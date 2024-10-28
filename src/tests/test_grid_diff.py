@@ -27,6 +27,8 @@ def test_add_stuff_roundtrip() -> None:
     The difference should be equal to what we added: i.e Lynn5bus
     """
     original = gce.open_file(filename=os.path.join("data", "grids", "IEEE57.gridcal"))  # we use this for diff
+    # gce.save_file(original, os.path.join("data", "grids", "IEEE57.gridcal"))  # it may fail if new properties are added, just save the original file
+
     grid1 = gce.open_file(filename=os.path.join("data", "grids", "IEEE57.gridcal"))  # we modify this one in place
 
     # add stuff

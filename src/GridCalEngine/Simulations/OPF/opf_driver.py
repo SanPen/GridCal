@@ -65,6 +65,9 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             hvdc_names=self.grid.get_hvdc_names(),
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             area_names=self.grid.get_area_names(),
+            fluid_node_names=self.grid.get_fluid_node_names(),
+            fluid_path_names=self.grid.get_fluid_path_names(),
+            fluid_inj_names=self.grid.get_fluid_injection_names(),
             F=F,
             T=T,
             F_hvdc=F_hvdc,
@@ -172,6 +175,14 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
             self.results.converged = opf_vars.acceptable_solution
+
+            self.results.fluid_node_p2x_flow = opf_vars.fluid_node_vars.p2x_flow[0, :]
+            self.results.fluid_node_current_level = opf_vars.fluid_node_vars.current_level[0, :]
+            self.results.fluid_node_spillage = opf_vars.fluid_node_vars.spillage[0, :]
+            self.results.fluid_node_flow_in = opf_vars.fluid_node_vars.flow_in[0, :]
+            self.results.fluid_node_flow_out = opf_vars.fluid_node_vars.flow_out[0, :]
+            self.results.fluid_path_flow = opf_vars.fluid_path_vars.flow[0, :]
+            self.results.fluid_injection_flow = opf_vars.fluid_inject_vars.flow[0, :]
 
         elif self.options.solver == SolverType.SIMPLE_OPF:
 

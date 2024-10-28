@@ -173,10 +173,13 @@ class ObjectsModel(WrappableTableModel):
         update table
         """
         self.r = len(self.objects)
-        row = self.rowCount()
-        self.beginInsertRows(QtCore.QModelIndex(), row, row)
-        # whatever code
-        self.endInsertRows()
+        # row = self.rowCount()
+        # self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        # # whatever code
+        # self.endInsertRows()
+
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
@@ -250,12 +253,16 @@ class ObjectsModel(WrappableTableModel):
             obj_idx = index.row()
             attr_idx = index.column()
 
-        prop = self.property_list[attr_idx]
+        if obj_idx < len(self.objects):
+            prop = self.property_list[attr_idx]
 
-        if prop.tpe is Bus:
-            return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_).name
+            if prop.tpe is Bus:
+                return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_).name
+            else:
+                return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_)
         else:
-            return self.objects[obj_idx].get_value(prop=prop, t_idx=self.time_index_)
+            # there is a mismatch because the element was deleted without refreshing this table model
+            return ""
 
     def data(self, index: QtCore.QModelIndex, role=None):
         """
@@ -309,16 +316,20 @@ class ObjectsModel(WrappableTableModel):
             taken = False
 
         if not taken:
-            if self.attributes[attr_idx] not in self.non_editable_attributes:
+            if obj_idx < len(self.objects):
+                if self.attributes[attr_idx] not in self.non_editable_attributes:
 
-                if prop.tpe is ContingencyGroup and value != "":
-                    value2 = ContingencyGroup(value)
+                    if prop.tpe is ContingencyGroup and value != "":
+                        value2 = ContingencyGroup(value)
+                    else:
+                        value2 = value
+
+                    self.objects[obj_idx].set_vaule(prop=prop, t_idx=self.time_index_, value=value2)
                 else:
-                    value2 = value
-
-                self.objects[obj_idx].set_vaule(prop=prop, t_idx=self.time_index_, value=value2)
+                    pass  # the column cannot be edited
             else:
-                pass  # the column cannot be edited
+                # the object was deleted without refreshing this table
+                pass
 
         return True
 
@@ -365,12 +376,19 @@ class ObjectsModel(WrappableTableModel):
             else:
                 # Normal
                 if orientation == QtCore.Qt.Orientation.Horizontal:
-                    if self.units[section] != '':
-                        return self.attributes[section] + ' [' + self.units[section] + ']'
+                    if section < len(self.attributes):
+                        if self.units[section] != '':
+                            return self.attributes[section] + ' [' + self.units[section] + ']'
+                        else:
+                            return self.attributes[section]
                     else:
-                        return self.attributes[section]
+                        return "Deleted :/"
+
                 elif orientation == QtCore.Qt.Orientation.Vertical:
-                    return str(section) + ':' + str(self.objects[section])
+                    if section < len(self.objects):
+                        return str(section) + ':' + str(self.objects[section])
+                    else:
+                        return "Deleted :/"
 
         # add a tooltip
         if role == QtCore.Qt.ItemDataRole.ToolTipRole:

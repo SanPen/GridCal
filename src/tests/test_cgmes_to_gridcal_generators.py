@@ -82,7 +82,7 @@ def device_to_terminal_dict_object() -> Dict[str, List[Terminal]]:
 generators_test_params = [(cgmes_object(2), calc_node_dict_object(), cn_dict_object(),
                            device_to_terminal_dict_object(), 0.55),
                           (cgmes_object(0), calc_node_dict_object(), cn_dict_object(),
-                           device_to_terminal_dict_object(), 0.8)]
+                           device_to_terminal_dict_object(), 1.0)]
 
 
 @pytest.mark.parametrize("cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,expected_power_factor",

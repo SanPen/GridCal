@@ -135,6 +135,7 @@ class BaseDiagram:
                  max_branch_width=5,
                  min_bus_width=20,
                  max_bus_width=20,
+                 arrow_size=20,
                  palette: Colormaps = Colormaps.GridCal,
                  default_bus_voltage: float = 10):
         """
@@ -147,6 +148,7 @@ class BaseDiagram:
         :param max_branch_width:
         :param min_bus_width:
         :param max_bus_width:
+        :param arrow_size:
         :param palette:
         :param default_bus_voltage:
         """
@@ -169,6 +171,7 @@ class BaseDiagram:
         self._max_branch_width: float = max_branch_width
         self._min_bus_width: float = min_bus_width
         self._max_bus_width: float = max_bus_width
+        self._arrow_size: float = arrow_size
 
         self._palette = palette
         self._default_bus_voltage: float = default_bus_voltage
@@ -188,6 +191,10 @@ class BaseDiagram:
     # min_branch_width property
     @property
     def min_branch_width(self) -> float:
+        """
+
+        :return:
+        """
         return self._min_branch_width
 
     @min_branch_width.setter
@@ -197,6 +204,10 @@ class BaseDiagram:
     # max_branch_width property
     @property
     def max_branch_width(self) -> float:
+        """
+
+        :return:
+        """
         return self._max_branch_width
 
     @max_branch_width.setter
@@ -206,24 +217,48 @@ class BaseDiagram:
     # min_bus_width property
     @property
     def min_bus_width(self) -> float:
+        """
+
+        :return:
+        """
         return self._min_bus_width
 
     @min_bus_width.setter
     def min_bus_width(self, value: float):
         self._min_bus_width = value
 
-    # max_bus_width property
+
     @property
     def max_bus_width(self) -> float:
+        """
+
+        :return:
+        """
         return self._max_bus_width
 
     @max_bus_width.setter
     def max_bus_width(self, value: float):
         self._max_bus_width = value
 
+    @property
+    def arrow_size(self) -> float:
+        """
+
+        :return:
+        """
+        return self._arrow_size
+
+    @arrow_size.setter
+    def arrow_size(self, value: float):
+        self._arrow_size = value
+
     # palette property
     @property
     def palette(self) -> Colormaps:
+        """
+
+        :return:
+        """
         return self._palette
 
     @palette.setter
@@ -234,6 +269,10 @@ class BaseDiagram:
     # default_bus_voltage property
     @property
     def default_bus_voltage(self) -> float:
+        """
+
+        :return:
+        """
         return self._default_bus_voltage
 
     @default_bus_voltage.setter
@@ -322,6 +361,8 @@ class BaseDiagram:
                 "max_branch_width": self.max_branch_width,
                 "min_bus_width": self.min_bus_width,
                 "max_bus_width": self.max_bus_width,
+                "arrow_size": self.arrow_size,
+
                 "palette": self.palette.value,
                 "default_bus_voltage": self.default_bus_voltage,
                 'data': data}
@@ -345,6 +386,7 @@ class BaseDiagram:
         self.max_branch_width: float = data.get("max_branch_width", 5)
         self.min_bus_width: float = data.get("min_bus_width", 20)
         self.max_bus_width: float = data.get("max_bus_width", 20)
+        self.arrow_size: float = data.get("arrow_size", 20)
         self.palette = Colormaps(data.get("palette", 'GridCal'))
         self.default_bus_voltage = data.get("default_bus_voltage", 10)
 
@@ -473,7 +515,8 @@ class BaseDiagram:
                              min_branch_width: int = 5,
                              max_branch_width=5,
                              min_bus_width=20,
-                             max_bus_width=20):
+                             max_bus_width=20,
+                             arrow_size=20):
         """
         Set the size constraints
         :param use_flow_based_width:
@@ -481,15 +524,11 @@ class BaseDiagram:
         :param max_branch_width:
         :param min_bus_width:
         :param max_bus_width:
+        :param arrow_size:
         """
         self.use_flow_based_width: bool = use_flow_based_width
         self.min_branch_width: float = min_branch_width
         self.max_branch_width: float = max_branch_width
         self.min_bus_width: float = min_bus_width
         self.max_bus_width: float = max_bus_width
-
-        # print(f"{self.use_flow_based_width}, "
-        #       f"{self.min_branch_width}, "
-        #       f"{self.max_branch_width}, "
-        #       f"{self.min_bus_width}, "
-        #       f"{self.max_bus_width}")
+        self.arrow_size = arrow_size

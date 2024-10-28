@@ -39,7 +39,7 @@ from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, CscMat, Vec
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+    from GridCalEngine.Compilers.circuit_to_data import VALID_OPF_RESULTS
 
 
 def solve(nc: NumericalCircuit,
@@ -417,7 +417,19 @@ def solve(nc: NumericalCircuit,
                            error=solution.norm_f,
                            elapsed=solution.elapsed,
                            iterations=solution.iterations)
-                final_solution = solution
+
+                if solution.method in [SolverType.DC, SolverType.LACPF]:
+                    # if the method is linear, we do not check the solution quality
+                    final_solution = solution
+                else:
+                    # if the method is supposed to be exact, we check the solution quality
+                    if abs(solution.norm_f) < 0.1:
+                        final_solution = solution
+                    else:
+                        logger.add_info('Tried solution is garbage',
+                                        solver_type.value,
+                                        value="{:.4e}".format(solution.norm_f),
+                                        expected_value=0.1)
             else:
                 logger.add_info('Tried solver but it did not improve the solution',
                                 solver_type.value,
@@ -645,7 +657,7 @@ def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: 
 
 def multi_island_pf_nc(nc: NumericalCircuit,
                        options: PowerFlowOptions,
-                       logger=Logger(),
+                       logger: Logger | None = None,
                        V_guess: Union[CxVec, None] = None,
                        Sbus_input: Union[CxVec, None] = None) -> PowerFlowResults:
     """
@@ -657,6 +669,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     :param Sbus_input: Use this power injections if provided
     :return: PowerFlowResults instance
     """
+    if logger is None:
+        logger = Logger()
 
     # declare results
     results = PowerFlowResults(
@@ -689,7 +703,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     Shvdc_prev = Shvdc.copy()
 
     # compute islands
-    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
+                                    logger=logger)
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time
@@ -798,7 +813,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
 def multi_island_pf(multi_circuit: MultiCircuit,
                     options: PowerFlowOptions,
-                    opf_results: Union[OptimalPowerFlowResults, None] = None,
+                    opf_results: VALID_OPF_RESULTS | None = None,
                     t: Union[int, None] = None,
                     logger: Logger = Logger(),
                     bus_dict: Union[Dict[Bus, int], None] = None,

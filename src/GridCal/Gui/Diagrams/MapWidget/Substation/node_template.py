@@ -17,6 +17,7 @@
 from __future__ import annotations
 from typing import Union, TYPE_CHECKING, List, Callable
 from PySide6.QtCore import QPointF
+from PySide6.QtGui import QBrush, QColor
 
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
@@ -46,9 +47,12 @@ class NodeTemplate(GenericDiagramWidget):
                                       editor=editor,
                                       draw_labels=draw_labels)
 
-        self.needsUpdate: bool = needsUpdate
+        self.needs_update: bool = needsUpdate
         self.lat = lat
         self.lon = lon
+
+        self.hovered = False
+        self.needsUpdate = False
 
         self._callbacks: List[Callable[[float, float], None]] = list()
 
@@ -82,3 +86,11 @@ class NodeTemplate(GenericDiagramWidget):
         :return:
         """
         return QPointF(0, 0)
+
+    def setBrush(self, brush: QBrush):
+        """
+        Dummy placeholder function
+        :param brush:
+        :return:
+        """
+        pass

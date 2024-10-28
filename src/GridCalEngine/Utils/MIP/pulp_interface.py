@@ -20,13 +20,15 @@ This module abstracts the synthax of PuLP out
 so that in the future it can be exchanged with some
 other solver interface easily
 """
+from __future__ import annotations
 
-from typing import List, Union
-import GridCalEngine.ThirdParty.pulp as pulp
-from GridCalEngine.ThirdParty.pulp import HiGHS, CPLEX_CMD
-from GridCalEngine.ThirdParty.pulp.pulp import LpAffineExpression as LpExp
-from GridCalEngine.ThirdParty.pulp.pulp import LpConstraint as LpCst
-from GridCalEngine.ThirdParty.pulp.pulp import LpVariable as LpVar
+from typing import List, Union, Callable
+import subprocess
+import GridCalEngine.Utils.ThirdParty.pulp as pulp
+from GridCalEngine.Utils.ThirdParty.pulp import HiGHS, CPLEX_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
@@ -195,15 +197,30 @@ class LpModel:
         else:
             raise Exception('PuLP Unsupported MIP solver ' + self.solver_type.value)
 
-    def solve(self, robust: bool = False, show_logs: bool = False) -> int:
+    def solve(self, robust: bool = False, show_logs: bool = False,
+              progress_text: Callable[[str], None] | None = None) -> int:
         """
         Solve the model
         :param robust: In this interface, this is useless
         :param show_logs: In this interface, this is useless
+        :param progress_text: progress function pointer
         :return:
         """
+        if progress_text is not None:
+            progress_text(f"Solving model with {self.solver_type.value}...")
+
         # solve the model
-        status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
+        try:
+            status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
+        except pulp.PulpSolverError as e:
+            self.logger.add_error(msg=str(e), )
+            # Retry with Highs
+            status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
+
+        except subprocess.CalledProcessError as e:
+            self.logger.add_error(msg=str(e), )
+            # Retry with Highs
+            status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
 
         if status != self.OPTIMAL:
             self.originally_infeasible = True
@@ -222,20 +239,18 @@ class LpModel:
                 bringing it to optimality.
                 """
 
-                self.logger.add_warning(msg="Base probrem is not optimal")
+                self.logger.add_error(msg="Base probrem could not be solved", value=self.status2string(status))
 
                 # deep copy of the original model
-                debug_model = self.model.copy()
+                debug_model = self.model.deepcopy()
 
                 # modify the original to detect the bad constraints
                 slacks = list()
                 debugging_f_obj = 0
                 for i, (cst_name, cst) in enumerate(debug_model.constraints.items()):
+
                     # create a new slack var in the problem
-                    sl = pulp.LpVariable(name=f'Relax_{cst_name}',
-                                         lowBound=0,
-                                         upBound=1e20,
-                                         cat=pulp.LpContinuous)
+                    sl = pulp.LpVariable(name=f'Relax_{cst_name}', lowBound=0, upBound=1e20, cat=pulp.LpContinuous)
                     debug_model.addVariable(sl)
 
                     # add the variable to the new objective function
@@ -250,11 +265,11 @@ class LpModel:
                 # set the objective function as the summation of the new slacks
                 debug_model.setObjective(debugging_f_obj)
 
+                if progress_text is not None:
+                    progress_text(f"Solving debug model with {self.solver_type.value}...")
+
                 # solve the debug model
                 status_d = debug_model.solve(solver=self.get_solver(show_logs=show_logs))
-
-                # at this point we can delete the debug model
-                del debug_model
 
                 # clear the relaxed slacks list
                 self.relaxed_slacks = list()
@@ -288,6 +303,12 @@ class LpModel:
 
                     # set the modified (original) objective function
                     self.model.setObjective(self.model.objective)
+
+                    # at this point we can delete the debug model
+                    del debug_model
+
+                    if progress_text is not None:
+                        progress_text(f"Solving relaxed model with {self.solver_type.value}...")
 
                     # solve the modified (original) model
                     status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
@@ -369,3 +390,11 @@ class LpModel:
             return val
         else:
             return 0.0
+
+    def status2string(self, stat: int) -> str:
+        """
+        Convert the PuLP status to a string
+        :param stat:
+        :return:
+        """
+        return pulp.LpStatus[stat]

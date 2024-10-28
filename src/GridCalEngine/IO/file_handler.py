@@ -51,6 +51,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.types import DRIVER_OBJECTS
@@ -127,6 +128,29 @@ class FileSavingOptions:
         return None
 
 
+class FileOpenOptions:
+    """
+    This class is to store the extra stuff that needs to be passed to open more complex files
+    """
+
+    def __init__(self,
+                 cgmes_map_areas_like_raw: bool = False,
+                 try_to_map_dc_to_hvdc_line: bool = True):
+        """
+
+        :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
+                                            GeographicalRegion <-> Area
+                                            SubGeographicalRegion <-> Zone
+                                        Otherwise:
+                                            GeographicalRegion <-> Country
+                                            SubGeographicalRegion <-> Community
+        :param try_to_map_dc_to_hvdc_line: Converters and DC lines in CGMES are attemted to be converted
+                                            to the simplified HvdcLine objects in GridCal
+        """
+        self.cgmes_map_areas_like_raw = cgmes_map_areas_like_raw
+        self.try_to_map_dc_to_hvdc_line = try_to_map_dc_to_hvdc_line
+
+
 class FileOpen:
     """
     File open interface
@@ -134,15 +158,19 @@ class FileOpen:
 
     def __init__(self,
                  file_name: Union[str, List[str]],
-                 previous_circuit: Union[MultiCircuit, None] = None):
+                 previous_circuit: Union[MultiCircuit, None] = None,
+                 options: FileOpenOptions | None = None):
         """
         File open handler
         :param file_name: name of the file
         :param previous_circuit: previous circuit
+        :param options: FileOpenOptions
         """
         self.file_name: Union[str, List[str]] = file_name
 
         self.circuit: Union[MultiCircuit, None] = None
+
+        self.options: FileOpenOptions = options if options is not None else FileOpenOptions()
 
         self.cgmes_circuit: Union[CgmesCircuit, None] = None
 
@@ -185,6 +213,7 @@ class FileOpen:
             data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
             data_parser.load_files(files=self.file_name)
             self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                              cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
                                               progress_func=progress_func, logger=self.cgmes_logger)
             self.cgmes_circuit.parse_files(data_parser=data_parser)
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
@@ -342,6 +371,7 @@ class FileOpen:
 
                     if is_valid_cgmes(data_parser.cgmes_version):
                         self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                          cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
                                                           progress_func=progress_func, logger=self.cgmes_logger)
                         self.cgmes_circuit.parse_files(data_parser=data_parser)
                         self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
@@ -551,11 +581,9 @@ class FileSave:
         cgmes_circuit.parse_files(data_parser=data_parser)
         profiles_to_export = self.options.cgmes_profiles
         one_file_per_profile = self.options.cgmes_one_file_per_profile
-        pf_results = self.options.get_power_flow_results()
-        # TODO get nc used for PF, recompile can be avoided?
-        from GridCalEngine.DataStructures.numerical_circuit import \
-            compile_numerical_circuit_at
         nc = compile_numerical_circuit_at(self.circuit)
+        pf_results = self.options.get_power_flow_results()
+
         cgmes_circuit = gridcal_to_cgmes(gc_model=self.circuit,
                                          num_circ=nc,
                                          cgmes_model=cgmes_circuit,

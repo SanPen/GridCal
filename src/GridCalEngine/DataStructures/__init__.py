@@ -27,3 +27,4 @@ from GridCalEngine.DataStructures.fluid_turbine_data import FluidTurbineData
 from GridCalEngine.DataStructures.fluid_pump_data import FluidPumpData
 from GridCalEngine.DataStructures.fluid_p2x_data import FluidP2XData
 from GridCalEngine.DataStructures.fluid_path_data import FluidPathData
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit

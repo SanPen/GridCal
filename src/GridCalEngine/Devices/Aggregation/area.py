@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
@@ -23,7 +23,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 class GenericAreaGroup(EditableDevice):
 
     def __init__(self, name='', code='', idtag: Union[str, None] = None,
-                 device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0):
+                 device_type=DeviceType.GenericArea, latitude=0.0, longitude=0.0, color: str | None = None):
         """
 
         :param name:
@@ -41,8 +41,11 @@ class GenericAreaGroup(EditableDevice):
         self.latitude = latitude
         self.longitude = longitude
 
+        self.color = color if color is not None else self.rnd_color()
+
         self.register(key='longitude', units='deg', tpe=float, definition='longitude.', profile_name='')
         self.register(key='latitude', units='deg', tpe=float, definition='latitude.', profile_name='')
+        self.register(key='color', units='', tpe=str, definition='Color to paint the SE in the map diagram')
 
 
 class Area(GenericAreaGroup):

@@ -188,11 +188,8 @@ class Assets:
         # emission gasses
         self._emission_gases: List[dev.EmissionGas] = list()
 
-        # self._generators_technologies: List[dev.GeneratorTechnology] = list()
-        #
-        # self._generators_fuels: List[dev.GeneratorFuel] = list()
-        #
-        # self._generators_emissions: List[dev.GeneratorEmission] = list()
+        # list of facilities
+        self._facilities: List[dev.Facility] = list()
 
         # fluids
         self._fluid_nodes: List[dev.FluidNode] = list()
@@ -243,8 +240,8 @@ class Assets:
             "Branches": [
                 dev.Line(),
                 dev.DcLine(),
-                dev.Transformer2W(),
                 dev.Winding(),
+                dev.Transformer2W(),
                 dev.Transformer3W(),
                 dev.SeriesReactance(),
                 dev.HvdcLine(),
@@ -266,7 +263,8 @@ class Assets:
                 dev.InvestmentsGroup(),
                 dev.Investment(),
                 dev.BranchGroup(),
-                dev.ModellingAuthority()
+                dev.ModellingAuthority(),
+                dev.Facility()
             ],
             "Associations": [
                 dev.Technology(),
@@ -618,7 +616,13 @@ class Assets:
         Delete line
         :param obj: Line instance
         """
-        self._lines.remove(obj)
+        try:
+            self._lines.remove(obj)
+
+            self.delete_groupings_with_object(obj=obj)
+
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # DC Line
@@ -658,7 +662,11 @@ class Assets:
         Delete line
         :param obj: Line instance
         """
-        self._dc_lines.remove(obj)
+        try:
+            self._dc_lines.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Transformer 2W
@@ -712,7 +720,11 @@ class Assets:
         Delete transformer
         :param obj: Transformer2W instance
         """
-        self._transformers2w.remove(obj)
+        try:
+            self._transformers2w.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # HVDC
@@ -766,7 +778,11 @@ class Assets:
         Delete HVDC line
         :param obj:
         """
-        self._hvdc_lines.remove(obj)
+        try:
+            self._hvdc_lines.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # VSC
@@ -813,7 +829,11 @@ class Assets:
         Delete VSC
         :param obj: VSC Instance
         """
-        self._vsc_devices.remove(obj)
+        try:
+            self._vsc_devices.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # UPFC
@@ -853,7 +873,11 @@ class Assets:
         Delete VSC
         :param obj: VSC Instance
         """
-        self._upfc_devices.remove(obj)
+        try:
+            self._upfc_devices.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Switches
@@ -902,7 +926,11 @@ class Assets:
         Delete transformer
         :param obj: Transformer2W instance
         """
-        self._switch_devices.remove(obj)
+        try:
+            self._switch_devices.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Transformer 3W
@@ -962,7 +990,11 @@ class Assets:
         Delete transformer
         :param obj: Transformer2W instance
         """
-        self._transformers3w.remove(obj)
+        try:
+            self._transformers3w.remove(obj)
+        except ValueError:
+            pass
+
         self.delete_winding(obj.winding1)
         self.delete_winding(obj.winding2)
         self.delete_winding(obj.winding3)
@@ -1024,23 +1056,18 @@ class Assets:
 
             if obj == tr3.winding1:
                 tr3.bus1 = None
-                # tr3.winding1 = None
-                # if tr3.graphic_obj is not None:
-                #     tr3.graphic_obj.connection_lines[0] = None
 
             elif obj == tr3.winding2:
                 tr3.bus2 = None
-                # tr3.winding2 = None
-                # if tr3.graphic_obj is not None:
-                #     tr3.graphic_obj.connection_lines[1] = None
 
             if obj == tr3.winding3:
                 tr3.bus3 = None
-                # tr3.winding3 = None
-                # if tr3.graphic_obj is not None:
-                #     tr3.graphic_obj.connection_lines[2] = None
 
-        # self.windings.remove(obj)
+        try:
+            self._windings.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Series reactance
@@ -1102,8 +1129,10 @@ class Assets:
         Add a SeriesReactance object
         :param obj: SeriesReactance instance
         """
-
-        self._series_reactances.remove(obj)
+        try:
+            self._series_reactances.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Buses
@@ -1221,8 +1250,10 @@ class Assets:
                 cn.default_bus = None  # remove the association
 
         # remove the bus itself
-        if obj in self._buses:
+        try:
             self._buses.remove(obj)
+        except ValueError:
+            pass
 
     def get_buses_by(self, filter_elements: List[Union[dev.Area, dev.Country, dev.Zone]]) -> List[dev.Bus]:
         """
@@ -1287,7 +1318,10 @@ class Assets:
         for elm in self._bus_bars:
             elm.connectivity_node = None
 
-        self._connectivity_nodes.remove(obj)
+        try:
+            self._connectivity_nodes.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Bus bars
@@ -1341,7 +1375,11 @@ class Assets:
         :param obj: Substation object
         """
         self.delete_connectivity_node(obj=obj.cn)
-        self._bus_bars.remove(obj)
+
+        try:
+            self._bus_bars.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Voltage level
@@ -1408,7 +1446,10 @@ class Assets:
             if elm.voltage_level == obj:
                 elm.voltage_level = None
 
-        self._voltage_levels.remove(obj)
+        try:
+            self._voltage_levels.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Load
@@ -1472,6 +1513,17 @@ class Assets:
         self._loads.append(api_obj)
 
         return api_obj
+
+    def delete_load(self, obj: dev.Load):
+        """
+        Delete a load
+        :param obj:
+        :return:
+        """
+        try:
+            self._loads.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Generator
@@ -1544,12 +1596,16 @@ class Assets:
         :param obj:
         :return:
         """
-        self._generators.remove(obj)
+        try:
+            self._generators.remove(obj)
+        except ValueError:
+            pass
 
         elms_to_del = list()
-        for elm in self._contingencies:
-            if elm.device_idtag == obj.idtag:
-                elms_to_del.append(elm)
+        for lst in [self._contingencies, self._remedial_actions]:
+            for elm in lst:
+                if elm.device_idtag == obj.idtag:
+                    elms_to_del.append(elm)
 
         for elm in elms_to_del:
             self.delete_element(elm)
@@ -1628,6 +1684,17 @@ class Assets:
 
         return api_obj
 
+    def delete_external_grid(self, obj: dev.ExternalGrid):
+        """
+        Delete a external grid
+        :param obj:
+        :return:
+        """
+        try:
+            self._external_grids.remove(obj)
+        except ValueError:
+            pass
+
     # ------------------------------------------------------------------------------------------------------------------
     # Shunt
     # ------------------------------------------------------------------------------------------------------------------
@@ -1692,6 +1759,17 @@ class Assets:
         self._shunts.append(api_obj)
 
         return api_obj
+
+    def delete_shunt(self, obj: dev.Shunt):
+        """
+        Delete a shunt
+        :param obj:
+        :return:
+        """
+        try:
+            self._shunts.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Batteries
@@ -1762,6 +1840,17 @@ class Assets:
 
         return api_obj
 
+    def delete_battery(self, obj: dev.Battery):
+        """
+        Delete a battery
+        :param obj:
+        :return:
+        """
+        try:
+            self._batteries.remove(obj)
+        except ValueError:
+            pass
+
     # ------------------------------------------------------------------------------------------------------------------
     # Static generator
     # ------------------------------------------------------------------------------------------------------------------
@@ -1826,6 +1915,17 @@ class Assets:
         self._static_generators.append(api_obj)
 
         return api_obj
+
+    def delete_static_generator(self, obj: dev.StaticGenerator):
+        """
+        Delete a static generators
+        :param obj:
+        :return:
+        """
+        try:
+            self._static_generators.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Current injection
@@ -1904,8 +2004,10 @@ class Assets:
         Add a CurrentInjection object
         :param obj: CurrentInjection instance
         """
-
-        self._current_injections.remove(obj)
+        try:
+            self._current_injections.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Controllable shunt
@@ -1987,8 +2089,10 @@ class Assets:
         Add a LinearShunt object
         :param obj: LinearShunt instance
         """
-
-        self._controllable_shunts.remove(obj)
+        try:
+            self._controllable_shunts.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # P_i measurement
@@ -2050,8 +2154,10 @@ class Assets:
         Add a PiMeasurement object
         :param obj: PiMeasurement instance
         """
-
-        self._pi_measurements.remove(obj)
+        try:
+            self._pi_measurements.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Q_i measurement
@@ -2112,8 +2218,10 @@ class Assets:
         Add a QiMeasurement object
         :param obj: QiMeasurement instance
         """
-
-        self._qi_measurements.remove(obj)
+        try:
+            self._qi_measurements.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Vm measurement
@@ -2175,8 +2283,10 @@ class Assets:
         Add a VmMeasurement object
         :param obj: VmMeasurement instance
         """
-
-        self._vm_measurements.remove(obj)
+        try:
+            self._vm_measurements.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Pf measurement
@@ -2238,8 +2348,10 @@ class Assets:
         Add a PfMeasurement object
         :param obj: PfMeasurement instance
         """
-
-        self._pf_measurements.remove(obj)
+        try:
+            self._pf_measurements.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Qf measurement
@@ -2301,8 +2413,10 @@ class Assets:
         Add a QfMeasurement object
         :param obj: QfMeasurement instance
         """
-
-        self._qf_measurements.remove(obj)
+        try:
+            self._qf_measurements.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # If measurement
@@ -2364,8 +2478,10 @@ class Assets:
         Add a IfMeasurement object
         :param obj: IfMeasurement instance
         """
-
-        self._if_measurements.remove(obj)
+        try:
+            self._if_measurements.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Overhead line type
@@ -2411,7 +2527,11 @@ class Assets:
         """
 
         self.delete_line_template_dependency(obj=obj)
-        self._overhead_line_types.remove(obj)
+
+        try:
+            self._overhead_line_types.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Wire types
@@ -2449,8 +2569,10 @@ class Assets:
             for elm in tower.wires_in_tower:
                 if elm.template == obj:
                     elm.template = None
-
-        self._wire_types.remove(obj)
+        try:
+            self._wire_types.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Underground cable
@@ -2485,7 +2607,11 @@ class Assets:
         :param obj:
         """
         self.delete_line_template_dependency(obj=obj)
-        self._underground_cable_types.remove(obj)
+
+        try:
+            self._underground_cable_types.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Sequence line type
@@ -2520,8 +2646,11 @@ class Assets:
         :param obj:
         """
         self.delete_line_template_dependency(obj=obj)
-        self._sequence_line_types.remove(obj)
-        return True
+
+        try:
+            self._sequence_line_types.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Transformer type
@@ -2566,7 +2695,11 @@ class Assets:
         :param obj
         """
         self.delete_transformer_template_dependency(obj=obj)
-        self._transformer_types.remove(obj)
+
+        try:
+            self._transformer_types.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Branch group
@@ -2628,8 +2761,10 @@ class Assets:
         Add a BranchGroup object
         :param obj: BranchGroup instance
         """
-
-        self._branch_groups.remove(obj)
+        try:
+            self._branch_groups.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Substations
@@ -2681,7 +2816,31 @@ class Assets:
             if elm.substation == obj:
                 elm.substation = None
 
-        self._substations.remove(obj)
+        try:
+            self._substations.remove(obj)
+        except ValueError:
+            pass
+
+    def merge_substations(self, selected_objects: List[dev.Substation]):
+        """
+        Merge selected substations into the first one
+        :param selected_objects:
+        :return:
+        """
+        if len(selected_objects) > 1:
+            # remove the first SE from the list and keep it
+            base = selected_objects.pop(0)
+
+            for elm in self.voltage_levels:
+                if elm.substation in selected_objects:
+                    elm.substation = base
+
+            for elm in self.buses:
+                if elm.substation in selected_objects:
+                    elm.substation = base
+
+            for obj in selected_objects:
+                self.delete_substation(obj=obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Area
@@ -2744,7 +2903,10 @@ class Assets:
             if elm.area == obj:
                 elm.area = None
 
-        self._areas.remove(obj)
+        try:
+            self._areas.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # zones
@@ -2796,7 +2958,10 @@ class Assets:
             if elm.zone == obj:
                 elm.zone = None
 
-        self._zones.remove(obj)
+        try:
+            self._zones.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Countries
@@ -2851,7 +3016,10 @@ class Assets:
             if elm.country == obj:
                 elm.country = None
 
-        self._countries.remove(obj)
+        try:
+            self._countries.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Communities
@@ -2922,7 +3090,10 @@ class Assets:
             if elm.community == obj:
                 elm.community = None
 
-        self._communities.remove(obj)
+        try:
+            self._communities.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Regions
@@ -2989,7 +3160,10 @@ class Assets:
             if elm.region == obj:
                 elm.region = None
 
-        self._regions.remove(obj)
+        try:
+            self._regions.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Municipalities
@@ -3056,7 +3230,10 @@ class Assets:
             if elm.municipality == obj:
                 elm.municipality = None
 
-        self._municipalities.remove(obj)
+        try:
+            self._municipalities.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Contingency
@@ -3088,15 +3265,33 @@ class Assets:
         """
         self._contingencies.append(obj)
 
-    def delete_contingency(self, obj):
+    def delete_contingency(self, obj, del_group: bool = False):
         """
         Delete zone
         :param obj: index
+        :param del_group: Delete group if empty?
         """
-        self._contingencies.remove(obj)
+        try:
+            self._contingencies.remove(obj)
+        except ValueError:
+            pass
+
+        if del_group:
+            to_del = list()
+            for grp in self.contingency_groups:
+                found = False
+                for elm in self.contingencies:
+                    if elm.group == grp:
+                        found = True
+
+                if not found:
+                    to_del.append(grp)
+
+            for grp in to_del:
+                self.delete_contingency_group(grp)
 
     # ------------------------------------------------------------------------------------------------------------------
-    # Continegency group
+    # Contingency group
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
@@ -3137,7 +3332,10 @@ class Assets:
         Delete contingency group
         :param obj: ContingencyGroup
         """
-        self._contingency_groups.remove(obj)
+        try:
+            self._contingency_groups.remove(obj)
+        except ValueError:
+            pass
 
         # delete references in the remedial action groups
         for rag in self._remedial_action_groups:
@@ -3274,12 +3472,30 @@ class Assets:
         """
         self._investments.append(obj)
 
-    def delete_investment(self, obj: dev.Investment):
+    def delete_investment(self, obj: dev.Investment, del_group: bool = False):
         """
         Delete zone
         :param obj: index
+        :param del_group: delete the group?
         """
-        self._investments.remove(obj)
+        try:
+            self._investments.remove(obj)
+        except ValueError:
+            pass
+
+        if del_group:
+            to_del = list()
+            for grp in self.investments_groups:
+                found = False
+                for elm in self.investments:
+                    if elm.group == grp:
+                        found = True
+
+                if not found:
+                    to_del.append(grp)
+
+            for grp in to_del:
+                self.delete_investment_groups(grp)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Remedial action
@@ -3311,12 +3527,29 @@ class Assets:
         """
         self._remedial_actions.append(obj)
 
-    def delete_remedial_action(self, obj):
+    def delete_remedial_action(self, obj, del_group: bool = False):
         """
         Delete RemedialAction
         :param obj: index
         """
-        self._remedial_actions.remove(obj)
+        try:
+            self._remedial_actions.remove(obj)
+        except ValueError:
+            pass
+
+        if del_group:
+            to_del = list()
+            for grp in self.remedial_action_groups:
+                found = False
+                for elm in self.remedial_actions:
+                    if elm.group == grp:
+                        found = True
+
+                if not found:
+                    to_del.append(grp)
+
+            for grp in to_del:
+                self.delete_remedial_action_group(grp)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Remedial Actions group
@@ -3360,7 +3593,10 @@ class Assets:
         Delete contingency group
         :param obj: ContingencyGroup
         """
-        self._remedial_action_groups.remove(obj)
+        try:
+            self._remedial_action_groups.remove(obj)
+        except ValueError:
+            pass
 
         to_del = [con for con in self._contingencies if con.group == obj]
         for con in to_del:
@@ -3506,7 +3742,10 @@ class Assets:
         Delete zone
         :param obj: index
         """
-        self._investments_groups.remove(obj)
+        try:
+            self._investments_groups.remove(obj)
+        except ValueError:
+            pass
 
         to_del = [invst for invst in self._investments if invst.group == obj]
         for invst in to_del:
@@ -3595,7 +3834,10 @@ class Assets:
                 for assoc in to_del:
                     elm.technologies.remove(assoc)
 
-        self._technologies.remove(obj)
+        try:
+            self._technologies.remove(obj)
+        except ValueError:
+            pass
 
     def get_technology_indexing_dict(self) -> Dict[str, int]:
         """
@@ -3667,8 +3909,68 @@ class Assets:
         Add a ModellingAuthority object
         :param obj: ModellingAuthority instance
         """
+        try:
+            self._modelling_authorities.remove(obj)
+        except ValueError:
+            pass
 
-        self._modelling_authorities.remove(obj)
+    # ------------------------------------------------------------------------------------------------------------------
+    # Facility
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def facilities(self) -> List[dev.Facility]:
+        """
+        Get the list of facilities
+        :return:
+        """
+        return self._facilities
+
+    @facilities.setter
+    def facilities(self, value: List[dev.Facility]):
+        self._facilities = value
+
+    def get_facilities(self) -> List[dev.Facility]:
+        """
+        Get list of areas
+        :return: List[dev.Facility]
+        """
+        return self._facilities
+
+    def get_facility_names(self) -> StrVec:
+        """
+        Get array of area names
+        :return: StrVec
+        """
+        return np.array([a.name for a in self._facilities])
+
+    def get_facility_number(self) -> int:
+        """
+        Get number of facilities
+        :return: number of facilities
+        """
+        return len(self._facilities)
+
+    def add_facility(self, obj: dev.Facility):
+        """
+        Add facility
+        :param obj: Facility object
+        """
+        self._facilities.append(obj)
+
+    def delete_facility(self, obj: dev.Facility):
+        """
+        Delete area
+        :param obj: Area
+        """
+        for elm in self.get_injection_devices_iter():
+            if elm.facility == obj:
+                elm.facility = None
+
+        try:
+            self._facilities.remove(obj)
+        except ValueError:
+            pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Fuels
@@ -3730,7 +4032,10 @@ class Assets:
                 for assoc in to_del:
                     elm.fuels.remove(assoc)
 
-        self._fuels.remove(obj)
+        try:
+            self._fuels.remove(obj)
+        except ValueError:
+            pass
 
     def get_fuel_indexing_dict(self) -> Dict[str, int]:
         """
@@ -3803,7 +4108,10 @@ class Assets:
                     elm.emissions.remove(assoc)
 
         # delete the gas
-        self._emission_gases.remove(obj)
+        try:
+            self._emission_gases.remove(obj)
+        except ValueError:
+            pass
 
     def get_emissions_indexing_dict(self) -> Dict[str, int]:
         """
@@ -3814,118 +4122,6 @@ class Assets:
         for k, elm in enumerate(self.get_emissions()):
             index_dict[elm.idtag] = k  # associate the idtag to the index
         return index_dict
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # Generator - Technology
-    # ------------------------------------------------------------------------------------------------------------------
-
-    # @property
-    # def generators_technologies(self) -> List[dev.GeneratorTechnology]:
-    #     """
-    #     Get list of GeneratorTechnology association objects
-    #     :return:
-    #     """
-    #     return self._generators_technologies
-    #
-    # @generators_technologies.setter
-    # def generators_technologies(self, value: List[dev.GeneratorTechnology]):
-    #     self._generators_technologies = value
-    #
-    # def add_generator_technology(self, obj: dev.GeneratorTechnology):
-    #     """
-    #     Add GeneratorTechnology
-    #     :param obj: GeneratorTechnology object
-    #     """
-    #     self._generators_technologies.append(obj)
-    #
-    # def delete_generator_technology(self, obj: dev.GeneratorTechnology):
-    #     """
-    #     Delete GeneratorTechnology
-    #     :param obj: GeneratorTechnology
-    #     """
-    #     # store the associations
-    #     rels = list()
-    #     for elm in self._generators_technologies:
-    #         if elm.technology == obj:
-    #             rels.append(elm)
-    #
-    #     # delete the associations
-    #     for elm in rels:
-    #         self.delete_generator_technology(elm)
-    #
-    #     # delete the technology
-    #     self._generators_technologies.remove(obj)
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # Generotor - Fuels
-    # ------------------------------------------------------------------------------------------------------------------
-
-    # @property
-    # def generators_fuels(self) -> List[dev.GeneratorFuel]:
-    #     """
-    #     Get list of Generator fuels associations
-    #     :return:
-    #     """
-    #     return self._generators_fuels
-    #
-    # @generators_fuels.setter
-    # def generators_fuels(self, value: List[dev.GeneratorFuel]):
-    #     self._generators_fuels = value
-    #
-    # def add_generator_fuel(self, obj: dev.GeneratorFuel):
-    #     """
-    #     Add GeneratorFuel
-    #     :param obj: GeneratorFuel object
-    #     """
-    #     self._generators_fuels.append(obj)
-    #
-    # def delete_generator_fuel(self, obj: dev.GeneratorFuel):
-    #     """
-    #     Delete GeneratorFuel
-    #     :param obj: GeneratorFuel
-    #     """
-    #     # store the associations
-    #     rels = list()
-    #     for elm in self._generators_fuels:
-    #         if elm.fuel == obj:
-    #             rels.append(elm)
-    #
-    #     # delete the assciations
-    #     for elm in rels:
-    #         self.delete_generator_fuel(elm)
-    #
-    #     # delete the fuel
-    #     self._generators_fuels.remove(obj)
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # Generator - Emissions
-    # ------------------------------------------------------------------------------------------------------------------
-
-    # @property
-    # def generators_emissions(self) -> List[dev.GeneratorEmission]:
-    #     """
-    #     Get list of generator associations
-    #     :return:
-    #     """
-    #     return self._generators_emissions
-    #
-    # @generators_emissions.setter
-    # def generators_emissions(self, value: List[dev.GeneratorEmission]):
-    #     self._generators_emissions = value
-    #
-    # def add_generator_emission(self, obj: dev.GeneratorEmission):
-    #     """
-    #     Add GeneratorFuel
-    #     :param obj: GeneratorFuel object
-    #     """
-    #     self._generators_emissions.append(obj)
-    #
-    # def delete_generator_emission(self, obj: dev.GeneratorEmission):
-    #     """
-    #     Delete GeneratorFuel
-    #     :param obj: GeneratorFuel
-    #     """
-    #     self._generators_emissions.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Fluid nodes
@@ -3963,7 +4159,10 @@ class Assets:
             if fluid_path.source == obj or fluid_path.target == obj:
                 self.delete_fluid_path(fluid_path)
 
-        self._fluid_nodes.remove(obj)
+        try:
+            self._fluid_nodes.remove(obj)
+        except ValueError:
+            pass
 
     def get_fluid_nodes(self) -> List[dev.FluidNode]:
         """
@@ -4017,7 +4216,10 @@ class Assets:
         Delete fuid path
         :param obj: FluidPath
         """
-        self._fluid_paths.remove(obj)
+        try:
+            self._fluid_paths.remove(obj)
+        except ValueError:
+            pass
 
     def get_fluid_paths(self) -> List[dev.FluidPath]:
         """
@@ -4081,7 +4283,10 @@ class Assets:
         Delete fuid turbine
         :param obj: FluidTurbine
         """
-        self._turbines.remove(obj)
+        try:
+            self._turbines.remove(obj)
+        except ValueError:
+            pass
 
     def get_fluid_turbines(self) -> List[dev.FluidTurbine]:
         """
@@ -4141,7 +4346,10 @@ class Assets:
         Delete fuid pump
         :param obj: FluidPump
         """
-        self._pumps.remove(obj)
+        try:
+            self._pumps.remove(obj)
+        except ValueError:
+            pass
 
     def get_fluid_pumps(self) -> List[dev.FluidPump]:
         """
@@ -4201,7 +4409,10 @@ class Assets:
         Delete fuid pump
         :param obj: FluidP2x
         """
-        self._p2xs.remove(obj)
+        try:
+            self._p2xs.remove(obj)
+        except ValueError:
+            pass
 
     def get_fluid_p2xs(self) -> List[dev.FluidP2x]:
         """
@@ -4327,18 +4538,28 @@ class Assets:
         for branch_list in self.get_branch_lists():
             try:
                 branch_list.remove(obj)
+                self.delete_groupings_with_object(obj=obj)
             except ValueError:  # element not found ...
                 pass
 
     def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
         """
-        Return all the branch objects.
+        Return all the real branch objects.
         :return: lines + transformers 2w + hvdc
         """
         lst = list()
         for dev_list in self.get_branch_lists_wo_hvdc():
             lst += dev_list
         return lst
+
+    def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator all the real branch objects.
+        :return: lines + transformers 2w + hvdc
+        """
+        for dev_list in self.get_branch_lists_wo_hvdc():
+            for elm in dev_list:
+                yield elm
 
     def get_branches_wo_hvdc_names(self) -> StrVec:
         """
@@ -4454,6 +4675,25 @@ class Assets:
             T[i] = bus_dict[elm.bus_to]
         return F, T
 
+    def delete_groupings_with_object(self, obj: BRANCH_TYPES, delete_groups: bool = True):
+        """
+        Delete the dependencies that may come with a branch
+        :param obj: branch object or any object
+        :param delete_groups: delete empty groups too?
+        :return:
+        """
+        for elm in self.contingencies:
+            if elm.device_idtag == obj.idtag:
+                self.delete_contingency(elm, del_group=delete_groups)
+
+        for elm in self.remedial_actions:
+            if elm.device_idtag == obj.idtag:
+                self.delete_remedial_action(elm, del_group=delete_groups)
+
+        for elm in self.investments:
+            if elm.device_idtag == obj.idtag:
+                self.delete_investment(elm, del_group=delete_groups)
+
     def get_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
         """
         get the from and to arrays of indices of HVDC lines
@@ -4526,7 +4766,7 @@ class Assets:
             elms += lst
         return elms
 
-    def injection_items(self) -> Generator[INJECTION_DEVICE_TYPES, None, None]:
+    def get_injection_devices_iter(self) -> Generator[INJECTION_DEVICE_TYPES, None, None]:
         """
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
@@ -4914,6 +5154,9 @@ class Assets:
         elif device_type == DeviceType.ModellingAuthority:
             return self.get_modelling_authorities()
 
+        elif device_type == DeviceType.FacilityDevice:
+            return self._facilities
+
         elif device_type == DeviceType.LambdaDevice:
             return list()
 
@@ -5108,6 +5351,9 @@ class Assets:
         elif device_type == DeviceType.ModellingAuthority:
             self._modelling_authorities = devices
 
+        elif device_type == DeviceType.FacilityDevice:
+            self._facilities = devices
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
@@ -5283,6 +5529,9 @@ class Assets:
         elif obj.device_type == DeviceType.ModellingAuthority:
             self.add_modelling_authority(obj=obj)
 
+        elif obj.device_type == DeviceType.FacilityDevice:
+            self.add_facility(obj=obj)
+
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
@@ -5294,28 +5543,28 @@ class Assets:
         """
 
         if obj.device_type == DeviceType.LoadDevice:
-            self._loads.remove(obj)
+            self.delete_load(obj)
 
         elif obj.device_type == DeviceType.StaticGeneratorDevice:
-            self._static_generators.remove(obj)
+            self.delete_static_generator(obj)
 
         elif obj.device_type == DeviceType.GeneratorDevice:
-            self._generators.remove(obj)
+            self.delete_generator(obj)
 
         elif obj.device_type == DeviceType.BatteryDevice:
-            self._batteries.remove(obj)
+            self.delete_battery(obj)
 
         elif obj.device_type == DeviceType.ShuntDevice:
-            self._shunts.remove(obj)
+            self.delete_shunt(obj)
 
         elif obj.device_type == DeviceType.ExternalGridDevice:
-            self._external_grids.remove(obj)
+            self.delete_external_grid(obj)
 
         elif obj.device_type == DeviceType.CurrentInjectionDevice:
-            self._current_injections.remove(obj)
+            self.delete_current_injection(obj)
 
         elif obj.device_type == DeviceType.ControllableShuntDevice:
-            self._controllable_shunts.remove(obj)
+            self.delete_controllable_shunt(obj)
 
         elif obj.device_type == DeviceType.LineDevice:
             self.delete_line(obj)
@@ -5458,6 +5707,9 @@ class Assets:
         elif obj.device_type == DeviceType.ModellingAuthority:
             self.delete_modelling_authority(obj)
 
+        elif obj.device_type == DeviceType.FacilityDevice:
+            self.delete_facility(obj)
+
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
@@ -5525,10 +5777,11 @@ class Assets:
 
         return data, ok
 
-    def get_all_elements_dict_by_type(self,
-                                      add_locations: bool = False,
-                                      string_keys: bool = True) -> dict[
-        Union[str, DeviceType], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(
+            self,
+            add_locations: bool = False,
+            string_keys: bool = True
+    ) -> dict[Union[str, DeviceType], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :param add_locations: Add locations to dict
@@ -5586,62 +5839,73 @@ class Assets:
 
         if elm_type == DeviceType.BusDevice:
             elm = dev.Bus()
-            dictionary_of_lists = {DeviceType.AreaDevice: self.areas,
-                                   DeviceType.ZoneDevice: self.zones,
-                                   DeviceType.SubstationDevice: self.substations,
-                                   DeviceType.VoltageLevelDevice: self.voltage_levels,
-                                   DeviceType.CountryDevice: self.countries,
-                                   DeviceType.ModellingAuthority: self.modelling_authorities,
-                                   }
+            dictionary_of_lists = {
+                DeviceType.AreaDevice: self.areas,
+                DeviceType.ZoneDevice: self.zones,
+                DeviceType.SubstationDevice: self.substations,
+                DeviceType.VoltageLevelDevice: self.voltage_levels,
+                DeviceType.CountryDevice: self.countries,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
 
         elif elm_type == DeviceType.LoadDevice:
             elm = dev.Load()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.StaticGeneratorDevice:
             elm = dev.StaticGenerator()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ControllableShuntDevice:
             elm = dev.ControllableShunt()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.CurrentInjectionDevice:
             elm = dev.CurrentInjection()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.GeneratorDevice:
             elm = dev.Generator()
-            dictionary_of_lists = {DeviceType.Technology: self.technologies,
-                                   DeviceType.FuelDevice: self.fuels,
-                                   DeviceType.EmissionGasDevice: self.emission_gases,
-                                   DeviceType.ModellingAuthority: self.modelling_authorities, }
+            dictionary_of_lists = {
+                DeviceType.Technology: self.technologies,
+                DeviceType.FuelDevice: self.fuels,
+                DeviceType.EmissionGasDevice: self.emission_gases,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
+            }
 
         elif elm_type == DeviceType.BatteryDevice:
             elm = dev.Battery()
             dictionary_of_lists = {
                 DeviceType.Technology: self.technologies,
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ShuntDevice:
             elm = dev.Shunt()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ExternalGridDevice:
             elm = dev.ExternalGrid()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.LineDevice:
@@ -5831,6 +6095,7 @@ class Assets:
                 DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
                 DeviceType.GeneratorDevice: self.get_generators(),
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.FluidPumpDevice:
@@ -5839,6 +6104,7 @@ class Assets:
                 DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
                 DeviceType.GeneratorDevice: self.get_generators(),
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.FluidP2XDevice:
@@ -5847,10 +6113,15 @@ class Assets:
                 DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
                 DeviceType.GeneratorDevice: self.get_generators(),
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ModellingAuthority:
             elm = dev.ModellingAuthority()
+            dictionary_of_lists = dict()
+
+        elif elm_type == DeviceType.FacilityDevice:
+            elm = dev.Facility()
             dictionary_of_lists = dict()
 
         else:

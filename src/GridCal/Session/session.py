@@ -253,7 +253,7 @@ class SimulationSession:
         else:
             return None, None
 
-    def get_results(self, driver_type: SimulationTypes):
+    def get_results(self, driver_type: SimulationTypes) -> RESULTS_OBJECTS | None:
         """
         Get the results of the driver
         :param driver_type: driver type

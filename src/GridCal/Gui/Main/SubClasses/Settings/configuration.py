@@ -300,6 +300,7 @@ class ConfigurationMain(ResultsMain):
                 "cgmes_single_profile_per_file": self.ui.cgmes_single_profile_per_file_checkBox,
                 "map_regions_like_raw": self.ui.cgmes_map_regions_like_raw_checkBox,
                 "raw_selected_version": self.ui.raw_export_version_comboBox,
+                "cgmes_dc_as_hvdclines": self.ui.cgmes_dc_as_hvdclines_checkBox,
             }
         }
 

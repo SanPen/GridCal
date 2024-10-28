@@ -383,6 +383,13 @@ class MapView(QGraphicsView):
 
         self.map_widget.view.centerOn(point)
 
+    def get_selected(self) -> List[QGraphicsItem]:
+        """
+        Get the selection
+        :return:
+        """
+        return self._scene.selectedItems()
+
 
 class MapWidget(QWidget):
     """
@@ -423,7 +430,7 @@ class MapWidget(QWidget):
 
         # the view is the transparent layer used to draw stuff
         self.view = MapView(scene=self.diagram_scene, map_widget=self)
-        self.view.setBackgroundBrush(Qt.transparent)
+        self.view.setBackgroundBrush(Qt.GlobalColor.transparent)
 
         # -------------------------------------------------------------------------
         # Internal vars
@@ -629,8 +636,8 @@ class MapWidget(QWidget):
         :return:
         """
         super().mousePressEvent(event)
-        click_x = event.x()
-        click_y = event.y()
+        # click_x = event.x()
+        # click_y = event.y()
 
         # assume we aren't dragging
         # self.start_drag_x = None
@@ -1907,3 +1914,10 @@ class MapWidget(QWidget):
         self.zoom_level_position(level, longitude, latitude)
 
         return old_tileset
+
+    def get_selected(self) -> List[QGraphicsItem]:
+        """
+        Get the selection
+        :return:
+        """
+        return self.view.get_selected()

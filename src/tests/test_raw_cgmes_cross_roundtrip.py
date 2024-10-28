@@ -5,7 +5,7 @@ import os
 import numpy as np
 from GridCalEngine.IO import FileSave
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
-from GridCalEngine.IO.file_handler import FileSavingOptions
+from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions
 from GridCalEngine.Simulations import PowerFlowOptions
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
@@ -41,7 +41,7 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
     :return:
     """
     logger = Logger()
-    # CGMES model import to MultiCircuit
+    # RAW model import to MultiCircuit
     circuit = gce.open_file(import_path)
 
     # detect substation from the raw file

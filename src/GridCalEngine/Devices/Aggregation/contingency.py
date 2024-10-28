@@ -18,6 +18,7 @@
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.enumerations import ContingencyOperationTypes
 
 
 class Contingency(EditableDevice):
@@ -29,7 +30,9 @@ class Contingency(EditableDevice):
                  idtag: Union[str, None] = None,
                  device_idtag='',
                  name="Contingency",
-                 code='', prop='active', value=0.0,
+                 code='',
+                 prop: ContingencyOperationTypes = ContingencyOperationTypes.Active,
+                 value=0.0,
                  group: Union[None, ContingencyGroup] = None):
         """
         Contingency
@@ -49,13 +52,13 @@ class Contingency(EditableDevice):
 
         # Contingency type
         self.device_idtag = device_idtag
-        self._prop = prop
+        self._prop: ContingencyOperationTypes = prop
         self._value = value
         self._group: ContingencyGroup = group
-        self._allowed_properties = ['active', '%']
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID', editable=False)
-        self.register(key='prop', units='', tpe=str, definition='Name of the object property to change (active, %)')
+        self.register(key='prop', units='', tpe=ContingencyOperationTypes,
+                      definition=f'Object property to change')
         self.register(key='value', units='', tpe=float, definition='Property value')
         self.register(key='group', units='', tpe=DeviceType.ContingencyGroupDevice, definition='Contingency group')
 
@@ -68,19 +71,19 @@ class Contingency(EditableDevice):
         self._name = val
 
     @property
-    def prop(self) -> str:
+    def prop(self) -> ContingencyOperationTypes:
         """
         Property to modify when contingency is triggered out
-        :return:
+        :return: ContingencyOperationsTypes
         """
         return self._prop
 
     @prop.setter
-    def prop(self, val: str):
-        if val in self._allowed_properties:
+    def prop(self, val: ContingencyOperationTypes):
+        if isinstance(val, ContingencyOperationTypes):
             self._prop = val
         else:
-            print(f"Not allowed property {val}, allowed: " + "".join(self._allowed_properties))
+            print(f"Not allowed property {val}")
 
     @property
     def value(self) -> float:

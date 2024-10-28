@@ -24,7 +24,7 @@ from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.enumerations import BranchImpedanceMode, BusMode
+from GridCalEngine.enumerations import BranchImpedanceMode, BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
 
@@ -494,12 +494,12 @@ class NumericalCircuit:
                 structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
 
                 if structure is not None:
-                    if cnt.prop == 'active':
+                    if cnt.prop == ContingencyOperationTypes.Active:
                         if revert:
                             structure.active[idx] = int(not bool(cnt.value))
                         else:
                             structure.active[idx] = int(cnt.value)
-                    elif cnt.prop == '%':
+                    elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                         if revert:
                             structure.p[idx] /= float(cnt.value / 100.0)
                         else:
@@ -528,12 +528,12 @@ class NumericalCircuit:
                 structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
 
                 if structure is not None:
-                    if cnt.prop == 'active':
+                    if cnt.prop == ContingencyOperationTypes.Active:
                         if revert:
                             structure.active[idx] = int(not bool(cnt.value))
                         else:
                             structure.active[idx] = int(cnt.value)
-                    elif cnt.prop == '%':
+                    elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                         # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
                         assert not isinstance(structure, ds.HvdcData)  # TODO Arreglar esto
                         dev_injections = np.zeros(structure.size())
@@ -1834,13 +1834,17 @@ class NumericalCircuit:
         return df
 
     def get_island(self, bus_idx: IntVec,
-                   consider_hvdc_as_island_links: bool = False) -> "NumericalCircuit":
+                   consider_hvdc_as_island_links: bool = False,
+                   logger: Logger | None = None) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param logger: Logger
         :return: SnapshotData
         """
+        if logger is None:
+            logger = Logger()
 
         # if the island is the same as the original bus indices, no slicing is needed
         if len(bus_idx) == len(self.bus_data.original_idx):
@@ -1875,7 +1879,7 @@ class NumericalCircuit:
 
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
-        nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
+        nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx, logger=logger)
 
         nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx)
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
@@ -1890,13 +1894,17 @@ class NumericalCircuit:
 
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,
-                           consider_hvdc_as_island_links: bool = False) -> List["NumericalCircuit"]:
+                           consider_hvdc_as_island_links: bool = False,
+                           logger: Logger | None = None) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param logger: Logger
         :return: List[NumericCircuit]
         """
+        if logger is None:
+            logger = Logger()
 
         # find the matching islands
         adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
@@ -1907,10 +1915,14 @@ class NumericalCircuit:
         for bus_idx in idx_islands:
             if ignore_single_node_islands:
                 if len(bus_idx) > 1:
-                    island = self.get_island(bus_idx, consider_hvdc_as_island_links=consider_hvdc_as_island_links)
+                    island = self.get_island(bus_idx,
+                                             consider_hvdc_as_island_links=consider_hvdc_as_island_links,
+                                             logger=logger)
                     circuit_islands.append(island)
             else:
-                island = self.get_island(bus_idx, consider_hvdc_as_island_links=consider_hvdc_as_island_links)
+                island = self.get_island(bus_idx,
+                                         consider_hvdc_as_island_links=consider_hvdc_as_island_links,
+                                         logger=logger)
                 circuit_islands.append(island)
 
         return circuit_islands
@@ -2029,20 +2041,20 @@ class NumericalCircuit:
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
-    def get_structural_ntc(self, bus_idx_from: IntVec, bus_idx_to: IntVec) -> float:
+    def get_structural_ntc(self, bus_a1_idx: IntVec, bus_a2_idx: IntVec) -> float:
         """
         Get the structural NTC
-        :param bus_idx_from: list of buses of the area from
-        :param bus_idx_to: list of buses of the area to
+        :param bus_a1_idx: list of buses of the area from
+        :param bus_a2_idx: list of buses of the area to
         :return: structural NTC in MVA
         """
 
-        inter_area_branches = self.branch_data.get_inter_areas(bus_idx_from=bus_idx_from, bus_idx_to=bus_idx_to)
+        inter_area_branches = self.branch_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
         sum_ratings = 0.0
         for k, sense in inter_area_branches:
             sum_ratings += self.branch_data.rates[k]
 
-        inter_area_hvdcs = self.hvdc_data.get_inter_areas(bus_idx_from=bus_idx_from, bus_idx_to=bus_idx_to)
+        inter_area_hvdcs = self.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
         for k, sense in inter_area_hvdcs:
             sum_ratings += self.hvdc_data.rate[k]
 
@@ -2053,7 +2065,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  t_idx: Union[int, None] = None,
                                  apply_temperature=False,
                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                 opf_results: Union[OptimalPowerFlowResults, None] = None,
+                                 opf_results: gc_compiler2.VALID_OPF_RESULTS | None = None,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
                                  areas_dict: Union[Dict[Area, int], None] = None,

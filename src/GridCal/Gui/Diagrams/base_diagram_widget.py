@@ -672,7 +672,8 @@ class BaseDiagramWidget(QSplitter):
                              min_branch_width: int = 5,
                              max_branch_width=5,
                              min_bus_width=20,
-                             max_bus_width=20):
+                             max_bus_width=20,
+                             arrow_size=20):
         """
         Set the size constraints
         :param use_flow_based_width:
@@ -680,13 +681,15 @@ class BaseDiagramWidget(QSplitter):
         :param max_branch_width:
         :param min_bus_width:
         :param max_bus_width:
+        :param arrow_size:
         """
         self.diagram.set_size_constraints(
             use_flow_based_width=use_flow_based_width,
             min_branch_width=min_branch_width,
             max_branch_width=max_branch_width,
             min_bus_width=min_bus_width,
-            max_bus_width=max_bus_width
+            max_bus_width=max_bus_width,
+            arrow_size=arrow_size
         )
 
     def copy(self):

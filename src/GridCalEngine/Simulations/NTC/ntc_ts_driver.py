@@ -16,16 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-import time
 from typing import Union
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
 from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import SimulationTypes
@@ -69,42 +66,15 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.report_progress(0)
 
-        if self.progress_text is not None:
-            self.report_text('Compiling circuit...')
-        else:
-            print('Compiling cicuit...')
-
-        tm0 = time.time()
-        nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
-        self.logger.add_info(f'Time circuit compiled in {time.time() - tm0:.2f} scs')
-        print(f'Time circuit compiled in {time.time() - tm0:.2f} scs')
-
-        # declare the linear analysis
-        if self.progress_text is not None:
-            self.report_text('Computing linear analysis...')
-        else:
-            print('Computing linear analysis...')
-
-        linear = LinearAnalysis(numerical_circuit=nc,
-                                distributed_slack=self.options.lin_options.distribute_slack,
-                                correct_values=self.options.lin_options.correct_values)
-
-        tm0 = time.time()
-        linear.run()
-
-        self.logger.add_info(f'Linear analysis computed in {time.time() - tm0:.2f} scs.')
-        print(f'Linear analysis computed in {time.time() - tm0:.2f} scs.')
-
         # Initialize results object
         self.results = OptimalNetTransferCapacityTimeSeriesResults(
             branch_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
-            hvdc_names=linear.numerical_circuit.hvdc_names,
+            hvdc_names=self.grid.get_hvdc_names(),
+            contingency_group_names=self.grid.get_contingency_group_names(),
             time_array=self.grid.time_profile[self.time_indices],
             time_indices=self.time_indices,
-            trm=self.options.transmission_reliability_margin,
-            loading_threshold_to_report=self.options.loading_threshold_to_report,
-            ntc_load_rule=self.options.branch_rating_contribution
+            clustering_results=self.clustering_results,
         )
 
         for t_idx, t in enumerate(self.time_indices):
@@ -118,8 +88,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 consider_contingencies=self.options.consider_contingencies,
                 contingency_groups_used=self.options.opf_options.contingency_groups_used,
                 lodf_threshold=self.options.lin_options.lodf_threshold,
-                bus_idx_from=self.options.area_from_bus_idx,
-                bus_idx_to=self.options.area_to_bus_idx,
+                bus_a1_idx=self.options.sending_bus_idx,
+                bus_a2_idx=self.options.receiving_bus_idx,
                 logger=self.logger,
                 progress_text=None,
                 progress_func=None,
@@ -128,23 +98,37 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 robust=self.options.opf_options.robust
             )
 
-            self.results.voltage[t_idx, :] = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta)
-            self.results.bus_shadow_prices[t_idx, :] = opf_vars.bus_vars.shadow_prices
-            self.results.Sbus[t_idx, :] = opf_vars.bus_vars.Pcalc
+            if t_idx == 0:
+                # one time results
+                self.results.rates = opf_vars.branch_vars.rates[0, :]
+                self.results.contingency_rates = opf_vars.branch_vars.contingency_rates[0, :]
+                self.results.sending_bus_idx = self.options.sending_bus_idx
+                self.results.receiving_bus_idx = self.options.receiving_bus_idx
+                self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
+                self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
 
-            self.results.Sf[t_idx, :] = opf_vars.branch_vars.flows
-            self.results.St[t_idx, :] = -opf_vars.branch_vars.flows
-            self.results.overloads[t_idx, :] = opf_vars.branch_vars.get_total_flow_slack()
-            self.results.loading[t_idx, :] = opf_vars.branch_vars.loading
-            self.results.phase_shift[t_idx, :] = opf_vars.branch_vars.tap_angles
+            self.results.voltage[t_idx, :] = opf_vars.get_voltages()[0, :]
+            self.results.Sbus[t_idx, :] = opf_vars.bus_vars.Pcalc[0, :]
+            self.results.dSbus[t_idx, :] = opf_vars.bus_vars.delta_p[0, :]
+            self.results.bus_shadow_prices[t_idx, :] = opf_vars.bus_vars.shadow_prices[0, :]
+            self.results.load_shedding[t_idx, :] = opf_vars.bus_vars.load_shedding[0, :]
 
-            self.results.hvdc_Pf[t_idx, :] = opf_vars.hvdc_vars.flows
-            self.results.hvdc_loading[t_idx, :] = opf_vars.hvdc_vars.loading
+            self.results.Sf[t_idx, :] = opf_vars.branch_vars.flows[0, :]
+            self.results.St[t_idx, :] = -opf_vars.branch_vars.flows[0, :]
+            self.results.overloads[t_idx, :] = (opf_vars.branch_vars.flow_slacks_pos[0, :]
+                                                - opf_vars.branch_vars.flow_slacks_neg[0, :])
+            self.results.loading[t_idx, :] = opf_vars.branch_vars.loading[0, :]
+            self.results.phase_shift[t_idx, :] = opf_vars.branch_vars.tap_angles[0, :]
 
-            self.results.monitor[t_idx, :] = opf_vars.branch_vars.monitor
-            self.results.monitor_type[t_idx, :] = opf_vars.branch_vars.monitor_type
+            self.results.alpha[t_idx, :] = opf_vars.branch_vars.alpha[0, :]
+            self.results.monitor_logic[t_idx, :] = opf_vars.branch_vars.monitor_logic[0, :]
 
-            # TODO: Create analize function to create the massive report
+            self.results.contingency_flows_list += opf_vars.branch_vars.contingency_flow_data
+
+            self.results.hvdc_Pf[t_idx, :] = opf_vars.hvdc_vars.flows[0, :]
+            self.results.hvdc_loading[t_idx, :] = opf_vars.hvdc_vars.loading[0, :]
+
+            self.results.converged[t_idx] = opf_vars.acceptable_solution
 
             # update progress bar
             self.report_progress2(t_idx, len(self.time_indices))
@@ -158,14 +142,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             if self.__cancel__:
                 break
 
-        self.report_text('Creating final reports...')
-
-        self.results.create_all_reports(loading_threshold=self.options.loading_threshold_to_report, reverse=False)
-
         self.report_text('Done!')
-
-        self.logger.add_info('Ejecutado en {0:.2f} scs. para {1} casos'.format(
-            time.time() - tm0, len(self.results.time_array)))
 
     def run(self):
         """

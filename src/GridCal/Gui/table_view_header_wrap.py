@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from PySide6 import QtCore, QtWidgets, QtGui
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
+from GridCal.Gui.results_model import ResultsModel
 
 
 class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
@@ -31,7 +32,7 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         super().__init__(QtCore.Qt.Orientation.Horizontal, parent)
 
         # Get the table view (assumes the header's parent is a QTableView)
-        self.tableView = self.parentWidget()
+        self.tableView: QtWidgets.QTableView = self.parentWidget()
 
         if isinstance(self.tableView, QtWidgets.QTableView):
 
@@ -40,6 +41,7 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
 
             # Connect the sectionClicked signal to the select_column method
             self.sectionClicked.connect(self.select_column)
+            self.sectionDoubleClicked.connect(self.sort_column)
         else:
             raise Exception("The parent is not a QTableView :(" + str(type(self.tableView)) + ")")
 
@@ -107,3 +109,18 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         """
         # Select the column
         self.tableView.selectColumn(logicalIndex)
+
+    def sort_column(self, i: int):
+        """
+
+        :param i:
+        :return:
+        """
+        mdl = self.model()  # assign with typing
+
+        if isinstance(mdl, ResultsModel):
+            mdl.sort_column(c=i)
+            mdl.update()
+
+
+

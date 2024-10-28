@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 from typing import List, Dict
 from GridCalEngine.IO.raw.devices.psse_object import RawObject, PsseProperty
@@ -107,13 +108,19 @@ class PsseCircuit(RawObject, BaseCircuit):
         self.register_property(property_name="switches", rawx_key="subswd", class_type=RawSystemSwitchingDevice)
         self.register_property(property_name="gne", rawx_key="gne", class_type=RawGneDevice)
 
-    def parse(self, data):
-        a = ""
-        b = ""
-        var = [a, b]
+    def parse(self, data: List[int | float]) -> None:
+        """
+        Parse the basic data
+        :param data: line with information
+        :return:
+        """
         self.IC, self.SBASE, self.REV, self.XFRRAT, self.NXFRAT, self.BASFRQ = data
 
     def get_class_properties(self) -> List[PsseProperty]:
+        """
+
+        :return:
+        """
         return [p for p in self.get_properties() if p.class_type not in [str, bool, int, float]]
 
     def check_primary_keys(self, logger: Logger = Logger()):
@@ -141,20 +148,6 @@ class PsseCircuit(RawObject, BaseCircuit):
                                      comment="Found {}:{}".format(found_elm.class_name, found_elm.get_id()))
                 else:
                     local_index[id_] = elm
-
-                # if id_ in global_index:
-                #     found_elm = global_index[id_]
-                #     logger.add_error(msg="Global ID duplicate", device=id_, device_class=prop.rawx_key,
-                #                      comment="Found {}:{}".format(found_elm.class_name, found_elm.get_id()))
-                # else:
-                #     global_index[id_] = elm
-
-                # if uuid_ in local_index:
-                #     found_elm = local_index[uuid_]
-                #     logger.add_error(msg="Local UUID5 duplicate", device=id_, device_class=prop.rawx_key, value=uuid_,
-                #                      comment="Found {}:{}".format(found_elm.class_name, found_elm.get_id()))
-                # else:
-                #     local_index[uuid_] = elm
 
                 if uuid_ in global_index:
                     found_elm = global_index[uuid_]

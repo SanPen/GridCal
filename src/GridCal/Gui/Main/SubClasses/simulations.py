@@ -27,6 +27,7 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 import GridCal.Gui.gui_functions as gf
 import GridCal.Gui.Visualization.visualization as viz
+from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
@@ -44,7 +45,6 @@ from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
@@ -597,6 +597,8 @@ class SimulationsMain(TimeEventsMain):
             SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg',
             SimulationTypes.InvestmentsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
             SimulationTypes.NodalCapacityTimeSeries_run.value: ':/Icons/icons/nodal_capacity.svg',
+            SimulationTypes.OPF_NTC_run.value: ':/Icons/icons/ntc_opf.svg',
+            SimulationTypes.OPF_NTC_TS_run.value: ':/Icons/icons/ntc_opf_ts.svg',
         }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
@@ -931,9 +933,10 @@ class SimulationsMain(TimeEventsMain):
                         if isinstance(diagram_widget, SchematicWidget):
 
                             for i, bus, graphic_object in diagram_widget.get_buses():
-                                if graphic_object.any_short_circuit():
-                                    sel_buses.append(i)
-                                    self_short_circuit_types.append(graphic_object.sc_type)
+                                if isinstance(graphic_object, BusGraphicItem):
+                                    if graphic_object.any_short_circuit():
+                                        sel_buses.append(i)
+                                        self_short_circuit_types.append(graphic_object.sc_type)
 
                     if len(sel_buses) > 1:
                         error_msg("GridCal only supports one short circuit bus at the time", "Short circuit")
@@ -1872,7 +1875,8 @@ class SimulationsMain(TimeEventsMain):
 
         if self.ui.save_mip_checkBox.isChecked():
             folder = opf_file_path()
-            fname = f'mip_{self.circuit.name}_{datetime.datetime.now()}.lp'
+            dte_str = str(datetime.datetime.now()).replace(":", "_").replace("/", "-")
+            fname = f'mip_{self.circuit.name}_{dte_str}.lp'
             export_model_fname = os.path.join(folder, fname)
         else:
             export_model_fname = None
@@ -2109,8 +2113,8 @@ class SimulationsMain(TimeEventsMain):
             return None
 
         opts = sim.OptimalNetTransferCapacityOptions(
-            area_from_bus_idx=idx_from,
-            area_to_bus_idx=idx_to,
+            sending_bus_idx=idx_from,
+            receiving_bus_idx=idx_to,
             transfer_method=self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()],
             loading_threshold_to_report=self.ui.ntcReportLoadingThresholdSpinBox.value(),
             skip_generation_limits=self.ui.skipNtcGenerationLimitsCheckBox.isChecked(),

@@ -106,6 +106,14 @@ class PfFormulationTemplate:
         """
         pass
 
+    def check_error(self, x: Vec) -> Tuple[float, Vec]:
+        """
+        Check error of the solution without affecting the problem
+        :param x: Solution vector
+        :return: error
+        """
+        return 1e20, x
+
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
         Update the problem

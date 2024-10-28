@@ -31,6 +31,8 @@ from GridCalEngine.Simulations.Derivatives.csc_derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc
 import GridCalEngine.Utils.Sparse.csc2 as csc
 from GridCalEngine.Utils.MIP.selected_interface import lpDot
+from GridCalEngine.enumerations import ContingencyOperationTypes
+
 
 
 @nb.njit()
@@ -399,7 +401,7 @@ class ContingencyIndices:
         br_idx = branches_dict.get(cnt.device_idtag, None)
         branch_found = False
         if br_idx is not None:
-            if cnt.prop == 'active':
+            if cnt.prop == ContingencyOperationTypes.Active:
                 branch_contingency_indices.append(br_idx)
                 return
             else:
@@ -411,7 +413,7 @@ class ContingencyIndices:
         gen = generator_dict.get(cnt.device_idtag, None)
         gen_found = False
         if gen is not None:
-            if cnt.prop == '%':
+            if cnt.prop == ContingencyOperationTypes.PowerPercentage:
                 bus_contingency_indices.append(bus_index_dict[gen.bus])
                 injections_factors.append(cnt.value / 100.0)
                 return

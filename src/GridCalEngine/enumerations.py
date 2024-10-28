@@ -696,6 +696,7 @@ class TapPhaseControl(Enum):
     fixed = 'Fixed'
     Pf = 'Pf'
     Pt = 'Pt'
+
     # Droop = "Droop"
 
     def __str__(self) -> str:
@@ -1000,7 +1001,7 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
-    CommunityDevice = 'Comunity'
+    CommunityDevice = 'Community'
     RegionDevice = 'Region'
     MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
@@ -1040,6 +1041,8 @@ class DeviceType(Enum):
     LineLocations = "Line Locations"
 
     ModellingAuthority = "Modelling Authority"
+
+    FacilityDevice = "Facility"
 
     SimulationOptionsDevice = "SimulationOptionsDevice"
 
@@ -1431,6 +1434,8 @@ class ResultTypes(Enum):
     BusVoltagePolar = 'Voltage (polar)'
     BusActivePower = 'P: Active power'
     BusReactivePower = 'Q: Reactive power'
+    BusActivePowerIncrement = "ΔP: Active power increment"
+
     BranchPower = 'Sf: Power'
     BranchActivePowerFrom = 'Pf: Active power "from"'
     BranchReactivePowerFrom = 'Qf: Reactive power "from"'
@@ -1511,6 +1516,8 @@ class ResultTypes(Enum):
     LossesPerArea = 'Losses per area'
     ActivePowerFlowPerArea = 'Active power flow per area'
     LossesPerGenPerArea = 'Losses per generation unit in area'
+    InterSpaceBranchPower = "Inter-space branch power"
+    InterSpaceBranchLoading = "Inter-space branch loading"
 
     SystemFuel = 'System fuel consumption'
     SystemEmissions = 'System emissions'
@@ -1896,6 +1903,40 @@ class SubstationTypes(Enum):
         """
         try:
             return SubstationTypes[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class ContingencyOperationTypes(Enum):
+    """
+    Types of contingency operations
+    """
+    Active = 'active'
+    PowerPercentage = '%'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ContingencyOperationTypes[s]
         except KeyError:
             return s
 

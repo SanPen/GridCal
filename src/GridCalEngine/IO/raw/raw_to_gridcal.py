@@ -19,25 +19,16 @@ from typing import Dict, List, Tuple, Union
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.raw.devices.area import RawArea
 from GridCalEngine.IO.raw.devices.branch import RawBranch
 from GridCalEngine.IO.raw.devices.bus import RawBus
 from GridCalEngine.IO.raw.devices.facts import RawFACTS
 from GridCalEngine.IO.raw.devices.generator import RawGenerator
-from GridCalEngine.IO.raw.devices.induction_machine import RawInductionMachine
-from GridCalEngine.IO.raw.devices.inter_area import RawInterArea
 from GridCalEngine.IO.raw.devices.load import RawLoad
 from GridCalEngine.IO.raw.devices.fixed_shunt import RawFixedShunt
 from GridCalEngine.IO.raw.devices.switched_shunt import RawSwitchedShunt
 from GridCalEngine.IO.raw.devices.transformer import RawTransformer
 from GridCalEngine.IO.raw.devices.two_terminal_dc_line import RawTwoTerminalDCLine
 from GridCalEngine.IO.raw.devices.vsc_dc_line import RawVscDCLine
-from GridCalEngine.IO.raw.devices.zone import RawZone
-from GridCalEngine.IO.raw.devices.owner import RawOwner
-from GridCalEngine.IO.raw.devices.substation import RawSubstation
-from GridCalEngine.IO.raw.devices.gne_device import RawGneDevice
-from GridCalEngine.IO.raw.devices.system_switching_device import RawSystemSwitchingDevice
-from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.enumerations import TapChangerTypes
 
@@ -161,9 +152,9 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
 
 def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logger):
     """
-    Return Newton Load object
+    Return GridCal Shunt object
     Returns:
-        Newton Load object
+        GridCal Shunt object
     """
     name = str(psse_elm.I) + '_' + str(psse_elm.ID).replace("'", "")
     name = name.strip()
@@ -263,7 +254,7 @@ def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.B
                         Pmax=psse_elm.PT,
                         Pmin=psse_elm.PB,
                         active=bool(psse_elm.STAT),
-                        power_factor=psse_elm.WPF)
+                        power_factor=psse_elm.WPF if psse_elm.WPF is not None else 0.8)
 
     if psse_elm.IREG > 0:
         if psse_elm.IREG != psse_elm.I:
@@ -350,31 +341,41 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             HV = V2
             LV = V1
 
-        elm = dev.Transformer2W(bus_from=bus_from,
-                                bus_to=bus_to,
-                                idtag=psse_elm.idtag,
-                                code=code,
-                                name=name,
-                                HV=HV,
-                                LV=LV,
-                                nominal_power=psse_elm.SBASE1_2,
-                                r=r,
-                                x=x,
-                                g=g,
-                                b=b,
-                                rate=psse_elm.RATE1_1,
-                                contingency_factor=round(contingency_factor, 6),
-                                tap_module=tap_module,
-                                tap_phase=tap_angle,
-                                active=bool(psse_elm.STAT),
-                                mttf=0,
-                                mttr=0)
+        elm = dev.Transformer2W(
+            bus_from=bus_from,
+            bus_to=bus_to,
+            idtag=psse_elm.idtag,
+            code=code,
+            name=name,
+            HV=HV,
+            LV=LV,
+            nominal_power=psse_elm.SBASE1_2,
+            r=r,
+            x=x,
+            g=g,
+            b=b,
+            rate=psse_elm.RATE1_1,
+            contingency_factor=round(contingency_factor, 6),
+            tap_module=1.0,  # it is modified afterwards to account for PSSe not having virtual taps
+            tap_phase=tap_angle,
+            active=bool(psse_elm.STAT),
+            mttf=0,
+            mttr=0
+        )
+
+        mf, mt = elm.get_virtual_taps()
+
+        # we need to discount that PSSe includes the virtual tap inside the normal tap
+        elm.tap_module = tap_module / mf * mt
 
         if psse_elm.COD1 == 0:
-            elm.tap_changer.total_positions = 2
-            elm.tap_changer.neutral_position = 0
-            elm.tap_changer.tap_position = -1
-            elm.tap_changer.dV = round(1 - tap_module, 6)
+            elm.tap_changer.total_positions = psse_elm.NTP1
+            elm.tap_changer.neutral_position = np.floor(psse_elm.NTP1 / 2)
+            elm.tap_changer.tap_position = elm.tap_changer.neutral_position
+            if (psse_elm.NTP1 - 1) > 0:
+                elm.tap_changer.dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1)
+            else:
+                elm.tap_changer.dV = 0.01
             elm.tap_changer.asymmetry_angle = 90.0
             elm.tap_changer.tc_type = TapChangerTypes.NoRegulation
         else:
@@ -542,7 +543,7 @@ def get_hvdc_from_vscdc(psse_elm: RawVscDCLine,
         bus2 = psse_bus_dict[IBUS2]
 
         name1 = psse_elm.NAME.replace("'", "").replace('/', '').strip()
-        idtag = str(psse_elm.IBUS1) + '_' + str(psse_elm.IBUS2) + '_1'
+        code = str(psse_elm.IBUS1) + '_' + str(psse_elm.IBUS2) + '_1'
 
         Vset_f = psse_elm.ACSET1
         Vset_t = psse_elm.ACSET2
@@ -559,7 +560,7 @@ def get_hvdc_from_vscdc(psse_elm: RawVscDCLine,
         obj = dev.HvdcLine(bus_from=bus1,
                            bus_to=bus2,
                            name=name1,
-                           idtag=idtag,
+                           code=code,
                            Pset=specified_power,
                            Vset_f=Vset_f,
                            Vset_t=Vset_t,
@@ -609,7 +610,7 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine,
         Vset_t = 1.0
 
         name1 = psse_elm.NAME.replace("'", "").replace('"', "").replace('/', '').strip()
-        idtag = str(psse_elm.IPR) + '_' + str(psse_elm.IPI) + '_1'
+        code = str(psse_elm.IPR) + '_' + str(psse_elm.IPI) + '_1'
 
         # set the HVDC line active
         active = bus1.active and bus2.active
@@ -618,7 +619,7 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine,
                            bus_to=bus2,  # inverter as of PSSe
                            active=active,
                            name=name1,
-                           idtag=idtag,
+                           code=code,
                            Pset=specified_power,
                            Vset_f=Vset_f,
                            Vset_t=Vset_t,

@@ -168,7 +168,7 @@ def test_get_pu_values_ac_line_segment_BaseVoltage_is_None_returns_zero():
     acls = ACLineSegment()
     (R, X, G, B, R0, X0, G0, B0) = get_pu_values_ac_line_segment(acls, None)
     assert R == 1e-20
-    assert X == 1e-20
+    assert X == 0.00001
     assert G == 1e-20
     assert B == 1e-20
     assert R0 == 1e-20

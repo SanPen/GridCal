@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Set
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import HvdcControlType
@@ -242,7 +242,24 @@ class HvdcData:
         :param Sbase: base power
         :return:
         """
+        # convert MW/deg to pu/rad
+        # MW    180 deg    1
+        # --- x ------- x ------ = 360 * 180 / pi / 100 = 206.26 aprox
+        # deg   pi rad    100 MVA
         return self.angle_droop * 57.295779513 / Sbase
+
+    def get_angle_droop_in_pu_rad_at(self, i: int, Sbase: float):
+        """
+        Get the angle droop in pu/rad
+        :param i: index
+        :param Sbase: base power
+        :return:
+        """
+        # convert MW/deg to pu/rad
+        # MW    180 deg    1
+        # --- x ------- x ------ = 360 * 180 / pi / 100 = 206.26 aprox
+        # deg   pi rad    100 MVA
+        return self.angle_droop[i] * 57.295779513 / Sbase
 
     def get_power(self, Sbase: float, theta: Vec) -> Tuple[Vec, Vec, Vec, Vec, Vec, int]:
         """
@@ -310,7 +327,7 @@ class HvdcData:
         # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free
         return Pbus, Losses, Pf, Pt, loading, nfree
 
-    def get_inter_areas(self, bus_idx_from, bus_idx_to):
+    def get_inter_areas(self, bus_idx_from: IntVec | Set[int], bus_idx_to: IntVec | Set[int]):
         """
         Get the hvdcs that join two areas
         :param bus_idx_from: Area from

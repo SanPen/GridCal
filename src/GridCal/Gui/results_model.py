@@ -18,6 +18,8 @@ import io
 import numpy as np
 import pandas as pd
 from PySide6 import QtCore, QtWidgets
+
+from GridCal.Gui.messages import error_msg
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Utils.Filtering.results_table_filtering import FilterResultsTable
@@ -66,6 +68,8 @@ class ResultsModel(WrappableTableModel):
 
         self.units = table.units
 
+        self.max_to_min = np.ones(self.table.c, dtype=bool)
+
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
 
@@ -76,6 +80,13 @@ class ResultsModel(WrappableTableModel):
             return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
+
+    def update(self) -> None:
+        """
+        update table
+        """
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
 
     def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
@@ -203,6 +214,16 @@ class ResultsModel(WrappableTableModel):
         else:
             return None
 
+    def sort_column(self, c: int):
+        """
+        Sort column, initially max to min, but fliping the side each time
+        :param c:
+        :return:
+        """
+
+        self.table.sort_column(c=c, max_to_min=self.max_to_min[c])
+        self.max_to_min[c] = not self.max_to_min[c]
+
     def copy_to_column(self, row, col):
         """
         Copies one value to all the column
@@ -314,8 +335,10 @@ class ResultsModel(WrappableTableModel):
         :param selected_rows: list of rows to plot
         :param stacked: stack the data?
         """
-
-        self.table.plot(ax=ax,
-                        selected_col_idx=selected_col_idx,
-                        selected_rows=selected_rows,
-                        stacked=stacked)
+        try:
+            self.table.plot(ax=ax,
+                            selected_col_idx=selected_col_idx,
+                            selected_rows=selected_rows,
+                            stacked=stacked)
+        except ValueError as e:
+            error_msg(text=str(e), title="Plotting error")

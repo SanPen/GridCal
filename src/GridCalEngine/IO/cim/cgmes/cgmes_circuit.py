@@ -20,6 +20,8 @@ from collections.abc import Callable
 from typing import Dict, List, Union, Tuple
 from enum import Enum, EnumMeta
 
+from numba.core.cgutils import false_bit
+
 from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets import Cgmes_2_4_15_Assets
 from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets import Cgmes_3_0_0_Assets
 # from GridCalEngine.IO.cim.cgmes.cgmes_utils import check_load_response_characteristic, check
@@ -316,6 +318,7 @@ class CgmesCircuit(BaseCircuit):
 
     def __init__(self,
                  cgmes_version: Union[None, CGMESVersions] = None,
+                 cgmes_map_areas_like_raw: bool = False,
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
@@ -325,6 +328,7 @@ class CgmesCircuit(BaseCircuit):
         BaseCircuit.__init__(self)
 
         self.cgmes_version: CGMESVersions = cgmes_version
+        self.cgmes_map_areas_like_raw = cgmes_map_areas_like_raw
         self.logger: DataLogger = logger
 
         self.text_func = text_func
@@ -507,7 +511,12 @@ class CgmesCircuit(BaseCircuit):
         return True
 
     def get_class_type(self, class_name: str) -> Base:
-        return self.cgmes_assets.class_dict.get(class_name)
+        class_type = self.cgmes_assets.class_dict.get(class_name)
+        if class_type is None:
+            raise NotImplementedError(
+                f"Class type missing from CGMES assets! ({class_name})"
+            )
+        return class_type
 
     def get_properties(self) -> List[CgmesProperty]:
         """

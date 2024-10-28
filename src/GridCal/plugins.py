@@ -27,7 +27,7 @@ from PySide6.QtGui import QPixmap
 from GridCalEngine.IO.file_system import plugins_path
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Main.GridCalMain import MainGUI
+    from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
 
 class PluginFunction:
@@ -41,7 +41,7 @@ class PluginFunction:
         self.alias = ""
         self.function_ptr = None
 
-    def get_pointer_lambda(self, gui_instance: MainGUI) -> Callable:
+    def get_pointer_lambda(self, gui_instance: ConfigurationMain) -> Callable:
         """
         Really hard core magic to avoid lambdas shadow each other due to late binding
 

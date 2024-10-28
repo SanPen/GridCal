@@ -176,7 +176,7 @@ def test_ac_transformers2w():
     assert generated_transtormer2w.X0 == 5.0
     assert generated_transtormer2w.X2 == 1e-20
     assert generated_transtormer2w.alpha == 0.0033
-    assert generated_transtormer2w.rate == 1
+    assert generated_transtormer2w.rate == 9999.0
     assert generated_transtormer2w.tap_module == 1.0
     assert generated_transtormer2w.tap_module_max == 1.2
     assert generated_transtormer2w.tap_module_min == 0.5
@@ -321,9 +321,9 @@ def test_ac_transformers3w():
     assert generated_transformers3w.r12 == 5.0
     assert generated_transformers3w.r23 == 5.0
     assert generated_transformers3w.r31 == 5.0
-    assert generated_transformers3w.rate12 == 1
-    assert generated_transformers3w.rate23 == 1
-    assert generated_transformers3w.rate31 == 1
+    assert generated_transformers3w.rate1 == 1
+    assert generated_transformers3w.rate2 == 1
+    assert generated_transformers3w.rate3 == 1
     assert generated_transformers3w.x == 0.0
     assert generated_transformers3w.x12 == 5.0
     assert generated_transformers3w.x23 == 5.0

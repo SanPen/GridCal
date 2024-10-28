@@ -201,12 +201,38 @@ class Line(BranchParent):
 
     @length.setter
     def length(self, val: float):
+        """
+        Set the length of the line, if a valid length is provided, the electric parameters are scaled approprietly
+        :param val:
+        :return:
+        """
+        self.set_length(val, update_electrical_values=True)
+
+    def set_length(self, val: float, update_electrical_values: bool = True):
+        """
+
+        :param val:
+        :param update_electrical_values:
+        :return:
+        """
         if isinstance(val, float):
             if val > 0.0:
+                if self._length != 0 and update_electrical_values:
+                    factor = np.round(val / self._length, 6)  # new length / old length
+
+                    self.R *= factor
+                    self.X *= factor
+                    self.B *= factor
+                    self.R0 *= factor
+                    self.X0 *= factor
+                    self.B0 *= factor
+                    self.R2 *= factor
+                    self.X2 *= factor
+                    self.B2 *= factor
+
                 self._length = val
             else:
-                print('The length cannot be zero, setting it to 1.0 km')
-                self._length = 1.0
+                print('The length cannot be zero, ignoring value')
         else:
             raise Exception('The length must be a float value')
 
@@ -425,7 +451,7 @@ class Line(BranchParent):
         new_rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
 
         self.rate = new_rate
-        self.length = length
+        self._length = length
 
         if apply_to_profile:
             prof_old = self.rate_prof.toarray()

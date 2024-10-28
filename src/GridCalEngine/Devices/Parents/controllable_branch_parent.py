@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import numpy as np
 from typing import Union
@@ -29,13 +30,13 @@ from GridCalEngine.Devices.profile import Profile
 class ControllableBranchParent(BranchParent):
 
     def __init__(self,
-                 bus_from: Bus,
-                 bus_to: Bus,
+                 bus_from: Bus | None,
+                 bus_to: Bus | None,
                  name: str,
-                 idtag: Union[None, str],
+                 idtag: str | None,
                  code: str,
-                 cn_from: ConnectivityNode,
-                 cn_to: ConnectivityNode,
+                 cn_from: ConnectivityNode | None,
+                 cn_to: ConnectivityNode | None,
                  active: bool,
                  rate: float,
                  r: float,
@@ -52,13 +53,12 @@ class ControllableBranchParent(BranchParent):
                  vset: float,
                  Pset: float,
                  Qset: float,
-                 regulation_branch: Union[BranchParent, None],
-                 regulation_bus: Union[Bus, None],
-                 regulation_cn: Union[ConnectivityNode, None],
+                 regulation_branch: BranchParent | None,
+                 regulation_bus: Bus | None,
+                 regulation_cn: ConnectivityNode | None,
                  temp_base: float,
                  temp_oper: float,
                  alpha: float,
-                 # control_mode: TransformerControlType,
                  tap_module_control_mode: TapModuleControl,
                  tap_phase_control_mode: TapPhaseControl,
                  contingency_factor: float,
@@ -292,9 +292,6 @@ class ControllableBranchParent(BranchParent):
         self.register(key='Pset', units='MW', tpe=float,
                       definition='Objective power at the selected side.',
                       profile_name='Pset_prof', old_names=['Pdc_set'])
-
-        # self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
-        #               definition='Branch where the controls are applied.', editable=False)
 
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',

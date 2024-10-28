@@ -107,6 +107,7 @@ ALL_DEV_TYPES = Union[
     LineLocations,
     LineLocation,
     ModellingAuthority,
+    Facility,
     Fuel,
     Investment,
     InvestmentsGroup,
@@ -120,6 +121,5 @@ ALL_DEV_TYPES = Union[
 ]
 
 CONNECTION_TYPE = Union[ConnectivityNode, Bus, None]
-
 
 ASSOCIATION_TYPES = Union[Fuel, Technology, EmissionGas]

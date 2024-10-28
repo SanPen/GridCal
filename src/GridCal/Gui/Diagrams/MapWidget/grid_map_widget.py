@@ -30,6 +30,7 @@ from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, 
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor,
                            QDropEvent, QWheelEvent)
 
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
@@ -37,7 +38,6 @@ from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
-from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
@@ -54,7 +54,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_hvdc_line import MapHvdcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathLine
-from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
@@ -92,7 +92,7 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     return R * c
 
 
-def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem):
+def compare_options(it1: LineLocationGraphicItem, it2: LineLocationGraphicItem):
     """
 
     :param it1:
@@ -355,8 +355,6 @@ class GridMapWidget(BaseDiagramWidget):
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
 
-        # print(f"Pos lat={latitude}, lon={longitude} x={x}, y={y}")
-
     def zoom_in(self):
         """
         Zoom in
@@ -423,10 +421,12 @@ class GridMapWidget(BaseDiagramWidget):
 
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
-    def create_node(self,
-                    line_container: MAP_BRANCH_GRAPHIC_TYPES,
-                    api_object: LineLocation,
-                    lat: float, lon: float, index: int) -> NodeGraphicItem:
+    def create_line_location_graphic(self,
+                                     line_container: MapLineContainer,
+                                     api_object: LineLocation,
+                                     lat: float,
+                                     lon: float,
+                                     index: int) -> LineLocationGraphicItem:
         """
 
         :param line_container:
@@ -436,13 +436,13 @@ class GridMapWidget(BaseDiagramWidget):
         :param index:
         :return:
         """
-        graphic_object = NodeGraphicItem(editor=self,
-                                         line_container=line_container,
-                                         api_object=api_object,
-                                         lat=lat,
-                                         lon=lon,
-                                         index=index,
-                                         r=0.005)
+        graphic_object = LineLocationGraphicItem(editor=self,
+                                                 line_container=line_container,
+                                                 api_object=api_object,
+                                                 lat=lat,
+                                                 lon=lon,
+                                                 index=index,
+                                                 r=0.005)
 
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
@@ -457,7 +457,7 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
 
-        selected_items = self.map.view._scene.selectedItems()
+        selected_items = self.map.get_selected()
         selectedItems = []
         for item in selected_items:
             selectedItems.append(item)
@@ -511,6 +511,9 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [s for s in self.map.view.selected_items() if isinstance(s, SubstationGraphicItem)]
 
+    # def get_selected(self):
+    #     return self.map.get_selected()
+
     def create_new_line_wizard(self):
         """
         Create a new line in the map with dialogues
@@ -542,7 +545,7 @@ class GridMapWidget(BaseDiagramWidget):
                 error_msg(text="Some of the buses was None :(", title="Create new line")
                 return None
 
-    def removeNode(self, node: NodeGraphicItem):
+    def remove_line_location_graphic(self, node: LineLocationGraphicItem):
         """
         Removes node from diagram and scene
         :param node: Node to remove
@@ -550,11 +553,9 @@ class GridMapWidget(BaseDiagramWidget):
 
         nod = self.graphics_manager.delete_device(node.api_object)
         self.map.diagram_scene.removeItem(nod)
-        nod.line_container.removeNode(node)
+        nod.line_container.remove_line_location_graphic(node)
 
-    pass
-
-    def removeSubstation(self, substation: SubstationGraphicItem):
+    def remove_substation(self, substation: SubstationGraphicItem):
         """
 
         :param substation:
@@ -565,14 +566,14 @@ class GridMapWidget(BaseDiagramWidget):
 
         br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
 
-        for ty in br_types:
-            lins = self.graphics_manager.get_device_type_list(ty)
-            for lin in lins:
-                if (lin.api_object.get_substation_from() == substation.api_object
-                        or lin.api_object.get_substation_to() == substation.api_object):
-                    self.removeLine(lin)
+        for tpe in br_types:
+            elms = self.graphics_manager.get_device_type_list(tpe)
+            for elm in elms:
+                if (elm.api_object.get_substation_from() == substation.api_object
+                        or elm.api_object.get_substation_to() == substation.api_object):
+                    self.remove_branch_graphic(elm)
 
-    def removeLine(self, line: MAP_BRANCH_GRAPHIC_TYPES):
+    def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES):
         """
         Removes line from diagram and scene
         :param line: Line to remove
@@ -732,7 +733,7 @@ class GridMapWidget(BaseDiagramWidget):
                                             lon=location.longitude,
                                             lat=location.latitude)
 
-        # second pass: create voltage levels
+        # second pass: create the rest of devices
         for category, points_group in diagram.data.items():
 
             if category == DeviceType.VoltageLevelDevice.value:
@@ -880,7 +881,6 @@ class GridMapWidget(BaseDiagramWidget):
             substation_graphics = self.add_api_substation(api_object=se_object, lat=lat, lon=lon)
 
             for vl_template in dlg.get_voltage_levels():
-
                 # substation_graphics.add_voltage_level()
                 vl = VoltageLevel(name=f"{se_object.name} @{kv}KV VL",
                                   Vnom=vl_template.voltage,
@@ -920,11 +920,37 @@ class GridMapWidget(BaseDiagramWidget):
         scale = self.diagram.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
         return scale
 
+    def get_arrow_scale(self) -> float:
+        """
+        Get the desired branch width
+        :return:
+        """
+        max_zoom = self.map.max_level
+        min_zoom = self.map.min_level
+        zoom = self.map.zoom_factor
+        scale = self.diagram.arrow_size + (zoom - min_zoom) / (max_zoom - min_zoom)
+        return scale
+
+    def get_substation_scale(self) -> float:
+        """
+        Get the desired branch width
+        :return:
+        """
+        max_zoom = self.map.max_level
+        min_zoom = self.map.min_level
+        zoom = self.map.zoom_factor
+        scale = self.diagram.min_bus_width + (zoom - min_zoom) / (max_zoom - min_zoom)
+        return scale
+
     def update_device_sizes(self) -> None:
         """
         Updat ethe devices' sizes
         :return:
         """
+
+        br_scale = self.get_branch_width()
+        arrow_scale = self.get_arrow_scale()
+        se_scale = self.get_substation_scale()
 
         # rescale lines
         for dev_tpe in [DeviceType.LineDevice,
@@ -932,14 +958,16 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.HVDCLineDevice,
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
+
             for key, elm_graphics in graphics_dict.items():
-                elm_graphics.set_width_scale(self.get_branch_width())
+                elm_graphics.set_width_scale(branch_scale=br_scale, arrow_scale=arrow_scale)
 
         # rescale substations
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
+
         for se_key, elm_graphics in data.items():
             elm_graphics.set_api_object_color()
-            elm_graphics.set_size(r=self.diagram.min_bus_width)
+            elm_graphics.re_scale(r=se_scale)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -954,9 +982,6 @@ class GridMapWidget(BaseDiagramWidget):
             graphic_object.change_pen_width(pen_width)
 
     def colour_results(self,
-                       buses: List[Bus],
-                       branches: List[BRANCH_TYPES],
-                       hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
                        Sf: CxVec,
@@ -975,6 +1000,13 @@ class GridMapWidget(BaseDiagramWidget):
                        ma: Vec = None,
                        theta: Vec = None,
                        Beq: Vec = None,
+                       fluid_node_p2x_flow: Vec = None,
+                       fluid_node_current_level: Vec = None,
+                       fluid_node_spillage: Vec = None,
+                       fluid_node_flow_in: Vec = None,
+                       fluid_node_flow_out: Vec = None,
+                       fluid_path_flow: Vec = None,
+                       fluid_injection_flow: Vec = None,
                        use_flow_based_width: bool = False,
                        min_branch_width: int = 5,
                        max_branch_width=5,
@@ -983,9 +1015,6 @@ class GridMapWidget(BaseDiagramWidget):
                        cmap: palettes.Colormaps = None):
         """
         Color objects based on the results passed
-        :param buses: list of matching bus objects
-        :param branches: list of Branches without HVDC
-        :param hvdc_lines: list of HVDC lines
         :param Sbus: Buses power (MVA)
         :param bus_active: Bus active status
         :param Sf: Branches power from the "from" bus (MVA)
@@ -1004,6 +1033,13 @@ class GridMapWidget(BaseDiagramWidget):
         :param ma: branch phase shift angle (rad)
         :param theta: branch tap module (p.u.)
         :param Beq: Branch equivanet susceptance (p.u.)
+        :param fluid_node_p2x_flow: P2X flow rate (m3)
+        :param fluid_node_current_level: Current level (m3)
+        :param fluid_node_spillage: Spillage (m3)
+        :param fluid_node_flow_in: Flow rate (m3)
+        :param fluid_node_flow_out: Flow rate (m3)
+        :param fluid_injection_flow: Injection rate (m3)
+        :param fluid_path_flow: fluid flow (m3)
         :param use_flow_based_width: use branch width based on the actual flow?
         :param min_branch_width: Minimum branch width [px]
         :param max_branch_width: Maximum branch width [px]
@@ -1015,18 +1051,18 @@ class GridMapWidget(BaseDiagramWidget):
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
 
-        vmin = 0
-        vmax = 1.2
-        vrng = vmax - vmin
-        vabs = np.abs(voltages)
-        vang = np.angle(voltages, deg=True)
-        vnorm = (vabs - vmin) / vrng
+        # vmin = 0
+        # vmax = 1.2
+        # vrng = vmax - vmin
+        # vabs = np.abs(voltages)
+        # vang = np.angle(voltages, deg=True)
+        # vnorm = (vabs - vmin) / vrng
+        nbus = self.circuit.get_bus_number()
 
-        n = len(buses)
-        longitudes = np.zeros(n)
-        latitudes = np.zeros(n)
+        longitudes = np.zeros(nbus)
+        latitudes = np.zeros(nbus)
         nodes_dict = dict()
-        for i, bus in enumerate(buses):
+        for i, bus in enumerate(self.circuit.buses):
 
             # try to find the diagram object of the DB object
             graphic_object = self.graphics_manager.query(bus)
@@ -1067,14 +1103,16 @@ class GridMapWidget(BaseDiagramWidget):
         #                   color=html_color,
         #                   tooltip=tooltip).add_to(marker_cluster)
 
+        arrow_scale = self.get_arrow_scale()
+
         # Try colouring the branches
-        if len(branches):
+        if self.circuit.get_branch_number_wo_hvdc():
 
             lnorm = np.abs(loadings)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(Sf)
             Sfnorm = Sfabs / np.max(Sfabs + 1e-20)
-            for i, branch in enumerate(branches):
+            for i, branch in enumerate(self.circuit.get_branches_wo_hvdc_iter()):
 
                 # try to find the diagram object of the DB object
                 graphic_object: Union[MapAcLine, MapDcLine] = self.graphics_manager.query(branch)
@@ -1116,7 +1154,7 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = self.get_branch_width()
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(weight)
+                    graphic_object.set_width_scale(branch_scale=weight, arrow_scale=arrow_scale)
 
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
@@ -1128,14 +1166,14 @@ class GridMapWidget(BaseDiagramWidget):
                     pass
 
         # try colouring the HVDC lines
-        if len(hvdc_lines) > 0:
+        if self.circuit.get_hvdc_number() > 0:
 
             lnorm = np.abs(hvdc_loading)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(hvdc_Pf)
             Sfnorm = Sfabs / np.max(Sfabs + 1e-9)
 
-            for i, branch in enumerate(hvdc_lines):
+            for i, branch in enumerate(self.circuit.hvdc_lines):
 
                 # try to find the diagram object of the DB object
                 graphic_object: MapHvdcLine = self.graphics_manager.query(branch)
@@ -1172,7 +1210,8 @@ class GridMapWidget(BaseDiagramWidget):
                     style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
-                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
+                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1)
+                        )
                     else:
                         weight = self.get_branch_width()
 
@@ -1190,7 +1229,18 @@ class GridMapWidget(BaseDiagramWidget):
                         graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(weight)
+                    graphic_object.set_width_scale(branch_scale=weight, arrow_scale=arrow_scale)
+
+        if fluid_path_flow is not None:
+
+            if self.circuit.get_fluid_paths_number() == len(fluid_path_flow):
+                for i, elm in enumerate(self.circuit.fluid_paths):
+
+                    # try to find the diagram object of the DB object
+                    graphic_object = self.graphics_manager.query(elm)
+
+                    if graphic_object:
+                        pass
 
     def get_image(self, transparent: bool = False) -> QImage:
         """
@@ -1226,14 +1276,6 @@ class GridMapWidget(BaseDiagramWidget):
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
-
-    # def capture_video_frame(self):
-    #     """
-    #     Save video frame
-    #     """
-    #     image, w, h = self.get_image()
-    #     cv2_image = qimage_to_cv(image)
-    #     self._video.write(cv2_image)
 
     def new_substation_diagram(self, substation: Substation):
         """
@@ -1274,7 +1316,8 @@ class GridMapWidget(BaseDiagramWidget):
         """
         Consolidate the graphic elements' x, y coordinates into the API DB values
         """
-        graphics: List[SubstationGraphicItem] = self.graphics_manager.query(elm=DeviceType.SubstationDevice)
+        graphics: List[SubstationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.SubstationDevice)
         for gelm in graphics:
             gelm.api_object.latitude = gelm.lat
             gelm.api_object.longitude = gelm.lon

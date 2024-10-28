@@ -186,9 +186,7 @@ class IoMain(ConfigurationMain):
 
         self.remove_all_diagrams()
 
-        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_template_objects_str_dict(),
-                                                                  top='Objects'))
-        self.expand_object_tree_nodes()
+        self.setup_objects_tree()
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
@@ -306,10 +304,13 @@ class IoMain(ConfigurationMain):
             # lock the ui
             self.LOCK()
 
+            options = self.get_file_open_options()
+
             # create thread
             self.open_file_thread_object = filedrv.FileOpenThread(
                 file_name=filenames if len(filenames) > 1 else filenames[0],
-                previous_circuit=self.circuit
+                previous_circuit=self.circuit,
+                options=options
             )
 
             # make connections
@@ -381,7 +382,7 @@ class IoMain(ConfigurationMain):
                 # set circuit comments
                 try:
                     self.ui.comments_textEdit.setText(str(self.circuit.comments))
-                except:
+                except ValueError:
                     pass
 
                 # update the drop-down menus that display dates
@@ -709,6 +710,20 @@ class IoMain(ConfigurationMain):
                                             cgmes_one_file_per_profile=one_file_per_profile,
                                             cgmes_map_areas_like_raw=cgmes_map_areas_like_raw,
                                             raw_version=raw_version)
+
+        return options
+
+    def get_file_open_options(self) -> filedrv.FileOpenOptions:
+        """
+        Compose the file open options
+        :return: FileOpenOptions
+        """
+
+        cgmes_map_areas_like_raw = self.ui.cgmes_map_regions_like_raw_checkBox.isChecked()
+        try_to_map_dc_to_hvdc_line = self.ui.cgmes_dc_as_hvdclines_checkBox.isChecked()
+
+        options = filedrv.FileOpenOptions(cgmes_map_areas_like_raw=cgmes_map_areas_like_raw,
+                                          try_to_map_dc_to_hvdc_line=try_to_map_dc_to_hvdc_line)
 
         return options
 

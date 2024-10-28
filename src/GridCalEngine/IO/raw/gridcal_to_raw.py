@@ -226,15 +226,19 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
     psse_transformer.RATE1_1 = transformer.rate
 
     # i, j, ckt = transformer.code.split("_", 2)
-
     psse_transformer.I = bus_dict[transformer.bus_from]
     psse_transformer.J = bus_dict[transformer.bus_to]
     psse_transformer.CKT = ckt
 
     psse_transformer.CW = 1
     # WINDV1 is the Winding 1 off-nominal turns ratio in pu of Winding1 bus base voltage
-    psse_transformer.WINDV1 = transformer.tap_module
+    mf, mt = transformer.get_virtual_taps()
+    psse_transformer.WINDV1 = transformer.tap_module * mf / mt
     psse_transformer.WINDV2 = 1.0
+
+    V1, V2 = transformer.get_from_to_nominal_voltages()
+    psse_transformer.NOMV1 = V1
+    psse_transformer.NOMV2 = V2
 
     psse_transformer.CZ = 1
     # 1 for resistance and reactance in pu on system MVA base and winding voltage base
@@ -246,6 +250,11 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
     # 1 for complex  admittance  in pu  on  system  MVA  base  and Winding 1 bus voltage base
     psse_transformer.MAG1 = transformer.G
     psse_transformer.MAG2 = transformer.B
+
+    # tap changer values
+    psse_transformer.NTP1 = transformer.tap_changer.total_positions
+    psse_transformer.VMA1 = transformer.tap_changer.get_tap_module_max()
+    psse_transformer.VMI1 = transformer.tap_changer.get_tap_module_min()
 
     return psse_transformer
 
@@ -264,9 +273,9 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.STAT = 1 if transformer.active else 0
 
     psse_transformer.NAME = transformer.name
-    psse_transformer.RATE1_1 = transformer.rate12
-    psse_transformer.RATE2_1 = transformer.rate23
-    psse_transformer.RATE3_1 = transformer.rate31
+    psse_transformer.RATE1_1 = transformer.rate1
+    psse_transformer.RATE2_1 = transformer.rate2
+    psse_transformer.RATE3_1 = transformer.rate3
 
     psse_transformer.ANG1 = transformer.winding1.tap_phase
     psse_transformer.ANG2 = transformer.winding2.tap_phase

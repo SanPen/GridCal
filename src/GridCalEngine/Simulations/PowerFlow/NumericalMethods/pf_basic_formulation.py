@@ -116,6 +116,36 @@ class PfBasicFormulation(PfFormulationTemplate):
         """
         return len(self.idx_dVa) + len(self.idx_dVm)
 
+    def check_error(self, x: Vec) -> Tuple[float, Vec]:
+        """
+        Check error of the solution without affecting the problem
+        :param x: Solution vector
+        :return: error
+        """
+        a = len(self.idx_dVa)
+        b = a + len(self.idx_dVm)
+
+        # update the vectors
+        Va = self.Va.copy()
+        Vm = self.Vm.copy()
+        Va[self.idx_dVa] = x[0:a]
+        Vm[self.idx_dVm] = x[a:b]
+
+        # compute the complex voltage
+        V = polar_to_rect(Vm, Va)
+
+        # compute the function residual
+        # Assumes the internal vars were updated already with self.x2var()
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
+        Scalc = compute_power(self.adm.Ybus, V)
+        dS = Scalc - Sbus  # compute the mismatch
+        _f = np.r_[
+            dS[self.idx_dP].real,
+            dS[self.idx_dQ].imag
+        ]
+        # compute the rror
+        return compute_fx_error(_f), x
+
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
         Update step

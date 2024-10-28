@@ -57,6 +57,7 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
     error, converged, _, f = problem.update(x, update_controls=False)
 
     iteration = 0
+    error0 = error
     error_evolution = np.zeros(max_iter + 1)
     trust0 = trust if trust <= 1.0 else 1.0  # trust radius in NR should not be greater than 1
 
@@ -87,7 +88,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 # compute update step: J x Δx = Δg
                 J: CSC = problem.Jacobian()
                 dx, ok = spsolve_csc(J, -f)
-                # dx, ok = problem.solve_step()
 
                 if verbose > 1:
                     import pandas as pd
@@ -104,37 +104,18 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 print("(newton_raphson_fx.py) Singular Jacobian")
                 return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
-            # mu = trust0
-            # back_track_condition = True
-            # l_iter = 0
-            # while back_track_condition and mu > tol:
-            #
-            #     x2 = x - mu * dx
-            #     error2, converged2, _ = problem.update(x2, update_controls=False)
-            #
-            #     # change mu for the next iteration
-            #     mu *= 0.5  # acceleration_parameter
-            #
-            #     # keep back-tracking?
-            #     back_track_condition = error2 > error
-            #     l_iter += 1
-            #
-            #     if not back_track_condition:
-            #         # accept the solution
-            #         x = x2
-            #
-            # if back_track_condition:
-            #     # this means that not even the backtracking was able to correct
-            #     # the solution, so terminate
-            #     logger.add_warning(f"Newton-Raphson's stagnated @iter {iteration}:")
-            #     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+            # line search
+            mu = trust0
+            update_controls = error < (tol * 100)
+            x_sol = x
+            while not converged and mu > tol and error >= error0:
+                error, x_sol = problem.check_error(x + dx * mu)
+                mu *= 0.25
 
-            x += dx
-
-            # set the problem state
-            error, converged, x, f = problem.update(x, update_controls=True)
+            error, converged, x, f = problem.update(x=x_sol, update_controls=update_controls)
 
             # save the error evolution
+            error0 = error
             error_evolution[iteration] = error
 
             if verbose > 0:
