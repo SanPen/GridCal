@@ -56,7 +56,7 @@ class ConnectivityNode(PhysicalDevice):
 
         self._voltage_level: Union[VoltageLevel, None] = voltage_level
 
-        self.internal: bool = bool(internal)
+        self._internal: bool = bool(internal)
 
         self.Vnom = float(Vnom) if voltage_level is None else voltage_level.Vnom
 
@@ -86,3 +86,11 @@ class ConnectivityNode(PhysicalDevice):
 
         if val is not None:
             self.Vnom = val.Vnom
+
+    @property
+    def internal(self):
+        return self._internal
+
+    @internal.setter
+    def internal(self, val: bool):
+        self._internal = val
