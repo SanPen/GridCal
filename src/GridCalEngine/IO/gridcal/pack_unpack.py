@@ -26,7 +26,8 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TapPhaseControl, TapModuleControl)
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TapPhaseControl, TapModuleControl,
+                                        ContingencyOperationTypes)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -625,7 +626,7 @@ class CreatedOnTheFly:
         :return:
         """
         con_group = dev.ContingencyGroup(name=elm.name)
-        conn = dev.Contingency(device_idtag=elm.idtag, prop='active', group=con_group)
+        conn = dev.Contingency(device_idtag=elm.idtag, prop=ContingencyOperationTypes.Active, group=con_group)
 
         self.contingency_groups.append(con_group)
         self.contingencies.append(conn)
@@ -1412,7 +1413,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
 
                     # set/augment the dictionary per type for later
                     prev_dict = elements_dict_by_type.get(template_elm.device_type, dict())
-                    elements_dict_by_type[template_elm.device_type] = dict(prev_dict, **devices_dict)
+                    prev_dict.update(devices_dict)  # augment prev_dict with devices_dict
+                    elements_dict_by_type[template_elm.device_type] = prev_dict
 
                     # add the devices to the circuit
                     circuit.set_elements_list_by_type(device_type=template_elm.device_type,

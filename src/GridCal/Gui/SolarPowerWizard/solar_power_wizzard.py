@@ -87,7 +87,10 @@ class SolarPvWizard(QtWidgets.QDialog):
     New solar photovoltaic wizard window
     """
 
-    def __init__(self, time_array: List[str], peak_power: float, latitude: float, longitude: float,
+    def __init__(self, time_array: List[str],
+                 peak_power: float,
+                 latitude: float,
+                 longitude: float,
                  gen_name='', bus_name='',
                  title='solar photovoltaic wizard'):
         """
@@ -103,7 +106,7 @@ class SolarPvWizard(QtWidgets.QDialog):
         self.ui.setupUi(self)
 
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
         self.is_accepted: bool = False
         self.selected_indices: List[int] = list()

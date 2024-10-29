@@ -4953,7 +4953,7 @@ class Assets:
     #
     # ------------------------------------------------------------------------------------------------------------------
 
-    def get_elements_by_type(self, device_type: DeviceType) -> Union[pd.DatetimeIndex, List[ALL_DEV_TYPES]]:
+    def get_elements_by_type(self, device_type: DeviceType) -> pd.DatetimeIndex | List[ALL_DEV_TYPES]:
         """
         Get set of elements and their parent nodes
         :param device_type: DeviceTYpe instance

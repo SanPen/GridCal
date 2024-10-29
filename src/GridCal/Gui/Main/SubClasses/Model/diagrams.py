@@ -26,6 +26,7 @@ from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
+from GridCalEngine import ContingencyOperationTypes
 from GridCalEngine.IO.file_system import tiles_path
 from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                            InputNumberDialogue, LogsDialogue)
@@ -2296,7 +2297,7 @@ class DiagramsMain(CompiledArraysMain):
                         con = dev.Contingency(device_idtag=elm.idtag,
                                               code=elm.code,
                                               name="Contingency " + elm.name,
-                                              prop="active",
+                                              prop=ContingencyOperationTypes.Active,
                                               value=0,
                                               group=group)
                         self.circuit.add_contingency(con)
@@ -2335,7 +2336,7 @@ class DiagramsMain(CompiledArraysMain):
                         ra = dev.RemedialAction(device_idtag=elm.idtag,
                                                 code=elm.code,
                                                 name="RA " + elm.name,
-                                                prop="active",
+                                                prop=ContingencyOperationTypes.Active,
                                                 value=0,
                                                 group=ra_group)
                         self.circuit.add_remedial_action(ra)

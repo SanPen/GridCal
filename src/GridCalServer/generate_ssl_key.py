@@ -63,10 +63,10 @@ def generate_ssl_certificate(key_fname="key.pem", cert_fname="cert.pem"):
     ).serial_number(
         x509.random_serial_number()
     ).not_valid_before(
-        datetime.datetime.utcnow()
+        datetime.datetime.now(datetime.UTC)
     ).not_valid_after(
         # Certificate is valid for 365 days
-        datetime.datetime.utcnow() + datetime.timedelta(days=365)
+        datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=365)
     ).add_extension(
         x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
         critical=False,
