@@ -661,61 +661,6 @@ class SchematicWidget(BaseDiagramWidget):
                         # bus_dict[idtag] = graphic_object
                         self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
-            elif category == DeviceType.Transformer3WDevice.value:
-
-                for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-                        elm: Transformer3W = location.api_object
-
-                        graphic_object = self.create_transformer_3w_graphics(elm=elm,
-                                                                             x=location.x,
-                                                                             y=location.y)
-                        self.add_to_scene(graphic_object=graphic_object)
-
-                        bus_1_graphic = self.graphics_manager.query(elm.bus1)
-
-                        if bus_1_graphic is not None:
-                            conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
-                                                       to_port=bus_1_graphic.get_terminal(),
-                                                       editor=self)
-
-                            graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=False)
-                            self.add_to_scene(graphic_object=conn1)
-                            self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
-
-                        bus_2_graphic = self.graphics_manager.query(elm.bus2)
-                        if bus_2_graphic is not None:
-                            conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
-                                                       to_port=bus_2_graphic.get_terminal(),
-                                                       editor=self)
-                            graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=False)
-                            self.add_to_scene(graphic_object=conn2)
-                            self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
-
-                        bus_3_graphic = self.graphics_manager.query(elm.bus3)
-                        if bus_3_graphic is not None:
-                            conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
-                                                       to_port=bus_3_graphic.get_terminal(),
-                                                       editor=self)
-                            graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=False)
-                            self.add_to_scene(graphic_object=conn3)
-                            self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
-
-                        graphic_object.set_position(x=location.x, y=location.y)
-                        graphic_object.change_size(h=location.h, w=location.w)
-
-                        graphic_object.update_conn()
-                        self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
-
-                        # register the windings for the branches pass
-                        # windings_dict[elm.winding1.idtag] = conn1
-                        # windings_dict[elm.winding2.idtag] = conn2
-                        # windings_dict[elm.winding3.idtag] = conn3
-
             elif category == DeviceType.FluidNodeDevice.value:
 
                 for idtag, location in points_group.locations.items():
@@ -773,10 +718,11 @@ class SchematicWidget(BaseDiagramWidget):
                                 injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
                             )
 
-                            # graphic_object.change_size(w=location.w)
-
                             # add buses reference for later
                             self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    else:
+                        # is internal
+                        pass
 
             elif category == DeviceType.BusBarDevice.value and prefer_node_breaker:
 
@@ -808,6 +754,92 @@ class SchematicWidget(BaseDiagramWidget):
             else:
                 # pass for now...
                 pass
+
+        # add 3W transformers after the node devices
+        for category, points_group in diagram.data.items():
+
+            if category == DeviceType.Transformer3WDevice.value:
+
+                for idtag, location in points_group.locations.items():
+
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+
+                    if graphic_object is None:
+                        elm: Transformer3W = location.api_object
+
+                        graphic_object = self.create_transformer_3w_graphics(elm=elm,
+                                                                             x=location.x,
+                                                                             y=location.y)
+                        self.add_to_scene(graphic_object=graphic_object)
+
+                        if prefer_node_breaker:
+
+                            cn_1_graphic = self.graphics_manager.query(elm.cn1)
+
+                            if cn_1_graphic is not None:
+                                conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
+                                                           to_port=cn_1_graphic.get_terminal(),
+                                                           editor=self)
+
+                                graphic_object.set_connection_cn(i=0, cn=elm.cn1, conn=conn1, set_voltage=False)
+                                self.add_to_scene(graphic_object=conn1)
+                                self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
+
+                            cn_2_graphic = self.graphics_manager.query(elm.cn2)
+                            if cn_2_graphic is not None:
+                                conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
+                                                           to_port=cn_2_graphic.get_terminal(),
+                                                           editor=self)
+                                graphic_object.set_connection_cn(i=1, cn=elm.cn2, conn=conn2, set_voltage=False)
+                                self.add_to_scene(graphic_object=conn2)
+                                self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
+
+                            cn_3_graphic = self.graphics_manager.query(elm.cn3)
+                            if cn_3_graphic is not None:
+                                conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
+                                                           to_port=cn_3_graphic.get_terminal(),
+                                                           editor=self)
+                                graphic_object.set_connection_cn(i=2, cn=elm.cn3, conn=conn3, set_voltage=False)
+                                self.add_to_scene(graphic_object=conn3)
+                                self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
+
+                        else:
+
+                            bus_1_graphic = self.graphics_manager.query(elm.bus1)
+
+                            if bus_1_graphic is not None:
+                                conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
+                                                           to_port=bus_1_graphic.get_terminal(),
+                                                           editor=self)
+
+                                graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=False)
+                                self.add_to_scene(graphic_object=conn1)
+                                self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
+
+                            bus_2_graphic = self.graphics_manager.query(elm.bus2)
+                            if bus_2_graphic is not None:
+                                conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
+                                                           to_port=bus_2_graphic.get_terminal(),
+                                                           editor=self)
+                                graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=False)
+                                self.add_to_scene(graphic_object=conn2)
+                                self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
+
+                            bus_3_graphic = self.graphics_manager.query(elm.bus3)
+                            if bus_3_graphic is not None:
+                                conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
+                                                           to_port=bus_3_graphic.get_terminal(),
+                                                           editor=self)
+                                graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=False)
+                                self.add_to_scene(graphic_object=conn3)
+                                self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
+
+                        graphic_object.set_position(x=location.x, y=location.y)
+                        graphic_object.change_size(h=location.h, w=location.w)
+
+                        graphic_object.update_conn()
+                        self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
 
         # add the rest of the branches
         for category, points_group in diagram.data.items():
