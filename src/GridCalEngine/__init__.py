@@ -134,6 +134,38 @@ def power_flow_ts(grid: MultiCircuit,
     return driver.results
 
 
+def linear_power_flow(grid: MultiCircuit,
+                      options: LinearAnalysisOptions = LinearAnalysisOptions()) -> LinearAnalysisResults:
+    """
+    Run linear power flow on the snapshot
+    :param grid: MultiCircuit instance
+    :param options: LinearAnalysisOptions instance
+    :return: LinearAnalysisResults instance
+    """
+
+    # snapshot
+    sn_driver = LinearAnalysisDriver(grid=grid, options=options)
+    sn_driver.run()
+
+    return sn_driver.results
+
+
+def linear_power_flow_ts(grid: MultiCircuit,
+                         options: LinearAnalysisOptions = LinearAnalysisOptions()) -> LinearAnalysisTimeSeriesResults:
+    """
+    Run linear power flow time series
+    :param grid: MultiCircuit instance
+    :param options: LinearAnalysisOptions instance
+    :return: LinearAnalysisTimeSeriesResults instance
+    """
+
+    # snapshot
+    sn_driver = LinearAnalysisTimeSeriesDriver(grid=grid, options=options)
+    sn_driver.run()
+
+    return sn_driver.results
+
+
 def short_circuit(grid: MultiCircuit,
                   fault_index: int,
                   fault_type=FaultType.LG,
@@ -165,15 +197,20 @@ def short_circuit(grid: MultiCircuit,
 
 
 def continuation_power_flow(grid: MultiCircuit,
-                            options: ContinuationPowerFlowOptions = None,
+                            options: ContinuationPowerFlowOptions | None = None,
                             pf_options: PowerFlowOptions = PowerFlowOptions(),
-                            pf_results: PowerFlowResults | None = None) -> ShortCircuitResults:
+                            pf_results: PowerFlowResults | None = None,
+                            factor: Vec | float = 2.0,
+                            stop_at=CpfStopAt.Full) -> ShortCircuitResults:
     """
     Run continuation power flow circuit
     :param grid: MultiCircuit instance
     :param options: ContinuationPowerFlowOptions instance (optional)
     :param pf_options: Power Flow Options instance (optional)
     :param pf_results: PowerFlowResults (optional, if none, a power flow is run)
+    :param factor: number or vector to multiply the base power injection to provide the loading direction.
+                    If a vector, it must be the same size as Sbus  (optional)
+    :param stop_at: Where to stop [CpfStopAt.Full, Nose, ExtraOverloads] (optional)
     :return: Short circuit results
     """
     if pf_results is None:
@@ -190,14 +227,14 @@ def continuation_power_flow(grid: MultiCircuit,
                                                error_tol=1e-3,
                                                tol=1e-6,
                                                max_it=20,
-                                               stop_at=CpfStopAt.Full,
+                                               stop_at=stop_at,
                                                verbose=False)
 
     # We compose the target direction
     base_power = pf_results.Sbus / grid.Sbase
     vc_inputs = ContinuationPowerFlowInput(Sbase=base_power,
                                            Vbase=pf_results.voltage,
-                                           Starget=base_power * 2)
+                                           Starget=base_power * factor)
 
     # declare the CPF driver and run
     vc = ContinuationPowerFlowDriver(grid=grid,
@@ -209,11 +246,11 @@ def continuation_power_flow(grid: MultiCircuit,
     return vc.results
 
 
-def acopf(grid: MultiCircuit,
-          pf_options: PowerFlowOptions = PowerFlowOptions(),
-          opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions(),
-          plot_error: bool = False,
-          pf_init: bool = True) -> NonlinearOPFResults:
+def nonlinear_opf(grid: MultiCircuit,
+                  pf_options: PowerFlowOptions = PowerFlowOptions(),
+                  opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions(),
+                  plot_error: bool = False,
+                  pf_init: bool = True) -> NonlinearOPFResults:
     """
     Run AC Optimal Power Flow
     :param grid: MultiCircuit instance
@@ -233,8 +270,8 @@ def acopf(grid: MultiCircuit,
     return acopf_res
 
 
-def lin_opf(grid: MultiCircuit,
-            options: OptimalPowerFlowOptions = OptimalPowerFlowOptions()) -> OptimalPowerFlowResults:
+def linear_opf(grid: MultiCircuit,
+               options: OptimalPowerFlowOptions = OptimalPowerFlowOptions()) -> OptimalPowerFlowResults:
     """
     Run Linear Optimal Power Flow
     :param grid: MultiCircuit instance
@@ -317,4 +354,3 @@ def contingencies_ts(circuit: MultiCircuit,
         driver_contingencies.results.expand_clustered_results()
 
     return driver_contingencies.results
-

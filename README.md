@@ -464,6 +464,26 @@ fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
 
 main_circuit = gce.open_file(fname)
 
+# snapshot
+results = gce.linear_power_flow(grid=main_circuit)
+
+print("Bus results:\n", results.get_bus_df())
+print("Branch results:\n", results.get_branch_df())
+print("PTDF:\n", results.mdl(gce.ResultTypes.PTDF).to_df())
+print("LODF:\n", results.mdl(gce.ResultTypes.LODF).to_df())
+```
+
+Simulating with a more detailed control of the objects:
+
+```python
+import os
+import GridCalEngine as gce
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
+
+main_circuit = gce.open_file(fname)
+
 options_ = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=True)
 
 # snapshot
@@ -575,7 +595,8 @@ fname = os.path.join(folder, 'IEEE39_1W.gridcal')
 main_circuit = gce.open_file(fname)
 
 # declare the snapshot opf
-opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit)
+opf_options = gce.OptimalPowerFlowOptions(mip_solver=gce.MIPSolvers.HIGHS)
+opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit, options=opf_options)
 
 print('Solving...')
 opf_driver.run()
@@ -759,6 +780,24 @@ fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
 
 grid = gce.open_file(filename=fname)
 
+# Run a Line-Ground short circuit on the bus at index 2
+# Since we do not provide any power flow results, it will run one for us
+results = gce.short_circuit(grid, fault_index=2, fault_type=gce.FaultType.LG)
+
+print("Short circuit power: ", results.SCpower[fault_index])
+```
+
+A more elaborated way to run the simulation, controlling all the steps:
+
+```python
+import os
+import GridCalEngine as gce
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+
+grid = gce.open_file(filename=fname)
+
 pf_options = gce.PowerFlowOptions()
 pf = gce.PowerFlowDriver(grid, pf_options)
 pf.run()
@@ -783,7 +822,46 @@ Short circuit power:  -217.00 MW - 680.35j MVAr
 
 Sequence voltage, currents and powers are also available.
 
+
+
 ### Continuation power flow
+
+GridCal can run continuation power flows (voltage collapse studies) 
+
+```python
+import os
+from matplotlib import pyplot as plt
+import GridCalEngine as gce
+
+plt.style.use('fivethirtyeight')
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+
+# open the grid file
+main_circuit = gce.open_file(fname)
+
+# Run the continuation power flow with the default options
+# Since we do not provide any power flow results, it will run one for us
+results = gce.continuation_power_flow(grid=main_circuit, 
+                                      factor=2.0, 
+                                      stop_at=gce.CpfStopAt.Full)
+
+# plot the results
+fig = plt.figure(figsize=(18, 6))
+
+ax1 = fig.add_subplot(121)
+res = results.mdl(gce.ResultTypes.BusActivePower)
+res.plot(ax=ax1)
+
+ax2 = fig.add_subplot(122)
+res = results.mdl(gce.ResultTypes.BusVoltage)
+res.plot(ax=ax2)
+
+plt.tight_layout()
+```
+
+A more elaborated way to run the simulation, controlling all the steps:
 
 ```python
 import os
@@ -816,10 +894,11 @@ vc_options = gce.ContinuationPowerFlowOptions(step=0.001,
                                               verbose=False)
 
 # We compose the target direction
+factor = 2.0
 base_power = power_flow.results.Sbus / main_circuit.Sbase
 vc_inputs = gce.ContinuationPowerFlowInput(Sbase=base_power,
                                            Vbase=power_flow.results.voltage,
-                                           Starget=base_power * 2)
+                                           Starget=base_power * factor)
 
 # declare the CPF driver and run
 vc = gce.ContinuationPowerFlowDriver(grid=main_circuit,
