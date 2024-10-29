@@ -197,7 +197,7 @@ aligned in memory. The GridCal data model is object-oriented, while the numerica
 ### Loading a grid
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PowerWorld), .dgs (PowerFactory)
 my_grid = gce.open_file("my_file.gridcal")
@@ -206,7 +206,7 @@ my_grid = gce.open_file("my_file.gridcal")
 In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid from many xml files
 my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
@@ -221,16 +221,14 @@ my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", "boundary.
 If you need to explore the CGMEs assets before conversion, you'll need to dive deeper in the API:
 
 ```python
-from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.basic_structures import Logger
+import GridCalEngine as gce
 
 fname = "tests/data/grids/CGMES_2_4_15/IEEE 118 Bus v2.zip"
 
-logger = Logger()
-data_parser = CgmesDataParser()
+logger = gce.Logger()
+data_parser = gce.CgmesDataParser()
 data_parser.load_files(files=[fname])
-cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,
+cgmes_circuit = gce.CgmesCircuit(cgmes_version=data_parser.cgmes_version,
                              cgmes_map_areas_like_raw=False, logger=logger)
 cgmes_circuit.parse_files(data_parser=data_parser)
 
@@ -256,7 +254,7 @@ Simmilarly to CGMES you may be able to use the conversion objects to explore the
 ### Save a grid
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid
 my_grid = gce.open_file("my_file.gridcal")
@@ -269,7 +267,7 @@ In the case of saving a model in CGMES mode, we need to specify some extra param
 To simplify we can use the API function `save_cgmes_file`:
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid
 my_grid = gce.open_file("my_file.gridcal")
@@ -292,7 +290,7 @@ We are going to create a very simple 5-node grid from the excellent book
 *Power System Load Flow Analysis by Lynn Powell*.
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # declare a circuit object
 grid = gce.MultiCircuit()
@@ -342,7 +340,7 @@ Using the simplified API:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -360,7 +358,7 @@ Using the more complex library objects:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE14_from_raw.gridcal')
@@ -430,7 +428,7 @@ GridCal can perform a summary of the inputs with the `InputsAnalysisDriver`:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 118 Bus - ntc_areas.gridcal')
@@ -459,7 +457,7 @@ We can run an PTDF equivalent of the power flow with the linear analysys drivers
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -522,7 +520,7 @@ Now let's make a comparison between the linear flows and the non-linear flows fr
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 plt.style.use('fivethirtyeight')
 
@@ -569,7 +567,7 @@ plt.show()
 ```python
 import os
 import numpy as np
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -609,7 +607,7 @@ PowerFlowDriver:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -682,7 +680,7 @@ electrical grid.
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'hydro_simple.gridcal')
@@ -754,7 +752,7 @@ _Computer Analysis of Power Systems by J. Arrillaga and C.P. Arnold_
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
@@ -790,7 +788,7 @@ Sequence voltage, currents and powers are also available.
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 plt.style.use('fivethirtyeight')
 
@@ -854,49 +852,48 @@ The simulation then tries all the contingency groups and apply the events regist
 
 ```python
 import os
-from GridCalEngine.api import *
-from GridCalEngine.enumerations import ContingencyMethod
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
 
-main_circuit = FileOpen(fname).open()
+main_circuit = gce.open_file(fname)
 
 branches = main_circuit.get_branches()
 
 # manually generate the contingencies
 for i, br in enumerate(branches):
     # add a contingency group
-    group = ContingencyGroup(name="contingency {}".format(i + 1))
+    group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
     main_circuit.add_contingency_group(group)
 
     # add the branch contingency to the groups, only groups are failed at once
-    con = Contingency(device_idtag=br.idtag, name=br.name, group=group)
+    con = gce.Contingency(device_idtag=br.idtag, name=br.name, group=group)
     main_circuit.add_contingency(con)
 
 # add a special contingency
-group = ContingencyGroup(name="Special contingency")
+group = gce.ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
 main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag,
                                          name=branches[3].name, group=group))
 main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag,
                                          name=branches[5].name, group=group))
 
-pf_options = PowerFlowOptions(solver_type=SolverType.NR)
+pf_options = gce.PowerFlowOptions(solver_type=SolverType.NR)
 
 # declare the contingency options
-options_ = ContingencyAnalysisOptions(use_provided_flows=False,
-                                      Pf=None,
-                                      contingency_method=ContingencyMethod.PowerFlow,
-                                      # if no power flow options are provided 
-                                      # a linear power flow is used
-                                      pf_options=pf_options)
+options_ = gce.ContingencyAnalysisOptions(use_provided_flows=False,
+                                          Pf=None,
+                                          contingency_method=gce.ContingencyMethod.PowerFlow,
+                                          # if no power flow options are provided 
+                                          # a linear power flow is used
+                                          pf_options=pf_options)
 
-linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)
+linear_multiple_contingencies = gce.LinearMultiContingencies(grid=main_circuit)
 
-simulation = ContingencyAnalysisDriver(grid=main_circuit,
-                                       options=options_,
-                                       linear_multiple_contingencies=linear_multiple_contingencies)
+simulation = gce.ContingencyAnalysisDriver(grid=main_circuit,
+                                           options=options_,
+                                           linear_multiple_contingencies=linear_multiple_contingencies)
 
 simulation.run()
 
@@ -927,17 +924,17 @@ Now lets program the example from the state estimation reference book
 _State Estimation in Electric Power Systems by A. Monticelli_.
 
 ```python
-from GridCalEngine.api import *
+import GridCalEngine as gce
 
-m_circuit = MultiCircuit()
+m_circuit = gce.MultiCircuit()
 
-b1 = Bus('B1', is_slack=True)
-b2 = Bus('B2')
-b3 = Bus('B3')
+b1 = gce.Bus('B1', is_slack=True)
+b2 = gce.Bus('B2')
+b3 = gce.Bus('B3')
 
-br1 = Line(b1, b2, name='Br1', r=0.01, x=0.03, rate=100.0)
-br2 = Line(b1, b3, name='Br2', r=0.02, x=0.05, rate=100.0)
-br3 = Line(b2, b3, name='Br3', r=0.03, x=0.08, rate=100.0)
+br1 = gce.Line(b1, b2, name='Br1', r=0.01, x=0.03, rate=100.0)
+br2 = gce.Line(b1, b3, name='Br2', r=0.02, x=0.05, rate=100.0)
+br3 = gce.Line(b2, b3, name='Br3', r=0.03, x=0.08, rate=100.0)
 
 # add measurements
 m_circuit.add_pf_measurement(PfMeasurement(0.888, 0.008, br1))
@@ -961,7 +958,7 @@ m_circuit.add_line(br2)
 m_circuit.add_line(br3)
 
 # Declare the simulation driver and run
-se = StateEstimation(circuit=m_circuit)
+se = gce.StateEstimation(circuit=m_circuit)
 se.run()
 
 print(se.results.get_bus_df())
@@ -987,7 +984,7 @@ Br3   38.591163  22.775597  0.0  0.0  22.775597
 A simple function is available to export the results of a driver.
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
 grid = gce.open_file(fname)
@@ -1008,7 +1005,7 @@ You could save many drivers in the same zip file passing then into the list `dri
 Also there is a function to save from the results objects themselves:
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
 grid = gce.open_file(fname)
@@ -1033,7 +1030,7 @@ An example on how to send a grid from a script to the server:
 ```python
 import os
 import asyncio
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # path to your file
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.gridcal")

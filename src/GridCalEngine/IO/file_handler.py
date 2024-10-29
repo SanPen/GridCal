@@ -45,7 +45,7 @@ from GridCalEngine.IO.gridcal.zip_interface import save_gridcal_data_to_zip, get
 from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
-from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
+from GridCalEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pypsa_hdf5
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -382,10 +382,10 @@ class FileOpen:
                         self.logger += parser.logger
 
                 elif file_extension.lower() == '.hdf5':
-                    self.circuit = parse_hdf5(self.file_name, self.logger)
+                    self.circuit = parse_pypsa_hdf5(self.file_name, self.logger)
 
                 elif file_extension.lower() == '.nc':
-                    self.circuit = parse_netcdf(self.file_name, self.logger)
+                    self.circuit = parse_pypsa_netcdf(self.file_name, self.logger)
 
             else:
                 # warn('The file does not exist.')
