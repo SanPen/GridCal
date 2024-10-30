@@ -178,9 +178,12 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
+    longitude = -110.9
 
     st = datetime(year=2018, month=1, day=1)
-    time_arr = pd.to_datetime([st + timedelta(hours=i) for i in range(200)])
+    direction = 1.0 if longitude > 0 else -1.0
+    offset = direction * longitude * 24.0 / 360.0
+    time_arr = pd.to_datetime([st + timedelta(hours=i + offset) for i in range(200)])
 
     window = SolarPvWizard(time_array=time_arr, peak_power=20, latitude=32.2, longitude=-110.9)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio

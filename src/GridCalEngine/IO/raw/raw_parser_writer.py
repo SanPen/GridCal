@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import chardet
+import re
 import datetime
 from typing import List, AnyStr, Dict
 from GridCalEngine.basic_structures import Logger
@@ -65,7 +66,7 @@ def delete_comment(raw_line):
     return lne
 
 
-def interpret_line(raw_line, splitter=','):
+def interpret_line(raw_line: str, splitter=','):
     """
     Split text into arguments and parse each of them to an appropriate format (int, float or string)
     Args:
@@ -82,7 +83,14 @@ def interpret_line(raw_line, splitter=','):
         lne = raw_line
 
     parsed = list()
-    elms = lne.split(splitter)
+
+    # Regular expression to split on commas but ignore commas within single quotes
+    pattern = splitter + r"\s*(?=(?:[^']*'[^']*')*[^']*$)"
+
+    # Use re.split to apply the pattern
+    elms = re.split(pattern, lne)
+
+    # elms = lne.split(splitter)
 
     for elm in elms:
 

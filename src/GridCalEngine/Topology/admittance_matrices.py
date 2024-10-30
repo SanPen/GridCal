@@ -541,7 +541,7 @@ def compute_split_admittances(R: Vec,
 
     Gsw = G0sw + a * np.power(If, 2) + b * If + c
 
-    ys = 1.0 / (R + 1.0j * X)  # series admittance
+    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
     ysh = (G + 1j * B) / 2  # shunt admittance
 
     # k is already filled with the appropriate value for each type of branch
