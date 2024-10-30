@@ -48,7 +48,7 @@ ShapeTuple: TypeAlias = Tuple[int, ...]
 
 Number = np.number
 Bool = np.bool_
-Bool8 = np.bool
+Bool8 = np.bool_
 Obj = np.object_  # Obj is a common abbreviation and should be usable.
 Object = np.object_
 Object0 = np.object_
