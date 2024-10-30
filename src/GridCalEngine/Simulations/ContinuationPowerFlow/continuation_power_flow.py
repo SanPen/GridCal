@@ -424,7 +424,7 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
     ]
 
     # check tolerance
-    normF = np.linalg.norm(F, np.Inf)
+    normF = np.linalg.norm(F, np.inf)
     converged = normF < tol
     if verbose:
         print('\nConverged!\n')
@@ -505,7 +505,7 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
             F = np.r_[mismatch[idx_dP].real, mismatch[idx_dQ].imag, P]
 
             # check for convergence
-            normF_new = np.linalg.norm(F, np.Inf)
+            normF_new = np.linalg.norm(F, np.inf)
 
             back_track_condition = normF_new > normF
             mu *= acceleration_parameter
@@ -794,7 +794,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 # Adapt step size
                 fx = (np.r_[np.angle(V[idx_dtheta]), np.abs(V[idx_dVm]), lam]
                       - np.r_[np.angle(V0[idx_dtheta]), np.abs(V0[idx_dVm]), lam0])
-                cpf_error = np.linalg.norm(fx, np.Inf)
+                cpf_error = np.linalg.norm(fx, np.inf)
 
                 if cpf_error == 0:
                     cpf_error = 1e-20

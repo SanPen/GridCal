@@ -19,7 +19,7 @@ from typing import List, Any, Dict, Union, Tuple
 import pandas as pd
 import numpy as np
 import datetime
-import nptyping as npt
+import GridCalEngine.Utils.ThirdParty.nptyping as npt
 from scipy.sparse import csc_matrix, csr_matrix
 from GridCalEngine.enumerations import TimeGrouping, LogSeverity
 

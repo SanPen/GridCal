@@ -137,7 +137,7 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
     fx = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]
 
     # check tolerance
-    normF = np.linalg.norm(fx, np.Inf)
+    normF = np.linalg.norm(fx, np.inf)
     converged = normF < tol
     dt = 1.0
 
@@ -180,7 +180,7 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
         fx = np.r_[mis[pv].real, mis[pq].real, mis[pq].imag]  # concatenate again
 
         # check for convergence
-        normF = np.linalg.norm(fx, np.Inf)
+        normF = np.linalg.norm(fx, np.inf)
 
         if normF > 0.01:
             dt = max(dt * 0.985, 0.75)
