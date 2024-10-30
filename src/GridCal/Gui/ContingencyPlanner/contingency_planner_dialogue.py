@@ -115,9 +115,9 @@ class ContingencyPlannerGUI(QtWidgets.QDialog):
         self.close()
 
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    window = ContingencyPlannerGUI()
-    window.resize(1.61 * 700.0, 600.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     window = ContingencyPlannerGUI()
+#     window.resize(1.61 * 700.0, 600.0)  # golden ratio
+#     window.show()
+#     sys.exit(app.exec())

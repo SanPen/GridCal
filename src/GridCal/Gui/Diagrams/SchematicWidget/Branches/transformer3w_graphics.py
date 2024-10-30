@@ -27,6 +27,8 @@ from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.gui_functions import add_menu_entry
 
@@ -318,7 +320,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         raise Exception("Unknown winding")
 
-    def set_connection(self, i: int, bus, conn: WindingGraphicItem, set_voltage: bool = True):
+    def set_connection(self, i: int, bus: Bus, conn: WindingGraphicItem, set_voltage: bool = True):
         """
         Create the connection with a bus
         :param i: winding index 0-2
@@ -348,6 +350,50 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.api_object.bus3 = bus
             if set_voltage:
                 self.api_object.V3 = bus.Vnom
+            self.connection_lines[2] = conn
+            self.terminals[2].setZValue(-1)
+            conn.api_object = self.api_object.winding3
+            conn.winding_number = 2
+        else:
+            raise Exception('Unsupported winding index {}'.format(i))
+
+        # set the reverse lookup
+        conn.parent_tr3_graphics_item = self
+
+        # update the connection placement
+        self.update_conn()
+        self.mousePressEvent(None)
+
+    def set_connection_cn(self, i: int, cn: ConnectivityNode, conn: WindingGraphicItem, set_voltage: bool = True):
+        """
+        Create the connection with a bus
+        :param i: winding index 0-2
+        :param cn: ConnectivityNode object to connect to
+        :param conn: Connection graphical object [LineGraphicItem]
+        :param set_voltage: Set voltage in the object (Transformer3W and Windings)
+        """
+        if i == 0:
+            self.api_object.cn1 = cn
+            if set_voltage:
+                self.api_object.V1 = cn.Vnom
+            self.connection_lines[0] = conn
+            self.terminals[0].setZValue(-1)
+            conn.api_object = self.api_object.winding1
+            conn.winding_number = 0
+
+        elif i == 1:
+            self.api_object.bus2 = cn
+            if set_voltage:
+                self.api_object.V2 = cn.Vnom
+            self.connection_lines[1] = conn
+            self.terminals[1].setZValue(-1)
+            conn.api_object = self.api_object.winding2
+            conn.winding_number = 1
+
+        elif i == 2:
+            self.api_object.bus3 = cn
+            if set_voltage:
+                self.api_object.V3 = cn.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
             conn.api_object = self.api_object.winding3

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import numpy as np
 
 from typing import Union, List
@@ -33,8 +35,8 @@ class LineEditor(QDialog):
                  line: Line,
                  Sbase=100,
                  frequency=50,
-                 templates: Union[List[Union[SequenceLineType, OverheadLineType, UndergroundLineType]], None] = None,
-                 current_template=None):
+                 templates: Union[List[SequenceLineType | OverheadLineType | UndergroundLineType], None] = None,
+                 current_template: SequenceLineType | OverheadLineType | UndergroundLineType | None = None):
         """
         Line Editor constructor
         :param line: Branch object to update
@@ -120,7 +122,7 @@ class LineEditor(QDialog):
                             x_ohm = self.current_template.X1
                             b_us = self.current_template.Bsh1
 
-                    except:
+                    except ValueError:
                         pass
 
         # load template

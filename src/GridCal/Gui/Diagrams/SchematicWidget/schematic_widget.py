@@ -661,61 +661,6 @@ class SchematicWidget(BaseDiagramWidget):
                         # bus_dict[idtag] = graphic_object
                         self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
-            elif category == DeviceType.Transformer3WDevice.value:
-
-                for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-                        elm: Transformer3W = location.api_object
-
-                        graphic_object = self.create_transformer_3w_graphics(elm=elm,
-                                                                             x=location.x,
-                                                                             y=location.y)
-                        self.add_to_scene(graphic_object=graphic_object)
-
-                        bus_1_graphic = self.graphics_manager.query(elm.bus1)
-
-                        if bus_1_graphic is not None:
-                            conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
-                                                       to_port=bus_1_graphic.get_terminal(),
-                                                       editor=self)
-
-                            graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=False)
-                            self.add_to_scene(graphic_object=conn1)
-                            self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
-
-                        bus_2_graphic = self.graphics_manager.query(elm.bus2)
-                        if bus_2_graphic is not None:
-                            conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
-                                                       to_port=bus_2_graphic.get_terminal(),
-                                                       editor=self)
-                            graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=False)
-                            self.add_to_scene(graphic_object=conn2)
-                            self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
-
-                        bus_3_graphic = self.graphics_manager.query(elm.bus3)
-                        if bus_3_graphic is not None:
-                            conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
-                                                       to_port=bus_3_graphic.get_terminal(),
-                                                       editor=self)
-                            graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=False)
-                            self.add_to_scene(graphic_object=conn3)
-                            self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
-
-                        graphic_object.set_position(x=location.x, y=location.y)
-                        graphic_object.change_size(h=location.h, w=location.w)
-
-                        graphic_object.update_conn()
-                        self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
-
-                        # register the windings for the branches pass
-                        # windings_dict[elm.winding1.idtag] = conn1
-                        # windings_dict[elm.winding2.idtag] = conn2
-                        # windings_dict[elm.winding3.idtag] = conn3
-
             elif category == DeviceType.FluidNodeDevice.value:
 
                 for idtag, location in points_group.locations.items():
@@ -773,10 +718,11 @@ class SchematicWidget(BaseDiagramWidget):
                                 injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
                             )
 
-                            # graphic_object.change_size(w=location.w)
-
                             # add buses reference for later
                             self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    else:
+                        # is internal
+                        pass
 
             elif category == DeviceType.BusBarDevice.value and prefer_node_breaker:
 
@@ -808,6 +754,51 @@ class SchematicWidget(BaseDiagramWidget):
             else:
                 # pass for now...
                 pass
+
+        # add 3W transformers after the node devices
+        for category, points_group in diagram.data.items():
+
+            if category == DeviceType.Transformer3WDevice.value:
+
+                for idtag, location in points_group.locations.items():
+
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+
+                    if graphic_object is None:
+                        elm: Transformer3W = location.api_object
+
+                        graphic_object = self.create_transformer_3w_graphics(elm=elm,
+                                                                             x=location.x,
+                                                                             y=location.y)
+                        self.add_to_scene(graphic_object=graphic_object)
+
+                        w1_graphics = self.add_api_winding(branch=elm.winding1,
+                                                           from_port=graphic_object.terminals[0],
+                                                           draw_labels=location.draw_labels,
+                                                           prefer_node_breaker=prefer_node_breaker,
+                                                           logger=logger)
+                        self.graphics_manager.add_device(elm=elm.winding1, graphic=w1_graphics)
+
+                        w2_graphics = self.add_api_winding(branch=elm.winding2,
+                                                           from_port=graphic_object.terminals[1],
+                                                           draw_labels=location.draw_labels,
+                                                           prefer_node_breaker=prefer_node_breaker,
+                                                           logger=logger)
+                        self.graphics_manager.add_device(elm=elm.winding2, graphic=w2_graphics)
+
+                        w3_graphics = self.add_api_winding(branch=elm.winding3,
+                                                           from_port=graphic_object.terminals[2],
+                                                           draw_labels=location.draw_labels,
+                                                           prefer_node_breaker=prefer_node_breaker,
+                                                           logger=logger)
+                        self.graphics_manager.add_device(elm=elm.winding3, graphic=w3_graphics)
+
+                        graphic_object.set_position(x=location.x, y=location.y)
+                        graphic_object.change_size(h=location.h, w=location.w)
+
+                        graphic_object.update_conn()
+                        self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
 
         # add the rest of the branches
         for category, points_group in diagram.data.items():
@@ -2203,10 +2194,34 @@ class SchematicWidget(BaseDiagramWidget):
             # the from bu is found, return its terminal
             to_port = bus_graphic1.get_terminal()
 
-        # from_port = self.find_port(port=None, bus=branch.bus_from, cn=branch.cn_from)
-        # to_port = self.find_port(port=None, bus=branch.bus_to, cn=branch.cn_to)
-
         return from_port, to_port
+
+    def find_to_port(self,
+                     branch: BRANCH_TYPES,
+                     prefer_node_breaker: bool,
+                     logger: Logger) -> OPTIONAL_PORT:
+        """
+        Find the preferred set of ports for drawing
+        :param branch: some API branch
+        :param prefer_node_breaker:
+        :param logger:
+        :return: OPTIONAL_PORT, OPTIONAL_PORT
+        """
+
+        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(t_idx=None,
+                                                                 logger=logger,
+                                                                 prefer_node_breaker=prefer_node_breaker)
+
+        # Bus provided, search its graphics
+        bus_graphic1 = self.graphics_manager.query_preferring_busbars(obj_to)
+        if bus_graphic1 is None:
+            # could not find any graphics :(
+            to_port = None
+        else:
+            # the from bu is found, return its terminal
+            to_port = bus_graphic1.get_terminal()
+
+        return to_port
 
     def add_api_branch(self,
                        branch: BRANCH_TYPES,
@@ -2241,6 +2256,10 @@ class SchematicWidget(BaseDiagramWidget):
                 from_port, to_port = self.find_ports(branch=branch,
                                                      prefer_node_breaker=prefer_node_breaker,
                                                      logger=logger)
+            elif from_port is not None and to_port is None:
+                to_port = self.find_to_port(branch=branch,
+                                            prefer_node_breaker=prefer_node_breaker,
+                                            logger=logger)
 
             if from_port is not None and to_port is not None and (from_port != to_port):
 
@@ -2444,6 +2463,32 @@ class SchematicWidget(BaseDiagramWidget):
 
         return self.add_api_branch(branch=branch,
                                    new_graphic_func=TransformerGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_winding(self,
+                        branch: Winding,
+                        from_port: OPTIONAL_PORT = None,
+                        to_port: OPTIONAL_PORT = None,
+                        draw_labels: bool = True,
+                        prefer_node_breaker: bool = False,
+                        logger: Logger = Logger()) -> Union[WindingGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: WindingGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=WindingGraphicItem,
                                    from_port=from_port,
                                    to_port=to_port,
                                    prefer_node_breaker=prefer_node_breaker,

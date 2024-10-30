@@ -35,7 +35,7 @@ class DcLineEditor(QDialog):
     """
     DcLineEditor
     """
-    def __init__(self, branch: DcLine, Sbase=100, templates=None, current_template=None):
+    def __init__(self, branch: DcLine, Sbase: float = 100.0, templates=None, current_template=None):
         """
         Line Editor constructor
         :param branch: Branch object to update
@@ -351,7 +351,7 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
 
-        dlg = DcLineEditor(self.api_object, Sbase)
+        dlg = DcLineEditor(branch=self.api_object, Sbase=Sbase)
         if dlg.exec_():
             pass
 

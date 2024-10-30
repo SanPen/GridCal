@@ -130,9 +130,9 @@ class CascadingStepsGUI(QtWidgets.QDialog):
             self.gridcal_main.post_cascade(idx=idx.row())
 
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    window = CascadingStepsGUI()
-    window.resize(1.61 * 700.0, 600.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     window = CascadingStepsGUI()
+#     window.resize(1.61 * 700, 600)  # golden ratio
+#     window.show()
+#     sys.exit(app.exec())
