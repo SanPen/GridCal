@@ -752,10 +752,15 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                 if cgmes_elm.LoadResponse is not None:
 
                     if cgmes_elm.LoadResponse.exponentModel:
-                        # print(f'Exponent model True at {cgmes_elm.name}')
-                        pass  # TODO convert exponent to ZIP
+                        logger.add_error(
+                            msg=f'Exponent model True at {cgmes_elm.name}',
+                            device=cgmes_elm.rdfid,
+                            device_class=cgmes_elm.tpe,
+                            device_property="LoadResponse",
+                            value=cgmes_elm.LoadResponse.exponentModel,
+                            comment="get_gcdev_loads()")
+                        # TODO convert exponent to ZIP
                     else:  # ZIP model
-                        # TODO check all attributes
                         # :param P: Active power in MW
                         p = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantPower
                         # :param Q: Reactive power in MVAr
@@ -1406,7 +1411,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 if getattr(tap_changer, 'TapChangerControl', None):
                     if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
                             and tap_changer.TapChangerControl.enabled):
-                        tap_phase_control_mode = TapPhaseControl.Pf  # TODO Pf ot Pt
+                        tap_phase_control_mode = TapPhaseControl.Pf  # from bus
                 else:
                     logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerSymmetrical",
                                        device=tap_changer.rdfid,
@@ -1426,7 +1431,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 if getattr(tap_changer, 'TapChangerControl', None):
                     if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
                             and tap_changer.TapChangerControl.enabled):
-                        tap_phase_control_mode = TapPhaseControl.Pf  # TODO Pf ot Pt
+                        tap_phase_control_mode = TapPhaseControl.Pf  # from bus
                 else:
                     logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerAsymmetrical",
                                        device=tap_changer.rdfid,
@@ -1659,7 +1664,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
 
                 if (cgmes_elm.ratedCurrent is not None
                         and cgmes_elm.ratedCurrent != 0.0
-                        and cgmes_elm.BaseVoltage is not None):  # TODO
+                        and cgmes_elm.BaseVoltage is not None):
                     rated_current = np.round(
                         (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
                         4)

@@ -261,7 +261,6 @@ def create_cgmes_load_response_char(load: gcdev.Load,
     #                      device=load,
     #                      device_class=gcdev.Load)
     # sum for 3 for p = 1
-    # TODO B only 1 lrc for every load
     # if it not supports voltage dependent load, lf wont be the same
     cgmes_model.add(lrc)
     return lrc
@@ -777,8 +776,13 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                 # link back
                 vl.TopologicalNode = tn
             else:
-                print(f'Bus.voltage_level.idtag is None for {bus.name}')
-                # TODO logger
+                logger.add_error(
+                    msg=f'No Voltage Level found for  {bus.name}',
+                    device=bus.idtag,
+                    device_class=bus.tpe,
+                    device_property="Bus.voltage_level.idtag",
+                    value=bus.voltage_level,
+                    comment="get_cgmes_tn_nodes()")
 
             add_location(cgmes_model, tn, bus.longitude, bus.latitude, logger)
 
@@ -1019,8 +1023,13 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
                 else:
                     subs.Equipment = [cgmes_gen]
             else:
-                print(f'No substation found for generator {mc_elm.name}')
-                # TODO logger
+                logger.add_error(
+                    msg=f'No substation found for generator {mc_elm.name}',
+                    device=mc_elm.idtag,
+                    device_class=mc_elm.device_type,
+                    device_property="Substation",
+                    value=subs,
+                    comment="get_cgmes_generators()")
 
         cgmes_gen.initialP = mc_elm.P
         cgmes_gen.maxOperatingP = mc_elm.Pmax
@@ -1392,13 +1401,6 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      nominal_power=mc_elm.winding2.rate,
                                                      rated_voltage=mc_elm.winding2.HV)
 
-        # TODO: what is this?
-        # if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-        #     pte2.r0 = r0
-        #     pte2.x0 = x0
-        #     pte2.g0 = g0
-        #     pte2.b0 = b0
-
         # Winding 3 ----------------------------------------------------------------------------------------------------
         pte3 = object_template()
         pte3.PowerTransformer = cm_transformer
@@ -1637,8 +1639,6 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
                              device_class=gcdev.Load,
                              value=mc_shunt_like.idtag)
 
-    # TODO pf_results.loading is what?
-
 
 def create_sv_power_flow(cgmes_model: CgmesCircuit,
                          p: float,
@@ -1730,10 +1730,9 @@ def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
 
 
 def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
+                                 nc: NumericalCircuit,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
-    # TODO get nc as an input
-    nc = compile_numerical_circuit_at(multicircuit_model)
     nc_islands = nc.split_into_islands()
     tpi_template = cgmes_model.get_class_type("TopologicalIsland")
     i = 0
@@ -1847,7 +1846,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # TODO call it from shunt function or write get_cgmes.. func
 
         # Topo Islands
-        get_cgmes_topological_island(gc_model, cgmes_model, logger)
+        get_cgmes_topological_island(gc_model, num_circ, cgmes_model, logger)
 
     else:
         logger.add_error(msg="Missing power flow result for CGMES export.")
