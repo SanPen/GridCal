@@ -92,7 +92,7 @@ class DataLogger:
 
         self.debug_entries: List[str] = list()
 
-    def get_message(self):
+    def get_message(self) -> str:
         """
         Get a diagnostic message
         :return: message
@@ -112,6 +112,10 @@ class DataLogger:
         return "There were {} errors, {} warnings and {} info logs.".format(n_error, n_warning, n_info)
 
     def add_debug(self, *args):
+        """
+
+        :param args: 
+        """
         self.debug_entries.append(" ".join([str(x) for x in args]))
 
     def append(self, txt: str):
@@ -150,8 +154,8 @@ class DataLogger:
                                          expected_value=str(expected_value),
                                          comment=str(comment)))
 
-    def add_warning(self, msg, device="", device_class="", device_property='', value="", expected_value="",
-                    comment=""):
+    def add_warning(self, msg: str, device: str = "", device_class: str = "", device_property: str = '',
+                    value: str = "", expected_value: str = "", comment: str = "") -> None:
         """
 
         :param msg:

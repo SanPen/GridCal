@@ -22,7 +22,7 @@ from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.Main.SubClasses.Server.server import ServerMain
 import GridCal.Gui.gui_functions as gf
 
-from GridCalEngine.enumerations import EngineType
+from GridCalEngine.enumerations import EngineType, BranchImpedanceMode
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
@@ -138,7 +138,21 @@ class CompiledArraysMain(ServerMain):
             engine = self.get_preferred_engine()
 
             if engine == EngineType.GridCal:
-                numerical_circuit = compile_numerical_circuit_at(circuit=self.circuit, t_idx=None)
+
+                if self.ui.apply_impedance_tolerances_checkBox.isChecked():
+                    branch_impedance_tolerance_mode = BranchImpedanceMode.Upper
+                else:
+                    branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
+
+                numerical_circuit = compile_numerical_circuit_at(
+                    circuit=self.circuit,
+                    t_idx=None,
+                    branch_tolerance_mode=branch_impedance_tolerance_mode,
+                    use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
+                    control_taps_phase=self.ui.control_tap_phase_checkBox.isChecked(),
+                    control_taps_modules=self.ui.control_tap_modules_checkBox.isChecked(),
+                    control_remote_voltage=self.ui.control_remote_voltage_checkBox.isChecked(),
+                )
                 calculation_inputs = numerical_circuit.split_into_islands()
                 self.calculation_inputs_to_display = calculation_inputs
 
