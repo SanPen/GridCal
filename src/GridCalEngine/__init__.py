@@ -4,13 +4,16 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from __future__ import annotations
-from GridCalEngine.basic_structures import *
-from GridCalEngine.Simulations import *
-from GridCalEngine.IO import *
-from GridCalEngine.Devices import *
-from GridCalEngine.DataStructures import *
-from GridCalEngine.Topology import *
-from GridCalEngine.enumerations import *
+try:
+    from GridCalEngine.basic_structures import *
+    from GridCalEngine.Simulations import *
+    from GridCalEngine.IO import *
+    from GridCalEngine.Devices import *
+    from GridCalEngine.DataStructures import *
+    from GridCalEngine.Topology import *
+    from GridCalEngine.enumerations import *
+except ModuleNotFoundError as e:
+    print("Modules not found :/", e)
 
 
 def open_file(filename: Union[str, List[str]]) -> MultiCircuit:
