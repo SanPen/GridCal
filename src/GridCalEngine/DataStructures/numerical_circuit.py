@@ -11,7 +11,7 @@ from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.enumerations import BranchImpedanceMode, BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
@@ -43,7 +43,8 @@ ALL_STRUCTS = Union[
 ]
 
 
-def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logger: Logger) -> int:
+def CheckArr(arr: Vec | IntVec | BoolVec | CxVec, arr_expected: Vec | IntVec | BoolVec | CxVec,
+             tol: float, name: str, test: str, logger: Logger) -> int:
     """
 
     :param arr:
@@ -65,12 +66,20 @@ def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logg
     if np.allclose(arr, arr_expected, atol=tol):
         return 0
     else:
-        diff = arr - arr_expected
-        logger.add_error(msg="Numeric differences",
-                         device=name,
-                         device_property=test,
-                         value=f"min diff: {diff.min()}, max diff: {diff.max()}",
-                         expected_value=tol)
+        if arr.dtype == np.bool:
+            diff = arr.astype(int) - arr_expected.astype(int)
+            logger.add_error(msg="Numeric differences",
+                             device=name,
+                             device_property=test,
+                             value=f"min diff: {diff.min()}, max diff: {diff.max()}",
+                             expected_value=tol)
+        else:
+            diff = arr - arr_expected
+            logger.add_error(msg="Numeric differences",
+                             device=name,
+                             device_property=test,
+                             value=f"min diff: {diff.min()}, max diff: {diff.max()}",
+                             expected_value=tol)
         return 1
 
 

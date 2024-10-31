@@ -767,7 +767,7 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                 logger.add_error(
                     msg=f'No Voltage Level found for  {bus.name}',
                     device=bus.idtag,
-                    device_class=bus.tpe,
+                    device_class=bus.device_type.value,
                     device_property="Bus.voltage_level.idtag",
                     value=bus.voltage_level,
                     comment="get_cgmes_tn_nodes()")
