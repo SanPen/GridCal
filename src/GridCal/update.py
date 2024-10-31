@@ -3,14 +3,14 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
+from typing import Tuple
 import subprocess
 import sys
-# import pkg_resources
 import packaging.version as pkg
 from GridCal.__version__ import __GridCal_VERSION__
 
 
-def find_latest_version(name='GridCal'):
+def find_latest_version(name: str = 'GridCal') -> str:
     """
     Find the latest version of a package
     :param name: name of the Package
@@ -24,7 +24,7 @@ def find_latest_version(name='GridCal'):
     return latest_version
 
 
-def check_version(name='GridCal'):
+def check_version(name: str = 'GridCal') -> Tuple[int, str]:
     """
     Check package version
     :param name: package name, GridCal by default
