@@ -19,7 +19,7 @@ from GridCal.Gui.profiles_model import ProfilesModel
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.Topology.detect_substations import detect_substations
+from GridCalEngine.Topology.detect_substations import detect_substations, detect_facilities
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -64,6 +64,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.actionClean_database.triggered.connect(self.clean_database)
         self.ui.actionScale.triggered.connect(self.scale)
         self.ui.actionDetect_substations.triggered.connect(self.detect_substations)
+        self.ui.actionDetect_facilities.triggered.connect(self.detect_facilities)
 
         # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -1041,7 +1042,7 @@ class ObjectsTableMain(DiagramsMain):
 
     def detect_substations(self):
         """
-        Call the detect substations logc
+        Call the detect substations logic
         """
 
         ok = yes_no_question("Do you want to try to detect substations and voltage levels in the grid model?",
@@ -1051,6 +1052,16 @@ class ObjectsTableMain(DiagramsMain):
             val = 1.0 / (10.0 ** self.ui.rxThresholdSpinBox.value())
             detect_substations(grid=self.circuit,
                                r_x_threshold=val)
+
+    def detect_facilities(self):
+        """
+        Call the detect facilities logic
+        """
+        ok = yes_no_question("Do you want to try to detect facilities in the grid model?",
+                             "Detect facilities")
+
+        if ok:
+            detect_facilities(grid=self.circuit)
 
     def show_objects_context_menu(self, pos: QtCore.QPoint):
         """

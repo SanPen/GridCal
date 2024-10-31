@@ -292,7 +292,7 @@ class Bus(PhysicalDevice):
             p_load[p_load > 0] = 0
             p_gen = p.copy()
             p_gen[p_gen < 0] = 0
-            P_data = {"Load":  p_load, "Gen": p_gen}
+            P_data = {"Load": p_load, "Gen": p_gen}
             t = time_series_driver.results.time_array
             pd.DataFrame(data=v, index=t, columns=['Voltage (p.u.)']).plot(ax=ax_voltage)
             pd.DataFrame(data=P_data, index=t).plot(ax=ax_load)
@@ -321,3 +321,19 @@ class Bus(PhysicalDevice):
         Get tuple of the bus coordinates (longitude, latitude)
         """
         return self.longitude, self.latitude
+
+    def try_to_find_coordinates(self):
+        """
+        Try to find the bus coordinates
+        """
+        lon, lat = self.longitude, self.latitude
+
+        if self.substation is not None:
+            if lon == 0.0:
+                lon = self.substation.longitude
+
+        if self.substation is not None:
+            if lat == 0.0:
+                lat = self.substation.latitude
+
+        return lon, lat

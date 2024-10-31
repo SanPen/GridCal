@@ -109,3 +109,22 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
         for i in island:
             bus = buses[i]
             bus.voltage_level = voltages_vl[bus.Vnom]
+
+
+def detect_facilities(grid: MultiCircuit) -> None:
+    """
+    Create facilities automatically
+    In essence is packing all the injections connected to he same bus into a facility object
+    :param grid: MultiCircuit
+    """
+    dict_bus_inj = grid.get_injection_devices_grouped_by_bus()
+
+    for bus, inj_list in dict_bus_inj.items():
+
+        if len(inj_list):
+            lon, lat = bus.try_to_find_coordinates()
+            plant = dev.Facility(name=f"Facility at bus {bus.name}", longitude=lon, latitude=lat)
+            grid.add_facility(obj=plant)
+
+            for elm in inj_list:
+                elm.facility = plant
