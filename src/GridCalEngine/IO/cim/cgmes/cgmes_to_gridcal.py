@@ -662,6 +662,84 @@ def get_gcdev_vsc_converters(cgmes_model: CgmesCircuit,
     return
 
 
+def get_gcdev_hvdc_from_dcline_and_vscs(
+        cgmes_model: CgmesCircuit,
+        gcdev_model: MultiCircuit,
+        dc_bus_dict: Dict[str, gcdev.Bus],
+        dc_cn_dict: Dict[str, gcdev.ConnectivityNode],
+        dc_device_to_terminal_dict: Dict[str, List[Base]],
+        calc_node_dict: Dict[str, gcdev.Bus],
+        cn_dict: Dict[str, gcdev.ConnectivityNode],
+        device_to_terminal_dict: Dict[str, List[Base]],
+        logger: DataLogger
+    ) -> None:
+    """
+    Convert the CGMES VcConverter to gcdev simplified HVDC lines
+    (if required attributes for converting from VSC to VSC not given)
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param dc_bus_dict:
+    :param dc_cn_dict:
+    :param dc_device_to_terminal_dict:
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger: DataLogger
+    :return: None
+    """
+
+    for dc_line_sgm in cgmes_model.cgmes_assets.DCLineSegment_list:
+        pass
+        # or in more general it is DCLine_list
+
+        dc_buses, dc_cns = find_connections(cgmes_elm=dc_line_sgm,
+                                            device_to_terminal_dict=dc_device_to_terminal_dict,
+                                            calc_node_dict=dc_bus_dict,
+                                            cn_dict=dc_cn_dict,
+                                            logger=logger)
+        # bus_from: AC side of VSC 1
+        # bus_to: AC side of VSC 2
+
+        # get the VSC-s connected to this dc_buses
+
+        # bus_ac, cn_ac = find_connections(cgmes_elm=vsc_1,
+        #                                  device_to_terminal_dict=device_to_terminal_dict,
+        #                                  calc_node_dict=calc_node_dict,
+        #                                  cn_dict=cn_dict,
+        #                                  logger=logger)
+        #
+        # if len(bus_dc) == 1 and len(bus_ac) == 1:
+        #
+        #     gcdev_elm = gcdev.HvdcLine(
+        #         bus_from=bus_dc[0],
+        #         bus_to=bus_ac[0],
+        #         cn_from=cn_dc[0],
+        #         cn_to=cn_ac[0],
+        #         name=dc_line_sgm.name,
+        #         idtag=dc_line_sgm.uuid,
+        #         code=dc_line_sgm.description,
+        #         active=True,
+        #         Pset=specified_power,   # power of the VSconverter
+        #         rate=rate,              # rate of DCLine? or ratedP of Converter?
+        #         Vset_f=Vset_f,          # if not found, 1.0 p.u.
+        #         Vset_t=Vset_t,
+        #     )
+        #
+        #     gcdev_model.add_hvdc(gcdev_elm)
+        #
+        # else:
+        #     logger.add_error(msg='VSC has to have one AC and one DC terminal',
+        #                      device=cgmes_elm.rdfid,
+        #                      device_class=cgmes_elm.tpe,
+        #                      device_property="number of associated terminals",
+        #                      value=len(bus_dc),
+        #                      expected_value=1,
+        #                      comment="Import VSC from CGMES")
+
+    return
+
+
 def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
                                  calc_node_dict: Dict[str, gcdev.Bus],
@@ -1474,7 +1552,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 )
 
                 # SET tap_module and tap_phase from its own TapChanger object
-                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()  # TODO: mind the zero indexing!
+                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
                 gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
@@ -2068,26 +2146,44 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
         logger=logger
     )
 
-    get_gcdev_dc_lines(
-        cgmes_model=cgmes_model,
-        gcdev_model=gc_model,
-        calc_node_dict=dc_bus_dict,
-        cn_dict=dc_cn_dict,
-        device_to_terminal_dict=dc_device_to_terminal_dict,
-        logger=logger,
-    )
+    treat_dc_equipment_as_hvdc_lines = True
 
-    get_gcdev_vsc_converters(
-        cgmes_model=cgmes_model,
-        gcdev_model=gc_model,
-        dc_bus_dict=dc_bus_dict,
-        dc_cn_dict=dc_cn_dict,
-        dc_device_to_terminal_dict=dc_device_to_terminal_dict,
-        calc_node_dict=calc_node_dict,
-        cn_dict=cn_dict,
-        device_to_terminal_dict=device_to_terminal_dict,
-        logger=logger,
-    )
+    if treat_dc_equipment_as_hvdc_lines:
+
+        get_gcdev_hvdc_from_dcline_and_vscs(
+            cgmes_model=cgmes_model,
+            gcdev_model=gc_model,
+            dc_bus_dict=dc_bus_dict,
+            dc_cn_dict=dc_cn_dict,
+            dc_device_to_terminal_dict=dc_device_to_terminal_dict,
+            calc_node_dict=calc_node_dict,
+            cn_dict=cn_dict,
+            device_to_terminal_dict=device_to_terminal_dict,
+            logger=logger,
+        )
+
+    else:
+
+        get_gcdev_dc_lines(
+            cgmes_model=cgmes_model,
+            gcdev_model=gc_model,
+            calc_node_dict=dc_bus_dict,
+            cn_dict=dc_cn_dict,
+            device_to_terminal_dict=dc_device_to_terminal_dict,
+            logger=logger,
+        )
+
+        get_gcdev_vsc_converters(
+            cgmes_model=cgmes_model,
+            gcdev_model=gc_model,
+            dc_bus_dict=dc_bus_dict,
+            dc_cn_dict=dc_cn_dict,
+            dc_device_to_terminal_dict=dc_device_to_terminal_dict,
+            calc_node_dict=calc_node_dict,
+            cn_dict=cn_dict,
+            device_to_terminal_dict=device_to_terminal_dict,
+            logger=logger,
+        )
 
     cgmes_model.emit_progress(100)
     cgmes_model.emit_text("Cgmes import done!")
