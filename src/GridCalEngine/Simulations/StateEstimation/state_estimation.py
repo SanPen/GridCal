@@ -382,7 +382,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
             nu = nu * 2
 
         # compute the convergence
-        err = np.linalg.norm(dx, np.Inf)
+        err = np.linalg.norm(dx, np.inf)
         converged = err < tol
 
         # update loops

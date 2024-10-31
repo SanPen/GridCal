@@ -83,7 +83,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
         mismatch = cf.compute_fx(Scalc, S0, no_slack, pq)
 
         # check for convergence
-        norm_f = np.linalg.norm(mismatch, np.Inf)
+        norm_f = np.linalg.norm(mismatch, np.inf)
     else:
         norm_f = 0.0
         V = V0

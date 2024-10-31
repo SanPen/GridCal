@@ -352,7 +352,7 @@ class BranchData:
 
         :return:
         """
-        return 1.0 / (self.R + 1.0j * self.X)
+        return 1.0 / (self.R + 1.0j * self.X + 1e-20)
 
     def get_linear_series_admittance(self) -> Vec:
         """

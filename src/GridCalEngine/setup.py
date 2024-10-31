@@ -52,11 +52,12 @@ package_data = {'GridCalEngine': ['LICENSE.txt', 'setup.py'], }
 
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',
-                "numpy>=1.19.0,<2.0.0",
+                "numpy<=2.0.0",
+                "autograd>=1.7.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
-                "pandas>=1.0",
-                "highspy",
+                "pandas>=2.2.3",
+                "highspy>=1.8.0",
                 "xlwt>=1.3.0",
                 "xlrd>=1.1.0",
                 "matplotlib>=2.1.1",
@@ -66,17 +67,16 @@ dependencies = ['setuptools>=41.0.1',
                 "scikit-learn>=1.5.0",
                 "geopy>=1.16",
                 "pytest>=7.2",
-                "h5py>=2.9.0",
-                "numba>=0.46",  # to compile routines natively
+                "h5py>=3.12.0",
+                "numba>=0.60",  # to compile routines natively
                 'pyproj',
                 'pyarrow>=15',
-                "nptyping",
-                "windpowerlib",
-                "pvlib",
-                "hyperopt",
+                "windpowerlib>=0.2.2",
+                "pvlib>=0.11",
                 "rdflib",
                 "pymoo>=0.6",
                 "websockets",
+                "opencv-python>=4.10.0.84",
                 ]
 
 extras_require = {

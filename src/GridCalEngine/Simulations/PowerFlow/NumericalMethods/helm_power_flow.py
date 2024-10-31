@@ -21,7 +21,6 @@
 import pandas as pd
 import numpy as np
 import numba as nb
-from numba.np.linalg import solve_impl
 import time
 from warnings import warn
 from scipy.sparse import csc_matrix, coo_matrix
@@ -367,6 +366,12 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
               hs((B, G, XRE)),
               hs((VRE, VIM, EMPTY))), format='csc')
 
+    converged = False
+    V = np.empty(n, dtype=complex)
+    V[sl] = V0[sl]
+    c = 2
+    V[pqpv] = U[:c, :].sum(axis=0)
+    iter_ = 1
     if verbose:
         logger.add_debug("MAT", MAT.toarray())
 
@@ -374,7 +379,12 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     # MAT_LU = factorized(MAT.tocsc())
 
     # solve
-    mat_factorized = factorized(MAT)
+    try:
+        mat_factorized = factorized(MAT)
+    except RuntimeError:
+        warn("Unable to factorize HELM coefficients matrix :/")
+        return U, X, Q, V, iter_, converged
+
     LHS = mat_factorized(RHS)
     # LHS = spsolve(MAT, RHS)
 
@@ -384,12 +394,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
-    iter_ = 1
-    c = 2
-    converged = False
-    V = np.empty(n, dtype=complex)
-    V[sl] = V0[sl]
-    V[pqpv] = U[:c, :].sum(axis=0)
+
     while c <= max_coeff and not converged:  # c defines the current depth
 
         valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
@@ -434,6 +439,7 @@ class HelmPreparation:
     """
     HelmPreparation
     """
+
     def __init__(self, sys_mat_factorization, Uini, Xini, Yslack, Vslack,
                  vec_P, vec_Q, Ysh, vec_W, pq, pv, pqpv, sl,
                  npqpv, nbus):

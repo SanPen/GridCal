@@ -416,14 +416,14 @@ def interior_point_solver(x0: Vec,
         ts_conds = timeit.default_timer()
         Hx_t = ret.Hx.T
         Gx_t = ret.Gx.T
-        g_norm = np.linalg.norm(ret.G, np.Inf)
-        lam_norm = np.linalg.norm(lam, np.Inf)
-        mu_norm = np.linalg.norm(mu, np.Inf)
-        z_norm = np.linalg.norm(z, np.Inf)
+        g_norm = np.linalg.norm(ret.G, np.inf)
+        lam_norm = np.linalg.norm(lam, np.inf)
+        mu_norm = np.linalg.norm(mu, np.inf)
+        z_norm = np.linalg.norm(z, np.inf)
 
         lx = ret.fx + Hx_t @ mu + Gx_t @ lam
-        feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.Inf), z_norm]))
-        gradcond = np.linalg.norm(lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
+        feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.inf), z_norm]))
+        gradcond = np.linalg.norm(lx, np.inf) / (1 + max([lam_norm, mu_norm]))
         error = np.max([feascond, gradcond, gamma])
         maxdispl = np.max(np.r_[dx, dlam, dz, dmu])
         z_inv = diags(1.0 / z)

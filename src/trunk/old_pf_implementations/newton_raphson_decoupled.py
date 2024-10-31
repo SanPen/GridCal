@@ -103,7 +103,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
 
     # check tolerance
     if use_norm_error:
-        norm_f = np.linalg.norm(f, np.Inf)
+        norm_f = np.linalg.norm(f, np.inf)
     else:
         norm_f = 0.5 * f.dot(f)
 
@@ -137,7 +137,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
         f_new = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
         if use_norm_error:
-            norm_f_new = np.linalg.norm(f_new, np.Inf)
+            norm_f_new = np.linalg.norm(f_new, np.inf)
         else:
             norm_f_new = 0.5 * f_new.dot(f_new)
 
@@ -164,7 +164,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
             f_new = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
             if use_norm_error:
-                norm_f_new = np.linalg.norm(f_new, np.Inf)
+                norm_f_new = np.linalg.norm(f_new, np.inf)
             else:
                 norm_f_new = 0.5 * f_new.dot(f_new)
 
@@ -182,7 +182,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
 
         # check for convergence
         if use_norm_error:
-            norm_f = np.linalg.norm(f_new, np.Inf)
+            norm_f = np.linalg.norm(f_new, np.inf)
         else:
             norm_f = 0.5 * f_new.dot(f_new)
 

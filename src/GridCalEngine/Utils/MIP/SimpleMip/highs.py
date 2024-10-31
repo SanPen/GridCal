@@ -41,7 +41,7 @@ def solve_with_highs(problem: LpModel, verbose: int = 0):
     h = highspy.highs.Highs()
 
     # declare the LP problem
-    lp = highspy.highs.HighsLp()
+    lp = highspy.HighsLp()
 
     # set the sense
     lp.sense_ = highspy.highs.ObjSense.kMinimize if problem.is_minimize() else highspy.highs.ObjSense.kMaximize
@@ -85,4 +85,4 @@ def solve_with_highs(problem: LpModel, verbose: int = 0):
                          row_values=solution.row_value,
                          row_duals=solution.row_dual,
                          f_obj=info.objective_function_value,
-                         is_optimal=model_status == highspy.highs.HighsModelStatus.kOptimal)
+                         is_optimal=model_status == highspy.HighsModelStatus.kOptimal)

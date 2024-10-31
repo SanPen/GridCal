@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from numpy import exp, r_, Inf
 from numpy.linalg import norm
 from scipy.sparse.linalg import splu
 import time
@@ -101,8 +100,8 @@ def FDPF(Vbus: CxVec,
     dQ = mis[blck3_idx].imag
 
     if n_block1 > 0:
-        normP = norm(dP, Inf)
-        normQ = norm(dQ, Inf)
+        normP = norm(dP, np.inf)
+        normQ = norm(dQ, np.inf)
         converged = normP < tol and normQ < tol
 
         # iterate
@@ -117,7 +116,7 @@ def FDPF(Vbus: CxVec,
 
             # update voltage
             Va[blck1_idx] -= dVa
-            voltage = Vm * exp(1j * Va)
+            voltage = Vm * np.exp(1j * Va)
 
             # evaluate mismatch
             # (Sbus does not change here since Vm is fixed ...)
@@ -125,8 +124,8 @@ def FDPF(Vbus: CxVec,
             mis = (Scalc - Sbus) / Vm  # complex power mismatch
             dP = mis[blck1_idx].real
             dQ = mis[blck3_idx].imag
-            normP = norm(dP, Inf)
-            normQ = norm(dQ, Inf)
+            normP = norm(dP, np.inf)
+            normQ = norm(dQ, np.inf)
 
             if normP < tol and normQ < tol:
                 converged = True
@@ -137,7 +136,7 @@ def FDPF(Vbus: CxVec,
 
                 # update voltage
                 Vm[blck2_idx] -= dVm
-                voltage = Vm * exp(1j * Va)
+                voltage = Vm * np.exp(1j * Va)
 
                 # evaluate mismatch
                 Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
@@ -145,8 +144,8 @@ def FDPF(Vbus: CxVec,
                 mis = (Scalc - Sbus) / Vm  # complex power mismatch
                 dP = mis[blck1_idx].real
                 dQ = mis[blck3_idx].imag
-                normP = norm(dP, Inf)
-                normQ = norm(dQ, Inf)
+                normP = norm(dP, np.inf)
+                normQ = norm(dQ, np.inf)
 
                 if normP < tol and normQ < tol:
                     converged = True
@@ -180,8 +179,8 @@ def FDPF(Vbus: CxVec,
                 if ok:
                     S0 += delta
 
-        F = r_[dP, dQ]  # concatenate again
-        normF = norm(F, Inf)
+        F = np.r_[dP, dQ]  # concatenate again
+        normF = norm(F, np.inf)
 
     else:
         converged = True
