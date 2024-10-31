@@ -114,6 +114,22 @@ class TapChanger:
             print(f"Max tap changer value exceeded {val} > {self._total_positions}")
 
     @property
+    def neutral_position(self) -> int:
+        """
+        Get the neutral position
+        :return: int
+        """
+        return self._neutral_position
+
+    @neutral_position.setter
+    def neutral_position(self, val: int):
+        """
+        Set the neutral position
+        :param val: neutral position value
+        """
+        self._neutral_position = int(val)
+
+    @property
     def tap_modules_array(self):
         """
         Get the tap modules array
