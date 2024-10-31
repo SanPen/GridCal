@@ -6,7 +6,7 @@ import datetime
 _current_year_ = datetime.datetime.now().year
 
 # do not forget to keep a three-number version!!!
-__GridCal_VERSION__ = "5.1.59"
+__GridCal_VERSION__ = "6.0.0"
 
 url = 'https://github.com/SanPen/GridCal'
 
@@ -19,14 +19,9 @@ Visit https://www.advancedgridinsights.com/gridcal for more details.\n"""
 
 about_msg += """
 This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+modify it subject to the terms of the Mozilla Public License, v. 2.0. 
+If a copy of the MPL was not distributed with this file, 
+You can obtain one at https://mozilla.org/MPL/2.0/.
 
 The source of GridCal can be found at:
 """ + url + "\n\n"
