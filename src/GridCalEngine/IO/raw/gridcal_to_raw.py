@@ -323,7 +323,8 @@ def get_vsc_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> Ra
     return psse_vsc_dc_line
 
 
-def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> RawTwoTerminalDCLine:
+def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine,
+                                  bus_dict: Dict[dev.Bus, int]) -> RawTwoTerminalDCLine:
     """
 
     :param hvdc_line:
@@ -333,11 +334,8 @@ def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bu
     psse_two_terminal_dc_line = RawTwoTerminalDCLine()
     psse_two_terminal_dc_line.NAME = hvdc_line.name
 
-    id_tag = hvdc_line.idtag[:-2] if hvdc_line.idtag.endswith("_1") else hvdc_line.idtag
-    ipr, ipi = id_tag.split("_", 2)
-
-    psse_two_terminal_dc_line.IPR = int(ipr)
-    psse_two_terminal_dc_line.IPI = int(ipi)
+    psse_two_terminal_dc_line.IPR = bus_dict[hvdc_line.bus_from]
+    psse_two_terminal_dc_line.IPI = bus_dict[hvdc_line.bus_to]
 
     psse_two_terminal_dc_line.RDC = hvdc_line.r
     psse_two_terminal_dc_line.ANMNR = np.rad2deg(hvdc_line.min_firing_angle_f)

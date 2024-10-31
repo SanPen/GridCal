@@ -388,6 +388,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
 
 def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
                        gc_model: MultiCircuit,
+                       skip_dc_import: bool,
                        buses_to_skip: List,
                        logger: DataLogger,
                        default_nominal_voltage=500.0) -> Dict[str, gcdev.Bus]:
@@ -397,6 +398,8 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
     :param cgmes_model: CgmesCircuit
     :param gc_model: gcdevCircuit
     :param buses_to_skip:
+    :param skip_dc_import: If simplified HVDC modelling applied, DC buses are not imported.
+    :param buses_to_skip: DCGround buses
     :param logger: DataLogger
     :param default_nominal_voltage: default nominal voltage for DC nodes since CGMES does not have any...
     :return:
@@ -427,7 +430,8 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
                 # Va0=va
             )
 
-            gc_model.add_bus(gcdev_elm)
+            if not skip_dc_import:
+                gc_model.add_bus(gcdev_elm)
 
             dc_bus_dict[gcdev_elm.idtag] = gcdev_elm
 
@@ -436,6 +440,7 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
 
 def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
                                     gc_model: MultiCircuit,
+                                    skip_dc_import: bool,
                                     dc_bus_dict: Dict[str, gcdev.Bus],
                                     logger: DataLogger) -> Dict[str, gcdev.ConnectivityNode]:
     """
@@ -443,6 +448,7 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
 
     :param cgmes_model: CgmesCircuit
     :param gc_model: gcdevCircuit
+    :param skip_dc_import:
     :param dc_bus_dict:
     :param logger: DataLogger
     :return:
@@ -478,7 +484,8 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
                 Vnom=vnom,
             )
 
-            gc_model.add_connectivity_node(gcdev_elm)
+            if not skip_dc_import:
+                gc_model.add_connectivity_node(gcdev_elm)
 
             dc_cn_node_dict[gcdev_elm.idtag] = gcdev_elm
 
@@ -655,6 +662,101 @@ def get_gcdev_vsc_converters(cgmes_model: CgmesCircuit,
     return
 
 
+def get_gcdev_hvdc_from_dcline_and_vscs(
+        cgmes_model: CgmesCircuit,
+        gcdev_model: MultiCircuit,
+        dc_bus_dict: Dict[str, gcdev.Bus],
+        dc_cn_dict: Dict[str, gcdev.ConnectivityNode],
+        dc_device_to_terminal_dict: Dict[str, List[Base]],
+        calc_node_dict: Dict[str, gcdev.Bus],
+        cn_dict: Dict[str, gcdev.ConnectivityNode],
+        device_to_terminal_dict: Dict[str, List[Base]],
+        logger: DataLogger
+    ) -> None:
+    """
+    Convert the CGMES VcConverter to gcdev simplified HVDC lines
+    (if required attributes for converting from VSC to VSC not given)
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    :param dc_bus_dict:
+    :param dc_cn_dict:
+    :param dc_device_to_terminal_dict:
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
+    :param device_to_terminal_dict: Dict[str, Terminal]
+    :param logger: DataLogger
+    :return: None
+    """
+
+    for dc_line_sgm in cgmes_model.cgmes_assets.DCLineSegment_list:
+        # or in more general it is DCLine_list
+
+        dc_buses, dc_cns = find_connections(cgmes_elm=dc_line_sgm,
+                                            device_to_terminal_dict=dc_device_to_terminal_dict,
+                                            calc_node_dict=dc_bus_dict,
+                                            cn_dict=dc_cn_dict,
+                                            logger=logger)
+
+        # get the cgmes terminal of this device
+        dc_terminals = dc_device_to_terminal_dict.get(dc_line_sgm.uuid, None)
+
+        # get the VSC-s connected to this dc_buses
+        device_list = [device
+                       for device, term in dc_device_to_terminal_dict.items()
+                       if term[0] in dc_terminals]
+
+        vsc_list = [vsc
+                    for vsc in cgmes_model.cgmes_assets.VsConverter_list
+                    if vsc.uuid in device_list]
+
+        # ONLY one line + two converters structure can be simplified
+        if len(vsc_list) != 2:
+            logger.add_info(msg='Not exactly two VSCs for DCLine(Segment)! cannot be simplified',
+                            device=dc_line_sgm.rdfid,
+                            device_class=dc_line_sgm.tpe,
+                            device_property="number of connected VSConverters",
+                            value=len(vsc_list),
+                            expected_value=2,
+                            comment="get_gcdev_hvdc_from_dcline_and_vscs")
+
+        else:
+            # bus_from: AC side of VSC 1
+            bus_from, cn_from = find_connections(cgmes_elm=vsc_list[0],
+                                                 device_to_terminal_dict=device_to_terminal_dict,
+                                                 calc_node_dict=calc_node_dict,
+                                                 cn_dict=cn_dict,
+                                                 logger=logger)
+
+            # bus_to: AC side of VSC 2
+            bus_to, cn_to = find_connections(cgmes_elm=vsc_list[1],
+                                             device_to_terminal_dict=device_to_terminal_dict,
+                                             calc_node_dict=calc_node_dict,
+                                             cn_dict=cn_dict,
+                                             logger=logger)
+
+            gcdev_elm = gcdev.HvdcLine(
+                bus_from=bus_from[0],
+                bus_to=bus_to[0],
+                cn_from=cn_from[0],
+                cn_to=cn_to[0],
+                name=dc_line_sgm.name,
+                idtag=dc_line_sgm.uuid,
+                code=dc_line_sgm.description,
+                active=True,
+                Pset=abs(vsc_list[0].p),   # power of the VS converter
+                # rate=rate,
+                # rate of DCLine? or ratedP of Converter?
+                # no Limit for DC terminal in XML
+                Vset_f=1.0,             # if not found, 1.0 p.u.
+                Vset_t=1.0,
+            )
+
+            gcdev_model.add_hvdc(gcdev_elm)
+
+    return
+
+
 def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
                                  calc_node_dict: Dict[str, gcdev.Bus],
@@ -745,10 +847,15 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                 if cgmes_elm.LoadResponse is not None:
 
                     if cgmes_elm.LoadResponse.exponentModel:
-                        # print(f'Exponent model True at {cgmes_elm.name}')
-                        pass  # TODO convert exponent to ZIP
+                        logger.add_error(
+                            msg=f'Exponent model True at {cgmes_elm.name}',
+                            device=cgmes_elm.rdfid,
+                            device_class=cgmes_elm.tpe,
+                            device_property="LoadResponse",
+                            value=cgmes_elm.LoadResponse.exponentModel,
+                            comment="get_gcdev_loads()")
+                        # TODO convert exponent to ZIP
                     else:  # ZIP model
-                        # TODO check all attributes
                         # :param P: Active power in MW
                         p = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantPower
                         # :param Q: Reactive power in MVAr
@@ -1272,7 +1379,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                         if i != j_min:
                             logger.add_error(
                                 msg='The winding is not in the right order with respect to the transformer TopologicalNodes',
-                                device=windings[j_min].uuid, device_class=windings[j_min].tpe)
+                                device=windings[j_min].uuid, device_class=windings[j_min].tpe
+                            )
 
                     windings = windings2
 
@@ -1400,7 +1508,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 if getattr(tap_changer, 'TapChangerControl', None):
                     if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
                             and tap_changer.TapChangerControl.enabled):
-                        tap_phase_control_mode = TapPhaseControl.Pf  # TODO Pf ot Pt
+                        tap_phase_control_mode = TapPhaseControl.Pf  # from bus
                 else:
                     logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerSymmetrical",
                                        device=tap_changer.rdfid,
@@ -1420,7 +1528,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 if getattr(tap_changer, 'TapChangerControl', None):
                     if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
                             and tap_changer.TapChangerControl.enabled):
-                        tap_phase_control_mode = TapPhaseControl.Pf  # TODO Pf ot Pt
+                        tap_phase_control_mode = TapPhaseControl.Pf  # from bus
                 else:
                     logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerAsymmetrical",
                                        device=tap_changer.rdfid,
@@ -1463,7 +1571,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 )
 
                 # SET tap_module and tap_phase from its own TapChanger object
-                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()  # TODO: mind the zero indexing!
+                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
                 gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
@@ -1653,7 +1761,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
 
                 if (cgmes_elm.ratedCurrent is not None
                         and cgmes_elm.ratedCurrent != 0.0
-                        and cgmes_elm.BaseVoltage is not None):  # TODO
+                        and cgmes_elm.BaseVoltage is not None):
                     rated_current = np.round(
                         (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
                         4)
@@ -2044,6 +2152,9 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     cgmes_model.emit_text("Converting CGMES to Gridcal - HVDC")
 
     # DC elements  ---------------------------------------------------------
+
+    treat_dc_equipment_as_hvdc_lines = True
+
     dc_device_to_terminal_dict, ground_buses, ground_nodes = get_gcdev_dc_device_to_terminal_dict(
         cgmes_model=cgmes_model,
         logger=logger
@@ -2052,6 +2163,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     dc_bus_dict = get_gcdev_dc_buses(
         cgmes_model=cgmes_model,
         gc_model=gc_model,
+        skip_dc_import=treat_dc_equipment_as_hvdc_lines,
         buses_to_skip=ground_buses,
         logger=logger
     )
@@ -2059,30 +2171,51 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     dc_cn_dict = get_gcdev_dc_connectivity_nodes(
         cgmes_model=cgmes_model,
         gc_model=gc_model,
+        skip_dc_import=treat_dc_equipment_as_hvdc_lines,
         dc_bus_dict=dc_bus_dict,
         logger=logger
     )
 
-    get_gcdev_dc_lines(
-        cgmes_model=cgmes_model,
-        gcdev_model=gc_model,
-        calc_node_dict=dc_bus_dict,
-        cn_dict=dc_cn_dict,
-        device_to_terminal_dict=dc_device_to_terminal_dict,
-        logger=logger,
-    )
+    if treat_dc_equipment_as_hvdc_lines:
 
-    get_gcdev_vsc_converters(
-        cgmes_model=cgmes_model,
-        gcdev_model=gc_model,
-        dc_bus_dict=dc_bus_dict,
-        dc_cn_dict=dc_cn_dict,
-        dc_device_to_terminal_dict=dc_device_to_terminal_dict,
-        calc_node_dict=calc_node_dict,
-        cn_dict=cn_dict,
-        device_to_terminal_dict=device_to_terminal_dict,
-        logger=logger,
-    )
+        logger.add_info(
+            msg="Simplified HVDC modelling",
+            comment="DC buses are not imported!")
+
+        get_gcdev_hvdc_from_dcline_and_vscs(
+            cgmes_model=cgmes_model,
+            gcdev_model=gc_model,
+            dc_bus_dict=dc_bus_dict,
+            dc_cn_dict=dc_cn_dict,
+            dc_device_to_terminal_dict=dc_device_to_terminal_dict,
+            calc_node_dict=calc_node_dict,
+            cn_dict=cn_dict,
+            device_to_terminal_dict=device_to_terminal_dict,
+            logger=logger,
+        )
+
+    else:
+
+        get_gcdev_dc_lines(
+            cgmes_model=cgmes_model,
+            gcdev_model=gc_model,
+            calc_node_dict=dc_bus_dict,
+            cn_dict=dc_cn_dict,
+            device_to_terminal_dict=dc_device_to_terminal_dict,
+            logger=logger,
+        )
+
+        get_gcdev_vsc_converters(
+            cgmes_model=cgmes_model,
+            gcdev_model=gc_model,
+            dc_bus_dict=dc_bus_dict,
+            dc_cn_dict=dc_cn_dict,
+            dc_device_to_terminal_dict=dc_device_to_terminal_dict,
+            calc_node_dict=calc_node_dict,
+            cn_dict=cn_dict,
+            device_to_terminal_dict=device_to_terminal_dict,
+            logger=logger,
+        )
 
     cgmes_model.emit_progress(100)
     cgmes_model.emit_text("Cgmes import done!")

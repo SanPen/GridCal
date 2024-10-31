@@ -35,7 +35,8 @@ def test_iee14_cgmes() -> None:
     gce.save_cgmes_file(grid=grid1,
                         filename=output_cgmes_path,
                         cgmes_boundary_set_path=bd_set,
-                        cgmes_version=gce.CGMESVersions.v3_0_0,
+                        cgmes_version=gce.CGMESVersions.v2_4_15,
+                        # cgmes_version=gce.CGMESVersions.v3_0_0,
                         pf_results=pf_res1)
 
     # load again from CGMES into a new grid object

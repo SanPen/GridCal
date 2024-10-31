@@ -86,7 +86,8 @@ def test_raw_roundtrip():
     """
     script_path = os.path.abspath(__file__)
     # test_grid_name = 'IEEE 14 bus.raw'
-    test_grid_name = 'IEEE 30 bus.raw'
+    # test_grid_name = 'IEEE 30 bus.raw'
+    test_grid_name = 'IEEE 14 bus_35_3_WINDING_POST_EDITING_IEEE_HVDC_final_nudox_1_hvdc_desf_rates_fs_ss.raw'
     raw_path, export_name = get_path(script_path, test_grid_name)
     run_import_export_test(import_path=raw_path, export_fname=export_name)
 
