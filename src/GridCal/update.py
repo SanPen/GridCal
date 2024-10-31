@@ -16,7 +16,9 @@ def find_latest_version(name: str = 'GridCal') -> str:
     :param name: name of the Package
     :return: version string
     """
-    latest_version = str(subprocess.run([sys.executable, '-m', 'pip', 'install', '{}==random'.format(name)],
+    latest_version = str(subprocess.run([sys.executable, '-m', 'pip',
+                                         'install', f'{name}==random',
+                                         '--break-system-packages'],
                                         capture_output=True, text=True))
     latest_version = latest_version[latest_version.find('(from versions:') + 15:]
     latest_version = latest_version[:latest_version.find(')')]
