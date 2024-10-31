@@ -1,16 +1,16 @@
 GridCalEngine.Simulations.InvestmentsEvaluation package
 =======================================================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   GridCalEngine.Simulations.InvestmentsEvaluation.Methods
+
 Submodules
 ----------
-
-GridCalEngine.Simulations.InvestmentsEvaluation.MVRSM module
-------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.MVRSM
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 GridCalEngine.Simulations.InvestmentsEvaluation.investments\_evaluation\_driver module
 --------------------------------------------------------------------------------------
@@ -32,14 +32,6 @@ GridCalEngine.Simulations.InvestmentsEvaluation.investments\_evaluation\_results
 ---------------------------------------------------------------------------------------
 
 .. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.Simulations.InvestmentsEvaluation.stop\_crits module
-------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.InvestmentsEvaluation.stop_crits
    :members:
    :undoc-members:
    :show-inheritance:

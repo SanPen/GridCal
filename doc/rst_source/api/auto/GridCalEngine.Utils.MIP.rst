@@ -1,6 +1,14 @@
 GridCalEngine.Utils.MIP package
 ===============================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   GridCalEngine.Utils.MIP.SimpleMip
+
 Submodules
 ----------
 

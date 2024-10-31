@@ -20,6 +20,14 @@ GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf\_autodif module
    :undoc-members:
    :show-inheritance:
 
+GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf\_derivatives module
+--------------------------------------------------------------------------
+
+.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

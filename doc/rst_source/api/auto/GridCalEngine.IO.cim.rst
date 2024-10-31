@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.IO.cim.cgmes_2_4_15
+   GridCalEngine.IO.cim.cgmes
    GridCalEngine.IO.cim.cim16
    GridCalEngine.IO.cim.db
 

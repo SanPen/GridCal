@@ -56,7 +56,8 @@ class ImmutableMeta(ABCMeta):
 
     def __setattr__(cls, key: str, value: Any) -> None:
         if key not in ("_abc_impl", "__abstractmethods__"):
-            raise NPTypingError(f"Cannot set values to nptyping.{cls.__name__}.")
+            print(f"Cannot set values to nptyping.{cls.__name__}.")
+            # raise NPTypingError(f"Cannot set values to nptyping.{cls.__name__}.")
 
 
 class FinalMeta(ABCMeta):

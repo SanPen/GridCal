@@ -4,34 +4,10 @@ GridCalEngine.Simulations.PowerFlow.NumericalMethods package
 Submodules
 ----------
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac\_jacobian module
-------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc\_jacobian module
---------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 GridCalEngine.Simulations.PowerFlow.NumericalMethods.common\_functions module
 -----------------------------------------------------------------------------
 
 .. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives module
------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives
    :members:
    :undoc-members:
    :show-inheritance:
@@ -76,18 +52,10 @@ GridCalEngine.Simulations.PowerFlow.NumericalMethods.iwamoto\_newton\_raphson mo
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg\_marquardt module
---------------------------------------------------------------------------------
+GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg\_marquadt\_fx module
+-----------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquardt
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg\_marquardt\_acdc module
---------------------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquardt_acdc
+.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx
    :members:
    :undoc-members:
    :show-inheritance:
@@ -100,42 +68,42 @@ GridCalEngine.Simulations.PowerFlow.NumericalMethods.linearized\_power\_flow mod
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton\_raphson module
----------------------------------------------------------------------------
+GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton\_raphson\_fx module
+-------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson
+.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx
    :members:
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton\_raphson\_acdc module
----------------------------------------------------------------------------------
+GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf\_advanced\_formulation module
+-------------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_acdc
+.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation
    :members:
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton\_raphson\_current module
-------------------------------------------------------------------------------------
+GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf\_basic\_formulation module
+----------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_current
+.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_basic_formulation
    :members:
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton\_raphson\_decoupled module
---------------------------------------------------------------------------------------
+GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf\_formulation\_template module
+-------------------------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_decoupled
+.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template
    :members:
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton\_raphson\_ode module
---------------------------------------------------------------------------------
+GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell\_fx module
+----------------------------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_ode
+.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx
    :members:
    :undoc-members:
    :show-inheritance:

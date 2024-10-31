@@ -7,9 +7,12 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GridCalEngine.Core
+   GridCalEngine.Compilers
+   GridCalEngine.DataStructures
+   GridCalEngine.Devices
    GridCalEngine.IO
    GridCalEngine.Simulations
+   GridCalEngine.Topology
    GridCalEngine.Utils
 
 Submodules
@@ -43,14 +46,6 @@ GridCalEngine.enumerations module
 ---------------------------------
 
 .. automodule:: GridCalEngine.enumerations
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.grid\_analysis module
------------------------------------
-
-.. automodule:: GridCalEngine.grid_analysis
    :members:
    :undoc-members:
    :show-inheritance:

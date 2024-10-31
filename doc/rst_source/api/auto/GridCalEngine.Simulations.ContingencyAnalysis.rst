@@ -1,6 +1,14 @@
 GridCalEngine.Simulations.ContingencyAnalysis package
 =====================================================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   GridCalEngine.Simulations.ContingencyAnalysis.Methods
+
 Submodules
 ----------
 
@@ -56,14 +64,6 @@ GridCalEngine.Simulations.ContingencyAnalysis.contingency\_plan module
 ----------------------------------------------------------------------
 
 .. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.Simulations.ContingencyAnalysis.helm\_contingencies module
-------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.ContingencyAnalysis.helm_contingencies
    :members:
    :undoc-members:
    :show-inheritance:

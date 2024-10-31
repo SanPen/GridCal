@@ -28,6 +28,14 @@ GridCalEngine.Simulations.Stochastic.reliability\_driver module
    :undoc-members:
    :show-inheritance:
 
+GridCalEngine.Simulations.Stochastic.reliability\_iterable module
+-----------------------------------------------------------------
+
+.. automodule:: GridCalEngine.Simulations.Stochastic.reliability_iterable
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.Simulations.Stochastic.stochastic\_power\_flow\_driver module
 ---------------------------------------------------------------------------
 

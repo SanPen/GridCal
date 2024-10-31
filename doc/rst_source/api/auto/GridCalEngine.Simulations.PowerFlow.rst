@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+GridCalEngine.Simulations.PowerFlow.grid\_analysis module
+---------------------------------------------------------
+
+.. automodule:: GridCalEngine.Simulations.PowerFlow.grid_analysis
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.Simulations.PowerFlow.power\_flow\_driver module
 --------------------------------------------------------------
 

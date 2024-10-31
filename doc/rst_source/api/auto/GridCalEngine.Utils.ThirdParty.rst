@@ -8,6 +8,8 @@ Subpackages
    :maxdepth: 4
 
    GridCalEngine.Utils.ThirdParty.SyntheticNetworks
+   GridCalEngine.Utils.ThirdParty.nptyping
+   GridCalEngine.Utils.ThirdParty.pulp
 
 Module contents
 ---------------

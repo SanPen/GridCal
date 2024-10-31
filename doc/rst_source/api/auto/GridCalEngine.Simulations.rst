@@ -11,11 +11,13 @@ Subpackages
    GridCalEngine.Simulations.Clustering
    GridCalEngine.Simulations.ContingencyAnalysis
    GridCalEngine.Simulations.ContinuationPowerFlow
+   GridCalEngine.Simulations.Derivatives
    GridCalEngine.Simulations.Dynamics
    GridCalEngine.Simulations.InputsAnalysis
    GridCalEngine.Simulations.InvestmentsEvaluation
    GridCalEngine.Simulations.LinearFactors
    GridCalEngine.Simulations.NTC
+   GridCalEngine.Simulations.NodalCapacity
    GridCalEngine.Simulations.OPF
    GridCalEngine.Simulations.PowerFlow
    GridCalEngine.Simulations.ShortCircuitStudies
@@ -43,10 +45,10 @@ GridCalEngine.Simulations.driver\_types module
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.result\_types module
-----------------------------------------------
+GridCalEngine.Simulations.options\_template module
+--------------------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.result_types
+.. automodule:: GridCalEngine.Simulations.options_template
    :members:
    :undoc-members:
    :show-inheritance:
@@ -67,10 +69,10 @@ GridCalEngine.Simulations.results\_template module
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.sparse\_solve module
-----------------------------------------------
+GridCalEngine.Simulations.types module
+--------------------------------------
 
-.. automodule:: GridCalEngine.Simulations.sparse_solve
+.. automodule:: GridCalEngine.Simulations.types
    :members:
    :undoc-members:
    :show-inheritance:

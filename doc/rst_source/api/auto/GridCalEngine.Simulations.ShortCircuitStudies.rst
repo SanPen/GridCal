@@ -20,6 +20,14 @@ GridCalEngine.Simulations.ShortCircuitStudies.short\_circuit\_driver module
    :undoc-members:
    :show-inheritance:
 
+GridCalEngine.Simulations.ShortCircuitStudies.short\_circuit\_options module
+----------------------------------------------------------------------------
+
+.. automodule:: GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_options
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.Simulations.ShortCircuitStudies.short\_circuit\_results module
 ----------------------------------------------------------------------------
 

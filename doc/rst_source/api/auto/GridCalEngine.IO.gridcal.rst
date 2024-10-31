@@ -4,6 +4,14 @@ GridCalEngine.IO.gridcal package
 Submodules
 ----------
 
+GridCalEngine.IO.gridcal.catalogue module
+-----------------------------------------
+
+.. automodule:: GridCalEngine.IO.gridcal.catalogue
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.IO.gridcal.contingency\_parser module
 ---------------------------------------------------
 
@@ -48,6 +56,22 @@ GridCalEngine.IO.gridcal.pack\_unpack module
 --------------------------------------------
 
 .. automodule:: GridCalEngine.IO.gridcal.pack_unpack
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+GridCalEngine.IO.gridcal.remote module
+--------------------------------------
+
+.. automodule:: GridCalEngine.IO.gridcal.remote
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+GridCalEngine.IO.gridcal.results\_export module
+-----------------------------------------------
+
+.. automodule:: GridCalEngine.IO.gridcal.results_export
    :members:
    :undoc-members:
    :show-inheritance:
