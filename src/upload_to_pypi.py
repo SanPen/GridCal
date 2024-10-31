@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 """
 
 #!/usr/bin/env bash
@@ -87,7 +91,7 @@ if __name__ == "__main__":
         _home_page = 'https://github.com/SanPen/GridCal'
 
         _classifiers_list = [
-            'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+            'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
             'Programming Language :: Python :: 3.10',
         ]
 
@@ -95,7 +99,7 @@ if __name__ == "__main__":
 
         _provides_extra = 'gch5'
 
-        _license_ = 'LGPL'
+        _license_ = 'MPL2'
 
         publish(pkg_name='GridCalEngine',
                 setup_path=os.path.join('GridCalEngine', 'setup.py'),

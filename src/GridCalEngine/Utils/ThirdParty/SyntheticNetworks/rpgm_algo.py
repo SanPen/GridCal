@@ -16,7 +16,10 @@ import itertools
 from scipy.sparse import dok_matrix
 
 
-class RpgAlgorithm(object):
+class RpgAlgorithm:
+    """
+    RpgAlgorithm
+    """
     def __init__(self):
 
         # parameters for the algorithm

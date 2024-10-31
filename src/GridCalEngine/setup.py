@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 """
 A setuptools based setup module.
 See:
@@ -88,7 +92,7 @@ extras_require = {
 setup(
     name='GridCalEngine',  # Required
     version=__GridCalEngine_VERSION__,  # Required
-    license='LGPL',
+    license='MPL2',
     description=description,  # Optional
     long_description=long_description,  # Optional
     long_description_content_type='text/markdown',  # Optional (see note above)
@@ -96,7 +100,7 @@ setup(
     author='Santiago Peñate Vera et. Al.',  # Optional
     author_email='santiago@gridcal.org',  # Optional
     classifiers=[
-        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+        'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 3.8',
     ],
     keywords='power systems planning',  # Optional
