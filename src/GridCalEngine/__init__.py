@@ -14,6 +14,8 @@ try:
     from GridCalEngine.enumerations import *
 except ModuleNotFoundError as e:
     print("Modules not found :/", e)
+except NameError as e:
+    print("Name not found :/", e)
 
 
 def open_file(filename: Union[str, List[str]]) -> MultiCircuit:

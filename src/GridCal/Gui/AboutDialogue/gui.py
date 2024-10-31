@@ -65,17 +65,19 @@ class Ui_AboutDialog(object):
 
         self.versionLabel = QLabel(self.tab)
         self.versionLabel.setObjectName(u"versionLabel")
+        self.versionLabel.setWordWrap(True)
         self.versionLabel.setOpenExternalLinks(True)
         self.versionLabel.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
 
-        self.gridLayout.addWidget(self.versionLabel, 3, 1, 1, 1)
+        self.gridLayout.addWidget(self.versionLabel, 3, 1, 1, 2)
 
         self.copyrightLabel = QLabel(self.tab)
         self.copyrightLabel.setObjectName(u"copyrightLabel")
+        self.copyrightLabel.setWordWrap(True)
         self.copyrightLabel.setOpenExternalLinks(True)
         self.copyrightLabel.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
 
-        self.gridLayout.addWidget(self.copyrightLabel, 4, 1, 1, 1)
+        self.gridLayout.addWidget(self.copyrightLabel, 4, 1, 1, 2)
 
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
@@ -85,6 +87,7 @@ class Ui_AboutDialog(object):
         self.contributorsLabel = QLabel(self.tab_2)
         self.contributorsLabel.setObjectName(u"contributorsLabel")
         self.contributorsLabel.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.contributorsLabel.setWordWrap(True)
 
         self.verticalLayout.addWidget(self.contributorsLabel)
 
