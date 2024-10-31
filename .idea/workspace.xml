@@ -28,7 +28,38 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed issue when installing in readthedocs" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added missing API modules">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Compilers.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.DataStructures.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Aggregation.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Associations.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Branches.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Diagrams.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Fluid.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Injections.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Parents.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.Substation.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Devices.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.cgmes_assets.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.ContingencyAnalysis.Methods.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.Derivatives.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.InvestmentsEvaluation.Methods.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.NodalCapacity.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Topology.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.Filtering.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.NumericalMethods.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.ThirdParty.nptyping.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.ThirdParty.pulp.apis.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.ThirdParty.pulp.model.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.ThirdParty.pulp.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/license.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/license.rst" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -154,6 +185,7 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
+    "Python.auto_document_models.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.download_stats.executor": "Run",
     "Python.file opening.executor": "Run",
@@ -211,7 +243,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.upload_to_pypi">
+  <component name="RunManager" selected="Python.auto_document_models">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -478,6 +510,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="auto_document_models" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/auto_document_models.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="download_stats" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -516,29 +571,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue/update_gui_file.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -684,7 +716,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.upload_to_pypi" />
+      <item itemvalue="Python.auto_document_models" />
       <item itemvalue="Python.download_stats" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
@@ -692,7 +724,7 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.upload_to_pypi" />
+        <item itemvalue="Python.auto_document_models" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
@@ -1766,7 +1798,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="588" />
+    <option name="localTasksCounter" value="589" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1800,7 +1832,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Seem to have fixed the line location retrieval problem" />
     <MESSAGE value="More refactoring" />
     <MESSAGE value="Reimplemented the line search in NR_FX" />
     <MESSAGE value="Added dc_link_voltage to HvdcLine" />
@@ -1825,7 +1856,8 @@
     <MESSAGE value="Improved the about dialogue" />
     <MESSAGE value="adjustments trying to fix read the docs" />
     <MESSAGE value="fixed issue when installing in readthedocs" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed issue when installing in readthedocs" />
+    <MESSAGE value="Added missing API modules" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added missing API modules" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2352,7 +2384,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ConsoleLogController.coverage" NAME="ConsoleLogController Coverage Results" MODIFIED="1663862178388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$main.coverage" NAME="main Coverage Results" MODIFIED="1629915665021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PCA/josep_v2" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ac_opf_test_pegase89.coverage" NAME="Nosetests for test_ac_opf.test_pegase89 Coverage Results" MODIFIED="1708448560192" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$auto_document_models.coverage" NAME="auto_document_models Coverage Results" MODIFIED="1711096173322" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/doc" />
+    <SUITE FILE_PATH="coverage/GridCal$auto_document_models.coverage" NAME="auto_document_models Coverage Results" MODIFIED="1730400003019" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/doc" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power_3.coverage" NAME="branch_power_3 Coverage Results" MODIFIED="1659198918844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_short_circuit_test_short_circuit.coverage" NAME="Nosetests for tests.test_short_circuit.test_short_circuit Coverage Results" MODIFIED="1660897112809" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$generate_profile_gatters_and_setters.coverage" NAME="generate_profile_gatters_and_setters Coverage Results" MODIFIED="1707253320241" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/code_generation" />
