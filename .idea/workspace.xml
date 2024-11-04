@@ -29,14 +29,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_create_instances.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/branch_group.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/branch_group.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/voltage_level.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Substation/voltage_level.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_poperty.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_property.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_create_instances.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_create_instances.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1338,7 +1333,7 @@
       <workItem from="1729156293046" duration="21649000" />
       <workItem from="1729246428158" duration="1274000" />
       <workItem from="1729490475835" duration="30233000" />
-      <workItem from="1730206552789" duration="60121000" />
+      <workItem from="1730206552789" duration="62214000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1683,7 +1678,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="553" />
+    <option name="localTasksCounter" value="554" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1717,7 +1712,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="build rates dict when cgmes transformer import" />
     <MESSAGE value="lrc Ii, Ir: round" />
     <MESSAGE value="add current limit for transformer terminals when cgmes export" />
     <MESSAGE value="sqrt3 corr at rate conv" />
@@ -1742,7 +1736,8 @@
     <MESSAGE value="fixing and cleaning some TODOS" />
     <MESSAGE value="function part for getting simpl hvdc from CGMES" />
     <MESSAGE value="simpl hvdc from CGMES" />
-    <option name="LAST_COMMIT_MESSAGE" value="simpl hvdc from CGMES" />
+    <MESSAGE value="rename cgmes property py and import DCLine as BranchGroup" />
+    <option name="LAST_COMMIT_MESSAGE" value="rename cgmes property py and import DCLine as BranchGroup" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2104,12 +2099,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/setup.py</url>
-          <line>8</line>
+          <line>12</line>
           <option name="timeStamp" value="1353" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/templates.py</url>
-          <line>48</line>
+          <line>37</line>
           <option name="timeStamp" value="1388" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2124,17 +2119,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1265</line>
+          <line>1254</line>
           <option name="timeStamp" value="1395" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1260</line>
+          <line>1249</line>
           <option name="timeStamp" value="1396" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Utils/NumericalMethods/newton_raphson.py</url>
-          <line>119</line>
+          <line>107</line>
           <option name="timeStamp" value="1399" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2159,22 +2154,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>649</line>
+          <line>637</line>
           <option name="timeStamp" value="1476" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>697</line>
+          <line>685</line>
           <option name="timeStamp" value="1478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>562</line>
+          <line>567</line>
           <option name="timeStamp" value="1496" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1835</line>
+          <line>1305</line>
           <option name="timeStamp" value="1504" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2184,72 +2179,72 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>136</line>
+          <line>141</line>
           <option name="timeStamp" value="1560" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_raw_cgmes_cross_roundtrip.py</url>
-          <line>106</line>
+          <line>110</line>
           <option name="timeStamp" value="1572" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_cgmes_roundtrip.py</url>
-          <line>72</line>
+          <line>77</line>
           <option name="timeStamp" value="1576" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_cgmes_roundtrip.py</url>
-          <line>111</line>
+          <line>116</line>
           <option name="timeStamp" value="1581" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1784</line>
+          <line>1254</line>
           <option name="timeStamp" value="1602" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1910</line>
+          <line>1382</line>
           <option name="timeStamp" value="1603" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>276</line>
+          <line>268</line>
           <option name="timeStamp" value="1617" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cim16/cim_parser.py</url>
-          <line>771</line>
+          <line>759</line>
           <option name="timeStamp" value="1625" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>1413</line>
+          <line>1409</line>
           <option name="timeStamp" value="1640" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>1407</line>
+          <line>1401</line>
           <option name="timeStamp" value="1641" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>1314</line>
+          <line>1308</line>
           <option name="timeStamp" value="1644" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>597</line>
+          <line>591</line>
           <option name="timeStamp" value="1645" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_cgmes_ieeee.py</url>
-          <line>167</line>
+          <line>155</line>
           <option name="timeStamp" value="1650" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1317</line>
+          <line>786</line>
           <option name="timeStamp" value="1651" />
         </line-breakpoint>
       </breakpoints>
