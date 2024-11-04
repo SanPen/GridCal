@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import numpy as np
 from typing import Dict, List, Tuple, Union
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
@@ -42,6 +30,10 @@ class CnLookup:
     """
 
     def __init__(self, cgmes_model: CgmesCircuit):
+        """
+
+        :param cgmes_model:
+        """
         self.cn_dict: Dict[str, gcdev.ConnectivityNode] = dict()
         self.bus_dict: Dict[str, gcdev.Bus] = dict()
 
@@ -398,15 +390,18 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
                        gc_model: MultiCircuit,
                        skip_dc_import: bool,
                        buses_to_skip: List,
-                       logger: DataLogger) -> Dict[str, gcdev.Bus]:
+                       logger: DataLogger,
+                       default_nominal_voltage=500.0) -> Dict[str, gcdev.Bus]:
     """
     Convert the DCTopologicalNodes to DC Buses (CalculationNodes)
 
     :param cgmes_model: CgmesCircuit
     :param gc_model: gcdevCircuit
+    :param buses_to_skip:
     :param skip_dc_import: If simplified HVDC modelling applied, DC buses are not imported.
     :param buses_to_skip: DCGround buses
     :param logger: DataLogger
+    :param default_nominal_voltage: default nominal voltage for DC nodes since CGMES does not have any...
     :return:
     """
 
@@ -416,13 +411,11 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
     for cgmes_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
 
         if cgmes_elm not in buses_to_skip:
-            nominal_voltage = 500.0  # TODO get DC nominal Voltage
-
             gcdev_elm = gcdev.Bus(
                 name=cgmes_elm.name,
                 idtag=cgmes_elm.uuid,
                 code=cgmes_elm.description,
-                Vnom=nominal_voltage,
+                Vnom=default_nominal_voltage,
                 active=True,
                 is_slack=False,
                 is_dc=True,
@@ -455,6 +448,7 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
 
     :param cgmes_model: CgmesCircuit
     :param gc_model: gcdevCircuit
+    :param skip_dc_import:
     :param dc_bus_dict:
     :param logger: DataLogger
     :return:
@@ -465,19 +459,20 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
     for cgmes_elm in cgmes_model.cgmes_assets.DCNode_list:
 
         bus = dc_bus_dict.get(cgmes_elm.DCTopologicalNode.uuid, None)
-        vnom = 10
+
         if bus is None:
             logger.add_warning(msg='No DC Bus found for DC Node.',
                                device=cgmes_elm.rdfid,
                                device_class=cgmes_elm.tpe,
                                comment="Maybe it belongs to a DCGround, that is not imported.")
-            default_bus = None
+
         else:
             if bus not in used_buses:
                 default_bus = bus
                 used_buses.add(bus)
             else:
                 default_bus = None
+
             vnom = bus.Vnom
 
             gcdev_elm = gcdev.ConnectivityNode(
@@ -487,7 +482,6 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
                 dc=True,
                 default_bus=default_bus,  # this is only set by the BusBar's
                 Vnom=vnom,
-                # voltage_level=vl
             )
 
             if not skip_dc_import:
@@ -1383,8 +1377,10 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                         windings2[i] = windings[j_min]
 
                         if i != j_min:
-                            logger.add_error(msg='The winding is not in the right order with respect to the transformer TopologicalNodes',
-                                             device=windings[j_min].uuid, device_class=windings[j_min].tpe)
+                            logger.add_error(
+                                msg='The winding is not in the right order with respect to the transformer TopologicalNodes',
+                                device=windings[j_min].uuid, device_class=windings[j_min].tpe
+                            )
 
                     windings = windings2
 
@@ -1411,7 +1407,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     x12=x12, x23=x23, x31=x31,
                                                     rate12=windings[0].ratedS,
                                                     rate23=windings[1].ratedS,
-                                                    rate31=windings[2].ratedS,)
+                                                    rate31=windings[2].ratedS, )
 
                     r1, x1, g1, b1, r01, x01, g01, b01 = get_pu_values_power_transformer_end(windings[0], Sbase)
                     gcdev_elm.winding1.R = r1
@@ -1687,6 +1683,7 @@ def get_gcdev_controllable_shunts(
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param Sbase: base power (100 MVA)
     :param logger:
     """
     # comes later
@@ -1728,8 +1725,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     for e in cgmes_model.cgmes_assets.CurrentLimit_list:
         if not isinstance(e.OperationalLimitSet, str):
             conducting_equipment = e.OperationalLimitSet.Terminal.ConductingEquipment
-            if isinstance(conducting_equipment,
-                          (sw_type, br_type, ds_type, lbs_type)):
+            if isinstance(conducting_equipment, (sw_type, br_type, ds_type, lbs_type)):
                 branch_id = conducting_equipment.uuid
                 rates_dict[branch_id] = e.value
 
@@ -1882,6 +1878,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
                 object_list=gcdev_model.substations,
                 target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
             )
+
             if subs:
                 gcdev_elm.substation = subs
 
@@ -1929,6 +1926,7 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
 
                 vl_type = cgmes_model.get_class_type("VoltageLevel")
                 container = cgmes_elm.EquipmentContainer
+
                 if isinstance(container, vl_type):
                     vl = container
                 else:
@@ -2016,10 +2014,12 @@ def get_gcdev_community(cgmes_model: CgmesCircuit,
                     object_list=gcdev_model.areas,
                     target_idtag=cgmes_elm.Region.uuid
                 )
+
                 if a is not None:
                     gcdev_elm.area = a
 
                 gcdev_model.add_zone(gcdev_elm)
+
             else:
                 gcdev_elm = gcdev.Community(
                     name=cgmes_elm.name,
@@ -2033,6 +2033,7 @@ def get_gcdev_community(cgmes_model: CgmesCircuit,
                     object_list=gcdev_model.countries,
                     target_idtag=cgmes_elm.Region.uuid
                 )
+
                 if c is not None:
                     gcdev_elm.country = c
 
@@ -2148,7 +2149,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                        Sbase=Sbase)
 
     cgmes_model.emit_progress(91)
-    cgmes_model.emit_text("Converting CGMES to Gridcal - HVDC!")
+    cgmes_model.emit_text("Converting CGMES to Gridcal - HVDC")
+
     # DC elements  ---------------------------------------------------------
 
     treat_dc_equipment_as_hvdc_lines = True

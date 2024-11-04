@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import pytest
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_voltage_power_transformer_end, \
     get_pu_values_power_transformer_end, get_voltage_ac_line_segment, \

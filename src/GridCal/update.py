@@ -1,32 +1,24 @@
-# This file is part of GridCal.g
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 
+from typing import Tuple
 import subprocess
 import sys
-# import pkg_resources
 import packaging.version as pkg
 from GridCal.__version__ import __GridCal_VERSION__
 
 
-def find_latest_version(name='GridCal'):
+def find_latest_version(name: str = 'GridCal') -> str:
     """
     Find the latest version of a package
     :param name: name of the Package
     :return: version string
     """
-    latest_version = str(subprocess.run([sys.executable, '-m', 'pip', 'install', '{}==random'.format(name)],
+    latest_version = str(subprocess.run([sys.executable, '-m', 'pip',
+                                         'install', f'{name}==random',
+                                         '--break-system-packages'],
                                         capture_output=True, text=True))
     latest_version = latest_version[latest_version.find('(from versions:') + 15:]
     latest_version = latest_version[:latest_version.find(')')]
@@ -34,7 +26,7 @@ def find_latest_version(name='GridCal'):
     return latest_version
 
 
-def check_version(name='GridCal'):
+def check_version(name: str = 'GridCal') -> Tuple[int, str]:
     """
     Check package version
     :param name: package name, GridCal by default

@@ -1,19 +1,8 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-# 
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
+
 
 from typing import Tuple, Union
 import numpy as np
@@ -303,7 +292,7 @@ class Bus(PhysicalDevice):
             p_load[p_load > 0] = 0
             p_gen = p.copy()
             p_gen[p_gen < 0] = 0
-            P_data = {"Load":  p_load, "Gen": p_gen}
+            P_data = {"Load": p_load, "Gen": p_gen}
             t = time_series_driver.results.time_array
             pd.DataFrame(data=v, index=t, columns=['Voltage (p.u.)']).plot(ax=ax_voltage)
             pd.DataFrame(data=P_data, index=t).plot(ax=ax_load)
@@ -332,3 +321,19 @@ class Bus(PhysicalDevice):
         Get tuple of the bus coordinates (longitude, latitude)
         """
         return self.longitude, self.latitude
+
+    def try_to_find_coordinates(self):
+        """
+        Try to find the bus coordinates
+        """
+        lon, lat = self.longitude, self.latitude
+
+        if self.substation is not None:
+            if lon == 0.0:
+                lon = self.substation.longitude
+
+        if self.substation is not None:
+            if lat == 0.0:
+                lat = self.substation.latitude
+
+        return lon, lat

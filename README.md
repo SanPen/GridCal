@@ -197,7 +197,7 @@ aligned in memory. The GridCal data model is object-oriented, while the numerica
 ### Loading a grid
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PowerWorld), .dgs (PowerFactory)
 my_grid = gce.open_file("my_file.gridcal")
@@ -206,7 +206,7 @@ my_grid = gce.open_file("my_file.gridcal")
 In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid from many xml files
 my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
@@ -221,16 +221,14 @@ my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", "boundary.
 If you need to explore the CGMEs assets before conversion, you'll need to dive deeper in the API:
 
 ```python
-from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.basic_structures import Logger
+import GridCalEngine as gce
 
 fname = "tests/data/grids/CGMES_2_4_15/IEEE 118 Bus v2.zip"
 
-logger = Logger()
-data_parser = CgmesDataParser()
+logger = gce.Logger()
+data_parser = gce.CgmesDataParser()
 data_parser.load_files(files=[fname])
-cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,
+cgmes_circuit = gce.CgmesCircuit(cgmes_version=data_parser.cgmes_version,
                              cgmes_map_areas_like_raw=False, logger=logger)
 cgmes_circuit.parse_files(data_parser=data_parser)
 
@@ -256,7 +254,7 @@ Simmilarly to CGMES you may be able to use the conversion objects to explore the
 ### Save a grid
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid
 my_grid = gce.open_file("my_file.gridcal")
@@ -269,7 +267,7 @@ In the case of saving a model in CGMES mode, we need to specify some extra param
 To simplify we can use the API function `save_cgmes_file`:
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # load a grid
 my_grid = gce.open_file("my_file.gridcal")
@@ -292,7 +290,7 @@ We are going to create a very simple 5-node grid from the excellent book
 *Power System Load Flow Analysis by Lynn Powell*.
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # declare a circuit object
 grid = gce.MultiCircuit()
@@ -342,7 +340,7 @@ Using the simplified API:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -360,7 +358,7 @@ Using the more complex library objects:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE14_from_raw.gridcal')
@@ -430,7 +428,7 @@ GridCal can perform a summary of the inputs with the `InputsAnalysisDriver`:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 118 Bus - ntc_areas.gridcal')
@@ -459,7 +457,27 @@ We can run an PTDF equivalent of the power flow with the linear analysys drivers
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
+
+main_circuit = gce.open_file(fname)
+
+# snapshot
+results = gce.linear_power_flow(grid=main_circuit)
+
+print("Bus results:\n", results.get_bus_df())
+print("Branch results:\n", results.get_branch_df())
+print("PTDF:\n", results.mdl(gce.ResultTypes.PTDF).to_df())
+print("LODF:\n", results.mdl(gce.ResultTypes.LODF).to_df())
+```
+
+Simulating with a more detailed control of the objects:
+
+```python
+import os
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
@@ -522,7 +540,7 @@ Now let's make a comparison between the linear flows and the non-linear flows fr
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 plt.style.use('fivethirtyeight')
 
@@ -569,7 +587,7 @@ plt.show()
 ```python
 import os
 import numpy as np
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -577,7 +595,8 @@ fname = os.path.join(folder, 'IEEE39_1W.gridcal')
 main_circuit = gce.open_file(fname)
 
 # declare the snapshot opf
-opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit)
+opf_options = gce.OptimalPowerFlowOptions(mip_solver=gce.MIPSolvers.HIGHS)
+opf_driver = gce.OptimalPowerFlowDriver(grid=main_circuit, options=opf_options)
 
 print('Solving...')
 opf_driver.run()
@@ -609,7 +628,7 @@ PowerFlowDriver:
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -682,7 +701,7 @@ electrical grid.
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'hydro_simple.gridcal')
@@ -754,7 +773,25 @@ _Computer Analysis of Power Systems by J. Arrillaga and C.P. Arnold_
 
 ```python
 import os
-import GridCalEngine.api as gce
+import GridCalEngine as gce
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+
+grid = gce.open_file(filename=fname)
+
+# Run a Line-Ground short circuit on the bus at index 2
+# Since we do not provide any power flow results, it will run one for us
+results = gce.short_circuit(grid, fault_index=2, fault_type=gce.FaultType.LG)
+
+print("Short circuit power: ", results.SCpower[fault_index])
+```
+
+A more elaborated way to run the simulation, controlling all the steps:
+
+```python
+import os
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
@@ -785,12 +822,51 @@ Short circuit power:  -217.00 MW - 680.35j MVAr
 
 Sequence voltage, currents and powers are also available.
 
+
+
 ### Continuation power flow
+
+GridCal can run continuation power flows (voltage collapse studies) 
 
 ```python
 import os
 from matplotlib import pyplot as plt
-import GridCalEngine.api as gce
+import GridCalEngine as gce
+
+plt.style.use('fivethirtyeight')
+
+folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
+
+# open the grid file
+main_circuit = gce.open_file(fname)
+
+# Run the continuation power flow with the default options
+# Since we do not provide any power flow results, it will run one for us
+results = gce.continuation_power_flow(grid=main_circuit, 
+                                      factor=2.0, 
+                                      stop_at=gce.CpfStopAt.Full)
+
+# plot the results
+fig = plt.figure(figsize=(18, 6))
+
+ax1 = fig.add_subplot(121)
+res = results.mdl(gce.ResultTypes.BusActivePower)
+res.plot(ax=ax1)
+
+ax2 = fig.add_subplot(122)
+res = results.mdl(gce.ResultTypes.BusVoltage)
+res.plot(ax=ax2)
+
+plt.tight_layout()
+```
+
+A more elaborated way to run the simulation, controlling all the steps:
+
+```python
+import os
+from matplotlib import pyplot as plt
+import GridCalEngine as gce
 
 plt.style.use('fivethirtyeight')
 
@@ -818,10 +894,11 @@ vc_options = gce.ContinuationPowerFlowOptions(step=0.001,
                                               verbose=False)
 
 # We compose the target direction
+factor = 2.0
 base_power = power_flow.results.Sbus / main_circuit.Sbase
 vc_inputs = gce.ContinuationPowerFlowInput(Sbase=base_power,
                                            Vbase=power_flow.results.voltage,
-                                           Starget=base_power * 2)
+                                           Starget=base_power * factor)
 
 # declare the CPF driver and run
 vc = gce.ContinuationPowerFlowDriver(grid=main_circuit,
@@ -854,49 +931,48 @@ The simulation then tries all the contingency groups and apply the events regist
 
 ```python
 import os
-from GridCalEngine.api import *
-from GridCalEngine.enumerations import ContingencyMethod
+import GridCalEngine as gce
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
 
-main_circuit = FileOpen(fname).open()
+main_circuit = gce.open_file(fname)
 
 branches = main_circuit.get_branches()
 
 # manually generate the contingencies
 for i, br in enumerate(branches):
     # add a contingency group
-    group = ContingencyGroup(name="contingency {}".format(i + 1))
+    group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
     main_circuit.add_contingency_group(group)
 
     # add the branch contingency to the groups, only groups are failed at once
-    con = Contingency(device_idtag=br.idtag, name=br.name, group=group)
+    con = gce.Contingency(device_idtag=br.idtag, name=br.name, group=group)
     main_circuit.add_contingency(con)
 
 # add a special contingency
-group = ContingencyGroup(name="Special contingency")
+group = gce.ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
 main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag,
                                          name=branches[3].name, group=group))
 main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag,
                                          name=branches[5].name, group=group))
 
-pf_options = PowerFlowOptions(solver_type=SolverType.NR)
+pf_options = gce.PowerFlowOptions(solver_type=SolverType.NR)
 
 # declare the contingency options
-options_ = ContingencyAnalysisOptions(use_provided_flows=False,
-                                      Pf=None,
-                                      contingency_method=ContingencyMethod.PowerFlow,
-                                      # if no power flow options are provided 
-                                      # a linear power flow is used
-                                      pf_options=pf_options)
+options_ = gce.ContingencyAnalysisOptions(use_provided_flows=False,
+                                          Pf=None,
+                                          contingency_method=gce.ContingencyMethod.PowerFlow,
+                                          # if no power flow options are provided 
+                                          # a linear power flow is used
+                                          pf_options=pf_options)
 
-linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)
+linear_multiple_contingencies = gce.LinearMultiContingencies(grid=main_circuit)
 
-simulation = ContingencyAnalysisDriver(grid=main_circuit,
-                                       options=options_,
-                                       linear_multiple_contingencies=linear_multiple_contingencies)
+simulation = gce.ContingencyAnalysisDriver(grid=main_circuit,
+                                           options=options_,
+                                           linear_multiple_contingencies=linear_multiple_contingencies)
 
 simulation.run()
 
@@ -927,17 +1003,17 @@ Now lets program the example from the state estimation reference book
 _State Estimation in Electric Power Systems by A. Monticelli_.
 
 ```python
-from GridCalEngine.api import *
+import GridCalEngine as gce
 
-m_circuit = MultiCircuit()
+m_circuit = gce.MultiCircuit()
 
-b1 = Bus('B1', is_slack=True)
-b2 = Bus('B2')
-b3 = Bus('B3')
+b1 = gce.Bus('B1', is_slack=True)
+b2 = gce.Bus('B2')
+b3 = gce.Bus('B3')
 
-br1 = Line(b1, b2, name='Br1', r=0.01, x=0.03, rate=100.0)
-br2 = Line(b1, b3, name='Br2', r=0.02, x=0.05, rate=100.0)
-br3 = Line(b2, b3, name='Br3', r=0.03, x=0.08, rate=100.0)
+br1 = gce.Line(b1, b2, name='Br1', r=0.01, x=0.03, rate=100.0)
+br2 = gce.Line(b1, b3, name='Br2', r=0.02, x=0.05, rate=100.0)
+br3 = gce.Line(b2, b3, name='Br3', r=0.03, x=0.08, rate=100.0)
 
 # add measurements
 m_circuit.add_pf_measurement(PfMeasurement(0.888, 0.008, br1))
@@ -961,7 +1037,7 @@ m_circuit.add_line(br2)
 m_circuit.add_line(br3)
 
 # Declare the simulation driver and run
-se = StateEstimation(circuit=m_circuit)
+se = gce.StateEstimation(circuit=m_circuit)
 se.run()
 
 print(se.results.get_bus_df())
@@ -987,7 +1063,7 @@ Br3   38.591163  22.775597  0.0  0.0  22.775597
 A simple function is available to export the results of a driver.
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
 grid = gce.open_file(fname)
@@ -1008,7 +1084,7 @@ You could save many drivers in the same zip file passing then into the list `dri
 Also there is a function to save from the results objects themselves:
 
 ```python
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
 grid = gce.open_file(fname)
@@ -1033,7 +1109,7 @@ An example on how to send a grid from a script to the server:
 ```python
 import os
 import asyncio
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 # path to your file
 fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', "IEEE57.gridcal")
@@ -1062,6 +1138,55 @@ reply_from_server = asyncio.get_event_loop().run_until_complete(
 print(reply_from_server)
 ```
 
+
+
+
+## Tests
+
+**GridCal** uses pytest for automatic software testing.
+
+If you make changes to **GridCal** that you plan to submit, first make sure that all
+tests are still passing. You can do this locally with `pytest`.
+
+If you have added new functionality, you should also add a new function that tests this
+functionality. pytest automatically detects all functions in the `src/tests` folder
+that start with `test_` and are located in a file that also starts with `test_` as
+relevant test cases. Unit test (for pytest) are included in `src/tests`. As defined in `pytest.ini`, all
+files matching `test_*.py` are executed by running `pytest`.
+    
+
+Files matching `*_test.py` are not executed; they were not formatted specifically for
+`pytest` but were mostly done for manual testing and documentation purposes.
+
+Additional tests should be developped for each new and existing feature. `pytest`
+should be run before each commit to prevent easily detectable bugs.
+
+
+## Bug reporting
+
+You have found a bug in **GridCal** or have a suggestion for a new functionality? Then
+get in touch with us by opening up an issue on the [issue board](https://github.com/SanPen/GridCal/issues) to discuss possible new
+developments with the community and the maintainers.
+
+## Contributing
+
+All contributions to the **GridCal** repository are made through pull requests to the
+`master` branch. You can either submit a pull request from the develop branch of your
+fork or create a special feature branch that you keep the changes on. A feature branch
+is the way to go if you have multiple issues that you are working on in parallel and
+want to submit with seperate pull requests. If you only have small, one-time changes
+to submit, you can also use the `master` branch to submit your pull request.
+
+However, it is best to discuss your contribution before the pull request is ready to be officially
+submitted. We only accept high quality contributions that align with the project design. 
+Those are heavily reviewed, and you may expect joint work with us if your proposal is deemed good enough.
+
+An alternative, maybe easier way to contribute functionality to GridCal, is to use the objects 
+and functions to produce your contribution in a script-like fashion. 
+Again, if that meets the functional and quality standards that we impose, we'll take care of the integration.
+
+All contributions must come with testing.
+
 ## Contact
 
 - Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
@@ -1071,7 +1196,7 @@ print(reply_from_server)
 
 ## License
 
-GridCal is licensed under the [Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) (LGPL)
+GridCal is licensed under the [Mozilla Public License 2.0](https://mozilla.org/MPL/2.0/) (MPLv2)
 
 In practical terms this means that:
 
@@ -1079,11 +1204,8 @@ In practical terms this means that:
 - You can sell commercial services based on GridCal.
 - If you distrubute GridCal, you must distribute GridCal's source code as well.
   That is always achieved in practice with python code.
-- GridCal license does not propagate to works that are not a derivative of GridCal.
-  An example of a derivative work is if you write a module of the program, the the license
-  of the modue must be LGPL too. An example of a non-derivative work is if you use
-  GridCal's API for something else without modifying the API itself, for instance,
-  using it as a library for another program.
+- GridCal license does not propagate, even if you use GridCal or pieces of it in your code.
+  However, you must retain the individual files licensing.
 
 Nonetheless, read the license carefully.
 

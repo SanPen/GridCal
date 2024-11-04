@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import os
 import json
@@ -45,7 +33,7 @@ from GridCalEngine.IO.gridcal.zip_interface import save_gridcal_data_to_zip, get
 from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
-from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
+from GridCalEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pypsa_hdf5
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -382,10 +370,10 @@ class FileOpen:
                         self.logger += parser.logger
 
                 elif file_extension.lower() == '.hdf5':
-                    self.circuit = parse_hdf5(self.file_name, self.logger)
+                    self.circuit = parse_pypsa_hdf5(self.file_name, self.logger)
 
                 elif file_extension.lower() == '.nc':
-                    self.circuit = parse_netcdf(self.file_name, self.logger)
+                    self.circuit = parse_pypsa_netcdf(self.file_name, self.logger)
 
             else:
                 # warn('The file does not exist.')

@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
 import math
 import numpy as np
 from datetime import datetime
@@ -7,7 +11,6 @@ try:
     import pypsa
     PYPSA_AVAILABLE = True
 except ImportError:
-    # print('Could not find PyPSA library; some grid file formats may not be supported')
     PYPSA_AVAILABLE = False
 
 from GridCalEngine.basic_structures import Logger
@@ -26,7 +29,15 @@ BUS_Y_SCALE_FACTOR = -900
 
 
 class PyPSAParser:
+    """
+    PyPSAParser
+    """
     def __init__(self, src: 'pypsa.Network', logger: Logger):
+        """
+
+        :param src:
+        :param logger:
+        """
         self.src = src
         self.dest = MultiCircuit(src.name)  # todo: PyPSA doesn't provide f_base
         self.logger = logger
@@ -272,12 +283,18 @@ def _log_pypsa_unavailable(logger: Logger, file_format: str):
     logger.add_error(f'{file_format} not supported since the PyPSA library could not be found')
 
 
-def _parse_network(network: 'pypsa.Network', logger: Logger) -> MultiCircuit:
+def pypsa2gridcal(network: 'pypsa.Network', logger: Logger) -> MultiCircuit:
+    """
+
+    :param network:
+    :param logger:
+    :return:
+    """
     parser = PyPSAParser(network, logger)
     return parser.parse()
 
 
-def parse_netcdf(file_path: str, logger: Logger) -> MultiCircuit:
+def parse_pypsa_netcdf(file_path: str, logger: Logger) -> MultiCircuit:
     """
     Parses the netCDF file using the PyPSA library.
     :param file_path: the file path
@@ -290,10 +307,10 @@ def parse_netcdf(file_path: str, logger: Logger) -> MultiCircuit:
 
     network = pypsa.Network()
     network.import_from_netcdf(file_path)
-    return _parse_network(network, logger)
+    return pypsa2gridcal(network, logger)
 
 
-def parse_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
+def parse_pypsa_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
     """
     Parses the HDF5 store file using the PyPSA library.
     :param file_path: the file path
@@ -306,4 +323,4 @@ def parse_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
 
     network = pypsa.Network()
     network.import_from_hdf5(file_path)
-    return _parse_network(network, logger)
+    return pypsa2gridcal(network, logger)

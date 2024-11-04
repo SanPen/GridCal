@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
 
 # AUTHORS: Josep Fanals Batllori and Santiago Peñate Vera
 # CONTACT:  u1946589@campus.udg.edu and santiago.penate.vera@gmail.com
@@ -21,7 +9,6 @@
 import pandas as pd
 import numpy as np
 import numba as nb
-from numba.np.linalg import solve_impl
 import time
 from warnings import warn
 from scipy.sparse import csc_matrix, coo_matrix
@@ -367,6 +354,12 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
               hs((B, G, XRE)),
               hs((VRE, VIM, EMPTY))), format='csc')
 
+    converged = False
+    V = np.empty(n, dtype=complex)
+    V[sl] = V0[sl]
+    c = 2
+    V[pqpv] = U[:c, :].sum(axis=0)
+    iter_ = 1
     if verbose:
         logger.add_debug("MAT", MAT.toarray())
 
@@ -374,7 +367,12 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     # MAT_LU = factorized(MAT.tocsc())
 
     # solve
-    mat_factorized = factorized(MAT)
+    try:
+        mat_factorized = factorized(MAT)
+    except RuntimeError:
+        warn("Unable to factorize HELM coefficients matrix :/")
+        return U, X, Q, V, iter_, converged
+
     LHS = mat_factorized(RHS)
     # LHS = spsolve(MAT, RHS)
 
@@ -384,12 +382,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
-    iter_ = 1
-    c = 2
-    converged = False
-    V = np.empty(n, dtype=complex)
-    V[sl] = V0[sl]
-    V[pqpv] = U[:c, :].sum(axis=0)
+
     while c <= max_coeff and not converged:  # c defines the current depth
 
         valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
@@ -434,6 +427,7 @@ class HelmPreparation:
     """
     HelmPreparation
     """
+
     def __init__(self, sys_mat_factorization, Uini, Xini, Yslack, Vslack,
                  vec_P, vec_Q, Ysh, vec_W, pq, pv, pqpv, sl,
                  npqpv, nbus):

@@ -1,13 +1,22 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
 import os
 import json
 from typing import List
-from GridCalEngine.Devices.Aggregation.contingency import Contingency
+from GridCalEngine.Devices.Aggregation.contingency import Contingency, ContingencyOperationTypes
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 def parse_contingencies(data):
+    """
 
+    :param data:
+    :return:
+    """
     contingencies: List[Contingency] = list()
 
     for key, jentry in data.items():
@@ -23,7 +32,7 @@ def parse_contingencies(data):
                 device_idtag=elem['device_idtag'] if 'device_idtag' in elem.keys() else '',
                 name=str(elem['name']) if 'key' in elem.keys() else '',
                 code=str(elem['code']) if 'code' in elem.keys() else '',
-                prop=str(elem['property']) if 'property' in elem.keys() else '',
+                prop=ContingencyOperationTypes(str(elem['property'])) if 'property' in elem.keys() else ContingencyOperationTypes.Active,
                 value=str(elem['value']) if 'value' in elem.keys() else 0,
                 group=group
             )
@@ -34,7 +43,11 @@ def parse_contingencies(data):
 
 
 def import_contingencies_from_json(file_name:str):
+    """
 
+    :param file_name:
+    :return:
+    """
     if os.path.exists(file_name):
 
         # read json file
@@ -49,6 +62,11 @@ def import_contingencies_from_json(file_name:str):
 
 
 def get_contingencies_dict(circuit: MultiCircuit):
+    """
+
+    :param circuit:
+    :return:
+    """
     contingency_groups = dict()
 
     for contingency in circuit.contingencies:

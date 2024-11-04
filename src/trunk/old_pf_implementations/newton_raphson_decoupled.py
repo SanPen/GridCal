@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 
 import time
 import scipy
@@ -103,7 +91,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
 
     # check tolerance
     if use_norm_error:
-        norm_f = np.linalg.norm(f, np.Inf)
+        norm_f = np.linalg.norm(f, np.inf)
     else:
         norm_f = 0.5 * f.dot(f)
 
@@ -137,7 +125,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
         f_new = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
         if use_norm_error:
-            norm_f_new = np.linalg.norm(f_new, np.Inf)
+            norm_f_new = np.linalg.norm(f_new, np.inf)
         else:
             norm_f_new = 0.5 * f_new.dot(f_new)
 
@@ -164,7 +152,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
             f_new = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 
             if use_norm_error:
-                norm_f_new = np.linalg.norm(f_new, np.Inf)
+                norm_f_new = np.linalg.norm(f_new, np.inf)
             else:
                 norm_f_new = 0.5 * f_new.dot(f_new)
 
@@ -182,7 +170,7 @@ def NRD_LS(Ybus, S0, V0, I0, Y0, pv, pq, tol, max_it=15,
 
         # check for convergence
         if use_norm_error:
-            norm_f = np.linalg.norm(f_new, np.Inf)
+            norm_f = np.linalg.norm(f_new, np.inf)
         else:
             norm_f = 0.5 * f_new.dot(f_new)
 

@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import os
 import sys
 import pandas as pd
@@ -188,7 +192,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
         self.assigned_count: int = 0
 
         # dataFrame
-        self.original_data_frame: pd.DataFrame = None
+        self.original_data_frame: pd.DataFrame | None = None
 
         # initialize the objectives list
         self.objects: List[Bus] = list_of_objects

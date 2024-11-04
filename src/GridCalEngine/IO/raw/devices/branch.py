@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol, Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
@@ -21,48 +9,48 @@ from GridCalEngine.basic_structures import Logger
 
 class RawBranch(RawObject):
 
-    def __init__(self):
+    def __init__(self) -> None:
         RawObject.__init__(self, "Branch")
 
-        self.I: int = 0
-        self.J: int = 0
-        self.CKT: str = '1'
-        self.R = 0
-        self.X = 0
-        self.B = 0
+        self._I: int = 0
+        self._J: int = 0
+        self._CKT: str = '1'
+        self._R: float = 0.0
+        self._X: float = 0.0
+        self._B: float = 0.0
 
-        self.NAME = ''
+        self._NAME: str = ''
 
         # rates for newer versions (34 and above)
-        self.RATE1 = 0
-        self.RATE2 = 0
-        self.RATE3 = 0
-        self.RATE4 = 0
-        self.RATE5 = 0
-        self.RATE6 = 0
-        self.RATE7 = 0
-        self.RATE8 = 0
-        self.RATE9 = 0
-        self.RATE10 = 0
-        self.RATE11 = 0
-        self.RATE12 = 0
+        self._RATE1: float = 0.0
+        self._RATE2: float = 0.0
+        self._RATE3: float = 0.0
+        self._RATE4: float = 0.0
+        self._RATE5: float = 0.0
+        self._RATE6: float = 0.0
+        self._RATE7: float = 0.0
+        self._RATE8: float = 0.0
+        self._RATE9: float = 0.0
+        self._RATE10: float = 0.0
+        self._RATE11: float = 0.0
+        self._RATE12: float = 0.0
 
-        self.GI = 0
-        self.BI = 0
-        self.GJ = 0
-        self.BJ = 0
-        self.ST = 1
-        self.MET = 1
-        self.LEN = 0.0
+        self._GI: float = 0.0
+        self._BI: float = 0.0
+        self._GJ: float = 0.0
+        self._BJ: float = 0.0
+        self._ST: int = 1
+        self._MET: int = 1
+        self._LEN: float = 0.0
 
-        self.O1 = 0
-        self.F1 = 0.0
-        self.O2 = 0
-        self.F2 = 0.0
-        self.O3 = 0
-        self.F3 = 0.0
-        self.O4 = 0
-        self.F4 = 0.0
+        self._O1: int = 0
+        self._F1: float = 0.0
+        self._O2: int = 0
+        self._F2: float = 0.0
+        self._O3: int = 0
+        self._F3: float = 0.0
+        self._O4: int = 0
+        self._F4: float = 0.0
 
         self.register_property(property_name="I",
                                rawx_key="ibus",
@@ -191,6 +179,13 @@ class RawBranch(RawObject):
             RATE1,   RATE2,   RATE3,   RATE4,   RATE5,   RATE6,   RATE7,   RATE8,   RATE9,  RATE10,  RATE11,  RATE12,    
             GI,       BI,       GJ,       BJ,STAT,MET,  LEN,  O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4
             """
+
+            """
+            I,     J,'CKT',      R,           X,       B,                   'N A M E'                 ,  
+            RATE1,  RATE2,  RATE3,  RATE4,  RATE5,  RATE6,  RATE7,  RATE8,  RATE9, RATE10, RATE11, RATE12,   
+            GI,      BI,      GJ,      BJ,STAT,MET, LEN,  O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4
+            """
+
             if len(data[0]) >= 26:
                 (self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME,
                  self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6,
@@ -285,3 +280,276 @@ class RawBranch(RawObject):
 
     def get_seed(self):
         return "_BR_{}".format(self.get_id())
+
+    @property
+    def I(self):
+        return self._I
+
+    @I.setter
+    def I(self, value):
+        self._I = value
+
+    @property
+    def J(self):
+        return self._J
+
+    @J.setter
+    def J(self, value):
+        self._J = value
+
+    @property
+    def CKT(self):
+        return self._CKT
+
+    @CKT.setter
+    def CKT(self, value):
+        self._CKT = value
+
+    @property
+    def R(self):
+        return self._R
+
+    @R.setter
+    def R(self, value):
+        self._R = value
+
+    @property
+    def X(self):
+        return self._X
+
+    @X.setter
+    def X(self, value):
+        self._X = value
+
+    @property
+    def B(self):
+        return self._B
+
+    @B.setter
+    def B(self, value):
+        self._B = value
+
+    @property
+    def NAME(self):
+        return self._NAME
+
+    @NAME.setter
+    def NAME(self, value):
+        self._NAME = value
+
+    # Individual property methods for each RATE attribute
+    @property
+    def RATE1(self):
+        return self._RATE1
+
+    @RATE1.setter
+    def RATE1(self, value):
+        self._RATE1 = value
+
+    @property
+    def RATE2(self):
+        return self._RATE2
+
+    @RATE2.setter
+    def RATE2(self, value):
+        self._RATE2 = value
+
+    @property
+    def RATE3(self):
+        return self._RATE3
+
+    @RATE3.setter
+    def RATE3(self, value):
+        self._RATE3 = value
+
+    @property
+    def RATE4(self):
+        return self._RATE4
+
+    @RATE4.setter
+    def RATE4(self, value):
+        self._RATE4 = value
+
+    @property
+    def RATE5(self):
+        return self._RATE5
+
+    @RATE5.setter
+    def RATE5(self, value):
+        self._RATE5 = value
+
+    @property
+    def RATE6(self):
+        return self._RATE6
+
+    @RATE6.setter
+    def RATE6(self, value):
+        self._RATE6 = value
+
+    @property
+    def RATE7(self):
+        return self._RATE7
+
+    @RATE7.setter
+    def RATE7(self, value):
+        self._RATE7 = value
+
+    @property
+    def RATE8(self):
+        return self._RATE8
+
+    @RATE8.setter
+    def RATE8(self, value):
+        self._RATE8 = value
+
+    @property
+    def RATE9(self):
+        return self._RATE9
+
+    @RATE9.setter
+    def RATE9(self, value):
+        self._RATE9 = value
+
+    @property
+    def RATE10(self):
+        return self._RATE10
+
+    @RATE10.setter
+    def RATE10(self, value):
+        self._RATE10 = value
+
+    @property
+    def RATE11(self):
+        return self._RATE11
+
+    @RATE11.setter
+    def RATE11(self, value):
+        self._RATE11 = value
+
+    @property
+    def RATE12(self):
+        return self._RATE12
+
+    @RATE12.setter
+    def RATE12(self, value):
+        self._RATE12 = value
+
+    @property
+    def GI(self):
+        return self._GI
+
+    @GI.setter
+    def GI(self, value):
+        self._GI = value
+
+    @property
+    def BI(self):
+        return self._BI
+
+    @BI.setter
+    def BI(self, value):
+        self._BI = value
+
+    @property
+    def GJ(self):
+        return self._GJ
+
+    @GJ.setter
+    def GJ(self, value):
+        self._GJ = value
+
+    @property
+    def BJ(self):
+        return self._BJ
+
+    @BJ.setter
+    def BJ(self, value):
+        self._BJ = value
+
+    @property
+    def ST(self):
+        return self._ST
+
+    @ST.setter
+    def ST(self, value):
+        self._ST = value
+
+    @property
+    def MET(self):
+        return self._MET
+
+    @MET.setter
+    def MET(self, value):
+        self._MET = value
+
+    @property
+    def LEN(self):
+        return self._LEN
+
+    @LEN.setter
+    def LEN(self, value):
+        self._LEN = value
+
+    @property
+    def O1(self):
+        return self._O1
+
+    @O1.setter
+    def O1(self, value):
+        self._O1 = value
+
+    @property
+    def F1(self):
+        return self._F1
+
+    @F1.setter
+    def F1(self, value):
+        self._F1 = value
+
+    @property
+    def O2(self):
+        return self._O2
+
+    @O2.setter
+    def O2(self, value):
+        self._O2 = value
+
+    @property
+    def F2(self):
+        return self._F2
+
+    @F2.setter
+    def F2(self, value):
+        self._F2 = value
+
+    @property
+    def O3(self):
+        return self._O3
+
+    @O3.setter
+    def O3(self, value):
+        self._O3 = value
+
+    @property
+    def F3(self):
+        return self._F3
+
+    @F3.setter
+    def F3(self, value):
+        self._F3 = value
+
+    @property
+    def O4(self):
+        return self._O4
+
+    @O4.setter
+    def O4(self, value):
+        self._O4 = value
+
+    @property
+    def F4(self):
+        return self._F4
+
+    @F4.setter
+    def F4(self, value):
+        self._F4 = value

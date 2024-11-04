@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
 from typing import List, Union, Tuple
@@ -87,7 +75,10 @@ class SolarPvWizard(QtWidgets.QDialog):
     New solar photovoltaic wizard window
     """
 
-    def __init__(self, time_array: List[str], peak_power: float, latitude: float, longitude: float,
+    def __init__(self, time_array: List[str],
+                 peak_power: float,
+                 latitude: float,
+                 longitude: float,
                  gen_name='', bus_name='',
                  title='solar photovoltaic wizard'):
         """
@@ -103,7 +94,7 @@ class SolarPvWizard(QtWidgets.QDialog):
         self.ui.setupUi(self)
 
         self.setObjectName("self")
-        self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
 
         self.is_accepted: bool = False
         self.selected_indices: List[int] = list()
@@ -175,9 +166,12 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
+    longitude = -110.9
 
     st = datetime(year=2018, month=1, day=1)
-    time_arr = pd.to_datetime([st + timedelta(hours=i) for i in range(200)])
+    direction = 1.0 if longitude > 0 else -1.0
+    offset = direction * longitude * 24.0 / 360.0
+    time_arr = pd.to_datetime([st + timedelta(hours=i + offset) for i in range(200)])
 
     window = SolarPvWizard(time_array=time_arr, peak_power=20, latitude=32.2, longitude=-110.9)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio

@@ -1,19 +1,8 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-# 
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
+
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 import numpy as np
@@ -35,7 +24,7 @@ class DcLineEditor(QDialog):
     """
     DcLineEditor
     """
-    def __init__(self, branch: DcLine, Sbase=100, templates=None, current_template=None):
+    def __init__(self, branch: DcLine, Sbase: float = 100.0, templates=None, current_template=None):
         """
         Line Editor constructor
         :param branch: Branch object to update
@@ -56,7 +45,7 @@ class DcLineEditor(QDialog):
 
         self.setObjectName("self")
 
-        self.setContextMenuPolicy(Qt.NoContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
         self.layout = QVBoxLayout(self)
 
@@ -351,7 +340,7 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
 
-        dlg = DcLineEditor(self.api_object, Sbase)
+        dlg = DcLineEditor(branch=self.api_object, Sbase=Sbase)
         if dlg.exec_():
             pass
 

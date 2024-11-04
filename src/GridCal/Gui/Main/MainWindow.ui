@@ -10070,6 +10070,7 @@ QProgressBar::chunk{
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
     <addaction name="actionDetect_substations"/>
+    <addaction name="actionDetect_facilities"/>
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
     <addaction name="actionScale"/>
@@ -11781,6 +11782,15 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionDetect_facilities">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/powerplant.svg</normaloff>:/Icons/icons/powerplant.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Detect facilities</string>
    </property>
   </action>
  </widget>

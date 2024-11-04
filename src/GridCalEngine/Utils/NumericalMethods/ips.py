@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 from typing import Callable, Any, Union, List, Dict, Tuple
 from dataclasses import dataclass
 import numba as nb
@@ -416,14 +404,14 @@ def interior_point_solver(x0: Vec,
         ts_conds = timeit.default_timer()
         Hx_t = ret.Hx.T
         Gx_t = ret.Gx.T
-        g_norm = np.linalg.norm(ret.G, np.Inf)
-        lam_norm = np.linalg.norm(lam, np.Inf)
-        mu_norm = np.linalg.norm(mu, np.Inf)
-        z_norm = np.linalg.norm(z, np.Inf)
+        g_norm = np.linalg.norm(ret.G, np.inf)
+        lam_norm = np.linalg.norm(lam, np.inf)
+        mu_norm = np.linalg.norm(mu, np.inf)
+        z_norm = np.linalg.norm(z, np.inf)
 
         lx = ret.fx + Hx_t @ mu + Gx_t @ lam
-        feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.Inf), z_norm]))
-        gradcond = np.linalg.norm(lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
+        feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.inf), z_norm]))
+        gradcond = np.linalg.norm(lx, np.inf) / (1 + max([lam_norm, mu_norm]))
         error = np.max([feascond, gradcond, gamma])
         maxdispl = np.max(np.r_[dx, dlam, dz, dmu])
         z_inv = diags(1.0 / z)
