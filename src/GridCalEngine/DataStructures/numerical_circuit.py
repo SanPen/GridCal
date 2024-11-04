@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import numpy as np
 import pandas as pd
@@ -23,7 +11,7 @@ from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.enumerations import BranchImpedanceMode, BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
@@ -55,7 +43,8 @@ ALL_STRUCTS = Union[
 ]
 
 
-def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logger: Logger) -> int:
+def CheckArr(arr: Vec | IntVec | BoolVec | CxVec, arr_expected: Vec | IntVec | BoolVec | CxVec,
+             tol: float, name: str, test: str, logger: Logger) -> int:
     """
 
     :param arr:
@@ -77,12 +66,20 @@ def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logg
     if np.allclose(arr, arr_expected, atol=tol):
         return 0
     else:
-        diff = arr - arr_expected
-        logger.add_error(msg="Numeric differences",
-                         device=name,
-                         device_property=test,
-                         value=f"min diff: {diff.min()}, max diff: {diff.max()}",
-                         expected_value=tol)
+        if arr.dtype == np.bool:
+            diff = arr.astype(int) - arr_expected.astype(int)
+            logger.add_error(msg="Numeric differences",
+                             device=name,
+                             device_property=test,
+                             value=f"min diff: {diff.min()}, max diff: {diff.max()}",
+                             expected_value=tol)
+        else:
+            diff = arr - arr_expected
+            logger.add_error(msg="Numeric differences",
+                             device=name,
+                             device_property=test,
+                             value=f"min diff: {diff.min()}, max diff: {diff.max()}",
+                             expected_value=tol)
         return 1
 
 

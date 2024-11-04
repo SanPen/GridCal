@@ -1138,6 +1138,55 @@ reply_from_server = asyncio.get_event_loop().run_until_complete(
 print(reply_from_server)
 ```
 
+
+
+
+## Tests
+
+**GridCal** uses pytest for automatic software testing.
+
+If you make changes to **GridCal** that you plan to submit, first make sure that all
+tests are still passing. You can do this locally with `pytest`.
+
+If you have added new functionality, you should also add a new function that tests this
+functionality. pytest automatically detects all functions in the `src/tests` folder
+that start with `test_` and are located in a file that also starts with `test_` as
+relevant test cases. Unit test (for pytest) are included in `src/tests`. As defined in `pytest.ini`, all
+files matching `test_*.py` are executed by running `pytest`.
+    
+
+Files matching `*_test.py` are not executed; they were not formatted specifically for
+`pytest` but were mostly done for manual testing and documentation purposes.
+
+Additional tests should be developped for each new and existing feature. `pytest`
+should be run before each commit to prevent easily detectable bugs.
+
+
+## Bug reporting
+
+You have found a bug in **GridCal** or have a suggestion for a new functionality? Then
+get in touch with us by opening up an issue on the [issue board](https://github.com/SanPen/GridCal/issues) to discuss possible new
+developments with the community and the maintainers.
+
+## Contributing
+
+All contributions to the **GridCal** repository are made through pull requests to the
+`master` branch. You can either submit a pull request from the develop branch of your
+fork or create a special feature branch that you keep the changes on. A feature branch
+is the way to go if you have multiple issues that you are working on in parallel and
+want to submit with seperate pull requests. If you only have small, one-time changes
+to submit, you can also use the `master` branch to submit your pull request.
+
+However, it is best to discuss your contribution before the pull request is ready to be officially
+submitted. We only accept high quality contributions that align with the project design. 
+Those are heavily reviewed, and you may expect joint work with us if your proposal is deemed good enough.
+
+An alternative, maybe easier way to contribute functionality to GridCal, is to use the objects 
+and functions to produce your contribution in a script-like fashion. 
+Again, if that meets the functional and quality standards that we impose, we'll take care of the integration.
+
+All contributions must come with testing.
+
 ## Contact
 
 - Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
@@ -1147,7 +1196,7 @@ print(reply_from_server)
 
 ## License
 
-GridCal is licensed under the [Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) (LGPL)
+GridCal is licensed under the [Mozilla Public License 2.0](https://mozilla.org/MPL/2.0/) (MPLv2)
 
 In practical terms this means that:
 
@@ -1155,11 +1204,8 @@ In practical terms this means that:
 - You can sell commercial services based on GridCal.
 - If you distrubute GridCal, you must distribute GridCal's source code as well.
   That is always achieved in practice with python code.
-- GridCal license does not propagate to works that are not a derivative of GridCal.
-  An example of a derivative work is if you write a module of the program, the the license
-  of the modue must be LGPL too. An example of a non-derivative work is if you use
-  GridCal's API for something else without modifying the API itself, for instance,
-  using it as a library for another program.
+- GridCal license does not propagate, even if you use GridCal or pieces of it in your code.
+  However, you must retain the individual files licensing.
 
 Nonetheless, read the license carefully.
 

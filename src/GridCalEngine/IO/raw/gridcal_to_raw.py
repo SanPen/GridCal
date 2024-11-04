@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import numpy as np
 from typing import Dict
 from itertools import groupby
@@ -335,7 +323,8 @@ def get_vsc_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> Ra
     return psse_vsc_dc_line
 
 
-def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> RawTwoTerminalDCLine:
+def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine,
+                                  bus_dict: Dict[dev.Bus, int]) -> RawTwoTerminalDCLine:
     """
 
     :param hvdc_line:
@@ -345,11 +334,8 @@ def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bu
     psse_two_terminal_dc_line = RawTwoTerminalDCLine()
     psse_two_terminal_dc_line.NAME = hvdc_line.name
 
-    id_tag = hvdc_line.idtag[:-2] if hvdc_line.idtag.endswith("_1") else hvdc_line.idtag
-    ipr, ipi = id_tag.split("_", 2)
-
-    psse_two_terminal_dc_line.IPR = int(ipr)
-    psse_two_terminal_dc_line.IPI = int(ipi)
+    psse_two_terminal_dc_line.IPR = bus_dict[hvdc_line.bus_from]
+    psse_two_terminal_dc_line.IPI = bus_dict[hvdc_line.bus_to]
 
     psse_two_terminal_dc_line.RDC = hvdc_line.r
     psse_two_terminal_dc_line.ANMNR = np.rad2deg(hvdc_line.min_firing_angle_f)

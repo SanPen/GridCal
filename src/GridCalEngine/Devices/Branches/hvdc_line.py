@@ -1,19 +1,8 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-# 
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
+
 
 
 import pandas as pd
@@ -141,11 +130,17 @@ class HvdcLine(BranchParent):
                  cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None,
                  name='HVDC Line', idtag=None, active=True, code='',
-                 rate=1.0, Pset=0.0, r=1e-20, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
-                 overload_cost=1000.0, min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
-                 max_firing_angle_t=1.0, contingency_factor=1.0, protection_rating_factor: float = 1.4,
-                 control_mode: HvdcControlType = HvdcControlType.type_1_Pset, dispatchable=True, angle_droop=0,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned,
+                 rate=1.0, Pset=0.0,
+                 r=1e-20, loss_factor=0.0,
+                 Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
+                 overload_cost=1000.0,
+                 min_firing_angle_f=-1.0, max_firing_angle_f=1.0,
+                 min_firing_angle_t=-1.0, max_firing_angle_t=1.0,
+                 contingency_factor=1.0, protection_rating_factor: float = 1.4,
+                 control_mode: HvdcControlType = HvdcControlType.type_1_Pset,
+                 dispatchable=True, angle_droop=0,
+                 capex=0, opex=0,
+                 build_status: BuildStatus = BuildStatus.Commissioned,
                  dc_link_voltage: float = 200):
         """
         HVDC Line model

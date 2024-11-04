@@ -1,3 +1,8 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
 from typing import List, Tuple, Dict
 import numpy as np
 import GridCalEngine.Devices as gcdev
@@ -133,7 +138,6 @@ def build_rates_dict(cgmes_model, device_type, logger):
                 for ols in cl.OperationalLimitSet:
                     volt = get_voltage_terminal(ols.Terminal, logger)
                     rate_mva = np.round(cl.value * volt * 1.73205080756888 / 1000, 4)
-                    # TODO rate in MVA = kA * kV * sqrt(3), is sqrt(3) needed?
                     # TODO type check: put min PATL to the dict
                     if isinstance(ols.Terminal.ConductingEquipment,
                                   device_type):

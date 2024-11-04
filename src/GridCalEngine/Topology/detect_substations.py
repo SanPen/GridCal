@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 from typing import List, Union, TYPE_CHECKING
 import numpy as np
@@ -121,3 +109,22 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
         for i in island:
             bus = buses[i]
             bus.voltage_level = voltages_vl[bus.Vnom]
+
+
+def detect_facilities(grid: MultiCircuit) -> None:
+    """
+    Create facilities automatically
+    In essence is packing all the injections connected to he same bus into a facility object
+    :param grid: MultiCircuit
+    """
+    dict_bus_inj = grid.get_injection_devices_grouped_by_bus()
+
+    for bus, inj_list in dict_bus_inj.items():
+
+        if len(inj_list):
+            lon, lat = bus.try_to_find_coordinates()
+            plant = dev.Facility(name=f"Facility at bus {bus.name}", longitude=lon, latitude=lat)
+            grid.add_facility(obj=plant)
+
+            for elm in inj_list:
+                elm.facility = plant

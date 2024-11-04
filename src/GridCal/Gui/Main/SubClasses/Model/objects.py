@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import numpy as np
 from typing import Union, List
 from PySide6 import QtGui, QtCore, QtWidgets
@@ -31,7 +19,7 @@ from GridCal.Gui.profiles_model import ProfilesModel
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.Topology.detect_substations import detect_substations
+from GridCalEngine.Topology.detect_substations import detect_substations, detect_facilities
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -76,6 +64,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.actionClean_database.triggered.connect(self.clean_database)
         self.ui.actionScale.triggered.connect(self.scale)
         self.ui.actionDetect_substations.triggered.connect(self.detect_substations)
+        self.ui.actionDetect_facilities.triggered.connect(self.detect_facilities)
 
         # tree click
         self.ui.dataStructuresTreeView.clicked.connect(self.view_objects_data)
@@ -1053,7 +1042,7 @@ class ObjectsTableMain(DiagramsMain):
 
     def detect_substations(self):
         """
-        Call the detect substations logc
+        Call the detect substations logic
         """
 
         ok = yes_no_question("Do you want to try to detect substations and voltage levels in the grid model?",
@@ -1063,6 +1052,16 @@ class ObjectsTableMain(DiagramsMain):
             val = 1.0 / (10.0 ** self.ui.rxThresholdSpinBox.value())
             detect_substations(grid=self.circuit,
                                r_x_threshold=val)
+
+    def detect_facilities(self):
+        """
+        Call the detect facilities logic
+        """
+        ok = yes_no_question("Do you want to try to detect facilities in the grid model?",
+                             "Detect facilities")
+
+        if ok:
+            detect_facilities(grid=self.circuit)
 
     def show_objects_context_menu(self, pos: QtCore.QPoint):
         """

@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
 import pandas as pd
@@ -112,6 +100,22 @@ class TapChanger:
             self._tap_position = int(val)
         else:
             print(f"Max tap changer value exceeded {val} > {self._total_positions}")
+
+    @property
+    def neutral_position(self) -> int:
+        """
+        Get the neutral position
+        :return: int
+        """
+        return self._neutral_position
+
+    @neutral_position.setter
+    def neutral_position(self, val: int):
+        """
+        Set the neutral position
+        :param val: neutral position value
+        """
+        self._neutral_position = int(val)
 
     @property
     def tap_modules_array(self):

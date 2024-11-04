@@ -1,19 +1,8 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-# 
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
+
 
 from PySide6 import QtWidgets
 import matplotlib
@@ -23,6 +12,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.figure import Figure
 
 from matplotlib import pyplot as plt
+
 plt.style.use('fivethirtyeight')
 
 
@@ -82,6 +72,7 @@ class MplCanvas(FigureCanvas):
         """
         Mouse zoom handler
         """
+
         def zoom(event):
             cur_xlim = ax.get_xlim()
             cur_ylim = ax.get_ylim()
@@ -102,13 +93,13 @@ class MplCanvas(FigureCanvas):
             new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
             new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
 
-            relx = (cur_xlim[1] - xdata)/(cur_xlim[1] - cur_xlim[0])
-            rely = (cur_ylim[1] - ydata)/(cur_ylim[1] - cur_ylim[0])
+            relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+            rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
 
-            self.zoom_x_limits = [xdata - new_width * (1-relx), xdata + new_width * relx]
-            self.zoom_y_limits = [ydata - new_height * (1-rely), ydata + new_height * rely]
+            self.zoom_x_limits = [xdata - new_width * (1 - relx), xdata + new_width * relx]
+            self.zoom_y_limits = [ydata - new_height * (1 - rely), ydata + new_height * rely]
 
-            ax.set_xlim(self.zoom_x_limits )
+            ax.set_xlim(self.zoom_x_limits)
             ax.set_ylim(self.zoom_y_limits)
             ax.figure.canvas.draw()
 
@@ -123,13 +114,14 @@ class MplCanvas(FigureCanvas):
 
     def set_last_zoom(self):
         if self.zoom_x_limits is not None:
-            self.ax.set_xlim(self.zoom_x_limits )
+            self.ax.set_xlim(self.zoom_x_limits)
             self.ax.set_ylim(self.zoom_y_limits)
 
     def pan_factory(self, ax):
         """
         Mouse pan handler
         """
+
         def onPress(event):
             if event.inaxes != ax:
                 return
@@ -239,6 +231,3 @@ class MatplotlibWidget(QtWidgets.QWidget):
         self.canvas.ax.set_xlabel(xlabel)
         self.canvas.ax.set_ylabel(ylabel)
         self.redraw()
-
-
-
