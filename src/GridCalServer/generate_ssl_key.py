@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.backends import default_backend
@@ -63,10 +51,10 @@ def generate_ssl_certificate(key_fname="key.pem", cert_fname="cert.pem"):
     ).serial_number(
         x509.random_serial_number()
     ).not_valid_before(
-        datetime.datetime.utcnow()
+        datetime.datetime.now(datetime.UTC)
     ).not_valid_after(
         # Certificate is valid for 365 days
-        datetime.datetime.utcnow() + datetime.timedelta(days=365)
+        datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=365)
     ).add_extension(
         x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
         critical=False,

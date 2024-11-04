@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import numpy as np
 
 from datetime import datetime
@@ -821,23 +809,23 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                     target_vnom=bus.Vnom
                 )
 
-                if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
-                    vl = find_object_by_uuid(
-                        cgmes_model=cgmes_model,
-                        object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-                        target_uuid=bus.voltage_level.idtag
-                    )
-                    tn.ConnectivityNodeContainer = vl
-                    # link back
-                    vl.TopologicalNode = tn
-                else:
-                    logger.add_error(
-                        msg=f'No Voltage Level found for  {bus.name}',
-                        device=bus.idtag,
-                        device_class=bus.device_type,
-                        device_property="Bus.voltage_level.idtag",
-                        value=bus.voltage_level,
-                        comment="get_cgmes_tn_nodes()")
+            if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
+                vl = find_object_by_uuid(
+                    cgmes_model=cgmes_model,
+                    object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                    target_uuid=bus.voltage_level.idtag
+                )
+                tn.ConnectivityNodeContainer = vl
+                # link back
+                vl.TopologicalNode = tn
+            else:
+                logger.add_error(
+                    msg=f'No Voltage Level found for  {bus.name}',
+                    device=bus.idtag,
+                    device_class=bus.device_type.value,
+                    device_property="Bus.voltage_level.idtag",
+                    value=bus.voltage_level,
+                    comment="get_cgmes_tn_nodes()")
 
                 add_location(cgmes_model, tn, bus.longitude, bus.latitude, logger)
 

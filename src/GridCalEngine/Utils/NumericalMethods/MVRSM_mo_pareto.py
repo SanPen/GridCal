@@ -1,3 +1,6 @@
+# MIT License
+#
+# Copyright (c) 2020 Laurens Bliek
 # MVRSM uses a piece-wise linear surrogate model for optimization of
 # expensive cost functions with mixed-integer variables.
 #

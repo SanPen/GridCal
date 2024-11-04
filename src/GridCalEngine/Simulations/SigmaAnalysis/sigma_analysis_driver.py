@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 import numpy as np
 import numba as nb
 from matplotlib import pyplot as plt
@@ -256,114 +244,84 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
                                       logger=logger)
     results.bus_names = nc.bus_data.names
 
+    # we cannot handle P and PQV node types, hence we must convert those:
+    # PQ_tpe = 1  # control P, Q
+    # PV_tpe = 2  # Control P, Vm
+    # Slack_tpe = 3  # Control Vm, Va (slack)
+    # PQV_tpe = 4  # voltage-controlled bus (P, Q, V set, theta computed)
+    # P_tpe = 5  # voltage-controlling bus (P set, Q, V, theta computed)
+    nc.bus_data.bus_types[nc.bus_data.bus_types == 4] = 1 # PQV to PQ
+    nc.bus_data.bus_types[nc.bus_data.bus_types == 5] = 2  # P tp PV
+
+    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(
+        Sbase=nc.Sbase,
+        theta=np.zeros(nc.nbus),
+    )
+
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
     if len(calculation_inputs) == 0:
         return results
 
-    elif len(calculation_inputs) == 1:
-        if len(calculation_inputs[0].vd) > 0:
-            # only one island
-            calculation_input = calculation_inputs[0]
+    # simulate each island and merge the results
+    for i, island in enumerate(calculation_inputs):
 
-            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=calculation_input.Ybus,
-                                                                   Yseries=calculation_input.Yseries,
-                                                                   V0=calculation_input.Vbus,
-                                                                   S0=calculation_input.Sbus,
-                                                                   Ysh0=calculation_input.Yshunt,
-                                                                   pq=calculation_input.pq,
-                                                                   pv=calculation_input.pv,
-                                                                   sl=calculation_input.vd,
-                                                                   pqpv=calculation_input.pqpv,
+        if len(island.vd) > 0:
+
+            Sbus = island.Sbus + Shvdc[island.original_bus_idx]
+
+            # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
+            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=island.Ybus,
+                                                                   Yseries=island.Yseries,
+                                                                   V0=island.Vbus,
+                                                                   S0=Sbus,
+                                                                   Ysh0=island.Yshunt,
+                                                                   pq=island.pq,
+                                                                   pv=island.pv,
+                                                                   sl=island.vd,
+                                                                   pqpv=island.pqpv,
                                                                    tolerance=options.tolerance,
                                                                    max_coeff=options.max_iter,
                                                                    verbose=False,
                                                                    logger=logger)
 
             # compute the sigma values
-            n = calculation_input.nbus
+            n = island.nbus
             sig_re = np.zeros(n, dtype=float)
             sig_im = np.zeros(n, dtype=float)
 
             try:
                 if iter_ > 1:
-                    sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
-                    sig_re[calculation_input.pqpv] = np.real(sigma)
-                    sig_im[calculation_input.pqpv] = np.imag(sigma)
+                    sigma = sigma_function(U, X, iter_ - 1, island.Vbus[island.vd])
+                    sig_re[island.pqpv] = np.real(sigma)
+                    sig_im[island.pqpv] = np.imag(sigma)
                 else:
                     sig_re = np.zeros(n, dtype=float)
                     sig_im = np.zeros(n, dtype=float)
             except np.linalg.LinAlgError:
                 print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
+                # sigma = np.zeros(n, dtype=complex)
                 sig_re = np.zeros(n, dtype=float)
                 sig_im = np.zeros(n, dtype=float)
 
             sigma_distances = sigma_distance(sig_re, sig_im)
 
             # store the results
-            island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
+            island_results = SigmaAnalysisResults(n=len(island.Vbus))
             island_results.lambda_value = 1.0
-            island_results.Sbus = calculation_input.Sbus
+            island_results.Sbus = island.Sbus
             island_results.sigma_re = sig_re
             island_results.sigma_im = sig_im
             island_results.distances = sigma_distances
             island_results.converged = converged
-            results.apply_from_island(island_results, calculation_input.original_bus_idx)
+
+            bus_original_idx = island.original_bus_idx
+
+            # merge the results from this island
+            results.apply_from_island(island_results, bus_original_idx)
+
         else:
-            logger.add_error('There are no slack nodes')
-    else:
-        # simulate each island and merge the results
-        for i, calculation_input in enumerate(calculation_inputs):
-
-            if len(calculation_input.vd) > 0:
-                # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
-                U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=calculation_input.Ybus,
-                                                                       Yseries=calculation_input.Yseries,
-                                                                       V0=calculation_input.Vbus,
-                                                                       S0=calculation_input.Sbus,
-                                                                       Ysh0=calculation_input.Yshunt,
-                                                                       pq=calculation_input.pq,
-                                                                       pv=calculation_input.pv,
-                                                                       sl=calculation_input.vd,
-                                                                       pqpv=calculation_input.pqpv,
-                                                                       tolerance=options.tolerance,
-                                                                       max_coeff=options.max_iter,
-                                                                       verbose=False,
-                                                                       logger=logger)
-
-                # compute the sigma values
-                n = calculation_input.nbus
-                sig_re = np.zeros(n, dtype=float)
-                sig_im = np.zeros(n, dtype=float)
-
-                try:
-                    sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
-                    sig_re[calculation_input.pqpv] = np.real(sigma)
-                    sig_im[calculation_input.pqpv] = np.imag(sigma)
-                except np.linalg.LinAlgError:
-                    print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
-                    sigma = np.zeros(n, dtype=complex)
-                    sig_re = np.zeros(n, dtype=float)
-                    sig_im = np.zeros(n, dtype=float)
-
-                sigma_distances = sigma_distance(sig_re, sig_im)
-
-                # store the results
-                island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
-                island_results.lambda_value = 1.0
-                island_results.Sbus = calculation_input.Sbus
-                island_results.sigma_re = sig_re
-                island_results.sigma_im = sig_im
-                island_results.distances = sigma_distances
-                island_results.converged = converged
-
-                bus_original_idx = calculation_input.original_bus_idx
-
-                # merge the results from this island
-                results.apply_from_island(island_results, bus_original_idx)
-
-            else:
-                logger.add_info('No slack nodes in the island', str(i))
+            logger.add_info('No slack nodes in the island', str(i))
 
     return results
 

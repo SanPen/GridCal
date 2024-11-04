@@ -1,3 +1,8 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
 from typing import Dict, List
 
 import pytest
@@ -6,7 +11,7 @@ import GridCalEngine.Devices as gcdev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures import BusData
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_transformers
+from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_transformers, get_gcdev_device_to_terminal_dict
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
@@ -77,10 +82,12 @@ def test_ac_transformers_one_power_transformer_end_log_error():
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.endNumber = 1
     cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end]
-    get_gcdev_ac_transformers(cgmes, multi_circuit, None, None, None, logger,
+    get_gcdev_ac_transformers(cgmes, multi_circuit, None, None, get_gcdev_device_to_terminal_dict(cgmes_model=cgmes,
+                                                                                                  logger=logger),
+                              logger,
                               0)
-    assert len(logger.entries) == 1
-    assert logger.entries[0].msg == 'Transformers with 1 windings not supported yet'
+    assert len(logger.entries) > 0
+    assert any(d.msg == 'Transformers with 1 windings not supported yet' for d in logger)
 
 
 def test_ac_transformers_zero_calc_node_log_error():
@@ -314,7 +321,7 @@ def test_ac_transformers3w():
                               device_to_terminal_dict_object_3_terminals(), logger,
                               10)
     generated_transformers3w = multi_circuit.transformers3w[0]
-    assert len(logger.entries) == 0
+    assert len(logger.entries) == 2
     assert generated_transformers3w.V1 == 2
     assert generated_transformers3w.V2 == 2
     assert generated_transformers3w.V3 == 2

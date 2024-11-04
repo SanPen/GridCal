@@ -23,8 +23,8 @@ from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 # -- Project information -----------------------------------------------------
 
 project = 'GridCal'
-copyright = '2024, Santiago Peñate Vera'
-author = 'Santiago Peñate Vera'
+copyright = '2024, Santiago Peñate Vera et. al.'
+author = 'Santiago Peñate Vera et. al.'
 
 # The full version, including alpha/beta/rc tags
 release = __GridCalEngine_VERSION__
@@ -56,6 +56,7 @@ extensions.append('sphinx.ext.mathjax')
 extensions.append('sphinx.ext.viewcode')
 extensions.append('sphinx.ext.graphviz')
 extensions.append('sphinx_rtd_theme')
+# extensions.append('sphinx_build_compatibility.extension')
 
 autosummary_generate = True
 

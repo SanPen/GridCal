@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
 import os
@@ -26,6 +14,7 @@ from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
+from GridCalEngine import ContingencyOperationTypes
 from GridCalEngine.IO.file_system import tiles_path
 from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                            InputNumberDialogue, LogsDialogue)
@@ -2296,7 +2285,7 @@ class DiagramsMain(CompiledArraysMain):
                         con = dev.Contingency(device_idtag=elm.idtag,
                                               code=elm.code,
                                               name="Contingency " + elm.name,
-                                              prop="active",
+                                              prop=ContingencyOperationTypes.Active,
                                               value=0,
                                               group=group)
                         self.circuit.add_contingency(con)
@@ -2335,7 +2324,7 @@ class DiagramsMain(CompiledArraysMain):
                         ra = dev.RemedialAction(device_idtag=elm.idtag,
                                                 code=elm.code,
                                                 name="RA " + elm.name,
-                                                prop="active",
+                                                prop=ContingencyOperationTypes.Active,
                                                 value=0,
                                                 group=ra_group)
                         self.circuit.add_remedial_action(ra)

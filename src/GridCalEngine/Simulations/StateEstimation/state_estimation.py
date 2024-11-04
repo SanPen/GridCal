@@ -1,3 +1,8 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
 import time
 
 from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix
@@ -382,7 +387,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
             nu = nu * 2
 
         # compute the convergence
-        err = np.linalg.norm(dx, np.Inf)
+        err = np.linalg.norm(dx, np.inf)
         converged = err < tol
 
         # update loops

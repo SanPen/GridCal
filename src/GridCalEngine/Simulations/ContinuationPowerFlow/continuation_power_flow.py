@@ -1,19 +1,7 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
 
@@ -424,7 +412,7 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
     ]
 
     # check tolerance
-    normF = np.linalg.norm(F, np.Inf)
+    normF = np.linalg.norm(F, np.inf)
     converged = normF < tol
     if verbose:
         print('\nConverged!\n')
@@ -505,7 +493,7 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
             F = np.r_[mismatch[idx_dP].real, mismatch[idx_dQ].imag, P]
 
             # check for convergence
-            normF_new = np.linalg.norm(F, np.Inf)
+            normF_new = np.linalg.norm(F, np.inf)
 
             back_track_condition = normF_new > normF
             mu *= acceleration_parameter
@@ -794,7 +782,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 # Adapt step size
                 fx = (np.r_[np.angle(V[idx_dtheta]), np.abs(V[idx_dVm]), lam]
                       - np.r_[np.angle(V0[idx_dtheta]), np.abs(V0[idx_dVm]), lam0])
-                cpf_error = np.linalg.norm(fx, np.Inf)
+                cpf_error = np.linalg.norm(fx, np.inf)
 
                 if cpf_error == 0:
                     cpf_error = 1e-20

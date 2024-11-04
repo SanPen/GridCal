@@ -1,22 +1,9 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from numpy import exp, r_, Inf
 from numpy.linalg import norm
 from scipy.sparse.linalg import splu
 import time
@@ -101,8 +88,8 @@ def FDPF(Vbus: CxVec,
     dQ = mis[blck3_idx].imag
 
     if n_block1 > 0:
-        normP = norm(dP, Inf)
-        normQ = norm(dQ, Inf)
+        normP = norm(dP, np.inf)
+        normQ = norm(dQ, np.inf)
         converged = normP < tol and normQ < tol
 
         # iterate
@@ -117,7 +104,7 @@ def FDPF(Vbus: CxVec,
 
             # update voltage
             Va[blck1_idx] -= dVa
-            voltage = Vm * exp(1j * Va)
+            voltage = Vm * np.exp(1j * Va)
 
             # evaluate mismatch
             # (Sbus does not change here since Vm is fixed ...)
@@ -125,8 +112,8 @@ def FDPF(Vbus: CxVec,
             mis = (Scalc - Sbus) / Vm  # complex power mismatch
             dP = mis[blck1_idx].real
             dQ = mis[blck3_idx].imag
-            normP = norm(dP, Inf)
-            normQ = norm(dQ, Inf)
+            normP = norm(dP, np.inf)
+            normQ = norm(dQ, np.inf)
 
             if normP < tol and normQ < tol:
                 converged = True
@@ -137,7 +124,7 @@ def FDPF(Vbus: CxVec,
 
                 # update voltage
                 Vm[blck2_idx] -= dVm
-                voltage = Vm * exp(1j * Va)
+                voltage = Vm * np.exp(1j * Va)
 
                 # evaluate mismatch
                 Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)  # compute the ZIP power injection
@@ -145,8 +132,8 @@ def FDPF(Vbus: CxVec,
                 mis = (Scalc - Sbus) / Vm  # complex power mismatch
                 dP = mis[blck1_idx].real
                 dQ = mis[blck3_idx].imag
-                normP = norm(dP, Inf)
-                normQ = norm(dQ, Inf)
+                normP = norm(dP, np.inf)
+                normQ = norm(dQ, np.inf)
 
                 if normP < tol and normQ < tol:
                     converged = True
@@ -180,8 +167,8 @@ def FDPF(Vbus: CxVec,
                 if ok:
                     S0 += delta
 
-        F = r_[dP, dQ]  # concatenate again
-        normF = norm(F, Inf)
+        F = np.r_[dP, dQ]  # concatenate again
+        normF = norm(F, np.inf)
 
     else:
         converged = True

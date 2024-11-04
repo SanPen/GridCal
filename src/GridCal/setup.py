@@ -1,17 +1,7 @@
-# This file is part of GridCal.g
-#
-# GridCal is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GridCal is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GridCal.  If not, see <http://www.gnu.org/licenses/>.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 """
 A setuptools based setup module.
 See:
@@ -79,33 +69,13 @@ package_data = {'GridCal': ['*.md',
 
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',
-                "PySide6<=6.6.3.1",  # 5.14 breaks the UI generation for development, 6.7.0 breaks all
-                "numpy>=1.19.0,<2.0.0",
-                "scipy>=1.0.0",
-                "networkx>=2.1",
-                "pandas>=1.0",
-                "xlwt>=1.3.0",
-                "xlrd>=1.1.0",
-                "matplotlib>=2.1.1",
+                "PySide6>=6.8.0",  # 5.14 breaks the UI generation for development, 6.7.0 breaks all
                 "qtconsole>=4.5.4",
-                "openpyxl>=2.4.9",
-                "chardet>=3.0.4",  # for the psse files character detection
-                "scikit-learn>=0.18",
-                "geopy>=1.16",
                 "pytest>=7.2",
-                "h5py>=2.9.0",
-                "numba>=0.46",  # to compile routines natively
-                'pyproj',
-                'pyarrow',
                 "darkdetect",
                 "pyqtdarktheme",
-                "nptyping",
-                "windpowerlib",
-                "pvlib",
-                "hyperopt",
-                "rdflib",
                 "websockets",
-                "opencv-python",
+                "opencv-python>=4.10.0.84",
                 "packaging",
                 "GridCalEngine==" + __GridCal_VERSION__,  # the GridCalEngine version must be exactly the same
                 ]
@@ -119,7 +89,7 @@ extras_require = {
 setup(
     name='GridCal',  # Required
     version=__GridCal_VERSION__,  # Required
-    license='LGPL',
+    license='MPL2',
     description=description,  # Optional
     long_description=long_description,  # Optional
     long_description_content_type='text/markdown',  # Optional (see note above)
@@ -127,7 +97,7 @@ setup(
     author='Santiago Peñate Vera et. Al.',  # Optional
     author_email='santiago@gridcal.org',  # Optional
     classifiers=[
-        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+        'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 3.8',
     ],
     keywords='power systems planning',  # Optional
