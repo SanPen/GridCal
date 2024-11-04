@@ -763,6 +763,28 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
     return
 
 
+def get_gcdev_branch_groups(cgmes_model: CgmesCircuit,
+                            gcdev_model: MultiCircuit) -> None:
+    """
+    Convert to gcdev BranchGroups from CGMES
+        Line, DCLIne, DCConverterUnit
+
+    :param cgmes_model: CgmesCircuit
+    :param gcdev_model: gcdevCircuit
+    """
+    # convert branch aggregations
+    for cgmes_elm in cgmes_model.cgmes_assets.DCLine_list:
+
+        gcdev_elm = gcdev.BranchGroup(
+            name=cgmes_elm.name,
+            idtag=cgmes_elm.uuid,
+            code=cgmes_elm.description,
+            converted_from=cgmes_elm.tpe
+        )
+
+        gcdev_model.add_branch_group(gcdev_elm)
+
+
 def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
                                  calc_node_dict: Dict[str, gcdev.Bus],
@@ -2058,6 +2080,10 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_community(cgmes_model, gc_model)
 
     get_gcdev_substations(cgmes_model, gc_model)
+
+    vl_dict = get_gcdev_voltage_levels(cgmes_model=cgmes_model,
+                                       gcdev_model=gc_model,
+                                       logger=logger)
 
     cn_look_up = CnLookup(cgmes_model)
 

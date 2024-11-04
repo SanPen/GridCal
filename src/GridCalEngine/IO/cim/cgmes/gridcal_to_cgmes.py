@@ -463,8 +463,8 @@ def create_operational_limit_set(terminal,
     object_template = cgmes_model.get_class_type("OperationalLimitSet")
     op_lim_set = object_template(rdfid=new_rdf_id)
     term_num = terminal.sequenceNumber if terminal.sequenceNumber is not None else 1
-    op_lim_set.name = f'OpertinalLimit at Term-{term_num}'
-    op_lim_set.description = f'OpertinalLimit at Port1'
+    op_lim_set.name = f'OperationalLimit at Term-{term_num}'
+    op_lim_set.description = f'OperationalLimit at Port1'
 
     terminal_type = cgmes_model.get_class_type('Terminal')
     if isinstance(terminal, terminal_type):
@@ -474,9 +474,9 @@ def create_operational_limit_set(terminal,
     return op_lim_set
 
 
-def create_operational_limit_type(mc_elm: gcdev.Line,
-                                  cgmes_model: CgmesCircuit,
-                                  logger: DataLogger):
+def create_cgmes_operational_limit_type(mc_elm: gcdev.Line,
+                                        cgmes_model: CgmesCircuit,
+                                        logger: DataLogger):
     """
 
     :param mc_elm:
@@ -490,6 +490,53 @@ def create_operational_limit_type(mc_elm: gcdev.Line,
 
     cgmes_model.add(op_lim_type)
     return op_lim_type
+
+
+def create_cgmes_dc_tp_node(tp_name: str,
+                            tp_description: str,
+                            cgmes_model: CgmesCircuit,
+                            logger: DataLogger):
+    """
+    Creates a DCTopologicalNode from a gcdev Bus
+    :param tp_name:
+    :param tp_description:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("DCTopologicalNode")
+    dc_tp = object_template(rdfid=new_rdf_id)
+
+    dc_tp.name = tp_name
+    dc_tp.description = tp_description
+
+    cgmes_model.add(dc_tp)
+    return dc_tp
+
+
+def create_cgmes_dc_node(cn_name: str,
+                         cn_description: str,
+                         cgmes_model: CgmesCircuit,
+                         logger: DataLogger):
+    """
+    Creates a DCTopologicalNode from a gcdev Bus
+
+    :param cn_name:
+    :param cn_description:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("DCNode")
+    dc_node = object_template(rdfid=new_rdf_id)
+
+    dc_node.name = cn_name
+    dc_node.description = cn_description
+
+    cgmes_model.add(dc_node)
+    return dc_node
 
 
 def add_location(cgmes_model: CgmesCircuit,
@@ -733,7 +780,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
         cgmes_model.add(vl)
 
 
-def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
+def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
     """
@@ -745,56 +792,65 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
     """
     for bus in multi_circuit_model.buses:
 
-        if not bus.is_internal:
+        if bus.is_dc:
+            create_cgmes_dc_tp_node(tp_name=bus.name,
+                                    tp_description=bus.code,
+                                    cgmes_model=cgmes_model,
+                                    logger=logger)
 
-            tn = find_object_by_uuid(
-                cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
-                target_uuid=bus.idtag
-            )
-            if tn is not None:
-                continue
+        else:
+            if not bus.is_internal:
 
-            object_template = cgmes_model.get_class_type("TopologicalNode")
-            tn = object_template(rdfid=form_rdfid(bus.idtag))
-            tn.name = bus.name
-            tn.shortName = bus.name
-            tn.description = bus.code
-            tn.BaseVoltage = find_object_by_vnom(
-                cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-                target_vnom=bus.Vnom
-            )
-
-            if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
-                vl = find_object_by_uuid(
+                tn = find_object_by_uuid(
                     cgmes_model=cgmes_model,
-                    object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-                    target_uuid=bus.voltage_level.idtag
+                    object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+                    target_uuid=bus.idtag
                 )
-                tn.ConnectivityNodeContainer = vl
-                # link back
-                vl.TopologicalNode = tn
-            else:
-                logger.add_error(
-                    msg=f'No Voltage Level found for  {bus.name}',
-                    device=bus.idtag,
-                    device_class=bus.tpe,
-                    device_property="Bus.voltage_level.idtag",
-                    value=bus.voltage_level,
-                    comment="get_cgmes_tn_nodes()")
+                if tn is not None:
+                    # Skipping already added buses
+                    continue
 
-            add_location(cgmes_model, tn, bus.longitude, bus.latitude, logger)
+                object_template = cgmes_model.get_class_type("TopologicalNode")
+                tn = object_template(rdfid=form_rdfid(bus.idtag))
+                tn.name = bus.name
+                tn.shortName = bus.name
+                tn.description = bus.code
+                tn.BaseVoltage = find_object_by_vnom(
+                    cgmes_model=cgmes_model,
+                    object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                    target_vnom=bus.Vnom
+                )
 
-            cgmes_model.add(tn)
+                if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
+                    vl = find_object_by_uuid(
+                        cgmes_model=cgmes_model,
+                        object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                        target_uuid=bus.voltage_level.idtag
+                    )
+                    tn.ConnectivityNodeContainer = vl
+                    # link back
+                    vl.TopologicalNode = tn
+                else:
+                    logger.add_error(
+                        msg=f'No Voltage Level found for  {bus.name}',
+                        device=bus.idtag,
+                        device_class=bus.device_type,
+                        device_property="Bus.voltage_level.idtag",
+                        value=bus.voltage_level,
+                        comment="get_cgmes_tn_nodes()")
+
+                add_location(cgmes_model, tn, bus.longitude, bus.latitude, logger)
+
+                cgmes_model.add(tn)
 
     return
 
 
-def get_cgmes_cn_nodes_from_tn_nodes(multi_circuit_model: MultiCircuit,
+def get_cgmes_cn_nodes_from_tp_nodes(multi_circuit_model: MultiCircuit,
                                      cgmes_model: CgmesCircuit,
                                      logger: DataLogger) -> None:
     """
+    Export one ConnectivityNode for every TopologicalNode
 
     :param multi_circuit_model:
     :param cgmes_model:
@@ -1808,8 +1864,8 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_substations(gc_model, cgmes_model, logger)
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
 
-    get_cgmes_tn_nodes(gc_model, cgmes_model, logger)
-    get_cgmes_cn_nodes_from_tn_nodes(gc_model, cgmes_model, logger)
+    get_cgmes_tp_nodes(gc_model, cgmes_model, logger)
+    get_cgmes_cn_nodes_from_tp_nodes(gc_model, cgmes_model, logger)
     # TODO BusbarSection
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 

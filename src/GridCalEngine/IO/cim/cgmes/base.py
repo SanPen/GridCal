@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Dict, List
 from uuid import uuid4, UUID
-from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
+from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.data_logger import DataLogger
