@@ -36,7 +36,7 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, F
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.Topology.topology_processor import TopologyProcessorInfo, process_grid_topology_at
-from GridCalEngine.enumerations import DeviceType, ActionType
+from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
 
 
 def get_system_user() -> str:
@@ -1910,6 +1910,22 @@ class MultiCircuit(Assets):
                                     device_property=prop.name,
                                     value=v2,
                                     expected_value=v1)
+                        elif prop.tpe == SubObjectType.Array:
+                            if len(v1) != len(v2):
+                                logger.add_error(
+                                    msg="Different array length",
+                                    device_class=template_elm.device_type.value,
+                                    device_property=prop.name,
+                                    value=v2,
+                                    expected_value=v1)
+                            else:
+                                if not np.isclose(v1, v2, atol=tolerance):
+                                    logger.add_error(
+                                        msg="Different snapshot values",
+                                        device_class=template_elm.device_type.value,
+                                        device_property=prop.name,
+                                        value=v2,
+                                        expected_value=v1)
                         else:
                             if v1 != v2:
                                 logger.add_error(msg="Different snapshot values",
@@ -1917,7 +1933,6 @@ class MultiCircuit(Assets):
                                                  device_property=prop.name,
                                                  value=v2,
                                                  expected_value=v1)
-
                         if prop.has_profile():
                             p1 = elm1.get_profile_by_prop(prop=prop)
                             p2 = elm1.get_profile_by_prop(prop=prop)
