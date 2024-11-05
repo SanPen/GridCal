@@ -856,11 +856,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
 
-        cm_transformer.EquipmentContainer = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.Substation_list,
-            target_uuid=mc_elm.bus1.substation.idtag
-        )
+        if mc_elm.bus1.substation:
+            cm_transformer.EquipmentContainer = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.Substation_list,
+                target_uuid=mc_elm.bus1.substation.idtag
+            )
 
         # TODO tr3w rates?
         # current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
