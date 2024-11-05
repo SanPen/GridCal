@@ -53,6 +53,7 @@ def get_transformers_catalogue_df(grid: MultiCircuit):
             'tap module min [p.u.]': elm.tap_module_min,
             'tap module max [p.u.]': elm.tap_module_max,
             'tap phase max [p.u.]': elm.tap_phase_max,
+            'number transformers': elm.num_tx
         })
 
     return pd.DataFrame(data)
@@ -151,7 +152,8 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
                               dV=item['dV [p.u.]'],
                               neutral_position=item['neutral position'],
                               asymmetry_angle=item['asymmetry angle [deg]'],
-                              tc_type=tc_type
+                              tc_type=tc_type,
+                              num_tx=item['number transformers']
                               )
         lst.append(tpe)
 
@@ -175,7 +177,8 @@ def parse_underground_line_types(df: pd.DataFrame) -> List[UndergroundLineType]:
                                   B=item['B [uS/km]'],
                                   R0=item['R0 (AC) [Ohm/km]'],
                                   X0=item['X0  [Ohm/km]'],
-                                  B0=item['B0 [uS/km]']
+                                  B0=item['B0 [uS/km]'],
+                                  num_circuits=item['Number of circuits']
                                   )
         lst.append(tpe)
 
@@ -219,7 +222,8 @@ def parse_sequence_line_types(df: pd.DataFrame) -> List[SequenceLineType]:
                                B=item['b (uS/km)'],
                                R0=item['r0 (ohm/km)'],
                                X0=item['x0 (ohm/km)'],
-                               B0=item['b0 (uS/km)'])
+                               B0=item['b0 (uS/km)'],
+                               num_circuits=item['Number of circuits'])
         lst.append(tpe)
 
     return lst
