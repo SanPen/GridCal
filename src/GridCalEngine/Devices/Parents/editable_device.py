@@ -12,7 +12,7 @@ from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, Wind
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
                                         CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
-                                        ZonalGrouping, MIPSolvers, AcOpfMode, SubstationTypes,
+                                        ZonalGrouping, MIPSolvers, AcOpfMode, SubstationTypes, BranchGroupTypes,
                                         BranchImpedanceMode, FaultType, TapChangerTypes, ContingencyOperationTypes)
 
 # types that can be assigned to a GridCal property
@@ -45,7 +45,8 @@ GCPROP_TYPES = Union[
     Type[FaultType],
     Type[TapChangerTypes],
     Type[SubstationTypes],
-    Type[ContingencyOperationTypes]
+    Type[ContingencyOperationTypes],
+    Type[BranchGroupTypes]
 ]
 
 

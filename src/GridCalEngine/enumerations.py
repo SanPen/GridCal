@@ -1935,3 +1935,38 @@ class ContingencyOperationTypes(Enum):
         :return:
         """
         return list(map(lambda c: c.value, cls))
+
+
+class BranchGroupTypes(Enum):
+    """
+    Branch group types
+    """
+    LineSegmentsGroup = 'Line segments group'
+    TransformerGroup = 'Transformer group'
+    GenericGroup = "Generic group"
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return BranchGroupTypes[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
