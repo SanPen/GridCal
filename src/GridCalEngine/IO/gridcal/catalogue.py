@@ -177,7 +177,8 @@ def parse_underground_line_types(df: pd.DataFrame) -> List[UndergroundLineType]:
                                   B=item['B [uS/km]'],
                                   R0=item['R0 (AC) [Ohm/km]'],
                                   X0=item['X0  [Ohm/km]'],
-                                  B0=item['B0 [uS/km]']
+                                  B0=item['B0 [uS/km]'],
+                                  num_circuits=item['Number of circuits']
                                   )
         lst.append(tpe)
 
@@ -221,7 +222,8 @@ def parse_sequence_line_types(df: pd.DataFrame) -> List[SequenceLineType]:
                                B=item['b (uS/km)'],
                                R0=item['r0 (ohm/km)'],
                                X0=item['x0 (ohm/km)'],
-                               B0=item['b0 (uS/km)'])
+                               B0=item['b0 (uS/km)'],
+                               num_circuits=item['Number of circuits'])
         lst.append(tpe)
 
     return lst
