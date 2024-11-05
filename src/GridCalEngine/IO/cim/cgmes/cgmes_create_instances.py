@@ -4,7 +4,7 @@ Collection of functions to create new CGMES instances for CGMES export.
 import numpy as np
 from datetime import datetime
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     WindGenUnitKind,
@@ -15,6 +15,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullMode
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import DCConverterOperatingModeKind
 
 from GridCalEngine.data_logger import DataLogger
 from typing import List, Union
@@ -493,6 +494,8 @@ def create_cgmes_dc_tp_node(tp_name: str,
 def create_cgmes_dc_node(cn_name: str,
                          cn_description: str,
                          cgmes_model: CgmesCircuit,
+                         dc_tp: Base,
+                         dc_ec: Base,
                          logger: DataLogger):
     """
     Creates a DCTopologicalNode from a gcdev Bus
@@ -500,6 +503,8 @@ def create_cgmes_dc_node(cn_name: str,
     :param cn_name:
     :param cn_description:
     :param cgmes_model:
+    :param dc_tp: DC TopologicalNode
+    :param dc_ec: DC EquipmentContainer (DCConverterUnit)
     :param logger:
     :return:
     """
@@ -509,9 +514,168 @@ def create_cgmes_dc_node(cn_name: str,
 
     dc_node.name = cn_name
     dc_node.description = cn_description
+    dc_node.DCTopologicalNode = dc_tp
+    dc_node.DCEquipmentContainer = dc_ec
 
     cgmes_model.add(dc_node)
     return dc_node
+
+
+def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
+                               mc_elm: Union[gcdev.VSC, None],
+                               logger: DataLogger) -> Base:
+    """
+    Creates a new Voltage-source converter
+
+    :param cgmes_model:
+    :param mc_elm:
+    :param logger:
+    :return:
+    """
+    if mc_elm is None:
+        rdf_id = get_new_rdfid()
+    else:
+        rdf_id = form_rdfid(mc_elm.idtag)
+    object_template = cgmes_model.get_class_type("VsConverter")
+    vs_converter = object_template(rdfid=rdf_id)
+
+    if mc_elm is not None:
+        vs_converter.name = mc_elm.name
+        vs_converter.description = mc_elm.code
+
+    conv_dc_term = create_cgmes_acdc_converter_terminal()
+
+    cgmes_model.add(vs_converter)
+    return vs_converter
+
+
+def create_cgmes_acdc_converter_terminal(mc_dc_bus: Bus,
+                                         seq_num: Union[int, None],
+                                         dc_cond_eq: Union[None, Base],
+                                         cgmes_model: CgmesCircuit,
+                                         logger: DataLogger):
+    """
+    Creates a new ACDCConverterDCTerminal in CGMES model,
+    and connects it the relating DCNode
+
+    :param mc_dc_bus:
+    :param seq_num:
+    :param dc_cond_eq:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+
+    new_rdf_id = get_new_rdfid()
+    terminal_template = cgmes_model.get_class_type("Terminal")
+    acdc_term = terminal_template(new_rdf_id)
+    acdc_term.name = f'{dc_cond_eq.name} - T{seq_num}' if dc_cond_eq is not None else ""
+    acdc_term.description = f'{dc_cond_eq.name}_converter_DC_term'
+    acdc_term.sequenceNumber = seq_num if seq_num is not None else 1
+
+    dc_cond_eq_type = cgmes_model.get_class_type("DCConductingEquipment")
+    if isinstance(dc_cond_eq, dc_cond_eq_type):
+        acdc_term.DCConductingEquipment = dc_cond_eq
+    acdc_term.connected = True
+
+    tn = find_object_by_uuid(
+        cgmes_model=cgmes_model,
+        object_list=cgmes_model.cgmes_assets.DCTopologicalNode_list,
+        target_uuid=mc_dc_bus.idtag
+    )
+    if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
+        acdc_term.TopologicalNode = tn
+        acdc_term.ConnectivityNode = tn.ConnectivityNodes
+    else:
+        logger.add_error(msg='No found TopologinalNode',
+                         device=mc_dc_bus,
+                         device_class=gcdev.Bus)
+
+    cgmes_model.add(acdc_term)
+
+    # <cim:IdentifiedObject.name>S 9_9_BUS 10_10_CBX-CS1_ON_BUS_9</cim:IdentifiedObject.name>
+    # <cim:IdentifiedObject.description>VSC_DCLINE_TERMINAL_@@@VSC_BUS 9_9_BUS 10_10_CBX-CS1_ON_BUS_9</cim:IdentifiedObject.description>
+    # <cim:DCBaseTerminal.DCNode rdf:resource="#_44bc63d9-6c3a-fb0a-4ff6-6743ee29bf85" />
+    # <cim:ACDCConverterDCTerminal.DCConductingEquipment rdf:resource="#_0d6a71d0-7901-9d82-f3fc-f45f5172227b" />
+    # <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+    # <cim:ACDCConverterDCTerminal.polarity rdf:resource="http://iec.ch/TC57/2013/CIM-schema-cim16#DCPolarityKind.positive"/>
+
+    # if not mc_dc_bus.is_dc:
+    #     logger.add_error(msg=f'Bus must be a DC bus',
+    #                      device=mc_dc_bus,
+    #                      device_property=mc_dc_bus.is_dc,
+    #                      expected_value=True,
+    #                      value=mc_dc_bus.is_dc,
+    #                      comment="create_cgmes_acdc_converter_terminal")
+    #     raise
+
+    return acdc_term
+
+
+def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
+                         logger: DataLogger) -> Base:
+    """
+    Creates a new CGMES DCLine
+
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("DCLine")
+    dc_line = object_template(rdfid=new_rdf_id)
+
+    cgmes_model.add(dc_line)
+    return dc_line
+
+
+def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
+                                 mc_elm: Union[gcdev.HvdcLine,
+                                               gcdev.DcLine],
+                                 eq_cont: Base,
+                                 logger: DataLogger) -> Base:
+    """
+    Creates a new CGMES DCLineSegment
+
+    :param cgmes_model:
+    :param mc_elm:
+    :param eq_cont: EquipmentContainer (DCLine)
+    :param logger:
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("DCLineSegment")
+    dc_line_segment = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+    dc_line_segment.name = mc_elm.name
+    dc_line_segment.description = mc_elm.code
+
+    dc_line_segment.length = mc_elm.length if mc_elm.length is not None else 1.0
+    dc_line_segment.resistance = mc_elm.r
+
+    dc_line_segment.EquipmentContainer = eq_cont
+
+    cgmes_model.add(dc_line_segment)
+    return dc_line_segment
+
+
+def create_cgmes_dc_converter_unit(cgmes_model: CgmesCircuit,
+                                   logger: DataLogger) -> Base:
+    """
+    Creates a new CGMES DCConverterUnit
+
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("DCConverterUnit")
+    dc_cu = object_template(rdfid=new_rdf_id)
+
+    dc_cu.Substation = None  # TODO
+    dc_cu.operationMode = DCConverterOperatingModeKind.monopolarGroundReturn
+
+    cgmes_model.add(dc_cu)
+    return dc_cu
 
 
 def create_cgmes_location(cgmes_model: CgmesCircuit,
@@ -549,3 +713,75 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
     device.Location = location
 
     return
+
+
+
+def create_sv_power_flow(cgmes_model: CgmesCircuit,
+                         p: float,
+                         q: float,
+                         terminal) -> None:
+    """
+    Creates a SvPowerFlow instance
+
+    :param cgmes_model:
+    :param p: The active power flow. Load sign convention is used,
+                i.e. positive sign means flow out
+                from a TopologicalNode (bus) into the conducting equipment.
+    :param q:
+    :param terminal:
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvPowerFlow")
+    new_rdf_id = get_new_rdfid()
+    sv_pf = object_template(rdfid=new_rdf_id)
+
+    sv_pf.p = p
+    sv_pf.q = q
+    sv_pf.Terminal = terminal
+
+    cgmes_model.add(sv_pf)
+
+
+def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
+                                         sections: int,
+                                         cgmes_shunt_compensator) -> None:
+    """
+    Creates a SvShuntCompensatorSections instance
+
+    :param cgmes_model: Cgmes Circuit
+    :param sections:
+    :param cgmes_shunt_compensator: Linear or Non-linear
+        ShuntCompensator instance from cgmes model
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvShuntCompensatorSections")
+    new_rdf_id = get_new_rdfid()
+    sv_scs = object_template(rdfid=new_rdf_id)
+
+    # sections: The number of sections in service as a continous variable.
+    # To get integer value scale with ShuntCompensator.bPerSection.
+    sv_scs.sections = sections
+    sv_scs.ShuntCompensator = cgmes_shunt_compensator
+
+    cgmes_model.add(sv_scs)
+
+
+def create_sv_status(cgmes_model: CgmesCircuit,
+                     in_service: int,
+                     cgmes_conducting_equipment) -> None:
+    """
+    Creates a SvStatus instance
+
+    :param cgmes_model: Cgmes Circuit
+    :param in_service: is active paramater
+    :param cgmes_conducting_equipment: cgmes CondEq
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvStatus")
+    new_rdf_id = get_new_rdfid()
+    sv_status = object_template(rdfid=new_rdf_id)
+
+    sv_status.inService = in_service
+    # TODO sv_status.ConductingEquipment = cgmes_conducting_equipment
+
+    cgmes_model.add(sv_status)

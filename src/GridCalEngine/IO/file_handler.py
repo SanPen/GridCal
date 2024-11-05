@@ -9,7 +9,9 @@ import json
 from collections.abc import Callable
 from typing import Union, List, Any, Dict, TYPE_CHECKING
 
-from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes, create_cgmes_headers
+from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
+    create_cgmes_headers
+from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger

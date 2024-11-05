@@ -15,7 +15,10 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
     (create_cgmes_dc_tp_node, create_cgmes_terminal, \
      create_cgmes_load_response_char, create_cgmes_current_limit,
      create_cgmes_location, create_cgmes_generating_unit,
-     create_cgmes_regulating_control, create_cgmes_tap_changer_control)
+     create_cgmes_regulating_control, create_cgmes_tap_changer_control,
+     create_sv_power_flow, create_cgmes_vsc_converter,
+     create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
+     create_cgmes_dc_converter_unit)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
@@ -1166,77 +1169,6 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
                              value=mc_shunt_like.idtag)
 
 
-def create_sv_power_flow(cgmes_model: CgmesCircuit,
-                         p: float,
-                         q: float,
-                         terminal) -> None:
-    """
-    Creates a SvPowerFlow instance
-
-    :param cgmes_model:
-    :param p: The active power flow. Load sign convention is used,
-                i.e. positive sign means flow out
-                from a TopologicalNode (bus) into the conducting equipment.
-    :param q:
-    :param terminal:
-    :return:
-    """
-    object_template = cgmes_model.get_class_type("SvPowerFlow")
-    new_rdf_id = get_new_rdfid()
-    sv_pf = object_template(rdfid=new_rdf_id)
-
-    sv_pf.p = p
-    sv_pf.q = q
-    sv_pf.Terminal = terminal
-
-    cgmes_model.add(sv_pf)
-
-
-def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
-                                         sections: int,
-                                         cgmes_shunt_compensator) -> None:
-    """
-    Creates a SvShuntCompensatorSections instance
-
-    :param cgmes_model: Cgmes Circuit
-    :param sections:
-    :param cgmes_shunt_compensator: Linear or Non-linear
-        ShuntCompensator instance from cgmes model
-    :return:
-    """
-    object_template = cgmes_model.get_class_type("SvShuntCompensatorSections")
-    new_rdf_id = get_new_rdfid()
-    sv_scs = object_template(rdfid=new_rdf_id)
-
-    # sections: The number of sections in service as a continous variable.
-    # To get integer value scale with ShuntCompensator.bPerSection.
-    sv_scs.sections = sections
-    sv_scs.ShuntCompensator = cgmes_shunt_compensator
-
-    cgmes_model.add(sv_scs)
-
-
-def create_sv_status(cgmes_model: CgmesCircuit,
-                     in_service: int,
-                     cgmes_conducting_equipment) -> None:
-    """
-    Creates a SvStatus instance
-
-    :param cgmes_model: Cgmes Circuit
-    :param in_service: is active paramater
-    :param cgmes_conducting_equipment: cgmes CondEq
-    :return:
-    """
-    object_template = cgmes_model.get_class_type("SvStatus")
-    new_rdf_id = get_new_rdfid()
-    sv_status = object_template(rdfid=new_rdf_id)
-
-    sv_status.inService = in_service
-    # TODO sv_status.ConductingEquipment = cgmes_conducting_equipment
-
-    cgmes_model.add(sv_status)
-
-
 def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
                           nc: NumericalCircuit,
                           cgmes_model: CgmesCircuit,
@@ -1305,6 +1237,68 @@ def make_coordinate_system(cgmes_model: CgmesCircuit,
     cgmes_model.add(coo_sys)
 
 
+def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
+                               cgmes_model: CgmesCircuit,
+                               logger: DataLogger):
+    """
+    Converts simplified HVDC line to two VSConverter,
+    connected with a DCLineSegment, contained in a DCLine
+    and in a DCConverterUnit?
+    DCGround?
+    DCNodes, DCTopologicalNodes are also created here from skratch
+    as there is no DC part in the simplified modelling.
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+
+    for hvdc_line in multicircuit_model.hvdc_lines:
+        # FROM side
+        vsc_1 = create_cgmes_vsc_converter(cgmes_model=cgmes_model, mc_elm=None,
+                                           logger=logger)
+
+        dc_conv_unit_1 = create_cgmes_dc_converter_unit(cgmes_model=cgmes_model,
+                                                        logger=logger)
+        dc_conv_unit_1.description = f'DC_Converter_Unit_for_VSC_1'
+
+        dc_tp_1 = create_cgmes_dc_tp_node(
+            tp_name=f'DC_side_{hvdc_line.bus_from.name}',
+            tp_description=f'DC_for_{hvdc_line.bus_from.code}',
+            cgmes_model=cgmes_model,
+            logger=logger
+        )
+
+        dc_node_1 = create_cgmes_dc_node(cn_name='dc node name',
+                                         cn_description='DC_node_VSC_1',
+                                         cgmes_model=cgmes_model,
+                                         dc_tp=dc_tp_1,
+                                         dc_ec=dc_conv_unit_1,
+                                         logger=logger)
+        # TO side
+        vsc_2 = create_cgmes_vsc_converter(cgmes_model=cgmes_model, mc_elm=None,
+                                           logger=logger)
+
+        # DC Line
+        dc_line = create_cgmes_dc_line(cgmes_model=cgmes_model,
+                                       logger=logger)
+        dc_line_sgm = create_cgmes_dc_line_segment(cgmes_model=cgmes_model,
+                                                   mc_elm=hvdc_line,
+                                                   eq_cont=dc_line,
+                                                   logger=logger)
+
+        # VSC 1
+
+        # VSC 2
+
+        # DC Line Segment
+        # dc_line_sgm.inductance = 30.0
+        # dc_line_sgm.capacitance = 0.0
+        # dc_line_sgm.aggregate = False
+
+    return
+
 # endregion
 
 
@@ -1349,6 +1343,15 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     # shunts
     get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
+
+    # DC elements
+    treat_dc_equipment_as_hvdc_lines = True
+    if treat_dc_equipment_as_hvdc_lines:
+        convert_hvdc_line_to_cgmes()
+    else:
+        pass
+        # TODO get_cgmes_vsc_from_vsc()
+        # TODO get_dc_line_from_dc_line()
 
     # results: sv classes
     if pf_results:

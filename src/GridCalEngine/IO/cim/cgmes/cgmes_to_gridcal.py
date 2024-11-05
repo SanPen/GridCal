@@ -671,8 +671,7 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
         calc_node_dict: Dict[str, gcdev.Bus],
         cn_dict: Dict[str, gcdev.ConnectivityNode],
         device_to_terminal_dict: Dict[str, List[Base]],
-        logger: DataLogger
-    ) -> None:
+        logger: DataLogger) -> None:
     """
     Convert the CGMES VcConverter to gcdev simplified HVDC lines
     (if required attributes for converting from VSC to VSC not given)
@@ -750,6 +749,8 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
                 # no Limit for DC terminal in XML
                 Vset_f=1.0,             # if not found, 1.0 p.u.
                 Vset_t=1.0,
+                r=dc_line_sgm.resistance,
+                dc_link_voltage=200, # TODO
             )
 
             gcdev_model.add_hvdc(gcdev_elm)
