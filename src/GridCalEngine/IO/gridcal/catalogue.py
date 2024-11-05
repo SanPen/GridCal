@@ -53,6 +53,7 @@ def get_transformers_catalogue_df(grid: MultiCircuit):
             'tap module min [p.u.]': elm.tap_module_min,
             'tap module max [p.u.]': elm.tap_module_max,
             'tap phase max [p.u.]': elm.tap_phase_max,
+            'number transformers': elm.num_tx
         })
 
     return pd.DataFrame(data)
@@ -151,7 +152,8 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
                               dV=item['dV [p.u.]'],
                               neutral_position=item['neutral position'],
                               asymmetry_angle=item['asymmetry angle [deg]'],
-                              tc_type=tc_type
+                              tc_type=tc_type,
+                              num_tx=item['number transformers']
                               )
         lst.append(tpe)
 

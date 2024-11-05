@@ -39,6 +39,7 @@ class TransformerType(EditableDevice):
                  asymmetry_angle: float = 90.0,
                  tc_type: TapChangerTypes = TapChangerTypes.NoRegulation,
                  name: str = 'TransformerType',
+                 num_tx: int = 1,
                  idtag: Union[None, str] = None) -> None:
         """
         Transformer template from the short circuit study
@@ -89,6 +90,7 @@ class TransformerType(EditableDevice):
                                        dV=dV,
                                        asymmetry_angle=asymmetry_angle,
                                        tc_type=tc_type)
+        self.num_tx = int(num_tx)
 
         self.register(key='HV', units='kV', tpe=float, definition='Nominal voltage al the high voltage side')
         self.register(key='LV', units='kV', tpe=float, definition='Nominal voltage al the low voltage side')
@@ -109,6 +111,7 @@ class TransformerType(EditableDevice):
         self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min tap phase', editable=False)
         self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max tap phase', editable=False)
 
+        self.register(key='num_tx', units='', tpe=int, definition='number of transformers in parallel')
     @property
     def tap_module_min(self) -> float:
         """
