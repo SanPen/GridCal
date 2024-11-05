@@ -240,7 +240,7 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
             else:
                 logger.add_error(
                     msg=f'Substation not found for VoltageLevel {vl.name}',
-                    device=mc_elm,
+                    device=mc_elm.device_type.value,
                     device_class=gcdev.Bus)
         cgmes_model.add(vl)
 
@@ -374,7 +374,7 @@ def get_cgmes_cn_nodes_from_tp_nodes(multi_circuit_model: MultiCircuit,
 #         else:
 #             logger.add_error(msg='Connectivity Node has no default bus',
 #                              device=mc_elm.name,
-#                              device_class=mc_elm.device_type)
+#                              device_class=mc_elm.device_type.value)
 #             # print(f'Topological node not found for cn: {cn.name}')
 #
 #         cgmes_model.add(cn)
@@ -535,7 +535,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_gen.name = mc_elm.name
         cgmes_gen.description = mc_elm.code
         # cgmes_gen.EquipmentContainer: cgmes.Substation
-        if cgmes_model.cgmes_assets.Substation_list:
+        if cgmes_model.cgmes_assets.Substation_list and mc_elm.bus.substation:
             subs = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
@@ -552,7 +552,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
                 logger.add_error(
                     msg=f'No substation found for generator {mc_elm.name}',
                     device=mc_elm.idtag,
-                    device_class=mc_elm.device_type,
+                    device_class=mc_elm.device_type.value,
                     device_property="Substation",
                     value=subs,
                     comment="get_cgmes_generators()")
@@ -768,7 +768,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         else:
             logger.add_error(msg='No TapChangerType found for TapChanger',
                              device=mc_elm.tap_changer,
-                             device_class=gcdev.TapChanger,
+                             device_class=mc_elm.device_type.value,
                              value=mc_elm.tap_changer)
         new_rdf_id = get_new_rdfid()
         tap_changer = object_template(rdfid=new_rdf_id)
@@ -795,7 +795,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             logger.add_error(
                 msg='stepVoltageIncerment cannot be filled fot TapChanger',
                 device=mc_elm,
-                device_class=gcdev.Transformer2W,
+                device_class=mc_elm.device_type.value,
                 value=mc_elm.idtag)
 
         # CONTROL
@@ -1106,7 +1106,7 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
         else:
             logger.add_error(msg='No Terminal found for Generator',
                              device=gen,
-                             device_class=gcdev.Generator,
+                             device_class=gen.device_type.value,
                              value=gen.idtag)
 
     # Load-like devices -----------------------------------------------------
@@ -1138,7 +1138,7 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
         else:
             logger.add_error(msg='No Terminal found for Load-like device',
                              device=mc_load_like,
-                             device_class=gcdev.Load,
+                             device_class=mc_load_like.device_type.value,
                              value=mc_load_like.idtag)
 
     # Shunts ----------------------------------------------------------------
@@ -1165,7 +1165,7 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
         else:
             logger.add_error(msg='No Terminal found for Shunt-like device',
                              device=mc_shunt_like,
-                             device_class=gcdev.Load,
+                             device_class=mc_shunt_like.device_type.value,
                              value=mc_shunt_like.idtag)
 
 
@@ -1347,7 +1347,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     # DC elements
     treat_dc_equipment_as_hvdc_lines = True
     if treat_dc_equipment_as_hvdc_lines:
-        convert_hvdc_line_to_cgmes()
+        convert_hvdc_line_to_cgmes(gc_model, cgmes_model, logger)
     else:
         pass
         # TODO get_cgmes_vsc_from_vsc()
