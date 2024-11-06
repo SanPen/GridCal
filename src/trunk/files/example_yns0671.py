@@ -1,4 +1,4 @@
-import GridCalEngine.api as gce
+import GridCalEngine as gce
 
 grid = gce.MultiCircuit()
 
