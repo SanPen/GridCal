@@ -311,7 +311,7 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                                           latitude=bus.latitude,
                                           logger=logger)
 
-                    cgmes_model.add(tn)
+                cgmes_model.add(tn)
 
     return
 
