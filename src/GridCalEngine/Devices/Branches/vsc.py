@@ -11,7 +11,7 @@ from typing import List, Tuple
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus, TapModuleControl, TapPhaseControl
+from GridCalEngine.enumerations import BuildStatus, TapModuleControl, TapPhaseControl, GpfControlType
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
@@ -61,8 +61,15 @@ class VSC(ControllableBranchParent):
                  x0=0.05,
                  r2=0.0001,
                  x2=0.05,
-                 capex=0,
-                 opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 capex=0.0,
+                 opex=0.0,
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 gpf_ctrl1_elm=None,
+                 gpf_ctrl1_mode: GpfControlType = GpfControlType.type_None,
+                 gpf_ctrl1_val=0.0,
+                 gpf_ctrl2_elm=None,
+                 gpf_ctrl2_mode: GpfControlType = GpfControlType.type_None,
+                 gpf_ctrl2_val=0.0):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -102,6 +109,12 @@ class VSC(ControllableBranchParent):
         :param capex:
         :param opex:
         :param build_status:
+        :param gpf_ctrl1_elm: pointer to the control of the first degree of freedom
+        :param gfp_ctrl1_mode: control magnitude for the first control
+        :param gpf_ctrl1_val: value at which the magnitude is set for the first control
+        :param gpf_ctrl2_elm: pointer to the control of the second degree of freedom
+        :param gfp_ctrl2_mode: control magnitude for the second control
+        :param gpf_ctrl2_val: value at which the magnitude is set for the second control
         """
 
         ControllableBranchParent.__init__(self,
@@ -197,6 +210,14 @@ class VSC(ControllableBranchParent):
         self.alpha2 = float(alpha2)
         self.alpha3 = float(alpha3)
 
+        # GENERALISED PF
+        self.gpf_ctrl1_elm = gpf_ctrl1_elm
+        self.gpf_ctrl1_mode: GpfControlType = gpf_ctrl1_mode
+        self.gpf_ctrl1_val = gpf_ctrl1_val
+        self.gpf_ctrl2_elm = gpf_ctrl2_elm
+        self.gpf_ctrl2_mode: GpfControlType = gpf_ctrl2_mode
+        self.gpf_ctrl2_val = gpf_ctrl2_val
+
         self.register(key='G0sw', units='p.u.', tpe=float, definition='Inverter losses.')
         self.register(key='Beq', units='p.u.', tpe=float, definition='Total shunt susceptance.')
         self.register(key='Beq_max', units='p.u.', tpe=float, definition='Max total shunt susceptance.')
@@ -212,6 +233,15 @@ class VSC(ControllableBranchParent):
         self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
 
         self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
+
+        # GENERALISED PF
+        # Why not recognizing it below but yes in transformer.py?
+        self.register(key='gpf_ctrl1_elm', units='', tpe=str, definition='Generalised PF control 1 element pointer')
+        self.register(key='gpf_ctrl1_mode', units='', tpe=GpfControlType, definition='Generalised PF control 1 mode')
+        self.register(key='gpf_ctrl1_val', units='', tpe=float, definition='Generalised PF control 1 value')
+        self.register(key='gpf_ctrl2_elm', units='', tpe=str, definition='Generalised PF control 2 element pointer')
+        self.register(key='gpf_ctrl2_mode', units='', tpe=GpfControlType, definition='Generalised PF control 2 mode')
+        self.register(key='gpf_ctrl2_val', units='', tpe=float, definition='Generalised PF control 2 value')
 
     def change_base(self, Sbase_old: float, Sbase_new: float):
         """

@@ -28,11 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="6.0.0">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/control_data.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Include first Raiyan files">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,7 +179,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "320__generalized__acdc__pf",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Utils/ThirdParty/nptyping",
+    "last_opened_file_path": "C:/Users/J/Desktop/GridCal_Raiyan/GridCal",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -701,8 +698,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.23339.19" />
-        <option value="bundled-python-sdk-0029f7779945-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.23339.19" />
+        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
       </set>
     </attachedChunks>
   </component>
@@ -1769,7 +1765,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="594" />
+    <option name="localTasksCounter" value="595" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1796,14 +1792,25 @@
         </entry>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="320_generalized_acdc_pf" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved the PSSe transformer conversion" />
     <MESSAGE value="Added color to areas, fluid node and fluid path&#10;Added fluid representation to the OPFResults&#10;Fixed bug with #317" />
     <MESSAGE value="Greatly improved the fluids representation" />
     <MESSAGE value="Delete empty groups if no reference is found when deleting contingency, remedial action or investment" />
@@ -1828,7 +1835,8 @@
     <MESSAGE value="Fixed numerical circuit comparison after updating to numpy 2.0" />
     <MESSAGE value="Fixed issue with about box in system pythons under linux" />
     <MESSAGE value="6.0.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="6.0.0" />
+    <MESSAGE value="Include first Raiyan files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Include first Raiyan files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

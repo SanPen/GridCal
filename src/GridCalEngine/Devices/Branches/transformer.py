@@ -12,7 +12,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl,
-                                        TapModuleControl, SubObjectType, TapChangerTypes)
+                                        TapModuleControl, SubObjectType, TapChangerTypes, GpfControlType)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -81,7 +81,13 @@ class Transformer2W(ControllableBranchParent):
                  tc_normal_position: int = 2,
                  tc_dV: float = 0.01,
                  tc_asymmetry_angle=90,
-                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation):
+                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation,
+                 gpf_ctrl1_elm=None,
+                 gpf_ctrl1_mode: GpfControlType = GpfControlType.type_None,
+                 gpf_ctrl1_val=0.0,
+                 gpf_ctrl2_elm=None,
+                 gpf_ctrl2_mode: GpfControlType = GpfControlType.type_None,
+                 gpf_ctrl2_val=0.0):
         """
         Transformer constructor
         :param name: Name of the branch
@@ -133,6 +139,12 @@ class Transformer2W(ControllableBranchParent):
         :param capex: Cost of investment (e/MW)
         :param opex: Cost of operation (e/MWh)
         :param build_status: build status (now time)
+        :param gpf_ctrl1_elm: object the first degree of freedom controls
+        :param gpf_ctrl1_mode: magnitude under control for the first degree of freedom
+        :param gpf_ctrl1_val: value at which the magnitude of the first control is set
+        :param gpf_ctrl2_elm: object the second degree of freedom controls
+        :param gpf_ctrl2_mode: magnitude under control for the second degree of freedom
+        :param gpf_ctrl2_val: value at which the magnitude of the second control is set
         """
 
         ControllableBranchParent.__init__(self,
@@ -220,6 +232,14 @@ class Transformer2W(ControllableBranchParent):
         # association with transformer templates
         self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)
 
+        # GENERALISED PF
+        self.gpf_ctrl1_elm = gpf_ctrl1_elm
+        self.gpf_ctrl1_mode: GpfControlType = gpf_ctrl1_mode
+        self.gpf_ctrl1_val = gpf_ctrl1_val
+        self.gpf_ctrl2_elm = gpf_ctrl2_elm
+        self.gpf_ctrl2_mode: GpfControlType = gpf_ctrl2_mode
+        self.gpf_ctrl2_val = gpf_ctrl2_val
+
         # register
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
@@ -237,6 +257,14 @@ class Transformer2W(ControllableBranchParent):
         self.register(key='possible_transformer_types', units='', tpe=SubObjectType.Associations,
                       definition='Possible transformer types (>1 to denote association), - to denote no association',
                       display=False)
+
+        # GENERALISED PF
+        self.register(key='gpf_ctrl1_elm', units='', tpe=object, definition='Generalised PF control 1 element pointer')
+        self.register(key='gpf_ctrl1_mode', units='', tpe=GpfControlType, definition='Generalised PF control 1 mode')
+        self.register(key='gpf_ctrl1_val', units='', tpe=float, definition='Generalised PF control 1 value')
+        self.register(key='gpf_ctrl2_elm', units='', tpe=object, definition='Generalised PF control 2 element pointer')
+        self.register(key='gpf_ctrl2_mode', units='', tpe=GpfControlType, definition='Generalised PF control 2 mode')
+        self.register(key='gpf_ctrl2_val', units='', tpe=float, definition='Generalised PF control 2 value')
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """

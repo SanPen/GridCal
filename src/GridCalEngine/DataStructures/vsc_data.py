@@ -6,8 +6,8 @@
 import numpy as np
 from typing import List, Tuple
 import scipy.sparse as sp
-# from GridCalEngine.enumerations import ConverterControlType
-from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec
+from GridCalEngine.enumerations import ConverterControlType, GpfControlType
+from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec, ObjVec
 
 
 class VscData:
@@ -68,12 +68,25 @@ class VscData:
                                                         dtype=int)  # this ons is just for splitting islands
 
         # Control settings
+        # Get rid of ConverterControlType? Visible in vsc_data but not imported. Why?
         self.control_mode: List[ConverterControlType] = [ConverterControlType.type_0_free] * nelm
+
         self.kdp: Vec = np.zeros(nelm, dtype=float)
         self.Pdc_set: Vec = np.zeros(nelm, dtype=float)
         self.Qac_set: Vec = np.zeros(nelm, dtype=float)
         self.Vac_set: Vec = np.zeros(nelm, dtype=float)
         self.Vdc_set: Vec = np.zeros(nelm, dtype=float)
+
+        # GENERALISED PF
+        self.gpf_ctrl1_elm: ObjVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl1_mode: List[GpfControlType] = [GpfControlType.type_None] * nelm
+        self.gpf_ctrl1_val: Vec = np.zeros(nelm, dtype=float)
+        self.gpf_ctrl2_elm: ObjVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl2_mode: List[GpfControlType] = [GpfControlType.type_None] * nelm
+        self.gpf_ctrl2_val: Vec = np.zeros(nelm, dtype=float)
+
+        self.name_to_idx: dict = dict()
+
 
     def update_loading(self, Pbus: Vec, Vbus: Vec, Sbase: float):
         """

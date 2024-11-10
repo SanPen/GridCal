@@ -3,12 +3,13 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
+from GridCalEngine.enumerations import  GpfControlType
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec, ObjVec
 
 
 class GeneratorData:
@@ -70,6 +71,19 @@ class GeneratorData:
 
         self.original_idx = np.zeros(nelm, dtype=int)
         self.bus_idx = np.zeros(nelm, dtype=int)
+
+        # GENERALISED PF
+        # ObjVec instead of StrVec, maybe some implications down the road
+        # At most, work with StrVec and point at idtags
+        self.gpf_ctrl1_elm: ObjVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl1_mode: List[GpfControlType] = [GpfControlType.type_None] * nelm
+        self.gpf_ctrl1_val: Vec = np.zeros(nelm, dtype=float)
+        self.gpf_ctrl2_elm: ObjVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl2_mode: List[GpfControlType] = [GpfControlType.type_None] * nelm
+        self.gpf_ctrl2_val: Vec = np.zeros(nelm, dtype=float)
+
+        self.name_to_idx: dict = dict()
+        self.is_at_dc_bus: BoolVec = np.zeros(nelm, dtype=bool)  # purpose? why not for VSC?
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec):
         """
