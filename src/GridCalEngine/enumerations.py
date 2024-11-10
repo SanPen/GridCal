@@ -189,6 +189,7 @@ class SolverType(Enum):
     BFS_linear = 'Backwards-Forward substitution (linear)'
     Constant_Impedance_linear = 'Constant impedance linear'
     NoSolver = 'No Solver'
+    GENERALISED = 'AC/DC Generalised Method'
 
     def __str__(self) -> str:
         """
@@ -739,6 +740,46 @@ class ActionType(Enum):
     def list(cls):
         """
 
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class GpfControlType(Enum):
+    """
+    GENERALISED PF Control types
+    """
+    type_Vm = '0:Vm'
+    type_Va = '1:Va'
+    type_Pzip = '2:Pzip'
+    type_Qzip = '3:Qzip'
+    type_Pf = '4:Pf'
+    type_Qf = '5:Qf'
+    type_Pt = '6:Pt'
+    type_Qt = '7:Qt'
+    type_TapMod = '8:m'
+    type_TapAng = '9:tau'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+        :param s:
+        :return:
+        """
+        try:
+            return GpfControlType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
         :return:
         """
         return list(map(lambda c: c.value, cls))
