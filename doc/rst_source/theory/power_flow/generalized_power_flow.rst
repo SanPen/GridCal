@@ -61,7 +61,7 @@ of Raiyan Bin Zulkifli in 2024 (Generalised AC/DC Power Flow at UPC university).
 
 
 
-Control sets:
+Specified variables' sets:
 
 - :math:`\mathcal{C}_{Va}` -> Indices of the buses where the voltage angles are specified.
 - :math:`\mathcal{C}_{Vm}` -> Indices of the buses where the voltage modules are specified.

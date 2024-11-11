@@ -1909,15 +1909,15 @@ class NumericalCircuit:
 
         circuit_islands = list()  # type: List[NumericalCircuit]
 
-        for bus_idx in idx_islands:
+        for island_bus_indices in idx_islands:
             if ignore_single_node_islands:
-                if len(bus_idx) > 1:
-                    island = self.get_island(bus_idx,
+                if len(island_bus_indices) > 1:
+                    island = self.get_island(island_bus_indices,
                                              consider_hvdc_as_island_links=consider_hvdc_as_island_links,
                                              logger=logger)
                     circuit_islands.append(island)
             else:
-                island = self.get_island(bus_idx,
+                island = self.get_island(island_bus_indices,
                                          consider_hvdc_as_island_links=consider_hvdc_as_island_links,
                                          logger=logger)
                 circuit_islands.append(island)

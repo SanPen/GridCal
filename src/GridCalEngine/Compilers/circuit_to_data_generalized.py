@@ -944,7 +944,7 @@ def fill_controllable_branch(
     :param logger:
     :return:
     """
-    f, t = fill_parent_branch(i=ii,
+    _, t = fill_parent_branch(i=ii,
                               elm=elm,
                               data=data,
                               bus_dict=bus_dict,
@@ -958,6 +958,8 @@ def fill_controllable_branch(
 
         if control_taps_phase:
             data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
+            indices.add_tap_phase_control(mode=elm.tap_phase_control_mode,
+                                          branch_idx=ii)
 
         if control_taps_modules:
             data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
@@ -971,6 +973,10 @@ def fill_controllable_branch(
                 reg_bus = elm.regulation_bus
 
             data.tap_controlled_buses[ii] = bus_dict[reg_bus]
+
+            indices.add_tap_module_control(mode=elm.tap_module_control_mode,
+                                           branch_idx=ii,
+                                           bus_idx=bus_dict[reg_bus])
 
         data.Pset[ii] = elm.Pset_prof[t_idx] / Sbase
         data.Qset[ii] = elm.Qset_prof[t_idx] / Sbase
@@ -986,11 +992,11 @@ def fill_controllable_branch(
 
         if control_taps_phase:
             data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
-            indices.add_tap_phase_control(mode=elm.tap_phase_control_mode, branch_idx=ii)
+            indices.add_tap_phase_control(mode=elm.tap_phase_control_mode,
+                                          branch_idx=ii)
 
         if control_taps_modules:
             data.tap_module_control_mode[ii] = elm.tap_module_control_mode
-            indices.add_tap_module_control(mode=elm.tap_module_control_mode, branch_idx=ii)
 
             if elm.regulation_bus is None:
                 reg_bus = elm.bus_from
@@ -1001,6 +1007,10 @@ def fill_controllable_branch(
             else:
                 reg_bus = elm.regulation_bus
             data.tap_controlled_buses[ii] = bus_dict[reg_bus]
+
+            indices.add_tap_module_control(mode=elm.tap_module_control_mode,
+                                           branch_idx=ii,
+                                           bus_idx=bus_dict[reg_bus])
 
         data.Pset[ii] = elm.Pset / Sbase
         data.Qset[ii] = elm.Qset / Sbase

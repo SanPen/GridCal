@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Dict
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
 
@@ -49,6 +49,41 @@ class GeneralizedSimulationIndices:
         # CInjQ -> Indices of the injection devices where the Q is specified.
         self.c_inj_Q: Set[int] = set()
 
+    def slice(self, bus_idx: IntVec, br_idx: IntVec) -> "GeneralizedSimulationIndices":
+        """
+
+        :param bus_idx:
+        :param br_idx:
+        :return:
+        """
+        # TODO: Test this stuff
+        indices = GeneralizedSimulationIndices()
+
+        # build the mappings
+        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
+        br_map: Dict[int, int] = {o: i for i, o in enumerate(br_idx)}
+
+        # bus index slicing
+        indices.c_va = {bus_map[val] for val in range(self.c_va)}
+        indices.c_vm = {bus_map[val] for val in range(self.c_vm)}
+
+        indices.c_p_zip = {bus_map[val] for val in range(self.c_p_zip)}
+        indices.c_q_zip = {bus_map[val] for val in range(self.c_q_zip)}
+
+        indices.c_inj_P = {bus_map[val] for val in range(self.c_inj_P)}
+        indices.c_inj_Q = {bus_map[val] for val in range(self.c_inj_Q)}
+
+        # branch index slicing
+        indices.c_tau = {br_map[val] for val in range(self.c_tau)}
+        indices.c_m = {br_map[val] for val in range(self.c_m)}
+
+        indices.c_Pf = {br_map[val] for val in range(self.c_Pf)}
+        indices.c_Pt = {br_map[val] for val in range(self.c_Pt)}
+        indices.c_Qf = {br_map[val] for val in range(self.c_Qf)}
+        indices.c_Qt = {br_map[val] for val in range(self.c_Qt)}
+
+        return indices
+
     # Add functions for each set
     def add_to_c_va(self, value: int):
         self.c_va.add(value)
@@ -96,18 +131,34 @@ class GeneralizedSimulationIndices:
         if mode == TapPhaseControl.fixed:
             self.add_to_c_tau(branch_idx)
 
+        elif mode == TapPhaseControl.Pf:
+            self.add_to_c_Pf(branch_idx)
+
+        elif mode == TapPhaseControl.Pt:
+            self.add_to_c_Pt(branch_idx)
+
         else:
             pass  # it is controllable
 
-    def add_tap_module_control(self, mode: TapModuleControl, branch_idx):
+    def add_tap_module_control(self, mode: TapModuleControl, branch_idx, bus_idx: int):
         """
 
         :param mode:
         :param branch_idx:
+        :param bus_idx:
         :return:
         """
         if mode == TapModuleControl.fixed:
             self.add_to_c_m(branch_idx)
+
+        elif mode == TapModuleControl.Vm:
+            self.add_to_c_vm(bus_idx)
+
+        elif mode == TapModuleControl.Qf:
+            self.add_to_c_Qf(branch_idx)
+
+        elif mode == TapModuleControl.Qt:
+            self.add_to_c_Qt(branch_idx)
 
         else:
             pass  # it is controllable
