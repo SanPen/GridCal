@@ -130,6 +130,7 @@ htmlhelp_basename = 'GridCaldoc'
 fh = open('latex_preamble.tex', 'r+')
 PREAMBLE = fh.read()
 fh.close()
+latex_engine = 'xelatex'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #

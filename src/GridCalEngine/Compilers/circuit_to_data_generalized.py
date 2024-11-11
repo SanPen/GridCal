@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-import numpy as np
 from typing import Dict, Union, TYPE_CHECKING, Tuple
 
 from GridCalEngine.basic_structures import Logger
@@ -16,6 +15,7 @@ from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGr
 from GridCalEngine.basic_structures import BoolVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Topology.generalized_simulation_indices import GeneralizedSimulationIndices
 import GridCalEngine.DataStructures as ds
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -1486,20 +1486,18 @@ def get_fluid_path_data(circuit: MultiCircuit,
     return data
 
 
-
-
-def compile_numerical_circuit_at(circuit: MultiCircuit,
-                                 t_idx: Union[int, None] = None,
-                                 apply_temperature=False,
-                                 branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                 opf_results: VALID_OPF_RESULTS | None = None,
-                                 use_stored_guess=False,
-                                 bus_dict: Union[Dict[Bus, int], None] = None,
-                                 areas_dict: Union[Dict[Area, int], None] = None,
-                                 control_taps_modules: bool = True,
-                                 control_taps_phase: bool = True,
-                                 control_remote_voltage: bool = True,
-                                 logger=Logger()) -> NumericalCircuit:
+def compile_generalized_numerical_circuit_at(circuit: MultiCircuit,
+                                             t_idx: Union[int, None] = None,
+                                             apply_temperature=False,
+                                             branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                             opf_results: VALID_OPF_RESULTS | None = None,
+                                             use_stored_guess=False,
+                                             bus_dict: Union[Dict[Bus, int], None] = None,
+                                             areas_dict: Union[Dict[Area, int], None] = None,
+                                             control_taps_modules: bool = True,
+                                             control_taps_phase: bool = True,
+                                             control_remote_voltage: bool = True,
+                                             logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
     :param circuit: MultiCircuit instance

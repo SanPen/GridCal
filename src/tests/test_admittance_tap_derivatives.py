@@ -8,7 +8,8 @@ import numpy as np
 import GridCalEngine.api as gce
 from scipy import sparse as sp
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 

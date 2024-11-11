@@ -27,6 +27,13 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 
 
+"""
+
+
+
+"""
+
+
 @njit()
 def adv_jacobian(nbus: int,
                  nbr: int,

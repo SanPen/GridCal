@@ -3,7 +3,7 @@ import sys
 
 sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
 import GridCalEngine.api as gce
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from generalised_power_flow import (run_nonlinear_opf,
                                     ac_optimal_power_flow)
 from GridCalEngine.enumerations import TransformerControlType, AcOpfMode

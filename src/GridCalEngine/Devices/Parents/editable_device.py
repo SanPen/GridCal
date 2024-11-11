@@ -8,7 +8,7 @@ import numpy as np
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Union, Type, Tuple
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection,
-                                        TapModuleControl, TapPhaseControl, SubObjectType,
+                                        TapModuleControl, TapPhaseControl, SubObjectType, GpfControlType,
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
                                         CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
@@ -46,7 +46,8 @@ GCPROP_TYPES = Union[
     Type[TapChangerTypes],
     Type[SubstationTypes],
     Type[ContingencyOperationTypes],
-    Type[BranchGroupTypes]
+    Type[BranchGroupTypes],
+    Type[GpfControlType]
 ]
 
 

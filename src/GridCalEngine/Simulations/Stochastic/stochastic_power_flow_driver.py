@@ -10,7 +10,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_input import StochasticPowerFlowInput
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, BranchImpedanceMode
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, BranchImpedanceMode
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
 from GridCalEngine.enumerations import SimulationTypes
