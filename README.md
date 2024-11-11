@@ -1171,19 +1171,19 @@ developments with the community and the maintainers.
 ## Contributing
 
 All contributions to the **GridCal** repository are made through pull requests to the
-`master` branch. You can either submit a pull request from the develop branch of your
+`devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
 want to submit with seperate pull requests. If you only have small, one-time changes
-to submit, you can also use the `master` branch to submit your pull request.
+to submit, you can also use the `devel` branch to submit your pull request.
 
 However, it is best to discuss your contribution before the pull request is ready to be officially
 submitted. We only accept high quality contributions that align with the project design. 
 Those are heavily reviewed, and you may expect joint work with us if your proposal is deemed good enough.
 
-An alternative, maybe easier way to contribute functionality to GridCal, is to use the objects 
-and functions to produce your contribution in a script-like fashion. 
-Again, if that meets the functional and quality standards that we impose, we'll take care of the integration.
+An easier alternative to contribute is to use the GridCal objects and functions to produce your contribution 
+in a script-like fashion. Again, if that meets the functional and quality standards that we impose, 
+we'll take care of the integration.
 
 All contributions must come with testing.
 
