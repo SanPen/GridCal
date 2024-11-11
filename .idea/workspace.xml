@@ -28,9 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="6.0.0">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Deleted commented code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1422,7 +1421,10 @@
       <workItem from="1730406202768" duration="696000" />
       <workItem from="1730981715960" duration="317000" />
       <workItem from="1731010585794" duration="8352000" />
-      <workItem from="1731058226921" duration="8452000" />
+      <workItem from="1731058226921" duration="9627000" />
+      <workItem from="1731096889666" duration="3975000" />
+      <workItem from="1731152691748" duration="1603000" />
+      <workItem from="1731313408054" duration="339000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1767,7 +1769,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="594" />
+    <option name="localTasksCounter" value="595" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1801,7 +1803,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved the PSSe transformer conversion" />
     <MESSAGE value="Added color to areas, fluid node and fluid path&#10;Added fluid representation to the OPFResults&#10;Fixed bug with #317" />
     <MESSAGE value="Greatly improved the fluids representation" />
     <MESSAGE value="Delete empty groups if no reference is found when deleting contingency, remedial action or investment" />
@@ -1826,7 +1827,8 @@
     <MESSAGE value="Fixed numerical circuit comparison after updating to numpy 2.0" />
     <MESSAGE value="Fixed issue with about box in system pythons under linux" />
     <MESSAGE value="6.0.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="6.0.0" />
+    <MESSAGE value="Deleted commented code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deleted commented code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
