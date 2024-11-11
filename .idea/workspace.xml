@@ -28,10 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="We moved the compilation of the numerical circuit to the compiler">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Worked on the indices generation (WIP)&#10;Added the slice method to GeneralizedSimulationIndices (check)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/generalized_power_flow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/power_flow/generalized_power_flow.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data_generalized.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data_generalized.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1777,7 +1775,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="597" />
+    <option name="localTasksCounter" value="599" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1811,8 +1809,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Delete empty groups if no reference is found when deleting contingency, remedial action or investment" />
-    <MESSAGE value="When clicking on a VL on the map, the event passes on to the SE" />
     <MESSAGE value="5.1.56" />
     <MESSAGE value="Included missing API elements" />
     <MESSAGE value="Unified API under `import GridCalEngine as gce`" />
@@ -1836,7 +1832,9 @@
     <MESSAGE value="Deleted commented code" />
     <MESSAGE value="Updated README.md" />
     <MESSAGE value="We moved the compilation of the numerical circuit to the compiler" />
-    <option name="LAST_COMMIT_MESSAGE" value="We moved the compilation of the numerical circuit to the compiler" />
+    <MESSAGE value="Started the indices generation" />
+    <MESSAGE value="Worked on the indices generation (WIP)&#10;Added the slice method to GeneralizedSimulationIndices (check)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Worked on the indices generation (WIP)&#10;Added the slice method to GeneralizedSimulationIndices (check)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

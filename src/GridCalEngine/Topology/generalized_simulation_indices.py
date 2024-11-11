@@ -64,61 +64,118 @@ class GeneralizedSimulationIndices:
         br_map: Dict[int, int] = {o: i for i, o in enumerate(br_idx)}
 
         # bus index slicing
-        indices.c_va = {bus_map[val] for val in range(self.c_va)}
-        indices.c_vm = {bus_map[val] for val in range(self.c_vm)}
+        indices.c_va = {bus_map[val] for val in self.c_va}
+        indices.c_vm = {bus_map[val] for val in self.c_vm}
 
-        indices.c_p_zip = {bus_map[val] for val in range(self.c_p_zip)}
-        indices.c_q_zip = {bus_map[val] for val in range(self.c_q_zip)}
+        indices.c_p_zip = {bus_map[val] for val in self.c_p_zip}
+        indices.c_q_zip = {bus_map[val] for val in self.c_q_zip}
 
-        indices.c_inj_P = {bus_map[val] for val in range(self.c_inj_P)}
-        indices.c_inj_Q = {bus_map[val] for val in range(self.c_inj_Q)}
+        indices.c_inj_P = {bus_map[val] for val in self.c_inj_P}
+        indices.c_inj_Q = {bus_map[val] for val in self.c_inj_Q}
 
         # branch index slicing
-        indices.c_tau = {br_map[val] for val in range(self.c_tau)}
-        indices.c_m = {br_map[val] for val in range(self.c_m)}
+        indices.c_tau = {br_map[val] for val in self.c_tau}
+        indices.c_m = {br_map[val] for val in self.c_m}
 
-        indices.c_Pf = {br_map[val] for val in range(self.c_Pf)}
-        indices.c_Pt = {br_map[val] for val in range(self.c_Pt)}
-        indices.c_Qf = {br_map[val] for val in range(self.c_Qf)}
-        indices.c_Qt = {br_map[val] for val in range(self.c_Qt)}
+        indices.c_Pf = {br_map[val] for val in self.c_Pf}
+        indices.c_Pt = {br_map[val] for val in self.c_Pt}
+        indices.c_Qf = {br_map[val] for val in self.c_Qf}
+        indices.c_Qt = {br_map[val] for val in self.c_Qt}
 
         return indices
 
-    # Add functions for each set
     def add_to_c_va(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_va.add(value)
 
     def add_to_c_vm(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_vm.add(value)
 
     def add_to_c_tau(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_tau.add(value)
 
     def add_to_c_m(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_m.add(value)
 
     def add_to_c_p_zip(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_p_zip.add(value)
 
     def add_to_c_q_zip(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_q_zip.add(value)
 
     def add_to_c_Pf(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_Pf.add(value)
 
     def add_to_c_Pt(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_Pt.add(value)
 
     def add_to_c_Qf(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_Qf.add(value)
 
     def add_to_c_Qt(self, value: int):
+        """
+
+        :param value:
+        :return:
+        """
         self.c_Qt.add(value)
 
     def add_to_c_inj_P(self, value: int):
+        """
+
+        :param value:
+        """
         self.c_inj_P.add(value)
 
     def add_to_c_inj_Q(self, value: int):
+        """
+
+        :param value:
+        """
         self.c_inj_Q.add(value)
 
     def add_tap_phase_control(self, mode: TapPhaseControl, branch_idx: int):
