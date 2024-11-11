@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+import numpy as np
 from typing import Dict, Union, TYPE_CHECKING, Tuple
 
 from GridCalEngine.basic_structures import Logger
@@ -83,6 +84,7 @@ def set_bus_control_voltage(i: int,
 
 def get_bus_data(circuit: MultiCircuit,
                  areas_dict: Dict[Area, int],
+                 indices: GeneralizedSimulationIndices,
                  t_idx: int = -1,
                  time_series=False,
                  use_stored_guess=False) -> ds.BusData:
@@ -90,6 +92,7 @@ def get_bus_data(circuit: MultiCircuit,
 
     :param circuit:
     :param areas_dict:
+    :param indices: GeneralizedSimulationIndices instance
     :param t_idx:
     :param time_series:
     :param use_stored_guess:
@@ -116,6 +119,8 @@ def get_bus_data(circuit: MultiCircuit,
 
         if bus.is_slack:
             bus_data.bus_types[i] = BusMode.Slack_tpe.value  # VD
+            indices.add_to_c_va(i)
+            indices.add_to_c_vm(i)
         else:
             # PQ by default, later it is modified by generators and batteries
             bus_data.bus_types[i] = BusMode.PQ_tpe.value
@@ -303,6 +308,7 @@ def get_shunt_data(
         bus_dict,
         bus_voltage_used: BoolVec,
         bus_data: ds.BusData,
+        indices: GeneralizedSimulationIndices,
         logger: Logger,
         t_idx=-1,
         time_series=False,
@@ -353,6 +359,11 @@ def get_shunt_data(
 
     for elm in circuit.get_controllable_shunts():
 
+        """
+        The controllable shunt behaves like a generator 
+        controlling voltage with P=0
+        """
+
         i = bus_dict[elm.bus]
 
         data.names[ii] = elm.name
@@ -372,12 +383,18 @@ def get_shunt_data(
 
             if elm.is_controlled and elm.active_prof[t_idx]:
 
+                if not elm.bus.is_slack:
+                    # if this generator is not at the slack, it is setting the P value
+                    indices.add_to_c_p_zip(i)
+
                 if elm.control_bus_prof[t_idx] is not None:
                     remote_control = True
                     j = bus_dict[elm.control_bus_prof[t_idx]]
+                    indices.add_to_c_vm(j)
                 else:
                     remote_control = False
                     j = -1
+                    indices.add_to_c_vm(i)
 
                 set_bus_control_voltage(i=i,
                                         j=j,
@@ -395,12 +412,19 @@ def get_shunt_data(
             data.cost[ii] = elm.Cost
 
             if elm.is_controlled and elm.active:
+
+                if not elm.bus.is_slack:
+                    # if this generator is not at the slack, it is setting the P value
+                    indices.add_to_c_p_zip(i)
+
                 if elm.control_bus is not None:
                     remote_control = True
                     j = bus_dict[elm.control_bus]
+                    indices.add_to_c_vm(j)
                 else:
                     remote_control = False
                     j = -1
+                    indices.add_to_c_vm(i)
 
                 set_bus_control_voltage(i=i,
                                         j=j,
@@ -432,6 +456,7 @@ def get_generator_data(
         bus_voltage_used: BoolVec,
         logger: Logger,
         bus_data: ds.BusData,
+        indices: GeneralizedSimulationIndices,
         opf_results: VALID_OPF_RESULTS | None = None,
         t_idx=-1,
         time_series=False,
@@ -445,6 +470,7 @@ def get_generator_data(
     :param bus_voltage_used:
     :param logger:
     :param bus_data:
+    :param indices:
     :param opf_results:
     :param t_idx:
     :param time_series:
@@ -510,13 +536,19 @@ def get_generator_data(
                 if elm.srap_enabled_prof[t_idx] and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
+                if not elm.bus.is_slack:
+                    # if this generator is not at the slack, it is setting the P value
+                    indices.add_to_c_p_zip(i)
+
                 if elm.is_controlled:
                     if elm.control_bus_prof[t_idx] is not None:
                         remote_control = True
                         j = bus_dict[elm.control_bus_prof[t_idx]]
+                        indices.add_to_c_vm(j)
                     else:
                         remote_control = False
                         j = -1
+                        indices.add_to_c_vm(i)
 
                     set_bus_control_voltage(i=i,
                                             j=j,
@@ -527,6 +559,10 @@ def get_generator_data(
                                             candidate_Vm=elm.Vset_prof[t_idx],
                                             use_stored_guess=use_stored_guess,
                                             logger=logger)
+                else:
+                    if not elm.bus.is_slack:
+                        # if this generator is not at the slack and not controlling voltage, it is setting the Q value
+                        indices.add_to_c_q_zip(i)
 
         else:
             if opf_results is not None:
@@ -547,13 +583,19 @@ def get_generator_data(
                 if elm.srap_enabled and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
+                if not elm.bus.is_slack:
+                    # if this generator is not at the slack, it is setting the P value
+                    indices.add_to_c_p_zip(i)
+
                 if elm.is_controlled:
                     if elm.control_bus is not None:
                         remote_control = True
                         j = bus_dict[elm.control_bus]
+                        indices.add_to_c_vm(j)
                     else:
                         remote_control = False
                         j = -1
+                        indices.add_to_c_vm(i)
 
                     set_bus_control_voltage(i=i,
                                             j=j,
@@ -564,6 +606,10 @@ def get_generator_data(
                                             candidate_Vm=elm.Vset,
                                             use_stored_guess=use_stored_guess,
                                             logger=logger)
+                else:
+                    if not elm.bus.is_slack:
+                        # if this generator is not at the slack and not controlling voltage, it is setting the Q value
+                        indices.add_to_c_q_zip(i)
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
@@ -592,6 +638,7 @@ def get_battery_data(
         bus_voltage_used: BoolVec,
         logger: Logger,
         bus_data: ds.BusData,
+        indices: GeneralizedSimulationIndices,
         opf_results: VALID_OPF_RESULTS | None = None,
         t_idx=-1,
         time_series=False,
@@ -605,6 +652,7 @@ def get_battery_data(
     :param bus_voltage_used:
     :param logger:
     :param bus_data:
+    :param indices:
     :param opf_results:
     :param t_idx:
     :param time_series:
@@ -676,14 +724,20 @@ def get_battery_data(
                 if elm.srap_enabled_prof[t_idx] and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
+                if not elm.bus.is_slack:
+                    # if this battery is not at the slack, it is setting the P value
+                    indices.add_to_c_p_zip(i)
+
                 if elm.is_controlled:
 
                     if elm.control_bus_prof[t_idx] is not None:
                         remote_control = True
                         j = bus_dict[elm.control_bus_prof[t_idx]]
+                        indices.add_to_c_vm(j)
                     else:
                         remote_control = False
                         j = -1
+                        indices.add_to_c_vm(i)
 
                     set_bus_control_voltage(i=i,
                                             j=j,
@@ -694,6 +748,10 @@ def get_battery_data(
                                             candidate_Vm=elm.Vset_prof[t_idx],
                                             use_stored_guess=use_stored_guess,
                                             logger=logger)
+                else:
+                    if not elm.bus.is_slack:
+                        # if this battery is not at the slack and not controlling voltage, it is setting the Q value
+                        indices.add_to_c_q_zip(i)
 
         else:
             if opf_results is not None:
@@ -714,14 +772,20 @@ def get_battery_data(
                 if elm.srap_enabled and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
+                if not elm.bus.is_slack:
+                    # if this battery is not at the slack, it is setting the P value
+                    indices.add_to_c_p_zip(i)
+
                 if elm.is_controlled:
 
                     if elm.control_bus is not None:
                         remote_control = True
                         j = bus_dict[elm.control_bus]
+                        indices.add_to_c_vm(j)
                     else:
                         remote_control = False
                         j = -1
+                        indices.add_to_c_vm(i)
 
                     set_bus_control_voltage(i=i,
                                             j=j,
@@ -732,6 +796,10 @@ def get_battery_data(
                                             candidate_Vm=elm.Vset,
                                             use_stored_guess=use_stored_guess,
                                             logger=logger)
+                else:
+                    if not elm.bus.is_slack:
+                        # if this battery is not at the slack and not controlling voltage, it is setting the Q value
+                        indices.add_to_c_q_zip(i)
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
@@ -841,6 +909,7 @@ def fill_controllable_branch(
         data: ds.BranchData,
         bus_data: ds.BusData,
         bus_dict: Dict[Bus, int],
+        indices: GeneralizedSimulationIndices,
         apply_temperature: bool,
         branch_tolerance_mode: BranchImpedanceMode,
         t_idx: int,
@@ -860,6 +929,7 @@ def fill_controllable_branch(
     :param data:
     :param bus_data:
     :param bus_dict:
+    :param indices: GeneralizedSimulationIndices
     :param apply_temperature:
     :param branch_tolerance_mode:
     :param t_idx:
@@ -874,7 +944,7 @@ def fill_controllable_branch(
     :param logger:
     :return:
     """
-    _, t = fill_parent_branch(i=ii,
+    f, t = fill_parent_branch(i=ii,
                               elm=elm,
                               data=data,
                               bus_dict=bus_dict,
@@ -916,9 +986,11 @@ def fill_controllable_branch(
 
         if control_taps_phase:
             data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
+            indices.add_tap_phase_control(mode=elm.tap_phase_control_mode, branch_idx=ii)
 
         if control_taps_modules:
             data.tap_module_control_mode[ii] = elm.tap_module_control_mode
+            indices.add_tap_module_control(mode=elm.tap_module_control_mode, branch_idx=ii)
 
             if elm.regulation_bus is None:
                 reg_bus = elm.bus_from
@@ -973,6 +1045,7 @@ def get_branch_data(
         circuit: MultiCircuit,
         bus_dict: Dict[Bus, int],
         bus_data: ds.BusData,
+        indices: GeneralizedSimulationIndices,
         bus_voltage_used: BoolVec,
         apply_temperature: bool,
         branch_tolerance_mode: BranchImpedanceMode,
@@ -1046,6 +1119,7 @@ def get_branch_data(
                                  data=data,
                                  bus_data=bus_data,
                                  bus_dict=bus_dict,
+                                 indices=indices,
                                  apply_temperature=apply_temperature,
                                  branch_tolerance_mode=branch_tolerance_mode,
                                  t_idx=t_idx,
@@ -1075,6 +1149,7 @@ def get_branch_data(
                                      data=data,
                                      bus_data=bus_data,
                                      bus_dict=bus_dict,
+                                     indices=indices,
                                      apply_temperature=apply_temperature,
                                      branch_tolerance_mode=branch_tolerance_mode,
                                      t_idx=t_idx,
@@ -1105,6 +1180,7 @@ def get_branch_data(
                                  data=data,
                                  bus_data=bus_data,
                                  bus_dict=bus_dict,
+                                 indices=indices,
                                  apply_temperature=apply_temperature,
                                  branch_tolerance_mode=branch_tolerance_mode,
                                  t_idx=t_idx,
@@ -1199,6 +1275,7 @@ def get_hvdc_data(circuit: MultiCircuit,
                   bus_types,
                   bus_data: ds.BusData,
                   bus_voltage_used: BoolVec,
+                  indices: GeneralizedSimulationIndices,
                   t_idx=-1,
                   time_series=False,
                   opf_results: Union[OptimalPowerFlowResults, OptimalNetTransferCapacityResults, None] = None,
@@ -1519,6 +1596,8 @@ def compile_generalized_numerical_circuit_at(circuit: MultiCircuit,
         # process topology, this
         circuit.process_topology_at(t_idx=t_idx, logger=logger)
 
+    indices = GeneralizedSimulationIndices()
+
     # if any valid time index is specified, then the data is compiled from the time series
     time_series = t_idx is not None
 
@@ -1550,16 +1629,18 @@ def compile_generalized_numerical_circuit_at(circuit: MultiCircuit,
 
     nc.bus_data = get_bus_data(
         circuit=circuit,
+        areas_dict=areas_dict,
+        indices=indices,
         t_idx=t_idx,
         time_series=time_series,
-        areas_dict=areas_dict,
-        use_stored_guess=use_stored_guess
+        use_stored_guess=use_stored_guess,
     )
 
     nc.generator_data, gen_dict = get_generator_data(
         circuit=circuit,
         bus_dict=bus_dict,
         bus_data=nc.bus_data,
+        indices=indices,
         t_idx=t_idx,
         time_series=time_series,
         bus_voltage_used=bus_voltage_used,
@@ -1573,6 +1654,7 @@ def compile_generalized_numerical_circuit_at(circuit: MultiCircuit,
         circuit=circuit,
         bus_dict=bus_dict,
         bus_data=nc.bus_data,
+        indices=indices,
         t_idx=t_idx,
         time_series=time_series,
         bus_voltage_used=bus_voltage_used,
@@ -1587,6 +1669,7 @@ def compile_generalized_numerical_circuit_at(circuit: MultiCircuit,
         bus_dict=bus_dict,
         bus_voltage_used=bus_voltage_used,
         bus_data=nc.bus_data,
+        indices=indices,
         t_idx=t_idx,
         time_series=time_series,
         logger=logger,
@@ -1612,6 +1695,7 @@ def compile_generalized_numerical_circuit_at(circuit: MultiCircuit,
         time_series=time_series,
         bus_dict=bus_dict,
         bus_data=nc.bus_data,
+        indices=indices,
         bus_voltage_used=bus_voltage_used,
         apply_temperature=apply_temperature,
         branch_tolerance_mode=branch_tolerance_mode,
@@ -1627,6 +1711,7 @@ def compile_generalized_numerical_circuit_at(circuit: MultiCircuit,
         t_idx=t_idx,
         time_series=time_series,
         bus_dict=bus_dict,
+        indices=indices,
         bus_types=nc.bus_data.bus_types,
         bus_data=nc.bus_data,
         bus_voltage_used=bus_voltage_used,

@@ -13,6 +13,17 @@ of Raiyan Bin Zulkifli in 2024 (Generalised AC/DC Power Flow at UPC university).
 
 .. math::
 
+    \Delta S = S_calc - S_esp
+
+.. math::
+
+    S_zip = S_zip0 + V \cdot (Ire_zip - j \cdot Iim_zip + V \cdot (G_zip - j \cdot B_zip))
+
+    S_calc = V \cdot (I)^* = V \cdot (Y \times V - I_zip)^*
+
+
+.. math::
+
     \begin{equation}
         \begin{bmatrix}
             \frac{\partial \Delta P}{\partial Va} & \frac{\partial \Delta P}{\partial Vm} & \frac{\partial \Delta P}{\partial \tau} & \frac{\partial \Delta P}{\partial m} & \frac{\partial \Delta P}{\partial P^{zip}} & \frac{\partial \Delta P}{\partial Q^{zip}} & \frac{\partial \Delta P}{\partial P_f} & \frac{\partial \Delta P}{\partial P_t} & \frac{\partial \Delta P}{\partial Q_f} & \frac{\partial \Delta P}{\partial Q_t} \\
