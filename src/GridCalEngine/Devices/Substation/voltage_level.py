@@ -11,8 +11,11 @@ from GridCalEngine.Devices.Substation.substation import Substation
 
 class VoltageLevel(PhysicalDevice):
 
-    def __init__(self, name='VoltageLevel', idtag: Union[str, None] = None, code: str = '',
-                 Vnom: float = 1.0, substation: Union[None, Substation] = None):
+    def __init__(self, name='VoltageLevel',
+                 idtag: Union[str, None] = None,
+                 code: str = '',
+                 Vnom: float = 1.0,
+                 substation: Union[None, Substation] = None):
         """
         Constructor
         :param name: Name

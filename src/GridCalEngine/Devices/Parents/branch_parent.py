@@ -125,7 +125,7 @@ class BranchParent(PhysicalDevice):
         self._protection_rating_factor = float(protection_rating_factor)
         self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor, data_type=float)
 
-        # List of measurements
+        # group of this branch
         self.group: Union[BranchGroup, None] = None
 
         self.register('bus_from', units="", tpe=DeviceType.BusDevice,

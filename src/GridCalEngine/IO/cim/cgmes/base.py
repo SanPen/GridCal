@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from typing import Dict, List
 from uuid import uuid4, UUID
-from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
+from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.data_logger import DataLogger

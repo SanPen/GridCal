@@ -15,7 +15,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets import Cgmes_2_
 from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets import Cgmes_3_0_0_Assets
 # from GridCalEngine.IO.cim.cgmes.cgmes_utils import check_load_response_characteristic, check
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes.cgmes_poperty import CgmesProperty
+from GridCalEngine.IO.cim.cgmes.cgmes_property import CgmesProperty
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
