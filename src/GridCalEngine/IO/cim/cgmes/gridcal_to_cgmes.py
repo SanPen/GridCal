@@ -680,6 +680,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.PowerTransformerEnd = list()
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
         pte1 = object_template()
+        pte1.name = mc_elm.name
         pte1.PowerTransformer = cm_transformer
         pte1.Terminal = cm_transformer.Terminals[0]
         pte1.BaseVoltage = find_object_by_vnom(
@@ -719,6 +720,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte1.endNumber = 1
 
         pte2 = object_template()
+        pte2.name = mc_elm.name
         pte2.PowerTransformer = cm_transformer
         pte2.Terminal = cm_transformer.Terminals[1]
         pte2.BaseVoltage = find_object_by_vnom(
@@ -871,6 +873,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         # Winding 1 ----------------------------------------------------------------------------------------------------
         pte1 = object_template()
+        pte1.name = mc_elm.name
         pte1.PowerTransformer = cm_transformer
         pte1.Terminal = cm_transformer.Terminals[0]
         pte1.BaseVoltage = find_object_by_vnom(
@@ -902,6 +905,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         # Winding 2 ----------------------------------------------------------------------------------------------------
         pte2 = object_template()
+        pte2.name = mc_elm.name
         pte2.PowerTransformer = cm_transformer
         pte2.Terminal = cm_transformer.Terminals[1]
         pte2.BaseVoltage = find_object_by_vnom(
@@ -933,6 +937,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         # Winding 3 ----------------------------------------------------------------------------------------------------
         pte3 = object_template()
+        pte3.name = mc_elm.name
         pte3.PowerTransformer = cm_transformer
         pte3.Terminal = cm_transformer.Terminals[2]
         pte3.BaseVoltage = find_object_by_vnom(
