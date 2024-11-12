@@ -5,6 +5,7 @@
 import numpy as np
 import timeit
 import pandas as pd
+from scipy import sparse as sp
 from typing import Tuple
 from dataclasses import dataclass
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
@@ -226,7 +227,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    if ntapm + ntapt !=0:
+    if ntapm + ntapt != 0:
         admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
     else:
         pass
@@ -394,6 +395,7 @@ class NonlinearOPFResults:
     loading: Vec = None
     Pg: Vec = None
     Qg: Vec = None
+    Qsh: Vec = None
     Pcost: Vec = None
     tap_module: Vec = None
     tap_phase: Vec = None
@@ -410,11 +412,12 @@ class NonlinearOPFResults:
     converged: bool = None
     iterations: int = None
 
-    def initialize(self, nbus: int, nbr: int, ng: int, nhvdc: int, ncap: int):
+    def initialize(self, nbus: int, nbr: int, nsh: int, ng: int, nhvdc: int, ncap: int):
         """
         Initialize the arrays
         :param nbus: number of buses
         :param nbr: number of branches
+        :param nsh: number of controllable shunt elements
         :param ng: number of generators
         :param nhvdc: number of HVDC
         :param ncap: Number of nodal capacity nodes
@@ -427,6 +430,7 @@ class NonlinearOPFResults:
         self.loading: Vec = np.zeros(nbr)
         self.Pg: Vec = np.zeros(ng)
         self.Qg: Vec = np.zeros(ng)
+        self.Qsh: Vec = np.zeros(nsh)
         self.Pcost: Vec = np.zeros(ng)
         self.tap_module: Vec = np.zeros(nbr)
         self.tap_phase: Vec = np.zeros(nbr)
@@ -451,6 +455,7 @@ class NonlinearOPFResults:
               gen_idx: IntVec,
               hvdc_idx: IntVec,
               ncap_idx: IntVec,
+              contshunt_idx: IntVec,
               acopf_mode):
         """
 
@@ -461,6 +466,7 @@ class NonlinearOPFResults:
         :param gen_idx:
         :param hvdc_idx:
         :param ncap_idx:
+        :param ngen:
         :param acopf_mode:
         :return:
         """
@@ -472,6 +478,7 @@ class NonlinearOPFResults:
         self.loading[br_idx] = other.loading
         self.Pg[gen_idx] = other.Pg
         self.Qg[gen_idx] = other.Qg
+        self.Qsh[contshunt_idx] = other.Qsh
         self.Pcost[gen_idx] = other.Pcost
         self.tap_module[br_idx] = other.tap_module
         self.tap_phase[br_idx] = other.tap_phase
@@ -536,16 +543,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Grab the base power and the costs associated to generation
     Sbase = nc.Sbase
 
-    # Compute the admittance elements, including the Ybus, Yf, Yt and connectivity matrices
-    admittances = nc.get_admittance_matrices()
-    Cg = nc.generator_data.C_bus_elm
+    Cgen = nc.generator_data.C_bus_elm
     from_idx = nc.F
     to_idx = nc.T
 
     # PV buses are identified by those who have the same upper and lower limits for the voltage. Slack obtained from nc
 
     slack = nc.vd
-    slackgens = np.where(Cg[slack, :].toarray() == 1)[1]
+    slackgens = np.where(Cgen[slack, :].toarray() == 1)[1]
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
 
@@ -561,6 +566,34 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     Qg_max = nc.generator_data.qmax / Sbase
     Qg_min = nc.generator_data.qmin / Sbase
+
+    ngen = len(Pg_max)
+    # Shunt elements are treated as generators with fixed P.
+    # As such, their limits are added in the generator limits array.
+
+    id_sh = np.where(nc.shunt_data.controllable == True)[0]
+    nsh = len(id_sh)
+
+    # Since controllable shunts will be treated as generators, we deactivate them to avoid its computation in the
+    # Admittance matrix. Then, the admittance elements are stored.
+
+    nc.shunt_data.Y[id_sh] = 0 + 0j
+    admittances = nc.get_admittance_matrices()
+
+    # print(admittances.Ybus)
+
+    Csh = nc.shunt_data.C_bus_elm[:, id_sh]
+    Cg = sp.hstack([Cgen, Csh])
+
+    Qsh_max = nc.shunt_data.qmax[id_sh] / Sbase
+    Qsh_min = nc.shunt_data.qmin[id_sh] / Sbase
+
+    Pg_max = np.r_[Pg_max, np.zeros(nsh)]
+    Pg_min = np.r_[Pg_min, np.zeros(nsh)]
+
+    Qg_max = np.r_[Qg_max, Qsh_max]
+    Qg_min = np.r_[Qg_min, Qsh_min]
+
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
     pf = nc.generator_data.pf
@@ -571,7 +604,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Check the active elements and their operational limits.
     br_mon_idx = nc.branch_data.get_monitor_enabled_indices()
-    gen_disp_idx = nc.generator_data.get_dispatchable_active_indices()
+    gen_disp_idx = np.r_[
+        nc.generator_data.get_dispatchable_active_indices(), np.array([*range(ngen, ngen + nsh)], dtype=int)]
     ind_gens = np.arange(len(Pg_max))
     gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[gen_nondisp_idx]
@@ -586,9 +620,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     R = nc.branch_data.R
     X = nc.branch_data.X
 
-    c0 = nc.generator_data.cost_0[gen_disp_idx]
-    c1 = nc.generator_data.cost_1[gen_disp_idx]
-    c2 = nc.generator_data.cost_2[gen_disp_idx]
+    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)]
+    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)]
+    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)]
 
     c0n = nc.generator_data.cost_0[gen_nondisp_idx]
     c1n = nc.generator_data.cost_1[gen_nondisp_idx]
@@ -629,9 +663,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
-                           1.0)  # Cost squared since the slack is also squared
-        c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
+        c_s = np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
+                       1.0)  # Cost squared since the slack is also squared
+        c_v = nc.bus_data.cost_v[pq] + 0.1
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
@@ -674,8 +708,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         allPgen = nc.generator_data.C_bus_elm.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
         allQgen = nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
         Sg_undis = allPgen[gen_nondisp_idx] + 1j * allQgen[gen_nondisp_idx]
-        p0gen = allPgen[gen_disp_idx]
-        q0gen = allQgen[gen_disp_idx]
+        p0gen = np.r_[allPgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
+        q0gen = np.r_[allQgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -683,8 +717,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
     else:
-        p0gen = (nc.generator_data.pmax[gen_disp_idx] + nc.generator_data.pmin[gen_disp_idx]) / (2 * nc.Sbase)
-        q0gen = (nc.generator_data.qmax[gen_disp_idx] + nc.generator_data.qmin[gen_disp_idx]) / (2 * nc.Sbase)
+        p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:ngen]] +
+                       nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
+        q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:ngen]] +
+                       nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -710,7 +746,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     loadtimeEnd = timeit.default_timer()
     times = np.array([])
-    print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
+    # print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
 
     if opf_options.verbose > 0:
         print("x0:", x0)
@@ -810,7 +846,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tap_phase = np.zeros(nc.nbr)
     tap_module[k_m] = tapm
     tap_phase[k_tau] = tapt
-    Pcost = np.zeros(nc.ngen)
+    Pcost = np.zeros(ngen + nsh)
     Pcost[gen_disp_idx] = c0 + c1 * Pg[gen_disp_idx] + c2 * np.power(Pg[gen_disp_idx], 2.0)
     Pcost[gen_nondisp_idx] = c0n + c1n * np.real(Sg_undis) + c2n * np.power(np.real(Sg_undis), 2.0)
     nodal_capacity = slcap * Sbase
@@ -838,20 +874,29 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Tau-Trafos:\n", df_trafo_tau)
         print("Gen:\n", df_gen)
         print("Link DC:\n", df_linkdc)
-        print("Slacks:\n", df_slsf)
-        print("Slacks:\n", df_slst)
-        print("Slacks:\n", df_slvmax)
-        print("Slacks:\n", df_slvmin)
+
+        print('Qshunt min: ' + str(Qsh_min))
+
+        if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
+            print("Slacks:\n", df_slsf)
+            print("Slacks:\n", df_slst)
+            print("Slacks:\n", df_slvmax)
+            print("Slacks:\n", df_slvmin)
+
         if optimize_nodal_capacity:
             df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': slcap * nc.Sbase}, index=capacity_nodes_idx)
             print("Nodal Capacity:\n", df_nodal_cap)
         print("Error", result.error)
         print("Gamma", result.gamma)
         print("Sf", result.structs.Sf)
-        print('Times:\n', df_times)
-        print('Relative times:\n', 100*df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
-                                         't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
-                                         't_mult', 't_steps', 't_cond', 't_iter']].div(df_times['t_iter'], axis=0))
+
+        if opf_options.verbose > 1:
+
+            print('Times:\n', df_times)
+            print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+                                                       't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+                                                       't_mult', 't_steps', 't_cond', 't_iter']].div(df_times['t_iter'],
+                                                                                                     axis=0))
 
     if plot_error:
         result.plot_error()
@@ -943,13 +988,13 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        value=str(sl_vmin[i]),
                                        expected_value=f'> {opf_options.ips_tolerance}')
 
-    if opf_options.verbose:
+    if opf_options.verbose > 0:
         if len(logger):
             logger.print()
 
     return NonlinearOPFResults(Va=Va, Vm=Vm, S=S,
                                Sf=Sf, St=St, loading=loading,
-                               Pg=Pg, Qg=Qg, Pcost=Pcost,
+                               Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
                                tap_module=tap_module, tap_phase=tap_phase,
                                hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
                                lam_p=lam_p, lam_q=lam_q,
@@ -1017,8 +1062,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc,
-                       ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
+                       nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
     for i, island in enumerate(islands):
 
@@ -1052,6 +1097,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       gen_idx=island.generator_data.original_idx,
                       hvdc_idx=island.hvdc_data.original_idx,
                       ncap_idx=capacity_nodes_idx_org,
+                      contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
                       acopf_mode=opf_options.acopf_mode)
         if i > 0:
             results.error = max(results.error, island_res.error)
@@ -1061,5 +1107,5 @@ def run_nonlinear_opf(grid: MultiCircuit,
             results.error = island_res.error
             results.iterations = island_res.iterations
             results.converged = island_res.converged
-
+    print('Converged: ' + str(results.converged))
     return results
