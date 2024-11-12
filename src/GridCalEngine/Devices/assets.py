@@ -3518,6 +3518,7 @@ class Assets:
     def delete_remedial_action(self, obj, del_group: bool = False):
         """
         Delete RemedialAction
+        :param del_group: Delete the group?
         :param obj: index
         """
         try:
