@@ -774,6 +774,8 @@ def analyze_buses(elements: List[Bus],
                   object_type: DeviceType,
                   tap_min: float,
                   tap_max: float,
+                  v_low: float,
+                  v_high: float,
                   logger: GridErrorLog,
                   fixable_errors: List[FIXABLE_ERROR_TYPES]):
     """
@@ -782,6 +784,8 @@ def analyze_buses(elements: List[Bus],
     :param object_type:
     :param tap_min:
     :param tap_max:
+    :param v_low:
+    :param v_high:
     :param logger:
     :param fixable_errors:
     :return:
@@ -804,6 +808,36 @@ def analyze_buses(elements: List[Bus],
                                                          value=elm.Vnom,
                                                          lower_limit=tap_min,
                                                          upper_limit=tap_max))
+
+        if elm.Vmin == 0.0:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='Vmin',
+                       message='Vmin = 0, that affects the nonlinear OPF',
+                       lower="0",
+                       val=elm.Vmin)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='Vmin',
+                                                         value=elm.Vmin,
+                                                         lower_limit=v_low,
+                                                         upper_limit=v_low))
+
+        if elm.Vmax <= elm.Vmin:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty='Vmax',
+                       message=' Vmax <= Vmin, that affects the nonlinear OPF',
+                       lower="0",
+                       val=elm.Vmax)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='Vmax',
+                                                         value=elm.Vmax,
+                                                         lower_limit=v_high,
+                                                         upper_limit=v_high))
 
         if elm.name == '':
             logger.add(object_type=object_type.value,
@@ -1219,6 +1253,8 @@ def grid_analysis(circuit: MultiCircuit,
                   tap_min=tap_min,
                   tap_max=tap_max,
                   logger=logger,
+                  v_low=v_low,
+                  v_high=v_high,
                   fixable_errors=fixable_errors)
 
     analyze_lines(elements=circuit.get_lines(),
@@ -1353,7 +1389,7 @@ def grid_analysis(circuit: MultiCircuit,
     # analyze the numerical stability
     nc = compile_numerical_circuit_at(circuit, t_idx=None)  # compile the snapshot
 
-    rcond, unstable = sparse_instability_svd_test(nc.Bbus, condition_number_thrshold=1.0/condition_number_thrshold)
+    rcond, unstable = sparse_instability_svd_test(nc.Bbus, condition_number_thrshold=1.0 / condition_number_thrshold)
 
     if unstable:
         logger.add(object_type='matrix',

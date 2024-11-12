@@ -918,8 +918,8 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                                  lil_matrix((npq, nslcap + ntapm + ntapt + ndc))])
 
         else:
-            Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, NV - 2 * N))])
-            Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(npq)), lil_matrix((npq, NV - 2 * N))])
+            Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, NV - N - npq))])
+            Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(npq)), lil_matrix((npq, NV - N - npq))])
             Hslsf = lil_matrix((0, NV))
             Hslst = lil_matrix((0, NV))
             Hslvmax = lil_matrix((0, NV))
