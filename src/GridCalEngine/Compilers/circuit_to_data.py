@@ -1006,7 +1006,9 @@ def get_branch_data(
     :return: BranchData
     """
 
-    data = ds.BranchData(nelm=circuit.get_branch_number_wo_hvdc(),
+    data = ds.BranchData(nelm=circuit.get_branch_number(add_vsc=consider_vsc_as_island_links,
+                                                        add_hvdc=False,
+                                                        add_switch=False),
                          nbus=circuit.get_bus_number())
 
     ii = 0
@@ -1165,7 +1167,7 @@ def get_branch_data(
                            is_dc_branch=False)
         ii += 1
 
-    # VSC
+    # VSC (only added if we want the VSC to be a regular branch: Fubm)
     if consider_vsc_as_island_links:
         for i, elm in enumerate(circuit.vsc_devices):
             # generic stuff
@@ -1684,24 +1686,24 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         use_stored_guess=use_stored_guess
     )
 
-    if consider_vsc_as_island_links:
-        nc.branch_data = get_branch_data(
-            circuit=circuit,
-            t_idx=t_idx,
-            time_series=time_series,
-            bus_dict=bus_dict,
-            bus_data=nc.bus_data,
-            bus_voltage_used=bus_voltage_used,
-            apply_temperature=apply_temperature,
-            branch_tolerance_mode=branch_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=use_stored_guess,
-            control_taps_modules=control_taps_modules,
-            control_taps_phase=control_taps_phase,
-            control_remote_voltage=control_remote_voltage,
-            consider_vsc_as_island_links=True,
-        )
-    else:
+    nc.branch_data = get_branch_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=time_series,
+        bus_dict=bus_dict,
+        bus_data=nc.bus_data,
+        bus_voltage_used=bus_voltage_used,
+        apply_temperature=apply_temperature,
+        branch_tolerance_mode=branch_tolerance_mode,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+        control_taps_modules=control_taps_modules,
+        control_taps_phase=control_taps_phase,
+        control_remote_voltage=control_remote_voltage,
+        consider_vsc_as_island_links=consider_vsc_as_island_links,
+    )
+
+    if not consider_vsc_as_island_links:
         nc.vsc_data = get_vsc_data(
             circuit=circuit,
             t_idx=t_idx,

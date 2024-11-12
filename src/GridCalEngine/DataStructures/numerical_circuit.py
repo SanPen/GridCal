@@ -376,6 +376,7 @@ class NumericalCircuit:
         self.nbus = len(self.bus_data)
         self.nbr = len(self.branch_data)
         self.nhvdc = len(self.hvdc_data)
+        self.nvsc = len(self.vsc_data)
         self.nload = len(self.load_data)
         self.ngen = len(self.generator_data)
         self.nbatt = len(self.battery_data)
@@ -386,6 +387,10 @@ class NumericalCircuit:
 
         self.hvdc_data.C_hvdc_bus_f = self.hvdc_data.C_hvdc_bus_f.tocsc()
         self.hvdc_data.C_hvdc_bus_t = self.hvdc_data.C_hvdc_bus_t.tocsc()
+
+        self.vsc_data.C_branch_bus_f = self.vsc_data.C_branch_bus_f.tocsc()
+        self.vsc_data.C_branch_bus_t = self.vsc_data.C_branch_bus_t.tocsc()
+
         self.load_data.C_bus_elm = self.load_data.C_bus_elm.tocsr()
         self.battery_data.C_bus_elm = self.battery_data.C_bus_elm.tocsr()
         self.generator_data.C_bus_elm = self.generator_data.C_bus_elm.tocsr()
@@ -2079,190 +2084,9 @@ class NumericalCircuit:
 
         return sum_ratings
 
-#
-# def compile_numerical_circuit_at(circuit: MultiCircuit,
-#                                  t_idx: Union[int, None] = None,
-#                                  apply_temperature=False,
-#                                  branch_tolerance_mode=BranchImpedanceMode.Specified,
-#                                  opf_results: gc_compiler2.VALID_OPF_RESULTS | None = None,
-#                                  use_stored_guess=False,
-#                                  bus_dict: Union[Dict[Bus, int], None] = None,
-#                                  areas_dict: Union[Dict[Area, int], None] = None,
-#                                  control_taps_modules: bool = True,
-#                                  control_taps_phase: bool = True,
-#                                  control_remote_voltage: bool = True,
-#                                  logger=Logger()) -> NumericalCircuit:
-#     """
-#     Compile a NumericalCircuit from a MultiCircuit
-#     :param circuit: MultiCircuit instance
-#     :param t_idx: time step from the time series to gather data from, if None the snapshot is used
-#     :param apply_temperature: apply the branch temperature correction
-#     :param branch_tolerance_mode: Branch tolerance mode
-#     :param opf_results:(optional) OptimalPowerFlowResults instance
-#     :param use_stored_guess: use the storage voltage guess?
-#     :param bus_dict (optional) Dict[Bus, int] dictionary
-#     :param areas_dict (optional) Dict[Area, int] dictionary
-#     :param control_taps_modules: control taps modules?
-#     :param control_taps_phase: control taps phase?
-#     :param control_remote_voltage: control remote voltage?
-#     :param logger: Logger instance
-#     :return: NumericalCircuit instance
-#     """
-#
-#     if circuit.get_connectivity_nodes_number() + circuit.get_switches_number():
-#         # process topology, this
-#         circuit.process_topology_at(t_idx=t_idx, logger=logger)
-#
-#     # if any valid time index is specified, then the data is compiled from the time series
-#     time_series = t_idx is not None
-#
-#     bus_voltage_used = np.zeros(circuit.get_bus_number(), dtype=bool)
-#
-#     # declare the numerical circuit
-#     nc = NumericalCircuit(
-#         nbus=0,
-#         nbr=0,
-#         nhvdc=0,
-#         nload=0,
-#         ngen=0,
-#         nbatt=0,
-#         nshunt=0,
-#         nfluidnode=0,
-#         nfluidturbine=0,
-#         nfluidpump=0,
-#         nfluidp2x=0,
-#         nfluidpath=0,
-#         sbase=circuit.Sbase,
-#         t_idx=t_idx
-#     )
-#
-#     if bus_dict is None:
-#         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
-#
-#     if areas_dict is None:
-#         areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
-#
-#     nc.bus_data = gc_compiler2.get_bus_data(
-#         circuit=circuit,
-#         t_idx=t_idx,
-#         time_series=time_series,
-#         areas_dict=areas_dict,
-#         use_stored_guess=use_stored_guess
-#     )
-#
-#     nc.generator_data, gen_dict = gc_compiler2.get_generator_data(
-#         circuit=circuit,
-#         bus_dict=bus_dict,
-#         bus_data=nc.bus_data,
-#         t_idx=t_idx,
-#         time_series=time_series,
-#         bus_voltage_used=bus_voltage_used,
-#         logger=logger,
-#         opf_results=opf_results,
-#         use_stored_guess=use_stored_guess,
-#         control_remote_voltage=control_remote_voltage
-#     )
-#
-#     nc.battery_data = gc_compiler2.get_battery_data(
-#         circuit=circuit,
-#         bus_dict=bus_dict,
-#         bus_data=nc.bus_data,
-#         t_idx=t_idx,
-#         time_series=time_series,
-#         bus_voltage_used=bus_voltage_used,
-#         logger=logger,
-#         opf_results=opf_results,
-#         use_stored_guess=use_stored_guess,
-#         control_remote_voltage=control_remote_voltage
-#     )
-#
-#     nc.shunt_data = gc_compiler2.get_shunt_data(
-#         circuit=circuit,
-#         bus_dict=bus_dict,
-#         bus_voltage_used=bus_voltage_used,
-#         bus_data=nc.bus_data,
-#         t_idx=t_idx,
-#         time_series=time_series,
-#         logger=logger,
-#         use_stored_guess=use_stored_guess,
-#         control_remote_voltage=control_remote_voltage
-#     )
-#
-#     nc.load_data = gc_compiler2.get_load_data(
-#         circuit=circuit,
-#         bus_dict=bus_dict,
-#         bus_voltage_used=bus_voltage_used,
-#         bus_data=nc.bus_data,
-#         logger=logger,
-#         t_idx=t_idx,
-#         time_series=time_series,
-#         opf_results=opf_results,
-#         use_stored_guess=use_stored_guess
-#     )
-#
-#     nc.branch_data = gc_compiler2.get_branch_data(
-#         circuit=circuit,
-#         t_idx=t_idx,
-#         time_series=time_series,
-#         bus_dict=bus_dict,
-#         bus_data=nc.bus_data,
-#         bus_voltage_used=bus_voltage_used,
-#         apply_temperature=apply_temperature,
-#         branch_tolerance_mode=branch_tolerance_mode,
-#         opf_results=opf_results,
-#         use_stored_guess=use_stored_guess,
-#         control_taps_modules=control_taps_modules,
-#         control_taps_phase=control_taps_phase,
-#         control_remote_voltage=control_remote_voltage,
-#     )
-#
-#     nc.hvdc_data = gc_compiler2.get_hvdc_data(
-#         circuit=circuit,
-#         t_idx=t_idx,
-#         time_series=time_series,
-#         bus_dict=bus_dict,
-#         bus_types=nc.bus_data.bus_types,
-#         bus_data=nc.bus_data,
-#         bus_voltage_used=bus_voltage_used,
-#         opf_results=opf_results,
-#         use_stored_guess=use_stored_guess,
-#         logger=logger
-#     )
-#
-#     if len(circuit.fluid_nodes) > 0:
-#         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(
-#             circuit=circuit,
-#             t_idx=t_idx,
-#             time_series=time_series
-#         )
-#
-#         nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(
-#             circuit=circuit,
-#             plant_dict=plant_dict,
-#             gen_dict=gen_dict,
-#             t_idx=t_idx
-#         )
-#
-#         nc.fluid_pump_data = gc_compiler2.get_fluid_pump_data(
-#             circuit=circuit,
-#             plant_dict=plant_dict,
-#             gen_dict=gen_dict,
-#             t_idx=t_idx
-#         )
-#
-#         nc.fluid_p2x_data = gc_compiler2.get_fluid_p2x_data(
-#             circuit=circuit,
-#             plant_dict=plant_dict,
-#             gen_dict=gen_dict,
-#             t_idx=t_idx
-#         )
-#
-#         nc.fluid_path_data = gc_compiler2.get_fluid_path_data(
-#             circuit=circuit,
-#             plant_dict=plant_dict,
-#             t_idx=t_idx
-#         )
-#
-#     nc.consolidate_information()
-#
-#     return nc
+    def is_dc(self) -> bool:
+        """
+        Check if this island is DC
+        :return:
+        """
+        return np.all(self.bus_data.is_dc)
