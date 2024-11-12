@@ -6,8 +6,9 @@
 import numpy as np
 from typing import List, Tuple
 import scipy.sparse as sp
+import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import ConverterControlType, GpfControlType
-from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec, ObjVec
+from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec, ObjVec, Logger
 
 
 class VscData:
@@ -87,6 +88,183 @@ class VscData:
         self.gpf_ctrl2_val: Vec = np.zeros(nelm, dtype=float)
 
         self.name_to_idx: dict = dict()
+
+    def size(self) -> int:
+        """
+        Get size of the VSC data structure
+        :return: number of VSC elements
+        """
+        return self.nelm
+
+    def copy(self) -> "VscData":
+        """
+        Get a deep copy of this VscData object
+        :return: new VscData instance
+        """
+        data = VscData(nelm=self.nelm, nbus=self.nbus)
+
+        data.names = self.names.copy()
+        data.idtag = self.idtag.copy()
+        data.branch_index = self.branch_index.copy()
+        data.F = self.F.copy()
+        data.T = self.T.copy()
+        data.active = self.active.copy()
+        data.rate = self.rate.copy()
+        data.contingency_factor = self.contingency_factor.copy()
+        data.protection_rating_factor = self.protection_rating_factor.copy()
+        data.monitor_loading = self.monitor_loading.copy()
+        data.mttf = self.mttf.copy()
+        data.mttr = self.mttr.copy()
+        data.cost = self.cost.copy()
+        data.capex = self.capex.copy()
+        data.opex = self.opex.copy()
+
+        # Electrical properties
+        data.R = self.R.copy()
+        data.X = self.X.copy()
+        data.R0 = self.R0.copy()
+        data.X0 = self.X0.copy()
+        data.R2 = self.R2.copy()
+        data.X2 = self.X2.copy()
+        data.G0sw = self.G0sw.copy()
+        data.Beq = self.Beq.copy()
+        data.Beq_max = self.Beq_max.copy()
+        data.Beq_min = self.Beq_min.copy()
+        data.tap_module = self.tap_module.copy()
+        data.tap_module_max = self.tap_module_max.copy()
+        data.tap_module_min = self.tap_module_min.copy()
+
+        # Loss Params
+        data.alpha1 = self.alpha1.copy()
+        data.alpha2 = self.alpha2.copy()
+        data.alpha3 = self.alpha3.copy()
+
+        # Connection Matrix
+        data.C_vsc_bus_f = self.C_vsc_bus_f.copy()
+        data.C_vsc_bus_t = self.C_vsc_bus_t.copy()
+
+        # Control settings
+        data.control_mode = self.control_mode.copy()
+        data.kdp = self.kdp.copy()
+        data.Pdc_set = self.Pdc_set.copy()
+        data.Qac_set = self.Qac_set.copy()
+        data.Vac_set = self.Vac_set.copy()
+        data.Vdc_set = self.Vdc_set.copy()
+
+        # Generalized PF
+        data.gpf_ctrl1_elm = self.gpf_ctrl1_elm.copy()
+        data.gpf_ctrl1_mode = self.gpf_ctrl1_mode.copy()
+        data.gpf_ctrl1_val = self.gpf_ctrl1_val.copy()
+        data.gpf_ctrl2_elm = self.gpf_ctrl2_elm.copy()
+        data.gpf_ctrl2_mode = self.gpf_ctrl2_mode.copy()
+        data.gpf_ctrl2_val = self.gpf_ctrl2_val.copy()
+
+        data.name_to_idx = self.name_to_idx.copy()
+
+        return data
+
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "VscData":
+        """
+        Slice VSC data by given indices
+        :param elm_idx: array of VSC element indices
+        :param bus_idx: array of bus indices
+        :param logger: Logger
+        :return: new VscData instance
+        """
+        data = VscData(nelm=len(elm_idx), nbus=len(bus_idx))
+
+        # Basic data
+        data.names = self.names[elm_idx]
+        data.idtag = self.idtag[elm_idx]
+        data.branch_index = self.branch_index[elm_idx]
+        data.F = self.F[elm_idx]
+        data.T = self.T[elm_idx]
+        data.active = self.active[elm_idx]
+        data.rate = self.rate[elm_idx]
+        data.contingency_factor = self.contingency_factor[elm_idx]
+        data.protection_rating_factor = self.protection_rating_factor[elm_idx]
+        data.monitor_loading = self.monitor_loading[elm_idx]
+        data.mttf = self.mttf[elm_idx]
+        data.mttr = self.mttr[elm_idx]
+        data.cost = self.cost[elm_idx]
+        data.capex = self.capex[elm_idx]
+        data.opex = self.opex[elm_idx]
+
+        # Electrical properties
+        data.R = self.R[elm_idx]
+        data.X = self.X[elm_idx]
+        data.R0 = self.R0[elm_idx]
+        data.X0 = self.X0[elm_idx]
+        data.R2 = self.R2[elm_idx]
+        data.X2 = self.X2[elm_idx]
+        data.G0sw = self.G0sw[elm_idx]
+        data.Beq = self.Beq[elm_idx]
+        data.Beq_max = self.Beq_max[elm_idx]
+        data.Beq_min = self.Beq_min[elm_idx]
+        data.tap_module = self.tap_module[elm_idx]
+        data.tap_module_max = self.tap_module_max[elm_idx]
+        data.tap_module_min = self.tap_module_min[elm_idx]
+
+        # Loss Params
+        data.alpha1 = self.alpha1[elm_idx]
+        data.alpha2 = self.alpha2[elm_idx]
+        data.alpha3 = self.alpha3[elm_idx]
+
+        # Connection Matrices
+        data.C_vsc_bus_f = self.C_vsc_bus_f[np.ix_(elm_idx, bus_idx)]
+        data.C_vsc_bus_t = self.C_vsc_bus_t[np.ix_(elm_idx, bus_idx)]
+
+        # Control settings
+        data.control_mode = [self.control_mode[i] for i in elm_idx]
+        data.kdp = self.kdp[elm_idx]
+        data.Pdc_set = self.Pdc_set[elm_idx]
+        data.Qac_set = self.Qac_set[elm_idx]
+        data.Vac_set = self.Vac_set[elm_idx]
+        data.Vdc_set = self.Vdc_set[elm_idx]
+
+        # Generalized PF controls
+        data.gpf_ctrl1_elm = self.gpf_ctrl1_elm[elm_idx]
+        data.gpf_ctrl1_mode = [self.gpf_ctrl1_mode[i] for i in elm_idx]
+        data.gpf_ctrl1_val = self.gpf_ctrl1_val[elm_idx]
+        data.gpf_ctrl2_elm = self.gpf_ctrl2_elm[elm_idx]
+        data.gpf_ctrl2_mode = [self.gpf_ctrl2_mode[i] for i in elm_idx]
+        data.gpf_ctrl2_val = self.gpf_ctrl2_val[elm_idx]
+
+        # Copy the name-to-index dictionary
+        data.name_to_idx = {name: idx for name, idx in self.name_to_idx.items() if idx in elm_idx}
+
+        # Remap F and T bus indices and check for disconnections
+        bus_map = {o: i for i, o in enumerate(bus_idx)}
+        for k in range(data.nelm):
+            data.F[k] = bus_map.get(data.F[k], -1)
+            if data.F[k] == -1:
+                if logger is not None:
+                    logger.add_error(f"VSC element {k}, {self.names[k]} is connected to a disconnected node", value=data.F[k])
+                data.active[k] = 0
+
+            data.T[k] = bus_map.get(data.T[k], -1)
+            if data.T[k] == -1:
+                if logger is not None:
+                    logger.add_error(f"VSC element {k}, {self.names[k]} is connected to a disconnected node", value=data.T[k])
+                data.active[k] = 0
+
+        return data
+
+    def get_island(self, bus_idx: IntVec) -> IntVec:
+        """
+        Get the array of VSC indices that belong to the island given by the bus indices
+        :param bus_idx: array of bus indices
+        :return: array of island VSC indices
+        """
+        if self.nelm:
+            return tp.get_elements_of_the_island(
+                C_element_bus=self.C_vsc_bus_f + self.C_vsc_bus_t,
+                island=bus_idx,
+                active=self.active
+            )
+        else:
+            return np.zeros(0, dtype=int)
+
 
     def update_loading(self, Pbus: Vec, Vbus: Vec, Sbase: float):
         """
