@@ -207,6 +207,7 @@ class NumericalCircuit:
                  nbus: int,
                  nbr: int,
                  nhvdc: int,
+                 nvsc: int,
                  nload: int,
                  ngen: int,
                  nbatt: int,
@@ -223,6 +224,7 @@ class NumericalCircuit:
         :param nbus: Number of calculation buses
         :param nbr: Number of calculation Branches
         :param nhvdc: Number of calculation hvdc devices
+        :param nvsc: Number of calculation vsc devices
         :param nload:  Number of calculation load devices
         :param ngen:  Number of calculation generator devices
         :param nbatt:  Number of calculation battery devices
@@ -240,6 +242,7 @@ class NumericalCircuit:
         self.nbatt: int = nbatt
         self.nshunt: int = nshunt
         self.nhvdc: int = nhvdc
+        self.nvsc: int = nvsc
 
         self.nfluidnode: int = nfluidnode
         self.nfluidturbine: int = nfluidturbine
@@ -255,6 +258,7 @@ class NumericalCircuit:
         self.bus_data: ds.BusData = ds.BusData(nbus=nbus)
         self.branch_data: ds.BranchData = ds.BranchData(nelm=nbr, nbus=nbus)
         self.hvdc_data: ds.HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
+        self.vsc_data: ds.VscData = ds.VscData(nelm=nvsc, nbus=nbus)
 
         self.load_data: ds.LoadData = ds.LoadData(nelm=nload, nbus=nbus)
 
@@ -398,6 +402,7 @@ class NumericalCircuit:
         nc = NumericalCircuit(nbus=self.nbus,
                               nbr=self.nbr,
                               nhvdc=self.nhvdc,
+                              nvsc=self.nvsc,
                               nload=self.nload,
                               ngen=self.ngen,
                               nbatt=self.nbatt,
@@ -1340,10 +1345,12 @@ class NumericalCircuit:
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
-    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False) -> sp.csc_matrix:
+    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False,
+                                 consider_vsc_as_island_links: bool = True,) -> sp.csc_matrix:
         """
         Compute the adjacency matrix
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :return: csc_matrix
         """
 
@@ -1832,11 +1839,13 @@ class NumericalCircuit:
 
     def get_island(self, bus_idx: IntVec,
                    consider_hvdc_as_island_links: bool = False,
+                   consider_vsc_as_island_links: bool = True,
                    logger: Logger | None = None) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :param logger: Logger
         :return: SnapshotData
         """
@@ -1851,6 +1860,7 @@ class NumericalCircuit:
         # find the indices of the devices of the island
         br_idx = self.branch_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
+        vsc_idx = self.vsc_data.get_island(bus_idx)  # TODO: Check this stuff out
 
         load_idx = self.load_data.get_island(bus_idx)
         gen_idx = self.generator_data.get_island(bus_idx)
@@ -1861,6 +1871,7 @@ class NumericalCircuit:
             nbus=len(bus_idx),
             nbr=len(br_idx),
             nhvdc=len(hvdc_idx),
+            nvsc=len(vsc_idx),
             nload=len(load_idx),
             ngen=len(gen_idx),
             nbatt=len(batt_idx),
@@ -1887,16 +1898,21 @@ class NumericalCircuit:
         if consider_hvdc_as_island_links:
             nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
 
+        if not consider_vsc_as_island_links:
+            nc.vsc_data = self.vsc_data.slice(elm_idx=br_idx, bus_idx=bus_idx, logger=logger)
+
         return nc
 
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,
                            consider_hvdc_as_island_links: bool = False,
+                           consider_vsc_as_island_links: bool = True,
                            logger: Logger | None = None) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :param logger: Logger
         :return: List[NumericCircuit]
         """
@@ -1904,7 +1920,9 @@ class NumericalCircuit:
             logger = Logger()
 
         # find the matching islands
-        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
+        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links,
+                                            consider_vsc_as_island_links=consider_vsc_as_island_links)
+
         idx_islands = tp.find_islands(adj=adj, active=self.bus_data.active)
 
         circuit_islands = list()  # type: List[NumericalCircuit]

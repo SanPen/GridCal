@@ -553,6 +553,7 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data = NumericalCircuit(nbus=0,
                                 nbr=0,
                                 nhvdc=0,
+                                nvsc=0,
                                 nload=0,
                                 ngen=0,
                                 nbatt=0,

@@ -5,7 +5,7 @@ from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
 
 class GeneralizedSimulationIndices:
     """
-
+    GeneralizedSimulationIndices
     """
 
     def __init__(self):

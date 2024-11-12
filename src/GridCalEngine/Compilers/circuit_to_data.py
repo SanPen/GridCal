@@ -983,6 +983,7 @@ def get_branch_data(
         control_taps_modules: bool = True,
         control_taps_phase: bool = True,
         control_remote_voltage: bool = True,
+        consider_vsc_as_island_links: bool = True,
         logger: Logger = Logger()
 ) -> ds.BranchData:
     """
@@ -1000,6 +1001,7 @@ def get_branch_data(
     :param control_taps_modules: Control TapsModules
     :param control_taps_phase: Control TapsPhase
     :param control_remote_voltage: Control RemoteVoltage
+    :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
     :param logger: Logger
     :return: BranchData
     """
@@ -1097,34 +1099,6 @@ def get_branch_data(
         else:
             logger.add_error("Ill connected winding", device=elm.idtag)
 
-    # VSC
-    for i, elm in enumerate(circuit.vsc_devices):
-        # generic stuff
-        fill_controllable_branch(ii=ii,
-                                 elm=elm,
-                                 data=data,
-                                 bus_data=bus_data,
-                                 bus_dict=bus_dict,
-                                 apply_temperature=apply_temperature,
-                                 branch_tolerance_mode=branch_tolerance_mode,
-                                 t_idx=t_idx,
-                                 time_series=time_series,
-                                 opf_results=opf_results,
-                                 use_stored_guess=use_stored_guess,
-                                 bus_voltage_used=bus_voltage_used,
-                                 Sbase=circuit.Sbase,
-                                 control_taps_modules=control_taps_modules,
-                                 control_taps_phase=control_taps_phase,
-                                 control_remote_voltage=control_remote_voltage,
-                                 logger=logger)
-        data.Kdp[ii] = elm.kdp
-        data.is_converter[ii] = True
-        data.alpha1[ii] = elm.alpha1
-        data.alpha2[ii] = elm.alpha2
-        data.alpha3[ii] = elm.alpha3
-        data._any_pf_control = True
-        ii += 1
-
     # UPFC
     for i, elm in enumerate(circuit.upfc_devices):
         # generic stuff
@@ -1189,6 +1163,107 @@ def get_branch_data(
                            t_idx=t_idx,
                            time_series=time_series,
                            is_dc_branch=False)
+        ii += 1
+
+    # VSC
+    if consider_vsc_as_island_links:
+        for i, elm in enumerate(circuit.vsc_devices):
+            # generic stuff
+            fill_controllable_branch(ii=ii,
+                                     elm=elm,
+                                     data=data,
+                                     bus_data=bus_data,
+                                     bus_dict=bus_dict,
+                                     apply_temperature=apply_temperature,
+                                     branch_tolerance_mode=branch_tolerance_mode,
+                                     t_idx=t_idx,
+                                     time_series=time_series,
+                                     opf_results=opf_results,
+                                     use_stored_guess=use_stored_guess,
+                                     bus_voltage_used=bus_voltage_used,
+                                     Sbase=circuit.Sbase,
+                                     control_taps_modules=control_taps_modules,
+                                     control_taps_phase=control_taps_phase,
+                                     control_remote_voltage=control_remote_voltage,
+                                     logger=logger)
+            data.Kdp[ii] = elm.kdp
+            data.is_converter[ii] = True
+            data.alpha1[ii] = elm.alpha1
+            data.alpha2[ii] = elm.alpha2
+            data.alpha3[ii] = elm.alpha3
+            data._any_pf_control = True
+            ii += 1
+
+    return data
+
+
+def get_vsc_data(
+        circuit: MultiCircuit,
+        bus_dict: Dict[Bus, int],
+        bus_data: ds.BusData,
+        bus_voltage_used: BoolVec,
+        apply_temperature: bool,
+        branch_tolerance_mode: BranchImpedanceMode,
+        t_idx: int = -1,
+        time_series: bool = False,
+        opf_results: VALID_OPF_RESULTS | None = None,
+        use_stored_guess: bool = False,
+        control_taps_modules: bool = True,
+        control_taps_phase: bool = True,
+        control_remote_voltage: bool = True,
+        logger: Logger = Logger()
+) -> ds.VscData:
+    """
+    Compile VscData for a time step or the snapshot
+    :param circuit: MultiCircuit
+    :param bus_dict: Dictionary of buses to compute the indices
+    :param bus_data: BusData
+    :param bus_voltage_used:
+    :param apply_temperature: apply the temperature correction?
+    :param branch_tolerance_mode: BranchImpedanceMode
+    :param t_idx: time index (-1 is useless)
+    :param time_series: compile time series? else the sanpshot is compiled
+    :param opf_results: OptimalPowerFlowResults
+    :param use_stored_guess: use the stored voltage ?
+    :param control_taps_modules: Control TapsModules
+    :param control_taps_phase: Control TapsPhase
+    :param control_remote_voltage: Control RemoteVoltage
+    :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
+    :param logger: Logger
+    :return: VscData
+    """
+
+    data = ds.VscData(nelm=circuit.get_vsc_number(),
+                      nbus=circuit.get_bus_number())
+
+    ii = 0
+
+    # VSC
+    for i, elm in enumerate(circuit.vsc_devices):
+        # generic stuff
+        fill_controllable_branch(ii=ii,
+                                 elm=elm,
+                                 data=data,
+                                 bus_data=bus_data,
+                                 bus_dict=bus_dict,
+                                 apply_temperature=apply_temperature,
+                                 branch_tolerance_mode=branch_tolerance_mode,
+                                 t_idx=t_idx,
+                                 time_series=time_series,
+                                 opf_results=opf_results,
+                                 use_stored_guess=use_stored_guess,
+                                 bus_voltage_used=bus_voltage_used,
+                                 Sbase=circuit.Sbase,
+                                 control_taps_modules=control_taps_modules,
+                                 control_taps_phase=control_taps_phase,
+                                 control_remote_voltage=control_remote_voltage,
+                                 logger=logger)
+        data.Kdp[ii] = elm.kdp
+        data.is_converter[ii] = True
+        data.alpha1[ii] = elm.alpha1
+        data.alpha2[ii] = elm.alpha2
+        data.alpha3[ii] = elm.alpha3
+        data._any_pf_control = True
         ii += 1
 
     return data
@@ -1486,8 +1561,6 @@ def get_fluid_path_data(circuit: MultiCircuit,
     return data
 
 
-
-
 def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  t_idx: Union[int, None] = None,
                                  apply_temperature=False,
@@ -1499,6 +1572,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  control_taps_modules: bool = True,
                                  control_taps_phase: bool = True,
                                  control_remote_voltage: bool = True,
+                                 consider_vsc_as_island_links: bool = True,
                                  logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
@@ -1513,6 +1587,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param control_taps_modules: control taps modules?
     :param control_taps_phase: control taps phase?
     :param control_remote_voltage: control remote voltage?
+    :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
     :param logger: Logger instance
     :return: NumericalCircuit instance
     """
@@ -1531,6 +1606,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         nbus=0,
         nbr=0,
         nhvdc=0,
+        nvsc=0,
         nload=0,
         ngen=0,
         nbatt=0,
@@ -1608,21 +1684,39 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         use_stored_guess=use_stored_guess
     )
 
-    nc.branch_data = get_branch_data(
-        circuit=circuit,
-        t_idx=t_idx,
-        time_series=time_series,
-        bus_dict=bus_dict,
-        bus_data=nc.bus_data,
-        bus_voltage_used=bus_voltage_used,
-        apply_temperature=apply_temperature,
-        branch_tolerance_mode=branch_tolerance_mode,
-        opf_results=opf_results,
-        use_stored_guess=use_stored_guess,
-        control_taps_modules=control_taps_modules,
-        control_taps_phase=control_taps_phase,
-        control_remote_voltage=control_remote_voltage,
-    )
+    if consider_vsc_as_island_links:
+        nc.branch_data = get_branch_data(
+            circuit=circuit,
+            t_idx=t_idx,
+            time_series=time_series,
+            bus_dict=bus_dict,
+            bus_data=nc.bus_data,
+            bus_voltage_used=bus_voltage_used,
+            apply_temperature=apply_temperature,
+            branch_tolerance_mode=branch_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=use_stored_guess,
+            control_taps_modules=control_taps_modules,
+            control_taps_phase=control_taps_phase,
+            control_remote_voltage=control_remote_voltage,
+            consider_vsc_as_island_links=True,
+        )
+    else:
+        nc.vsc_data = get_vsc_data(
+            circuit=circuit,
+            t_idx=t_idx,
+            time_series=time_series,
+            bus_dict=bus_dict,
+            bus_data=nc.bus_data,
+            bus_voltage_used=bus_voltage_used,
+            apply_temperature=apply_temperature,
+            branch_tolerance_mode=branch_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=use_stored_guess,
+            control_taps_modules=control_taps_modules,
+            control_taps_phase=control_taps_phase,
+            control_remote_voltage=control_remote_voltage,
+        )
 
     nc.hvdc_data = get_hvdc_data(
         circuit=circuit,

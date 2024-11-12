@@ -4583,9 +4583,9 @@ class Assets:
             self._dc_lines,
             self._transformers2w,
             self._windings,
-            self._vsc_devices,
             self._upfc_devices,
-            self._series_reactances
+            self._series_reactances,
+            self._vsc_devices,
         ]
 
     def get_branch_names_wo_hvdc(self) -> StrVec:

@@ -12,7 +12,8 @@ from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec, ObjVec
 
 class VscData:
     """
-    VscData class provides a structured model for managing data related to Voltage Source Converters (VSC) in power grid simulations.
+    VscData class provides a structured model for managing data related to
+    Voltage Source Converters (VSC) in power grid simulations.
     """
 
     def __init__(self, nelm: int, nbus: int):
@@ -86,7 +87,6 @@ class VscData:
         self.gpf_ctrl2_val: Vec = np.zeros(nelm, dtype=float)
 
         self.name_to_idx: dict = dict()
-
 
     def update_loading(self, Pbus: Vec, Vbus: Vec, Sbase: float):
         """
