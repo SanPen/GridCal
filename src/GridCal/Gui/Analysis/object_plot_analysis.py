@@ -824,15 +824,28 @@ def analyze_buses(elements: List[Bus],
                                                          lower_limit=v_low,
                                                          upper_limit=v_low))
 
-        if elm.Vmax <= elm.Vmin:
-            logger.add(object_type=object_type.value,
-                       element_name=elm.name,
-                       element_index=i,
-                       severity=LogSeverity.Error,
-                       propty='Vmax',
-                       message=' Vmax <= Vmin, that affects the nonlinear OPF',
-                       lower="0",
-                       val=elm.Vmax)
+        if elm.Vmax < elm.Vmin or elm.Vmax == 0:
+
+            if elm.Vmax == 0:
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Error,
+                           propty='Vmax',
+                           message=' Vmax = 0, that affects the nonlinear OPF',
+                           lower="0",
+                           val=elm.Vmax)
+
+            if elm.Vmax < elm.Vmin:
+                logger.add(object_type=object_type.value,
+                           element_name=elm.name,
+                           element_index=i,
+                           severity=LogSeverity.Error,
+                           propty='Vmax',
+                           message=' Vmax <= Vmin, that affects the nonlinear OPF',
+                           lower="0",
+                           val=elm.Vmax)
+
             fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
                                                          property_name='Vmax',
                                                          value=elm.Vmax,

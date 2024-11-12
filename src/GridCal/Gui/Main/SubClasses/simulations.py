@@ -2454,7 +2454,8 @@ class SimulationsMain(TimeEventsMain):
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
                                                                pf_options=self.get_selected_power_flow_options(),
-                                                               objf_tpe=obj_fn_tpe,
+                                                               opf_options=self.get_opf_options(),
+                                                               obj_tpe=obj_fn_tpe,
                                                                plugin_fcn_ptr=fn_ptr
                                                                )
 
