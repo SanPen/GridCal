@@ -56,7 +56,7 @@ class PowerFlowDriver(DriverTemplate):
                                         n_batt=self.grid.get_batteries_number(),
                                         n_sh=self.grid.get_shunt_like_device_number(),
                                         bus_names=self.grid.get_bus_names(),
-                                        branch_names=self.grid.get_branches_wo_hvdc_names(),
+                                        branch_names=self.grid.get_branch_names_wo_hvdc(),
                                         hvdc_names=self.grid.get_hvdc_names(),
                                         gen_names=self.grid.get_generation_like_names(),
                                         batt_names=self.grid.get_battery_names(),

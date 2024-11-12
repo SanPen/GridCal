@@ -423,7 +423,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
         # check devices' status: if an element is connected to disconnected
         # buses the branch must be disconnected too this is to handle the
         # typical PSSe garbage modlling practices
-        for elm in main_grid.get_all_branches_iter():
+        for elm in main_grid.get_branches_iter(add_vsc=True, add_hvdc=True):
             if not (elm.bus_from.active and elm.bus_to.active):
                 elm.active = False
                 logger.add_warning(msg="Inconsistent active state",

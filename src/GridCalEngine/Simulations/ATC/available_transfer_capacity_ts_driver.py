@@ -216,7 +216,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # OPF results
         self.results = AvailableTransferCapacityTimeSeriesResults(
-            br_names=self.grid.get_branches_wo_hvdc_names(),
+            br_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
             rates=self.grid.get_branch_rates_prof_wo_hvdc(),
             contingency_rates=self.grid.get_branch_contingency_rates_prof_wo_hvdc(),

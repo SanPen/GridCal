@@ -1860,7 +1860,11 @@ class NumericalCircuit:
         # find the indices of the devices of the island
         br_idx = self.branch_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
-        vsc_idx = self.vsc_data.get_island(bus_idx)  # TODO: Check this stuff out
+
+        if not consider_vsc_as_island_links:
+            vsc_idx = self.vsc_data.get_island(bus_idx)  # TODO: Check this stuff out
+        else:
+            vsc_idx = np.zeros(0, dtype=int)
 
         load_idx = self.load_data.get_island(bus_idx)
         gen_idx = self.generator_data.get_island(bus_idx)

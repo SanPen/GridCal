@@ -61,7 +61,7 @@ class LinearAnalysisDriver(DriverTemplate):
         self.report_progress(0)
 
         bus_names = self.grid.get_bus_names()
-        br_names = self.grid.get_branches_wo_hvdc_names()
+        br_names = self.grid.get_branch_names_wo_hvdc()
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
             self.results = LinearAnalysisResults(

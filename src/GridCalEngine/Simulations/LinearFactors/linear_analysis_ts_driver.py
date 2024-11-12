@@ -53,7 +53,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             time_array=self.grid.time_profile[self.time_indices],
             bus_names=self.grid.get_bus_names(),
             bus_types=self.grid.get_bus_default_types(),
-            branch_names=self.grid.get_branches_wo_hvdc_names(),
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
             clustering_results=self.clustering_results,
         )
 
