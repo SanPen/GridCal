@@ -517,6 +517,56 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.units_label.setText("")
 
+    @staticmethod
+    def get_investments_combination_tree_model(drv: sim.InvestmentsEvaluationDriver) -> QtGui.QStandardItemModel:
+        """
+        Get the investments combination tree model
+        :param drv:
+        :return:
+        """
+        model = QtGui.QStandardItemModel()
+        model.setHorizontalHeaderLabels([
+            "Combination", "capex", "opex", "losses", "overload_score", "voltage_score"
+        ])
+
+        results = drv.results
+        for i in range(results.max_eval):
+            idx = np.where(results._combinations[i, :] != 0)[0]
+            if len(idx):
+                row_items = [
+                    QtGui.QStandardItem(f"Combination {i}"),
+                    QtGui.QStandardItem(f"{results._capex[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._opex[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._losses[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._overload_score[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._voltage_score[i]:.2f}"),
+                ]
+                model.appendRow(row_items)
+
+                # Add names as child nodes under this combination
+                names_parent_item = row_items[0]  # Use the first column (Combination) as parent
+                for k in idx:
+                    name_item = QtGui.QStandardItem(results.investment_groups_names[k])
+                    names_parent_item.appendRow([name_item] + [QtGui.QStandardItem("") for _ in range(5)])
+
+        return model
+
+    def fill_combinations_tree(self, drv: DRIVER_OBJECTS | None):
+        """
+        Fill the tree driver
+        :param drv: Any Driver object
+        """
+        if drv is None:
+            self.ui.combinationsTreeView.setModel(None)
+        else:
+            if drv.tpe == SimulationTypes.InvestmentsEvaluation_run:
+                model = self.get_investments_combination_tree_model(drv=drv)
+                self.ui.combinationsTreeView.setModel(model)
+                # self.ui.combinationsTreeView.expandAll()
+
+            else:
+                self.ui.combinationsTreeView.setModel(None)
+
     def changed_study(self):
         """
 
@@ -538,6 +588,8 @@ class SimulationsMain(TimeEventsMain):
                 self.setup_time_sliders()
         else:
             self.setup_time_sliders()
+
+        self.fill_combinations_tree(drv=drv)
 
     def update_available_results(self) -> None:
         """
