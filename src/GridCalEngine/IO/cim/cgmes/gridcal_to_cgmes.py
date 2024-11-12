@@ -18,7 +18,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
      create_cgmes_regulating_control, create_cgmes_tap_changer_control,
      create_sv_power_flow, create_cgmes_vsc_converter,
      create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
-     create_cgmes_dc_converter_unit)
+     create_cgmes_dc_terminal, create_cgmes_acdc_converter_terminal)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
@@ -1246,7 +1246,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
     connected with a DCLineSegment, contained in a DCLine
     and in a DCConverterUnit?
     DCGround?
-    DCNodes, DCTopologicalNodes are also created here from skratch
+    DCNodes, DCTopologicalNodes are also created here from scratch
     as there is no DC part in the simplified modelling.
 
     :param multicircuit_model:
@@ -1257,29 +1257,31 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
 
     for hvdc_line in multicircuit_model.hvdc_lines:
         # FROM side
-        vsc_1 = create_cgmes_vsc_converter(cgmes_model=cgmes_model, mc_elm=None,
-                                           logger=logger)
-
-        dc_conv_unit_1 = create_cgmes_dc_converter_unit(cgmes_model=cgmes_model,
-                                                        logger=logger)
-        dc_conv_unit_1.description = f'DC_Converter_Unit_for_VSC_1'
-
+        vsc_1, dc_conv_unit_1 = create_cgmes_vsc_converter(
+            cgmes_model=cgmes_model,
+            mc_elm=None,
+            logger=logger
+        )
         dc_tp_1 = create_cgmes_dc_tp_node(
             tp_name=f'DC_side_{hvdc_line.bus_from.name}',
             tp_description=f'DC_for_{hvdc_line.bus_from.code}',
             cgmes_model=cgmes_model,
             logger=logger
         )
-
-        dc_node_1 = create_cgmes_dc_node(cn_name='dc node name',
+        dc_node_1 = create_cgmes_dc_node(cn_name='DC_node_name',
                                          cn_description='DC_node_VSC_1',
                                          cgmes_model=cgmes_model,
                                          dc_tp=dc_tp_1,
                                          dc_ec=dc_conv_unit_1,
                                          logger=logger)
-        # TO side
-        vsc_2 = create_cgmes_vsc_converter(cgmes_model=cgmes_model, mc_elm=None,
-                                           logger=logger)
+        conv_dc_term_1 = create_cgmes_acdc_converter_terminal(
+            cgmes_model=cgmes_model,
+            mc_dc_bus=None,
+            seq_num=2,
+            dc_node=dc_node_1,
+            dc_cond_eq=vsc_1,
+            logger=logger
+        )
 
         # DC Line
         dc_line = create_cgmes_dc_line(cgmes_model=cgmes_model,
@@ -1288,10 +1290,39 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                                    mc_elm=hvdc_line,
                                                    eq_cont=dc_line,
                                                    logger=logger)
+        dc_term_1 = create_cgmes_dc_terminal(cgmes_model=cgmes_model,
+                                             dc_tp=dc_tp_1,
+                                             dc_node=dc_node_1,
+                                             dc_cond_eq=dc_line_sgm,
+                                             seq_num=1,
+                                             logger=logger)
 
-        # VSC 1
-
-        # VSC 2
+        # TO side
+        vsc_2, dc_conv_unit_2 = create_cgmes_vsc_converter(
+            cgmes_model=cgmes_model,
+            mc_elm=None,
+            logger=logger
+        )
+        dc_tp_2 = create_cgmes_dc_tp_node(
+            tp_name=f'DC_side_{hvdc_line.bus_to.name}',
+            tp_description=f'DC_for_{hvdc_line.bus_to.code}',
+            cgmes_model=cgmes_model,
+            logger=logger
+        )
+        dc_node_2 = create_cgmes_dc_node(cn_name='DC_node_name_2',
+                                         cn_description='DC_node_VSC_2',
+                                         cgmes_model=cgmes_model,
+                                         dc_tp=dc_tp_2,
+                                         dc_ec=dc_conv_unit_2,
+                                         logger=logger)
+        conv_dc_term_2 = create_cgmes_acdc_converter_terminal(
+            cgmes_model=cgmes_model,
+            mc_dc_bus=None,
+            seq_num=2,
+            dc_node=dc_node_2,
+            dc_cond_eq=vsc_2,
+            logger=logger
+        )
 
         # DC Line Segment
         # dc_line_sgm.inductance = 30.0
