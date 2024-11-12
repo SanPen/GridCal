@@ -596,6 +596,17 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
+
+    id_Vm_max0 = np.where(Vm_max == 0)[0]
+    id_Vm_min0 = np.where(Vm_min == 0)[0]
+
+    if len(id_Vm_max0) != 0 or len(id_Vm_min0) != 0:
+        logger.add_warning('Some of the upper voltage limits are set to 0. Correcting all the limits to (0.9, 1.1)')
+        Vm_max[id_Vm_max0] = 1.1
+        Vm_min[id_Vm_min0] = 0.9
+
+
+
     pf = nc.generator_data.pf
     tanmax = ((1 - pf ** 2) ** (1 / 2)) / (pf + 1e-15)
 
