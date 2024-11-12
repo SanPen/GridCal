@@ -2761,14 +2761,24 @@ class Ui_mainWindow(object):
         self.groupBox_3.setFont(font6)
         self.gridLayout_27 = QGridLayout(self.groupBox_3)
         self.gridLayout_27.setObjectName(u"gridLayout_27")
-        self.label_127 = QLabel(self.groupBox_3)
-        self.label_127.setObjectName(u"label_127")
+        self.verticalSpacer_21 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_27.addItem(self.verticalSpacer_21, 8, 0, 1, 1)
+
+        self.label_129 = QLabel(self.groupBox_3)
+        self.label_129.setObjectName(u"label_129")
         font7 = QFont()
         font7.setPointSize(9)
         font7.setBold(False)
-        self.label_127.setFont(font7)
+        self.label_129.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.label_127, 3, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.label_129, 2, 0, 1, 1)
+
+        self.ips_initialize_with_pf_checkBox = QCheckBox(self.groupBox_3)
+        self.ips_initialize_with_pf_checkBox.setObjectName(u"ips_initialize_with_pf_checkBox")
+        self.ips_initialize_with_pf_checkBox.setFont(font7)
+
+        self.gridLayout_27.addWidget(self.ips_initialize_with_pf_checkBox, 6, 0, 1, 2)
 
         self.ips_method_comboBox = QComboBox(self.groupBox_3)
         self.ips_method_comboBox.setObjectName(u"ips_method_comboBox")
@@ -2776,15 +2786,19 @@ class Ui_mainWindow(object):
 
         self.gridLayout_27.addWidget(self.ips_method_comboBox, 0, 1, 1, 1)
 
-        self.label_125 = QLabel(self.groupBox_3)
-        self.label_125.setObjectName(u"label_125")
-        self.label_125.setFont(font7)
+        self.ips_iterations_spinBox = QSpinBox(self.groupBox_3)
+        self.ips_iterations_spinBox.setObjectName(u"ips_iterations_spinBox")
+        self.ips_iterations_spinBox.setFont(font7)
+        self.ips_iterations_spinBox.setMinimum(1)
+        self.ips_iterations_spinBox.setMaximum(9999999)
+        self.ips_iterations_spinBox.setValue(100)
 
-        self.gridLayout_27.addWidget(self.label_125, 0, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.ips_iterations_spinBox, 2, 1, 1, 1)
 
-        self.verticalSpacer_21 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.label_130 = QLabel(self.groupBox_3)
+        self.label_130.setObjectName(u"label_130")
 
-        self.gridLayout_27.addItem(self.verticalSpacer_21, 7, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.label_130, 5, 0, 1, 1)
 
         self.label_126 = QLabel(self.groupBox_3)
         self.label_126.setObjectName(u"label_126")
@@ -2801,11 +2815,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout_27.addWidget(self.ips_tolerance_spinBox, 1, 1, 1, 1)
 
-        self.ips_initialize_with_pf_checkBox = QCheckBox(self.groupBox_3)
-        self.ips_initialize_with_pf_checkBox.setObjectName(u"ips_initialize_with_pf_checkBox")
-        self.ips_initialize_with_pf_checkBox.setFont(font7)
+        self.label_125 = QLabel(self.groupBox_3)
+        self.label_125.setObjectName(u"label_125")
+        self.label_125.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.ips_initialize_with_pf_checkBox, 6, 0, 1, 2)
+        self.gridLayout_27.addWidget(self.label_125, 0, 0, 1, 1)
 
         self.ips_trust_radius_doubleSpinBox = QDoubleSpinBox(self.groupBox_3)
         self.ips_trust_radius_doubleSpinBox.setObjectName(u"ips_trust_radius_doubleSpinBox")
@@ -2816,25 +2830,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_27.addWidget(self.ips_trust_radius_doubleSpinBox, 3, 1, 1, 1)
 
-        self.ips_iterations_spinBox = QSpinBox(self.groupBox_3)
-        self.ips_iterations_spinBox.setObjectName(u"ips_iterations_spinBox")
-        self.ips_iterations_spinBox.setFont(font7)
-        self.ips_iterations_spinBox.setMinimum(1)
-        self.ips_iterations_spinBox.setMaximum(9999999)
-        self.ips_iterations_spinBox.setValue(100)
+        self.label_127 = QLabel(self.groupBox_3)
+        self.label_127.setObjectName(u"label_127")
+        self.label_127.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.ips_iterations_spinBox, 2, 1, 1, 1)
+        self.gridLayout_27.addWidget(self.label_127, 3, 0, 1, 1)
 
-        self.label_129 = QLabel(self.groupBox_3)
-        self.label_129.setObjectName(u"label_129")
-        self.label_129.setFont(font7)
+        self.ips_control_Qlimits_checkBox = QCheckBox(self.groupBox_3)
+        self.ips_control_Qlimits_checkBox.setObjectName(u"ips_control_Qlimits_checkBox")
+        self.ips_control_Qlimits_checkBox.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.label_129, 2, 0, 1, 1)
-
-        self.label_130 = QLabel(self.groupBox_3)
-        self.label_130.setObjectName(u"label_130")
-
-        self.gridLayout_27.addWidget(self.label_130, 5, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.ips_control_Qlimits_checkBox, 7, 0, 1, 2)
 
 
         self.gridLayout_10.addWidget(self.groupBox_3, 3, 4, 1, 1)
@@ -5453,7 +5459,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.control_q_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for reactive power limits control", None))
 #endif // QT_CONFIG(tooltip)
-        self.control_q_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control generators Q", None))
+        self.control_q_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control Q limits", None))
 #if QT_CONFIG(tooltip)
         self.control_tap_modules_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for branches tap module control", None))
 #endif // QT_CONFIG(tooltip)
@@ -5512,13 +5518,17 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.groupBox_3.setTitle(QCoreApplication.translate("mainWindow", u"Nonlinear settings", None))
 #if QT_CONFIG(tooltip)
-        self.label_127.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point trust radius", None))
+        self.label_129.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver maximum number of iterations", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_127.setText(QCoreApplication.translate("mainWindow", u"Trust radius", None))
+        self.label_129.setText(QCoreApplication.translate("mainWindow", u"Iterations", None))
 #if QT_CONFIG(tooltip)
-        self.label_125.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver method", None))
+        self.ips_initialize_with_pf_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Initialize the interior point OPF with the power flow solution", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_125.setText(QCoreApplication.translate("mainWindow", u"IPS method", None))
+        self.ips_initialize_with_pf_checkBox.setText(QCoreApplication.translate("mainWindow", u"Initialize with power flow", None))
+#if QT_CONFIG(tooltip)
+        self.ips_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Number of iterations of the method", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_130.setText("")
 #if QT_CONFIG(tooltip)
         self.label_126.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver tolerance", None))
 #endif // QT_CONFIG(tooltip)
@@ -5528,20 +5538,20 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.ips_tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
 #if QT_CONFIG(tooltip)
-        self.ips_initialize_with_pf_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Initialize the interior point OPF with the power flow solution", None))
+        self.label_125.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver method", None))
 #endif // QT_CONFIG(tooltip)
-        self.ips_initialize_with_pf_checkBox.setText(QCoreApplication.translate("mainWindow", u"Initialize with power flow", None))
+        self.label_125.setText(QCoreApplication.translate("mainWindow", u"IPS method", None))
 #if QT_CONFIG(tooltip)
         self.ips_trust_radius_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Factor that multiplies each increment solution. </p><p>In practice this is used to slow down troublesome solutions.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.ips_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Number of iterations of the method", None))
+        self.label_127.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point trust radius", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_127.setText(QCoreApplication.translate("mainWindow", u"Trust radius", None))
 #if QT_CONFIG(tooltip)
-        self.label_129.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver maximum number of iterations", None))
+        self.ips_control_Qlimits_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for reactive power limits control in the nonlinear optimal power flow", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_129.setText(QCoreApplication.translate("mainWindow", u"Iterations", None))
-        self.label_130.setText("")
+        self.ips_control_Qlimits_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control Q limits", None))
         self.groupBox.setTitle(QCoreApplication.translate("mainWindow", u"Linear settings", None))
         self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
         self.label_132.setText("")

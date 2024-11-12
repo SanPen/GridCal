@@ -1888,7 +1888,10 @@ class SimulationsMain(TimeEventsMain):
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
+        ips_control_q_limits = self.ui.ips_control_Qlimits_checkBox.isChecked()
+
         verbose = self.ui.ips_verbose_spinBox.value()
+
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
                                               zonal_grouping=zonal_grouping,
@@ -1908,6 +1911,7 @@ class SimulationsMain(TimeEventsMain):
                                               ips_iterations=ips_iterations,
                                               ips_trust_radius=ips_trust_radius,
                                               ips_init_with_pf=ips_init_with_pf,
+                                              ips_control_q_limits=ips_control_q_limits,
                                               robust=robust,
                                               verbose=verbose)
 
