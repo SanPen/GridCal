@@ -6,26 +6,18 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from typing import List, Tuple, Dict, Union, TYPE_CHECKING
+from typing import List, Tuple, Dict, Union
 
 from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
-from GridCalEngine.enumerations import BranchImpedanceMode, BusMode, ContingencyOperationTypes
+from GridCalEngine.enumerations import BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
-
-import GridCalEngine.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Topology.admittance_matrices as ycalc
 import GridCalEngine.DataStructures as ds
-from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.Aggregation.contingency import Contingency
-
-if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 ALL_STRUCTS = Union[
     ds.BusData,
@@ -869,17 +861,6 @@ class NumericalCircuit:
 
         return self.conn_matrices_.Ct
 
-    @property
-    def A(self):
-        """
-        Connectivity matrix
-        :return: CSC matrix
-        """
-        if self.conn_matrices_ is None:
-            self.conn_matrices_ = self.get_connectivity_matrices()
-
-        return self.conn_matrices_.A
-
     def get_simulation_indices(self) -> si.SimulationIndices:
         """
         Get the simulation indices
@@ -1359,32 +1340,44 @@ class NumericalCircuit:
         :return: csc_matrix
         """
 
-        if consider_hvdc_as_island_links:
-            conn_matrices = tp.compute_connectivity_with_hvdc(
-                branch_active=self.branch_data.active,
-                Cf_=self.branch_data.C_branch_bus_f.tocsc(),
-                Ct_=self.branch_data.C_branch_bus_t.tocsc(),
-                hvdc_active=self.hvdc_data.active,
-                Cf_hvdc=self.hvdc_data.C_hvdc_bus_f.tocsc(),
-                Ct_hvdc=self.hvdc_data.C_hvdc_bus_t.tocsc()
-            )
+        # if consider_hvdc_as_island_links:
+        #     conn_matrices = tp.compute_connectivity_flexible(
+        #         branch_active=self.branch_data.active,
+        #         Cf_=self.branch_data.C_branch_bus_f.tocsc(),
+        #         Ct_=self.branch_data.C_branch_bus_t.tocsc(),
+        #         hvdc_active=self.hvdc_data.active,
+        #         Cf_hvdc=self.hvdc_data.C_hvdc_bus_f.tocsc(),
+        #         Ct_hvdc=self.hvdc_data.C_hvdc_bus_t.tocsc()
+        #     )
+        #
+        #     return conn_matrices.get_Adjacency(self.bus_data.active)
+        # else:
+        #     # just the branches
+        #     Cf_ = self.branch_data.C_branch_bus_f.tocsc()
+        #     Ct_ = self.branch_data.C_branch_bus_t.tocsc()
+        #     active = self.branch_data.active
+        #
+        # # compute the adjacency matrix
+        # return tp.get_adjacency_matrix(
+        #     C_branch_bus_f=Cf_,
+        #     C_branch_bus_t=Ct_,
+        #     branch_active=active,
+        #     bus_active=self.bus_data.active
+        # )
 
-            # compute the adjacency matrix
-            return tp.get_adjacency_matrix(
-                C_branch_bus_f=conn_matrices.Cf,
-                C_branch_bus_t=conn_matrices.Ct,
-                branch_active=np.r_[self.branch_data.active, self.hvdc_data.active],
-                bus_active=self.bus_data.active
-            )
-        else:
+        conn_matrices = tp.compute_connectivity_flexible(
+            branch_active=self.branch_data.active,
+            Cf_=self.branch_data.C_branch_bus_f.tocsc(),
+            Ct_=self.branch_data.C_branch_bus_t.tocsc(),
+            hvdc_active=self.hvdc_data.active if consider_hvdc_as_island_links else None,
+            Cf_hvdc=self.hvdc_data.C_hvdc_bus_f.tocsc() if consider_hvdc_as_island_links else None,
+            Ct_hvdc=self.hvdc_data.C_hvdc_bus_t.tocsc() if consider_hvdc_as_island_links else None,
+            vsc_active=self.vsc_data.active if consider_vsc_as_island_links else None,
+            Cf_vsc=self.vsc_data.C_branch_bus_f.tocsc() if consider_vsc_as_island_links else None,
+            Ct_vsc=self.vsc_data.C_branch_bus_t.tocsc() if consider_vsc_as_island_links else None
+        )
 
-            # compute the adjacency matrix
-            return tp.get_adjacency_matrix(
-                C_branch_bus_f=self.Cf,
-                C_branch_bus_t=self.Ct,
-                branch_active=self.branch_data.active,
-                bus_active=self.bus_data.active
-            )
+        return conn_matrices.get_Adjacency(self.bus_data.active)
 
     def get_structure(self, structure_type: str) -> pd.DataFrame:
         """
@@ -2084,9 +2077,16 @@ class NumericalCircuit:
 
         return sum_ratings
 
-    def is_dc(self) -> bool:
+    def is_dc(self) -> Tuple[int, str]:
         """
         Check if this island is DC
-        :return:
+        :return: int, str -> 1: all DC, 0: all AC, 2: AC and DC
         """
-        return np.all(self.bus_data.is_dc)
+        n = len(self.bus_data.is_dc)
+        ndc = np.sum(self.bus_data.is_dc)
+        if n == ndc:
+            return 1, "DC"
+        elif ndc == 0:
+            return 0, "AC"
+        else:
+            return 2, "AC/DC"

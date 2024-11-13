@@ -6,26 +6,28 @@
 from typing import List, Any, Dict, Union, Tuple
 import pandas as pd
 import numpy as np
+import numpy.typing as npt
 import datetime
-import GridCalEngine.Utils.ThirdParty.nptyping as npt
 from scipy.sparse import csc_matrix, csr_matrix
 from GridCalEngine.enumerations import TimeGrouping, LogSeverity
 
 IntList = List[int]
 Numeric = Union[int, float, bool, complex]
-NumericVec = npt.NDArray[npt.Shape['*'], npt.Double]
-DateVec = npt.NDArray[npt.Shape['*'], npt.Datetime64]
-IntVec = npt.NDArray[npt.Shape['*'], npt.Int]
-BoolVec = npt.NDArray[npt.Shape['*'], npt.Bool]
-Vec = npt.NDArray[npt.Shape['*'], npt.Double]
-CxVec = npt.NDArray[npt.Shape['*'], npt.Complex]
-StrVec = npt.NDArray[npt.Shape['*'], npt.String]
-ObjVec = npt.NDArray[npt.Shape['*'], npt.Object]
-Mat = npt.NDArray[npt.Shape['*, *'], npt.Double]
-CxMat = npt.NDArray[npt.Shape['*, *'], npt.Complex]
-IntMat = npt.NDArray[npt.Shape['*, *'], npt.Int]
-StrMat = npt.NDArray[npt.Shape['*, *'], npt.String]
-ObjMat = npt.NDArray[npt.Shape['*, *'], npt.Object]
+
+NumericVec = npt.NDArray[np.float64]
+DateVec = npt.NDArray[np.datetime64]
+IntVec = npt.NDArray[np.int_]
+BoolVec = npt.NDArray[np.bool]
+Vec = npt.NDArray[np.float64]
+CxVec = npt.NDArray[np.complex128]
+StrVec = npt.NDArray[np.str_]
+ObjVec = npt.NDArray[np.object_]
+Mat = npt.NDArray[np.float64]  # no way yet to say it is 2D
+CxMat = npt.NDArray[np.complex128]  # no way yet to say it is 2D
+IntMat = npt.NDArray[np.int_]  # no way yet to say it is 2D
+StrMat = npt.NDArray[np.str_]  # no way yet to say it is 2D
+ObjMat = npt.NDArray[np.object_]  # no way yet to say it is 2D
+
 CscMat = csc_matrix
 CsrMat = csr_matrix
 
@@ -321,7 +323,7 @@ class Logger:
         """
         self.entries.append(LogEntry(txt))
 
-    def has_logs(self):
+    def has_logs(self) -> bool:
         """
         Are there any logs?
         :return: True / False
@@ -526,7 +528,7 @@ class Logger:
             print(title)
         print(self.to_df())
 
-    def __str__(self):
+    def __str__(self) -> str:
 
         val = ''
         for e in self.entries:
@@ -621,7 +623,7 @@ class ConvergenceReport:
         self.elapsed_ = list()
         self.iterations_ = list()
 
-    def add(self, method, converged, error, elapsed, iterations):
+    def add(self, method, converged: bool, error: float, elapsed: float, iterations: int):
         """
 
         :param method:
@@ -798,7 +800,7 @@ class CompressedJsonStruct:
         :return:
         """
         nf = len(self.__fields)
-        self.__data = [[None] * nf for i in range(n)]
+        self.__data = [[None] * nf for _ in range(n)]
 
     def set_at(self, i, col_name, val):
         """

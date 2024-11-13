@@ -9,16 +9,13 @@ main_nc = gce.compile_numerical_circuit_at(grid, consider_vsc_as_island_links=Fa
 islands = main_nc.split_into_islands(
     ignore_single_node_islands=False,
     consider_hvdc_as_island_links=False,
-    consider_vsc_as_island_links=False,
+    consider_vsc_as_island_links=True
 )
 
 print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhvdc: {main_nc.nhvdc}")
 
 for i, island in enumerate(islands):
-
-    if island.is_dc():
-        print(f"island {i} is DC: nbus {island.nbus}, nbr: {island.nbr}, nvsc: {island.nvsc}, nhvdc: {island.nhvdc}")
-    else:
-        print(f"island {i} is AC: nbus {island.nbus}, nbr: {island.nbr}, nvsc: {island.nvsc}, nhvdc: {island.nhvdc}")
+    is_dc, is_dc_str = island.is_dc()
+    print(f"island {i} is {is_dc_str}: nbus {island.nbus}, nbr: {island.nbr}, nvsc: {island.nvsc}, nhvdc: {island.nhvdc}")
 
 print()
