@@ -134,7 +134,15 @@ if __name__ == "__main__":
                 provides_extra=_provides_extra,
                 long_description=_long_description,
                 ext_filter=['.py', '.csv', '.txt'],
-                exeption_paths=('__pycache__', 'icons', 'svg')
+                exeption_paths=('__pycache__', 'icons', 'svg'),
+                extra_files=[
+                    os.path.join("data", "cables.csv"),
+                    os.path.join("data", "GridCal.ico"),
+                    os.path.join("data", "GridCal.svg"),
+                    os.path.join("data", "sequence_lines.csv"),
+                    os.path.join("data", "transformers.csv"),
+                    os.path.join("data", "wires.csv")
+                ]
                 )
 
         publish(pkg_name='GridCalServer',
