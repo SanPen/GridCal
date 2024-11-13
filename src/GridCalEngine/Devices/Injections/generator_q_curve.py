@@ -155,18 +155,6 @@ class GeneratorQCurve:
         """
         return json.dumps(self.to_list())
 
-    # def parse(self, data: List[float]) -> None:
-    #     """
-    #     Parse json curve data
-    #     :param data: string value: [[P1, Qmin1, Qmax1], [P2, Qmin2, Qmax2], ...]
-    #     """
-    #     n = len(data)
-    #     self._q_points = np.zeros((n, 3))
-    #     for i, row in enumerate(data):
-    #         self._q_points[i, 0] = row[0]
-    #         self._q_points[i, 1] = row[1]
-    #         self._q_points[i, 2] = row[2]
-
     def parse(self, data: List[Tuple[float, float, float]]):
         """
         Parse Json data
