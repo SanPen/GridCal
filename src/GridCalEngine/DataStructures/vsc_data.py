@@ -39,5 +39,5 @@ class VscData(BranchData):
         :return: new VscData instance
         """
         data = super().slice(elm_idx, bus_idx, logger)
-
+        data.__class__ = VscData
         return data

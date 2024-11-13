@@ -1858,11 +1858,7 @@ class NumericalCircuit:
         # find the indices of the devices of the island
         br_idx = self.branch_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
-
-        if not consider_vsc_as_island_links:
-            vsc_idx = self.vsc_data.get_island(bus_idx)  # TODO: Check this stuff out
-        else:
-            vsc_idx = np.zeros(0, dtype=int)
+        vsc_idx = self.vsc_data.get_island(bus_idx)
 
         load_idx = self.load_data.get_island(bus_idx)
         gen_idx = self.generator_data.get_island(bus_idx)
@@ -1896,12 +1892,11 @@ class NumericalCircuit:
         nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx)
         nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx)
 
-        # HVDC data does not propagate into islands
         if consider_hvdc_as_island_links:
             nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
 
-        if not consider_vsc_as_island_links:
-            nc.vsc_data = self.vsc_data.slice(elm_idx=br_idx, bus_idx=bus_idx, logger=logger)
+        if consider_vsc_as_island_links:
+            nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, logger=logger)
 
         return nc
 

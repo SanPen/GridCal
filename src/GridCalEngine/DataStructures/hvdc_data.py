@@ -82,6 +82,9 @@ class HvdcData:
         data = HvdcData(nelm=len(elm_idx),
                         nbus=len(bus_idx))
 
+        if data.nelm == 0:
+            return data
+
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]
 
@@ -193,7 +196,9 @@ class HvdcData:
         :return: list of HVDC lines indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx, active=self.active)
+            return tp.get_elements_of_the_island(C_element_bus=self.C_hvdc_bus_f + self.C_hvdc_bus_t,
+                                                 island=bus_idx,
+                                                 active=self.active)
         else:
             return np.zeros(0, dtype=int)
 

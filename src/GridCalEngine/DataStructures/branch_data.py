@@ -128,6 +128,9 @@ class BranchData:
 
         data = BranchData(nelm=len(elm_idx), nbus=len(bus_idx))
 
+        if data.nelm == 0:
+            return data
+
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]
 
