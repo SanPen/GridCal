@@ -597,13 +597,19 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
 
-    id_Vm_max0 = np.where(Vm_max == 0)[0]
     id_Vm_min0 = np.where(Vm_min == 0)[0]
 
-    if len(id_Vm_max0) != 0 or len(id_Vm_min0) != 0:
-        logger.add_warning('Some of the upper voltage limits are set to 0. Correcting all the limits to (0.9, 1.1)')
-        Vm_max[id_Vm_max0] = 1.1
-        Vm_min[id_Vm_min0] = 0.9
+    if len(id_Vm_min0) != 0:
+        for i in id_Vm_min0:
+            logger.add_warning('Lower voltage limits are set to 0. Correcting to 0.9 p.u.', device="Bus " + str(i))
+            Vm_min[id_Vm_min0] = 0.9
+
+    id_Vm_max0 = np.where(Vm_max < Vm_min)[0]
+
+    if len(id_Vm_max0) != 0:
+        for i in id_Vm_max0:
+            logger.add_warning('Uper voltage limits are set lower to the lower limit. Correcting to 1.1 p.u.', device="Bus " + str(i))
+            Vm_max[id_Vm_max0] = 1.1
 
 
 
@@ -704,10 +710,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
-    if pf_options.control_Q == False:
-        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl  # No Reactive constraint (power curve)
-    else:
+    if opf_options.ips_control_q_limits:
         NI = 2 * n_br_mon + 2 * npq + 5 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
+    else:
+        # No Reactive constraint (power curve)
+        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
 
     # ignore power from Z and I of the load
 
@@ -771,7 +778,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                             k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx,
-                                            gen_nondisp_idx, Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
+                                            gen_nondisp_idx, Sg_undis,
+                                            opf_options.ips_control_q_limits, opf_options.acopf_mode),
                                        verbose=opf_options.verbose,
                                        max_iter=opf_options.ips_iterations,
                                        tol=opf_options.ips_tolerance,
@@ -807,7 +815,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                       alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
                                                       br_mon_idx,
                                                       n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
-                                                      pf_options.control_Q,
+                                                      opf_options.ips_control_q_limits,
                                                       opf_options.acopf_mode),
                                                   verbose=opf_options.verbose,
                                                   max_iter=opf_options.ips_iterations,

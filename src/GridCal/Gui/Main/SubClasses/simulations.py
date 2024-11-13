@@ -518,6 +518,56 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.units_label.setText("")
 
+    @staticmethod
+    def get_investments_combination_tree_model(drv: sim.InvestmentsEvaluationDriver) -> QtGui.QStandardItemModel:
+        """
+        Get the investments combination tree model
+        :param drv:
+        :return:
+        """
+        model = QtGui.QStandardItemModel()
+        model.setHorizontalHeaderLabels([
+            "Combination", "capex", "opex", "losses", "overload_score", "voltage_score"
+        ])
+
+        results = drv.results
+        for i in range(results.max_eval):
+            idx = np.where(results._combinations[i, :] != 0)[0]
+            if len(idx):
+                row_items = [
+                    QtGui.QStandardItem(f"Combination {i}"),
+                    QtGui.QStandardItem(f"{results._capex[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._opex[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._losses[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._overload_score[i]:.2f}"),
+                    QtGui.QStandardItem(f"{results._voltage_score[i]:.2f}"),
+                ]
+                model.appendRow(row_items)
+
+                # Add names as child nodes under this combination
+                names_parent_item = row_items[0]  # Use the first column (Combination) as parent
+                for k in idx:
+                    name_item = QtGui.QStandardItem(results.investment_groups_names[k])
+                    names_parent_item.appendRow([name_item] + [QtGui.QStandardItem("") for _ in range(5)])
+
+        return model
+
+    def fill_combinations_tree(self, drv: DRIVER_OBJECTS | None):
+        """
+        Fill the tree driver
+        :param drv: Any Driver object
+        """
+        if drv is None:
+            self.ui.combinationsTreeView.setModel(None)
+        else:
+            if drv.tpe == SimulationTypes.InvestmentsEvaluation_run:
+                model = self.get_investments_combination_tree_model(drv=drv)
+                self.ui.combinationsTreeView.setModel(model)
+                # self.ui.combinationsTreeView.expandAll()
+
+            else:
+                self.ui.combinationsTreeView.setModel(None)
+
     def changed_study(self):
         """
 
@@ -539,6 +589,8 @@ class SimulationsMain(TimeEventsMain):
                 self.setup_time_sliders()
         else:
             self.setup_time_sliders()
+
+        self.fill_combinations_tree(drv=drv)
 
     def update_available_results(self) -> None:
         """
@@ -1889,7 +1941,10 @@ class SimulationsMain(TimeEventsMain):
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
+        ips_control_q_limits = self.ui.ips_control_Qlimits_checkBox.isChecked()
+
         verbose = self.ui.ips_verbose_spinBox.value()
+
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
                                               zonal_grouping=zonal_grouping,
@@ -1909,6 +1964,7 @@ class SimulationsMain(TimeEventsMain):
                                               ips_iterations=ips_iterations,
                                               ips_trust_radius=ips_trust_radius,
                                               ips_init_with_pf=ips_init_with_pf,
+                                              ips_control_q_limits=ips_control_q_limits,
                                               robust=robust,
                                               verbose=verbose)
 
@@ -2455,7 +2511,8 @@ class SimulationsMain(TimeEventsMain):
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
                                                                pf_options=self.get_selected_power_flow_options(),
-                                                               objf_tpe=obj_fn_tpe,
+                                                               opf_options=self.get_opf_options(),
+                                                               obj_tpe=obj_fn_tpe,
                                                                plugin_fcn_ptr=fn_ptr
                                                                )
 

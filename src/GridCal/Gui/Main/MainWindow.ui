@@ -332,7 +332,7 @@ QProgressBar::chunk{
                         <number>0</number>
                        </property>
                        <property name="bottomMargin">
-                        <number>5</number>
+                        <number>1</number>
                        </property>
                        <item>
                         <widget class="QListView" name="diagramsListView">
@@ -349,96 +349,33 @@ QProgressBar::chunk{
                          </property>
                         </widget>
                        </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="tab">
+                      <attribute name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/Icons/icons/data.svg</normaloff>:/Icons/icons/data.svg</iconset>
+                      </attribute>
+                      <attribute name="title">
+                       <string>Combinations</string>
+                      </attribute>
+                      <layout class="QVBoxLayout" name="verticalLayout">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>1</number>
+                       </property>
                        <item>
-                        <widget class="QFrame" name="grid_colouring_frame">
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>50</height>
-                          </size>
-                         </property>
+                        <widget class="QTreeView" name="combinationsTreeView">
                          <property name="frameShape">
                           <enum>QFrame::NoFrame</enum>
-                         </property>
-                         <property name="frameShadow">
-                          <enum>QFrame::Raised</enum>
-                         </property>
-                         <layout class="QHBoxLayout" name="horizontalLayout_30">
-                          <property name="leftMargin">
-                           <number>1</number>
-                          </property>
-                          <property name="topMargin">
-                           <number>1</number>
-                          </property>
-                          <property name="rightMargin">
-                           <number>1</number>
-                          </property>
-                          <property name="bottomMargin">
-                           <number>0</number>
-                          </property>
-                          <item>
-                           <widget class="QComboBox" name="available_results_to_color_comboBox">
-                            <property name="minimumSize">
-                             <size>
-                              <width>164</width>
-                              <height>0</height>
-                             </size>
-                            </property>
-                            <property name="font">
-                             <font>
-                              <pointsize>9</pointsize>
-                             </font>
-                            </property>
-                            <property name="toolTip">
-                             <string>Available results</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="colour_results_pushButton">
-                            <property name="maximumSize">
-                             <size>
-                              <width>32</width>
-                              <height>16777215</height>
-                             </size>
-                            </property>
-                            <property name="toolTip">
-                             <string>Color the grid with the selected study</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="icon">
-                             <iconset resource="icons.qrc">
-                              <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
-                            </property>
-                           </widget>
-                          </item>
-                         </layout>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QLabel" name="schematic_step_label">
-                         <property name="font">
-                          <font>
-                           <pointsize>9</pointsize>
-                          </font>
-                         </property>
-                         <property name="text">
-                          <string>Snapshot</string>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QSlider" name="diagram_step_slider">
-                         <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
                          </property>
                         </widget>
                        </item>
@@ -484,7 +421,7 @@ QProgressBar::chunk{
                            <number>6</number>
                           </property>
                           <property name="bottomMargin">
-                           <number>0</number>
+                           <number>4</number>
                           </property>
                           <item row="17" column="0">
                            <widget class="QLabel" name="label_118">
@@ -1339,6 +1276,93 @@ QProgressBar::chunk{
                        </item>
                       </layout>
                      </widget>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="grid_colouring_frame">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_31">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>4</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item row="2" column="0" colspan="3">
+                       <widget class="QLabel" name="schematic_step_label">
+                        <property name="font">
+                         <font>
+                          <pointsize>9</pointsize>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Snapshot</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="0" rowspan="2" colspan="2">
+                       <widget class="QComboBox" name="available_results_to_color_comboBox">
+                        <property name="minimumSize">
+                         <size>
+                          <width>164</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <pointsize>9</pointsize>
+                         </font>
+                        </property>
+                        <property name="toolTip">
+                         <string>Available results</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="2" rowspan="2">
+                       <widget class="QPushButton" name="colour_results_pushButton">
+                        <property name="maximumSize">
+                         <size>
+                          <width>32</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string>Color the grid with the selected study</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="icons.qrc">
+                          <normaloff>:/Icons/icons/color_grid.svg</normaloff>:/Icons/icons/color_grid.svg</iconset>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="0" colspan="3">
+                       <widget class="QSlider" name="diagram_step_slider">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                   </layout>
@@ -4653,7 +4677,7 @@ QProgressBar::chunk{
                   <string>General switch for reactive power limits control</string>
                  </property>
                  <property name="text">
-                  <string>Control generators Q</string>
+                  <string>Control Q limits</string>
                  </property>
                 </widget>
                </item>
@@ -5231,8 +5255,21 @@ QProgressBar::chunk{
                <string>Nonlinear settings</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_27">
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_127">
+               <item row="8" column="0">
+                <spacer name="verticalSpacer_21">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_129">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -5240,10 +5277,26 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Interior point trust radius</string>
+                  <string>Interior point solver maximum number of iterations</string>
                  </property>
                  <property name="text">
-                  <string>Trust radius</string>
+                  <string>Iterations</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <widget class="QCheckBox" name="ips_initialize_with_pf_checkBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Initialize the interior point OPF with the power flow solution</string>
+                 </property>
+                 <property name="text">
+                  <string>Initialize with power flow</string>
                  </property>
                 </widget>
                </item>
@@ -5257,8 +5310,8 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_125">
+               <item row="2" column="1">
+                <widget class="QSpinBox" name="ips_iterations_spinBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -5266,25 +5319,25 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Interior point solver method</string>
+                  <string>Number of iterations of the method</string>
                  </property>
-                 <property name="text">
-                  <string>IPS method</string>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>9999999</number>
+                 </property>
+                 <property name="value">
+                  <number>100</number>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
-                <spacer name="verticalSpacer_21">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_130">
+                 <property name="text">
+                  <string/>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
+                </widget>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_126">
@@ -5327,8 +5380,8 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0" colspan="2">
-                <widget class="QCheckBox" name="ips_initialize_with_pf_checkBox">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_125">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -5336,10 +5389,10 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Initialize the interior point OPF with the power flow solution</string>
+                  <string>Interior point solver method</string>
                  </property>
                  <property name="text">
-                  <string>Initialize with power flow</string>
+                  <string>IPS method</string>
                  </property>
                 </widget>
                </item>
@@ -5365,8 +5418,8 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
-                <widget class="QSpinBox" name="ips_iterations_spinBox">
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_127">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -5374,21 +5427,15 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Number of iterations of the method</string>
+                  <string>Interior point trust radius</string>
                  </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>9999999</number>
-                 </property>
-                 <property name="value">
-                  <number>100</number>
+                 <property name="text">
+                  <string>Trust radius</string>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_129">
+               <item row="7" column="0" colspan="2">
+                <widget class="QCheckBox" name="ips_control_Qlimits_checkBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -5396,17 +5443,10 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Interior point solver maximum number of iterations</string>
+                  <string>General switch for reactive power limits control in the nonlinear optimal power flow</string>
                  </property>
                  <property name="text">
-                  <string>Iterations</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_130">
-                 <property name="text">
-                  <string/>
+                  <string>Control Q limits</string>
                  </property>
                 </widget>
                </item>
