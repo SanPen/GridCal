@@ -28,91 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="All matpower grids passing">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case10ba.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case118.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case118zh.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case12da.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case1354pegase.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case13659pegase.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case136ma.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case14.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case141.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case145.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case15da.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case15nbr.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case16am.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case16ci.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case17me.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case18.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case1888rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case18nbr.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case1951rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case22.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2383wp.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case24_ieee_rts.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2736sp.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2737sop.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2746wop.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2746wp.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2848rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2868rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case2869pegase.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case28da.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case30.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case300.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case3012wp.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case30Q.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case30pwl.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case3120sp.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case3375wp.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case33bw.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case33mg.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case34sa.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case38si.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case39.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case4_dist.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case4gs.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case5.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case51ga.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case51he.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case57.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case60nordic.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case6468rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case6470rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case6495rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case6515rte.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case69.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case6ww.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case70da.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case74ds.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case8387pegase.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case85.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case89pegase.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case9.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case9241pegase.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case94pi.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case9Q.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case9_gurobi_test.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case9target.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_ACTIVSg10k.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_ACTIVSg200.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_ACTIVSg2000.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_ACTIVSg25k.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_ACTIVSg500.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_ACTIVSg70k.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_RTS_GMLC.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_SyntheticUSA.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/case_ieee30.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/contab_ACTIVSg10k.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/contab_ACTIVSg200.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/contab_ACTIVSg2000.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/contab_ACTIVSg500.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/scenarios_ACTIVSg200.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/Matpower/scenarios_ACTIVSg2000.m" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added converging all matpower files as a test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_power_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -209,47 +127,47 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
-    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
-    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
-    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
-    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.pytest for src.tests.test_admittance_matrix.test1.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_all_matpower_grids.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
-    "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.acdc_generalized_1.executor": "Debug",
-    "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.matpower_grids.executor": "Run",
-    "Python.new_circuit_objects.executor": "Run",
-    "Python.node_widget.executor": "Run",
-    "Python.parse_matpower_with_tricks.executor": "Run",
-    "Python.pymoo_example.executor": "Debug",
-    "Python.update_gui_file (1).executor": "Run",
-    "Python.update_gui_file.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "199__finalize__cgmes__import",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/Matpower",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_admittance_matrix.test1.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_all_matpower_grids.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.acdc_generalized_1.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.matpower_grids.executor&quot;: &quot;Run&quot;,
+    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python.node_widget.executor&quot;: &quot;Run&quot;,
+    &quot;Python.parse_matpower_with_tricks.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/Matpower&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -1466,7 +1384,8 @@
       <workItem from="1730206552789" duration="81417000" />
       <workItem from="1731073427405" duration="612000" />
       <workItem from="1731310731160" duration="24788000" />
-      <workItem from="1731615363330" duration="7904000" />
+      <workItem from="1731615363330" duration="8203000" />
+      <workItem from="1731624350029" duration="420000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1811,7 +1730,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="561" />
+    <option name="localTasksCounter" value="562" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1845,7 +1764,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved tapChanger import-export, normal position is introduced for TapChanger" />
     <MESSAGE value="improved tapChanger import-export functions, normal position is introduced for TapChanger" />
     <MESSAGE value="improved tapChanger import-export functions v2" />
     <MESSAGE value="enhanced tap changer import (phase tc added)" />
@@ -1870,7 +1788,8 @@
     <MESSAGE value="Minor updates" />
     <MESSAGE value="fixed matpower voltage initialization" />
     <MESSAGE value="All matpower grids passing" />
-    <option name="LAST_COMMIT_MESSAGE" value="All matpower grids passing" />
+    <MESSAGE value="Added converging all matpower files as a test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added converging all matpower files as a test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
