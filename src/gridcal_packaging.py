@@ -158,7 +158,8 @@ def build_tar_gz_pkg(pkg_name: str,
                      provides_extra: str,
                      long_description: str,
                      folder_to_save='dist',
-                     ext_filter=['py']):
+                     ext_filter=['py'],
+                     extra_files=()):
     """
 
     :param pkg_name:
@@ -185,6 +186,9 @@ def build_tar_gz_pkg(pkg_name: str,
 
     files = find_pkg_files(path=pkg_name,
                            ext_filter=ext_filter)
+
+    for f in extra_files:
+        files.append((f, os.path.join(pkg_name, f)))
 
     pkg_info = build_pkg_info(name=pkg_name,
                               version=version,
@@ -241,7 +245,8 @@ def build_wheel(pkg_name: str,
                 provides_extra: str,
                 long_description: str,
                 folder_to_save='dist',
-                ext_filter=['py']):
+                ext_filter=['py'],
+                extra_files=()):
     """
 
     :param pkg_name:
@@ -260,6 +265,7 @@ def build_wheel(pkg_name: str,
     :param long_description:
     :param folder_to_save:
     :param ext_filter:
+    :param extra_files:
     :return:
     """
 
@@ -270,6 +276,9 @@ def build_wheel(pkg_name: str,
 
     files = find_pkg_files(path=pkg_name,
                            ext_filter=ext_filter)
+
+    for f in extra_files:
+        files.append((f, os.path.join(pkg_name, f)))
 
     """
     The .dist-info directory
@@ -384,7 +393,8 @@ def publish(pkg_name: str,
             provides_extra: str,
             long_description: str,
             ext_filter=('.py', '.csv', '.txt'),
-            exeption_paths=('__pycache__', 'icons', 'svg')):
+            exeption_paths=('__pycache__', 'icons', 'svg'),
+            extra_files=()):
     """
     Publish package to Pypi using twine
     :param pkg_name: name of the package (i.e GridCal)
@@ -403,6 +413,7 @@ def publish(pkg_name: str,
     :param long_description:
     :param ext_filter:
     :param exeption_paths:
+    :param extra_files:
     """
 
     check_all_folders_contain_init_py(directory=os.path.dirname(setup_path),
@@ -424,7 +435,8 @@ def publish(pkg_name: str,
                              provides_extra=provides_extra,
                              long_description=long_description,
                              folder_to_save='dist',
-                             ext_filter=ext_filter)
+                             ext_filter=ext_filter,
+                             extra_files=extra_files)
 
     # check the tar.gz file
     call([sys.executable, '-m', 'twine', 'check', fpath])

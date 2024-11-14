@@ -701,7 +701,7 @@ class Ui_mainWindow(object):
         self.tab_3.setObjectName(u"tab_3")
         self.verticalLayout_37 = QVBoxLayout(self.tab_3)
         self.verticalLayout_37.setObjectName(u"verticalLayout_37")
-        self.verticalLayout_37.setContentsMargins(0, 0, 0, 5)
+        self.verticalLayout_37.setContentsMargins(0, 0, 0, 1)
         self.diagramsListView = QListView(self.tab_3)
         self.diagramsListView.setObjectName(u"diagramsListView")
         self.diagramsListView.setFont(font1)
@@ -709,49 +709,21 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_37.addWidget(self.diagramsListView)
 
-        self.grid_colouring_frame = QFrame(self.tab_3)
-        self.grid_colouring_frame.setObjectName(u"grid_colouring_frame")
-        self.grid_colouring_frame.setMaximumSize(QSize(16777215, 50))
-        self.grid_colouring_frame.setFrameShape(QFrame.NoFrame)
-        self.grid_colouring_frame.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_30 = QHBoxLayout(self.grid_colouring_frame)
-        self.horizontalLayout_30.setObjectName(u"horizontalLayout_30")
-        self.horizontalLayout_30.setContentsMargins(1, 1, 1, 0)
-        self.available_results_to_color_comboBox = QComboBox(self.grid_colouring_frame)
-        self.available_results_to_color_comboBox.setObjectName(u"available_results_to_color_comboBox")
-        self.available_results_to_color_comboBox.setMinimumSize(QSize(164, 0))
-        self.available_results_to_color_comboBox.setFont(font1)
-
-        self.horizontalLayout_30.addWidget(self.available_results_to_color_comboBox)
-
-        self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
-        self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
-        self.colour_results_pushButton.setMaximumSize(QSize(32, 16777215))
         icon78 = QIcon()
-        icon78.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.colour_results_pushButton.setIcon(icon78)
+        icon78.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_6.addTab(self.tab_3, icon78, "")
+        self.tab = QWidget()
+        self.tab.setObjectName(u"tab")
+        self.verticalLayout = QVBoxLayout(self.tab)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 1)
+        self.combinationsTreeView = QTreeView(self.tab)
+        self.combinationsTreeView.setObjectName(u"combinationsTreeView")
+        self.combinationsTreeView.setFrameShape(QFrame.NoFrame)
 
-        self.horizontalLayout_30.addWidget(self.colour_results_pushButton)
+        self.verticalLayout.addWidget(self.combinationsTreeView)
 
-
-        self.verticalLayout_37.addWidget(self.grid_colouring_frame)
-
-        self.schematic_step_label = QLabel(self.tab_3)
-        self.schematic_step_label.setObjectName(u"schematic_step_label")
-        self.schematic_step_label.setFont(font1)
-        self.schematic_step_label.setAlignment(Qt.AlignCenter)
-
-        self.verticalLayout_37.addWidget(self.schematic_step_label)
-
-        self.diagram_step_slider = QSlider(self.tab_3)
-        self.diagram_step_slider.setObjectName(u"diagram_step_slider")
-        self.diagram_step_slider.setOrientation(Qt.Horizontal)
-
-        self.verticalLayout_37.addWidget(self.diagram_step_slider)
-
-        icon79 = QIcon()
-        icon79.addFile(u":/Icons/icons/show_color_controls.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_6.addTab(self.tab_3, icon79, "")
+        self.tabWidget_6.addTab(self.tab, icon50, "")
         self.tab_4 = QWidget()
         self.tab_4.setObjectName(u"tab_4")
         self.verticalLayout_38 = QVBoxLayout(self.tab_4)
@@ -763,7 +735,7 @@ class Ui_mainWindow(object):
         self.frame_58.setFrameShadow(QFrame.Raised)
         self.gridLayout = QGridLayout(self.frame_58)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(6, 0, 6, 0)
+        self.gridLayout.setContentsMargins(6, 0, 6, 4)
         self.label_118 = QLabel(self.frame_58)
         self.label_118.setObjectName(u"label_118")
         font2 = QFont()
@@ -1100,11 +1072,50 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_38.addWidget(self.frame_58)
 
-        icon80 = QIcon()
-        icon80.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_6.addTab(self.tab_4, icon80, "")
+        icon79 = QIcon()
+        icon79.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_6.addTab(self.tab_4, icon79, "")
 
         self.verticalLayout_2.addWidget(self.tabWidget_6)
+
+        self.grid_colouring_frame = QFrame(self.diagram_selection_frame)
+        self.grid_colouring_frame.setObjectName(u"grid_colouring_frame")
+        self.grid_colouring_frame.setFrameShape(QFrame.NoFrame)
+        self.grid_colouring_frame.setFrameShadow(QFrame.Raised)
+        self.gridLayout_31 = QGridLayout(self.grid_colouring_frame)
+        self.gridLayout_31.setObjectName(u"gridLayout_31")
+        self.gridLayout_31.setContentsMargins(0, 0, 4, 0)
+        self.schematic_step_label = QLabel(self.grid_colouring_frame)
+        self.schematic_step_label.setObjectName(u"schematic_step_label")
+        self.schematic_step_label.setFont(font1)
+        self.schematic_step_label.setAlignment(Qt.AlignCenter)
+
+        self.gridLayout_31.addWidget(self.schematic_step_label, 2, 0, 1, 3)
+
+        self.available_results_to_color_comboBox = QComboBox(self.grid_colouring_frame)
+        self.available_results_to_color_comboBox.setObjectName(u"available_results_to_color_comboBox")
+        self.available_results_to_color_comboBox.setMinimumSize(QSize(164, 0))
+        self.available_results_to_color_comboBox.setFont(font1)
+
+        self.gridLayout_31.addWidget(self.available_results_to_color_comboBox, 0, 0, 2, 2)
+
+        self.colour_results_pushButton = QPushButton(self.grid_colouring_frame)
+        self.colour_results_pushButton.setObjectName(u"colour_results_pushButton")
+        self.colour_results_pushButton.setMaximumSize(QSize(32, 16777215))
+        icon80 = QIcon()
+        icon80.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.colour_results_pushButton.setIcon(icon80)
+
+        self.gridLayout_31.addWidget(self.colour_results_pushButton, 0, 2, 2, 1)
+
+        self.diagram_step_slider = QSlider(self.grid_colouring_frame)
+        self.diagram_step_slider.setObjectName(u"diagram_step_slider")
+        self.diagram_step_slider.setOrientation(Qt.Horizontal)
+
+        self.gridLayout_31.addWidget(self.diagram_step_slider, 3, 0, 1, 3)
+
+
+        self.verticalLayout_2.addWidget(self.grid_colouring_frame)
 
         self.diagram_selection_splitter.addWidget(self.diagram_selection_frame)
 
@@ -2761,14 +2772,24 @@ class Ui_mainWindow(object):
         self.groupBox_3.setFont(font6)
         self.gridLayout_27 = QGridLayout(self.groupBox_3)
         self.gridLayout_27.setObjectName(u"gridLayout_27")
-        self.label_127 = QLabel(self.groupBox_3)
-        self.label_127.setObjectName(u"label_127")
+        self.verticalSpacer_21 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_27.addItem(self.verticalSpacer_21, 8, 0, 1, 1)
+
+        self.label_129 = QLabel(self.groupBox_3)
+        self.label_129.setObjectName(u"label_129")
         font7 = QFont()
         font7.setPointSize(9)
         font7.setBold(False)
-        self.label_127.setFont(font7)
+        self.label_129.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.label_127, 3, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.label_129, 2, 0, 1, 1)
+
+        self.ips_initialize_with_pf_checkBox = QCheckBox(self.groupBox_3)
+        self.ips_initialize_with_pf_checkBox.setObjectName(u"ips_initialize_with_pf_checkBox")
+        self.ips_initialize_with_pf_checkBox.setFont(font7)
+
+        self.gridLayout_27.addWidget(self.ips_initialize_with_pf_checkBox, 6, 0, 1, 2)
 
         self.ips_method_comboBox = QComboBox(self.groupBox_3)
         self.ips_method_comboBox.setObjectName(u"ips_method_comboBox")
@@ -2776,15 +2797,19 @@ class Ui_mainWindow(object):
 
         self.gridLayout_27.addWidget(self.ips_method_comboBox, 0, 1, 1, 1)
 
-        self.label_125 = QLabel(self.groupBox_3)
-        self.label_125.setObjectName(u"label_125")
-        self.label_125.setFont(font7)
+        self.ips_iterations_spinBox = QSpinBox(self.groupBox_3)
+        self.ips_iterations_spinBox.setObjectName(u"ips_iterations_spinBox")
+        self.ips_iterations_spinBox.setFont(font7)
+        self.ips_iterations_spinBox.setMinimum(1)
+        self.ips_iterations_spinBox.setMaximum(9999999)
+        self.ips_iterations_spinBox.setValue(100)
 
-        self.gridLayout_27.addWidget(self.label_125, 0, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.ips_iterations_spinBox, 2, 1, 1, 1)
 
-        self.verticalSpacer_21 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.label_130 = QLabel(self.groupBox_3)
+        self.label_130.setObjectName(u"label_130")
 
-        self.gridLayout_27.addItem(self.verticalSpacer_21, 7, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.label_130, 5, 0, 1, 1)
 
         self.label_126 = QLabel(self.groupBox_3)
         self.label_126.setObjectName(u"label_126")
@@ -2801,11 +2826,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout_27.addWidget(self.ips_tolerance_spinBox, 1, 1, 1, 1)
 
-        self.ips_initialize_with_pf_checkBox = QCheckBox(self.groupBox_3)
-        self.ips_initialize_with_pf_checkBox.setObjectName(u"ips_initialize_with_pf_checkBox")
-        self.ips_initialize_with_pf_checkBox.setFont(font7)
+        self.label_125 = QLabel(self.groupBox_3)
+        self.label_125.setObjectName(u"label_125")
+        self.label_125.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.ips_initialize_with_pf_checkBox, 6, 0, 1, 2)
+        self.gridLayout_27.addWidget(self.label_125, 0, 0, 1, 1)
 
         self.ips_trust_radius_doubleSpinBox = QDoubleSpinBox(self.groupBox_3)
         self.ips_trust_radius_doubleSpinBox.setObjectName(u"ips_trust_radius_doubleSpinBox")
@@ -2816,25 +2841,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_27.addWidget(self.ips_trust_radius_doubleSpinBox, 3, 1, 1, 1)
 
-        self.ips_iterations_spinBox = QSpinBox(self.groupBox_3)
-        self.ips_iterations_spinBox.setObjectName(u"ips_iterations_spinBox")
-        self.ips_iterations_spinBox.setFont(font7)
-        self.ips_iterations_spinBox.setMinimum(1)
-        self.ips_iterations_spinBox.setMaximum(9999999)
-        self.ips_iterations_spinBox.setValue(100)
+        self.label_127 = QLabel(self.groupBox_3)
+        self.label_127.setObjectName(u"label_127")
+        self.label_127.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.ips_iterations_spinBox, 2, 1, 1, 1)
+        self.gridLayout_27.addWidget(self.label_127, 3, 0, 1, 1)
 
-        self.label_129 = QLabel(self.groupBox_3)
-        self.label_129.setObjectName(u"label_129")
-        self.label_129.setFont(font7)
+        self.ips_control_Qlimits_checkBox = QCheckBox(self.groupBox_3)
+        self.ips_control_Qlimits_checkBox.setObjectName(u"ips_control_Qlimits_checkBox")
+        self.ips_control_Qlimits_checkBox.setFont(font7)
 
-        self.gridLayout_27.addWidget(self.label_129, 2, 0, 1, 1)
-
-        self.label_130 = QLabel(self.groupBox_3)
-        self.label_130.setObjectName(u"label_130")
-
-        self.gridLayout_27.addWidget(self.label_130, 5, 0, 1, 1)
+        self.gridLayout_27.addWidget(self.ips_control_Qlimits_checkBox, 7, 0, 1, 2)
 
 
         self.gridLayout_10.addWidget(self.groupBox_3, 3, 4, 1, 1)
@@ -4553,7 +4570,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 2, 1, 1)
 
-        self.tabWidget.addTab(self.SettingsTab, icon80, "")
+        self.tabWidget.addTab(self.SettingsTab, icon79, "")
 
         self.gridLayout_3.addWidget(self.tabWidget, 0, 0, 1, 1)
 
@@ -5093,18 +5110,8 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.diagramsListView.setToolTip(QCoreApplication.translate("mainWindow", u"List of available diagrams", None))
 #endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.available_results_to_color_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Available results", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.colour_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Color the grid with the selected study", None))
-#endif // QT_CONFIG(tooltip)
-        self.colour_results_pushButton.setText("")
-        self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"Snapshot", None))
-#if QT_CONFIG(tooltip)
-        self.diagram_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Time slider</span></p><p>Move this time slider to select the appropriate time slot to view.</p><p>The first position sets the snapshot values, the rest attend to the time series values.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
         self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_3), QCoreApplication.translate("mainWindow", u"Diagrams", None))
+        self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab), QCoreApplication.translate("mainWindow", u"Combinations", None))
         self.label_118.setText(QCoreApplication.translate("mainWindow", u"Map tile provider", None))
 #if QT_CONFIG(tooltip)
         self.defaultBusVoltageSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Bus default voltage</span></p><p>This is the voltage that drag&amp;drop buses have when they are created from the schematic.</p></body></html>", None))
@@ -5152,6 +5159,17 @@ class Ui_mainWindow(object):
         self.redraw_pushButton.setText(QCoreApplication.translate("mainWindow", u"redraw", None))
         self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
         self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Settings", None))
+        self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"Snapshot", None))
+#if QT_CONFIG(tooltip)
+        self.available_results_to_color_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Available results", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.colour_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Color the grid with the selected study", None))
+#endif // QT_CONFIG(tooltip)
+        self.colour_results_pushButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.diagram_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Time slider</span></p><p>Move this time slider to select the appropriate time slot to view.</p><p>The first position sets the snapshot values, the rest attend to the time series values.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Diagrams", None))
 #if QT_CONFIG(tooltip)
         self.smart_search_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Subjects:</span></p><p>col, idx, val, colobj, idxobj</p><p>colobj and idxobj allow accessing the objects that may be represented at the index or the columns. With these you can access their internal properties for filtering.</p><p><span style=\" font-weight:700;\">Operators:</span></p><p>&gt;, &lt;, &gt;=, &lt;=, !=, =, like, notlike, starts, ends</p><p><span style=\" font-weight:700;\">Examples:</span></p><p>Filter all object names that are similar to 'alba' and their Vnom property &gt; 200</p><p>-&gt; idx<span style=\" font-style:italic;\">obj.name like alba and idxobj.Vnom &gt; 200</span></p></body></html>", None))
@@ -5453,7 +5471,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.control_q_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for reactive power limits control", None))
 #endif // QT_CONFIG(tooltip)
-        self.control_q_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control generators Q", None))
+        self.control_q_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control Q limits", None))
 #if QT_CONFIG(tooltip)
         self.control_tap_modules_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for branches tap module control", None))
 #endif // QT_CONFIG(tooltip)
@@ -5512,13 +5530,17 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.groupBox_3.setTitle(QCoreApplication.translate("mainWindow", u"Nonlinear settings", None))
 #if QT_CONFIG(tooltip)
-        self.label_127.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point trust radius", None))
+        self.label_129.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver maximum number of iterations", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_127.setText(QCoreApplication.translate("mainWindow", u"Trust radius", None))
+        self.label_129.setText(QCoreApplication.translate("mainWindow", u"Iterations", None))
 #if QT_CONFIG(tooltip)
-        self.label_125.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver method", None))
+        self.ips_initialize_with_pf_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Initialize the interior point OPF with the power flow solution", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_125.setText(QCoreApplication.translate("mainWindow", u"IPS method", None))
+        self.ips_initialize_with_pf_checkBox.setText(QCoreApplication.translate("mainWindow", u"Initialize with power flow", None))
+#if QT_CONFIG(tooltip)
+        self.ips_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Number of iterations of the method", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_130.setText("")
 #if QT_CONFIG(tooltip)
         self.label_126.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver tolerance", None))
 #endif // QT_CONFIG(tooltip)
@@ -5528,20 +5550,20 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.ips_tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
 #if QT_CONFIG(tooltip)
-        self.ips_initialize_with_pf_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Initialize the interior point OPF with the power flow solution", None))
+        self.label_125.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver method", None))
 #endif // QT_CONFIG(tooltip)
-        self.ips_initialize_with_pf_checkBox.setText(QCoreApplication.translate("mainWindow", u"Initialize with power flow", None))
+        self.label_125.setText(QCoreApplication.translate("mainWindow", u"IPS method", None))
 #if QT_CONFIG(tooltip)
         self.ips_trust_radius_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Factor that multiplies each increment solution. </p><p>In practice this is used to slow down troublesome solutions.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.ips_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Number of iterations of the method", None))
+        self.label_127.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point trust radius", None))
 #endif // QT_CONFIG(tooltip)
+        self.label_127.setText(QCoreApplication.translate("mainWindow", u"Trust radius", None))
 #if QT_CONFIG(tooltip)
-        self.label_129.setToolTip(QCoreApplication.translate("mainWindow", u"Interior point solver maximum number of iterations", None))
+        self.ips_control_Qlimits_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for reactive power limits control in the nonlinear optimal power flow", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_129.setText(QCoreApplication.translate("mainWindow", u"Iterations", None))
-        self.label_130.setText("")
+        self.ips_control_Qlimits_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control Q limits", None))
         self.groupBox.setTitle(QCoreApplication.translate("mainWindow", u"Linear settings", None))
         self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
         self.label_132.setText("")
