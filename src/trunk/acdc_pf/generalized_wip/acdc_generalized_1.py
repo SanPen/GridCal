@@ -1,5 +1,7 @@
 import os
 import GridCalEngine as gce
+from GridCalEngine.Topology.generalized_simulation_indices import GeneralizedSimulationIndices
+
 
 fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
 grid = gce.open_file(fname)
@@ -17,5 +19,7 @@ print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhv
 for i, island in enumerate(islands):
     _, is_dc_str = island.is_dc()
     print(f"island {i} is {is_dc_str}: nbus {island.nbus}, nbr: {island.nbr}, nvsc: {island.nvsc}, nhvdc: {island.nhvdc}")
+
+    indices = GeneralizedSimulationIndices().fill_specified(island)
 
 print()

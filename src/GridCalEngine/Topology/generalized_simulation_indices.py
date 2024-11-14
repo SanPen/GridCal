@@ -1,6 +1,6 @@
-from typing import Set, Dict
-from GridCalEngine.basic_structures import IntVec
-from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
+from typing import Set
+from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 
 class GeneralizedSimulationIndices:
@@ -8,7 +8,10 @@ class GeneralizedSimulationIndices:
     GeneralizedSimulationIndices
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
         # CVa -> Indices of the buses where the voltage angles are specified.
         # (slack bus)
         self.c_va: Set[int] = set()
@@ -49,40 +52,78 @@ class GeneralizedSimulationIndices:
         # CInjQ -> Indices of the injection devices where the Q is specified.
         self.c_inj_Q: Set[int] = set()
 
-    def slice(self, bus_idx: IntVec, br_idx: IntVec) -> "GeneralizedSimulationIndices":
+    def fill_specified(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
         """
 
-        :param bus_idx:
-        :param br_idx:
+        :param nc:
         :return:
         """
-        # TODO: Test this stuff
-        indices = GeneralizedSimulationIndices()
 
-        # build the mappings
-        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
-        br_map: Dict[int, int] = {o: i for i, o in enumerate(br_idx)}
+        for i, tpe in enumerate(nc.bus_data.bus_types):
+            if tpe == BusMode.Slack_tpe.value:
+                self.c_va.add(i)
+                self.c_vm.add(i)
+            elif tpe == BusMode.PQ_tpe.value:
+                pass
+            elif tpe == BusMode.PV_tpe.value:
+                self.c_vm.add(i)
+            elif tpe == BusMode.PQV_tpe.value:
+                self.c_vm.add(i)
+            elif tpe == BusMode.P_tpe.value:
+                pass
+        
+        for struct in (nc.branch_data, nc.vsc_data):
+            for k, tpe in enumerate(struct.tap_module_control_mode):
+                if tpe == TapModuleControl.fixed:
+                    pass
+                elif tpe == TapModuleControl.Vm:
+                    ii = struct.tap_controlled_buses[k]
+                    if ii > -1:
+                        # if the controlled branch was specified, use that
+                        self.c_vm.add(ii)
+                    else:
+                        # else, we pick the from bus
+                        iii = struct.F[k]
+                        self.c_vm.add(iii)
+                        
+                elif tpe == TapModuleControl.Qf:
+                    self.c_Qf.add(k)
+                    
+                elif tpe == TapModuleControl.Qt:
+                    self.c_Qt.add(k)
+                
+            for k, tpe in enumerate(struct.tap_phase_control_mode):
+                if tpe == TapPhaseControl.fixed:
+                    pass                    
+                elif tpe == TapPhaseControl.Pf:
+                    self.c_Pf.add(k)
+    
+                elif tpe == TapPhaseControl.Pt:
+                    self.c_Pt.add(k)        
 
-        # bus index slicing
-        indices.c_va = {bus_map[val] for val in self.c_va}
-        indices.c_vm = {bus_map[val] for val in self.c_vm}
+        return self
 
-        indices.c_p_zip = {bus_map[val] for val in self.c_p_zip}
-        indices.c_q_zip = {bus_map[val] for val in self.c_q_zip}
+    def fill_unspecified(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
+        """
 
-        indices.c_inj_P = {bus_map[val] for val in self.c_inj_P}
-        indices.c_inj_Q = {bus_map[val] for val in self.c_inj_Q}
+        :param nc:
+        :return:
+        """
 
-        # branch index slicing
-        indices.c_tau = {br_map[val] for val in self.c_tau}
-        indices.c_m = {br_map[val] for val in self.c_m}
+        for i, tpe in enumerate(nc.bus_data.bus_types):
+            if tpe == BusMode.Slack_tpe.value:
+                self.c_va.add(i)
+                self.c_vm.add(i)
+            elif tpe == BusMode.PQ_tpe.value:
+                pass
+            elif tpe == BusMode.PV_tpe.value:
+                self.c_vm.add(i)
+            elif tpe == BusMode.PQV_tpe.value:
+                self.c_vm.add(i)
+            elif tpe == BusMode.P_tpe.value:
+                pass
 
-        indices.c_Pf = {br_map[val] for val in self.c_Pf}
-        indices.c_Pt = {br_map[val] for val in self.c_Pt}
-        indices.c_Qf = {br_map[val] for val in self.c_Qf}
-        indices.c_Qt = {br_map[val] for val in self.c_Qt}
-
-        return indices
+        return self
 
     def add_to_c_va(self, value: int):
         """
