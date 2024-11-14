@@ -320,7 +320,7 @@ class CimExporter:
                 for attr_name, attr_value in obj_dict.items():
                     if attr_value is None:
                         continue
-                    if attr_name not in filters:
+                    if attr_name not in filters or attr_name == "mRID":
                         continue
                     attr_filters = filters[attr_name]
                     if not self.attr_in_profile(attr_filters, profile):

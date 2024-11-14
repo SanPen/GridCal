@@ -203,7 +203,7 @@ class BranchData:
 
             if data.F[k] == -1:
                 if logger is not None:
-                    logger.add_error(f"Branch {k}, {self.names[k]} if connected to a disconnected node",
+                    logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
                                      value=data.F[k])
                 data.active[k] = 0
 
@@ -211,7 +211,7 @@ class BranchData:
 
             if data.T[k] == -1:
                 if logger is not None:
-                    logger.add_error(f"Branch {k}, {self.names[k]} if connected to a disconnected node",
+                    logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
                                      value=data.T[k])
                 data.active[k] = 0
 
@@ -310,7 +310,7 @@ class BranchData:
         Get the series admittance of the branches
         :return: complex vector
         """
-        return 1.0 / (self.R + 1j * self.X)
+        return 1.0 / (self.R + 1.0j * self.X + 1e-20)
 
     def get_island(self, bus_idx: Vec) -> IntVec:
         """
@@ -338,13 +338,6 @@ class BranchData:
         :return:
         """
         return np.where(self.dc != 0)[0]
-
-    def get_series_admittance(self) -> CxVec:
-        """
-
-        :return:
-        """
-        return 1.0 / (self.R + 1.0j * self.X + 1e-20)
 
     def get_linear_series_admittance(self) -> Vec:
         """
