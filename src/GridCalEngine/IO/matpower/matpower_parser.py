@@ -748,14 +748,14 @@ def arr_to_dict(hdr, arr):
 
 def get_matpower_case_data(filename, force_linear_cost=False) -> Dict:
     """
-    PArse matpower .m file and get the case data structure
+    Parse matpower .m file and get the case data structure
     :param filename: Name of the file
     :param force_linear_cost: Force linear cost when costs are found?
     :return: Matpower case data dictionary
     """
     logger = Logger()
 
-    data = read_matpower_file(filename)
+    data = read_matpower_file(filename, logger)
 
     bus_data = list()
     bus_arr = data['bus']
