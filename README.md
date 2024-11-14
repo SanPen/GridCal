@@ -1222,8 +1222,9 @@ without you having to do anything special. And of course, GridCal solves all Mat
 | case4_dist.m        | 4       | 3          | -100.0          | FALSE   | TRUE      | 5.70E-09     | 3          | 0.00032  |
 | case4gs.m           | 4       | 4          | -100.0          | FALSE   | TRUE      | 1.07E-09     | 3          | 0.00031  |
 
+_Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
 All solved using Newton-Raphson, and only using the provided solution 
-that comes with the files when the flat start fails. That is what `Used V0` means.
+that comes with the files when the flat start fails. That is what `Used V0` means._
 
 Cool right?
 
