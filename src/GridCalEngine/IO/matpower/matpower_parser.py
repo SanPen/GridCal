@@ -16,7 +16,7 @@ import GridCalEngine.IO.matpower.matpower_bus_definitions as matpower_buses
 import GridCalEngine.IO.matpower.matpower_gen_definitions as matpower_gen
 
 
-def find_between(s, first, last):
+def find_between(s: str, first: str, last: str) -> str:
     """
     Find sting between two sub-strings
     Args:
@@ -174,7 +174,7 @@ def parse_buses_data(circuit: MultiCircuit,
                       area=area,
                       is_slack=is_slack,
                       Vm0=table[i, matpower_buses.VM],
-                      Va0=table[i, matpower_buses.VA])
+                      Va0=np.deg2rad(table[i, matpower_buses.VA]))
 
         # store the given bus index in relation to its real index in the table for later
         bus_idx_dict[table[i, matpower_buses.BUS_I]] = i
