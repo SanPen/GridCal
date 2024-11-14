@@ -11,7 +11,9 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     RegulatingControlModeKind,
                                                     UnitMultiplier,
                                                     DCPolarityKind,
-                                                    DCConverterOperatingModeKind)
+                                                    DCConverterOperatingModeKind,
+                                                    VsPpccControlKind,
+                                                    VsQpccControlKind)
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
@@ -192,7 +194,7 @@ def create_cgmes_terminal(mc_bus: Bus,
         term.TopologicalNode = tn
         term.ConnectivityNode = tn.ConnectivityNodes
     else:
-        logger.add_error(msg='No found TopologinalNode',
+        logger.add_error(msg='No found TopologicalNode',
                          device=mc_bus,
                          device_class=gcdev.Bus)
 
@@ -523,35 +525,75 @@ def create_cgmes_dc_node(cn_name: str,
 
 
 def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
-                               mc_elm: Union[gcdev.VSC, None],
+                               gc_vsc: Union[gcdev.VSC, None],
+                               p_set: float,
                                logger: DataLogger) -> (Base, Base):
     """
     Creates a new Voltage-source converter
     with a DCConverterUnit as a container
 
     :param cgmes_model: CgmesCircuit
-    :param mc_elm: optional input: VSC from GridCal
+    :param gc_vsc: optional input: VSC from GridCal
+    :param p_set: power set point
     :param logger: DataLogger
     :return: VsConverter and DCConverterUnit objects
     """
-    if mc_elm is None:
+    if gc_vsc is None:
         rdf_id = get_new_rdfid()
     else:
-        rdf_id = form_rdfid(mc_elm.idtag)
+        rdf_id = form_rdfid(gc_vsc.idtag)
     object_template = cgmes_model.get_class_type("VsConverter")
     vs_converter = object_template(rdfid=rdf_id)
 
-    if mc_elm is not None:
-        vs_converter.name = mc_elm.name
-        vs_converter.description = mc_elm.code
+    if gc_vsc is not None:
+        vs_converter.name = gc_vsc.name
+        vs_converter.description = gc_vsc.code
     else:
         i = len(cgmes_model.cgmes_assets.VsConverter_list)
         vs_converter.name = f'VSC_{i+1}'
         vs_converter.description = f'VSC_{i+1}'
 
+    # EQ
+    vs_converter.baseS = 9999
+    vs_converter.idleLoss = 1.0
+    # <cim:ACDCConverter.maxUdc>180.000000</cim:ACDCConverter.maxUdc>
+    # <cim:ACDCConverter.minUdc>0e+000</cim:ACDCConverter.minUdc>
+    # <cim:ACDCConverter.ratedUdc>160.000000</cim:ACDCConverter.ratedUdc>
+    # <cim:ACDCConverter.resistiveLoss>2.000000</cim:ACDCConverter.resistiveLoss>
+    # <cim:ACDCConverter.switchingLoss>0.000500</cim:ACDCConverter.switchingLoss>
+    # <cim:ACDCConverter.valveU0>0e+000</cim:ACDCConverter.valveU0>
+    # <cim:ACDCConverter.numberOfValves>1</cim:ACDCConverter.numberOfValves>
+    # <cim:VsConverter.maxModulationIndex>1.000000</cim:VsConverter.maxModulationIndex>
+    vs_converter.numberOfValves = 1
+    vs_converter.switchingLoss = 0.00308
+    vs_converter.maxValveCurrent = 99999
+
+    # SSH
+    vs_converter.p = p_set   # hvdc_line.Pset or VSC.Pset
+    vs_converter.q = 0.0
+    vs_converter.targetPpcc = p_set
+    vs_converter.targetUdc = 0
+    vs_converter.droop = 0
+    vs_converter.droopCompensation = 0
+    vs_converter.pPccControl = VsPpccControlKind.pPcc
+    vs_converter.qPccControl = VsQpccControlKind.voltagePcc
+    vs_converter.qShare = 100  # Reactive power-sharing factor among parallel converters on Uac control.
+    vs_converter.targetQpcc = 0
+    vs_converter.targetUpcc = 0.97
+
+    # SV
+    #     <cim:VsConverter.delta>0</cim:VsConverter.delta>
+    #     <cim:VsConverter.uf>124.427328</cim:VsConverter.uf>
+    #     <cim:ACDCConverter.uc>124.427328</cim:ACDCConverter.uc>
+    #     <cim:ACDCConverter.udc>152.405856</cim:ACDCConverter.udc>
+    #     <cim:ACDCConverter.poleLossP>3.333380</cim:ACDCConverter.poleLossP>
+    #     <cim:ACDCConverter.idc>962.342430</cim:ACDCConverter.idc>
+
+    # DCConverterUnit for containment
     dc_conv_unit_1 = create_cgmes_dc_converter_unit(cgmes_model=cgmes_model,
                                                     logger=logger)
     dc_conv_unit_1.description = f'DC_Converter_Unit_for_{vs_converter.name}'
+    vs_converter.EquipmentContainer = dc_conv_unit_1
 
     cgmes_model.add(vs_converter)
     return vs_converter, dc_conv_unit_1
@@ -592,8 +634,14 @@ def create_cgmes_acdc_converter_terminal(cgmes_model: CgmesCircuit,
     acdc_term.description = f'{dc_cond_eq.name}_converter_DC_term'
     acdc_term.sequenceNumber = seq_num if seq_num is not None else 1
 
-    if isinstance(dc_cond_eq, cgmes_model.get_class_type("DCConductingEquipment")):
+    if isinstance(dc_cond_eq, cgmes_model.get_class_type("ACDCConverter")):
         acdc_term.DCConductingEquipment = dc_cond_eq
+    else:
+        logger.add_error(msg=f'DCConductingEquipment must be an ACDCConverter',
+                         device=dc_cond_eq,
+                         value=dc_cond_eq.tpe,
+                         expected_value="ACDCConverter",
+                         comment="create_cgmes_acdc_converter_terminal")
     acdc_term.connected = True
     acdc_term.polarity = DCPolarityKind.positive
 
@@ -638,6 +686,10 @@ def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
 def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
                                  mc_elm: Union[gcdev.HvdcLine,
                                                gcdev.DcLine],
+                                 dc_tp_1: Base,
+                                 dc_node_1: Base,
+                                 dc_tp_2: Base,
+                                 dc_node_2: Base,
                                  eq_cont: Base,
                                  logger: DataLogger) -> Base:
     """
@@ -645,6 +697,10 @@ def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
 
     :param cgmes_model:
     :param mc_elm:
+    :param dc_tp_1:
+    :param dc_node_1:
+    :param dc_tp_2:
+    :param dc_node_2:
     :param eq_cont: EquipmentContainer (DCLine)
     :param logger:
     :return:
@@ -657,8 +713,25 @@ def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
 
     dc_line_segment.length = mc_elm.length if mc_elm.length is not None else 1.0
     dc_line_segment.resistance = mc_elm.r
+    dc_line_segment.inductance = 0.0
+    dc_line_segment.capacitance = 0.0
+    dc_line_segment.aggregate = False
 
     dc_line_segment.EquipmentContainer = eq_cont
+
+    # Terminals
+    create_cgmes_dc_terminal(cgmes_model=cgmes_model,
+                             dc_tp=dc_tp_1,
+                             dc_node=dc_node_1,
+                             dc_cond_eq=dc_line_segment,
+                             seq_num=1,
+                             logger=logger)
+    create_cgmes_dc_terminal(cgmes_model=cgmes_model,
+                             dc_tp=dc_tp_2,
+                             dc_node=dc_node_2,
+                             dc_cond_eq=dc_line_segment,
+                             seq_num=2,
+                             logger=logger)
 
     cgmes_model.add(dc_line_segment)
     return dc_line_segment
