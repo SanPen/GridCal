@@ -669,6 +669,16 @@ class ConvergenceReport:
         else:
             return 0.0
 
+    def iterations(self) -> float:
+        """
+
+        :return:
+        """
+        if len(self.iterations_) > 0:
+            return self.iterations_[-1]
+        else:
+            return 0.0
+
     def to_dataframe(self) -> pd.DataFrame:
         """
 

@@ -1680,6 +1680,21 @@ class MultiCircuit(Assets):
         """
         return self.get_Sbus_prof().real
 
+    def get_imbalance(self) -> float:
+        """
+        Get the system imbalance in per unit
+        :return:
+        """
+        P = self.get_Pbus()
+        Pg = P[P > 0].sum()
+        Pl = -P[P < 0].sum()
+        if Pl > 0:
+            ratio = (Pg - Pl) / Pl
+        else:
+            ratio = 1.0
+
+        return ratio
+
     def get_branch_rates_prof_wo_hvdc(self) -> Mat:
         """
         Get the complex bus power Injections
