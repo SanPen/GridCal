@@ -141,7 +141,7 @@ class HvdcLine(BranchParent):
                  dispatchable=True, angle_droop=0,
                  capex=0, opex=0,
                  build_status: BuildStatus = BuildStatus.Commissioned,
-                 dc_link_voltage: float = 200):
+                 dc_link_voltage: float = 200.0):
         """
         HVDC Line model
         :param bus_from: Bus from
