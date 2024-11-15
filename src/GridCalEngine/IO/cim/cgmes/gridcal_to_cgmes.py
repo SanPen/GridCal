@@ -18,7 +18,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
      create_cgmes_regulating_control, create_cgmes_tap_changer_control,
      create_sv_power_flow, create_cgmes_vsc_converter,
      create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
-     create_cgmes_dc_terminal, create_cgmes_acdc_converter_terminal)
+     create_cgmes_dc_terminal, create_cgmes_acdc_converter_terminal, create_cgmes_conform_load_group)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
@@ -394,6 +394,8 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
     :return:
     """
 
+    c_load_group = create_cgmes_conform_load_group(cgmes_model, logger)
+
     for mc_elm in multicircuit_model.loads:
         object_template = cgmes_model.get_class_type("ConformLoad")
         cl = object_template(rdfid=form_rdfid(mc_elm.idtag))
@@ -417,7 +419,6 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
             cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm,
                                                               cgmes_model=cgmes_model,
                                                               logger=logger)
-            # cl.LoadGroup = ConformLoadGroup ..?
             cl.p = mc_elm.P / cl.LoadResponse.pConstantPower
             cl.q = mc_elm.Q / cl.LoadResponse.qConstantPower
         else:
@@ -425,6 +426,9 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
             cl.q = mc_elm.Q
 
         cl.description = mc_elm.code
+
+        cl.LoadGroup = c_load_group
+        c_load_group.EnergyConsumers.append(cl)
 
         cgmes_model.add(cl)
 
