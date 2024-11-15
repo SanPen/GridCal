@@ -28,9 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added converging all matpower files as a test">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added the Matpower results to the README.md">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1385,7 +1386,8 @@
       <workItem from="1731073427405" duration="612000" />
       <workItem from="1731310731160" duration="24788000" />
       <workItem from="1731615363330" duration="8203000" />
-      <workItem from="1731624350029" duration="420000" />
+      <workItem from="1731624350029" duration="1203000" />
+      <workItem from="1731659533351" duration="4737000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1730,7 +1732,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="562" />
+    <option name="localTasksCounter" value="565" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1764,7 +1766,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved tapChanger import-export functions, normal position is introduced for TapChanger" />
     <MESSAGE value="improved tapChanger import-export functions v2" />
     <MESSAGE value="enhanced tap changer import (phase tc added)" />
     <MESSAGE value="tpe added to generated Sv class init" />
@@ -1789,7 +1790,8 @@
     <MESSAGE value="fixed matpower voltage initialization" />
     <MESSAGE value="All matpower grids passing" />
     <MESSAGE value="Added converging all matpower files as a test" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added converging all matpower files as a test" />
+    <MESSAGE value="Added the Matpower results to the README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added the Matpower results to the README.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
