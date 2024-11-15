@@ -73,8 +73,6 @@ class GeneratorData:
         self.bus_idx = np.zeros(nelm, dtype=int)
 
         # GENERALISED PF
-        # ObjVec instead of StrVec, maybe some implications down the road
-        # At most, work with StrVec and point at idtags
         self.gpf_ctrl1_elm: ObjVec = np.empty(nelm, dtype=object)
         self.gpf_ctrl1_mode: List[GpfControlType] = [GpfControlType.type_None] * nelm
         self.gpf_ctrl1_val: Vec = np.zeros(nelm, dtype=float)

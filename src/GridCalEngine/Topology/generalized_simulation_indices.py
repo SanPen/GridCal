@@ -58,20 +58,32 @@ class GeneralizedSimulationIndices:
         :param nc:
         :return:
         """
+        self.bus_voltage_used = np.zeros(nc.nbus, dtype=bool)
+        # for i, tpe in enumerate(nc.bus_data.bus_types):
+        #     if tpe == BusMode.Slack_tpe.value:
+        #         self.c_va.add(i)
+        #         self.c_vm.add(i)
+        #     elif tpe == BusMode.PQ_tpe.value:
+        #         pass
+        #     elif tpe == BusMode.PV_tpe.value:
+        #         self.c_vm.add(i)
+        #     elif tpe == BusMode.PQV_tpe.value:
+        #         self.c_vm.add(i)
+        #     elif tpe == BusMode.P_tpe.value:
+        #         pass
+        # for i in range(nc.generator.nelm):
+        for dev in nc.generator_data:
+            bus_idx = dev.bus
 
-        for i, tpe in enumerate(nc.bus_data.bus_types):
-            if tpe == BusMode.Slack_tpe.value:
-                self.c_va.add(i)
-                self.c_vm.add(i)
-            elif tpe == BusMode.PQ_tpe.value:
-                pass
-            elif tpe == BusMode.PV_tpe.value:
-                self.c_vm.add(i)
-            elif tpe == BusMode.PQV_tpe.value:
-                self.c_vm.add(i)
-            elif tpe == BusMode.P_tpe.value:
-                pass
-        
+            if dev.is_controlled:
+                self.c_vm.add(idx)
+                self.set_bus_control_voltage(i=dev.bus_idx, )
+                # Set voltage magnitude through set_bus_control_voltage
+                self.c_p_zip.add(idx)
+
+            else:
+                self.c_p_zip.add(dev)
+                self.c_q_zip.add(dev)
         for struct in (nc.branch_data, nc.vsc_data):
             for k, tpe in enumerate(struct.tap_module_control_mode):
                 if tpe == TapModuleControl.fixed:
