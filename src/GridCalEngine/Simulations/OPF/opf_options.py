@@ -39,6 +39,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
                  ips_iterations: int = 100,
                  ips_trust_radius: float = 1.0,
                  ips_init_with_pf: bool = False,
+                 ips_control_q_limits: bool = False,
                  acopf_mode: AcOpfMode = AcOpfMode.ACOPFstd,
                  robust: bool = False,):
         """
@@ -63,6 +64,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
         :param ips_iterations:
         :param ips_trust_radius:
         :param ips_init_with_pf:
+        :param ips_control_q_limits:
         :param acopf_mode:
         """
         OptionsTemplate.__init__(self, name="Optimal power flow options")
@@ -111,6 +113,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
         self.ips_iterations = ips_iterations
         self.ips_trust_radius = ips_trust_radius
         self.ips_init_with_pf = ips_init_with_pf
+        self.ips_control_q_limits = ips_control_q_limits
 
         self.register(key="verbose", tpe=int)
         self.register(key="solver", tpe=SolverType)
@@ -134,4 +137,5 @@ class OptimalPowerFlowOptions(OptionsTemplate):
         self.register(key="ips_iterations", tpe=int)
         self.register(key="ips_trust_radius", tpe=float)
         self.register(key="ips_init_with_pf", tpe=bool)
+        self.register(key="ips_control_q_limits", tpe=bool)
         self.register(key="robust", tpe=bool)

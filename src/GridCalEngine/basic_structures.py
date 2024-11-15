@@ -6,26 +6,28 @@
 from typing import List, Any, Dict, Union, Tuple
 import pandas as pd
 import numpy as np
+import numpy.typing as npt
 import datetime
-import GridCalEngine.Utils.ThirdParty.nptyping as npt
 from scipy.sparse import csc_matrix, csr_matrix
 from GridCalEngine.enumerations import TimeGrouping, LogSeverity
 
 IntList = List[int]
 Numeric = Union[int, float, bool, complex]
-NumericVec = npt.NDArray[npt.Shape['*'], npt.Double]
-DateVec = npt.NDArray[npt.Shape['*'], npt.Datetime64]
-IntVec = npt.NDArray[npt.Shape['*'], npt.Int]
-BoolVec = npt.NDArray[npt.Shape['*'], npt.Bool]
-Vec = npt.NDArray[npt.Shape['*'], npt.Double]
-CxVec = npt.NDArray[npt.Shape['*'], npt.Complex]
-StrVec = npt.NDArray[npt.Shape['*'], npt.String]
-ObjVec = npt.NDArray[npt.Shape['*'], npt.Object]
-Mat = npt.NDArray[npt.Shape['*, *'], npt.Double]
-CxMat = npt.NDArray[npt.Shape['*, *'], npt.Complex]
-IntMat = npt.NDArray[npt.Shape['*, *'], npt.Int]
-StrMat = npt.NDArray[npt.Shape['*, *'], npt.String]
-ObjMat = npt.NDArray[npt.Shape['*, *'], npt.Object]
+
+NumericVec = npt.NDArray[np.float64]
+DateVec = npt.NDArray[np.datetime64]
+IntVec = npt.NDArray[np.int_]
+BoolVec = npt.NDArray[np.bool_]
+Vec = npt.NDArray[np.float64]
+CxVec = npt.NDArray[np.complex128]
+StrVec = npt.NDArray[np.str_]
+ObjVec = npt.NDArray[np.object_]
+Mat = npt.NDArray[np.float64]  # no way yet to say it is 2D
+CxMat = npt.NDArray[np.complex128]  # no way yet to say it is 2D
+IntMat = npt.NDArray[np.int_]  # no way yet to say it is 2D
+StrMat = npt.NDArray[np.str_]  # no way yet to say it is 2D
+ObjMat = npt.NDArray[np.object_]  # no way yet to say it is 2D
+
 CscMat = csc_matrix
 CsrMat = csr_matrix
 
@@ -664,6 +666,16 @@ class ConvergenceReport:
         """
         if len(self.elapsed_) > 0:
             return self.elapsed_[-1]
+        else:
+            return 0.0
+
+    def iterations(self) -> float:
+        """
+
+        :return:
+        """
+        if len(self.iterations_) > 0:
+            return self.iterations_[-1]
         else:
             return 0.0
 

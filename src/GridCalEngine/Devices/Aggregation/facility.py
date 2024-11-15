@@ -5,10 +5,10 @@
 
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup, DeviceType
 
 
-class Facility(EditableDevice):
+class Facility(GenericAreaGroup):
     """
     This is an aggregation of Injection devices
     """
@@ -22,14 +22,10 @@ class Facility(EditableDevice):
         :param latitude: latitude (deg)
         :param longitude: longitude (deg)
         """
-        EditableDevice.__init__(self,
-                                name=name,
-                                code=code,
-                                idtag=idtag,
-                                device_type=DeviceType.FacilityDevice)
-
-        self.latitude = float(latitude)
-        self.longitude = float(longitude)
-
-        self.register(key='longitude', units='deg', tpe=float, definition='longitude.')
-        self.register(key='latitude', units='deg', tpe=float, definition='latitude.')
+        GenericAreaGroup.__init__(self,
+                                  name=name,
+                                  idtag=idtag,
+                                  code=code,
+                                  device_type=DeviceType.AreaDevice,
+                                  latitude=latitude,
+                                  longitude=longitude)

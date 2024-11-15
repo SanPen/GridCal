@@ -126,6 +126,18 @@ class Bus(PhysicalDevice):
 
         self._voltage_level: VoltageLevel = voltage_level
 
+        if voltage_level is not None:
+
+            if voltage_level.Vnom != Vnom:
+                print(f"{self.idtag} {self.name} The nominal voltage of the voltage level is different from bus nominal voltage!")
+
+            if voltage_level.substation is not None:
+                if substation is None:
+                    self.substation = voltage_level.substation
+                else:
+                    if substation != voltage_level.substation:
+                        print(f"{self.idtag} {self.name} The substation from the voltage level is different from bus substation!")
+
         # Bus type
         self.type = BusMode.PQ_tpe
 

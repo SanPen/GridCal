@@ -233,6 +233,7 @@ class ConfigurationMain(ResultsMain):
                 "ips_iterations": self.ui.ips_iterations_spinBox,
                 "ips_trust_radius": self.ui.ips_trust_radius_doubleSpinBox,
                 "ips_init_with_pf": self.ui.ips_initialize_with_pf_checkBox,
+                "ips_control_Qlimits": self.ui.ips_control_Qlimits_checkBox,
             },
             "continuation_power_flow": {
                 "max_iterations": self.ui.vs_max_iterations_spinBox,
