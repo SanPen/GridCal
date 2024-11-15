@@ -793,16 +793,21 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
          voltageIncr,
          tap_changer.step) = mc_elm.tap_changer.get_cgmes_values()
 
-        try:
+        if isinstance(tap_changer, cgmes_model.get_class_type("RatioTapChanger")):
             tap_changer.stepVoltageIncrement = voltageIncr
-        except:
+        elif isinstance(tap_changer, cgmes_model.get_class_type("PhaseTapChangerNonLinear")):
+            # PhaseTapChangerSymmetrical or PhaseTapChangerAsymmetrical
             tap_changer.voltageStepIncrement = voltageIncr
-        finally:
+        else:
             logger.add_error(
-                msg='stepVoltageIncerment cannot be filled fot TapChanger',
+                msg='stepVoltageIncrement cannot be filled for TapChanger',
                 device=mc_elm,
                 device_class=mc_elm.device_type.value,
-                value=mc_elm.idtag)
+                value=mc_elm.idtag,
+                comment="get_cgmes_power_transformers")
+
+        if isinstance(tap_changer, cgmes_model.get_class_type("PhaseTapChangerAsymmetrical")):
+            tap_changer.windingConnectionAngle = mc_elm.tap_changer.asymmetry_angle
 
         # CONTROL
         tap_changer.ltcFlag = False  # load tap changing capability
@@ -1047,7 +1052,8 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
     """
     # SvVoltage: v, (a?) -> TopologicalNode
-
+    # TODO move it to tp node export
+    # TODO or simply loop on TP nodes list
     for i, voltage in enumerate(pf_results.voltage):
         object_template = cgmes_model.get_class_type("SvVoltage")
         new_rdf_id = get_new_rdfid()
@@ -1251,9 +1257,8 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                cgmes_model: CgmesCircuit,
                                logger: DataLogger):
     """
-    Converts simplified HVDC line to two VSConverter,
+    Converts simplified HVDC line to two VSConverters inside DCConverterUnits,
     connected with a DCLineSegment, contained in a DCLine
-    and in a DCConverterUnit?
     DCGround?
     DCNodes, DCTopologicalNodes are also created here from scratch
     as there is no DC part in the simplified modelling.
@@ -1268,7 +1273,8 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
         # FROM side
         vsc_1, dc_conv_unit_1 = create_cgmes_vsc_converter(
             cgmes_model=cgmes_model,
-            mc_elm=None,
+            gc_vsc=None,
+            p_set=hvdc_line.Pset,
             logger=logger
         )
         dc_tp_1 = create_cgmes_dc_tp_node(
@@ -1283,7 +1289,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                          dc_tp=dc_tp_1,
                                          dc_ec=dc_conv_unit_1,
                                          logger=logger)
-        conv_dc_term_1 = create_cgmes_acdc_converter_terminal(
+        create_cgmes_acdc_converter_terminal(
             cgmes_model=cgmes_model,
             mc_dc_bus=None,
             seq_num=2,
@@ -1291,25 +1297,19 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             dc_cond_eq=vsc_1,
             logger=logger
         )
-
-        # DC Line
-        dc_line = create_cgmes_dc_line(cgmes_model=cgmes_model,
-                                       logger=logger)
-        dc_line_sgm = create_cgmes_dc_line_segment(cgmes_model=cgmes_model,
-                                                   mc_elm=hvdc_line,
-                                                   eq_cont=dc_line,
-                                                   logger=logger)
-        dc_term_1 = create_cgmes_dc_terminal(cgmes_model=cgmes_model,
-                                             dc_tp=dc_tp_1,
-                                             dc_node=dc_node_1,
-                                             dc_cond_eq=dc_line_sgm,
-                                             seq_num=1,
-                                             logger=logger)
+        create_cgmes_terminal(
+            cgmes_model=cgmes_model,
+            mc_bus=hvdc_line.bus_from,
+            seq_num=None,
+            cond_eq=vsc_1,
+            logger=logger
+        )
 
         # TO side
         vsc_2, dc_conv_unit_2 = create_cgmes_vsc_converter(
             cgmes_model=cgmes_model,
-            mc_elm=None,
+            gc_vsc=None,
+            p_set=-hvdc_line.Pset,
             logger=logger
         )
         dc_tp_2 = create_cgmes_dc_tp_node(
@@ -1324,7 +1324,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
                                          dc_tp=dc_tp_2,
                                          dc_ec=dc_conv_unit_2,
                                          logger=logger)
-        conv_dc_term_2 = create_cgmes_acdc_converter_terminal(
+        create_cgmes_acdc_converter_terminal(
             cgmes_model=cgmes_model,
             mc_dc_bus=None,
             seq_num=2,
@@ -1332,11 +1332,25 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             dc_cond_eq=vsc_2,
             logger=logger
         )
+        create_cgmes_terminal(
+            cgmes_model=cgmes_model,
+            mc_bus=hvdc_line.bus_to,
+            seq_num=None,
+            cond_eq=vsc_2,
+            logger=logger
+        )
 
-        # DC Line Segment
-        # dc_line_sgm.inductance = 30.0
-        # dc_line_sgm.capacitance = 0.0
-        # dc_line_sgm.aggregate = False
+        # DC Line
+        dc_line = create_cgmes_dc_line(cgmes_model=cgmes_model,
+                                       logger=logger)
+        create_cgmes_dc_line_segment(cgmes_model=cgmes_model,
+                                     mc_elm=hvdc_line,
+                                     dc_tp_1=dc_tp_1,
+                                     dc_node_1=dc_node_1,
+                                     dc_tp_2=dc_tp_2,
+                                     dc_node_2=dc_node_2,
+                                     eq_cont=dc_line,
+                                     logger=logger)
 
     return
 
@@ -1399,7 +1413,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # if converged == True...
 
         # SvVoltage for every TopoNode
-        get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
+        # get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
 
         # PowerFlow: P, Q results for every terminal
         get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results,
@@ -1410,6 +1424,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # TODO create_sv_status() elements.active parameter
 
         # SVTapStep: handled at transformer function
+        # TODO get it from results
         get_cgmes_sv_tap_step(gc_model, num_circ, cgmes_model, pf_results,
                               logger)
 
@@ -1424,5 +1439,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         logger.add_error(msg="Missing power flow result for CGMES export.")
 
     if logger.__len__() != 0:
-        print("Logger is not empty! (cgmes export)")
+        print("\nLogger is not empty! (cgmes export)")
+
     return cgmes_model

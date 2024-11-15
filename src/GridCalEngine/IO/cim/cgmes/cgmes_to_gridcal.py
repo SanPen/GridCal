@@ -639,7 +639,7 @@ def get_gcdev_vsc_converters(cgmes_model: CgmesCircuit,
                 # tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
                 # tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
                 # vset: float = 1.0,
-                # Pset: float = 0.0,
+                Pset=cgmes_elm.p,
                 # Qset: float = 0.0,
                 # cost = 100,
                 # contingency_factor = 1.0,
@@ -738,6 +738,10 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
                                              cn_dict=cn_dict,
                                              logger=logger)
 
+            rated_udc = getattr(vsc_list[0], 'ratedUdc', None)
+            if rated_udc is None:
+                rated_udc = 200.0
+
             gcdev_elm = gcdev.HvdcLine(
                 bus_from=bus_from[0],
                 bus_to=bus_to[0],
@@ -754,7 +758,7 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
                 Vset_f=1.0,  # if not found, 1.0 p.u.
                 Vset_t=1.0,
                 r=dc_line_sgm.resistance,
-                dc_link_voltage=200,  # TODO
+                dc_link_voltage=rated_udc,
             )
 
             gcdev_model.add_hvdc(gcdev_elm)
