@@ -582,10 +582,12 @@ class FileSave:
                                          pf_results=pf_results,
                                          logger=logger)
         cgmes_circuit = create_cgmes_headers(cgmes_model=cgmes_circuit,
+                                             mas_names=self.circuit.get_modelling_authority_names(),
                                              profiles_to_export=profiles_to_export,
                                              version="1",
                                              desc="Test description.",
-                                             scenariotime="2021-02-09T19:30:00Z")
+                                             scenariotime="2021-02-09T19:30:00Z",
+                                             logger=logger)
 
         cim_exporter = CimExporter(cgmes_circuit=cgmes_circuit,
                                    profiles_to_export=profiles_to_export,

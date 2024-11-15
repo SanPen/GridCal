@@ -747,14 +747,14 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
                 idtag=dc_line_sgm.uuid,
                 code=dc_line_sgm.description,
                 active=True,
-                Pset=abs(vsc_list[0].p),   # power of the VS converter
+                Pset=abs(vsc_list[0].p),  # power of the VS converter
                 # rate=rate,
                 # rate of DCLine? or ratedP of Converter?
                 # no Limit for DC terminal in XML
-                Vset_f=1.0,             # if not found, 1.0 p.u.
+                Vset_f=1.0,  # if not found, 1.0 p.u.
                 Vset_t=1.0,
                 r=dc_line_sgm.resistance,
-                dc_link_voltage=200, # TODO
+                dc_link_voltage=200,  # TODO
             )
 
             gcdev_model.add_hvdc(gcdev_elm)
@@ -773,7 +773,6 @@ def get_gcdev_branch_groups(cgmes_model: CgmesCircuit,
     """
     # convert branch aggregations
     for cgmes_elm in cgmes_model.cgmes_assets.DCLine_list:
-
         gcdev_elm = gcdev.BranchGroup(
             name=cgmes_elm.name,
             idtag=cgmes_elm.uuid,
@@ -2067,6 +2066,26 @@ def get_gcdev_community(cgmes_model: CgmesCircuit,
                 gcdev_model.add_community(gcdev_elm)
 
 
+def get_header_mas(cgmes_model: CgmesCircuit,
+                   gcdev_model: MultiCircuit,
+                   logger: DataLogger) -> None:
+    mas_set = set()
+    for full_model in cgmes_model.cgmes_assets.FullModel_list:
+        if full_model.modelingAuthoritySet is None:
+            logger.add_warning(msg="Missing MAS in header!",
+                               device=full_model.rdfid,
+                               device_property="modelingAuthoritySet")
+            continue
+        if isinstance(full_model.modelingAuthoritySet, list):
+            for mas in full_model.modelingAuthoritySet:
+                mas_set.add(mas)
+        else:
+            mas_set.add(full_model.modelingAuthoritySet)
+    for mas in mas_set:
+        gcdev_elm = gcdev.ModellingAuthority(name=mas)
+        gcdev_model.add_modelling_authority(gcdev_elm)
+
+
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                      map_dc_to_hvdc_line: bool,
                      logger: DataLogger) -> MultiCircuit:
@@ -2084,6 +2103,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     Sbase = gc_model.Sbase
     cgmes_model.emit_progress(70)
     cgmes_model.emit_text("Converting CGMES to Gridcal")
+
+    get_header_mas(cgmes_model, gc_model, logger)
 
     get_gcdev_countries(cgmes_model, gc_model)
 
