@@ -1,6 +1,9 @@
 from typing import Set
+import numpy as np
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.DataStructures.bus_data import BusData
+from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec
 
 
 class GeneralizedSimulationIndices:
@@ -52,38 +55,57 @@ class GeneralizedSimulationIndices:
         # CInjQ -> Indices of the injection devices where the Q is specified.
         self.c_inj_Q: Set[int] = set()
 
-    def fill_specified(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
+        self.logger = Logger()
+
+        self.bus_voltage_used: BoolVec | None = None
+
+    def fill_specified(self, nc: NumericalCircuit,
+                       use_stored_guess: bool = False,
+                       control_remote_voltage: bool = True) -> "GeneralizedSimulationIndices":
         """
 
         :param nc:
+        :param use_stored_guess:
+        :param control_remote_voltage:
         :return:
         """
         self.bus_voltage_used = np.zeros(nc.nbus, dtype=bool)
-        # for i, tpe in enumerate(nc.bus_data.bus_types):
-        #     if tpe == BusMode.Slack_tpe.value:
-        #         self.c_va.add(i)
-        #         self.c_vm.add(i)
-        #     elif tpe == BusMode.PQ_tpe.value:
-        #         pass
-        #     elif tpe == BusMode.PV_tpe.value:
-        #         self.c_vm.add(i)
-        #     elif tpe == BusMode.PQV_tpe.value:
-        #         self.c_vm.add(i)
-        #     elif tpe == BusMode.P_tpe.value:
-        #         pass
-        # for i in range(nc.generator.nelm):
-        for dev in nc.generator_data:
-            bus_idx = dev.bus
 
-            if dev.is_controlled:
-                self.c_vm.add(idx)
-                self.set_bus_control_voltage(i=dev.bus_idx, )
-                # Set voltage magnitude through set_bus_control_voltage
-                self.c_p_zip.add(idx)
+        for i, tpe in enumerate(nc.bus_data.bus_types):
+            if tpe == BusMode.Slack_tpe.value:
+                self.c_va.add(i)
+                self.c_vm.add(i)
+            # elif tpe == BusMode.PQ_tpe.value:
+            #     pass
+            # elif tpe == BusMode.PV_tpe.value:
+            #     self.c_vm.add(i)
+            # elif tpe == BusMode.PQV_tpe.value:
+            #     self.c_vm.add(i)
+            # elif tpe == BusMode.P_tpe.value:
+            #     pass
 
-            else:
-                self.c_p_zip.add(dev)
-                self.c_q_zip.add(dev)
+        for struct in (nc.generator_data, nc.battery_data):
+            for e, is_controlled in enumerate(struct.controllable):
+                bus_idx = struct.bus_idx[e]
+                ctr_bus_idx = struct.controllable_bus_idx[e]
+
+                if is_controlled:
+                    remote_control = ctr_bus_idx != -1
+
+                    self.set_bus_control_voltage(i=bus_idx,
+                                                 j=ctr_bus_idx,
+                                                 remote_control=remote_control and control_remote_voltage,
+                                                 bus_name=nc.bus_data.names[bus_idx],
+                                                 bus_data=nc.bus_data,
+                                                 candidate_Vm=struct.v[e],
+                                                 use_stored_guess=use_stored_guess)
+
+                    # Set voltage magnitude through set_bus_control_voltage
+
+                else:
+                    self.c_p_zip.add(bus_idx)
+                    self.c_q_zip.add(bus_idx)
+
         for struct in (nc.branch_data, nc.vsc_data):
             for k, tpe in enumerate(struct.tap_module_control_mode):
                 if tpe == TapModuleControl.fixed:
@@ -97,21 +119,21 @@ class GeneralizedSimulationIndices:
                         # else, we pick the from bus
                         iii = struct.F[k]
                         self.c_vm.add(iii)
-                        
+
                 elif tpe == TapModuleControl.Qf:
                     self.c_Qf.add(k)
-                    
+
                 elif tpe == TapModuleControl.Qt:
                     self.c_Qt.add(k)
-                
+
             for k, tpe in enumerate(struct.tap_phase_control_mode):
                 if tpe == TapPhaseControl.fixed:
-                    pass                    
+                    pass
                 elif tpe == TapPhaseControl.Pf:
                     self.c_Pf.add(k)
-    
+
                 elif tpe == TapPhaseControl.Pt:
-                    self.c_Pt.add(k)        
+                    self.c_Pt.add(k)
 
         return self
 
@@ -275,3 +297,61 @@ class GeneralizedSimulationIndices:
 
     def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
         pass
+
+    def set_bus_control_voltage(self,
+                                i: int,
+                                j: int,
+                                remote_control: bool,
+                                bus_name: str,
+                                bus_data: BusData,
+                                candidate_Vm: float,
+                                use_stored_guess: bool,
+                                ) -> None:
+        """
+        Set the bus control voltage
+        :param i: Bus index
+        :param j: Remote Bus index
+        :param remote_control: Using remote control?
+        :param bus_name: Bus name
+        :param bus_data: BusData
+        :param candidate_Vm: Voltage set point that you want to set
+        :param use_stored_guess: Use the stored seed values?
+        """
+
+        # if not self.bus_voltage_used[i]:
+
+        if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
+            if remote_control and j > -1 and j != i:
+                # # remove voltage control
+                # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
+                # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
+
+                self.c_p_zip.add(i)
+
+                self.c_vm.add(j)
+                self.c_p_zip.add(j)
+                self.c_q_zip.add(j)
+
+            else:
+                # local voltage control
+                # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
+
+                self.c_vm.add(i)
+                self.c_p_zip.add(i)
+
+        if not use_stored_guess:
+            if not self.bus_voltage_used[i]:
+                if remote_control and j > -1 and j != i:
+                    # initialize the remote bus voltage to the control value
+                    bus_data.Vbus[j] = complex(candidate_Vm, 0)
+                    self.bus_voltage_used[j] = True
+                else:
+                    # initialize the local bus voltage to the control value
+                    bus_data.Vbus[i] = complex(candidate_Vm, 0)
+                    self.bus_voltage_used[i] = True
+
+            elif candidate_Vm != bus_data.Vbus[i]:
+                self.logger.add_error(msg='Different control voltage set points',
+                                      device=bus_name,
+                                      value=candidate_Vm,
+                                      expected_value=bus_data.Vbus[i])

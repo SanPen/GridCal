@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 import numpy as np
 import scipy.sparse as sp
@@ -45,6 +45,8 @@ class GeneratorData:
         self.mttr: Vec = np.zeros(nelm, dtype=float)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
+        self.bus_idx = np.zeros(nelm, dtype=int)
+        self.controllable_bus_idx = np.zeros(nelm, dtype=int)
 
         # r0, r1, r2, x0, x1, x2
         self.r0: Vec = np.zeros(nelm, dtype=float)
@@ -70,15 +72,6 @@ class GeneratorData:
         self.min_time_down: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
-        self.bus_idx = np.zeros(nelm, dtype=int)
-
-        # GENERALISED PF
-        self.gpf_ctrl1_elm: ObjVec = np.empty(nelm, dtype=object)
-        self.gpf_ctrl1_mode: List[GpfControlType] = [GpfControlType.type_None] * nelm
-        self.gpf_ctrl1_val: Vec = np.zeros(nelm, dtype=float)
-        self.gpf_ctrl2_elm: ObjVec = np.empty(nelm, dtype=object)
-        self.gpf_ctrl2_mode: List[GpfControlType] = [GpfControlType.type_None] * nelm
-        self.gpf_ctrl2_val: Vec = np.zeros(nelm, dtype=float)
 
         self.name_to_idx: dict = dict()
         self.is_at_dc_bus: BoolVec = np.zeros(nelm, dtype=bool)  # purpose? why not for VSC?
@@ -113,6 +106,14 @@ class GeneratorData:
         data.mttr = self.mttr[elm_idx]
 
         data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
+        data.bus_idx = self.bus_idx[elm_idx]
+        data.controllable_bus_idx = self.controllable_bus_idx[elm_idx]
+
+        # Remapping of the buses
+        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
+        for k in range(data.nelm):
+            data.bus_idx[k] = bus_map.get(data.bus_idx[k], -1)
+            data.controllable_bus_idx[k] = bus_map.get(data.controllable_bus_idx[k], -1)
 
         data.r0 = self.r0[elm_idx]
         data.r1 = self.r1[elm_idx]
@@ -175,6 +176,8 @@ class GeneratorData:
         data.mttr = self.mttr.copy()
 
         data.C_bus_elm = self.C_bus_elm.copy()
+        data.bus_idx = self.bus_idx.copy()
+        data.controllable_bus_idx = self.controllable_bus_idx.copy()
 
         data.r0 = self.r0.copy()
         data.r1 = self.r1.copy()

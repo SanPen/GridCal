@@ -164,6 +164,7 @@ def get_load_data(circuit: MultiCircuit,
 
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
+        data.bus_idx[ii] = i
 
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
@@ -203,7 +204,7 @@ def get_load_data(circuit: MultiCircuit,
     for elm in circuit.get_static_generators():
 
         i = bus_dict[elm.bus]
-
+        data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
 
@@ -229,7 +230,7 @@ def get_load_data(circuit: MultiCircuit,
     for elm in circuit.get_external_grids():
 
         i = bus_dict[elm.bus]
-
+        data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
 
@@ -269,7 +270,7 @@ def get_load_data(circuit: MultiCircuit,
     for elm in circuit.get_current_injections():
 
         i = bus_dict[elm.bus]
-
+        data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
 
@@ -330,7 +331,7 @@ def get_shunt_data(
     for k, elm in enumerate(circuit.get_shunts()):
 
         i = bus_dict[elm.bus]
-
+        data.bus_idx[k] = i
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
@@ -354,7 +355,7 @@ def get_shunt_data(
     for elm in circuit.get_controllable_shunts():
 
         i = bus_dict[elm.bus]
-
+        data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
 
@@ -379,6 +380,8 @@ def get_shunt_data(
                     remote_control = False
                     j = -1
 
+                data.controllable_bus_idx[ii] = j
+
                 set_bus_control_voltage(i=i,
                                         j=j,
                                         remote_control=remote_control and control_remote_voltage,
@@ -401,6 +404,8 @@ def get_shunt_data(
                 else:
                     remote_control = False
                     j = -1
+
+                data.controllable_bus_idx[ii] = j
 
                 set_bus_control_voltage(i=i,
                                         j=j,
@@ -462,7 +467,7 @@ def get_generator_data(
         gen_index_dict[elm.idtag] = k  # associate the idtag to the index
 
         i = bus_dict[elm.bus]
-
+        data.bus_idx[k] = i
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
@@ -518,6 +523,8 @@ def get_generator_data(
                         remote_control = False
                         j = -1
 
+                    data.controllable_bus_idx[k] = j
+
                     set_bus_control_voltage(i=i,
                                             j=j,
                                             remote_control=remote_control and control_remote_voltage,
@@ -554,6 +561,8 @@ def get_generator_data(
                     else:
                         remote_control = False
                         j = -1
+
+                    data.controllable_bus_idx[k] = j
 
                     set_bus_control_voltage(i=i,
                                             j=j,
@@ -620,6 +629,7 @@ def get_battery_data(
     for k, elm in enumerate(devices):
 
         i = bus_dict[elm.bus]
+        data.bus_idx[k] = i
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
@@ -685,6 +695,8 @@ def get_battery_data(
                         remote_control = False
                         j = -1
 
+                    data.controllable_bus_idx[k] = j
+
                     set_bus_control_voltage(i=i,
                                             j=j,
                                             remote_control=remote_control and control_remote_voltage,
@@ -722,6 +734,8 @@ def get_battery_data(
                     else:
                         remote_control = False
                         j = -1
+
+                    data.controllable_bus_idx[k] = j
 
                     set_bus_control_voltage(i=i,
                                             j=j,
