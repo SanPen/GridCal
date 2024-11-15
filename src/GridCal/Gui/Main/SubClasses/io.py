@@ -346,7 +346,7 @@ class IoMain(ConfigurationMain):
                         self.set_diagram_widget(diagram)
 
                 else:
-                    if self.circuit.get_bus_number() > 1500:
+                    if self.circuit.get_bus_number() > 300:
                         quit_msg = ("The grid is quite large, hence the schematic might be slow.\n"
                                     "Do you want to enable the schematic?\n"
                                     "(you can always enable the drawing later)")

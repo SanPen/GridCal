@@ -17,7 +17,7 @@ Numeric = Union[int, float, bool, complex]
 NumericVec = npt.NDArray[np.float64]
 DateVec = npt.NDArray[np.datetime64]
 IntVec = npt.NDArray[np.int_]
-BoolVec = npt.NDArray[np.bool]
+BoolVec = npt.NDArray[np.bool_]
 Vec = npt.NDArray[np.float64]
 CxVec = npt.NDArray[np.complex128]
 StrVec = npt.NDArray[np.str_]
@@ -666,6 +666,16 @@ class ConvergenceReport:
         """
         if len(self.elapsed_) > 0:
             return self.elapsed_[-1]
+        else:
+            return 0.0
+
+    def iterations(self) -> float:
+        """
+
+        :return:
+        """
+        if len(self.iterations_) > 0:
+            return self.iterations_[-1]
         else:
             return 0.0
 
