@@ -27,14 +27,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 
 
-"""
-
-
-
-"""
-
-
-@njit()
+# @njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  idx_dva: IntVec,
@@ -521,7 +514,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt - self.nc.branch_data.Qset[self.idx_dQt]
         ]
 
-        # compute the rror
+        # compute the error
         return compute_fx_error(_f), x
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
@@ -596,7 +589,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt - self.nc.branch_data.Qset[self.idx_dQt]
         ]
 
-        # compute the rror
+        # compute the error
         self._error = compute_fx_error(self._f)
 
         if self.options.verbose > 1:
@@ -706,7 +699,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # recompute the error based on the new Scalc and S0
                 self._f = self.fx()
 
-                # compute the rror
+                # compute the error
                 self._error = compute_fx_error(self._f)
         """
 
