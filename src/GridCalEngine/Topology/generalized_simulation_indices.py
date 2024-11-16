@@ -1,6 +1,6 @@
 from typing import Set, Union
 import numpy as np
-from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode
+from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec
@@ -137,8 +137,7 @@ class GeneralizedSimulationIndices:
                     self.set_bus_vm_simple(bus_local=bus_idx,
                                            bus_data=nc.bus_data,
                                            bus_remote=ctr_bus_idx,
-                                           remote_control=remote_control,
-                                           candidate_vm=dev_tpe.v[i])
+                                           remote_control=remote_control)
 
                     self.add_to_c_p_zip(bus_idx)
 
@@ -147,6 +146,7 @@ class GeneralizedSimulationIndices:
                     self.add_to_c_q_zip(bus_idx)
 
         # -------------- ControlledShunts search ----------------
+        # Setting the Vm has already been done before
         for i, is_controlled in enumerate(nc.shunt_data.controllable):
             bus_idx = nc.shunt_data.bus_idx[i]
             ctr_bus_idx = nc.shunt_data.controllable_bus_idx[i]
@@ -157,10 +157,33 @@ class GeneralizedSimulationIndices:
                 self.set_bus_vm_simple(bus_local=bus_idx,
                                        bus_data=nc.bus_data,
                                        bus_remote=ctr_bus_idx,
-                                       remote_control=remote_control,
-                                       candidate_vm=nc.shunt_data.vset[i])
+                                       remote_control=remote_control)
 
         # -------------- HvdcLines search ----------------
+        # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
+        # The control mode does not change the indices sets, only the equation
+        # See how to store this bool_mode
+        for i, hvdc_dev in enumerate(nc.hvdc_data[:]):
+            branch_idx = nc.branch_dict[hvdc_dev.idtag]  # or assume we can have this index
+            self.add_to_c_Pf(branch_idx)
+            self.add_to_c_hvdc(branch_idx)
+            self.set_bus_vm_simple(bus_local=hvdc_dev.F,
+                                   bus_data=nc.bus_data,
+                                   bus_remote=-1,
+                                   remote_control=False)
+            self.set_bus_vm_simple(bus_local=hvdc_dev.T,
+                                   bus_data=nc.bus_data,
+                                   bus_remote=-1,
+                                   remote_control=False)
+
+        # -------------- VSCs search ----------------
+        for i, vsc_dev in enumerate(nc.vsc_data[:]):
+            branch_idx = nc.branch_dict[vsc_dev.idtag]
+
+
+
+
+
 
         for i, tpe in enumerate(nc.bus_data.bus_types):
             if tpe == BusMode.Slack_tpe.value:
@@ -344,6 +367,20 @@ class GeneralizedSimulationIndices:
         """
         self.c_inj_Q.add(value)
 
+    def add_to_c_acdc(self, value: int):
+        """
+
+        :param value:
+        """
+        self.c_acdc.add(value)
+
+    def add_to_c_hvdc(self, value: int):
+        """
+
+        :param value:
+        """
+        self.c_hvdc.add(value)
+
     def add_tap_phase_control(self, mode: TapPhaseControl, branch_idx: int):
         """
 
@@ -393,17 +430,15 @@ class GeneralizedSimulationIndices:
                           bus_local: int,
                           bus_data: BusData,
                           bus_remote: int = -1,
-                          remote_control: bool = False,
-                          candidate_vm: float = 1.0) -> None:
+                          remote_control: bool = False):
         """
         Set the bus control voltage checking incompatibilities
-        Simple setting for now, just throwing errors if the bus is already set
+        No point in setting the voltage magnitude, already did in the circuit_to_data
 
         :param bus_local: Local bus index
+        :param bus_data: BusData
         :param bus_remote: Remote bus index
         :param remote_control: Remote control?
-        :param candidate_vm: Candidate voltage
-        :param bus_data: BusData
         """
 
         if bus_data.bus_types[bus_local] == BusMode.Slack_tpe.value:
@@ -415,7 +450,6 @@ class GeneralizedSimulationIndices:
             if remote_control and bus_remote > -1 and bus_remote != bus_local:
                 if not self.bus_voltage_used[bus_remote]:
                     # initialize the remote bus voltage to the control value
-                    bus_data.Vbus[bus_remote] = complex(candidate_vm, 0)
                     self.bus_voltage_used[bus_remote] = True
                     self.add_to_c_vm(bus_remote)
                 else:
@@ -430,7 +464,6 @@ class GeneralizedSimulationIndices:
             # Not a remote bus control
             elif not self.bus_voltage_used[bus_local]:
                 # initialize the local bus voltage to the control value
-                bus_data.Vbus[bus_local] = complex(candidate_vm, 0)
                 self.bus_voltage_used[bus_local] = True
                 self.add_to_c_vm(bus_local)
             else:
