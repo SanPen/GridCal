@@ -60,98 +60,49 @@ class GeneralizedSimulationIndices:
         For each potential collision type:
         - Pzip: store all bus indices except for the slack ones (sort of ~bus_data[:].is_slack)
         - Qzip: store the bus indices of devices acting as controllable injections (generators, batteries, controlled shunts)
-                then run Pzip - controllable_bus_injections
+                then run Pzip - bus_vm_source_used to get the Qzip set
         - Vm: store the indices of already controlled buses, raising an error if we try to set the same bus twice, stopping the program there
 
-        Idea: should we use sets instead of lists? Much more efficient for the intersection and difference operations maybe?
         """
-        # CVa -> Indices of the buses where the voltage angles are specified.
-        # Bus index type
-        # (Slack buses)
-        self.c_va: Set[int] = set()
 
-        # CVm -> Indices of the buses where the voltage modules are specified.
-        # Bus index type
-        # (Slack buses, Generators, ControlledShunts, Batteries, HvdcLines, VSCs, Transformers)
-        self.c_vm: Set[int] = set()
+        # cg sets
+        self.cg_pac: Set[int] = set()  # All AC buses (AC P balance)
+        self.cg_qac: Set[int] = set()  # All AC buses (AC Q balance)
+        self.cg_pdc: Set[int] = set()  # All DC buses (DC P balance)
+        self.cg_acdc: Set[int] = set()  # All VSCs (loss equation)
+        self.cg_hvdc: Set[int] = set()  # All HVDC lines (loss equation + control equation)
+        self.cg_pftr: Set[int] = set()  # All controllable transformers
+        self.cg_pttr: Set[int] = set()  # All controllable transformers
+        self.cg_qftr: Set[int] = set()  # All controllable transformers
+        self.cg_qttr: Set[int] = set()  # All controllable transformers
 
-        # Cτ -> Indices of the controllable branches where the phase shift angles are specified.
-        # Branch index type
-        # (Transformers)
-        self.c_tau: Set[int] = set()
+        # cx sets
+        self.cx_va: Set[int] = set()  # All slack buses
+        self.cx_vm: Set[int] = set()  # All slack buses, generators, controlled shunts, batteries, HVDC lines, VSCs, transformers 
+        self.cx_tau: Set[int] = set()  # All controllable transformers that do not use the tap phase control mode
+        self.cx_m: Set[int] = set()  # All controllable transformers that do not use the tap module control mode
+        self.cx_pzip: Set[int] = set()  # All generators, all batteries, all loads
+        self.cx_qzip: Set[int] = set()  # Non-controllable generators, non-controllable batteries, all loads
+        self.cx_pta: Set[int] = set()  # VSCs controlling Pt, transformers controlling Pt
+        self.cx_qfa: Set[int] = set()  # VSCs controlling Qf, transformers controlling Qf
+        self.cx_qta: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
 
-        # Cm -> Indices of the controllable branches where the tap ratios are specified.
-        # Branch index type
-        # (Transformers)
-        self.c_m: Set[int] = set()
-
-        # CPac -> Indices of the buses where the ZIP active power injection are specified.
-        # Bus index type
-        # (AC buses)
-        self.c_pac: Set[int] = set()
-
-        # CQac -> Indices of the buses where the ZIP reactive power injection are specified.
-        # Bus index type
-        # (AC buses)
-        self.c_qac: Set[int] = set()
-
-        # CPdc -> Indices of the buses where the P active power injection is specified.
-        # Bus index type
-        # (DC buses)
-        self.c_pdc: Set[int] = set()
-
-        # CPf -> Indices of branches where Pf is specified.
-        # Branch index type
-        # (VSCs, HvdcLines)
-        self.c_Pf: Set[int] = set()
-
-        # CPt -> Indices of branches where Pt is specified.
-        # Branch index type
-        # (VSCs)
-        self.c_Pt: Set[int] = set()
-
-        # CQf -> Indices of branches where Qf is specified.
-        # Branch index type
-        # (VSCs)
-        self.c_Qf: Set[int] = set()
-
-        # CQt -> Indices of branches where Qt is specified.
-        # Branch index type
-        # (VSCs)
-        self.c_Qt: Set[int] = set()
-
-        # Cacdc -> Indices of branches with loss equations for AC/DC VSCs.
-        # Branch index type
-        # (VSCs)
-        self.c_acdc: Set[int] = set()
-
-        # Chvdc -> Indices of branches with loss equations for HVDC lines.
-        # Branch index type
-        # (HvdcLines)
-        self.c_hvdc: Set[int] = set()
-
-        # -----------------------
-        # Check if this is really needed
-        # CInjP -> Indices of the injection devices where the P is specified.
-        self.c_inj_P: Set[int] = set()
-
-        # CInjQ -> Indices of the injection devices where the Q is specified.
-        self.c_inj_Q: Set[int] = set()
+        # Source refers to the bus with the controlled device directly connected 
+        # Pointer refers to the bus where we control the voltage magnitude 
+        self.bus_vm_source_used: BoolVec | None = None
+        self.bus_vm_pointer_used: BoolVec | None = None
 
         self.logger = Logger()
 
-        self.bus_voltage_used: BoolVec | None = None
-
-    def fill_specified(self, nc: NumericalCircuit):
+    def fill_g_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
         """
-        Fill the specified sets by going over each device
-        Possible duplicity of controls in setting Vm; we check for this and raise an error if so
-        This function will eventually be removed, we have to move it inside the circuit_to_data
+        Fill the residuals sets by going over each device
 
         :param nc: numerical circuit
         :return:
         """
-        self.bus_voltage_used = np.zeros(nc.nbus, dtype=bool)
+        self.bus_vm_pointer_used = np.zeros(nc.nbus, dtype=bool)
+        self.bus_vm_source_used = np.zeros(nc.nbus, dtype=bool)
 
         # DONE
         # -------------- Buses search ----------------
@@ -250,132 +201,183 @@ class GeneralizedSimulationIndices:
                                       branch_idx=branch_idx,
                                       bus_idx=bus_idx)
 
-    def fill_unspecified(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
+        return self
+
+    def fill_x_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
         """
-        Redo, just negate the specified I guess
-        For this counting the total of buses and branches would come in handy
+        Populate going over the elements, probably harder than the g_sets
+
         :param nc:
         :return:
         """
 
         return self
 
+
     # Primitive additions
-    def add_to_c_va(self, value: int):
+    # Methods for cg sets
+    def add_to_cg_pac(self, value: int):
         """
-
+        Add a value to the cg_pac set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_va.add(value)
+        self.cg_pac.add(value)
 
-    def add_to_c_vm(self, value: int):
+    def add_to_cg_qac(self, value: int):
         """
-
+        Add a value to the cg_qac set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_vm.add(value)
+        self.cg_qac.add(value)
 
-    def add_to_c_tau(self, value: int):
+    def add_to_cg_pdc(self, value: int):
         """
-
+        Add a value to the cg_pdc set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_tau.add(value)
+        self.cg_pdc.add(value)
 
-    def add_to_c_m(self, value: int):
+    def add_to_cg_acdc(self, value: int):
         """
-
+        Add a value to the cg_acdc set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_m.add(value)
+        self.cg_acdc.add(value)
 
-    def add_to_c_pac(self, value: int):
+    def add_to_cg_hvdc(self, value: int):
         """
-
+        Add a value to the cg_hvdc set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_pac.add(value)
+        self.cg_hvdc.add(value)
 
-    def add_to_c_qac(self, value: int):
+    def add_to_cg_pftr(self, value: int):
         """
-
+        Add a value to the cg_pftr set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_qac.add(value)
+        self.cg_pftr.add(value)
 
-    def add_to_c_pdc(self, value: int):
+    def add_to_cg_pttr(self, value: int):
         """
-
+        Add a value to the cg_pttr set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_pdc.add(value)
+        self.cg_pttr.add(value)
 
-    def add_to_c_Pf(self, value: int):
+    def add_to_cg_qftr(self, value: int):
         """
-
+        Add a value to the cg_qftr set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_Pf.add(value)
+        self.cg_qftr.add(value)
 
-    def add_to_c_Pt(self, value: int):
+    def add_to_cg_qttr(self, value: int):
         """
-
+        Add a value to the cg_qttr set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_Pt.add(value)
+        self.cg_qttr.add(value)
 
-    def add_to_c_Qf(self, value: int):
+    # Methods for cx sets
+    def add_to_cx_va(self, value: int):
         """
-
+        Add a value to the cx_va set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_Qf.add(value)
+        self.cx_va.add(value)
 
-    def add_to_c_Qt(self, value: int):
+    def add_to_cx_vm(self, value: int):
         """
-
+        Add a value to the cx_vm set.
+        
         :param value:
-        :return:
+        :return: None
         """
-        self.c_Qt.add(value)
+        self.cx_vm.add(value)
 
-    def add_to_c_inj_P(self, value: int):
+    def add_to_cx_tau(self, value: int):
         """
-
+        Add a value to the cx_tau set.
+        
         :param value:
+        :return: None
         """
-        self.c_inj_P.add(value)
+        self.cx_tau.add(value)
 
-    def add_to_c_inj_Q(self, value: int):
+    def add_to_cx_m(self, value: int):
         """
-
+        Add a value to the cx_m set.
+        
         :param value:
+        :return: None
         """
-        self.c_inj_Q.add(value)
+        self.cx_m.add(value)
 
-    def add_to_c_acdc(self, value: int):
+    def add_to_cx_pzip(self, value: int):
         """
-
+        Add a value to the cx_pzip set.
+        
         :param value:
+        :return: None
         """
-        self.c_acdc.add(value)
+        self.cx_pzip.add(value)
 
-    def add_to_c_hvdc(self, value: int):
+    def add_to_cx_qzip(self, value: int):
         """
-
+        Add a value to the cx_qzip set.
+        
         :param value:
+        :return: None
         """
-        self.c_hvdc.add(value)
+        self.cx_qzip.add(value)
+
+    def add_to_cx_pta(self, value: int):
+        """
+        Add a value to the cx_pta set.
+        
+        :param value:
+        :return: None
+        """
+        self.cx_pta.add(value)
+
+    def add_to_cx_qfa(self, value: int):
+        """
+        Add a value to the cx_qfa set.
+        
+        :param value:
+        :return: None
+        """
+        self.cx_qfa.add(value)
+
+    def add_to_cx_qta(self, value: int):
+        """
+        Add a value to the cx_qta set.
+        
+        :param value:
+        :return: None
+        """
+        self.cx_qta.add(value)
 
     # Non-primitive additions
     def add_tau_control_branch(self,
@@ -451,14 +453,14 @@ class GeneralizedSimulationIndices:
 
         if is_slack:
             self.add_to_c_vm(bus_local)
-            self.bus_voltage_used[bus_local] = True
+            self.bus_vm_pointer_used[bus_local] = True
 
         else:
             # First check if we are setting a remote bus voltage
             if remote_control and bus_remote > -1 and bus_remote != bus_local:
-                if not self.bus_voltage_used[bus_remote]:
+                if not self.bus_vm_pointer_used[bus_remote]:
                     # initialize the remote bus voltage to the control value
-                    self.bus_voltage_used[bus_remote] = True
+                    self.bus_vm_pointer_used[bus_remote] = True
                     self.add_to_c_vm(bus_remote)
                 else:
                     self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
@@ -470,9 +472,9 @@ class GeneralizedSimulationIndices:
                                       device_property='Vm')
 
             # Not a remote bus control
-            elif not self.bus_voltage_used[bus_local]:
+            elif not self.bus_vm_pointer_used[bus_local]:
                 # initialize the local bus voltage to the control value
-                self.bus_voltage_used[bus_local] = True
+                self.bus_vm_pointer_used[bus_local] = True
                 self.add_to_c_vm(bus_local)
             else:
                 self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
