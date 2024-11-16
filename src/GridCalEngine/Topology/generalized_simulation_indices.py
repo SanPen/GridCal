@@ -179,7 +179,51 @@ class GeneralizedSimulationIndices:
         # -------------- VSCs search ----------------
         for i, vsc_dev in enumerate(nc.vsc_data[:]):
             branch_idx = nc.branch_dict[vsc_dev.idtag]
+            if vsc_dev.tap_module_control_mode == TapModuleControl.Vm:
+                self.set_bus_vm_simple(bus_local=nc.bus_dict[vsc_dev.regulated_bus],
+                                       bus_data=nc.bus_data,
+                                       bus_remote=-1,
+                                       remote_control=False)
+            elif vsc_dev.tap_module_control_mode == TapModuleControl.Qf:
+                self.add_to_c_Qf(branch_idx)
+            elif vsc_dev.tap_module_control_mode == TapModuleControl.Qt:
+                self.add_to_c_Qt(branch_idx)
+            elif vsc_dev.tap_module_control_mode == TapModuleControl.fixed:
+                pass
 
+            if vsc_dev.tap_phase_control_mode == TapPhaseControl.Pf:
+                self.add_to_c_Pf(branch_idx)
+            elif vsc_dev.tap_phase_control_mode == TapPhaseControl.Pt:
+                self.add_to_c_Pt(branch_idx)
+            elif vsc_dev.tap_phase_control_mode == TapPhaseControl.fixed:
+                pass
+
+            self.add_to_c_acdc(branch_idx)
+
+        # -------------- Transformers search (also applies to windings) ----------------
+        for i, trafo_dev in enumerate(nc.trafo_data[:]):
+            branch_idx = nc.branch_dict[trafo_dev.idtag]
+            if trafo_dev.tap_module_control_mode == TapModuleControl.Vm:
+                self.set_bus_vm_simple(bus_local=nc.bus_dict[trafo_dev.regulated_bus],
+                                       bus_data=nc.bus_data,
+                                       bus_remote=-1,
+                                       remote_control=False)
+            elif trafo_dev.tap_module_control_mode == TapModuleControl.Qf:
+                self.add_to_c_Qf(branch_idx)
+            elif trafo_dev.tap_module_control_mode == TapModuleControl.Qt:
+                self.add_to_c_Qt(branch_idx)
+            elif trafo_dev.tap_module_control_mode == TapModuleControl.fixed:
+                pass
+
+            if trafo_dev.tap_phase_control_mode == TapPhaseControl.Pf:
+                self.add_to_c_Pf(branch_idx)
+            elif trafo_dev.tap_phase_control_mode == TapPhaseControl.Pt:
+                self.add_to_c_Pt(branch_idx)
+            elif trafo_dev.tap_phase_control_mode == TapPhaseControl.fixed:
+                pass
+
+            self.add_to_c_tau(branch_idx)
+            self.add_to_c_m(branch_idx)
 
 
 
