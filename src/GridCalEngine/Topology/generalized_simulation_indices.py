@@ -14,41 +14,72 @@ class GeneralizedSimulationIndices:
     def __init__(self) -> None:
         """
         Constructor
+        Specified sets of indices represent those indices where we know the value of the variable.
+        Unspecified sets can be obtained by subtracting the specified sets from the total set of indices.
+        Sets can only be of two types: bus indices or branch indices.
         """
         # CVa -> Indices of the buses where the voltage angles are specified.
-        # (slack bus)
+        # Bus index type
+        # (Slack buses)
         self.c_va: Set[int] = set()
 
         # CVm -> Indices of the buses where the voltage modules are specified.
-        # Slack buses, Gerators, ControlledShunts, Batteries, HvdcLine, VSC, Transformers.
+        # Bus index type
+        # (Slack buses, Generators, ControlledShunts, Batteries, HvdcLines, VSCs, Transformers)
         self.c_vm: Set[int] = set()
 
         # Cτ -> Indices of the controllable branches where the phase shift angles are specified.
+        # Branch index type
+        # (Transformers)
         self.c_tau: Set[int] = set()
 
         # Cm -> Indices of the controllable branches where the tap ratios are specified.
+        # Branch index type
+        # (Transformers)
         self.c_m: Set[int] = set()
 
         # CPzip -> Indices of the buses where the ZIP active power injection are specified.
+        # Bus index type
         # (Generators, Batteries)
         self.c_p_zip: Set[int] = set()
 
         # CQzip -> Indices of the buses where the ZIP reactive power injection are specified.
+        # Bus index type
         # (Generators, Batteries) that are not controlling voltage
         self.c_q_zip: Set[int] = set()
 
-        # CPf -> Indices of the controllable branches where Pf is specified.
+        # CPf -> Indices of branches where Pf is specified.
+        # Branch index type
+        # (VSCs, HvdcLines)
         self.c_Pf: Set[int] = set()
 
-        # CPt -> Indices of the controllable branches where Pt is specified.
+        # CPt -> Indices of branches where Pt is specified.
+        # Branch index type
+        # (VSCs)
         self.c_Pt: Set[int] = set()
 
-        # CQf -> Indices of the controllable branches where Qf is specified.
+        # CQf -> Indices of branches where Qf is specified.
+        # Branch index type
+        # (VSCs)
         self.c_Qf: Set[int] = set()
 
-        # CQt -> Indices of the controllable branches where Qt is specified.
+        # CQt -> Indices of branches where Qt is specified.
+        # Branch index type
+        # (VSCs)
         self.c_Qt: Set[int] = set()
 
+        # Cacdc -> Indices of branches with loss equations for AC/DC VSCs.
+        # Branch index type
+        # (VSCs)
+        self.c_acdc: Set[int] = set()
+
+        # Chvdc -> Indices of branches with loss equations for HVDC lines.
+        # Branch index type
+        # (HvdcLines)
+        self.c_hvdc: Set[int] = set()
+
+        # -----------------------
+        # Check if this is really needed
         # CInjP -> Indices of the injection devices where the P is specified.
         self.c_inj_P: Set[int] = set()
 
@@ -318,24 +349,19 @@ class GeneralizedSimulationIndices:
         :param use_stored_guess: Use the stored seed values?
         """
 
-        # if not self.bus_voltage_used[i]:
-
         if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
             if remote_control and j > -1 and j != i:
-                # # remove voltage control
-                # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
-                # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
 
+                # P bus
                 self.c_p_zip.add(i)
 
+                # PQV bus
                 self.c_vm.add(j)
                 self.c_p_zip.add(j)
                 self.c_q_zip.add(j)
 
             else:
-                # local voltage control
-                # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
-
+                # PV bus
                 self.c_vm.add(i)
                 self.c_p_zip.add(i)
 

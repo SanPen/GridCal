@@ -4,7 +4,8 @@ import numpy as np
 # Set the printing precision to 4 decimal places
 np.set_printoptions(precision=4)
 
-fname = './../../tests/data/grids/fubm_caseHVDC_vt.m'
+# fname = './../../tests/data/grids/fubm_caseHVDC_vt.m'
+fname = 'C:/Users/J/Desktop/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt_josep.gridcal'
 grid = gce.open_file(fname)
 
 opt = gce.PowerFlowOptions(retry_with_other_methods=False, verbose=3, solver_type=gce.SolverType.NR)
