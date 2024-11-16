@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Further deduce the hvdc controls">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added controllable branches (vscs and trafos)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" afterDir="false" />
     </list>
@@ -1750,7 +1750,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="563" />
+    <option name="localTasksCounter" value="564" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1796,7 +1796,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved tapChanger import-export functions v2" />
     <MESSAGE value="enhanced tap changer import (phase tc added)" />
     <MESSAGE value="tpe added to generated Sv class init" />
     <MESSAGE value="SvPowerFlow cgmes export functions" />
@@ -1821,7 +1820,8 @@
     <MESSAGE value="Rethink sets structure, add hvdc" />
     <MESSAGE value="Added up to controllable shunts, and added vset to their data" />
     <MESSAGE value="Further deduce the hvdc controls" />
-    <option name="LAST_COMMIT_MESSAGE" value="Further deduce the hvdc controls" />
+    <MESSAGE value="Added controllable branches (vscs and trafos)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added controllable branches (vscs and trafos)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
