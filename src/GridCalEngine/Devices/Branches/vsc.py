@@ -210,14 +210,6 @@ class VSC(ControllableBranchParent):
         self.alpha2 = float(alpha2)
         self.alpha3 = float(alpha3)
 
-        # GENERALISED PF
-        self.gpf_ctrl1_elm = gpf_ctrl1_elm
-        self.gpf_ctrl1_mode: GpfControlType = gpf_ctrl1_mode
-        self.gpf_ctrl1_val = gpf_ctrl1_val
-        self.gpf_ctrl2_elm = gpf_ctrl2_elm
-        self.gpf_ctrl2_mode: GpfControlType = gpf_ctrl2_mode
-        self.gpf_ctrl2_val = gpf_ctrl2_val
-
         self.register(key='G0sw', units='p.u.', tpe=float, definition='Inverter losses.')
         self.register(key='Beq', units='p.u.', tpe=float, definition='Total shunt susceptance.')
         self.register(key='Beq_max', units='p.u.', tpe=float, definition='Max total shunt susceptance.')
@@ -233,15 +225,6 @@ class VSC(ControllableBranchParent):
         self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
 
         self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
-
-        # GENERALISED PF
-        # Why not recognizing it below but yes in transformer.py?
-        self.register(key='gpf_ctrl1_elm', units='', tpe=str, definition='Generalised PF control 1 element pointer')
-        self.register(key='gpf_ctrl1_mode', units='', tpe=GpfControlType, definition='Generalised PF control 1 mode')
-        self.register(key='gpf_ctrl1_val', units='', tpe=float, definition='Generalised PF control 1 value')
-        self.register(key='gpf_ctrl2_elm', units='', tpe=str, definition='Generalised PF control 2 element pointer')
-        self.register(key='gpf_ctrl2_mode', units='', tpe=GpfControlType, definition='Generalised PF control 2 mode')
-        self.register(key='gpf_ctrl2_val', units='', tpe=float, definition='Generalised PF control 2 value')
 
     def change_base(self, Sbase_old: float, Sbase_new: float):
         """

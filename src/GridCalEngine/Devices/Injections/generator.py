@@ -209,22 +209,14 @@ class Generator(GeneratorParent):
         # system base power MVA
         self.Sbase = float(Sbase)
 
-        # GENERALISED PF
-        self.gpf_ctrl1_elm = gpf_ctrl1_elm
-        self.gpf_ctrl1_mode: GpfControlType = gpf_ctrl1_mode
-        self.gpf_ctrl1_val = gpf_ctrl1_val
-        self.gpf_ctrl2_elm = gpf_ctrl2_elm
-        self.gpf_ctrl2_mode: GpfControlType = gpf_ctrl2_mode
-        self.gpf_ctrl2_val = gpf_ctrl2_val
-
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 
         self.register(key='Pf', units='', tpe=float,
-                      definition='Power factor (cos(fi)). This is used for non-controlled generators.',
+                      definition='Power factor (cos(phi)). This is used for non-controlled generators.',
                       profile_name='Pf_prof')
         self.register(key='Vset', units='p.u.', tpe=float,
                       definition='Set voltage. This is used for controlled generators.', profile_name='Vset_prof')
-        self.register(key='Snom', units='MVA', tpe=float, definition='Nomnial power.')
+        self.register(key='Snom', units='MVA', tpe=float, definition='Nominal power.')
         self.register(key='Qmin', units='MVAr', tpe=float, definition='Minimum reactive power.')
         self.register(key='Qmax', units='MVAr', tpe=float, definition='Maximum reactive power.')
         self.register(key='use_reactive_power_curve', units='', tpe=bool,
@@ -262,14 +254,6 @@ class Generator(GeneratorParent):
 
         self.register(key='fuels', units='t/MWh', tpe=SubObjectType.Associations,
                       definition='List of fuels', display=False)
-
-        # GENERALISED PF
-        self.register(key='gpf_ctrl1_elm', units='', tpe=str, definition='Generalised PF control 1 element pointer')
-        self.register(key='gpf_ctrl1_mode', units='', tpe=GpfControlType, definition='Generalised PF control 1 mode')
-        self.register(key='gpf_ctrl1_val', units='', tpe=float, definition='Generalised PF control 1 value')
-        self.register(key='gpf_ctrl2_elm', units='', tpe=str, definition='Generalised PF control 2 element pointer')
-        self.register(key='gpf_ctrl2_mode', units='', tpe=GpfControlType, definition='Generalised PF control 2 mode')
-        self.register(key='gpf_ctrl2_val', units='', tpe=float, definition='Generalised PF control 2 value')
 
     @property
     def Pf_prof(self) -> Profile:
