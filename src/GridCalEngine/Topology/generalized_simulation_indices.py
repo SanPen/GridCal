@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Union
 import numpy as np
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -17,6 +17,17 @@ class GeneralizedSimulationIndices:
         Specified sets of indices represent those indices where we know the value of the variable.
         Unspecified sets can be obtained by subtracting the specified sets from the total set of indices.
         Sets can only be of two types: bus indices or branch indices.
+
+        | Device Type     | Specified Sets Involved                         |
+        |-----------------|-------------------------------------------------|
+        | Slack Buses     | `c_va`, `c_vm`                                  |
+        | Generators      | `c_vm`, `c_p_zip`, `c_q_zip`                    |
+        | ControlledShunts| `c_vm`                                          |
+        | Batteries       | `c_vm`, `c_p_zip`, `c_q_zip`                    |
+        | HvdcLines       | `c_vm`, `c_Pf`, `c_hvdc`                        |
+        | VSCs            | `c_vm`, `c_Pf`, `c_Pt`, `c_Qf`, `c_Qt`, `c_acdc`|
+        | Transformers    | `c_vm`, `c_tau`, `c_m`                          |
+
         """
         # CVa -> Indices of the buses where the voltage angles are specified.
         # Bus index type
@@ -94,13 +105,62 @@ class GeneralizedSimulationIndices:
                        use_stored_guess: bool = False,
                        control_remote_voltage: bool = True) -> "GeneralizedSimulationIndices":
         """
+        Fill the specified sets by going over each device
+        Possible duplicity of controls in setting Vm; we check for this and raise an error if so
 
-        :param nc:
+        :param nc: numerical circuit
         :param use_stored_guess:
-        :param control_remote_voltage:
+        :param control_remote_voltage: true if controlling a remote bus
         :return:
         """
         self.bus_voltage_used = np.zeros(nc.nbus, dtype=bool)
+
+        # -------------- Slack Buses search ----------------
+        # Assume they are all set, but probably need some logic when compiling the numerical circuit to
+        # enforce we have one slack on each AC island, split by the VSCs
+
+        for i, bus in enumerate(nc.bus_data[:]):
+            if bus.bus_types == BusMode.Slack_tpe.value:
+                self.add_to_c_va(i)
+                self.set_bus_vm_simple(bus_local=i,
+                                       bus_data=nc.bus_data)
+
+        # -------------- Generators and Batteries search ----------------
+        for dev_tpe in (nc.generator_data, nc.battery_data):
+            for i, is_controlled in enumerate(dev_tpe.controllable):
+                bus_idx = dev_tpe.bus_idx[i]
+                ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
+
+                if is_controlled:
+                    remote_control = ctr_bus_idx != -1
+
+                    self.set_bus_vm_simple(bus_local=bus_idx,
+                                           bus_data=nc.bus_data,
+                                           bus_remote=ctr_bus_idx,
+                                           remote_control=remote_control,
+                                           candidate_vm=dev_tpe.v[i])
+
+                    self.add_to_c_p_zip(bus_idx)
+
+                else:
+                    self.add_to_c_p_zip(bus_idx)
+                    self.add_to_c_q_zip(bus_idx)
+
+        # -------------- ControlledShunts search ----------------
+        for i, is_controlled in enumerate(nc.shunt_data.controllable):
+            bus_idx = nc.shunt_data.bus_idx[i]
+            ctr_bus_idx = nc.shunt_data.controllable_bus_idx[i]
+
+            if is_controlled:
+                remote_control = ctr_bus_idx != -1
+
+                self.set_bus_vm_simple(bus_local=bus_idx,
+                                       bus_data=nc.bus_data,
+                                       bus_remote=ctr_bus_idx,
+                                       remote_control=remote_control,
+                                       candidate_vm=nc.shunt_data.vset[i])
+
+        # -------------- HvdcLines search ----------------
 
         for i, tpe in enumerate(nc.bus_data.bus_types):
             if tpe == BusMode.Slack_tpe.value:
@@ -170,7 +230,7 @@ class GeneralizedSimulationIndices:
 
     def fill_unspecified(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
         """
-
+        Redo, just negate the specified I guess
         :param nc:
         :return:
         """
@@ -328,6 +388,55 @@ class GeneralizedSimulationIndices:
 
     def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
         pass
+
+    def set_bus_vm_simple(self,
+                          bus_local: int,
+                          bus_data: BusData,
+                          bus_remote: int = -1,
+                          remote_control: bool = False,
+                          candidate_vm: float = 1.0) -> None:
+        """
+        Set the bus control voltage checking incompatibilities
+        Simple setting for now, just throwing errors if the bus is already set
+
+        :param bus_local: Local bus index
+        :param bus_remote: Remote bus index
+        :param remote_control: Remote control?
+        :param candidate_vm: Candidate voltage
+        :param bus_data: BusData
+        """
+
+        if bus_data.bus_types[bus_local] == BusMode.Slack_tpe.value:
+            self.add_to_c_vm(bus_local)
+            self.bus_voltage_used[bus_local] = True
+
+        else:
+            # First check if we are setting a remote bus voltage
+            if remote_control and bus_remote > -1 and bus_remote != bus_local:
+                if not self.bus_voltage_used[bus_remote]:
+                    # initialize the remote bus voltage to the control value
+                    bus_data.Vbus[bus_remote] = complex(candidate_vm, 0)
+                    self.bus_voltage_used[bus_remote] = True
+                    self.add_to_c_vm(bus_remote)
+                else:
+                    self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
+                                          device=bus_data.names[bus_remote],
+                                          device_property='Vm')
+            elif remote_control:
+                self.logger.add_error(msg='Remote control without a valid remote bus',
+                                      device=bus_data.names[bus_remote],
+                                      device_property='Vm')
+
+            # Not a remote bus control
+            elif not self.bus_voltage_used[bus_local]:
+                # initialize the local bus voltage to the control value
+                bus_data.Vbus[bus_local] = complex(candidate_vm, 0)
+                self.bus_voltage_used[bus_local] = True
+                self.add_to_c_vm(bus_local)
+            else:
+                self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
+                                      device=bus_data.names[bus_local],
+                                      device_property='Vm')
 
     def set_bus_control_voltage(self,
                                 i: int,

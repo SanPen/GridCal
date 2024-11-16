@@ -50,6 +50,7 @@ class ShuntData:
         self.controllable_bus_idx = np.zeros(nelm, dtype=int)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+        self.vset: Vec = np.zeros(nelm, dtype=float)
 
     def size(self) -> int:
         """
@@ -100,6 +101,7 @@ class ShuntData:
             data.controllable_bus_idx[k] = bus_map.get(data.controllable_bus_idx[k], -1)
 
         data.original_idx = elm_idx
+        data.vset = self.vset[elm_idx]
 
         return data
 
@@ -134,6 +136,7 @@ class ShuntData:
         data.controllable_bus_idx = self.controllable_bus_idx.copy()
 
         data.original_idx = self.original_idx.copy()
+        data.vset = self.vset.copy()
 
         return data
 

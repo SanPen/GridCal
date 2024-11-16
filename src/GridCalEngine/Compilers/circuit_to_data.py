@@ -363,6 +363,7 @@ def get_shunt_data(
         data.mttr[ii] = elm.mttr
 
         data.controllable[ii] = elm.is_controlled
+        data.vset[ii] = elm.Vset
         data.qmin[ii] = elm.Bmin
         data.qmax[ii] = elm.Bmax
 
