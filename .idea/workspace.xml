@@ -28,9 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added controllable branches (vscs and trafos)">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Checked indices filling, now move to circuit to data">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_generalized_formulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/acdc_pf/fubm_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/fubm_example.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +150,7 @@
     "Python.ExecuteGridCal.executor": "Run",
     "Python.acdc_generalized_1.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.fubm_example.executor": "Debug",
+    "Python.fubm_example.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
     "Python.node_widget.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
@@ -155,14 +160,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "320__generalized__acdc__pf",
-    "last_opened_file_path": "C:/Users/J/Desktop/GridCal/src/trunk/acdc_pf/fubm_example.py",
+    "last_opened_file_path": "C:/Users/J/Desktop/GridCal/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_generalized_formulation.py",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "aDefault",
     "settings.editor.selected.configurable": "preferences.lookFeel",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
+    "two.files.diff.last.used.file": "C:/Users/J/Desktop/GridCal/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_generalized_formulation.py",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -187,7 +192,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1750,7 +1755,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="564" />
+    <option name="localTasksCounter" value="565" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1796,7 +1801,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="enhanced tap changer import (phase tc added)" />
     <MESSAGE value="tpe added to generated Sv class init" />
     <MESSAGE value="SvPowerFlow cgmes export functions" />
     <MESSAGE value="improved tap changer export and SvTapStep func" />
@@ -1821,7 +1825,8 @@
     <MESSAGE value="Added up to controllable shunts, and added vset to their data" />
     <MESSAGE value="Further deduce the hvdc controls" />
     <MESSAGE value="Added controllable branches (vscs and trafos)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added controllable branches (vscs and trafos)" />
+    <MESSAGE value="Checked indices filling, now move to circuit to data" />
+    <option name="LAST_COMMIT_MESSAGE" value="Checked indices filling, now move to circuit to data" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

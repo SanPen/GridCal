@@ -14,6 +14,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_basic_formulation import PfBasicFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import PfAdvancedFormulation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_generalized_formulation import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
@@ -294,7 +295,25 @@ def solve(nc: NumericalCircuit,
                                      control_q=options.control_Q,
                                      distribute_slack=options.distributed_slack)
 
-            # Newton-Raphson (full)
+            elif solver_type == SolverType.GENERALISED:
+                problem = PfGeneralizedFormulation(V0=final_solution.V,
+                                                S0=S0,
+                                                I0=I0,
+                                                Y0=Y0,
+                                                Qmin=Qmin,
+                                                Qmax=Qmax,
+                                                nc=nc,
+                                                options=options,
+                                                logger=logger)
+
+                solution = newton_raphson_fx(problem=problem,
+                                                 tol=options.tolerance,
+                                                 max_iter=options.max_iter,
+                                                 trust=options.trust_radius,
+                                                 verbose=options.verbose,
+                                                 logger=logger)
+
+            # Newton-Raphson (full, but non-generalized)
             elif solver_type == SolverType.NR:
                 if nc.any_control:
                     # Solve NR with the AC/DC algorithm

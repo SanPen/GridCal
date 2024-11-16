@@ -194,8 +194,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param S0: Set power injections
         :param I0: Set current injections
         :param Y0: Set admittance injections
-        :param Qmin: Minimum reactive power per bus
-        :param Qmax: Maximum reactive power per bus
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         :param logger: Logger (modified in-place)
@@ -209,9 +207,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.S0: CxVec = S0
         self.I0: CxVec = I0
         self.Y0: CxVec = Y0
-
-        self.Qmin = Qmin
-        self.Qmax = Qmax
 
         self.bus_types = self.nc.bus_data.bus_types.copy()
         self.tap_module_control_mode = self.nc.branch_data.tap_module_control_mode.copy()
@@ -613,6 +608,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             print("Gsw:", self.Gsw)
 
         # Update controls only below a certain error
+        """
         if update_controls and self._error < self._controls_tol:
             any_change = False
             branch_ctrl_change = False
@@ -712,6 +708,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                 # compute the rror
                 self._error = compute_fx_error(self._f)
+        """
 
         # converged?
         self._converged = self._error < self.options.tolerance

@@ -101,7 +101,7 @@ class GeneralizedSimulationIndices:
 
         self.bus_voltage_used: BoolVec | None = None
 
-    def fill_specified(self, nc: NumericalCircuit)
+    def fill_specified(self, nc: NumericalCircuit):
         """
         Fill the specified sets by going over each device
         Possible duplicity of controls in setting Vm; we check for this and raise an error if so

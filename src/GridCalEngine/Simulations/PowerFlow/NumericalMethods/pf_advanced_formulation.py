@@ -594,7 +594,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Qt - self.nc.branch_data.Qset[self.idx_dQt]
         ]
 
-        # compute the rror
+        # compute the error
         self._error = compute_fx_error(self._f)
 
         if self.options.verbose > 1:
