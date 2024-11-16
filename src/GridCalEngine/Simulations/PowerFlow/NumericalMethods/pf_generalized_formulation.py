@@ -66,7 +66,7 @@ def adv_jacobian(nbus: int,
                  ytf: CxVec,
                  ytt: CxVec) -> CSC:
     """
-    Compute the advanced jacobian
+    Compute the generalized jacobian
     :param nbus:
     :param nbr:
     :param idx_dva:
