@@ -104,12 +104,12 @@ class GeneralizedSimulationIndices:
         self.cg_qttr: Set[int] = set()  # All controllable transformers
 
         # cx sets
-        self.cx_va: Set[int] = set()  # All slack buses
-        self.cx_vm: Set[int] = set()  # All slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers 
+        self.cx_va: Set[int] = set()  # All AC minus slack buses
+        self.cx_vm: Set[int] = set()  # All minus slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers 
         self.cx_tau: Set[int] = set()  # All controllable transformers that do not use the tap phase control mode
         self.cx_m: Set[int] = set()  # All controllable transformers that do not use the tap module control mode
-        self.cx_pzip: Set[int] = set()  # All buses unless slack
-        self.cx_qzip: Set[int] = set()  # All buses minus slack and uncontrollable generators/batteries/shunts
+        self.cx_pzip: Set[int] = set()  # Slack buses
+        self.cx_qzip: Set[int] = set()  # Slack buses and those AC with uncontrollable generators/batteries/shunts
         self.cx_pfa: Set[int] = set()  # VSCs controlling Pf, transformers controlling Pf
         self.cx_pta: Set[int] = set()  # VSCs controlling Pt, transformers controlling Pt
         self.cx_qfa: Set[int] = set()  # VSCs controlling Qf, transformers controlling Qf
@@ -123,6 +123,12 @@ class GeneralizedSimulationIndices:
         self.bus_vm_pointer_used: BoolVec | None = None
         self.bus_unspecified_qzip: BoolVec | None = None
 
+        self.ac_bus: Set[int] = set()
+        self.dc_bus: Set[int] = set()
+        self.br_trad: Set[int] = set()
+        self.br_vsc: Set[int] = set()
+        self.br_hvdc: Set[int] = set()
+
         self.logger = Logger()
 
         # Run the search to get the indices
@@ -135,8 +141,17 @@ class GeneralizedSimulationIndices:
                           hvdc_data=hvdc_data)
 
         # Negate the cx sets to show the unknowns
-        self.negate_cx(nbus=len(bus_data.active),
-                       nbr=len(branch_data.active) + len(vsc_data.active) + len(hvdc_data.active))
+        ndc_bus = bus_data.is_dc.sum()
+        nac_bus = len(bus_data.is_dc) - ndc_bus
+        nconv_br = len(branch_data.active)
+        nvsc_br = len(vsc_data.active)
+        nhvdc_br = len(hvdc_data.active)
+
+        self.negate_cx(ac_bus=self.ac_bus,
+                       dc_bus=self.dc_bus,
+                       trad_br=self.br_trad,
+                       vsc_br=self.br_vsc,
+                       hvdc_br=self.br_hvdc)
 
         # Finally convert to sets
         self.sets_to_lists()
@@ -528,18 +543,19 @@ class GeneralizedSimulationIndices:
             if not(bus_data.is_dc[i]):
                 self.add_to_cg_pac(i)
                 self.add_to_cg_qac(i)
+                self.ac_bus.add(i)
 
                 if bus_type == BusMode.Slack_tpe.value:
-                    self.add_to_cx_va(i)
+                    self.add_to_cx_pzip(i)
                     self.rem_bus_qzip_simple(i)
                     self.set_bus_vm_simple(bus_local=i,
                                            is_slack=True)
                 else:
-                    self.add_to_cx_pzip(i)
+                    self.add_to_cx_va(i)
                     self.set_bus_qzip_simple(i)
             else:
                 self.add_to_cg_pdc(i)
-                self.add_to_cx_pzip(i)
+                self.dc_bus.add(i)
 
         # DONE
         # -------------- Generators and Batteries search ----------------
@@ -596,6 +612,7 @@ class GeneralizedSimulationIndices:
                                       bus_idx=bus_idx,
                                       is_conventional=True)
 
+            self.br_trad.add(branch_idx)
             branch_idx += 1
 
         # DONE
@@ -616,7 +633,7 @@ class GeneralizedSimulationIndices:
                                       is_conventional=False)
 
             self.add_to_cg_acdc(branch_idx)
-
+            self.br_vsc.add(branch_idx)
             branch_idx += 1
 
         # DONE
@@ -635,33 +652,37 @@ class GeneralizedSimulationIndices:
                                    device_name=hvdc_data.names[iii])
 
             self.add_to_cg_hvdc(branch_idx)
-
+            self.br_hvdc.add(branch_idx)
             branch_idx += 1
 
         return self
     
-    def negate_cx(self, nbus: int, nbr: int):
+    def negate_cx(self, 
+                  ac_bus: int, 
+                  dc_bus: int,
+                  trad_br: int,
+                  vsc_br: int,
+                  hvdc_br: int):
         """
         Negate the cx sets to display the unknowns, not the knowns
-        :param nbus:
-        :param nbr:
+        :param ac_bus:
+        :param dc_bus:
+        :param trad_br:
+        :param vsc_br:
+        :param hvdc_br:
         """
-        # Precompute the full sets of bus and branch indices
-        full_bus_set = set(range(nbus))
-        full_branch_set = set(range(nbr))
+        # Subtract only the necessary sets
+        self.cx_vm = ac_bus | dc_bus - self.cx_vm
+        self.cx_qzip = ac_bus - self.cx_qzip
 
-        # Subtract existing sets from the full sets
-        self.cx_va = full_bus_set - self.cx_va
-        self.cx_vm = full_bus_set - self.cx_vm
-        self.cx_pzip = full_bus_set - self.cx_pzip
-        self.cx_qzip = full_bus_set - self.cx_qzip
+        self.cx_tau = trad_br - self.cx_tau
+        self.cx_m = trad_br - self.cx_m
 
-        self.cx_tau = full_branch_set - self.cx_tau
-        self.cx_m = full_branch_set - self.cx_m
-        self.cx_pfa = full_branch_set - self.cx_pfa
-        self.cx_pta = full_branch_set - self.cx_pta
-        self.cx_qfa = full_branch_set - self.cx_qfa
-        self.cx_qta = full_branch_set - self.cx_qta
+        # Check better
+        self.cx_pfa = vsc_br | hvdc_br - self.cx_pfa
+        self.cx_pta = vsc_br | hvdc_br - self.cx_pta
+        self.cx_qfa = vsc_br | hvdc_br - self.cx_qfa
+        self.cx_qta = vsc_br | hvdc_br - self.cx_qta
     
     def sets_to_lists(self):
         """
