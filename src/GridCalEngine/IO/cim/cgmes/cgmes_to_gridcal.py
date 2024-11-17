@@ -2213,8 +2213,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     # DC elements  ---------------------------------------------------------
 
-    map_dc_to_hvdc_line = True
-
     dc_device_to_terminal_dict, ground_buses, ground_nodes = get_gcdev_dc_device_to_terminal_dict(
         cgmes_model=cgmes_model,
         logger=logger

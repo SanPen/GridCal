@@ -606,11 +606,11 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
 
         # TODO cgmes_syn.EquipmentContainer: VoltageLevel
 
-        cgmes_syn.Terminals = create_cgmes_terminal(mc_bus=mc_elm.bus,
-                                                    seq_num=1,
-                                                    cond_eq=cgmes_syn,
-                                                    cgmes_model=cgmes_model,
-                                                    logger=logger)
+        # cgmes_syn.Terminals = create_cgmes_terminal(mc_bus=mc_elm.bus,
+        #                                             seq_num=1,
+        #                                             cond_eq=cgmes_syn,
+        #                                             cgmes_model=cgmes_model,
+        #                                             logger=logger)
 
         # CONTROL : has_control: do we have control?
         # control_type: voltage or power control, ..
