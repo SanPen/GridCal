@@ -9,7 +9,7 @@ import numpy as np
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import MultiCircuit
-from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, Base
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
     (create_cgmes_dc_tp_node, create_cgmes_terminal, \
@@ -18,12 +18,14 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
      create_cgmes_regulating_control, create_cgmes_tap_changer_control,
      create_sv_power_flow, create_cgmes_vsc_converter,
      create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
-     create_cgmes_dc_terminal, create_cgmes_acdc_converter_terminal, create_cgmes_conform_load_group)
+     create_cgmes_acdc_converter_terminal, 
+     create_cgmes_conform_load_group, create_cgmes_operational_limit_type)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
     SynchronousMachineOperatingMode,
-    SynchronousMachineKind)
+    SynchronousMachineKind,
+    LimitTypeKind, OperationalLimitDirectionKind)
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (find_object_by_uuid,
                                                     find_object_by_vnom,
                                                     find_object_by_cond_eq_uuid,
@@ -298,7 +300,7 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                     vl.TopologicalNode = tn
                 else:
                     logger.add_error(
-                        msg=f'No Voltage Level found for  {bus.name}',
+                        msg=f'No Voltage Level found',
                         device=bus.idtag,
                         device_class=bus.device_type.value,
                         device_property="Bus.voltage_level.idtag",
@@ -465,14 +467,16 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
 
 def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                cgmes_model: CgmesCircuit,
+                               patl_type: Base,
                                logger: DataLogger):
     """
     Converts every Multi Circuit line
     into CGMES AC line segment.
 
     :param multicircuit_model:
-    :param cgmes_model:
-    :param logger:
+    :param cgmes_model: CgmesModel
+    :param patl_type: PATL type for normal rating
+    :param logger: DataLogger
     :return:
     """
     sbase = multicircuit_model.Sbase
@@ -481,23 +485,38 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         line = object_template(rdfid=form_rdfid(mc_elm.idtag))
         line.description = mc_elm.code
         line.name = mc_elm.name
-        line.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
-                                               object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-                                               target_vnom=mc_elm.get_max_bus_nominal_voltage()
-                                               )  # which Vnom we need?
+        line.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.get_max_bus_nominal_voltage()
+        )  # which Vnom we need?
+        # Terminals
         line.Terminals = [
-            create_cgmes_terminal(mc_elm.bus_from, 1, line, cgmes_model,
-                                  logger),
-            create_cgmes_terminal(mc_elm.bus_to, 2, line, cgmes_model, logger)]
+            create_cgmes_terminal(mc_bus=mc_elm.bus_from,
+                                  seq_num=1,
+                                  cond_eq=line,
+                                  cgmes_model=cgmes_model,
+                                  logger=logger),
+            create_cgmes_terminal(mc_bus=mc_elm.bus_to,
+                                  seq_num=2,
+                                  cond_eq=line,
+                                  cgmes_model=cgmes_model,
+                                  logger=logger)
+        ]
         line.length = mc_elm.length
 
+        # Rates
         current_rate = mc_elm.rate * 1e3 / (
                 mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
         current_rate = np.round(current_rate, 4)
-        create_cgmes_current_limit(line.Terminals[0], current_rate,
-                                   cgmes_model, logger)
-        create_cgmes_current_limit(line.Terminals[1], current_rate,
-                                   cgmes_model, logger)
+        create_cgmes_current_limit(terminal=line.Terminals[0],
+                                   rate=current_rate,
+                                   op_limit_type=patl_type,
+                                   cgmes_model=cgmes_model, logger=logger)
+        create_cgmes_current_limit(terminal=line.Terminals[1],
+                                   rate=current_rate,
+                                   op_limit_type=patl_type,
+                                   cgmes_model=cgmes_model, logger=logger)
 
         vnom = line.BaseVoltage.nominalVoltage
 
@@ -554,12 +573,17 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
                     subs.Equipment = [cgmes_gen]
             else:
                 logger.add_error(
-                    msg=f'No substation found for generator {mc_elm.name}',
+                    msg=f'No substation found for generator',
                     device=mc_elm.idtag,
                     device_class=mc_elm.device_type.value,
                     device_property="Substation",
                     value=subs,
-                    comment="get_cgmes_generators()")
+                    comment=f"get_cgmes_generators() - {mc_elm.name}")
+        else:
+            logger.add_error(
+                msg=f'No substations in the model',
+                device_property="Substation list",
+                comment=f"get_cgmes_generators()")
 
         cgmes_gen.initialP = mc_elm.P
         cgmes_gen.maxOperatingP = mc_elm.Pmax
@@ -577,9 +601,16 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         else:
             cgmes_syn.referencePriority = 0
             cgmes_gen.normalPF = 0
+
         # TODO cgmes_syn.EquipmentContainer: VoltageLevel
 
-        # has_control: do we have control
+        cgmes_syn.Terminals = create_cgmes_terminal(mc_bus=mc_elm.bus,
+                                                    seq_num=1,
+                                                    cond_eq=cgmes_syn,
+                                                    cgmes_model=cgmes_model,
+                                                    logger=logger)
+
+        # CONTROL : has_control: do we have control?
         # control_type: voltage or power control, ..
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
@@ -653,13 +684,15 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
 
 def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
+                                 patl_type: Base,
                                  logger: DataLogger):
     """
     Creates all transformer related CGMES classes from GridCal transformer.
 
     :param multicircuit_model:
-    :param cgmes_model:
-    :param logger:
+    :param cgmes_model: CgmesModel
+    :param patl_type: PATL type
+    :param logger: DataLogger
     :return:
     """
     for mc_elm in multicircuit_model.transformers2w:
@@ -693,13 +726,18 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             target_vnom=mc_elm.bus_from.Vnom
         )
 
+        # Rates
         current_rate = mc_elm.rate * 1e3 / (
                 mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
         current_rate = np.round(current_rate, 4)
-        create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate,
-                                   cgmes_model, logger)
-        create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate,
-                                   cgmes_model, logger)
+        create_cgmes_current_limit(terminal=cm_transformer.Terminals[0],
+                                   rate=current_rate,
+                                   op_limit_type=patl_type,
+                                   cgmes_model=cgmes_model, logger=logger)
+        create_cgmes_current_limit(terminal=cm_transformer.Terminals[1],
+                                   rate=current_rate,
+                                   op_limit_type=patl_type,
+                                   cgmes_model=cgmes_model, logger=logger)
 
         (pte1.r,
          pte1.x,
@@ -815,7 +853,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             tap_changer=tap_changer,
             tcc_mode=tcc_mode,
             tcc_enabled=tcc_enabled,
-            mc_trafo=cm_transformer,
+            mc_trafo=mc_elm,
             cgmes_model=cgmes_model,
             logger=logger
         )
@@ -1182,7 +1220,8 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
             logger.add_error(msg='No Terminal found for Shunt-like device',
                              device=mc_shunt_like,
                              device_class=mc_shunt_like.device_type.value,
-                             value=mc_shunt_like.idtag)
+                             value=mc_shunt_like.idtag,
+                             comment="SvPowerFlow is not exported.")
 
 
 def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
@@ -1354,6 +1393,34 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
 
     return
 
+
+def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
+    """
+    Creates two kind of Operational limit type for Cgmes Export.
+
+    :param cgmes_model: CgmesModel
+    :return:
+    """
+    patl = create_cgmes_operational_limit_type(cgmes_model)
+    patl.name = "Normal rating"
+    patl.shortName = "PATL"
+    patl.description = "Permanent Admissible Transmission Loading"
+    patl.acceptableDuration = None  # unlimited
+
+    patl.limitType = LimitTypeKind.patl
+    patl.direction = OperationalLimitDirectionKind.absoluteValue
+    
+    tatl = create_cgmes_operational_limit_type(cgmes_model)
+    tatl.name = "Contingency rating in GridCal"
+    tatl.shortName = "TATL"
+    tatl.description = "Temporarily Admissible Transmission Loading"
+    tatl.acceptableDuration = 60
+
+    tatl.limitType = LimitTypeKind.tatl
+    tatl.direction = OperationalLimitDirectionKind.absoluteValue
+    
+    return patl, tatl
+
 # endregion
 
 
@@ -1392,23 +1459,23 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_equivalent_injections(gc_model, cgmes_model, logger)
     get_cgmes_generators(gc_model, cgmes_model, logger)
 
-    get_cgmes_ac_line_segments(gc_model, cgmes_model, logger)
+    # BRANCHES
+    patl_type, tatl_type = get_cgmes_operational_limit_types(cgmes_model)
+    # lines
+    get_cgmes_ac_line_segments(gc_model, cgmes_model, patl_type, logger)
     # transformers, windings
-    get_cgmes_power_transformers(gc_model, cgmes_model, logger)
+    get_cgmes_power_transformers(gc_model, cgmes_model, patl_type, logger)
 
-    # shunts
+    # SHUNTS
     get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
+    # TODO controllable shunts
 
     # DC elements
-    treat_dc_equipment_as_hvdc_lines = True
-    if treat_dc_equipment_as_hvdc_lines:
-        convert_hvdc_line_to_cgmes(gc_model, cgmes_model, logger)
-    else:
-        pass
-        # TODO get_cgmes_vsc_from_vsc()
-        # TODO get_dc_line_from_dc_line()
+    convert_hvdc_line_to_cgmes(gc_model, cgmes_model, logger)
+    # TODO get_cgmes_vsc_from_vsc()
+    # TODO get_dc_line_from_dc_line()
 
-    # results: sv classes
+    # RESULTS: sv classes
     if pf_results:
         # if converged == True...
 

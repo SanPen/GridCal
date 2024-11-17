@@ -415,12 +415,18 @@ def create_cgmes_tap_changer_control(
 
 def create_cgmes_current_limit(terminal,
                                rate: float,
-                               # mc_elm: Union[gcdev.Line,
-                               #               # gcdev.Transformer2W,
-                               #               # gcdev.Transformer3W
-                               #               ],
+                               op_limit_type: Base,
                                cgmes_model: CgmesCircuit,
                                logger: DataLogger):
+    """
+
+    :param terminal: Cgmes Terminal
+    :param rate: current rate for cgmes
+    :param op_limit_type: Operational Limit Type
+    :param cgmes_model: CgmesModel
+    :param logger: DataLogger
+    :return:
+    """
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("CurrentLimit")
     curr_lim = object_template(rdfid=new_rdf_id)
@@ -434,9 +440,11 @@ def create_cgmes_current_limit(terminal,
     if op_lim_set_1 is not None:
         curr_lim.OperationalLimitSet = op_lim_set_1
     else:
-        logger.add_error(msg='No operational limit created')
+        logger.add_error(msg='No operational limit created',
+                         device=op_lim_set_1,
+                         comment="create_cgmes_current_limit")
 
-    # curr_lim.OperationalLimitType
+    curr_lim.OperationalLimitType = op_limit_type
 
     cgmes_model.add(curr_lim)
     return
@@ -467,18 +475,14 @@ def create_operational_limit_set(terminal,
     return op_lim_set
 
 
-def create_cgmes_operational_limit_type(mc_elm: gcdev.Line,
-                                        cgmes_model: CgmesCircuit,
-                                        logger: DataLogger):
+def create_cgmes_operational_limit_type(cgmes_model: CgmesCircuit):
     """
 
-    :param mc_elm:
-    :param cgmes_model:
-    :param logger:
+    :param cgmes_model: CgmesModel
     :return:
     """
     new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("OperationalLimitSet")
+    object_template = cgmes_model.get_class_type("OperationalLimitType")
     op_lim_type = object_template(rdfid=new_rdf_id)
 
     cgmes_model.add(op_lim_type)

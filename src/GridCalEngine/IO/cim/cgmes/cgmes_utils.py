@@ -147,6 +147,12 @@ def build_rates_dict(cgmes_model, device_type, logger):
                             rates_dict[branch_id] = rate_mva
                         elif cl.value < act_lim:
                             rates_dict[branch_id] = rate_mva
+                    else:
+                        logger.add_error(msg='ConductingEquipment is missing for terminal.',
+                                         device=ols.Terminal.rdfid,
+                                         device_class=ols.Terminal.tpe,
+                                         device_property="ConductingEquipment",
+                                         value="None")
             else:
                 if isinstance(cl.OperationalLimitSet.Terminal.ConductingEquipment,
                               device_type):
