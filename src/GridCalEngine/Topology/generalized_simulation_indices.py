@@ -358,8 +358,14 @@ class GeneralizedSimulationIndices:
                 # NOTE: in principle, VSCs must have two controls
                 # However, if fixed mode, the system will become unsolvable 
                 # FUBM adds the Beq zero equation but it is not really what we want
-                # To circument this, we assume a fixed converter sets the Qt
-                self.add_to_cx_qta(branch_idx)
+                # To circument this, can we assume a fixed converter sets the Qt?
+                # The risk is if the other degree of freedom controls Qt also, check for that
+
+                self.add_to_cg_qttr(branch_idx)  # NOTE: quick fix for now
+
+                self.add_to_cx_pfa(branch_idx)
+                self.add_to_cx_pta(branch_idx)
+
                 self.logger.add_warning(msg='Fixed mode for VSCs can be problematic in a generalized power flow',
                                         device=branch_name,
                                         value=mode,
@@ -367,19 +373,19 @@ class GeneralizedSimulationIndices:
                                         device_class=VscData)
 
             elif mode == TapPhaseControl.Pf:
-                self.add_to_cx_pfa(branch_idx)
-            elif mode == TapPhaseControl.Pt:
                 self.add_to_cx_pta(branch_idx)
+            elif mode == TapPhaseControl.Pt:
+                self.add_to_cx_pfa(branch_idx)
         else:
             # Handle conventional conditions (regular transformers)
             if mode == TapPhaseControl.fixed:
-                self.add_to_cx_tau(branch_idx)
+                pass
             elif mode == TapPhaseControl.Pf:
                 self.add_to_cg_pftr(branch_idx)
-                self.add_to_cx_pfa(branch_idx)
+                self.add_to_cx_tau(branch_idx)
             elif mode == TapPhaseControl.Pt:
                 self.add_to_cg_pttr(branch_idx)
-                self.add_to_cx_pta(branch_idx)
+                self.add_to_cx_tau(branch_idx)
             else:
                 pass
 
@@ -404,34 +410,42 @@ class GeneralizedSimulationIndices:
                 # NOTE: in principle, VSCs must have two controls
                 # However, if fixed mode, the system will become unsolvable 
                 # FUBM adds the Beq zero equation but it is not really what we want
-                # To circument this, we assume a fixed converter sets the Qt
-                self.add_to_cx_qta(branch_idx)
+                # To circument this, we need an additional equation
+                # We can assume a fixed converter sets the Qt and should remove this Qt from cx, for example
+
+                self.add_to_cg_qttr(branch_idx)  # NOTE: quick fix for now
+
                 self.logger.add_warning(msg='Fixed mode for VSCs can be problematic in a generalized power flow',
                                         device=branch_name,
                                         value=mode,
                                         device_property=VscData.tap_module_control_mode,
                                         device_class=VscData)
             else:
-                self.add_to_cx_m(branch_idx)
+                pass
 
         elif mode == TapModuleControl.Vm:
             self.set_bus_vm_simple(bus_local=bus_idx, device_name=branch_name)
+            if is_conventional:
+                self.add_to_cx_m(branch_idx)
+            if not is_conventional:
+                self.add_to_cx_qta(branch_idx)
 
         elif mode in (TapModuleControl.Qf, TapModuleControl.Qt):
             if is_conventional:
-                # If conventional, add to both cx_q* and cg_q*
+                # If conventional, add
                 if mode == TapModuleControl.Qf:
-                    self.add_to_cx_qfa(branch_idx)
                     self.add_to_cg_qftr(branch_idx)
+                    self.add_to_cx_m(branch_idx)
                 else:  # TapModuleControl.Qt
-                    self.add_to_cx_qta(branch_idx)
                     self.add_to_cg_qttr(branch_idx)
+                    self.add_to_cx_m(branch_idx)
             else:
                 # If not conventional, add only to cx_q*
                 if mode == TapModuleControl.Qf:
-                    self.add_to_cx_qfa(branch_idx)
-                else:  # TapModuleControl.Qt
                     self.add_to_cx_qta(branch_idx)
+                else:  # TapModuleControl.Qt
+                    pass  # no point in the DC side
+                    # self.add_to_cx_qfa(branch_idx)
         else:
             pass
 
