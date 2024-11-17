@@ -134,6 +134,10 @@ class GeneralizedSimulationIndices:
                           vsc_data=vsc_data,
                           hvdc_data=hvdc_data)
 
+        # Negate the cx sets to show the unknowns
+        self.negate_cx(nbus=len(bus_data.active),
+                       nbr=len(branch_data.active) + len(vsc_data.active) + len(hvdc_data.active))
+
         # Finally convert to sets
         self.sets_to_lists()
 
@@ -346,7 +350,6 @@ class GeneralizedSimulationIndices:
                                         value=mode,
                                         device_property=TapPhaseControl,
                                         device_class=VscData)
-                print()
 
             elif mode == TapPhaseControl.Pf:
                 self.add_to_cx_pfa(branch_idx)
@@ -636,6 +639,29 @@ class GeneralizedSimulationIndices:
             branch_idx += 1
 
         return self
+    
+    def negate_cx(self, nbus: int, nbr: int):
+        """
+        Negate the cx sets to display the unknowns, not the knowns
+        :param nbus:
+        :param nbr:
+        """
+        # Precompute the full sets of bus and branch indices
+        full_bus_set = set(range(nbus))
+        full_branch_set = set(range(nbr))
+
+        # Subtract existing sets from the full sets
+        self.cx_va = full_bus_set - self.cx_va
+        self.cx_vm = full_bus_set - self.cx_vm
+        self.cx_pzip = full_bus_set - self.cx_pzip
+        self.cx_qzip = full_bus_set - self.cx_qzip
+
+        self.cx_tau = full_branch_set - self.cx_tau
+        self.cx_m = full_branch_set - self.cx_m
+        self.cx_pfa = full_branch_set - self.cx_pfa
+        self.cx_pta = full_branch_set - self.cx_pta
+        self.cx_qfa = full_branch_set - self.cx_qfa
+        self.cx_qta = full_branch_set - self.cx_qta
     
     def sets_to_lists(self):
         """

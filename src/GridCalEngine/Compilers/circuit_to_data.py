@@ -1790,6 +1790,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     nc.consolidate_information()
 
     # Dummy call to get the indices and debug them
-    abcc = nc.cg_pac
+    _ = nc.cg_pac
 
     return nc
