@@ -1589,7 +1589,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  opf_results: VALID_OPF_RESULTS | None = None,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
-                                 branch_dict: Union[Dict[BRANCH_TYPES, int], None] = None,
                                  areas_dict: Union[Dict[Area, int], None] = None,
                                  control_taps_modules: bool = True,
                                  control_taps_phase: bool = True,
@@ -1605,7 +1604,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param opf_results:(optional) OptimalPowerFlowResults instance
     :param use_stored_guess: use the storage voltage guess?
     :param bus_dict (optional) Dict[Bus, int] dictionary
-    :param branch_dict (optional) Dict[BRANCH_TYPES, int] dictionary
     :param areas_dict (optional) Dict[Area, int] dictionary
     :param control_taps_modules: control taps modules?
     :param control_taps_phase: control taps phase?
@@ -1642,24 +1640,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         sbase=circuit.Sbase,
         t_idx=t_idx
     )
-
-    if branch_dict is None:
-        branch_dict = {}
-        index = 0
-
-        for device_list in [
-            circuit.lines,
-            circuit.dc_lines,
-            circuit.transformers2w,
-            circuit.windings,
-            circuit.upfc_devices,
-            circuit.series_reactances,
-            circuit.vsc_devices,
-            circuit.hvdc_lines
-        ]:
-            for device in device_list:
-                branch_dict[device] = index
-                index += 1
 
     if bus_dict is None:
         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
@@ -1807,7 +1787,9 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         )
 
     nc.bus_dict = bus_dict
-    nc.branch_dict = branch_dict
     nc.consolidate_information()
+
+    abcc = nc.cg_pac
+    print(nc.cg_acdc)
 
     return nc

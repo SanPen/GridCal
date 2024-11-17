@@ -1,7 +1,12 @@
-from typing import Set, Union, List
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# SPDX-License-Identifier: MPL-2.0
+
+
+from typing import Set
 import numpy as np
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.branch_data import BranchData
 from GridCalEngine.DataStructures.vsc_data import VscData
@@ -9,7 +14,7 @@ from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.battery_data import BatteryData
 from GridCalEngine.DataStructures.shunt_data import ShuntData
-from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec
+from GridCalEngine.basic_structures import Logger, BoolVec
 
 
 class GeneralizedSimulationIndices:
@@ -24,7 +29,7 @@ class GeneralizedSimulationIndices:
                  shunt_data,
                  branch_data,
                  vsc_data,
-                 hvdc_data) -> None:
+                 hvdc_data) -> "GeneralizedSimulationIndices":
         """
         Pass now the data classes, maybe latter on pass only the necessary attributes
         Specified sets of indices represent those indices where we know the value of the variable.
@@ -128,265 +133,7 @@ class GeneralizedSimulationIndices:
         # Finally convert to sets
         self.sets_to_lists()
 
-    def fill_gx_sets(self, 
-                     bus_data: BusData,
-                     generator_data: GeneratorData,
-                     battery_data: BatteryData,
-                     shunt_data: ShuntData,
-                     branch_data: BranchData,
-                     vsc_data: VscData,
-                     hvdc_data: HvdcData):
-        """
-        Populate going over the elements, probably harder than the g_sets
-
-        :param bus_data:
-        :param generator_data:
-        :param battery_data:
-        :param shunt_data:
-        :param branch_data:
-        :param vsc_data:
-        :param hvdc_data:
-        """
-        nbus = len(bus_data.Vbus)
-        self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
-        self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
-
-        # DONE
-        # -------------- Buses search ----------------
-        # Assume they are all set, but probably need some logic when compiling the numerical circuit to
-        # enforce we have one slack on each AC island, split by the VSCs
-
-        for i, bus in enumerate(bus_data[:]):
-            if not(bus.is_dc):
-                self.add_to_c_pac(i)
-                self.add_to_c_qac(i)
-
-                if bus.bus_types == BusMode.Slack_tpe.value:
-                    self.add_to_c_va(i)
-                    self.set_bus_vm_simple(bus_local=i,
-                                        is_slack=True)
-            else:
-                self.add_to_c_pdc(i)
-
-        # DONE
-        # -------------- Generators and Batteries search ----------------
-        for dev_tpe in (generator_data, battery_data):
-            for i, is_controlled in enumerate(dev_tpe.controllable):
-                bus_idx = dev_tpe.bus_idx[i]
-                ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
-
-                if is_controlled:
-                    remote_control = ctr_bus_idx != -1
-
-                    self.set_bus_vm_simple(bus_local=bus_idx,
-                                           device_name=dev_tpe.names[i],
-                                           bus_remote=ctr_bus_idx,
-                                           remote_control=remote_control)
-
-                    self.add_to_c_pac(bus_idx)
-
-                else:
-                    self.add_to_c_pac(bus_idx)
-                    self.add_to_c_qac(bus_idx)
-
-        # DONE
-        # -------------- ControlledShunts search ----------------
-        # Setting the Vm has already been done before
-        for i, is_controlled in enumerate(shunt_data.controllable):
-            bus_idx = shunt_data.bus_idx[i]
-            ctr_bus_idx = shunt_data.controllable_bus_idx[i]
-
-            if is_controlled:
-                remote_control = ctr_bus_idx != -1
-
-                self.set_bus_vm_simple(bus_local=bus_idx,
-                                       device_name = shunt_data.names[i],
-                                       bus_remote=ctr_bus_idx,
-                                       remote_control=remote_control)
-
-        # DONE
-        # -------------- HvdcLines search ----------------
-        # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
-        # The control mode does not change the indices sets, only the equation
-        # See how to store this bool_mode
-        for i, hvdc_dev in enumerate(hvdc_data[:]):
-
-            branch_idx = 0  # quick fix
-            self.add_to_c_Pf(branch_idx)
-
-            self.add_to_c_hvdc(branch_idx)
-
-            self.set_bus_vm_simple(bus_local=hvdc_dev.F,
-                                   device_name=hvdc_dev.name)
-
-            self.set_bus_vm_simple(bus_local=hvdc_dev.T,
-                                   device_name=hvdc_dev.name)
-
-        # DONE
-        # -------------- VSCs search ----------------
-        for i, vsc_dev in enumerate(vsc_data[:]):
-
-            self.add_tau_control_branch(mode=vsc_dev.tap_phase_control_mode,
-                                        branch_idx=branch_idx)
-
-            self.add_m_control_branch(branch_name=vsc_dev.name,
-                                      mode=vsc_dev.tap_module_control_mode,
-                                      branch_idx=branch_idx,
-                                      bus_idx=bus_idx)
-
-            self.add_to_c_acdc(branch_idx)
-
-        # DONE
-        # -------------- Transformers search (also applies to windings) ----------------
-        for i, trafo_dev in enumerate(branch_data[:]):
-
-            self.add_tau_control_branch(mode=trafo_dev.tap_phase_control_mode,
-                                        branch_idx=branch_idx)
-
-            self.add_m_control_branch(branch_name=trafo_dev.name,
-                                      mode=trafo_dev.tap_module_control_mode,
-                                      branch_idx=branch_idx,
-                                      bus_idx=bus_idx)
-
         return self
-    
-    def sets_to_lists(self):
-        """
-        Finalize the sets, converting from sets to lists
-        """
-        self.cg_pac = list(self.cg_pac)
-        self.cg_qac = list(self.cg_qac)
-        self.cg_pdc = list(self.cg_pdc)
-        self.cg_acdc = list(self.cg_acdc)
-        self.cg_hvdc = list(self.cg_hvdc)
-        self.cg_pftr = list(self.cg_pftr)
-        self.cg_pttr = list(self.cg_pttr)
-        self.cg_qftr = list(self.cg_qftr)
-        self.cg_qttr = list(self.cg_qttr)
-
-        self.cx_va = list(self.cx_va)
-        self.cx_vm = list(self.cx_vm)
-        self.cx_tau = list(self.cx_tau)
-        self.cx_m = list(self.cx_m)
-        self.cx_pzip = list(self.cx_pzip)
-        self.cx_qzip = list(self.cx_qzip)
-        self.cx_pta = list(self.cx_pta)
-        self.cx_qfa = list(self.cx_qfa)
-        self.cx_qta = list(self.cx_qta)
-        
-
-    def fill_x_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
-        """
-        Populate going over the elements, probably harder than the g_sets
-        Better to have a single method to fill sets, this way we avoid double searches
-
-        :param nc:
-        :return:
-        """
-
-        return self
-
-    # Non-primitive additions
-    def add_tau_control_branch(self,
-                               mode: TapPhaseControl = TapPhaseControl.fixed,
-                               branch_idx: int = None):
-        """
-
-        :param mode:
-        :param branch_idx:
-        :return:
-        """
-        if mode == TapPhaseControl.fixed:
-            self.add_to_c_tau(branch_idx)
-
-        elif mode == TapPhaseControl.Pf:
-            self.add_to_c_Pf(branch_idx)
-
-        elif mode == TapPhaseControl.Pt:
-            self.add_to_c_Pt(branch_idx)
-
-        else:
-            pass
-
-    def add_m_control_branch(self,
-                             branch_name: str = "",
-                             mode: TapModuleControl = TapModuleControl.fixed,
-                             branch_idx: int = None,
-                             bus_idx: int = None):
-
-        """
-        :param branch_name:
-        :param mode:
-        :param branch_idx:
-        :param bus_idx:
-        :return:
-        """
-        if mode == TapModuleControl.fixed:
-            # May get an error eventually with VSCs
-            self.add_to_c_m(branch_idx)
-
-        elif mode == TapModuleControl.Vm:
-            self.set_bus_vm_simple(bus_local=bus_idx,
-                                   device_name=branch_name)
-
-        elif mode == TapModuleControl.Qf:
-            self.add_to_c_Qf(branch_idx)
-
-        elif mode == TapModuleControl.Qt:
-            self.add_to_c_Qt(branch_idx)
-
-        else:
-            pass
-
-    def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
-        pass
-
-    def set_bus_vm_simple(self,
-                          bus_local: int,
-                          device_name="",
-                          bus_remote: int = -1,
-                          remote_control: bool = False,
-                          is_slack: bool = False):
-        """
-        Set the bus control voltage checking incompatibilities
-        No point in setting the voltage magnitude, already did in the circuit_to_data
-
-        :param bus_local: Local bus index
-        :param device_name: Name to store in the logger
-        :param bus_remote: Remote bus index
-        :param remote_control: Remote control?
-        :param is_slack: Is it a slack bus?
-        """
-
-        if is_slack:
-            self.add_to_c_vm(bus_local)
-            self.bus_vm_pointer_used[bus_local] = True
-
-        else:
-            # First check if we are setting a remote bus voltage
-            if remote_control and bus_remote > -1 and bus_remote != bus_local:
-                if not self.bus_vm_pointer_used[bus_remote]:
-                    # initialize the remote bus voltage to the control value
-                    self.bus_vm_pointer_used[bus_remote] = True
-                    self.add_to_c_vm(bus_remote)
-                else:
-                    self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
-                                          device=device_name,
-                                          device_property='Vm')
-            elif remote_control:
-                self.logger.add_error(msg='Remote control without a valid remote bus',
-                                      device=device_name,
-                                      device_property='Vm')
-
-            # Not a remote bus control
-            elif not self.bus_vm_pointer_used[bus_local]:
-                # initialize the local bus voltage to the control value
-                self.bus_vm_pointer_used[bus_local] = True
-                self.add_to_c_vm(bus_local)
-            else:
-                self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
-                                      device=device_name,
-                                      device_property='Vm')
 
     # Primitive additions
     # Methods for cg sets
@@ -553,4 +300,265 @@ class GeneralizedSimulationIndices:
         """
         self.cx_qta.add(value)
 
+    # Non-primitive additions
+    def add_tau_control_branch(self,
+                               mode: TapPhaseControl = TapPhaseControl.fixed,
+                               branch_idx: int = None):
+        """
 
+        :param mode:
+        :param branch_idx:
+        :return:
+        """
+        if mode == TapPhaseControl.fixed:
+            self.add_to_c_tau(branch_idx)
+
+        elif mode == TapPhaseControl.Pf:
+            self.add_to_c_Pf(branch_idx)
+
+        elif mode == TapPhaseControl.Pt:
+            self.add_to_c_Pt(branch_idx)
+
+        else:
+            pass
+
+    def add_m_control_branch(self,
+                             branch_name: str = "",
+                             mode: TapModuleControl = TapModuleControl.fixed,
+                             branch_idx: int = None,
+                             bus_idx: int = None):
+
+        """
+        :param branch_name:
+        :param mode:
+        :param branch_idx:
+        :param bus_idx:
+        :return:
+        """
+        if mode == TapModuleControl.fixed:
+            # May get an error eventually with VSCs
+            self.add_to_c_m(branch_idx)
+
+        elif mode == TapModuleControl.Vm:
+            self.set_bus_vm_simple(bus_local=bus_idx,
+                                   device_name=branch_name)
+
+        elif mode == TapModuleControl.Qf:
+            self.add_to_c_Qf(branch_idx)
+
+        elif mode == TapModuleControl.Qt:
+            self.add_to_c_Qt(branch_idx)
+
+        else:
+            pass
+
+    def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
+        pass
+
+    def set_bus_vm_simple(self,
+                          bus_local: int,
+                          device_name="",
+                          bus_remote: int = -1,
+                          remote_control: bool = False,
+                          is_slack: bool = False):
+        """
+        Set the bus control voltage checking incompatibilities
+        No point in setting the voltage magnitude, already did in the circuit_to_data
+
+        :param bus_local: Local bus index
+        :param device_name: Name to store in the logger
+        :param bus_remote: Remote bus index
+        :param remote_control: Remote control?
+        :param is_slack: Is it a slack bus?
+        """
+
+        if is_slack:
+            self.add_to_c_vm(bus_local)
+            self.bus_vm_pointer_used[bus_local] = True
+
+        else:
+            # First check if we are setting a remote bus voltage
+            if remote_control and bus_remote > -1 and bus_remote != bus_local:
+                if not self.bus_vm_pointer_used[bus_remote]:
+                    # initialize the remote bus voltage to the control value
+                    self.bus_vm_pointer_used[bus_remote] = True
+                    self.add_to_c_vm(bus_remote)
+                else:
+                    self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
+                                          device=device_name,
+                                          device_property='Vm')
+            elif remote_control:
+                self.logger.add_error(msg='Remote control without a valid remote bus',
+                                      device=device_name,
+                                      device_property='Vm')
+
+            # Not a remote bus control
+            elif not self.bus_vm_pointer_used[bus_local]:
+                # initialize the local bus voltage to the control value
+                self.bus_vm_pointer_used[bus_local] = True
+                self.add_to_c_vm(bus_local)
+            else:
+                self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
+                                      device=device_name,
+                                      device_property='Vm')
+
+    def fill_gx_sets(self, 
+                     bus_data: BusData,
+                     generator_data: GeneratorData,
+                     battery_data: BatteryData,
+                     shunt_data: ShuntData,
+                     branch_data: BranchData,
+                     vsc_data: VscData,
+                     hvdc_data: HvdcData):
+        """
+        Populate going over the elements, probably harder than the g_sets
+        Should we filter for only active elements?
+
+        :param bus_data:
+        :param generator_data:
+        :param battery_data:
+        :param shunt_data:
+        :param branch_data:
+        :param vsc_data:
+        :param hvdc_data:
+        """
+        nbus = len(bus_data.Vbus)
+        self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
+        self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
+
+        # DONE
+        # -------------- Buses search ----------------
+        # Assume they are all set, but probably need some logic when compiling the numerical circuit to
+        # enforce we have one slack on each AC island, split by the VSCs
+
+        for i, bus_type in enumerate(bus_data.bus_types):
+            if not(bus_data.is_dc[i]):
+                self.add_to_cg_pac(i)
+                self.add_to_cg_qac(i)
+
+                if bus_type == BusMode.Slack_tpe.value:
+                    self.add_to_c_va(i)
+                    self.set_bus_vm_simple(bus_local=i,
+                                           is_slack=True)
+            else:
+                self.add_to_c_pdc(i)
+
+        # DONE
+        # -------------- Generators and Batteries search ----------------
+        for dev_tpe in (generator_data, battery_data):
+            for i, is_controlled in enumerate(dev_tpe.controllable):
+                bus_idx = dev_tpe.bus_idx[i]
+                ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
+
+                if is_controlled:
+                    remote_control = ctr_bus_idx != -1
+
+                    self.set_bus_vm_simple(bus_local=bus_idx,
+                                           device_name=dev_tpe.names[i],
+                                           bus_remote=ctr_bus_idx,
+                                           remote_control=remote_control)
+
+                    self.add_to_c_pac(bus_idx)
+
+                else:
+                    self.add_to_c_pac(bus_idx)
+                    self.add_to_c_qac(bus_idx)
+
+        # DONE
+        # -------------- ControlledShunts search ----------------
+        # Setting the Vm has already been done before
+        for i, is_controlled in enumerate(shunt_data.controllable):
+            bus_idx = shunt_data.bus_idx[i]
+            ctr_bus_idx = shunt_data.controllable_bus_idx[i]
+
+            if is_controlled:
+                remote_control = ctr_bus_idx != -1
+
+                self.set_bus_vm_simple(bus_local=bus_idx,
+                                       device_name = shunt_data.names[i],
+                                       bus_remote=ctr_bus_idx,
+                                       remote_control=remote_control)
+
+        # DONE
+        # -------------- Regular branch search (also applies to trafos) ----------------
+        # Ensure VSCs and HVDCs have the flag so that they are not part of this data structure
+        for i, _ in enumerate(branch_data[:]):
+
+            self.add_tau_control_branch(mode=branch_data.tap_phase_control_mode[i],
+                                        branch_idx=branch_idx)
+
+            self.add_m_control_branch(branch_name=branch_data.name[i],
+                                      mode=branch_data.tap_module_control_mode[i],
+                                      branch_idx=branch_idx,
+                                      bus_idx=bus_idx)
+
+        # DONE
+        # -------------- VSCs search ----------------
+        for i, _ in enumerate(vsc_data.active):
+
+            branch_idx = 0  # TODO: quick fix, change with the stack I listed! branch, vsc, hvdc
+            self.add_tau_control_branch(mode=vsc_data.tap_phase_control_mode[i],
+                                        branch_idx=branch_idx)
+
+            self.add_m_control_branch(branch_name=vsc_data.name[i],
+                                      mode=vsc_data.tap_module_control_mode[i],
+                                      branch_idx=branch_idx,
+                                      bus_idx=bus_idx)
+
+            self.add_to_c_acdc(branch_idx)
+
+        # DONE
+        # -------------- HvdcLines search ----------------
+        # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
+        # The control mode does not change the indices sets, only the equation
+        # See how to store this bool_mode
+        for i, _ in enumerate(hvdc_data.active):
+
+            branch_idx = 0  # TODO: quick fix, change with the stack I listed! branch, vsc, hvdc
+            self.add_to_c_Pf(branch_idx)
+
+            self.add_to_c_hvdc(branch_idx)
+
+            self.set_bus_vm_simple(bus_local=hvdc_data.F[i],
+                                   device_name=hvdc_data.name[i])
+
+            self.set_bus_vm_simple(bus_local=hvdc_data.T[i],
+                                   device_name=hvdc_data.name[i])
+
+        return self
+    
+    def sets_to_lists(self):
+        """
+        Finalize the sets, converting from sets to lists
+        """
+        self.cg_pac = list(self.cg_pac)
+        self.cg_qac = list(self.cg_qac)
+        self.cg_pdc = list(self.cg_pdc)
+        self.cg_acdc = list(self.cg_acdc)
+        self.cg_hvdc = list(self.cg_hvdc)
+        self.cg_pftr = list(self.cg_pftr)
+        self.cg_pttr = list(self.cg_pttr)
+        self.cg_qftr = list(self.cg_qftr)
+        self.cg_qttr = list(self.cg_qttr)
+
+        self.cx_va = list(self.cx_va)
+        self.cx_vm = list(self.cx_vm)
+        self.cx_tau = list(self.cx_tau)
+        self.cx_m = list(self.cx_m)
+        self.cx_pzip = list(self.cx_pzip)
+        self.cx_qzip = list(self.cx_qzip)
+        self.cx_pta = list(self.cx_pta)
+        self.cx_qfa = list(self.cx_qfa)
+        self.cx_qta = list(self.cx_qta)
+        
+
+    # def fill_x_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
+    #     """
+    #     Populate going over the elements, probably harder than the g_sets
+    #     Better to have a single method to fill sets, this way we avoid double searches
+
+    #     :param nc:
+    #     :return:
+    #     """
+
+    #     return self

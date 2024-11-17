@@ -226,6 +226,29 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.idx_dPt = np.array(0, dtype=int)
         self.idx_dQt = np.array(0, dtype=int)
 
+        # Generalized indices
+        # cg sets
+        self.cg_pac = np.array(0, dtype=int) 
+        self.cg_qac = np.array(0, dtype=int) 
+        self.cg_pdc = np.array(0, dtype=int) 
+        self.cg_acdc = np.array(0, dtype=int)  
+        self.cg_hvdc = np.array(0, dtype=int) 
+        self.cg_pftr = np.array(0, dtype=int)  
+        self.cg_pttr = np.array(0, dtype=int)  
+        self.cg_qftr = np.array(0, dtype=int)  
+        self.cg_qttr = np.array(0, dtype=int) 
+
+        # cx sets
+        self.cx_va = np.array(0, dtype=int)  
+        self.cx_vm = np.array(0, dtype=int)  
+        self.cx_tau = np.array(0, dtype=int) 
+        self.cx_m = np.array(0, dtype=int)  
+        self.cx_pzip = np.array(0, dtype=int) 
+        self.cx_qzip = np.array(0, dtype=int) 
+        self.cx_pta = np.array(0, dtype=int) 
+        self.cx_qfa = np.array(0, dtype=int) 
+        self.cx_qta = np.array(0, dtype=int) 
+
         k_v_m = self.analyze_branch_controls()  # this fills the indices above
         self.vd, pq, pv, pqv, p, self.no_slack = compile_types(
             Pbus=self.nc.Sbus.real,
