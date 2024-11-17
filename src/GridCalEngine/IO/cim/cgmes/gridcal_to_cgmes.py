@@ -241,9 +241,11 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                 substation.VoltageLevels.append(vl)
             else:
                 logger.add_error(
-                    msg=f'Substation not found for VoltageLevel {vl.name}',
+                    msg=f'Substation not found for VoltageLevel',
                     device=mc_elm.device_type.value,
-                    device_class=gcdev.Bus)
+                    device_class=gcdev.Bus,
+                    comment=f"{vl.name}"
+                )
         cgmes_model.add(vl)
 
 
@@ -1074,6 +1076,60 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         cgmes_model.add(lsc)
 
 
+def get_cgmes_non_linear_shunts(multicircuit_model: MultiCircuit,
+                                cgmes_model: CgmesCircuit,
+                                logger: DataLogger):
+    """
+    Converts Multi Circuit Controllable Shunts
+    into CGMES Non-Linear shunt compensates
+
+    :param multicircuit_model: MultiCircuit model in GridCal
+    :param cgmes_model: CgmesModel
+    :param logger: DataLogger
+    :return:
+    """
+    nl_sc_templ = cgmes_model.get_class_type("NonLinearShuntCompensator")
+    nl_sc_p_templ = cgmes_model.get_class_type("NonLinearShuntCompensatorPoint")
+
+    for mc_elm in multicircuit_model.controllable_shunts:
+
+        non_lin_sc = nl_sc_templ(rdfid=form_rdfid(mc_elm.idtag))
+        non_lin_sc.name = mc_elm.name
+        non_lin_sc.description = mc_elm.code
+        if mc_elm.bus.voltage_level:
+            vl = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                target_uuid=mc_elm.bus.voltage_level.idtag
+            )
+            non_lin_sc.EquipmentContainer = vl
+
+        non_lin_sc.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.bus.Vnom)
+
+        # CONTROL
+        # non_lin_sc.RegulatingControl = False  # TODO: Should be an object
+        non_lin_sc.controlEnabled = False
+        non_lin_sc.maximumSections = 1
+
+        # non_lin_sc.nomU = mc_elm.bus.Vnom
+        # non_lin_sc.bPerSection = mc_elm.B / (non_lin_sc.nomU ** 2)
+        # non_lin_sc.gPerSection = mc_elm.G / (non_lin_sc.nomU ** 2)
+        # if mc_elm.active:
+        #     non_lin_sc.sections = 1
+        # else:
+        #     non_lin_sc.sections = 0
+        # non_lin_sc.normalSections = non_lin_sc.sections
+
+        non_lin_sc.Terminals = create_cgmes_terminal(
+            mc_elm.bus, None, non_lin_sc, cgmes_model, logger
+        )
+
+        cgmes_model.add(non_lin_sc)
+
+
 def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
                           logger: DataLogger) -> None:
@@ -1468,7 +1524,8 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     # SHUNTS
     get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
-    # TODO controllable shunts
+    # TODO controllable shunts to be finished
+    # get_cgmes_non_linear_shunts(gc_model, cgmes_model, logger)
 
     # DC elements
     convert_hvdc_line_to_cgmes(gc_model, cgmes_model, logger)
