@@ -479,7 +479,7 @@ class GeneralizedSimulationIndices:
         """
 
         if is_slack:
-            self.add_to_cx_vm(bus_local)
+            # self.add_to_cx_vm(bus_local)
             self.bus_vm_pointer_used[bus_local] = True
 
         else:
@@ -488,7 +488,7 @@ class GeneralizedSimulationIndices:
                 if not self.bus_vm_pointer_used[bus_remote]:
                     # initialize the remote bus voltage to the control value
                     self.bus_vm_pointer_used[bus_remote] = True
-                    self.add_to_cx_vm(bus_remote)
+                    # self.add_to_cx_vm(bus_remote)
                 else:
                     self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
                                           device=device_name,
@@ -502,7 +502,7 @@ class GeneralizedSimulationIndices:
             elif not self.bus_vm_pointer_used[bus_local]:
                 # initialize the local bus voltage to the control value
                 self.bus_vm_pointer_used[bus_local] = True
-                self.add_to_cx_vm(bus_local)
+                # self.add_to_cx_vm(bus_local)
             else:
                 self.logger.add_error(msg='Trying to set an already fixed voltage, duplicity of controls',
                                       device=device_name,
@@ -547,12 +547,11 @@ class GeneralizedSimulationIndices:
 
                 if bus_type == BusMode.Slack_tpe.value:
                     self.add_to_cx_pzip(i)
-                    self.rem_bus_qzip_simple(i)
+                    self.add_to_cx_qzip(i)
                     self.set_bus_vm_simple(bus_local=i,
                                            is_slack=True)
                 else:
                     self.add_to_cx_va(i)
-                    self.set_bus_qzip_simple(i)
             else:
                 self.add_to_cg_pdc(i)
                 self.dc_bus.add(i)
@@ -572,7 +571,7 @@ class GeneralizedSimulationIndices:
                                            bus_remote=ctr_bus_idx,
                                            remote_control=remote_control)
                     
-                    self.rem_bus_qzip_simple(bus_idx)
+                    self.add_to_cx_qzip(bus_idx)
 
         # DONE
         # -------------- ControlledShunts search ----------------
@@ -589,7 +588,7 @@ class GeneralizedSimulationIndices:
                                        bus_remote=ctr_bus_idx,
                                        remote_control=remote_control)
 
-                self.rem_bus_qzip_simple(bus_idx)
+                self.add_to_cx_qzip(bus_idx)
 
         # DONE
         # -------------- Regular branch search (also applies to trafos) ----------------
@@ -654,6 +653,13 @@ class GeneralizedSimulationIndices:
             self.add_to_cg_hvdc(branch_idx)
             self.br_hvdc.add(branch_idx)
             branch_idx += 1
+
+        # Post-processing
+        for i, val in enumerate(self.bus_vm_pointer_used):
+            if not val:
+                self.add_to_cx_vm(i)
+
+        print()
 
         return self
     
