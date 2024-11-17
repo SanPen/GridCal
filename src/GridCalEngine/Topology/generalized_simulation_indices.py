@@ -123,12 +123,6 @@ class GeneralizedSimulationIndices:
         self.bus_vm_pointer_used: BoolVec | None = None
         self.bus_unspecified_qzip: BoolVec | None = None
 
-        self.ac_bus: Set[int] = set()
-        self.dc_bus: Set[int] = set()
-        self.br_trad: Set[int] = set()
-        self.br_vsc: Set[int] = set()
-        self.br_hvdc: Set[int] = set()
-
         self.logger = Logger()
 
         # Run the search to get the indices
@@ -139,19 +133,6 @@ class GeneralizedSimulationIndices:
                           branch_data=branch_data,
                           vsc_data=vsc_data,
                           hvdc_data=hvdc_data)
-
-        # Negate the cx sets to show the unknowns
-        ndc_bus = bus_data.is_dc.sum()
-        nac_bus = len(bus_data.is_dc) - ndc_bus
-        nconv_br = len(branch_data.active)
-        nvsc_br = len(vsc_data.active)
-        nhvdc_br = len(hvdc_data.active)
-
-        self.negate_cx(ac_bus=self.ac_bus,
-                       dc_bus=self.dc_bus,
-                       trad_br=self.br_trad,
-                       vsc_br=self.br_vsc,
-                       hvdc_br=self.br_hvdc)
 
         # Finally convert to sets
         self.sets_to_lists()
@@ -557,7 +538,6 @@ class GeneralizedSimulationIndices:
             if not(bus_data.is_dc[i]):
                 self.add_to_cg_pac(i)
                 self.add_to_cg_qac(i)
-                self.ac_bus.add(i)
 
                 if bus_type == BusMode.Slack_tpe.value:
                     self.add_to_cx_pzip(i)
@@ -568,7 +548,6 @@ class GeneralizedSimulationIndices:
                     self.add_to_cx_va(i)
             else:
                 self.add_to_cg_pdc(i)
-                self.dc_bus.add(i)
 
         # DONE
         # -------------- Generators and Batteries search ----------------
@@ -625,7 +604,6 @@ class GeneralizedSimulationIndices:
                                       bus_idx=bus_idx,
                                       is_conventional=True)
 
-            self.br_trad.add(branch_idx)
             branch_idx += 1
 
         # DONE
@@ -646,7 +624,6 @@ class GeneralizedSimulationIndices:
                                       is_conventional=False)
 
             self.add_to_cg_acdc(branch_idx)
-            self.br_vsc.add(branch_idx)
             branch_idx += 1
 
         # DONE
@@ -665,7 +642,6 @@ class GeneralizedSimulationIndices:
                                    device_name=hvdc_data.names[iii])
 
             self.add_to_cg_hvdc(branch_idx)
-            self.br_hvdc.add(branch_idx)
             branch_idx += 1
 
         # Post-processing
@@ -676,33 +652,6 @@ class GeneralizedSimulationIndices:
         print()
 
         return self
-    
-    def negate_cx(self, 
-                  ac_bus: int, 
-                  dc_bus: int,
-                  trad_br: int,
-                  vsc_br: int,
-                  hvdc_br: int):
-        """
-        Negate the cx sets to display the unknowns, not the knowns
-        :param ac_bus:
-        :param dc_bus:
-        :param trad_br:
-        :param vsc_br:
-        :param hvdc_br:
-        """
-        # Subtract only the necessary sets
-        self.cx_vm = ac_bus | dc_bus - self.cx_vm
-        self.cx_qzip = ac_bus - self.cx_qzip
-
-        self.cx_tau = trad_br - self.cx_tau
-        self.cx_m = trad_br - self.cx_m
-
-        # Check better
-        self.cx_pfa = vsc_br | hvdc_br - self.cx_pfa
-        self.cx_pta = vsc_br | hvdc_br - self.cx_pta
-        self.cx_qfa = vsc_br | hvdc_br - self.cx_qfa
-        self.cx_qta = vsc_br | hvdc_br - self.cx_qta
     
     def sets_to_lists(self):
         """
