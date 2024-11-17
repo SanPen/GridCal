@@ -39,6 +39,8 @@ class BranchData:
         self.contingency_rates: Vec = np.zeros(nelm, dtype=float)
         self.protection_rates: Vec = np.zeros(nelm, dtype=float)
 
+        self.branch_idx: IntVec = np.zeros(nelm, dtype=int)
+
         self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
         self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
 
@@ -197,8 +199,10 @@ class BranchData:
         # first slice, then remap
         data.F = self.F[elm_idx]
         data.T = self.T[elm_idx]
+        data.branch_idx = self.branch_idx[elm_idx]
         bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
+            data.branch_idx[k] = k  # Correct?
             data.F[k] = bus_map.get(data.F[k], -1)
 
             if data.F[k] == -1:
@@ -279,6 +283,8 @@ class BranchData:
         data.contingency_rates = self.contingency_rates.copy()
         data.protection_rates = self.protection_rates.copy()
         data.tap_module = self.tap_module.copy()
+
+        data.branch_idx = self.branch_idx.copy()
 
         data.tap_module_min = self.tap_module_min.copy()
         data.tap_module_max = self.tap_module_max.copy()

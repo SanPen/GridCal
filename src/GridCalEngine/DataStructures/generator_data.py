@@ -45,7 +45,7 @@ class GeneratorData:
         self.mttr: Vec = np.zeros(nelm, dtype=float)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
-        self.bus_idx = np.zeros(nelm, dtype=int)
+        self.bus_idx: IntVec = np.zeros(nelm, dtype=int)
         self.controllable_bus_idx = np.zeros(nelm, dtype=int)
 
         # r0, r1, r2, x0, x1, x2

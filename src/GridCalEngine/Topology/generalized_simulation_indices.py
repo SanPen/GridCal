@@ -206,6 +206,7 @@ class GeneralizedSimulationIndices:
     def fill_x_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
         """
         Populate going over the elements, probably harder than the g_sets
+        Better to have a single method to fill sets, this way we avoid double searches
 
         :param nc:
         :return:
