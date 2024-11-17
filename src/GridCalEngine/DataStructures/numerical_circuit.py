@@ -872,7 +872,10 @@ class NumericalCircuit:
         Getter for the cg_pac set.
         :return: 
         """
-        return self.cg_pac
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_pac
 
     @property
     def cg_qac(self):
@@ -880,7 +883,10 @@ class NumericalCircuit:
         Getter for the cg_qac set.
         :return: 
         """
-        return self.cg_qac
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_qac
 
     @property
     def cg_pdc(self):
@@ -888,7 +894,10 @@ class NumericalCircuit:
         Getter for the cg_pdc set.
         :return: 
         """
-        return self.cg_pdc
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_pdc
 
     @property
     def cg_acdc(self):
@@ -896,7 +905,10 @@ class NumericalCircuit:
         Getter for the cg_acdc set.
         :return: 
         """
-        return self.cg_acdc
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_acdc
 
     @property
     def cg_hvdc(self):
@@ -904,7 +916,10 @@ class NumericalCircuit:
         Getter for the cg_hvdc set.
         :return: 
         """
-        return self.cg_hvdc
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_hvdc
 
     @property
     def cg_pftr(self):
@@ -912,7 +927,10 @@ class NumericalCircuit:
         Getter for the cg_pftr set.
         :return: 
         """
-        return self.cg_pftr
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_pftr
 
     @property
     def cg_pttr(self):
@@ -920,7 +938,10 @@ class NumericalCircuit:
         Getter for the cg_pttr set.
         :return: 
         """
-        return self.cg_pttr
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_pttr
 
     @property
     def cg_qftr(self):
@@ -928,7 +949,10 @@ class NumericalCircuit:
         Getter for the cg_qftr set.
         :return: 
         """
-        return self.cg_qftr
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_qftr
 
     @property
     def cg_qttr(self):
@@ -936,7 +960,10 @@ class NumericalCircuit:
         Getter for the cg_qttr set.
         :return: 
         """
-        return self.cg_qttr
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cg_qttr
 
     @property
     def cx_va(self):
@@ -944,7 +971,10 @@ class NumericalCircuit:
         Getter for the cx_va set.
         :return: 
         """
-        return self.cx_va
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_va
 
     @property
     def cx_vm(self):
@@ -952,7 +982,10 @@ class NumericalCircuit:
         Getter for the cx_vm set.
         :return: 
         """
-        return self.cx_vm
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_vm
 
     @property
     def cx_tau(self):
@@ -960,7 +993,10 @@ class NumericalCircuit:
         Getter for the cx_tau set.
         :return: 
         """
-        return self.cx_tau
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_tau
 
     @property
     def cx_m(self):
@@ -968,7 +1004,10 @@ class NumericalCircuit:
         Getter for the cx_m set.
         :return: 
         """
-        return self.cx_m
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_m
 
     @property
     def cx_pzip(self):
@@ -976,7 +1015,10 @@ class NumericalCircuit:
         Getter for the cx_pzip set.
         :return: 
         """
-        return self.cx_pzip
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_pzip
 
     @property
     def cx_qzip(self):
@@ -984,7 +1026,10 @@ class NumericalCircuit:
         Getter for the cx_qzip set.
         :return: 
         """
-        return self.cx_qzip
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_qzip
 
     @property
     def cx_pta(self):
@@ -992,7 +1037,10 @@ class NumericalCircuit:
         Getter for the cx_pta set.
         :return: 
         """
-        return self.cx_pta
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_pta
 
     @property
     def cx_qfa(self):
@@ -1000,7 +1048,10 @@ class NumericalCircuit:
         Getter for the cx_qfa set.
         :return: 
         """
-        return self.cx_qfa
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_qfa
 
     @property
     def cx_qta(self):
@@ -1008,7 +1059,10 @@ class NumericalCircuit:
         Getter for the cx_qta set.
         :return: 
         """
-        return self.cx_qta
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_qta
 
     def get_simulation_indices(self) -> si.SimulationIndices:
         """
