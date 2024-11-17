@@ -1032,6 +1032,17 @@ class NumericalCircuit:
         return self.generalized_simulation_indices_.cx_qzip
 
     @property
+    def cx_pfa(self):
+        """
+        Getter for the cx_pfa set.
+        :return: 
+        """
+        if self.generalized_simulation_indices_ is None:
+            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
+
+        return self.generalized_simulation_indices_.cx_pfa
+
+    @property
     def cx_pta(self):
         """
         Getter for the cx_pta set.
