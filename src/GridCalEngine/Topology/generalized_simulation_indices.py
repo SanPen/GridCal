@@ -137,8 +137,6 @@ class GeneralizedSimulationIndices:
         # Finally convert to sets
         self.sets_to_lists()
 
-        return self
-
     # Primitive additions
     # Methods for cg sets
     def add_to_cg_pac(self, value: int):
@@ -324,11 +322,12 @@ class GeneralizedSimulationIndices:
 
     # Non-primitive additions
     def add_tau_control_branch(self,
+                               branch_name: str = "",
                                mode: TapPhaseControl = TapPhaseControl.fixed,
                                branch_idx: int = None,
                                is_conventional: bool = True):
         """
-
+        :param branch_idx:
         :param mode:
         :param branch_idx:
         :param is_conventional: True of transformers and all branches, False for VSCs
@@ -337,7 +336,18 @@ class GeneralizedSimulationIndices:
         # Check for non-conventional conditions first
         if not is_conventional:
             if mode == TapPhaseControl.fixed:
-                raise Exception("VSCs cannot have fixed a tap phase control!")
+                # NOTE: in principle, VSCs must have two controls
+                # However, if fixed mode, the system will become unsolvable 
+                # FUBM adds the Beq zero equation but it is not really what we want
+                # To circument this, we assume a fixed converter sets the Qt
+                self.add_to_cx_qta(branch_idx)
+                self.logger.add_warning(msg='Fixed mode for VSCs can be problematic in a generalized power flow',
+                                        device=branch_name,
+                                        value=mode,
+                                        device_property=TapPhaseControl,
+                                        device_class=VscData)
+                print()
+
             elif mode == TapPhaseControl.Pf:
                 self.add_to_cx_pfa(branch_idx)
             elif mode == TapPhaseControl.Pt:
@@ -373,7 +383,16 @@ class GeneralizedSimulationIndices:
         # Check the mode first
         if mode == TapModuleControl.fixed:
             if not is_conventional:
-                raise Exception("VSCs cannot have fixed a tap module control!")
+                # NOTE: in principle, VSCs must have two controls
+                # However, if fixed mode, the system will become unsolvable 
+                # FUBM adds the Beq zero equation but it is not really what we want
+                # To circument this, we assume a fixed converter sets the Qt
+                self.add_to_cx_qta(branch_idx)
+                self.logger.add_warning(msg='Fixed mode for VSCs can be problematic in a generalized power flow',
+                                        device=branch_name,
+                                        value=mode,
+                                        device_property=VscData.tap_module_control_mode,
+                                        device_class=VscData)
             else:
                 self.add_to_cx_m(branch_idx)
 
@@ -478,7 +497,7 @@ class GeneralizedSimulationIndices:
                      shunt_data: ShuntData,
                      branch_data: BranchData,
                      vsc_data: VscData,
-                     hvdc_data: HvdcData):
+                     hvdc_data: HvdcData) -> "GeneralizedSimulationIndices":
         """
         Populate going over the elements, probably harder than the g_sets
         Should we filter for only active elements?
@@ -561,13 +580,14 @@ class GeneralizedSimulationIndices:
 
         for i, _ in enumerate(branch_data.active):
 
-            self.add_tau_control_branch(mode=branch_data.tap_phase_control_mode[i],
+            self.add_tau_control_branch(branch_name=branch_data.names[i],
+                                        mode=branch_data.tap_phase_control_mode[i],
                                         branch_idx=branch_idx,
                                         is_conventional=True)
 
-            bus_idx = vsc_data.tap_controlled_buses[i]
+            bus_idx = branch_data.tap_controlled_buses[i]
 
-            self.add_m_control_branch(branch_name=branch_data.name[i],
+            self.add_m_control_branch(branch_name=branch_data.names[i],
                                       mode=branch_data.tap_module_control_mode[i],
                                       branch_idx=branch_idx,
                                       bus_idx=bus_idx,
@@ -579,15 +599,18 @@ class GeneralizedSimulationIndices:
         # -------------- VSCs search ----------------
         for ii, _ in enumerate(vsc_data.active):
 
-            self.add_tau_control_branch(mode=vsc_data.tap_phase_control_mode[ii],
-                                        branch_idx=branch_idx)
+            self.add_tau_control_branch(branch_name=vsc_data.names[ii],
+                                        mode=vsc_data.tap_phase_control_mode[ii],
+                                        branch_idx=branch_idx,
+                                        is_conventional=False)
 
             bus_idx = vsc_data.tap_controlled_buses[ii]
 
-            self.add_m_control_branch(branch_name=vsc_data.name[ii],
+            self.add_m_control_branch(branch_name=vsc_data.names[ii],
                                       mode=vsc_data.tap_module_control_mode[ii],
                                       branch_idx=branch_idx,
-                                      bus_idx=bus_idx)
+                                      bus_idx=bus_idx,
+                                      is_conventional=False)
 
             self.add_to_cg_acdc(branch_idx)
 
@@ -603,10 +626,10 @@ class GeneralizedSimulationIndices:
             self.add_to_cx_Pf(branch_idx)
 
             self.set_bus_vm_simple(bus_local=hvdc_data.F[iii],
-                                   device_name=hvdc_data.name[iii])
+                                   device_name=hvdc_data.names[iii])
 
             self.set_bus_vm_simple(bus_local=hvdc_data.T[iii],
-                                   device_name=hvdc_data.name[iii])
+                                   device_name=hvdc_data.names[iii])
 
             self.add_to_cg_hvdc(branch_idx)
 
@@ -634,6 +657,7 @@ class GeneralizedSimulationIndices:
         self.cx_m = list(self.cx_m)
         self.cx_pzip = list(self.cx_pzip)
         self.cx_qzip = list(self.cx_qzip)
+        self.cx_pfa = list(self.cx_pfa)
         self.cx_pta = list(self.cx_pta)
         self.cx_qfa = list(self.cx_qfa)
         self.cx_qta = list(self.cx_qta)

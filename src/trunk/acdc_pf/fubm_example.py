@@ -5,10 +5,10 @@ import numpy as np
 np.set_printoptions(precision=4)
 
 # fname = './../../tests/data/grids/fubm_caseHVDC_vt.m'
-# fname = 'C:/Users/J/Desktop/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt_josep.gridcal'
-fname = 'C:/Users/J/Desktop/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt_josep_whvdc.gridcal'
+fname = 'C:/Users/J/Desktop/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt_josep.gridcal'
+# fname = 'C:/Users/J/Desktop/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt_josep_whvdc.gridcal'
 grid = gce.open_file(fname)
-# nc = compile_numerical_circuit_at(circuit=grid, consider_vsc_as_island_links=False)
+nc = gce.compile_numerical_circuit_at(circuit=grid, consider_vsc_as_island_links=False)
 
 print()
 

@@ -1789,7 +1789,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     nc.bus_dict = bus_dict
     nc.consolidate_information()
 
+    # Dummy call to get the indices and debug them
     abcc = nc.cg_pac
-    print(nc.cg_acdc)
 
     return nc
