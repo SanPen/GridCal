@@ -820,6 +820,8 @@ def fill_parent_branch(i: int,
     data.F[i] = f
     data.T[i] = t
 
+    data.branch_idx[i] = i  # Correct?
+
     if apply_temperature:
         data.R[i] = elm.R_corrected
     else:
@@ -1127,6 +1129,8 @@ def get_branch_data(
 
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
+
+        data.branch_idx[ii] = ii  # Correct? Do we support UPFCs? We should I think
 
         if time_series:
             data.active[ii] = elm.active_prof[t_idx]
