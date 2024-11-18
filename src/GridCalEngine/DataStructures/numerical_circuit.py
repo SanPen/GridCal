@@ -14,7 +14,6 @@ from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.enumerations import BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
-import GridCalEngine.Topology.generalized_simulation_indices as gsi
 import GridCalEngine.Topology.admittance_matrices as ycalc
 import GridCalEngine.DataStructures as ds
 from GridCalEngine.Devices.Aggregation.investment import Investment
@@ -284,9 +283,6 @@ class NumericalCircuit:
 
         # class that holds all the simulation indices
         self.simulation_indices_: Union[None, si.SimulationIndices] = None
-
-        # add the generalized simulation indices
-        self.generalized_simulation_indices_: Union[None, gsi.GeneralizedSimulationIndices] = None
 
         # Connectivity matrices
         self.conn_matrices_: Union[tp.ConnectivityMatrices, None] = None
@@ -866,216 +862,6 @@ class NumericalCircuit:
 
         return self.conn_matrices_.Ct
 
-    # Getters for the generalized simulation indices
-    @property
-    def cg_pac(self):
-        """
-        Getter for the cg_pac set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_pac
-
-    @property
-    def cg_qac(self):
-        """
-        Getter for the cg_qac set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_qac
-
-    @property
-    def cg_pdc(self):
-        """
-        Getter for the cg_pdc set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_pdc
-
-    @property
-    def cg_acdc(self):
-        """
-        Getter for the cg_acdc set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_acdc
-
-    @property
-    def cg_hvdc(self):
-        """
-        Getter for the cg_hvdc set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_hvdc
-
-    @property
-    def cg_pftr(self):
-        """
-        Getter for the cg_pftr set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_pftr
-
-    @property
-    def cg_pttr(self):
-        """
-        Getter for the cg_pttr set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_pttr
-
-    @property
-    def cg_qftr(self):
-        """
-        Getter for the cg_qftr set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_qftr
-
-    @property
-    def cg_qttr(self):
-        """
-        Getter for the cg_qttr set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cg_qttr
-
-    @property
-    def cx_va(self):
-        """
-        Getter for the cx_va set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_va
-
-    @property
-    def cx_vm(self):
-        """
-        Getter for the cx_vm set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_vm
-
-    @property
-    def cx_tau(self):
-        """
-        Getter for the cx_tau set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_tau
-
-    @property
-    def cx_m(self):
-        """
-        Getter for the cx_m set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_m
-
-    @property
-    def cx_pzip(self):
-        """
-        Getter for the cx_pzip set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_pzip
-
-    @property
-    def cx_qzip(self):
-        """
-        Getter for the cx_qzip set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_qzip
-
-    @property
-    def cx_pfa(self):
-        """
-        Getter for the cx_pfa set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_pfa
-
-    @property
-    def cx_pta(self):
-        """
-        Getter for the cx_pta set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_pta
-
-    @property
-    def cx_qfa(self):
-        """
-        Getter for the cx_qfa set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_qfa
-
-    @property
-    def cx_qta(self):
-        """
-        Getter for the cx_qta set.
-        :return: 
-        """
-        if self.generalized_simulation_indices_ is None:
-            self.generalized_simulation_indices_ = self.get_generalized_simulation_indices()
-
-        return self.generalized_simulation_indices_.cx_qta
-
     def get_simulation_indices(self) -> si.SimulationIndices:
         """
         Get the simulation indices
@@ -1090,19 +876,6 @@ class NumericalCircuit:
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
                                     is_dc_bus=self.bus_data.is_dc)
-
-    def get_generalized_simulation_indices(self) -> gsi.GeneralizedSimulationIndices:
-        """
-        Get the generalized simulation indices
-        :return: generalized simulation indices
-        """
-        return gsi.GeneralizedSimulationIndices(bus_data=self.bus_data,
-                                                generator_data=self.generator_data,
-                                                battery_data=self.battery_data,
-                                                shunt_data=self.shunt_data,
-                                                branch_data=self.branch_data,
-                                                hvdc_data=self.hvdc_data,
-                                                vsc_data=self.vsc_data)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """
@@ -1561,7 +1334,7 @@ class NumericalCircuit:
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
     def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False,
-                                 consider_vsc_as_island_links: bool = True,) -> sp.csc_matrix:
+                                 consider_vsc_as_island_links: bool = True, ) -> sp.csc_matrix:
         """
         Compute the adjacency matrix
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?

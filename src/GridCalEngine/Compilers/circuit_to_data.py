@@ -1271,42 +1271,57 @@ def get_vsc_data(
     # VSC
     for i, elm in enumerate(circuit.vsc_devices):
         # generic stuff
-        fill_controllable_branch(ii=ii,
-                                 elm=elm,
-                                 data=data,
-                                 bus_data=bus_data,
-                                 bus_dict=bus_dict,
-                                 apply_temperature=apply_temperature,
-                                 branch_tolerance_mode=branch_tolerance_mode,
-                                 t_idx=t_idx,
-                                 time_series=time_series,
-                                 opf_results=opf_results,
-                                 use_stored_guess=use_stored_guess,
-                                 bus_voltage_used=bus_voltage_used,
-                                 Sbase=circuit.Sbase,
-                                 control_taps_modules=control_taps_modules,
-                                 control_taps_phase=control_taps_phase,
-                                 control_remote_voltage=control_remote_voltage,
-                                 logger=logger)
+        data.names[i] = elm.name
+        data.idtag[i] = elm.idtag
+
+        data.mttf[i] = elm.mttf
+        data.mttr[i] = elm.mttr
+
+        if time_series:
+            data.active[i] = elm.active_prof[t_idx]
+            data.rates[i] = elm.rate_prof[t_idx]
+            data.contingency_rates[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[i] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
+
+            data.overload_cost[i] = elm.Cost_prof[t_idx]
+
+            data.control1[ii] = elm.control1_prof[t_idx]
+            data.control2[ii] = elm.control2_prof[t_idx]
+            data.control1_val[ii] = elm.control1_val_prof[t_idx]
+            data.control2_val[ii] = elm.control2_val_prof[t_idx]
+            set_control_dev(ii, elm.control1_dev_prof[t_idx], data.control1_bus_idx, data.control1_branch_idx)
+            set_control_dev(ii, elm.control2_dev_prof[t_idx], data.control2_bus_idx, data.control2_branch_idx)
+
+        else:
+            data.active[i] = elm.active
+            data.rates[i] = elm.rate
+            data.contingency_rates[i] = elm.rate * elm.contingency_factor
+            data.protection_rates[i] = elm.rate * elm.protection_rating_factor
+
+            data.overload_cost[i] = elm.Cost
+
+            data.control1[ii] = elm.control1
+            data.control2[ii] = elm.control2
+            data.control1_val[ii] = elm.control1_val
+            data.control2_val[ii] = elm.control2_val
+            set_control_dev(ii, elm.control1_dev, data.control1_bus_idx, data.control1_branch_idx)
+            set_control_dev(ii, elm.control2_dev, data.control2_bus_idx, data.control2_branch_idx)
+
+        f = bus_dict[elm.bus_from]
+        t = bus_dict[elm.bus_to]
+        data.C_branch_bus_f[i, f] = 1
+        data.C_branch_bus_t[i, t] = 1
+        data.F[i] = f
+        data.T[i] = t
+
+        data.contingency_enabled[i] = int(elm.contingency_enabled)
+        data.monitor_loading[i] = int(elm.monitor_loading)
+
         data.Kdp[ii] = elm.kdp
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
 
-        if time_series:
-            data.control1[ii] = elm.control1_prof[t_idx]
-            data.control2[ii] = elm.control2_prof[t_idx]
-            data.control1_val = elm.control1_val_prof[t_idx]
-            data.control2_val = elm.control2_val_prof[t_idx]
-            set_control_dev(ii, elm.control1_dev_prof[t_idx], data.control1_bus_idx, data.control1_branch_idx)
-            set_control_dev(ii, elm.control2_dev_prof[t_idx], data.control2_bus_idx, data.control2_branch_idx)
-        else:
-            data.control1[ii] = elm.control1
-            data.control2[ii] = elm.control2
-            data.control1_val = elm.control1_val
-            data.control2_val = elm.control2_val
-            set_control_dev(ii, elm.control1_dev, data.control1_bus_idx, data.control1_branch_idx)
-            set_control_dev(ii, elm.control2_dev, data.control2_bus_idx, data.control2_branch_idx)
 
         ii += 1
 

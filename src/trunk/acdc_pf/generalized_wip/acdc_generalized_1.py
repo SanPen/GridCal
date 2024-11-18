@@ -20,6 +20,6 @@ for i, island in enumerate(islands):
     _, is_dc_str = island.is_dc()
     print(f"island {i} is {is_dc_str}: nbus {island.nbus}, nbr: {island.nbr}, nvsc: {island.nvsc}, nhvdc: {island.nhvdc}")
 
-    indices = GeneralizedSimulationIndices().fill_specified(island)
+    indices = GeneralizedSimulationIndices(island)
 
 print()

@@ -7,6 +7,7 @@
 from typing import Set
 import numpy as np
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.branch_data import BranchData
 from GridCalEngine.DataStructures.vsc_data import VscData
@@ -23,13 +24,7 @@ class GeneralizedSimulationIndices:
     """
 
     def __init__(self,
-                 bus_data,
-                 generator_data,
-                 battery_data, 
-                 shunt_data,
-                 branch_data,
-                 vsc_data,
-                 hvdc_data) -> "GeneralizedSimulationIndices":
+                 nc: NumericalCircuit) -> None:
         """
         Pass now the data classes, maybe latter on pass only the necessary attributes
         Specified sets of indices represent those indices where we know the value of the variable.
@@ -82,13 +77,7 @@ class GeneralizedSimulationIndices:
                 then run Pzip - bus_vm_source_used to get the Qzip set
         - Vm: store the indices of already controlled buses, raising an error if we try to set the same bus twice, stopping the program there
 
-        :param bus_data:
-        :param generator_data:
-        :param battery_data:
-        :param shunt_data:
-        :param branch_data:
-        :param vsc_data:
-        :param hvdc_data:
+        :param nc: NumericalCircuit
 
         """
 
@@ -105,7 +94,8 @@ class GeneralizedSimulationIndices:
 
         # cx sets
         self.cx_va: Set[int] = set()  # All AC minus slack buses
-        self.cx_vm: Set[int] = set()  # All minus slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers 
+        self.cx_vm: Set[
+            int] = set()  # All minus slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers 
         self.cx_tau: Set[int] = set()  # All controllable transformers that do not use the tap phase control mode
         self.cx_m: Set[int] = set()  # All controllable transformers that do not use the tap module control mode
         self.cx_pzip: Set[int] = set()  # Slack buses
@@ -126,13 +116,7 @@ class GeneralizedSimulationIndices:
         self.logger = Logger()
 
         # Run the search to get the indices
-        self.fill_gx_sets(bus_data=bus_data,
-                          generator_data=generator_data,
-                          battery_data=battery_data,
-                          shunt_data=shunt_data,
-                          branch_data=branch_data,
-                          vsc_data=vsc_data,
-                          hvdc_data=hvdc_data)
+        self.fill_gx_sets(nc=nc)
 
         # Finally convert to sets
         self.sets_to_lists()
@@ -433,7 +417,7 @@ class GeneralizedSimulationIndices:
     def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
         pass
 
-    def rem_bus_qzip_simple(self, 
+    def rem_bus_qzip_simple(self,
                             bus_idx: int):
         """
         Set the bus index as unspecified (true) for Qzip if slack or bus with controllable gen/batt/shunt
@@ -446,7 +430,7 @@ class GeneralizedSimulationIndices:
         if bus_idx in self.cx_qzip:
             self.del_from_cx_qzip(bus_idx)
 
-    def set_bus_qzip_simple(self, 
+    def set_bus_qzip_simple(self,
                             bus_idx: int):
         """
         Store the bus index in the Qzip set if no slack or controllable generator/battery/shunt (check bool array)
@@ -503,27 +487,14 @@ class GeneralizedSimulationIndices:
                                       device=device_name,
                                       device_property='Vm')
 
-    def fill_gx_sets(self, 
-                     bus_data: BusData,
-                     generator_data: GeneratorData,
-                     battery_data: BatteryData,
-                     shunt_data: ShuntData,
-                     branch_data: BranchData,
-                     vsc_data: VscData,
-                     hvdc_data: HvdcData) -> "GeneralizedSimulationIndices":
+    def fill_gx_sets(self,
+                     nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
         """
         Populate going over the elements, probably harder than the g_sets
         Should we filter for only active elements?
-
-        :param bus_data:
-        :param generator_data:
-        :param battery_data:
-        :param shunt_data:
-        :param branch_data:
-        :param vsc_data:
-        :param hvdc_data:
+        :param nc: NumericalCircuit
         """
-        nbus = len(bus_data.Vbus)
+        nbus = len(nc.bus_data.Vbus)
 
         self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
         self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
@@ -534,8 +505,8 @@ class GeneralizedSimulationIndices:
         # Assume they are all set, but probably need some logic when compiling the numerical circuit to
         # enforce we have one slack on each AC island, split by the VSCs
 
-        for i, bus_type in enumerate(bus_data.bus_types):
-            if not(bus_data.is_dc[i]):
+        for i, bus_type in enumerate(nc.bus_data.bus_types):
+            if not (nc.bus_data.is_dc[i]):
                 self.add_to_cg_pac(i)
                 self.add_to_cg_qac(i)
 
@@ -551,7 +522,7 @@ class GeneralizedSimulationIndices:
 
         # DONE
         # -------------- Generators and Batteries search ----------------
-        for dev_tpe in (generator_data, battery_data):
+        for dev_tpe in (nc.generator_data, nc.battery_data):
             for i, is_controlled in enumerate(dev_tpe.controllable):
                 bus_idx = dev_tpe.bus_idx[i]
                 ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
@@ -563,21 +534,21 @@ class GeneralizedSimulationIndices:
                                            device_name=dev_tpe.names[i],
                                            bus_remote=ctr_bus_idx,
                                            remote_control=remote_control)
-                    
+
                     self.add_to_cx_qzip(bus_idx)
 
         # DONE
         # -------------- ControlledShunts search ----------------
         # Setting the Vm has already been done before
-        for i, is_controlled in enumerate(shunt_data.controllable):
-            bus_idx = shunt_data.bus_idx[i]
-            ctr_bus_idx = shunt_data.controllable_bus_idx[i]
+        for i, is_controlled in enumerate(nc.shunt_data.controllable):
+            bus_idx = nc.shunt_data.bus_idx[i]
+            ctr_bus_idx = nc.shunt_data.controllable_bus_idx[i]
 
             if is_controlled:
                 remote_control = ctr_bus_idx != -1
 
                 self.set_bus_vm_simple(bus_local=bus_idx,
-                                       device_name = shunt_data.names[i],
+                                       device_name=nc.shunt_data.names[i],
                                        bus_remote=ctr_bus_idx,
                                        remote_control=remote_control)
 
@@ -589,17 +560,16 @@ class GeneralizedSimulationIndices:
         # Branches in their most generic sense are stacked as [conventional, VSC, HVDC]
         branch_idx = 0
 
-        for i, _ in enumerate(branch_data.active):
-
-            self.add_tau_control_branch(branch_name=branch_data.names[i],
-                                        mode=branch_data.tap_phase_control_mode[i],
+        for i, _ in enumerate(nc.branch_data.active):
+            self.add_tau_control_branch(branch_name=nc.branch_data.names[i],
+                                        mode=nc.branch_data.tap_phase_control_mode[i],
                                         branch_idx=branch_idx,
                                         is_conventional=True)
 
-            bus_idx = branch_data.tap_controlled_buses[i]
+            bus_idx = nc.branch_data.tap_controlled_buses[i]
 
-            self.add_m_control_branch(branch_name=branch_data.names[i],
-                                      mode=branch_data.tap_module_control_mode[i],
+            self.add_m_control_branch(branch_name=nc.branch_data.names[i],
+                                      mode=nc.branch_data.tap_module_control_mode[i],
                                       branch_idx=branch_idx,
                                       bus_idx=bus_idx,
                                       is_conventional=True)
@@ -608,20 +578,19 @@ class GeneralizedSimulationIndices:
 
         # DONE
         # -------------- VSCs search ----------------
-        for ii, _ in enumerate(vsc_data.active):
-
-            self.add_tau_control_branch(branch_name=vsc_data.names[ii],
-                                        mode=vsc_data.tap_phase_control_mode[ii],
-                                        branch_idx=branch_idx,
-                                        is_conventional=False)
-
-            bus_idx = vsc_data.tap_controlled_buses[ii]
-
-            self.add_m_control_branch(branch_name=vsc_data.names[ii],
-                                      mode=vsc_data.tap_module_control_mode[ii],
-                                      branch_idx=branch_idx,
-                                      bus_idx=bus_idx,
-                                      is_conventional=False)
+        for ii, _ in enumerate(nc.vsc_data.active):
+            # self.add_tau_control_branch(branch_name=nc.vsc_data.names[ii],
+            #                             mode=nc.vsc_data.tap_phase_control_mode[ii],
+            #                             branch_idx=branch_idx,
+            #                             is_conventional=False)
+            #
+            # bus_idx = nc.vsc_data.tap_controlled_buses[ii]
+            #
+            # self.add_m_control_branch(branch_name=nc.vsc_data.names[ii],
+            #                           mode=nc.vsc_data.tap_module_control_mode[ii],
+            #                           branch_idx=branch_idx,
+            #                           bus_idx=bus_idx,
+            #                           is_conventional=False)
 
             self.add_to_cg_acdc(branch_idx)
             branch_idx += 1
@@ -631,15 +600,14 @@ class GeneralizedSimulationIndices:
         # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
         # The control mode does not change the indices sets, only the equation
         # See how to store this bool_mode
-        for iii, _ in enumerate(hvdc_data.active):
-
+        for iii, _ in enumerate(nc.hvdc_data.active):
             # self.add_to_cx_Pf(branch_idx)
 
-            self.set_bus_vm_simple(bus_local=hvdc_data.F[iii],
-                                   device_name=hvdc_data.names[iii])
+            self.set_bus_vm_simple(bus_local=nc.hvdc_data.F[iii],
+                                   device_name=nc.hvdc_data.names[iii])
 
-            self.set_bus_vm_simple(bus_local=hvdc_data.T[iii],
-                                   device_name=hvdc_data.names[iii])
+            self.set_bus_vm_simple(bus_local=nc.hvdc_data.T[iii],
+                                   device_name=nc.hvdc_data.names[iii])
 
             self.add_to_cg_hvdc(branch_idx)
             branch_idx += 1
@@ -652,8 +620,8 @@ class GeneralizedSimulationIndices:
         print()
 
         return self
-    
-    def sets_to_lists(self):
+
+    def sets_to_lists(self) -> None:
         """
         Finalize the sets, converting from sets to lists
         """
@@ -677,7 +645,6 @@ class GeneralizedSimulationIndices:
         self.cx_pta = list(self.cx_pta)
         self.cx_qfa = list(self.cx_qfa)
         self.cx_qta = list(self.cx_qta)
-        
 
     # def fill_x_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
     #     """
