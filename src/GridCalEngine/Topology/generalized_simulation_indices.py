@@ -623,14 +623,14 @@ class GeneralizedSimulationIndices:
 
         for i, _ in enumerate(nc.passive_branch_data.active):
             self.add_tau_control_branch(branch_name=nc.passive_branch_data.names[i],
-                                        mode=nc.passive_branch_data.tap_phase_control_mode[i],
+                                        mode=nc.active_branch_data.tap_phase_control_mode[i],
                                         branch_idx=branch_idx,
                                         is_conventional=True)
 
-            bus_idx = nc.passive_branch_data.tap_controlled_buses[i]
+            bus_idx = nc.active_branch_data.tap_controlled_buses[i]
 
             self.add_m_control_branch(branch_name=nc.passive_branch_data.names[i],
-                                      mode=nc.passive_branch_data.tap_module_control_mode[i],
+                                      mode=nc.active_branch_data.tap_module_control_mode[i],
                                       branch_idx=branch_idx,
                                       bus_idx=bus_idx,
                                       is_conventional=True)
