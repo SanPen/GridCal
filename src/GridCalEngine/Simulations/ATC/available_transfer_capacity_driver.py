@@ -438,8 +438,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         linear.run()
 
         # get the branch indices to analyze
-        br_idx = nc.branch_data.get_monitor_enabled_indices()
-        con_br_idx = nc.branch_data.get_contingency_enabled_indices()
+        br_idx = nc.passive_branch_data.get_monitor_enabled_indices()
+        con_br_idx = nc.passive_branch_data.get_contingency_enabled_indices()
 
         # declare the results
         self.results = AvailableTransferCapacityResults(

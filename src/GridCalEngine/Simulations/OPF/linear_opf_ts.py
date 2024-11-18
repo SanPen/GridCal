@@ -23,8 +23,8 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.battery_data import BatteryData
 from GridCalEngine.DataStructures.load_data import LoadData
-from GridCalEngine.DataStructures.branch_data import BranchData
-from GridCalEngine.DataStructures.controllable_branch_data import ControllableBranchData
+from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.fluid_node_data import FluidNodeData
@@ -1066,8 +1066,8 @@ def add_linear_load_formulation(t: Union[int, None],
 
 def add_linear_branches_formulation(t: int,
                                     Sbase: float,
-                                    branch_data_t: BranchData,
-                                    ctrl_branch_data_t: ControllableBranchData,
+                                    branch_data_t: PassiveBranchData,
+                                    ctrl_branch_data_t: ActiveBranchData,
                                     branch_vars: BranchVars,
                                     bus_vars: BusVars,
                                     prob: LpModel,
@@ -1164,7 +1164,7 @@ def add_linear_branches_formulation(t: int,
 
 def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   Sbase: float,
-                                                  branch_data_t: BranchData,
+                                                  branch_data_t: PassiveBranchData,
                                                   branch_vars: BranchVars,
                                                   bus_vars: BusVars,
                                                   prob: LpModel,
@@ -1747,8 +1747,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
             f_obj += add_linear_branches_formulation(
                 t=local_t_idx,
                 Sbase=nc.Sbase,
-                branch_data_t=nc.branch_data,
-                ctrl_branch_data_t=nc.controllable_branch_data,
+                branch_data_t=nc.passive_branch_data,
+                ctrl_branch_data_t=nc.active_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
@@ -1800,7 +1800,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                     f_obj += add_linear_branches_contingencies_formulation(
                         t_idx=local_t_idx,
                         Sbase=nc.Sbase,
-                        branch_data_t=nc.branch_data,
+                        branch_data_t=nc.passive_branch_data,
                         branch_vars=mip_vars.branch_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,

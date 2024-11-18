@@ -10,7 +10,7 @@ from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
 from GridCalEngine.basic_structures import Vec, IntVec, ObjVec, CxVec
 
 
-class ControllableBranchData:
+class ActiveBranchData:
     """
     ControllableBranchData
     """
@@ -44,7 +44,7 @@ class ControllableBranchData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> ControllableBranchData:
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> ActiveBranchData:
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -52,7 +52,7 @@ class ControllableBranchData:
         :return: new BranchData instance
         """
 
-        data = ControllableBranchData(nelm=len(elm_idx), nbus=len(bus_idx))
+        data = ActiveBranchData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         data.m_taps = self.m_taps.slice(elm_idx)
         data.tau_taps = self.tau_taps.slice(elm_idx)
@@ -73,12 +73,12 @@ class ControllableBranchData:
 
         return data
 
-    def copy(self) -> ControllableBranchData:
+    def copy(self) -> ActiveBranchData:
         """
 
         :return:
         """
-        data = ControllableBranchData(nelm=self.nelm, nbus=self.nbus)
+        data = ActiveBranchData(nelm=self.nelm, nbus=self.nbus)
 
         data.m_taps = self.m_taps.copy()
         data.tau_taps = self.tau_taps.copy()

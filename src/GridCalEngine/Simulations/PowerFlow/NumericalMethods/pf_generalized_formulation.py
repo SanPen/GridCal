@@ -202,8 +202,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Y0: CxVec = Y0
 
         self.bus_types = self.nc.bus_data.bus_types.copy()
-        self.tap_module_control_mode = self.nc.branch_data.tap_module_control_mode.copy()
-        self.tap_phase_control_mode = self.nc.branch_data.tap_phase_control_mode.copy()
+        self.tap_module_control_mode = self.nc.passive_branch_data.tap_module_control_mode.copy()
+        self.tap_phase_control_mode = self.nc.passive_branch_data.tap_phase_control_mode.copy()
 
         self.pq = np.array(0, dtype=int)
         self.pv = np.array(0, dtype=int)
@@ -256,24 +256,24 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         )
         self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
-        self.m: Vec = self.nc.controllable_branch_data.tap_module[self.idx_dm]
-        self.tau: Vec = self.nc.controllable_branch_data.tap_angle[self.idx_dtau]
-        self.Ys: CxVec = self.nc.branch_data.get_series_admittance()
+        self.m: Vec = self.nc.active_branch_data.tap_module[self.idx_dm]
+        self.tau: Vec = self.nc.active_branch_data.tap_angle[self.idx_dtau]
+        self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
 
         self.adm = compute_admittances(
-            R=self.nc.branch_data.R,
-            X=self.nc.branch_data.X,
-            G=self.nc.branch_data.G,
-            B=self.nc.branch_data.B,
-            k=self.nc.branch_data.k,
+            R=self.nc.passive_branch_data.R,
+            X=self.nc.passive_branch_data.X,
+            G=self.nc.passive_branch_data.G,
+            B=self.nc.passive_branch_data.B,
+            k=self.nc.passive_branch_data.k,
             tap_module=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
-            vtap_f=self.nc.branch_data.virtual_tap_f,
-            vtap_t=self.nc.branch_data.virtual_tap_t,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
             Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.branch_data.conn,
+            conn=self.nc.passive_branch_data.conn,
             seq=1,
             add_windings_phase=False
         )
@@ -318,7 +318,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             ctrl_m = self.tap_module_control_mode[k]
             ctrl_tau = self.tap_phase_control_mode[k]
-            is_conv = self.nc.branch_data.is_converter[k]
+            is_conv = self.nc.passive_branch_data.is_converter[k]
 
             conv_type = 1 if is_conv else 0
 
@@ -326,10 +326,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             if ctrl_m == TapModuleControl.Vm:
 
                 # Every bus controlled by m has to become a PQV bus
-                bus_idx = self.nc.branch_data.tap_controlled_buses[k]
+                bus_idx = self.nc.passive_branch_data.tap_controlled_buses[k]
                 self.bus_types[bus_idx] = BusMode.PQV_tpe.value
 
-                if is_conv and bus_idx == self.nc.branch_data.F[k]:
+                if is_conv and bus_idx == self.nc.passive_branch_data.F[k]:
                     # if this is a converter,
                     # the voltage can be managed with Beq
                     # if the control bus is the "From" bus
@@ -398,11 +398,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.idx_dPt = np.array(k_pt_tau, dtype=int)
         self.idx_dQt = np.array(k_qt_m, dtype=int)
 
-        self.m: Vec = self.nc.branch_data.tap_module[self.idx_dm]
-        self.tau: Vec = self.nc.branch_data.tap_angle[self.idx_dtau]
-        self.beq: Vec = self.nc.branch_data.Beq[self.idx_dbeq]
+        self.m: Vec = self.nc.passive_branch_data.tap_module[self.idx_dm]
+        self.tau: Vec = self.nc.passive_branch_data.tap_angle[self.idx_dtau]
+        self.beq: Vec = self.nc.passive_branch_data.Beq[self.idx_dbeq]
 
-        self.Gsw = self.nc.branch_data.G0sw[self.idx_conv]
+        self.Gsw = self.nc.passive_branch_data.G0sw[self.idx_conv]
 
         return k_v_m
 
@@ -471,19 +471,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # recompute admittances
         adm = compute_admittances(
-            R=self.nc.branch_data.R,
-            X=self.nc.branch_data.X,
-            G=self.nc.branch_data.G,
-            B=self.nc.branch_data.B,
-            k=self.nc.branch_data.k,
+            R=self.nc.passive_branch_data.R,
+            X=self.nc.passive_branch_data.X,
+            G=self.nc.passive_branch_data.G,
+            B=self.nc.passive_branch_data.B,
+            k=self.nc.passive_branch_data.k,
             tap_module=expand(self.nc.nbr, m, self.idx_dm, 1.0),
-            vtap_f=self.nc.branch_data.virtual_tap_f,
-            vtap_t=self.nc.branch_data.virtual_tap_t,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, tau, self.idx_dtau, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
             Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.branch_data.conn,
+            conn=self.nc.passive_branch_data.conn,
             seq=1,
             add_windings_phase=False,
             verbose=self.options.verbose,
@@ -496,9 +496,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         It = get_It(k=self.idx_conv, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T)
         Itm = np.abs(It)
         Itm2 = Itm * Itm
-        PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha1[self.idx_conv])
+        PLoss_IEC = (self.nc.passive_branch_data.alpha3[self.idx_conv] * Itm2
+                     + self.nc.passive_branch_data.alpha2[self.idx_conv] * Itm2
+                     + self.nc.passive_branch_data.alpha1[self.idx_conv])
 
         self.Gsw = PLoss_IEC / np.power(Vm[self.nc.F[self.idx_conv]], 2.0)
 
@@ -523,10 +523,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         _f = np.r_[
             dS[self.idx_dP].real,
             dS[self.idx_dQ].imag,
-            Pf - self.nc.branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.branch_data.Qset[self.idx_dQt]
+            Pf - self.nc.passive_branch_data.Pset[self.idx_dPf],
+            Qf - self.nc.passive_branch_data.Qset[self.idx_dQf],
+            Pt - self.nc.passive_branch_data.Pset[self.idx_dPt],
+            Qt - self.nc.passive_branch_data.Qset[self.idx_dQt]
         ]
 
         # compute the error
@@ -544,19 +544,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # recompute admittances
         self.adm = compute_admittances(
-            R=self.nc.branch_data.R,
-            X=self.nc.branch_data.X,
-            G=self.nc.branch_data.G,
-            B=self.nc.branch_data.B,
-            k=self.nc.branch_data.k,
+            R=self.nc.passive_branch_data.R,
+            X=self.nc.passive_branch_data.X,
+            G=self.nc.passive_branch_data.G,
+            B=self.nc.passive_branch_data.B,
+            k=self.nc.passive_branch_data.k,
             tap_module=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
-            vtap_f=self.nc.branch_data.virtual_tap_f,
-            vtap_t=self.nc.branch_data.virtual_tap_t,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
             Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.branch_data.conn,
+            conn=self.nc.passive_branch_data.conn,
             seq=1,
             add_windings_phase=False,
             verbose=self.options.verbose,
@@ -569,9 +569,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         It = get_It(k=self.idx_conv, V=self.V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
         Itm = np.abs(It)
         Itm2 = Itm * Itm
-        PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha1[self.idx_conv])
+        PLoss_IEC = (self.nc.passive_branch_data.alpha3[self.idx_conv] * Itm2
+                     + self.nc.passive_branch_data.alpha2[self.idx_conv] * Itm2
+                     + self.nc.passive_branch_data.alpha1[self.idx_conv])
 
         self.Gsw = PLoss_IEC / np.power(self.Vm[self.nc.F[self.idx_conv]], 2.0)
 
@@ -596,10 +596,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self._f = np.r_[
             dS[self.idx_dP].real,
             dS[self.idx_dQ].imag,
-            Pf - self.nc.branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.branch_data.Qset[self.idx_dQt]
+            Pf - self.nc.passive_branch_data.Pset[self.idx_dPf],
+            Qf - self.nc.passive_branch_data.Qset[self.idx_dQf],
+            Pt - self.nc.passive_branch_data.Pset[self.idx_dPt],
+            Qt - self.nc.passive_branch_data.Qset[self.idx_dQt]
         ]
 
         # compute the error
@@ -748,10 +748,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self._f = np.r_[
             dS[self.idx_dP].real,
             dS[self.idx_dQ].imag,
-            Pf - self.nc.branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.branch_data.Qset[self.idx_dQt]
+            Pf - self.nc.passive_branch_data.Pset[self.idx_dPf],
+            Qf - self.nc.passive_branch_data.Qset[self.idx_dQf],
+            Pt - self.nc.passive_branch_data.Pset[self.idx_dPt],
+            Qt - self.nc.passive_branch_data.Qset[self.idx_dQt]
         ]
         return self._f
 
@@ -784,19 +784,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         V = polar_to_rect(Vm, Va)
 
         adm = compute_admittances(
-            R=self.nc.branch_data.R,
-            X=self.nc.branch_data.X,
-            G=self.nc.branch_data.G,
-            B=self.nc.branch_data.B,
-            k=self.nc.branch_data.k,
+            R=self.nc.passive_branch_data.R,
+            X=self.nc.passive_branch_data.X,
+            G=self.nc.passive_branch_data.G,
+            B=self.nc.passive_branch_data.B,
+            k=self.nc.passive_branch_data.k,
             tap_module=m,
-            vtap_f=self.nc.branch_data.virtual_tap_f,
-            vtap_t=self.nc.branch_data.virtual_tap_t,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=tau,
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
             Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.branch_data.conn,
+            conn=self.nc.passive_branch_data.conn,
             seq=1,
             add_windings_phase=False
         )
@@ -814,10 +814,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         f = np.r_[
             dS[self.idx_dP].real,
             dS[self.idx_dQ].imag,
-            Pf - self.nc.controllable_branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.controllable_branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.controllable_branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.controllable_branch_data.Qset[self.idx_dQt]
+            Pf - self.nc.active_branch_data.Pset[self.idx_dPf],
+            Qf - self.nc.active_branch_data.Qset[self.idx_dQf],
+            Pt - self.nc.active_branch_data.Pset[self.idx_dPt],
+            Qt - self.nc.active_branch_data.Qset[self.idx_dQt]
         ]
         return f
 
@@ -866,10 +866,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              F=self.nc.F,
                              T=self.nc.T,
                              Ys=self.Ys,
-                             kconv=self.nc.branch_data.k,
+                             kconv=self.nc.passive_branch_data.k,
                              complex_tap=tap,
                              tap_modules=tap_modules,
-                             Bc=self.nc.branch_data.B,
+                             Bc=self.nc.passive_branch_data.B,
                              Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
                              V=self.V,
                              Vm=self.Vm,

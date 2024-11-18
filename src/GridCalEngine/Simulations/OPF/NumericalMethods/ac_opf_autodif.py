@@ -231,7 +231,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
     Va_max = nc.bus_data.angle_max
     Va_min = nc.bus_data.angle_min
 
-    nbr = nc.branch_data.nelm
+    nbr = nc.passive_branch_data.nelm
     nbus = nc.bus_data.nbus
     ngen = nc.generator_data.nelm
     n_no_slack = len(no_slack)

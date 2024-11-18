@@ -16,8 +16,8 @@ from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGr
 from GridCalEngine.basic_structures import BoolVec, IntVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.DataStructures.battery_data import BatteryData
-from GridCalEngine.DataStructures.branch_data import BranchData
-from GridCalEngine.DataStructures.controllable_branch_data import ControllableBranchData
+from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
@@ -776,7 +776,7 @@ def get_battery_data(
 
 def fill_parent_branch(i: int,
                        elm: BRANCH_TYPES,
-                       data: BranchData,
+                       data: PassiveBranchData,
                        bus_dict: Dict[Bus, int],
                        apply_temperature: bool,
                        branch_tolerance_mode: BranchImpedanceMode,
@@ -860,8 +860,8 @@ def fill_parent_branch(i: int,
 def fill_controllable_branch(
         ii: int,
         elm: Union[dev.Transformer2W, dev.Winding, dev.VSC, dev.UPFC],
-        data: BranchData,
-        ctrl_data: ControllableBranchData,
+        data: PassiveBranchData,
+        ctrl_data: ActiveBranchData,
         bus_data: BusData,
         bus_dict: Dict[Bus, int],
         apply_temperature: bool,
@@ -994,8 +994,8 @@ def fill_controllable_branch(
 
 
 def get_branch_data(
-        data: BranchData,
-        ctrl_data: ControllableBranchData,
+        data: PassiveBranchData,
+        ctrl_data: ActiveBranchData,
         circuit: MultiCircuit,
         bus_dict: Dict[Bus, int],
         bus_data: BusData,
@@ -1730,8 +1730,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     )
 
     branch_dict = get_branch_data(
-        data=nc.branch_data,
-        ctrl_data=nc.controllable_branch_data,
+        data=nc.passive_branch_data,
+        ctrl_data=nc.active_branch_data,
         circuit=circuit,
         t_idx=t_idx,
         time_series=time_series,

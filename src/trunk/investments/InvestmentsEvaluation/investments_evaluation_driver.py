@@ -86,7 +86,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # do something
         res = multi_island_pf_nc(nc=nc_mod, options=self.options.pf_options)
         total_losses = np.sum(res.losses.real)
-        overload_score = res.get_oveload_score(branch_prices=nc_mod.branch_data.overload_cost)
+        overload_score = res.get_oveload_score(branch_prices=nc_mod.passive_branch_data.overload_cost)
         # voltage_score = res.get_undervoltage_overvoltage_score(undervoltage_prices=self.nc.bus_data.undervoltage_cost,
         #                                                        overvoltage_prices=self.nc.bus_data.overvoltage_cost,
         #                                                        vmin=self.nc.bus_data.Vmin,

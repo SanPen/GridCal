@@ -145,14 +145,14 @@ def test_lodf_ieee14_definition() -> None:
         lodf = np.zeros((nc.nbr, nc.nbr))
 
         for i in range(nc.nbr):
-            nc.branch_data.active[i] = 0  # fail branch
+            nc.passive_branch_data.active[i] = 0  # fail branch
             res = multi_island_pf_nc(nc=nc, options=options)
             if base_res.Sf.real[i] != 0.0:
                 lodf[:, i] = (res.Sf.real - base_res.Sf.real) / base_res.Sf.real[i]
             else:
                 lodf[i, i] = -1.0
 
-            nc.branch_data.active[i] = 1  # revert back
+            nc.passive_branch_data.active[i] = 1  # revert back
 
         # force zeros in the identified antenna branches
         lodf[:, antenna_branch_idx] = 0

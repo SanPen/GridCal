@@ -79,12 +79,12 @@ def compute_analytic_admittances(nc: NumericalCircuit):
     k_tau = nc.k_tau
     k_mtau = nc.k_mtau
 
-    tapm = nc.branch_data.tap_module
-    tapt = nc.branch_data.tap_angle
+    tapm = nc.passive_branch_data.tap_module
+    tapt = nc.passive_branch_data.tap_angle
 
     Cf = nc.Cf
     Ct = nc.Ct
-    ys = 1.0 / (nc.branch_data.R + 1.0j * nc.branch_data.X + 1e-20)
+    ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)
 
     # First partial derivative with respect to tap module
     mp = tapm[k_m]
@@ -141,18 +141,18 @@ def compute_finitediff_admittances(nc: NumericalCircuit, tol=1e-5):
     adm0 = nc.get_admittance_matrices()
 
     # Modify tap modules
-    nc.branch_data.tap_module[k_m] += tol
+    nc.passive_branch_data.tap_module[k_m] += tol
     adm1 = nc.get_admittance_matrices()
-    nc.branch_data.tap_module[k_m] -= tol
+    nc.passive_branch_data.tap_module[k_m] -= tol
 
     dYf_dm = (adm1.Yf - adm0.Yf) / tol
     dYt_dm = (adm1.Yt - adm0.Yt) / tol
     dY_dm = (adm1.Ybus - adm0.Ybus) / tol
 
     # modify tap angles
-    nc.branch_data.tap_angle[k_tau] += tol
+    nc.passive_branch_data.tap_angle[k_tau] += tol
     adm2 = nc.get_admittance_matrices()
-    nc.branch_data.tap_angle[k_tau] -= tol
+    nc.passive_branch_data.tap_angle[k_tau] -= tol
 
     dYf_dt = (adm2.Yf - adm0.Yf) / tol
     dYt_dt = (adm2.Yt - adm0.Yt) / tol
@@ -172,12 +172,12 @@ def compute_analytic_admittances_2dev(nc: NumericalCircuit):
     k_tau = indices.k_tau
     k_mtau = indices.k_mtau
 
-    tapm = nc.branch_data.tap_module
-    tapt = nc.branch_data.tap_angle
+    tapm = nc.passive_branch_data.tap_module
+    tapt = nc.passive_branch_data.tap_angle
 
     Cf = nc.Cf
     Ct = nc.Ct
-    ys = 1.0 / (nc.branch_data.R + 1.0j * nc.branch_data.X + 1e-20)
+    ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)
 
     # Second partial derivative with respect to tap module
     mp = tapm[k_m]
@@ -260,9 +260,9 @@ def compute_finitediff_admittances_2dev(nc: NumericalCircuit, tol=1e-5):
     dY0_dm, dYf0_dm, dYt0_dm, dY0_dt, dYf0_dt, dYt0_dt = compute_finitediff_admittances(nc)
 
     # Modify the tap module
-    nc.branch_data.tap_module[k_m] += tol
+    nc.passive_branch_data.tap_module[k_m] += tol
     dY_dm, dYf_dm, dYt_dm, dY_dt, dYf_dt, dYt_dt = compute_finitediff_admittances(nc)
-    nc.branch_data.tap_module[k_m] -= tol
+    nc.passive_branch_data.tap_module[k_m] -= tol
 
     dYf_dmdm = (dYf_dm - dYf0_dm) / tol
     dYt_dmdm = (dYt_dm - dYt0_dm) / tol
@@ -273,9 +273,9 @@ def compute_finitediff_admittances_2dev(nc: NumericalCircuit, tol=1e-5):
     dY_dtdm = (dY_dt - dY0_dt) / tol
 
     # Modify the tap angle
-    nc.branch_data.tap_angle[k_tau] += tol
+    nc.passive_branch_data.tap_angle[k_tau] += tol
     dY_dm, dYf_dm, dYt_dm, dY_dt, dYf_dt, dYt_dt = compute_finitediff_admittances(nc)
-    nc.branch_data.tap_angle[k_tau] -= tol
+    nc.passive_branch_data.tap_angle[k_tau] -= tol
 
     dYf_dmdt = (dYf_dm - dYf0_dm) / tol
     dYt_dmdt = (dYt_dm - dYt0_dm) / tol

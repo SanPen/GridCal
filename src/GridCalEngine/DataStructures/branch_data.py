@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import WindingsConnection
@@ -15,7 +14,7 @@ from GridCalEngine.basic_structures import Vec, IntVec, ObjVec, CxVec, Logger
 from typing import List, Tuple, Set
 
 
-class BranchData(BranchParentData):
+class PassiveBranchData(BranchParentData):
     """
     Structure to host all branches data for calculation
     """
@@ -52,22 +51,8 @@ class BranchData(BranchParentData):
 
         self.k: Vec = np.ones(nelm, dtype=float)
 
-        # self.tap_module: Vec = np.ones(nelm, dtype=float)
-        # self.tap_module_min: Vec = np.full(nelm, fill_value=0.1, dtype=float)
-        # self.tap_module_max: Vec = np.full(nelm, fill_value=1.5, dtype=float)
-        # self.tap_angle: Vec = np.zeros(nelm, dtype=float)
-        # self.tap_angle_min: Vec = np.full(nelm, fill_value=-6.28, dtype=float)
-        # self.tap_angle_max: Vec = np.full(nelm, fill_value=6.28, dtype=float)
-        # self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        # self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        # self.tap_controlled_buses: IntVec = np.zeros(self.nelm, dtype=int)
-
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
-
-        # self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
-        # self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
-        # self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
 
     def size(self) -> int:
         """
@@ -77,7 +62,7 @@ class BranchData(BranchParentData):
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "BranchData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "PassiveBranchData":
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -86,8 +71,8 @@ class BranchData(BranchParentData):
         :return: new BranchData instance
         """
         data, bus_map = super().slice(elm_idx, bus_idx, logger)
-        data.__class__ = BranchData
-        data: BranchData = data
+        data.__class__ = PassiveBranchData
+        data: PassiveBranchData = data
 
         data.branch_idx = self.branch_idx[elm_idx]
 
@@ -113,32 +98,18 @@ class BranchData(BranchParentData):
 
         data.k = self.k[elm_idx]
 
-        # data.tap_module = self.tap_module[elm_idx]
-        # data.tap_module_min = self.tap_module_min[elm_idx]
-        # data.tap_module_max = self.tap_module_max[elm_idx]
-        # data.tap_angle = self.tap_angle[elm_idx]
-        # data.tap_angle_min = self.tap_angle_min[elm_idx]
-        # data.tap_angle_max = self.tap_angle_max[elm_idx]
-        # data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
-        # data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
-        # data.tap_controlled_buses = self.tap_controlled_buses[elm_idx]
-
         data.virtual_tap_f = self.virtual_tap_f[elm_idx]
         data.virtual_tap_t = self.virtual_tap_t[elm_idx]
 
-        # data.Pset = self.Pset[elm_idx]
-        # data.Qset = self.Qset[elm_idx]
-        # data.vset = self.vset[elm_idx]
-
         return data
 
-    def copy(self) -> "BranchData":
+    def copy(self) -> "PassiveBranchData":
         """
         Get a deep copy of this object
         :return: new BranchData instance
         """
-        data: BranchData = super().copy()
-        data.__class__ = BranchData
+        data: PassiveBranchData = super().copy()
+        data.__class__ = PassiveBranchData
 
         data.branch_idx = self.branch_idx.copy()
 
@@ -162,22 +133,8 @@ class BranchData(BranchParentData):
         data.tau_taps = self.tau_taps.copy()
         data.k = self.k.copy()
 
-        # data.tap_module = self.tap_module.copy()
-        # data.tap_module_min = self.tap_module_min.copy()
-        # data.tap_module_max = self.tap_module_max.copy()
-        # data.tap_angle = self.tap_angle.copy()
-        # data.tap_angle_min = self.tap_angle_min.copy()
-        # data.tap_angle_max = self.tap_angle_max.copy()
-        # data.tap_module_control_mode = self.tap_module_control_mode.copy()
-        # data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
-        # data.tap_controlled_buses = self.tap_controlled_buses.copy()
-
         data.virtual_tap_f = self.virtual_tap_f.copy()
         data.virtual_tap_t = self.virtual_tap_t.copy()
-
-        # data.Pset = self.Pset.copy()
-        # data.Qset = self.Qset.copy()
-        # data.vset = self.vset.copy()
 
         return data
 

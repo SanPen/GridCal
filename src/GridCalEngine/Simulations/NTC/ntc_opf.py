@@ -19,8 +19,8 @@ from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.load_data import LoadData
-from GridCalEngine.DataStructures.branch_data import BranchData
-from GridCalEngine.DataStructures.controllable_branch_data import ControllableBranchData
+from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
@@ -653,8 +653,8 @@ def add_linear_injections_formulation(t: Union[int, None],
 
 def add_linear_branches_formulation(t_idx: int,
                                     Sbase: float,
-                                    branch_data_t: BranchData,
-                                    ctrl_branch_data_t: ControllableBranchData,
+                                    branch_data_t: PassiveBranchData,
+                                    ctrl_branch_data_t: ActiveBranchData,
                                     branch_vars: BranchNtcVars,
                                     bus_vars: BusNtcVars,
                                     prob: LpModel,
@@ -784,7 +784,7 @@ def add_linear_branches_formulation(t_idx: int,
 
 def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   Sbase: float,
-                                                  branch_data_t: BranchData,
+                                                  branch_data_t: PassiveBranchData,
                                                   branch_vars: BranchNtcVars,
                                                   bus_vars: BusNtcVars,
                                                   prob: LpModel,
@@ -1099,8 +1099,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             bus_a2_idx_set = set(bus_a2_idx)
 
             # find the inter space branches given the bus indices of each space
-            mip_vars.branch_vars.inter_space_branches = nc.branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
-                                                                                       bus_idx_to=bus_a2_idx_set)
+            mip_vars.branch_vars.inter_space_branches = nc.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
+                                                                                               bus_idx_to=bus_a2_idx_set)
             mip_vars.hvdc_vars.inter_space_hvdc = nc.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
                                                                                bus_idx_to=bus_a2_idx_set)
 
@@ -1176,8 +1176,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             f_obj += add_linear_branches_formulation(
                 t_idx=t_idx,
                 Sbase=nc.Sbase,
-                branch_data_t=nc.branch_data,
-                ctrl_branch_data_t=nc.controllable_branch_data,
+                branch_data_t=nc.passive_branch_data,
+                ctrl_branch_data_t=nc.active_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
@@ -1217,7 +1217,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                     f_obj += add_linear_branches_contingencies_formulation(
                         t_idx=t_idx,
                         Sbase=nc.Sbase,
-                        branch_data_t=nc.branch_data,
+                        branch_data_t=nc.passive_branch_data,
                         branch_vars=mip_vars.branch_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,
@@ -1426,8 +1426,8 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
             bus_a2_idx_set = set(bus_a2_idx)
 
             # find the inter space branches given the bus indices of each space
-            mip_vars.branch_vars.inter_space_branches = nc.branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
-                                                                                       bus_idx_to=bus_a2_idx_set)
+            mip_vars.branch_vars.inter_space_branches = nc.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
+                                                                                               bus_idx_to=bus_a2_idx_set)
             mip_vars.hvdc_vars.inter_space_hvdc = nc.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
                                                                                bus_idx_to=bus_a2_idx_set)
 
@@ -1480,7 +1480,7 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
             f_obj += add_linear_branches_formulation(
                 t_idx=t_idx,
                 Sbase=nc.Sbase,
-                branch_data_t=nc.branch_data,
+                branch_data_t=nc.passive_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
@@ -1515,7 +1515,7 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
                     f_obj += add_linear_branches_contingencies_formulation(
                         t_idx=t_idx,
                         Sbase=nc.Sbase,
-                        branch_data_t=nc.branch_data,
+                        branch_data_t=nc.passive_branch_data,
                         branch_vars=mip_vars.branch_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,

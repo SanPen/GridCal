@@ -9,7 +9,7 @@ import numpy as np
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.bus_data import BusData
-from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.generator_data import GeneratorData
@@ -564,16 +564,16 @@ class GeneralizedSimulationIndices:
         # Branches in their most generic sense are stacked as [conventional, VSC, HVDC]
         branch_idx = 0
 
-        for i, _ in enumerate(nc.branch_data.active):
-            self.add_tau_control_branch(branch_name=nc.branch_data.names[i],
-                                        mode=nc.branch_data.tap_phase_control_mode[i],
+        for i, _ in enumerate(nc.passive_branch_data.active):
+            self.add_tau_control_branch(branch_name=nc.passive_branch_data.names[i],
+                                        mode=nc.passive_branch_data.tap_phase_control_mode[i],
                                         branch_idx=branch_idx,
                                         is_conventional=True)
 
-            bus_idx = nc.branch_data.tap_controlled_buses[i]
+            bus_idx = nc.passive_branch_data.tap_controlled_buses[i]
 
-            self.add_m_control_branch(branch_name=nc.branch_data.names[i],
-                                      mode=nc.branch_data.tap_module_control_mode[i],
+            self.add_m_control_branch(branch_name=nc.passive_branch_data.names[i],
+                                      mode=nc.passive_branch_data.tap_module_control_mode[i],
                                       branch_idx=branch_idx,
                                       bus_idx=bus_idx,
                                       is_conventional=True)

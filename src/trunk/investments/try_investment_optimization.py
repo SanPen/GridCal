@@ -119,7 +119,7 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
         # do something
         res = multi_island_pf_nc(nc=nc, options=pf_options)
         total_losses = np.sum(res.losses.real)
-        overload_score = res.get_overload_score(branch_prices=nc.branch_data.overload_cost)
+        overload_score = res.get_overload_score(branch_prices=nc.passive_branch_data.overload_cost)
         voltage_score = res.get_undervoltage_overvoltage_score(undervoltage_prices=nc.bus_data.undervoltage_cost,
                                                                overvoltage_prices=nc.bus_data.overvoltage_cost,
                                                                vmin=nc.bus_data.Vmin,

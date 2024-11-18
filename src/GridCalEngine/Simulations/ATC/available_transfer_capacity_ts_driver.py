@@ -261,8 +261,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # get the branch indices to analyze
         nc = compile_numerical_circuit_at(self.grid, logger=self.logger)
-        br_idx = nc.branch_data.get_monitor_enabled_indices()
-        con_br_idx = nc.branch_data.get_contingency_enabled_indices()
+        br_idx = nc.passive_branch_data.get_monitor_enabled_indices()
+        con_br_idx = nc.passive_branch_data.get_contingency_enabled_indices()
 
         # declare the results
         self.results.clear()

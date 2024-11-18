@@ -206,7 +206,7 @@ def test_tau_derivatives() -> None:
     grid = gce.open_file(filename=fname)
     nc = gce.compile_numerical_circuit_at(grid)
 
-    Ys = 1.0 / (nc.branch_data.R + 1j * nc.branch_data.X)
+    Ys = 1.0 / (nc.passive_branch_data.R + 1j * nc.passive_branch_data.X)
 
     test_data = [
         {
@@ -233,8 +233,8 @@ def test_tau_derivatives() -> None:
 
         (dSbus_dm1, dSf_dm1, dSt_dm1,
          dSbus_dtau1, dSf_dtau1, dSt_dtau1) = compute_branch_power_derivatives(
-            all_tap_m=nc.controllable_branch_data.tap_module,
-            all_tap_tau=nc.controllable_branch_data.tap_angle,
+            all_tap_m=nc.active_branch_data.tap_module,
+            all_tap_tau=nc.active_branch_data.tap_angle,
             V=nc.Vbus,
             k_m=np.empty(0, dtype=int),
             k_tau=tau_idx,
@@ -242,8 +242,8 @@ def test_tau_derivatives() -> None:
             Ct=nc.Ct,
             F=nc.F,
             T=nc.T,
-            R=nc.branch_data.R,
-            X=nc.branch_data.X
+            R=nc.passive_branch_data.R,
+            X=nc.passive_branch_data.X
         )
 
         # dSbus_dtau1, dSf_dtau1, dSt_dtau1 = cscdiff.derivatives_tau_csc_numba(nbus=nc.nbus,
@@ -274,8 +274,8 @@ def test_tau_derivatives() -> None:
             F=nc.F,
             T=nc.T,
             Ys=Ys,
-            kconv=nc.branch_data.k,
-            tap=nc.controllable_branch_data.tap,
+            kconv=nc.passive_branch_data.k,
+            tap=nc.active_branch_data.tap,
             V=nc.Vbus
         )
 
@@ -295,8 +295,8 @@ def test_tau_derivatives() -> None:
                                          F=nc.F,
                                          T=nc.T,
                                          Ys=Ys,
-                                         kconv=nc.branch_data.k,
-                                         tap=nc.controllable_branch_data.tap,
+                                         kconv=nc.passive_branch_data.k,
+                                         tap=nc.active_branch_data.tap,
                                          V=nc.Vbus)
 
         dSf_dtau3 = dSf_dtau1[sf_idx, :]
@@ -315,8 +315,8 @@ def test_tau_derivatives() -> None:
                                          F=nc.F,
                                          T=nc.T,
                                          Ys=Ys,
-                                         kconv=nc.branch_data.k,
-                                         tap=nc.controllable_branch_data.tap,
+                                         kconv=nc.passive_branch_data.k,
+                                         tap=nc.active_branch_data.tap,
                                          V=nc.Vbus)
 
         dSt_dtau3 = dSt_dtau1[sf_idx, :]
@@ -338,7 +338,7 @@ def test_m_derivatives() -> None:
     grid = gce.open_file(filename=fname)
     nc = gce.compile_numerical_circuit_at(grid)
 
-    Ys = 1.0 / (nc.branch_data.R + 1j * nc.branch_data.X)
+    Ys = 1.0 / (nc.passive_branch_data.R + 1j * nc.passive_branch_data.X)
 
     test_data = [
         {
@@ -370,10 +370,10 @@ def test_m_derivatives() -> None:
             F=nc.F,
             T=nc.T,
             Ys=Ys,
-            kconv=nc.branch_data.k,
-            tap=nc.controllable_branch_data.tap,
-            tap_module=nc.controllable_branch_data.tap_module,
-            Bc=nc.branch_data.B,
+            kconv=nc.passive_branch_data.k,
+            tap=nc.active_branch_data.tap,
+            tap_module=nc.active_branch_data.tap_module,
+            Bc=nc.passive_branch_data.B,
             Beq=np.zeros(nc.nbr),
             V=nc.Vbus
         )
@@ -410,11 +410,11 @@ def test_m_derivatives() -> None:
             F=nc.F,
             T=nc.T,
             Ys=Ys,
-            Bc=nc.branch_data.B,
+            Bc=nc.passive_branch_data.B,
             Beq=np.zeros(nc.nbr),
-            kconv=nc.branch_data.k,
-            tap=nc.controllable_branch_data.tap,
-            tap_module=nc.controllable_branch_data.tap_module,
+            kconv=nc.passive_branch_data.k,
+            tap=nc.active_branch_data.tap,
+            tap_module=nc.active_branch_data.tap_module,
             V=nc.Vbus
         )
         dSbus_dm3 = dSbus_dm1[bus_idx, :]
@@ -427,11 +427,11 @@ def test_m_derivatives() -> None:
             F=nc.F,
             T=nc.T,
             Ys=Ys,
-            Bc=nc.branch_data.B,
+            Bc=nc.passive_branch_data.B,
             Beq=np.zeros(nc.nbr),
-            kconv=nc.branch_data.k,
-            tap=nc.controllable_branch_data.tap,
-            tap_module=nc.controllable_branch_data.tap_module,
+            kconv=nc.passive_branch_data.k,
+            tap=nc.active_branch_data.tap,
+            tap_module=nc.active_branch_data.tap_module,
             V=nc.Vbus
         )
         dSf_dm3 = dSf_dm1[sf_idx, :]
@@ -444,9 +444,9 @@ def test_m_derivatives() -> None:
             F=nc.F,
             T=nc.T,
             Ys=Ys,
-            kconv=nc.branch_data.k,
-            tap=nc.controllable_branch_data.tap,
-            tap_module=nc.controllable_branch_data.tap_module,
+            kconv=nc.passive_branch_data.k,
+            tap=nc.active_branch_data.tap,
+            tap_module=nc.active_branch_data.tap_module,
             V=nc.Vbus
         )
         dSt_dm3 = dSt_dm1[sf_idx, :]
@@ -464,7 +464,7 @@ def test_beq_derivatives() -> None:
     grid = gce.open_file(filename=fname)
     nc = gce.compile_numerical_circuit_at(grid)
 
-    Ys = 1.0 / (nc.branch_data.R + 1j * nc.branch_data.X)
+    Ys = 1.0 / (nc.passive_branch_data.R + 1j * nc.passive_branch_data.X)
 
     test_data = [
         {
@@ -494,8 +494,8 @@ def test_beq_derivatives() -> None:
             nbr=nc.nbr,
             iBeqx=m_idx,
             F=nc.F,
-            kconv=nc.branch_data.k,
-            tap_module=nc.controllable_branch_data.tap_module,
+            kconv=nc.passive_branch_data.k,
+            tap_module=nc.active_branch_data.tap_module,
             V=nc.Vbus
         )
         dSbus_dbeq1, dSf_dbeq1, dSt_dbeq1 = mat_to_scipy(dSbus_dbeq1), mat_to_scipy(dSf_dbeq1), mat_to_scipy(dSt_dbeq1)
@@ -510,8 +510,8 @@ def test_beq_derivatives() -> None:
                                              bus_indices=bus_idx,
                                              beq_indices=m_idx,
                                              F=nc.F,
-                                             kconv=nc.branch_data.k,
-                                             tap_module=nc.controllable_branch_data.tap_module,
+                                             kconv=nc.passive_branch_data.k,
+                                             tap_module=nc.active_branch_data.tap_module,
                                              V=nc.Vbus)
         dSbus_dbeq3 = dSbus_dbeq1[bus_idx, :]
         assert np.allclose(dSbus_dbeq3.toarray(), dSbus_dbeq2.toarray())
@@ -520,8 +520,8 @@ def test_beq_derivatives() -> None:
                                          sf_indices=sf_idx,
                                          beq_indices=m_idx,
                                          F=nc.F,
-                                         kconv=nc.branch_data.k,
-                                         tap_module=nc.controllable_branch_data.tap_module,
+                                         kconv=nc.passive_branch_data.k,
+                                         tap_module=nc.active_branch_data.tap_module,
                                          V=nc.Vbus)
         dSf_dbeq3 = dSf_dbeq1[sf_idx, :]
         assert np.allclose(dSf_dbeq3.toarray(), dSf_dbeq2.toarray())
