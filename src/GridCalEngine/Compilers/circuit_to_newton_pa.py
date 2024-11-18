@@ -1061,10 +1061,10 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.Vbus_ = npa_data.Vbus.reshape(-1, 1)
         data.Sbus_ = inj.S0.reshape(-1, 1)
         data.Ibus_ = inj.I0.reshape(-1, 1)
-        data.branch_data.names = np.array(npa_data.branch_data.names)
-        data.branch_data.virtual_tap_f = npa_data.branch_data.vtap_f
-        data.branch_data.virtual_tap_t = npa_data.branch_data.vtap_t
-        data.branch_data.original_idx = npa_data.branch_data.original_indices
+        data.passive_branch_data.names = np.array(npa_data.passive_branch_data.names)
+        data.passive_branch_data.virtual_tap_f = npa_data.passive_branch_data.vtap_f
+        data.passive_branch_data.virtual_tap_t = npa_data.passive_branch_data.vtap_t
+        data.passive_branch_data.original_idx = npa_data.passive_branch_data.original_indices
 
         data.bus_data.names = np.array(npa_data.bus_data.names)
         data.bus_data.original_idx = npa_data.bus_data.original_indices

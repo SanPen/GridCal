@@ -361,7 +361,7 @@ def get_psse_facts(upfc: dev.UPFC, bus_dict: Dict[dev.Bus, int]) -> RawFACTS:
 
     psse_facts.I = bus_dict[upfc.bus_from]
     psse_facts.J = bus_dict[upfc.bus_to]
-    psse_facts.SET1 = upfc.Rs
+    psse_facts.SET1 = upfc.R
     psse_facts.SHMX = 1 / upfc.Xsh if upfc.Xsh > 0 else 0.0
     psse_facts.VSET = upfc.Vsh
     psse_facts.PDES = upfc.Pfset

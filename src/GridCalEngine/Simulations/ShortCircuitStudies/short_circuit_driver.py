@@ -265,7 +265,7 @@ class ShortCircuitDriver(DriverTemplate):
                                                     fault_type=self.options.fault_type)
 
                     # merge results
-                    results.apply_from_island(res, island.bus_data.original_idx, island.branch_data.original_idx)
+                    results.apply_from_island(res, island.bus_data.original_idx, island.passive_branch_data.original_idx)
 
         else:  # single island
 

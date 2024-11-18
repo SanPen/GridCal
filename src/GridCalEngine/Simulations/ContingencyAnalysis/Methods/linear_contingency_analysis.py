@@ -65,7 +65,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                           prepare_for_srap=options.use_srap)
 
     # get the contingency branch indices
-    mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
+    mon_idx = numerical_circuit.passive_branch_data.get_monitor_enabled_indices()
     Pbus = numerical_circuit.get_injections(normalize=False).real
 
     # compute the branch Sf in "n"
@@ -110,7 +110,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                contingency_idx=ic,
                                contingency_group=linear_multiple_contingencies.contingency_groups_used[ic],
                                using_srap=options.use_srap,
-                               srap_ratings=numerical_circuit.branch_data.protection_rates,
+                               srap_ratings=numerical_circuit.passive_branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
                                srap_deadband=options.srap_deadband,
                                contingency_deadband=options.contingency_deadband,

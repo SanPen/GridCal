@@ -98,8 +98,8 @@ def solve(nc: NumericalCircuit,
                                            converged=False,
                                            norm_f=1e200,
                                            Scalc=S0,
-                                           m=nc.branch_data.tap_module,
-                                           tau=nc.branch_data.tap_angle,
+                                           m=nc.active_branch_data.tap_module,
+                                           tau=nc.active_branch_data.tap_angle,
                                            Beq=np.zeros(nc.nbr, dtype=float),
                                            Ybus=nc.Ybus,
                                            Yf=nc.Yf,
@@ -117,8 +117,8 @@ def solve(nc: NumericalCircuit,
                                                  converged=False,
                                                  norm_f=1e200,
                                                  Scalc=S0,
-                                                 m=nc.branch_data.tap_module,
-                                                 tau=nc.branch_data.tap_angle,
+                                                 m=nc.active_branch_data.tap_module,
+                                                 tau=nc.active_branch_data.tap_angle,
                                                  Beq=np.zeros(nc.nbr, dtype=float),
                                                  Ybus=nc.Ybus,
                                                  Yf=nc.Yf,
@@ -177,7 +177,7 @@ def solve(nc: NumericalCircuit,
                                      I0=I0,
                                      Y0=Y0,
                                      V0=V0,
-                                     tau=nc.branch_data.tap_angle,
+                                     tau=nc.active_branch_data.tap_angle,
                                      vd=vd,
                                      no_slack=no_slack,
                                      pq=pq,
@@ -196,7 +196,7 @@ def solve(nc: NumericalCircuit,
                                              I0=I0,
                                              Y0=Y0,
                                              V0=V0,
-                                             tau=nc.branch_data.tap_angle,
+                                             tau=nc.active_branch_data.tap_angle,
                                              vd=vd,
                                              no_slack=no_slack,
                                              pq=pq,
@@ -465,10 +465,10 @@ def solve(nc: NumericalCircuit,
                              expected_value=f"<{options.tolerance}")
 
         if final_solution.tap_module is None:
-            final_solution.tap_module = nc.branch_data.tap_module
+            final_solution.tap_module = nc.active_branch_data.tap_module
 
         if final_solution.tap_angle is None:
-            final_solution.tap_angle = nc.branch_data.tap_angle
+            final_solution.tap_angle = nc.active_branch_data.tap_angle
 
         if final_solution.Beq is None:
             final_solution.Beq = np.zeros(nc.nbr, dtype=float),
@@ -593,8 +593,8 @@ def power_flow_post_process(
         Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
 
         # Branches current, loading, etc
-        Vf = V[calculation_inputs.branch_data.F]
-        Vt = V[calculation_inputs.branch_data.T]
+        Vf = V[calculation_inputs.passive_branch_data.F]
+        Vt = V[calculation_inputs.passive_branch_data.T]
         If = Yf @ V
         It = Yt @ V
         Sf = Vf * np.conj(If)
@@ -616,16 +616,16 @@ def power_flow_post_process(
         theta_f = theta[calculation_inputs.F]
         theta_t = theta[calculation_inputs.T]
 
-        b = 1.0 / (calculation_inputs.branch_data.X * calculation_inputs.branch_data.tap_module)
+        b = 1.0 / (calculation_inputs.passive_branch_data.X * calculation_inputs.active_branch_data.tap_module)
         # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
 
-        Pf = b * (theta_f - theta_t - calculation_inputs.branch_data.tap_angle)
+        Pf = b * (theta_f - theta_t - calculation_inputs.active_branch_data.tap_angle)
 
         Sfb = Pf * calculation_inputs.Sbase
         Stb = -Pf * calculation_inputs.Sbase
 
-        Vf = V[calculation_inputs.branch_data.F]
-        Vt = V[calculation_inputs.branch_data.T]
+        Vf = V[calculation_inputs.passive_branch_data.F]
+        Vt = V[calculation_inputs.passive_branch_data.T]
         Vbranch = Vf - Vt
         If = Pf / (Vf + 1e-20)
         It = -If
@@ -700,7 +700,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         n_batt=nc.nbatt,
         n_sh=nc.nshunt,
         bus_names=nc.bus_data.names,
-        branch_names=nc.branch_data.names,
+        branch_names=nc.passive_branch_data.names,
         hvdc_names=nc.hvdc_data.names,
         gen_names=nc.generator_names,
         batt_names=nc.battery_names,

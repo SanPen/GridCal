@@ -568,9 +568,9 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
         data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
         data.Ibus_ = btg_data.Ibus
-        data.branch_data.names = np.array(btg_data.branch_data.names)
-        data.branch_data.virtual_tap_f = btg_data.branch_data.virtual_tap_f
-        data.branch_data.virtual_tap_t = btg_data.branch_data.virtual_tap_t
+        data.passive_branch_data.names = np.array(btg_data.passive_branch_data.names)
+        data.passive_branch_data.virtual_tap_f = btg_data.passive_branch_data.virtual_tap_f
+        data.passive_branch_data.virtual_tap_t = btg_data.passive_branch_data.virtual_tap_t
 
         data.bus_data.names = np.array(btg_data.bus_data.names)
 
@@ -598,7 +598,7 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.pqpv_ = btg_data.bus_types_data.pqpv
 
         data.bus_data.original_idx = btg_data.bus_data.original_indices
-        data.branch_data.original_idx = btg_data.branch_data.original_indices
+        data.passive_branch_data.original_idx = btg_data.passive_branch_data.original_indices
 
         data.Qmax_bus_ = btg_data.Qmax_bus
         data.Qmin_bus_ = btg_data.Qmin_bus

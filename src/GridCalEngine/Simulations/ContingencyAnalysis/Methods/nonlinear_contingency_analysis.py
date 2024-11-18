@@ -63,7 +63,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     # get contingency groups dictionary
     cg_dict = grid.get_contingency_group_dict()
     calc_branches = grid.get_branches_wo_hvdc()
-    mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
+    mon_idx = numerical_circuit.passive_branch_data.get_monitor_enabled_indices()
 
     # run 0
     pf_res_0 = multi_island_pf_nc(nc=numerical_circuit,
@@ -127,7 +127,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                contingency_idx=ic,
                                contingency_group=contingency_group,
                                using_srap=options.use_srap,
-                               srap_ratings=numerical_circuit.branch_data.protection_rates,
+                               srap_ratings=numerical_circuit.passive_branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
                                srap_deadband=options.srap_deadband,
                                contingency_deadband=options.contingency_deadband,

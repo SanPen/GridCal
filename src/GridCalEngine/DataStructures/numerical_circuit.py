@@ -15,23 +15,36 @@ from GridCalEngine.enumerations import BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
 import GridCalEngine.Topology.admittance_matrices as ycalc
-import GridCalEngine.DataStructures as ds
+from GridCalEngine.DataStructures.battery_data import BatteryData
+from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
+from GridCalEngine.DataStructures.bus_data import BusData
+from GridCalEngine.DataStructures.generator_data import GeneratorData
+from GridCalEngine.DataStructures.hvdc_data import HvdcData
+from GridCalEngine.DataStructures.vsc_data import VscData
+from GridCalEngine.DataStructures.load_data import LoadData
+from GridCalEngine.DataStructures.shunt_data import ShuntData
+from GridCalEngine.DataStructures.fluid_node_data import FluidNodeData
+from GridCalEngine.DataStructures.fluid_turbine_data import FluidTurbineData
+from GridCalEngine.DataStructures.fluid_pump_data import FluidPumpData
+from GridCalEngine.DataStructures.fluid_p2x_data import FluidP2XData
+from GridCalEngine.DataStructures.fluid_path_data import FluidPathData
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.Aggregation.contingency import Contingency
 
 ALL_STRUCTS = Union[
-    ds.BusData,
-    ds.GeneratorData,
-    ds.BatteryData,
-    ds.LoadData,
-    ds.ShuntData,
-    ds.BranchData,
-    ds.HvdcData,
-    ds.FluidNodeData,
-    ds.FluidTurbineData,
-    ds.FluidPumpData,
-    ds.FluidP2XData,
-    ds.FluidPathData
+    BusData,
+    GeneratorData,
+    BatteryData,
+    LoadData,
+    ShuntData,
+    PassiveBranchData,
+    HvdcData,
+    FluidNodeData,
+    FluidTurbineData,
+    FluidPumpData,
+    FluidP2XData,
+    FluidPathData
 ]
 
 
@@ -248,24 +261,22 @@ class NumericalCircuit:
         # --------------------------------------------------------------------------------------------------------------
         # Data structures
         # --------------------------------------------------------------------------------------------------------------
-        self.bus_data: ds.BusData = ds.BusData(nbus=nbus)
-        self.branch_data: ds.BranchData = ds.BranchData(nelm=nbr, nbus=nbus)
-        self.hvdc_data: ds.HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
-        self.vsc_data: ds.VscData = ds.VscData(nelm=nvsc, nbus=nbus)
+        self.bus_data: BusData = BusData(nbus=nbus)
+        self.passive_branch_data: PassiveBranchData = PassiveBranchData(nelm=nbr, nbus=nbus)
+        self.active_branch_data: ActiveBranchData = ActiveBranchData(nelm=nbr, nbus=nbus)
+        self.hvdc_data: HvdcData = HvdcData(nelm=nhvdc, nbus=nbus)
+        self.vsc_data: VscData = VscData(nelm=nvsc, nbus=nbus)
 
-        self.load_data: ds.LoadData = ds.LoadData(nelm=nload, nbus=nbus)
+        self.load_data: LoadData = LoadData(nelm=nload, nbus=nbus)
+        self.battery_data: BatteryData = BatteryData(nelm=nbatt, nbus=nbus)
+        self.generator_data: GeneratorData = GeneratorData(nelm=ngen, nbus=nbus)
+        self.shunt_data: ShuntData = ShuntData(nelm=nshunt, nbus=nbus)
 
-        self.battery_data: ds.BatteryData = ds.BatteryData(nelm=nbatt, nbus=nbus)
-
-        self.generator_data: ds.GeneratorData = ds.GeneratorData(nelm=ngen, nbus=nbus)
-
-        self.shunt_data: ds.ShuntData = ds.ShuntData(nelm=nshunt, nbus=nbus)
-
-        self.fluid_node_data: ds.FluidNodeData = ds.FluidNodeData(nelm=nfluidnode)
-        self.fluid_turbine_data: ds.FluidTurbineData = ds.FluidTurbineData(nelm=nfluidturbine)
-        self.fluid_pump_data: ds.FluidPumpData = ds.FluidPumpData(nelm=nfluidpump)
-        self.fluid_p2x_data: ds.FluidP2XData = ds.FluidP2XData(nelm=nfluidp2x)
-        self.fluid_path_data: ds.FluidPathData = ds.FluidPathData(nelm=nfluidpath)
+        self.fluid_node_data: FluidNodeData = FluidNodeData(nelm=nfluidnode)
+        self.fluid_turbine_data: FluidTurbineData = FluidTurbineData(nelm=nfluidturbine)
+        self.fluid_pump_data: FluidPumpData = FluidPumpData(nelm=nfluidpump)
+        self.fluid_p2x_data: FluidP2XData = FluidP2XData(nelm=nfluidp2x)
+        self.fluid_path_data: FluidPathData = FluidPathData(nelm=nfluidpath)
 
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed
@@ -367,7 +378,7 @@ class NumericalCircuit:
         """
 
         self.nbus = len(self.bus_data)
-        self.nbr = len(self.branch_data)
+        self.nbr = len(self.passive_branch_data)
         self.nhvdc = len(self.hvdc_data)
         self.nvsc = len(self.vsc_data)
         self.nload = len(self.load_data)
@@ -375,8 +386,8 @@ class NumericalCircuit:
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
 
-        self.branch_data.C_branch_bus_f = self.branch_data.C_branch_bus_f.tocsc()
-        self.branch_data.C_branch_bus_t = self.branch_data.C_branch_bus_t.tocsc()
+        self.passive_branch_data.C_branch_bus_f = self.passive_branch_data.C_branch_bus_f.tocsc()
+        self.passive_branch_data.C_branch_bus_t = self.passive_branch_data.C_branch_bus_t.tocsc()
 
         self.hvdc_data.C_hvdc_bus_f = self.hvdc_data.C_hvdc_bus_f.tocsc()
         self.hvdc_data.C_hvdc_bus_t = self.hvdc_data.C_hvdc_bus_t.tocsc()
@@ -414,7 +425,7 @@ class NumericalCircuit:
                               t_idx=self.t_idx)
 
         nc.bus_data = self.bus_data.copy()
-        nc.branch_data = self.branch_data.copy()
+        nc.passive_branch_data = self.passive_branch_data.copy()
         nc.hvdc_data = self.hvdc_data.copy()
         nc.load_data = self.load_data.copy()
         nc.shunt_data = self.shunt_data.copy()
@@ -439,7 +450,7 @@ class NumericalCircuit:
                 self.battery_data,
                 self.load_data,
                 self.shunt_data,
-                self.branch_data,
+                self.passive_branch_data,
                 self.hvdc_data,
                 self.fluid_node_data,
                 self.fluid_turbine_data,
@@ -535,7 +546,7 @@ class NumericalCircuit:
                             structure.active[idx] = int(cnt.value)
                     elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                         # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
-                        assert not isinstance(structure, ds.HvdcData)  # TODO Arreglar esto
+                        assert not isinstance(structure, HvdcData)  # TODO Arreglar esto
                         dev_injections = np.zeros(structure.size())
                         dev_injections[idx] -= structure.p[idx]
                         if revert:
@@ -567,7 +578,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.original_idx
+        return self.passive_branch_data.original_idx
 
     @property
     def original_load_idx(self):
@@ -660,7 +671,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.rates
+        return self.passive_branch_data.rates
 
     @property
     def ContingencyRates(self):
@@ -668,7 +679,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.contingency_rates
+        return self.passive_branch_data.contingency_rates
 
     @property
     def Qmax_bus(self):
@@ -734,7 +745,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.names
+        return self.passive_branch_data.names
 
     @property
     def rates(self):
@@ -742,7 +753,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.rates
+        return self.passive_branch_data.rates
 
     @property
     def contingency_rates(self):
@@ -750,7 +761,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.contingency_rates
+        return self.passive_branch_data.contingency_rates
 
     @property
     def load_names(self):
@@ -798,7 +809,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.F
+        return self.passive_branch_data.F
 
     @property
     def T(self):
@@ -806,7 +817,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.T
+        return self.passive_branch_data.T
 
     @property
     def branch_rates(self):
@@ -814,7 +825,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data.rates
+        return self.passive_branch_data.rates
 
     @property
     def ac_indices(self):
@@ -869,12 +880,12 @@ class NumericalCircuit:
         """
         return si.SimulationIndices(bus_types=self.bus_data.bus_types,
                                     Pbus=self.Sbus.real,
-                                    tap_module_control_mode=self.branch_data.tap_module_control_mode,
-                                    tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
-                                    tap_controlled_buses=self.branch_data.tap_controlled_buses,
+                                    tap_module_control_mode=self.active_branch_data.tap_module_control_mode,
+                                    tap_phase_control_mode=self.active_branch_data.tap_phase_control_mode,
+                                    tap_controlled_buses=self.active_branch_data.tap_controlled_buses,
                                     is_converter=np.zeros(self.nbr, dtype=bool),
-                                    F=self.branch_data.F,
-                                    T=self.branch_data.T,
+                                    F=self.passive_branch_data.F,
+                                    T=self.passive_branch_data.T,
                                     is_dc_bus=self.bus_data.is_dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
@@ -883,9 +894,9 @@ class NumericalCircuit:
         :return:
         """
         return tp.compute_connectivity(
-            branch_active=self.branch_data.active,
-            Cf_=self.branch_data.C_branch_bus_f.tocsc(),
-            Ct_=self.branch_data.C_branch_bus_t.tocsc()
+            branch_active=self.passive_branch_data.active,
+            Cf_=self.passive_branch_data.C_branch_bus_f.tocsc(),
+            Ct_=self.passive_branch_data.C_branch_bus_t.tocsc()
         )
 
     def get_admittance_matrices(self) -> ycalc.AdmittanceMatrices:
@@ -896,21 +907,19 @@ class NumericalCircuit:
 
         # compute admittances on demand
         return ycalc.compute_admittances(
-            R=self.branch_data.R,
-            X=self.branch_data.X,
-            G=self.branch_data.G,
-            B=self.branch_data.B,
-            k=self.branch_data.k,
-            tap_module=self.branch_data.tap_module,
-            vtap_f=self.branch_data.virtual_tap_f,
-            vtap_t=self.branch_data.virtual_tap_t,
-            tap_angle=self.branch_data.tap_angle,
-            Beq=np.zeros(self.nbr, dtype=float),
+            R=self.passive_branch_data.R,
+            X=self.passive_branch_data.X,
+            G=self.passive_branch_data.G,
+            B=self.passive_branch_data.B,
+            k=self.passive_branch_data.k,
+            tap_module=self.active_branch_data.tap_module,
+            vtap_f=self.passive_branch_data.virtual_tap_f,
+            vtap_t=self.passive_branch_data.virtual_tap_t,
+            tap_angle=self.active_branch_data.tap_angle,
             Cf=self.Cf,
             Ct=self.Ct,
-            Gsw=np.zeros(self.nbr, dtype=float),
             Yshunt_bus=self.Yshunt_from_devices,
-            conn=self.branch_data.conn,
+            conn=self.passive_branch_data.conn,
             seq=1,
             add_windings_phase=False
         )
@@ -921,20 +930,20 @@ class NumericalCircuit:
         :return:
         """
         return ycalc.compute_split_admittances(
-            R=self.branch_data.R,
-            X=self.branch_data.X,
-            G=self.branch_data.G,
-            B=self.branch_data.B,
-            k=self.branch_data.k,
-            tap_module=self.branch_data.tap_module,
-            vtap_f=self.branch_data.virtual_tap_f,
-            vtap_t=self.branch_data.virtual_tap_t,
-            tap_angle=self.branch_data.tap_angle,
+            R=self.passive_branch_data.R,
+            X=self.passive_branch_data.X,
+            G=self.passive_branch_data.G,
+            B=self.passive_branch_data.B,
+            k=self.passive_branch_data.k,
+            tap_module=self.active_branch_data.tap_module,
+            vtap_f=self.passive_branch_data.virtual_tap_f,
+            vtap_t=self.passive_branch_data.virtual_tap_t,
+            tap_angle=self.active_branch_data.tap_angle,
             Beq=np.zeros(self.nbr, dtype=float),
             Cf=self.Cf,
             Ct=self.Ct,
             G0sw=np.zeros(self.nbr, dtype=float),
-            If=np.zeros(len(self.branch_data)),
+            If=np.zeros(len(self.passive_branch_data)),
             a=np.zeros(self.nbr, dtype=float),
             b=np.zeros(self.nbr, dtype=float),
             c=np.zeros(self.nbr, dtype=float),
@@ -947,11 +956,11 @@ class NumericalCircuit:
         :return:
         """
         return ycalc.compute_fast_decoupled_admittances(
-            X=self.branch_data.X,
-            B=self.branch_data.B,
-            tap_module=self.branch_data.tap_module,
-            vtap_f=self.branch_data.virtual_tap_f,
-            vtap_t=self.branch_data.virtual_tap_t,
+            X=self.passive_branch_data.X,
+            B=self.passive_branch_data.B,
+            tap_module=self.active_branch_data.tap_module,
+            vtap_f=self.passive_branch_data.virtual_tap_f,
+            vtap_t=self.passive_branch_data.virtual_tap_t,
             Cf=self.Cf,
             Ct=self.Ct,
         )
@@ -963,10 +972,10 @@ class NumericalCircuit:
         """
         return ycalc.compute_linear_admittances(
             nbr=self.nbr,
-            X=self.branch_data.X,
-            R=self.branch_data.R,
-            m=self.branch_data.tap_module,
-            active=self.branch_data.active,
+            X=self.passive_branch_data.X,
+            R=self.passive_branch_data.R,
+            m=self.active_branch_data.tap_module,
+            active=self.passive_branch_data.active,
             Cf=self.Cf,
             Ct=self.Ct,
             ac=self.ac_indices,
@@ -1290,7 +1299,7 @@ class NumericalCircuit:
         :param buses_areas_2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
-        return get_inter_areas_branch(self.branch_data.F, self.branch_data.T, buses_areas_1, buses_areas_2)
+        return get_inter_areas_branch(self.passive_branch_data.F, self.passive_branch_data.T, buses_areas_1, buses_areas_2)
 
     def get_inter_areas_hvdc(self, buses_areas_1, buses_areas_2):
         """
@@ -1333,50 +1342,23 @@ class NumericalCircuit:
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
-    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False,
-                                 consider_vsc_as_island_links: bool = True, ) -> sp.csc_matrix:
+    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False) -> sp.csc_matrix:
         """
         Compute the adjacency matrix
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
-        :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :return: csc_matrix
         """
 
-        # if consider_hvdc_as_island_links:
-        #     conn_matrices = tp.compute_connectivity_flexible(
-        #         branch_active=self.branch_data.active,
-        #         Cf_=self.branch_data.C_branch_bus_f.tocsc(),
-        #         Ct_=self.branch_data.C_branch_bus_t.tocsc(),
-        #         hvdc_active=self.hvdc_data.active,
-        #         Cf_hvdc=self.hvdc_data.C_hvdc_bus_f.tocsc(),
-        #         Ct_hvdc=self.hvdc_data.C_hvdc_bus_t.tocsc()
-        #     )
-        #
-        #     return conn_matrices.get_Adjacency(self.bus_data.active)
-        # else:
-        #     # just the branches
-        #     Cf_ = self.branch_data.C_branch_bus_f.tocsc()
-        #     Ct_ = self.branch_data.C_branch_bus_t.tocsc()
-        #     active = self.branch_data.active
-        #
-        # # compute the adjacency matrix
-        # return tp.get_adjacency_matrix(
-        #     C_branch_bus_f=Cf_,
-        #     C_branch_bus_t=Ct_,
-        #     branch_active=active,
-        #     bus_active=self.bus_data.active
-        # )
-
         conn_matrices = tp.compute_connectivity_flexible(
-            branch_active=self.branch_data.active,
-            Cf_=self.branch_data.C_branch_bus_f.tocsc(),
-            Ct_=self.branch_data.C_branch_bus_t.tocsc(),
+            branch_active=self.passive_branch_data.active,
+            Cf_=self.passive_branch_data.C_branch_bus_f.tocsc(),
+            Ct_=self.passive_branch_data.C_branch_bus_t.tocsc(),
             hvdc_active=self.hvdc_data.active if consider_hvdc_as_island_links else None,
             Cf_hvdc=self.hvdc_data.C_hvdc_bus_f.tocsc() if consider_hvdc_as_island_links else None,
             Ct_hvdc=self.hvdc_data.C_hvdc_bus_t.tocsc() if consider_hvdc_as_island_links else None,
-            vsc_active=self.vsc_data.active if consider_vsc_as_island_links else None,
-            Cf_vsc=self.vsc_data.C_branch_bus_f.tocsc() if consider_vsc_as_island_links else None,
-            Ct_vsc=self.vsc_data.C_branch_bus_t.tocsc() if consider_vsc_as_island_links else None
+            vsc_active=self.vsc_data.active,
+            Cf_vsc=self.vsc_data.C_branch_bus_f.tocsc(),
+            Ct_vsc=self.vsc_data.C_branch_bus_t.tocsc()
         )
 
         return conn_matrices.get_Adjacency(self.bus_data.active)
@@ -1390,14 +1372,6 @@ class NumericalCircuit:
 
         if self.simulation_indices_ is None:
             self.simulation_indices_ = self.get_simulation_indices()
-
-        # idx_dm = np.r_[self.simulation_indices_.k_v_m, self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qt_m]
-        # idx_dtau = np.r_[self.simulation_indices_.k_pf_tau, self.simulation_indices_.k_pt_tau]
-        # idx_dbeq = self.simulation_indices_.k_qf_beq
-        # idx_dPf = self.simulation_indices_.k_pf_tau
-        # idx_dQf = np.r_[self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qf_beq]
-        # idx_dPt = self.simulation_indices_.k_pt_tau
-        # idx_dQt = self.simulation_indices_.k_qt_m
 
         from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import (
             PfAdvancedFormulation)
@@ -1492,14 +1466,14 @@ class NumericalCircuit:
             df = pd.DataFrame(
                 data=self.Yf.toarray(),
                 columns=self.bus_data.names,
-                index=self.branch_data.names,
+                index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Yt':
             df = pd.DataFrame(
                 data=self.Yt.toarray(),
                 columns=self.bus_data.names,
-                index=self.branch_data.names,
+                index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Bbus':
@@ -1513,21 +1487,21 @@ class NumericalCircuit:
             df = pd.DataFrame(
                 data=self.Bf.toarray(),
                 columns=self.bus_data.names,
-                index=self.branch_data.names,
+                index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Cf':
             df = pd.DataFrame(
                 data=self.Cf.toarray(),
                 columns=self.bus_data.names,
-                index=self.branch_data.names,
+                index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Ct':
             df = pd.DataFrame(
                 data=self.Ct.toarray(),
                 columns=self.bus_data.names,
-                index=self.branch_data.names,
+                index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Yshunt':
@@ -1623,19 +1597,19 @@ class NumericalCircuit:
 
         elif structure_type == 'branch_ctrl':
 
-            data1 = [val.value if val != 0 else "-" for val in self.branch_data.tap_module_control_mode]
-            data2 = [val.value if val != 0 else "-" for val in self.branch_data.tap_phase_control_mode]
+            data1 = [val.value if val != 0 else "-" for val in self.active_branch_data.tap_module_control_mode]
+            data2 = [val.value if val != 0 else "-" for val in self.active_branch_data.tap_phase_control_mode]
 
             df = pd.DataFrame(
                 data=np.c_[
-                    self.branch_data.F,
-                    self.branch_data.T,
-                    self.branch_data.tap_controlled_buses,
+                    self.passive_branch_data.F,
+                    self.passive_branch_data.T,
+                    self.active_branch_data.tap_controlled_buses,
                     data1,
                     data2
                 ],
                 columns=['bus F', 'bus T', 'V ctrl bus', 'm control', 'tau control'],
-                index=[f"{k}) {name}" for k, name in enumerate(self.branch_data.names)],
+                index=[f"{k}) {name}" for k, name in enumerate(self.passive_branch_data.names)],
             )
 
         elif structure_type == 'pq':
@@ -1682,91 +1656,91 @@ class NumericalCircuit:
 
         elif structure_type == 'tap_f':
             df = pd.DataFrame(
-                data=self.branch_data.virtual_tap_f,
+                data=self.passive_branch_data.virtual_tap_f,
                 columns=['Virtual tap from (p.u.)'],
-                index=self.branch_data.names,
+                index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'tap_t':
             df = pd.DataFrame(
-                data=self.branch_data.virtual_tap_t,
+                data=self.passive_branch_data.virtual_tap_t,
                 columns=['Virtual tap to (p.u.)'],
-                index=self.branch_data.names,
+                index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'k_pf_tau':
             df = pd.DataFrame(
                 data=self.simulation_indices_.k_pf_tau.astype(int).astype(str),
                 columns=['k_pf_tau'],
-                index=self.branch_data.names[self.simulation_indices_.k_pf_tau],
+                index=self.passive_branch_data.names[self.simulation_indices_.k_pf_tau],
             )
 
         elif structure_type == 'k_pt_tau':
             df = pd.DataFrame(
                 data=self.simulation_indices_.k_pt_tau.astype(int).astype(str),
                 columns=['k_pt_tau'],
-                index=self.branch_data.names[self.simulation_indices_.k_pt_tau],
+                index=self.passive_branch_data.names[self.simulation_indices_.k_pt_tau],
             )
 
         elif structure_type == 'k_qf_m':
             df = pd.DataFrame(
                 data=self.simulation_indices_.k_qf_m.astype(int).astype(str),
                 columns=['k_qf_m'],
-                index=self.branch_data.names[self.simulation_indices_.k_qf_m],
+                index=self.passive_branch_data.names[self.simulation_indices_.k_qf_m],
             )
 
         elif structure_type == 'k_qt_m':
             df = pd.DataFrame(
                 data=self.simulation_indices_.k_qt_m.astype(int).astype(str),
                 columns=['k_qt_m'],
-                index=self.branch_data.names[self.simulation_indices_.k_qt_m],
+                index=self.passive_branch_data.names[self.simulation_indices_.k_qt_m],
             )
 
         elif structure_type == 'k_qf_beq':
             df = pd.DataFrame(
                 data=self.simulation_indices_.k_qf_beq.astype(int).astype(str),
                 columns=['k_qf_beq'],
-                index=self.branch_data.names[self.simulation_indices_.k_qf_beq],
+                index=self.passive_branch_data.names[self.simulation_indices_.k_qf_beq],
             )
 
         elif structure_type == 'k_v_m':
             df = pd.DataFrame(
                 data=self.simulation_indices_.k_v_m.astype(int).astype(str),
                 columns=['k_v_m'],
-                index=self.branch_data.names[self.simulation_indices_.k_v_m],
+                index=self.passive_branch_data.names[self.simulation_indices_.k_v_m],
             )
         elif structure_type == 'k_v_beq':
             df = pd.DataFrame(
                 data=self.simulation_indices_.k_v_beq.astype(int).astype(str),
                 columns=['k_v_beq'],
-                index=self.branch_data.names[self.simulation_indices_.k_v_beq],
+                index=self.passive_branch_data.names[self.simulation_indices_.k_v_beq],
             )
         elif structure_type == 'idx_dPf':
             df = pd.DataFrame(
                 data=formulation.idx_dPf.astype(int).astype(str),
                 columns=['idx_dPf'],
-                index=self.branch_data.names[formulation.idx_dPf],
+                index=self.passive_branch_data.names[formulation.idx_dPf],
             )
 
         elif structure_type == 'idx_dQf':
             df = pd.DataFrame(
                 data=formulation.idx_dQf.astype(int).astype(str),
                 columns=['idx_dQf'],
-                index=self.branch_data.names[formulation.idx_dQf],
+                index=self.passive_branch_data.names[formulation.idx_dQf],
             )
 
         elif structure_type == 'idx_dPt':
             df = pd.DataFrame(
                 data=formulation.idx_dPt.astype(int).astype(str),
                 columns=['idx_dPt'],
-                index=self.branch_data.names[formulation.idx_dPt],
+                index=self.passive_branch_data.names[formulation.idx_dPt],
             )
 
         elif structure_type == 'idx_dQt':
             df = pd.DataFrame(
                 data=formulation.idx_dQt.astype(int).astype(str),
                 columns=['idx_dQt'],
-                index=self.branch_data.names[formulation.idx_dQt],
+                index=self.passive_branch_data.names[formulation.idx_dQt],
             )
 
         elif structure_type == 'idx_dVa':
@@ -1787,49 +1761,49 @@ class NumericalCircuit:
             df = pd.DataFrame(
                 data=formulation.idx_dm.astype(int).astype(str),
                 columns=['idx_dm'],
-                index=self.branch_data.names[formulation.idx_dm],
+                index=self.passive_branch_data.names[formulation.idx_dm],
             )
 
         elif structure_type == 'idx_dtau':
             df = pd.DataFrame(
                 data=formulation.idx_dtau.astype(int).astype(str),
                 columns=['idx_dtau'],
-                index=self.branch_data.names[formulation.idx_dtau],
+                index=self.passive_branch_data.names[formulation.idx_dtau],
             )
 
         elif structure_type == 'idx_dbeq':
             df = pd.DataFrame(
                 data=formulation.idx_dbeq.astype(int).astype(str),
                 columns=['idx_dbeq'],
-                index=self.branch_data.names[formulation.idx_dbeq],
+                index=self.passive_branch_data.names[formulation.idx_dbeq],
             )
 
         elif structure_type == 'Pf_set':
             df = pd.DataFrame(
-                data=self.branch_data.Pset[formulation.idx_dPf],
+                data=self.active_branch_data.Pset[formulation.idx_dPf],
                 columns=['Pf_set'],
-                index=self.branch_data.names[formulation.idx_dPf],
+                index=self.passive_branch_data.names[formulation.idx_dPf],
             )
 
         elif structure_type == 'Pt_set':
             df = pd.DataFrame(
-                data=self.branch_data.Pset[formulation.idx_dPt],
+                data=self.active_branch_data.Pset[formulation.idx_dPt],
                 columns=['Pt_set'],
-                index=self.branch_data.names[formulation.idx_dPt],
+                index=self.passive_branch_data.names[formulation.idx_dPt],
             )
 
         elif structure_type == 'Qf_set':
             df = pd.DataFrame(
-                data=self.branch_data.Qset[formulation.idx_dQf],
+                data=self.active_branch_data.Qset[formulation.idx_dQf],
                 columns=['Qf_set'],
-                index=self.branch_data.names[formulation.idx_dQf],
+                index=self.passive_branch_data.names[formulation.idx_dQf],
             )
 
         elif structure_type == 'Qt_set':
             df = pd.DataFrame(
-                data=self.branch_data.Qset[formulation.idx_dQt],
+                data=self.active_branch_data.Qset[formulation.idx_dQt],
                 columns=['Qt_set'],
-                index=self.branch_data.names[formulation.idx_dQt],
+                index=self.passive_branch_data.names[formulation.idx_dQt],
             )
 
         else:
@@ -1858,7 +1832,7 @@ class NumericalCircuit:
                 return self
 
         # find the indices of the devices of the island
-        br_idx = self.branch_data.get_island(bus_idx)
+        br_idx = self.passive_branch_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
         vsc_idx = self.vsc_data.get_island(bus_idx)
 
@@ -1887,7 +1861,8 @@ class NumericalCircuit:
 
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
-        nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx, logger=logger)
+        nc.passive_branch_data = self.passive_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx, logger=logger)
+        nc.active_branch_data = self.active_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
 
         nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx)
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
@@ -1905,13 +1880,11 @@ class NumericalCircuit:
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,
                            consider_hvdc_as_island_links: bool = False,
-                           consider_vsc_as_island_links: bool = True,
                            logger: Logger | None = None) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
-        :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :param logger: Logger
         :return: List[NumericCircuit]
         """
@@ -1919,8 +1892,7 @@ class NumericalCircuit:
             logger = Logger()
 
         # find the matching islands
-        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links,
-                                            consider_vsc_as_island_links=consider_vsc_as_island_links)
+        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
 
         idx_islands = tp.find_islands(adj=adj, active=self.bus_data.active)
 
@@ -1955,26 +1927,26 @@ class NumericalCircuit:
         #  Compare data
         # --------------------------------------------------------------------------------------------------------------
 
-        CheckArr(self.branch_data.F, nc_2.branch_data.F, tol, 'BranchData', 'F', logger)
-        CheckArr(self.branch_data.T, nc_2.branch_data.T, tol, 'BranchData', 'T', logger)
-        CheckArr(self.branch_data.active, nc_2.branch_data.active, tol,
+        CheckArr(self.passive_branch_data.F, nc_2.passive_branch_data.F, tol, 'BranchData', 'F', logger)
+        CheckArr(self.passive_branch_data.T, nc_2.passive_branch_data.T, tol, 'BranchData', 'T', logger)
+        CheckArr(self.passive_branch_data.active, nc_2.passive_branch_data.active, tol,
                  'BranchData', 'active', logger)
-        CheckArr(self.branch_data.R, nc_2.branch_data.R, tol, 'BranchData', 'r', logger)
-        CheckArr(self.branch_data.X, nc_2.branch_data.X, tol, 'BranchData', 'x', logger)
-        CheckArr(self.branch_data.G, nc_2.branch_data.G, tol, 'BranchData', 'g', logger)
-        CheckArr(self.branch_data.B, nc_2.branch_data.B, tol, 'BranchData', 'b', logger)
-        CheckArr(self.branch_data.rates, nc_2.branch_data.rates, tol, 'BranchData',
+        CheckArr(self.passive_branch_data.R, nc_2.passive_branch_data.R, tol, 'BranchData', 'r', logger)
+        CheckArr(self.passive_branch_data.X, nc_2.passive_branch_data.X, tol, 'BranchData', 'x', logger)
+        CheckArr(self.passive_branch_data.G, nc_2.passive_branch_data.G, tol, 'BranchData', 'g', logger)
+        CheckArr(self.passive_branch_data.B, nc_2.passive_branch_data.B, tol, 'BranchData', 'b', logger)
+        CheckArr(self.passive_branch_data.rates, nc_2.passive_branch_data.rates, tol, 'BranchData',
                  'rates', logger)
-        CheckArr(self.branch_data.tap_module, nc_2.branch_data.tap_module, tol,
+        CheckArr(self.active_branch_data.tap_module, nc_2.active_branch_data.tap_module, tol,
                  'BranchData', 'tap_module', logger)
-        CheckArr(self.branch_data.tap_angle, nc_2.branch_data.tap_angle, tol,
+        CheckArr(self.active_branch_data.tap_angle, nc_2.active_branch_data.tap_angle, tol,
                  'BranchData', 'tap_angle', logger)
 
-        CheckArr(self.branch_data.G0, nc_2.branch_data.G0, tol, 'BranchData', 'g0', logger)
+        CheckArr(self.passive_branch_data.G0, nc_2.passive_branch_data.G0, tol, 'BranchData', 'g0', logger)
 
-        CheckArr(self.branch_data.virtual_tap_f, nc_2.branch_data.virtual_tap_f,
+        CheckArr(self.passive_branch_data.virtual_tap_f, nc_2.passive_branch_data.virtual_tap_f,
                  tol, 'BranchData', 'vtap_f', logger)
-        CheckArr(self.branch_data.virtual_tap_t, nc_2.branch_data.virtual_tap_t,
+        CheckArr(self.passive_branch_data.virtual_tap_t, nc_2.passive_branch_data.virtual_tap_t,
                  tol, 'BranchData', 'vtap_t', logger)
 
         # bus data
@@ -2063,10 +2035,10 @@ class NumericalCircuit:
         :return: structural NTC in MVA
         """
 
-        inter_area_branches = self.branch_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
+        inter_area_branches = self.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
         sum_ratings = 0.0
         for k, sense in inter_area_branches:
-            sum_ratings += self.branch_data.rates[k]
+            sum_ratings += self.passive_branch_data.rates[k]
 
         inter_area_hvdcs = self.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
         for k, sense in inter_area_hvdcs:
