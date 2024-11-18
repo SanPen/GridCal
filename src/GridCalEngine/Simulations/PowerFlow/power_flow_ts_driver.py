@@ -142,7 +142,6 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         results.Vbranch = res.Vbranch
         results.If = res.If
         results.It = res.It
-        results.Beq = res.Beq
         results.m = res.tap_modules
         results.tap_angle = res.tap_angles
 
@@ -179,7 +178,6 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         # results.Vbranch = res.Vbranch
         # results.If = res.If
         # results.It = res.It
-        results.Beq = res.Beq
         results.tap_module = res.tap_module
         results.tap_angle = res.tap_angle
         results.F = res.F

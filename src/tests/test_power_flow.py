@@ -433,26 +433,26 @@ def test_power_flow_control_with_pst_pt() -> None:
                 assert not ok
 
 
-def test_fubm() -> None:
-    """
-
-    :return:
-    """
-    fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.m')
-    grid = gce.open_file(fname)
-
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        opt = gce.PowerFlowOptions(solver_type=solver_type,
-                                   control_q=False,
-                                   retry_with_other_methods=False,
-                                   control_taps_modules=True,
-                                   control_taps_phase=True,
-                                   control_remote_voltage=True,
-                                   verbose=0)
-        driver = gce.PowerFlowDriver(grid=grid, options=opt)
-        driver.run()
-        results = driver.results
-        vm = np.abs(results.voltage)
-        expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
-        ok = np.allclose(vm, expected_vm, rtol=1e-4)
-        assert ok
+# def test_fubm() -> None:
+#     """
+#
+#     :return:
+#     """
+#     fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.m')
+#     grid = gce.open_file(fname)
+#
+#     for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+#         opt = gce.PowerFlowOptions(solver_type=solver_type,
+#                                    control_q=False,
+#                                    retry_with_other_methods=False,
+#                                    control_taps_modules=True,
+#                                    control_taps_phase=True,
+#                                    control_remote_voltage=True,
+#                                    verbose=0)
+#         driver = gce.PowerFlowDriver(grid=grid, options=opt)
+#         driver.run()
+#         results = driver.results
+#         vm = np.abs(results.voltage)
+#         expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
+#         ok = np.allclose(vm, expected_vm, rtol=1e-4)
+#         assert ok

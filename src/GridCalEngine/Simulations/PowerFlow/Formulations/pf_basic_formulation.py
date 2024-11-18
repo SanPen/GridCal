@@ -12,7 +12,7 @@ from GridCalEngine.Simulations.Derivatives.ac_jacobian import create_J_vc_csc
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    compute_fx, polar_to_rect)
 from GridCalEngine.Topology.simulation_indices import compile_types
@@ -252,7 +252,6 @@ class PfBasicFormulation(PfFormulationTemplate):
                                        Scalc=self.Scalc,
                                        m=None,
                                        tau=None,
-                                       Beq=None,
                                        Ybus=self.adm.Ybus,
                                        Yf=self.adm.Yf,
                                        Yt=self.adm.Yt,

@@ -1179,8 +1179,7 @@ class NumericalCircuit:
 
         :return:
         """
-        # TODO: Remove this everywhere or find a way to find it
-        return False
+        return self.active_branch_data.any_pf_control
 
     @property
     def k_pf_tau(self):
@@ -1373,7 +1372,7 @@ class NumericalCircuit:
         if self.simulation_indices_ is None:
             self.simulation_indices_ = self.get_simulation_indices()
 
-        from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import (
+        from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import (
             PfAdvancedFormulation)
         from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 

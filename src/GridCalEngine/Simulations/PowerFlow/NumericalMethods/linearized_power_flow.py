@@ -82,7 +82,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
 
     # return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, None, None, None, 1, elapsed)
     return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=1, elapsed=elapsed)
 
@@ -132,7 +132,7 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
         # solve the linear system
         try:
             x = linear_solver(Asys, rhs)
-        except Exception as e:
+        except RuntimeError as e:
             V = V0
             # Calculate the error and check the convergence
             Scalc = cf.compute_power(Ybus, V)
@@ -145,7 +145,7 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
             # return NumericPowerFlowResults(V, False, norm_f, Scalc,
             #                                None, None, None, None, None, None, 1, elapsed)
             return NumericPowerFlowResults(V=V, converged=False, norm_f=norm_f,
-                                           Scalc=Scalc, m=None, tau=None, Beq=None,
+                                           Scalc=Scalc, m=None, tau=None,
                                            Ybus=None, Yf=None, Yt=None,
                                            iterations=1, elapsed=elapsed)
 
@@ -177,7 +177,7 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
     # return NumericPowerFlowResults(V, True, norm_f, Scalc,
     #                                None, None, None, None, None, None, 1, elapsed)
     return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=1, elapsed=elapsed)
 

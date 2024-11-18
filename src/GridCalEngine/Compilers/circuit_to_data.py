@@ -972,11 +972,11 @@ def fill_controllable_branch(
 
     if (ctrl_data.tap_module_control_mode[ii] != TapModuleControl.fixed
             or ctrl_data.tap_phase_control_mode[ii] != TapPhaseControl.fixed):
-        ctrl_data._any_pf_control = True
+        ctrl_data.any_pf_control = True
 
     if not use_stored_guess:
         if ctrl_data.tap_module_control_mode[ii] == TapModuleControl.Vm:
-            ctrl_data._any_pf_control = True
+            ctrl_data.any_pf_control = True
             bus_idx = ctrl_data.tap_controlled_buses[ii]
             if not bus_voltage_used[bus_idx]:
                 if elm.vset > 0.0:

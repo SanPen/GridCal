@@ -27,7 +27,6 @@ class NumericPowerFlowResults:
                  Scalc: CxVec,
                  m: Union[Vec, None] = None,
                  tau: Union[Vec, None] = None,
-                 Beq: Union[Vec, None] = None,
                  Ybus: Union[CscMat, None] = None,
                  Yf: Union[CscMat, None] = None,
                  Yt: Union[CscMat, None] = None,
@@ -41,7 +40,6 @@ class NumericPowerFlowResults:
         :param Scalc: Calculated power vector
         :param m: Tap modules vector for all the Branches
         :param tau: Tap angles vector for all the Branches
-        :param Beq: Equivalent susceptance vector for all the Branches
         :param Ybus: Admittance matrix
         :param Yf: Admittance matrix of the "from" buses
         :param Yt: Admittance matrix of the "to" buses
@@ -54,7 +52,6 @@ class NumericPowerFlowResults:
         self.Scalc = Scalc
         self.tap_module = m
         self.tap_angle = tau
-        self.Beq = Beq
         self.Ybus = Ybus
         self.Yf = Yf
         self.Yt = Yt
@@ -117,7 +114,6 @@ class PowerFlowResults(ResultsTemplate):
 
                     ResultTypes.BranchTapModule,
                     ResultTypes.BranchTapAngle,
-                    ResultTypes.BranchBeq,
 
                     ResultTypes.BranchLoading,
                     ResultTypes.BranchActiveLosses,
@@ -186,7 +182,6 @@ class PowerFlowResults(ResultsTemplate):
 
         self.tap_module: Vec = np.zeros(m, dtype=float)
         self.tap_angle: Vec = np.zeros(m, dtype=float)
-        self.Beq: Vec = np.zeros(m, dtype=float)
 
         self.Vbranch: CxVec = np.zeros(m, dtype=complex)
         self.loading: CxVec = np.zeros(m, dtype=complex)
@@ -230,7 +225,6 @@ class PowerFlowResults(ResultsTemplate):
         self.register(name='It', tpe=CxVec)
         self.register(name='tap_module', tpe=Vec)
         self.register(name='tap_angle', tpe=Vec)
-        self.register(name='Beq', tpe=Vec)
         self.register(name='Vbranch', tpe=CxVec)
         self.register(name='loading', tpe=CxVec)
         self.register(name='losses', tpe=CxVec)
@@ -314,7 +308,6 @@ class PowerFlowResults(ResultsTemplate):
 
         self.tap_module[br_idx] = results.tap_module
         self.tap_angle[br_idx] = results.tap_angle
-        self.Beq[br_idx] = results.Beq
 
         self.Vbranch[br_idx] = results.Vbranch
         self.loading[br_idx] = results.loading
@@ -630,17 +623,6 @@ class PowerFlowResults(ResultsTemplate):
                                 title=result_type.value,
                                 ylabel='(deg)',
                                 units='(deg)')
-
-        elif result_type == ResultTypes.BranchBeq:
-
-            return ResultsTable(data=self.Beq,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(p.u.)',
-                                units='(p.u.)')
 
         elif result_type == ResultTypes.HvdcLosses:
 

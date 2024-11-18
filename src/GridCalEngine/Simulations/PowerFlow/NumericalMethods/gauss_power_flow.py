@@ -135,6 +135,6 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, p, pqv, vd, bus_installed_power, Qmin,
     elapsed = end - start
 
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)

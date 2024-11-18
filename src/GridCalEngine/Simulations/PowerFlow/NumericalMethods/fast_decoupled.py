@@ -184,7 +184,6 @@ def FDPF(Vbus: CxVec,
                                    Scalc=Scalc,
                                    m=None,
                                    tau=None,
-                                   Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_,
                                    elapsed=elapsed)

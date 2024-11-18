@@ -12,9 +12,9 @@ from GridCalEngine.basic_structures import Logger, ConvergenceReport
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_basic_formulation import PfBasicFormulation
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import PfAdvancedFormulation
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_generalized_formulation import PfGeneralizedFormulation
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation import PfBasicFormulation
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import PfAdvancedFormulation
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
@@ -100,7 +100,6 @@ def solve(nc: NumericalCircuit,
                                            Scalc=S0,
                                            m=nc.active_branch_data.tap_module,
                                            tau=nc.active_branch_data.tap_angle,
-                                           Beq=np.zeros(nc.nbr, dtype=float),
                                            Ybus=nc.Ybus,
                                            Yf=nc.Yf,
                                            Yt=nc.Yt,
@@ -119,7 +118,6 @@ def solve(nc: NumericalCircuit,
                                                  Scalc=S0,
                                                  m=nc.active_branch_data.tap_module,
                                                  tau=nc.active_branch_data.tap_angle,
-                                                 Beq=np.zeros(nc.nbr, dtype=float),
                                                  Ybus=nc.Ybus,
                                                  Yf=nc.Yf,
                                                  Yt=nc.Yt,
@@ -470,9 +468,6 @@ def solve(nc: NumericalCircuit,
         if final_solution.tap_angle is None:
             final_solution.tap_angle = nc.active_branch_data.tap_angle
 
-        if final_solution.Beq is None:
-            final_solution.Beq = np.zeros(nc.nbr, dtype=float),
-
         return final_solution
 
 
@@ -539,7 +534,6 @@ def single_island_pf(nc: NumericalCircuit,
     results.It = It  # in p.u.
     results.tap_module = solution.tap_module
     results.tap_angle = solution.tap_angle
-    results.Beq = solution.Beq
     results.Vbranch = Vbranch
     results.loading = loading
     results.losses = losses

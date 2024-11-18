@@ -128,18 +128,18 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
                     logger.add_error('NR Singular matrix @iter:'.format(iter_))
 
                     return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
-                                                   Scalc=S0, m=None, tau=None, Beq=None,
+                                                   Scalc=S0, m=None, tau=None,
                                                    Ybus=None, Yf=None, Yt=None,
                                                    iterations=iter_, elapsed=elapsed)
 
-            except ValueError:
-                print(J)
+            except RuntimeError:
+                # print(J)
                 converged = False
                 iter_ = max_it + 1  # exit condition
                 end = time.time()
                 elapsed = end - start
                 return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                               Scalc=Scalc, m=None, tau=None, Beq=None,
+                                               Scalc=Scalc, m=None, tau=None,
                                                Ybus=None, Yf=None, Yt=None,
                                                iterations=iter_, elapsed=elapsed)
 
@@ -151,7 +151,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
             # update voltage
             if robust:
                 # if dV contains zeros will crash the second Jacobian derivative
-                if not (dV == 0.0).any():
+                if not np.any(dV == 0.0):
                     # calculate the optimal multiplier for enhanced convergence
                     mu_ = mu(Ybus, J, f, dV, dx, blck1_idx, blck2_idx, blck3_idx)
                 else:
@@ -212,6 +212,6 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)

@@ -36,6 +36,8 @@ class ActiveBranchData:
         self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
         self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
 
+        self.any_pf_control = False
+
     def size(self) -> int:
         """
         Get size of the structure
@@ -71,6 +73,8 @@ class ActiveBranchData:
         data.Qset = self.Qset[elm_idx]
         data.vset = self.vset[elm_idx]
 
+        data.any_pf_control = self.any_pf_control
+
         return data
 
     def copy(self) -> ActiveBranchData:
@@ -96,6 +100,8 @@ class ActiveBranchData:
         data.Pset = self.Pset.copy()
         data.Qset = self.Qset.copy()
         data.vset = self.vset.copy()
+
+        data.any_pf_control = self.any_pf_control
 
         return data
 
