@@ -6,7 +6,7 @@
 
 from typing import Set
 import numpy as np
-from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType
+from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType, ConverterControlType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.branch_data import BranchData
@@ -102,7 +102,7 @@ class GeneralizedSimulationIndices:
         self.cx_qzip: Set[int] = set()  # Slack buses and those AC with uncontrollable generators/batteries/shunts
         self.cx_pfa: Set[int] = set()  # VSCs controlling Pf, transformers controlling Pf
         self.cx_pta: Set[int] = set()  # VSCs controlling Pt, transformers controlling Pt
-        self.cx_qfa: Set[int] = set()  # VSCs controlling Qf, transformers controlling Qf
+        self.cx_qfa: Set[int] = set()  # ONLY transformers controlling Qf
         self.cx_qta: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
 
         # Ancilliary
@@ -414,6 +414,63 @@ class GeneralizedSimulationIndices:
         else:
             pass
 
+    def add_converter_control(self, vsc_data: VscData, branch_idx: int, ii: int):
+        """
+        Add controls for a VSC to the appropriate unknown sets based on control types.
+
+        :param vsc_data: VscData object containing VSC-related data.
+        :param ii: Index of the current VSC being processed.
+        """
+       
+        # Initialize a boolean array for the six control types, defaulting to False
+        control_flags = np.zeros(len(ConverterControlType), dtype=bool)
+
+        # Extract control types
+        control1_type = vsc_data.control1[ii]
+        control2_type = vsc_data.control2[ii]
+
+        # Set flags for active controls
+        for control in [control1_type, control2_type]:
+            try:
+                control_index = list(ConverterControlType).index(control)
+                control_flags[control_index] = True
+            except ValueError:
+                return  # Skip processing this VSC if control type is invalid
+
+        # Ensure exactly two controls are active
+        active_control_count = control_flags.sum()
+        assert active_control_count == 2, ( #magic number 2, replace with a constant?
+            f"VSC '{vsc_data.names[ii]}' must have exactly two active controls, "
+            f"but {active_control_count} were found."
+        )
+
+        # Add to unknown sets based on inactive control flags
+        for index, is_controlled in enumerate(control_flags):
+            control_type = list(ConverterControlType)[index]  # Map index to control type
+            if not is_controlled:  # If control is inactive
+                if control_type == ConverterControlType.Vm_dc:
+                    bus_idx = vsc_data.F[ii]
+                    self.cx_vm.add(bus_idx)
+                elif control_type == ConverterControlType.Vm_ac:
+                    bus_idx = vsc_data.T[ii]
+                    self.cx_vm.add(bus_idx)
+                elif control_type == ConverterControlType.Va_ac:
+                    bus_idx = vsc_data.T[ii]
+                    self.cx_va.add(bus_idx)
+                elif control_type == ConverterControlType.Qac:
+                    branch_idx =  branch_idx
+                    self.cx_qta.add(branch_idx)
+                elif control_type == ConverterControlType.Pdc:
+                    branch_idx =  branch_idx
+                    self.cx_pfa.add(branch_idx)
+                elif control_type == ConverterControlType.Pac:
+                    branch_idx =  branch_idx
+                    self.cx_pta.add(branch_idx)
+
+
+
+
+
     def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
         pass
 
@@ -591,31 +648,33 @@ class GeneralizedSimulationIndices:
             #                           branch_idx=branch_idx,
             #                           bus_idx=bus_idx,
             #                           is_conventional=False)
+            self.add_converter_control(nc.vsc_data, branch_idx, ii)
 
             self.add_to_cg_acdc(branch_idx)
             branch_idx += 1
+        
 
-        # DONE
+        # DONE -- This is a bit tricky, seems to add some unwanted indices into our sets
         # -------------- HvdcLines search ----------------
         # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
         # The control mode does not change the indices sets, only the equation
         # See how to store this bool_mode
-        for iii, _ in enumerate(nc.hvdc_data.active):
-            # self.add_to_cx_Pf(branch_idx)
+        # for iii, _ in enumerate(nc.hvdc_data.active):
+        #     # self.add_to_cx_Pf(branch_idx)
 
-            self.set_bus_vm_simple(bus_local=nc.hvdc_data.F[iii],
-                                   device_name=nc.hvdc_data.names[iii])
+        #     self.set_bus_vm_simple(bus_local=nc.hvdc_data.F[iii],
+        #                            device_name=nc.hvdc_data.names[iii])
 
-            self.set_bus_vm_simple(bus_local=nc.hvdc_data.T[iii],
-                                   device_name=nc.hvdc_data.names[iii])
+        #     self.set_bus_vm_simple(bus_local=nc.hvdc_data.T[iii],
+        #                            device_name=nc.hvdc_data.names[iii])
 
-            self.add_to_cg_hvdc(branch_idx)
-            branch_idx += 1
+        #     self.add_to_cg_hvdc(branch_idx)
+        #     branch_idx += 1
 
-        # Post-processing
-        for i, val in enumerate(self.bus_vm_pointer_used):
-            if not val:
-                self.add_to_cx_vm(i)
+        # # Post-processing
+        # for i, val in enumerate(self.bus_vm_pointer_used):
+        #     if not val:
+        #         self.add_to_cx_vm(i)
 
         print()
 
