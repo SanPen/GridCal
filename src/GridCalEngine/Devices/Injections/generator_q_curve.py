@@ -169,7 +169,7 @@ class GeneratorQCurve:
     def set(self, data: np.ndarray):
         """
         Parse Json data
-        :param data: List of lists with (latitude, longitude, altitude)
+        :param data: List of [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
         """
         if data.ndim == 2:
             if data.shape[1] == 3:

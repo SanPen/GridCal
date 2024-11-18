@@ -241,11 +241,11 @@ class OverheadLineType(EditableDevice):
     def compute_rating(self):
         """
         Compute the sum of the wires max current in A
-        :return: max current iof the tower in A
+        :return: max current (I) of the tower in A
         """
         r = 0
-        for wire in self.wires_in_tower:
-            r += wire.wire.max_current
+        for wit in self.wires_in_tower:
+            r += wit.wire.max_current
 
         return r
 

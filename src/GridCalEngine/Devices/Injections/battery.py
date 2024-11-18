@@ -10,68 +10,7 @@ from GridCalEngine.Devices.Injections.generator import Generator, BuildStatus
 
 class Battery(Generator):
     """
-    :ref:`Battery<battery>` (voltage controlled and dispatchable).
-
-    Arguments:
-
-        **name** (str, "batt"): Name of the battery
-
-        **active_power** (float, 0.0): Active power in MW
-
-        **power_factor** (float, 0.8): Power factor
-
-        **voltage_module** (float, 1.0): Voltage setpoint in per unit
-
-        **is_controlled** (bool, True): Is the unit voltage controlled (if so, the
-        connection bus becomes a PV bus)
-
-        **Qmin** (float, -9999): Minimum reactive power in MVAr
-
-        **Qmax** (float, 9999): Maximum reactive power in MVAr
-
-        **Snom** (float, 9999): Nominal apparent power in MVA
-
-        **Enom** (float, 9999): Nominal energy capacity in MWh
-
-        **p_min** (float, -9999): Minimum dispatchable power in MW
-
-        **p_max** (float, 9999): Maximum dispatchable power in MW
-
-        **op_cost** (float, 1.0): Operational cost in Eur (or other e) per MW
-
-        **power_prof** (DataFrame, None): Pandas DataFrame with the active power
-        profile in MW
-
-        **power_factor_prof** (DataFrame, None): Pandas DataFrame with the power factor profile
-
-        **vset_prof** (DataFrame, None): Pandas DataFrame with the voltage setpoint
-        profile in per unit
-
-        **active** (bool, True): Is the battery active?
-
-        **Sbase** (float, 100): Base apparent power in MVA
-
-        **enabled_dispatch** (bool, True): Is the battery enabled for OPF?
-
-        **mttf** (float, 0.0): Mean time to failure in hours
-
-        **mttr** (float, 0.0): Mean time to recovery in hours
-
-        **charge_efficiency** (float, 0.9): Efficiency when charging
-
-        **discharge_efficiency** (float, 0.9): Efficiency when discharging
-
-        **max_soc** (float, 0.99): Maximum state of charge
-
-        **min_soc** (float, 0.3): Minimum state of charge
-
-        **soc** (float, 0.8): Current state of charge
-
-        **charge_per_cycle** (float, 0.1): Per unit of power to take per cycle when charging
-
-        **discharge_per_cycle** (float, 0.1): Per unit of power to deliver per cycle
-        when discharging
-
+    Battery
     """
 
     def __init__(self, name='batt', idtag=None, P=0.0, power_factor=0.8, vset=1.0,
@@ -84,32 +23,32 @@ class Battery(Generator):
                  srap_enabled: bool = True,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
-
-        :param name:
+        :ref:`Battery<battery>` (voltage controlled and dispatchable).
+        :param name: Name of the battery
         :param idtag:
-        :param P:
-        :param power_factor:
-        :param vset:
-        :param is_controlled:
-        :param Qmin:
-        :param Qmax:
-        :param Snom:
-        :param Enom:
-        :param Pmin:
-        :param Pmax:
-        :param Cost:
-        :param active:
-        :param Sbase:
-        :param enabled_dispatch:
-        :param mttf:
-        :param mttr:
-        :param charge_efficiency:
-        :param discharge_efficiency:
-        :param max_soc:
-        :param min_soc:
-        :param soc:
-        :param charge_per_cycle:
-        :param discharge_per_cycle:
+        :param P: Active power in MW
+        :param power_factor: Power factor
+        :param vset: Voltage setpoint in per unit
+        :param is_controlled: Is the unit voltage controlled (if so, the connection bus becomes a PV bus)
+        :param Qmin: Minimum reactive power in MVAr
+        :param Qmax: Maximum reactive power in MVAr
+        :param Snom: Nominal apparent power in MVA
+        :param Enom: Nominal energy capacity in MWh
+        :param Pmin: Minimum dispatchable power in MW
+        :param Pmax: Maximum dispatchable power in MW
+        :param Cost: Operational cost in Eur (or other e) per MW
+        :param active: Is the battery active?
+        :param Sbase: Base apparent power in MVA
+        :param enabled_dispatch: Is the battery enabled for OPF?
+        :param mttf: Mean time to failure in hours
+        :param mttr: Mean time to recovery in hours
+        :param charge_efficiency: Efficiency when charging
+        :param discharge_efficiency: Efficiency when discharging
+        :param max_soc: Maximum state of charge
+        :param min_soc: Minimum state of charge
+        :param soc: Current state of charge
+        :param charge_per_cycle: Per unit of power to take per cycle when charging
+        :param discharge_per_cycle: Per unit of power to deliver per cycle when discharging
         :param r1:
         :param x1:
         :param r0:
@@ -168,10 +107,6 @@ class Battery(Generator):
         self.min_energy = self.Enom * self.min_soc
 
         self.energy = self.Enom * self.soc
-
-        self.energy_array = None
-
-        self.power_array = None
 
         self.register(key='Enom', units='MWh', tpe=float, definition='Nominal energy capacity.')
         self.register(key='max_soc', units='p.u.', tpe=float, definition='Minimum state of charge.')
