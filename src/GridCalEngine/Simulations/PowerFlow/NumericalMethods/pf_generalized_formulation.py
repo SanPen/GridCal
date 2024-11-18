@@ -256,12 +256,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         )
         self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
-        self.m: Vec = self.nc.branch_data.tap_module[self.idx_dm]
-        self.tau: Vec = self.nc.branch_data.tap_angle[self.idx_dtau]
-        self.beq: Vec = self.nc.branch_data.Beq[self.idx_dbeq]
-
-        self.Gsw = self.nc.branch_data.G0sw[self.idx_conv]
-
+        self.m: Vec = self.nc.controllable_branch_data.tap_module[self.idx_dm]
+        self.tau: Vec = self.nc.controllable_branch_data.tap_angle[self.idx_dtau]
         self.Ys: CxVec = self.nc.branch_data.get_series_admittance()
 
         self.adm = compute_admittances(
@@ -274,10 +270,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.branch_data.virtual_tap_f,
             vtap_t=self.nc.branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-            Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
-            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
@@ -486,10 +480,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.branch_data.virtual_tap_f,
             vtap_t=self.nc.branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, tau, self.idx_dtau, 0.0),
-            Beq=expand(self.nc.nbr, beq, self.idx_dbeq, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
-            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
@@ -561,10 +553,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.branch_data.virtual_tap_f,
             vtap_t=self.nc.branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-            Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
-            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
@@ -803,10 +793,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.branch_data.virtual_tap_f,
             vtap_t=self.nc.branch_data.virtual_tap_t,
             tap_angle=tau,
-            Beq=beq,
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
-            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
@@ -826,10 +814,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         f = np.r_[
             dS[self.idx_dP].real,
             dS[self.idx_dQ].imag,
-            Pf - self.nc.branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.branch_data.Qset[self.idx_dQt]
+            Pf - self.nc.controllable_branch_data.Pset[self.idx_dPf],
+            Qf - self.nc.controllable_branch_data.Qset[self.idx_dQf],
+            Pt - self.nc.controllable_branch_data.Pset[self.idx_dPt],
+            Qt - self.nc.controllable_branch_data.Qset[self.idx_dQt]
         ]
         return f
 

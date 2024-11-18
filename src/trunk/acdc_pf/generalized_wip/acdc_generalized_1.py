@@ -6,12 +6,10 @@ from GridCalEngine.Topology.generalized_simulation_indices import GeneralizedSim
 fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
 grid = gce.open_file(fname)
 
-main_nc = gce.compile_numerical_circuit_at(grid, consider_vsc_as_island_links=False)
+main_nc = gce.compile_numerical_circuit_at(grid)
 
 islands = main_nc.split_into_islands(
-    ignore_single_node_islands=False,
     consider_hvdc_as_island_links=False,
-    consider_vsc_as_island_links=True
 )
 
 print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhvdc: {main_nc.nhvdc}")

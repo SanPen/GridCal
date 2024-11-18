@@ -20,6 +20,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.load_data import LoadData
 from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.controllable_branch_data import ControllableBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
@@ -653,6 +654,7 @@ def add_linear_injections_formulation(t: Union[int, None],
 def add_linear_branches_formulation(t_idx: int,
                                     Sbase: float,
                                     branch_data_t: BranchData,
+                                    ctrl_branch_data_t: ControllableBranchData,
                                     branch_vars: BranchNtcVars,
                                     bus_vars: BusNtcVars,
                                     prob: LpModel,
@@ -663,14 +665,14 @@ def add_linear_branches_formulation(t_idx: int,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
                                     inf=1e20,
-                                    add_flow_slacks: bool = True,
-                                    ):
+                                    add_flow_slacks: bool = True):
     """
     Formulate the branches
     :param t_idx: time index
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
     :param branch_vars: BranchVars
+    :param ctrl_branch_data_t:
     :param bus_vars: BusVars
     :param prob: OR problem
     :param monitor_only_ntc_load_rule_branches:
@@ -715,12 +717,12 @@ def add_linear_branches_formulation(t_idx: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
+            if ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
 
                 # add angle
                 branch_vars.tap_angles[t_idx, m] = prob.add_var(
-                    lb=branch_data_t.tap_angle_min[m],
-                    ub=branch_data_t.tap_angle_max[m],
+                    lb=ctrl_branch_data_t.tap_angle_min[m],
+                    ub=ctrl_branch_data_t.tap_angle_max[m],
                     name=join("tap_ang_", [t_idx, m], "_")
                 )
 
@@ -1175,6 +1177,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 t_idx=t_idx,
                 Sbase=nc.Sbase,
                 branch_data_t=nc.branch_data,
+                ctrl_branch_data_t=nc.controllable_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,

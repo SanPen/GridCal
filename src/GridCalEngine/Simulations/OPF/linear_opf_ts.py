@@ -24,6 +24,7 @@ from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.battery_data import BatteryData
 from GridCalEngine.DataStructures.load_data import LoadData
 from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.controllable_branch_data import ControllableBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.fluid_node_data import FluidNodeData
@@ -1066,6 +1067,7 @@ def add_linear_load_formulation(t: Union[int, None],
 def add_linear_branches_formulation(t: int,
                                     Sbase: float,
                                     branch_data_t: BranchData,
+                                    ctrl_branch_data_t: ControllableBranchData,
                                     branch_vars: BranchVars,
                                     bus_vars: BusVars,
                                     prob: LpModel,
@@ -1075,6 +1077,7 @@ def add_linear_branches_formulation(t: int,
     :param t: time index
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
+    :param ctrl_branch_data_t: ControllableBranchData
     :param branch_vars: BranchVars
     :param bus_vars: BusVars
     :param prob: OR problem
@@ -1108,11 +1111,11 @@ def add_linear_branches_formulation(t: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
+            if ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
 
                 # add angle
-                branch_vars.tap_angles[t, m] = prob.add_var(lb=branch_data_t.tap_angle_min[m],
-                                                            ub=branch_data_t.tap_angle_max[m],
+                branch_vars.tap_angles[t, m] = prob.add_var(lb=ctrl_branch_data_t.tap_angle_min[m],
+                                                            ub=ctrl_branch_data_t.tap_angle_max[m],
                                                             name=join("tap_ang_", [t, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
@@ -1745,6 +1748,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                 t=local_t_idx,
                 Sbase=nc.Sbase,
                 branch_data_t=nc.branch_data,
+                ctrl_branch_data_t=nc.controllable_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,

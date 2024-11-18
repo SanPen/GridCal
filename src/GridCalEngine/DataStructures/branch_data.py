@@ -52,22 +52,22 @@ class BranchData(BranchParentData):
 
         self.k: Vec = np.ones(nelm, dtype=float)
 
-        self.tap_module: Vec = np.ones(nelm, dtype=float)
-        self.tap_module_min: Vec = np.full(nelm, fill_value=0.1, dtype=float)
-        self.tap_module_max: Vec = np.full(nelm, fill_value=1.5, dtype=float)
-        self.tap_angle: Vec = np.zeros(nelm, dtype=float)
-        self.tap_angle_min: Vec = np.full(nelm, fill_value=-6.28, dtype=float)
-        self.tap_angle_max: Vec = np.full(nelm, fill_value=6.28, dtype=float)
-        self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.tap_controlled_buses: IntVec = np.zeros(self.nelm, dtype=int)
+        # self.tap_module: Vec = np.ones(nelm, dtype=float)
+        # self.tap_module_min: Vec = np.full(nelm, fill_value=0.1, dtype=float)
+        # self.tap_module_max: Vec = np.full(nelm, fill_value=1.5, dtype=float)
+        # self.tap_angle: Vec = np.zeros(nelm, dtype=float)
+        # self.tap_angle_min: Vec = np.full(nelm, fill_value=-6.28, dtype=float)
+        # self.tap_angle_max: Vec = np.full(nelm, fill_value=6.28, dtype=float)
+        # self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        # self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        # self.tap_controlled_buses: IntVec = np.zeros(self.nelm, dtype=int)
 
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
-        self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
-        self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
-        self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
+        # self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
+        # self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
+        # self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
 
     def size(self) -> int:
         """
@@ -113,22 +113,22 @@ class BranchData(BranchParentData):
 
         data.k = self.k[elm_idx]
 
-        data.tap_module = self.tap_module[elm_idx]
-        data.tap_module_min = self.tap_module_min[elm_idx]
-        data.tap_module_max = self.tap_module_max[elm_idx]
-        data.tap_angle = self.tap_angle[elm_idx]
-        data.tap_angle_min = self.tap_angle_min[elm_idx]
-        data.tap_angle_max = self.tap_angle_max[elm_idx]
-        data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
-        data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
-        data.tap_controlled_buses = self.tap_controlled_buses[elm_idx]
+        # data.tap_module = self.tap_module[elm_idx]
+        # data.tap_module_min = self.tap_module_min[elm_idx]
+        # data.tap_module_max = self.tap_module_max[elm_idx]
+        # data.tap_angle = self.tap_angle[elm_idx]
+        # data.tap_angle_min = self.tap_angle_min[elm_idx]
+        # data.tap_angle_max = self.tap_angle_max[elm_idx]
+        # data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
+        # data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
+        # data.tap_controlled_buses = self.tap_controlled_buses[elm_idx]
 
         data.virtual_tap_f = self.virtual_tap_f[elm_idx]
         data.virtual_tap_t = self.virtual_tap_t[elm_idx]
 
-        data.Pset = self.Pset[elm_idx]
-        data.Qset = self.Qset[elm_idx]
-        data.vset = self.vset[elm_idx]
+        # data.Pset = self.Pset[elm_idx]
+        # data.Qset = self.Qset[elm_idx]
+        # data.vset = self.vset[elm_idx]
 
         return data
 
@@ -162,22 +162,22 @@ class BranchData(BranchParentData):
         data.tau_taps = self.tau_taps.copy()
         data.k = self.k.copy()
 
-        data.tap_module = self.tap_module.copy()
-        data.tap_module_min = self.tap_module_min.copy()
-        data.tap_module_max = self.tap_module_max.copy()
-        data.tap_angle = self.tap_angle.copy()
-        data.tap_angle_min = self.tap_angle_min.copy()
-        data.tap_angle_max = self.tap_angle_max.copy()
-        data.tap_module_control_mode = self.tap_module_control_mode.copy()
-        data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
-        data.tap_controlled_buses = self.tap_controlled_buses.copy()
+        # data.tap_module = self.tap_module.copy()
+        # data.tap_module_min = self.tap_module_min.copy()
+        # data.tap_module_max = self.tap_module_max.copy()
+        # data.tap_angle = self.tap_angle.copy()
+        # data.tap_angle_min = self.tap_angle_min.copy()
+        # data.tap_angle_max = self.tap_angle_max.copy()
+        # data.tap_module_control_mode = self.tap_module_control_mode.copy()
+        # data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
+        # data.tap_controlled_buses = self.tap_controlled_buses.copy()
 
         data.virtual_tap_f = self.virtual_tap_f.copy()
         data.virtual_tap_t = self.virtual_tap_t.copy()
 
-        data.Pset = self.Pset.copy()
-        data.Qset = self.Qset.copy()
-        data.vset = self.vset.copy()
+        # data.Pset = self.Pset.copy()
+        # data.Qset = self.Qset.copy()
+        # data.vset = self.vset.copy()
 
         return data
 
@@ -215,26 +215,6 @@ class BranchData(BranchParentData):
         """
         return np.where(self.dc != 0)[0]
 
-    def get_linear_series_admittance(self) -> Vec:
-        """
-        Get the linear version of the series admittance for ACDC systems
-        :return: Array of the length of the number of Branches with 1/X or 1/R depending whether if it is AC or DC
-        """
-        dc = self.get_dc_indices()
-        ac = self.get_ac_indices()
-        m_abs = np.abs(self.tap_module)
-        if len(dc):
-            # compose the vector for AC-DC grids where the R is needed for this matrix
-            # even if conceptually we only want the susceptance
-            b = np.zeros(self.nelm)
-            active = self.active
-            b[ac] = 1.0 / (m_abs[ac] * self.X[ac] * active[ac] + 1e-20)  # for ac Branches
-            b[dc] = 1.0 / (m_abs[dc] * self.R[dc] * active[dc] + 1e-20)  # for dc Branches
-        else:
-            b = 1.0 / (m_abs * self.X * self.active + 1e-20)  # for ac Branches
-
-        return b
-
     def get_monitor_enabled_indices(self) -> IntVec:
         """
         Get monitored branch indices
@@ -264,35 +244,4 @@ class BranchData(BranchParentData):
             elif self.F[k] in bus_idx_to and self.T[k] in bus_idx_from:
                 lst.append((k, -1.0))
         return lst
-
-    def to_df(self) -> pd.DataFrame:
-        """
-        Create DataFrame with the compiled Branches information
-        :return: Pandas DataFrame
-        """
-        data = {
-            'names': self.names,
-            'active': self.active,
-            'F': self.F,
-            'T': self.T,
-            'Rates': self.rates,
-            'Contingency rates': self.contingency_rates,
-            'R': self.R,
-            'X': self.X,
-            'G': self.G,
-            'B': self.B,
-            'Vtap F': self.virtual_tap_f,
-            'Vtap T': self.virtual_tap_t,
-            'Tap module': self.tap_module,
-            'Tap angle': self.tap_angle
-        }
-        return pd.DataFrame(data=data)
-
-    @property
-    def tap(self) -> CxVec:
-        """
-
-        :return:
-        """
-        return self.tap_module * np.exp(1.0j * self.tap_angle)
 

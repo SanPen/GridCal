@@ -646,13 +646,16 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     c2n = nc.generator_data.cost_2[gen_nondisp_idx]
 
     # Transformer operational limits
-    tapm_max = nc.branch_data.tap_module_max[k_m]
-    tapm_min = nc.branch_data.tap_module_min[k_m]
-    tapt_max = nc.branch_data.tap_angle_max[k_tau]
-    tapt_min = nc.branch_data.tap_angle_min[k_tau]
-    alltapm = nc.branch_data.tap_module  # We grab all tapm even when uncontrolled since the indexing is needed
+    tapm_max = nc.controllable_branch_data.tap_module_max[k_m]
+    tapm_min = nc.controllable_branch_data.tap_module_min[k_m]
+    tapt_max = nc.controllable_branch_data.tap_angle_max[k_tau]
+    tapt_min = nc.controllable_branch_data.tap_angle_min[k_tau]
+
+    # We grab all tapm even when uncontrolled since the indexing is needed
+    alltapm = nc.controllable_branch_data.tap_module
     # if the tapt of the same trafo is variable.
-    alltapt = nc.branch_data.tap_angle  # We grab all tapt even when uncontrolled since the indexing is needed if
+    # We grab all tapt even when uncontrolled since the indexing is needed if
+    alltapt = nc.controllable_branch_data.tap_angle
     # the tapm of the same trafo is variable.
 
     # Sizing of the problem
@@ -730,8 +733,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         q0gen = np.r_[allQgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
-        tapm0 = nc.branch_data.tap_module[k_m]
-        tapt0 = nc.branch_data.tap_angle[k_tau]
+        tapm0 = nc.controllable_branch_data.tap_module[k_m]
+        tapt0 = nc.controllable_branch_data.tap_angle[k_tau]
         Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
     else:
@@ -741,8 +744,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                        nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
-        tapm0 = nc.branch_data.tap_module[k_m]
-        tapt0 = nc.branch_data.tap_angle[k_tau]
+        tapm0 = nc.controllable_branch_data.tap_module[k_m]
+        tapt0 = nc.controllable_branch_data.tap_angle[k_tau]
         Pf0_hvdc = np.zeros(n_disp_hvdc)
 
     # compose the initial values

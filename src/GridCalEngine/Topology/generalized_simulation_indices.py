@@ -93,9 +93,13 @@ class GeneralizedSimulationIndices:
         self.cg_qttr: Set[int] = set()  # All controllable transformers
 
         # cx sets
-        self.cx_va: Set[int] = set()  # All AC minus slack buses
-        self.cx_vm: Set[
-            int] = set()  # All minus slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers 
+
+        # All AC minus slack buses
+        self.cx_va: Set[int] = set()
+
+        # All minus slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers
+        self.cx_vm: Set[int] = set()
+
         self.cx_tau: Set[int] = set()  # All controllable transformers that do not use the tap phase control mode
         self.cx_m: Set[int] = set()  # All controllable transformers that do not use the tap module control mode
         self.cx_pzip: Set[int] = set()  # Slack buses

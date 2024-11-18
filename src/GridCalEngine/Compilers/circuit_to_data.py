@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import numpy as np
-from typing import Dict, Union, TYPE_CHECKING, Tuple
+from typing import Dict, Union, TYPE_CHECKING
 
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
@@ -12,11 +12,24 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, DeviceType,
-                                        ConverterControlType, TapModuleControl, TapPhaseControl, HvdcControlType)
+                                        TapModuleControl, TapPhaseControl, HvdcControlType, ConverterControlType)
 from GridCalEngine.basic_structures import BoolVec, IntVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.DataStructures.battery_data import BatteryData
+from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.controllable_branch_data import ControllableBranchData
+from GridCalEngine.DataStructures.bus_data import BusData
+from GridCalEngine.DataStructures.generator_data import GeneratorData
+from GridCalEngine.DataStructures.hvdc_data import HvdcData
+from GridCalEngine.DataStructures.vsc_data import VscData
+from GridCalEngine.DataStructures.load_data import LoadData
+from GridCalEngine.DataStructures.shunt_data import ShuntData
+from GridCalEngine.DataStructures.fluid_node_data import FluidNodeData
+from GridCalEngine.DataStructures.fluid_turbine_data import FluidTurbineData
+from GridCalEngine.DataStructures.fluid_pump_data import FluidPumpData
+from GridCalEngine.DataStructures.fluid_p2x_data import FluidP2XData
+from GridCalEngine.DataStructures.fluid_path_data import FluidPathData
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-import GridCalEngine.DataStructures as ds
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -38,7 +51,7 @@ def set_bus_control_voltage(i: int,
                             remote_control: bool,
                             bus_name: str,
                             bus_voltage_used: BoolVec,
-                            bus_data: ds.BusData,
+                            bus_data: BusData,
                             candidate_Vm: float,
                             use_stored_guess: bool,
                             logger: Logger) -> None:
@@ -81,13 +94,15 @@ def set_bus_control_voltage(i: int,
                              expected_value=bus_data.Vbus[i])
 
 
-def get_bus_data(circuit: MultiCircuit,
+def get_bus_data(bus_data: BusData,
+                 circuit: MultiCircuit,
                  areas_dict: Dict[Area, int],
                  t_idx: int = -1,
                  time_series=False,
-                 use_stored_guess=False) -> ds.BusData:
+                 use_stored_guess=False) -> None:
     """
 
+    :param bus_data: BusData
     :param circuit:
     :param areas_dict:
     :param t_idx:
@@ -95,8 +110,6 @@ def get_bus_data(circuit: MultiCircuit,
     :param use_stored_guess:
     :return:
     """
-    bus_data = ds.BusData(nbus=circuit.get_bus_number())
-
     substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
 
     for i, bus in enumerate(circuit.buses):
@@ -129,20 +142,22 @@ def get_bus_data(circuit: MultiCircuit,
         else:
             bus_data.active[i] = bus.active
 
-    return bus_data
+    return None
 
 
-def get_load_data(circuit: MultiCircuit,
+def get_load_data(data: LoadData,
+                  circuit: MultiCircuit,
                   bus_dict: Dict[Bus, int],
                   bus_voltage_used: BoolVec,
-                  bus_data: ds.BusData,
+                  bus_data: BusData,
                   logger: Logger,
                   t_idx=-1,
                   opf_results: Union[OptimalPowerFlowResults, None] = None,
                   time_series=False,
-                  use_stored_guess=False) -> ds.LoadData:
+                  use_stored_guess=False) -> LoadData:
     """
 
+    :param data:
     :param circuit:
     :param bus_dict:
     :param bus_voltage_used:
@@ -154,8 +169,6 @@ def get_load_data(circuit: MultiCircuit,
     :param use_stored_guess:
     :return:
     """
-
-    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=circuit.get_bus_number())
 
     ii = 0
     for elm in circuit.get_loads():
@@ -300,18 +313,20 @@ def get_load_data(circuit: MultiCircuit,
 
 
 def get_shunt_data(
+        data: ShuntData,
         circuit: MultiCircuit,
         bus_dict,
         bus_voltage_used: BoolVec,
-        bus_data: ds.BusData,
+        bus_data: BusData,
         logger: Logger,
         t_idx=-1,
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
-) -> ds.ShuntData:
+) -> None:
     """
 
+    :param data:
     :param circuit:
     :param bus_dict:
     :param bus_voltage_used:
@@ -323,9 +338,6 @@ def get_shunt_data(
     :param control_remote_voltage:
     :return:
     """
-
-    data = ds.ShuntData(nelm=circuit.get_shunt_like_device_number(),
-                        nbus=circuit.get_bus_number())
 
     ii = 0
     for k, elm in enumerate(circuit.get_shunts()):
@@ -429,23 +441,23 @@ def get_shunt_data(
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
-    return data
-
 
 def get_generator_data(
+        data: GeneratorData,
         circuit: MultiCircuit,
         bus_dict,
         bus_voltage_used: BoolVec,
         logger: Logger,
-        bus_data: ds.BusData,
+        bus_data: BusData,
         opf_results: VALID_OPF_RESULTS | None = None,
         t_idx=-1,
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
-) -> Tuple[ds.GeneratorData, Dict[str, int]]:
+) -> Dict[str, int]:
     """
 
+    :param data:
     :param circuit:
     :param bus_dict:
     :param bus_voltage_used:
@@ -458,12 +470,9 @@ def get_generator_data(
     :param control_remote_voltage:
     :return:
     """
-    devices = circuit.get_generators()
-
-    data = ds.GeneratorData(nelm=len(devices), nbus=circuit.get_bus_number())
 
     gen_index_dict: Dict[str, int] = dict()
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_generators()):
 
         gen_index_dict[elm.idtag] = k  # associate the idtag to the index
 
@@ -593,23 +602,25 @@ def get_generator_data(
 
         data.C_bus_elm[i, k] = 1
 
-    return data, gen_index_dict
+    return gen_index_dict
 
 
 def get_battery_data(
+        data: BatteryData,
         circuit: MultiCircuit,
         bus_dict: Dict[Bus, int],
         bus_voltage_used: BoolVec,
         logger: Logger,
-        bus_data: ds.BusData,
+        bus_data: BusData,
         opf_results: VALID_OPF_RESULTS | None = None,
         t_idx=-1,
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
-) -> ds.BatteryData:
+) -> None:
     """
 
+    :param data:
     :param circuit:
     :param bus_dict:
     :param bus_voltage_used:
@@ -622,12 +633,8 @@ def get_battery_data(
     :param control_remote_voltage:
     :return:
     """
-    devices = circuit.get_batteries()
 
-    data = ds.BatteryData(nelm=len(devices),
-                          nbus=circuit.get_bus_number())
-
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_batteries()):
 
         i = bus_dict[elm.bus]
         data.bus_idx[k] = i
@@ -766,12 +773,10 @@ def get_battery_data(
 
         data.C_bus_elm[i, k] = 1
 
-    return data
-
 
 def fill_parent_branch(i: int,
                        elm: BRANCH_TYPES,
-                       data: ds.BranchData,
+                       data: BranchData,
                        bus_dict: Dict[Bus, int],
                        apply_temperature: bool,
                        branch_tolerance_mode: BranchImpedanceMode,
@@ -855,8 +860,9 @@ def fill_parent_branch(i: int,
 def fill_controllable_branch(
         ii: int,
         elm: Union[dev.Transformer2W, dev.Winding, dev.VSC, dev.UPFC],
-        data: ds.BranchData,
-        bus_data: ds.BusData,
+        data: BranchData,
+        ctrl_data: ControllableBranchData,
+        bus_data: BusData,
         bus_dict: Dict[Bus, int],
         apply_temperature: bool,
         branch_tolerance_mode: BranchImpedanceMode,
@@ -875,6 +881,7 @@ def fill_controllable_branch(
     :param ii:
     :param elm:
     :param data:
+    :param ctrl_data:
     :param bus_data:
     :param bus_dict:
     :param apply_temperature:
@@ -904,73 +911,73 @@ def fill_controllable_branch(
     if time_series:
 
         if control_taps_phase:
-            data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
+            ctrl_data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
 
         if control_taps_modules:
-            data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
+            ctrl_data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
             if elm.regulation_bus is None:
                 reg_bus = elm.bus_from
-                if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+                if ctrl_data.tap_module_control_mode[ii] == TapModuleControl.Vm:
                     logger.add_warning("Unspecified regulation bus",
                                        device_class=elm.device_type.value,
                                        device=elm.name)
             else:
                 reg_bus = elm.regulation_bus
 
-            data.tap_controlled_buses[ii] = bus_dict[reg_bus]
+            ctrl_data.tap_controlled_buses[ii] = bus_dict[reg_bus]
 
-        data.Pset[ii] = elm.Pset_prof[t_idx] / Sbase
-        data.Qset[ii] = elm.Qset_prof[t_idx] / Sbase
-        data.vset[ii] = elm.vset_prof[t_idx]
+        ctrl_data.Pset[ii] = elm.Pset_prof[t_idx] / Sbase
+        ctrl_data.Qset[ii] = elm.Qset_prof[t_idx] / Sbase
+        ctrl_data.vset[ii] = elm.vset_prof[t_idx]
 
         if opf_results is not None:
-            data.tap_module[ii] = elm.tap_module
-            data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
+            ctrl_data.tap_module[ii] = elm.tap_module
+            ctrl_data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
         else:
-            data.tap_module[ii] = elm.tap_module_prof[t_idx]
-            data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
+            ctrl_data.tap_module[ii] = elm.tap_module_prof[t_idx]
+            ctrl_data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
     else:
 
         if control_taps_phase:
-            data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
+            ctrl_data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
 
         if control_taps_modules:
-            data.tap_module_control_mode[ii] = elm.tap_module_control_mode
+            ctrl_data.tap_module_control_mode[ii] = elm.tap_module_control_mode
 
             if elm.regulation_bus is None:
                 reg_bus = elm.bus_from
-                if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+                if ctrl_data.tap_module_control_mode[ii] == TapModuleControl.Vm:
                     logger.add_warning("Unspecified regulation bus",
                                        device_class=elm.device_type.value,
                                        device=elm.name)
             else:
                 reg_bus = elm.regulation_bus
-            data.tap_controlled_buses[ii] = bus_dict[reg_bus]
+            ctrl_data.tap_controlled_buses[ii] = bus_dict[reg_bus]
 
-        data.Pset[ii] = elm.Pset / Sbase
-        data.Qset[ii] = elm.Qset / Sbase
-        data.vset[ii] = elm.vset
+        ctrl_data.Pset[ii] = elm.Pset / Sbase
+        ctrl_data.Qset[ii] = elm.Qset / Sbase
+        ctrl_data.vset[ii] = elm.vset
 
         if opf_results is not None:
-            data.tap_module[ii] = elm.tap_module
-            data.tap_angle[ii] = opf_results.phase_shift[ii]
+            ctrl_data.tap_module[ii] = elm.tap_module
+            ctrl_data.tap_angle[ii] = opf_results.phase_shift[ii]
         else:
-            data.tap_module[ii] = elm.tap_module
-            data.tap_angle[ii] = elm.tap_phase
+            ctrl_data.tap_module[ii] = elm.tap_module
+            ctrl_data.tap_angle[ii] = elm.tap_phase
 
-    data.tap_module_min[ii] = elm.tap_module_min
-    data.tap_module_max[ii] = elm.tap_module_max
-    data.tap_angle_min[ii] = elm.tap_phase_min
-    data.tap_angle_max[ii] = elm.tap_phase_max
+    ctrl_data.tap_module_min[ii] = elm.tap_module_min
+    ctrl_data.tap_module_max[ii] = elm.tap_module_max
+    ctrl_data.tap_angle_min[ii] = elm.tap_phase_min
+    ctrl_data.tap_angle_max[ii] = elm.tap_phase_max
 
-    if (data.tap_module_control_mode[ii] != TapModuleControl.fixed
-            or data.tap_phase_control_mode[ii] != TapPhaseControl.fixed):
-        data._any_pf_control = True
+    if (ctrl_data.tap_module_control_mode[ii] != TapModuleControl.fixed
+            or ctrl_data.tap_phase_control_mode[ii] != TapPhaseControl.fixed):
+        ctrl_data._any_pf_control = True
 
     if not use_stored_guess:
-        if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
-            data._any_pf_control = True
-            bus_idx = data.tap_controlled_buses[ii]
+        if ctrl_data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+            ctrl_data._any_pf_control = True
+            bus_idx = ctrl_data.tap_controlled_buses[ii]
             if not bus_voltage_used[bus_idx]:
                 if elm.vset > 0.0:
                     bus_data.Vbus[bus_idx] = elm.vset
@@ -987,9 +994,11 @@ def fill_controllable_branch(
 
 
 def get_branch_data(
+        data: BranchData,
+        ctrl_data: ControllableBranchData,
         circuit: MultiCircuit,
         bus_dict: Dict[Bus, int],
-        bus_data: ds.BusData,
+        bus_data: BusData,
         bus_voltage_used: BoolVec,
         apply_temperature: bool,
         branch_tolerance_mode: BranchImpedanceMode,
@@ -1000,11 +1009,12 @@ def get_branch_data(
         control_taps_modules: bool = True,
         control_taps_phase: bool = True,
         control_remote_voltage: bool = True,
-        consider_vsc_as_island_links: bool = True,
         logger: Logger = Logger()
-) -> Tuple[ds.BranchData, Dict[BRANCH_TYPES, int]]:
+) -> Dict[BRANCH_TYPES, int]:
     """
     Compile BranchData for a time step or the snapshot
+    :param data: BranchData
+    :param ctrl_data: ControllableBranchData
     :param circuit: MultiCircuit
     :param bus_dict: Dictionary of buses to compute the indices
     :param bus_data: BusData
@@ -1018,15 +1028,9 @@ def get_branch_data(
     :param control_taps_modules: Control TapsModules
     :param control_taps_phase: Control TapsPhase
     :param control_remote_voltage: Control RemoteVoltage
-    :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
     :param logger: Logger
     :return: BranchData
     """
-
-    data = ds.BranchData(nelm=circuit.get_branch_number(add_vsc=consider_vsc_as_island_links,
-                                                        add_hvdc=False,
-                                                        add_switch=False),
-                         nbus=circuit.get_bus_number())
 
     branch_dict: Dict[BRANCH_TYPES, int] = dict()
 
@@ -1073,6 +1077,7 @@ def get_branch_data(
         fill_controllable_branch(ii=ii,
                                  elm=elm,
                                  data=data,
+                                 ctrl_data=ctrl_data,
                                  bus_data=bus_data,
                                  bus_dict=bus_dict,
                                  apply_temperature=apply_temperature,
@@ -1105,6 +1110,7 @@ def get_branch_data(
             fill_controllable_branch(ii=ii,
                                      elm=elm,
                                      data=data,
+                                     ctrl_data=ctrl_data,
                                      bus_data=bus_data,
                                      bus_dict=bus_dict,
                                      apply_temperature=apply_temperature,
@@ -1135,54 +1141,24 @@ def get_branch_data(
     # UPFC
     for i, elm in enumerate(circuit.upfc_devices):
         # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        data.branch_idx[ii] = ii  # Correct? Do we support UPFCs? We should I think
-
-        if time_series:
-            data.active[ii] = elm.active_prof[t_idx]
-            data.rates[ii] = elm.rate_prof[t_idx]
-            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-            data.overload_cost[ii] = elm.Cost_prof[t_idx]
-        else:
-            data.active[ii] = elm.active
-            data.rates[ii] = elm.rate
-            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
-            data.overload_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.R[ii] = elm.Rs
-        data.X[ii] = elm.Xs
-
-        data.R0[ii] = elm.Rs0
-        data.X0[ii] = elm.Xs0
-
-        data.R2[ii] = elm.Rs2
-        data.X2[ii] = elm.Xs2
-
-        # ysh1 = elm.get_ysh1()
-        # data.Beq[ii] = ysh1.imag
-
-        data.Pset[ii] = elm.Pfset / circuit.Sbase
-
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
-
-        data.tap_phase_control_mode[i] = 0
-        data.tap_module_control_mode[i] = 0
+        fill_controllable_branch(ii=ii,
+                                 elm=elm,
+                                 data=data,
+                                 ctrl_data=ctrl_data,
+                                 bus_data=bus_data,
+                                 bus_dict=bus_dict,
+                                 apply_temperature=apply_temperature,
+                                 branch_tolerance_mode=branch_tolerance_mode,
+                                 t_idx=t_idx,
+                                 time_series=time_series,
+                                 opf_results=opf_results,
+                                 use_stored_guess=use_stored_guess,
+                                 bus_voltage_used=bus_voltage_used,
+                                 Sbase=circuit.Sbase,
+                                 control_taps_modules=control_taps_modules,
+                                 control_taps_phase=control_taps_phase,
+                                 control_remote_voltage=control_remote_voltage,
+                                 logger=logger)
 
         # store for later
         branch_dict[elm] = ii
@@ -1207,64 +1183,75 @@ def get_branch_data(
 
         ii += 1
 
-    return data, branch_dict
+    return branch_dict
 
 
 def get_vsc_data(
+        data: VscData,
         circuit: MultiCircuit,
         bus_dict: Dict[Bus, int],
         branch_dict: Dict[BRANCH_TYPES, int],
-        bus_data: ds.BusData,
+        bus_data: BusData,
         bus_voltage_used: BoolVec,
-        apply_temperature: bool,
-        branch_tolerance_mode: BranchImpedanceMode,
         t_idx: int = -1,
         time_series: bool = False,
         opf_results: VALID_OPF_RESULTS | None = None,
         use_stored_guess: bool = False,
-        control_taps_modules: bool = True,
-        control_taps_phase: bool = True,
         control_remote_voltage: bool = True,
         logger: Logger = Logger()
-) -> ds.VscData:
+) -> None:
     """
     Compile VscData for a time step or the snapshot
+    :param data: VscData
     :param circuit: MultiCircuit
     :param bus_dict: Dictionary of buses to compute the indices
     :param branch_dict: Dictionary of branches to compute the indices
     :param bus_data: BusData
     :param bus_voltage_used:
-    :param apply_temperature: apply the temperature correction?
-    :param branch_tolerance_mode: BranchImpedanceMode
     :param t_idx: time index (-1 is useless)
     :param time_series: compile time series? else the sanpshot is compiled
     :param opf_results: OptimalPowerFlowResults
     :param use_stored_guess: use the stored voltage ?
-    :param control_taps_modules: Control TapsModules
-    :param control_taps_phase: Control TapsPhase
     :param control_remote_voltage: Control RemoteVoltage
     :param logger: Logger
     :return: VscData
     """
 
-    data = ds.VscData(nelm=circuit.get_vsc_number(),
-                      nbus=circuit.get_bus_number())
-
-    def set_control_dev(k, control1_dev: Bus | BRANCH_TYPES | None, control1_bus_idx: IntVec,
-                        control1_branch_idx: IntVec):
+    def set_control_dev(k: int,
+                        control: ConverterControlType,
+                        control_dev: Bus | BRANCH_TYPES | None,
+                        control_val: float,
+                        control_bus_idx: IntVec,
+                        control_branch_idx: IntVec):
         """
 
-        :param k:
-        :param control1_dev:
-        :param control1_bus_idx:
-        :param control1_branch_idx:
-        :return:
+        :param k: device index
+        :param control: ConverterControlType
+        :param control_dev: control device
+        :param control_val: control value
+        :param control_bus_idx: array to be filled in
+        :param control_branch_idx: array to be filled in
         """
-        if control1_dev is not None:
-            if control1_dev.device_type == DeviceType.BusDevice:
-                control1_bus_idx[k] = bus_dict[control1_dev]
+        if control_dev is not None:
+            if control_dev.device_type == DeviceType.BusDevice:
+
+                bus_idx = bus_dict[control_dev]
+
+                control_bus_idx[k] = bus_idx
+
+                if control in (ConverterControlType.Vm_ac, ConverterControlType.Vm_dc):
+                    set_bus_control_voltage(i=bus_idx,
+                                            j=-1,
+                                            remote_control=False,
+                                            bus_name=bus_data.names[bus_idx],
+                                            bus_voltage_used=bus_voltage_used,
+                                            bus_data=bus_data,
+                                            candidate_Vm=control_val,
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
+
             else:
-                control1_branch_idx[k] = branch_dict[control1_dev]
+                control_branch_idx[k] = branch_dict[control_dev]
 
     ii = 0
 
@@ -1289,8 +1276,10 @@ def get_vsc_data(
             data.control2[ii] = elm.control2_prof[t_idx]
             data.control1_val[ii] = elm.control1_val_prof[t_idx]
             data.control2_val[ii] = elm.control2_val_prof[t_idx]
-            set_control_dev(ii, elm.control1_dev_prof[t_idx], data.control1_bus_idx, data.control1_branch_idx)
-            set_control_dev(ii, elm.control2_dev_prof[t_idx], data.control2_bus_idx, data.control2_branch_idx)
+            set_control_dev(ii, data.control1[ii], elm.control1_dev_prof[t_idx], data.control1_val[ii],
+                            data.control1_bus_idx, data.control1_branch_idx)
+            set_control_dev(ii, data.control2[ii], elm.control2_dev_prof[t_idx], data.control2_val[ii],
+                            data.control2_bus_idx, data.control2_branch_idx)
 
         else:
             data.active[i] = elm.active
@@ -1304,8 +1293,10 @@ def get_vsc_data(
             data.control2[ii] = elm.control2
             data.control1_val[ii] = elm.control1_val
             data.control2_val[ii] = elm.control2_val
-            set_control_dev(ii, elm.control1_dev, data.control1_bus_idx, data.control1_branch_idx)
-            set_control_dev(ii, elm.control2_dev, data.control2_bus_idx, data.control2_branch_idx)
+            set_control_dev(ii, data.control1[ii], elm.control1_dev, data.control1_val[ii],
+                            data.control1_bus_idx, data.control1_branch_idx)
+            set_control_dev(ii, data.control2[ii], elm.control2_dev, data.control2_val[ii],
+                            data.control2_bus_idx, data.control2_branch_idx)
 
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -1322,16 +1313,14 @@ def get_vsc_data(
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
 
-
         ii += 1
 
-    return data
 
-
-def get_hvdc_data(circuit: MultiCircuit,
+def get_hvdc_data(data: HvdcData,
+                  circuit: MultiCircuit,
                   bus_dict,
                   bus_types,
-                  bus_data: ds.BusData,
+                  bus_data: BusData,
                   bus_voltage_used: BoolVec,
                   t_idx=-1,
                   time_series=False,
@@ -1340,6 +1329,7 @@ def get_hvdc_data(circuit: MultiCircuit,
                   logger: Logger = Logger()):
     """
 
+    :param data:
     :param circuit:
     :param bus_dict:
     :param bus_types:
@@ -1352,7 +1342,6 @@ def get_hvdc_data(circuit: MultiCircuit,
     :param logger:
     :return:
     """
-    data = ds.HvdcData(nelm=circuit.get_hvdc_number(), nbus=circuit.get_bus_number())
 
     # HVDC
     for i, elm in enumerate(circuit.hvdc_lines):
@@ -1462,25 +1451,22 @@ def get_hvdc_data(circuit: MultiCircuit,
         data.C_hvdc_bus_f[i, f] = 1
         data.C_hvdc_bus_t[i, t] = 1
 
-    return data
 
-
-def get_fluid_node_data(circuit: MultiCircuit,
+def get_fluid_node_data(data: FluidNodeData,
+                        circuit: MultiCircuit,
                         t_idx=-1,
-                        time_series=False) -> Tuple[ds.FluidNodeData, Dict[str, int]]:
+                        time_series=False) -> Dict[str, int]:
     """
 
+    :param data:
     :param circuit:
     :param time_series:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_nodes()
     plant_dict: Dict[str, int] = dict()
 
-    data = ds.FluidNodeData(nelm=len(devices))
-
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_fluid_nodes()):
         plant_dict[elm.idtag] = k
 
         data.names[k] = elm.name
@@ -1502,26 +1488,24 @@ def get_fluid_node_data(circuit: MultiCircuit,
             data.max_soc[k] = elm.max_soc
             data.min_soc[k] = elm.min_soc
 
-    return data, plant_dict
+    return plant_dict
 
 
-def get_fluid_turbine_data(circuit: MultiCircuit,
+def get_fluid_turbine_data(data: FluidTurbineData,
+                           circuit: MultiCircuit,
                            plant_dict: Dict[str, int],
                            gen_dict: Dict[str, int],
-                           t_idx=-1) -> ds.FluidTurbineData:
+                           t_idx=-1) -> FluidTurbineData:
     """
 
+    :param data:
     :param circuit:
     :param plant_dict:
     :param gen_dict:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_turbines()
-
-    data = ds.FluidTurbineData(nelm=len(devices))
-
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_fluid_turbines()):
         data.plant_idx[k] = plant_dict[elm.plant.idtag]
         data.generator_idx[k] = gen_dict[elm.generator.idtag]
 
@@ -1534,23 +1518,22 @@ def get_fluid_turbine_data(circuit: MultiCircuit,
     return data
 
 
-def get_fluid_pump_data(circuit: MultiCircuit,
+def get_fluid_pump_data(data: FluidPumpData,
+                        circuit: MultiCircuit,
                         plant_dict: Dict[str, int],
                         gen_dict: Dict[str, int],
-                        t_idx=-1) -> ds.FluidPumpData:
+                        t_idx=-1) -> FluidPumpData:
     """
 
+    :param data:
     :param circuit:
     :param plant_dict:
     :param gen_dict:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_pumps()
 
-    data = ds.FluidPumpData(nelm=len(devices))
-
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_fluid_pumps()):
         data.plant_idx[k] = plant_dict[elm.plant.idtag]
         data.generator_idx[k] = gen_dict[elm.generator.idtag]
 
@@ -1563,23 +1546,22 @@ def get_fluid_pump_data(circuit: MultiCircuit,
     return data
 
 
-def get_fluid_p2x_data(circuit: MultiCircuit,
+def get_fluid_p2x_data(data: FluidP2XData,
+                       circuit: MultiCircuit,
                        plant_dict: Dict[str, int],
                        gen_dict: Dict[str, int],
-                       t_idx=-1) -> ds.FluidP2XData:
+                       t_idx=-1) -> FluidP2XData:
     """
 
+    :param data:
     :param circuit:
     :param plant_dict:
     :param gen_dict:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_p2xs()
 
-    data = ds.FluidP2XData(nelm=len(devices))
-
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_fluid_p2xs()):
         data.plant_idx[k] = plant_dict[elm.plant.idtag]
         data.generator_idx[k] = gen_dict[elm.generator.idtag]
 
@@ -1592,21 +1574,20 @@ def get_fluid_p2x_data(circuit: MultiCircuit,
     return data
 
 
-def get_fluid_path_data(circuit: MultiCircuit,
+def get_fluid_path_data(data: FluidPathData,
+                        circuit: MultiCircuit,
                         plant_dict: Dict[str, int],
-                        t_idx=-1) -> ds.FluidPathData:
+                        t_idx=-1) -> FluidPathData:
     """
 
+    :param data: FluidPathData
     :param circuit:
     :param plant_dict:
     :param t_idx:
     :return:
     """
-    devices = circuit.get_fluid_paths()
 
-    data = ds.FluidPathData(nelm=len(devices))
-
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_fluid_paths()):
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
 
@@ -1631,7 +1612,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  control_taps_modules: bool = True,
                                  control_taps_phase: bool = True,
                                  control_remote_voltage: bool = True,
-                                 consider_vsc_as_island_links: bool = True,
                                  logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
@@ -1646,7 +1626,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param control_taps_modules: control taps modules?
     :param control_taps_phase: control taps phase?
     :param control_remote_voltage: control remote voltage?
-    :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
     :param logger: Logger instance
     :return: NumericalCircuit instance
     """
@@ -1662,19 +1641,21 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     # declare the numerical circuit
     nc = NumericalCircuit(
-        nbus=0,
-        nbr=0,
-        nhvdc=0,
-        nvsc=0,
-        nload=0,
-        ngen=0,
-        nbatt=0,
-        nshunt=0,
-        nfluidnode=0,
-        nfluidturbine=0,
-        nfluidpump=0,
-        nfluidp2x=0,
-        nfluidpath=0,
+        nbus=circuit.get_bus_number(),
+        nbr=circuit.get_branch_number(add_vsc=False,
+                                      add_hvdc=False,
+                                      add_switch=False),
+        nhvdc=circuit.get_hvdc_number(),
+        nvsc=circuit.get_vsc_number(),
+        nload=circuit.get_load_like_device_number(),
+        ngen=circuit.get_generators_number(),
+        nbatt=circuit.get_batteries_number(),
+        nshunt=circuit.get_shunt_like_device_number(),
+        nfluidnode=circuit.get_fluid_nodes_number(),
+        nfluidturbine=circuit.get_fluid_turbines_number(),
+        nfluidpump=circuit.get_fluid_pumps_number(),
+        nfluidp2x=circuit.get_fluid_p2xs_number(),
+        nfluidpath=circuit.get_fluid_paths_number(),
         sbase=circuit.Sbase,
         t_idx=t_idx
     )
@@ -1685,7 +1666,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     if areas_dict is None:
         areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
 
-    nc.bus_data = get_bus_data(
+    get_bus_data(
+        bus_data=nc.bus_data,  # filled here
         circuit=circuit,
         t_idx=t_idx,
         time_series=time_series,
@@ -1693,7 +1675,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         use_stored_guess=use_stored_guess
     )
 
-    nc.generator_data, gen_dict = get_generator_data(
+    gen_dict = get_generator_data(
+        data=nc.generator_data,  # filled here
         circuit=circuit,
         bus_dict=bus_dict,
         bus_data=nc.bus_data,
@@ -1706,7 +1689,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         control_remote_voltage=control_remote_voltage
     )
 
-    nc.battery_data = get_battery_data(
+    get_battery_data(
+        data=nc.battery_data,  # filled here
         circuit=circuit,
         bus_dict=bus_dict,
         bus_data=nc.bus_data,
@@ -1719,7 +1703,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         control_remote_voltage=control_remote_voltage
     )
 
-    nc.shunt_data = get_shunt_data(
+    get_shunt_data(
+        data=nc.shunt_data,  # filled here
         circuit=circuit,
         bus_dict=bus_dict,
         bus_voltage_used=bus_voltage_used,
@@ -1731,7 +1716,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         control_remote_voltage=control_remote_voltage
     )
 
-    nc.load_data = get_load_data(
+    get_load_data(
+        data=nc.load_data,
         circuit=circuit,
         bus_dict=bus_dict,
         bus_voltage_used=bus_voltage_used,
@@ -1743,7 +1729,9 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         use_stored_guess=use_stored_guess
     )
 
-    nc.branch_data, branch_dict = get_branch_data(
+    branch_dict = get_branch_data(
+        data=nc.branch_data,
+        ctrl_data=nc.controllable_branch_data,
         circuit=circuit,
         t_idx=t_idx,
         time_series=time_series,
@@ -1757,10 +1745,10 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         control_taps_modules=control_taps_modules,
         control_taps_phase=control_taps_phase,
         control_remote_voltage=control_remote_voltage,
-        consider_vsc_as_island_links=consider_vsc_as_island_links,
     )
 
-    nc.vsc_data = get_vsc_data(
+    get_vsc_data(
+        data=nc.vsc_data,
         circuit=circuit,
         t_idx=t_idx,
         time_series=time_series,
@@ -1768,16 +1756,13 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         branch_dict=branch_dict,
         bus_data=nc.bus_data,
         bus_voltage_used=bus_voltage_used,
-        apply_temperature=apply_temperature,
-        branch_tolerance_mode=branch_tolerance_mode,
         opf_results=opf_results,
         use_stored_guess=use_stored_guess,
-        control_taps_modules=control_taps_modules,
-        control_taps_phase=control_taps_phase,
         control_remote_voltage=control_remote_voltage,
     )
 
-    nc.hvdc_data = get_hvdc_data(
+    get_hvdc_data(
+        data=nc.hvdc_data,
         circuit=circuit,
         t_idx=t_idx,
         time_series=time_series,
@@ -1791,34 +1776,39 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     )
 
     if len(circuit.fluid_nodes) > 0:
-        nc.fluid_node_data, plant_dict = get_fluid_node_data(
+        plant_dict = get_fluid_node_data(
+            data=nc.fluid_node_data,
             circuit=circuit,
             t_idx=t_idx,
             time_series=time_series
         )
 
-        nc.fluid_turbine_data = get_fluid_turbine_data(
+        get_fluid_turbine_data(
+            data=nc.fluid_turbine_data,
             circuit=circuit,
             plant_dict=plant_dict,
             gen_dict=gen_dict,
             t_idx=t_idx
         )
 
-        nc.fluid_pump_data = get_fluid_pump_data(
+        get_fluid_pump_data(
+            data=nc.fluid_pump_data,
             circuit=circuit,
             plant_dict=plant_dict,
             gen_dict=gen_dict,
             t_idx=t_idx
         )
 
-        nc.fluid_p2x_data = get_fluid_p2x_data(
+        get_fluid_p2x_data(
+            data=nc.fluid_p2x_data,
             circuit=circuit,
             plant_dict=plant_dict,
             gen_dict=gen_dict,
             t_idx=t_idx
         )
 
-        nc.fluid_path_data = get_fluid_path_data(
+        get_fluid_path_data(
+            data=nc.fluid_path_data,
             circuit=circuit,
             plant_dict=plant_dict,
             t_idx=t_idx

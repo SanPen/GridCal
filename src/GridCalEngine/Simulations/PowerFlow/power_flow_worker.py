@@ -98,8 +98,8 @@ def solve(nc: NumericalCircuit,
                                            converged=False,
                                            norm_f=1e200,
                                            Scalc=S0,
-                                           m=nc.branch_data.tap_module,
-                                           tau=nc.branch_data.tap_angle,
+                                           m=nc.controllable_branch_data.tap_module,
+                                           tau=nc.controllable_branch_data.tap_angle,
                                            Beq=np.zeros(nc.nbr, dtype=float),
                                            Ybus=nc.Ybus,
                                            Yf=nc.Yf,
@@ -117,8 +117,8 @@ def solve(nc: NumericalCircuit,
                                                  converged=False,
                                                  norm_f=1e200,
                                                  Scalc=S0,
-                                                 m=nc.branch_data.tap_module,
-                                                 tau=nc.branch_data.tap_angle,
+                                                 m=nc.controllable_branch_data.tap_module,
+                                                 tau=nc.controllable_branch_data.tap_angle,
                                                  Beq=np.zeros(nc.nbr, dtype=float),
                                                  Ybus=nc.Ybus,
                                                  Yf=nc.Yf,
@@ -177,7 +177,7 @@ def solve(nc: NumericalCircuit,
                                      I0=I0,
                                      Y0=Y0,
                                      V0=V0,
-                                     tau=nc.branch_data.tap_angle,
+                                     tau=nc.controllable_branch_data.tap_angle,
                                      vd=vd,
                                      no_slack=no_slack,
                                      pq=pq,
@@ -196,7 +196,7 @@ def solve(nc: NumericalCircuit,
                                              I0=I0,
                                              Y0=Y0,
                                              V0=V0,
-                                             tau=nc.branch_data.tap_angle,
+                                             tau=nc.controllable_branch_data.tap_angle,
                                              vd=vd,
                                              no_slack=no_slack,
                                              pq=pq,
@@ -465,10 +465,10 @@ def solve(nc: NumericalCircuit,
                              expected_value=f"<{options.tolerance}")
 
         if final_solution.tap_module is None:
-            final_solution.tap_module = nc.branch_data.tap_module
+            final_solution.tap_module = nc.controllable_branch_data.tap_module
 
         if final_solution.tap_angle is None:
-            final_solution.tap_angle = nc.branch_data.tap_angle
+            final_solution.tap_angle = nc.controllable_branch_data.tap_angle
 
         if final_solution.Beq is None:
             final_solution.Beq = np.zeros(nc.nbr, dtype=float),
@@ -616,10 +616,10 @@ def power_flow_post_process(
         theta_f = theta[calculation_inputs.F]
         theta_t = theta[calculation_inputs.T]
 
-        b = 1.0 / (calculation_inputs.branch_data.X * calculation_inputs.branch_data.tap_module)
+        b = 1.0 / (calculation_inputs.branch_data.X * calculation_inputs.controllable_branch_data.tap_module)
         # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
 
-        Pf = b * (theta_f - theta_t - calculation_inputs.branch_data.tap_angle)
+        Pf = b * (theta_f - theta_t - calculation_inputs.controllable_branch_data.tap_angle)
 
         Sfb = Pf * calculation_inputs.Sbase
         Stb = -Pf * calculation_inputs.Sbase
