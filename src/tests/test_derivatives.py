@@ -370,7 +370,7 @@ def test_m_derivatives() -> None:
                                                                        tap=nc.branch_data.tap,
                                                                        tap_module=nc.branch_data.tap_module,
                                                                        Bc=nc.branch_data.B,
-                                                                       Beq=nc.branch_data.Beq,
+                                                                       Beq=np.zeros(nc.nbr),
                                                                        V=nc.Vbus)
         dSbus_dm1, dSf_dm1, dSt_dm1 = mat_to_scipy(dSbus_dm1), mat_to_scipy(dSf_dm1), mat_to_scipy(dSt_dm1)
 
@@ -405,7 +405,7 @@ def test_m_derivatives() -> None:
                                          T=nc.T,
                                          Ys=Ys,
                                          Bc=nc.branch_data.B,
-                                         Beq=nc.branch_data.Beq,
+                                         Beq=np.zeros(nc.nbr),
                                          kconv=nc.branch_data.k,
                                          tap=nc.branch_data.tap,
                                          tap_module=nc.branch_data.tap_module,
@@ -420,7 +420,7 @@ def test_m_derivatives() -> None:
                                      T=nc.T,
                                      Ys=Ys,
                                      Bc=nc.branch_data.B,
-                                     Beq=nc.branch_data.Beq,
+                                     Beq=np.zeros(nc.nbr),
                                      kconv=nc.branch_data.k,
                                      tap=nc.branch_data.tap,
                                      tap_module=nc.branch_data.tap_module,

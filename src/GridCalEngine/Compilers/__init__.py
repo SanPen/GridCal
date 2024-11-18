@@ -8,4 +8,3 @@ import GridCalEngine.Compilers.circuit_to_data
 # import GridCalEngine.Compilers.circuit_to_newton_pa
 # import GridCalEngine.Compilers.circuit_to_pgm
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Compilers.circuit_to_data_generalized import compile_generalized_numerical_circuit_at

@@ -528,33 +528,12 @@ class ConverterControlType(Enum):
     """
     Converter control types
     """
-    # Type I
-    # theta_vac = '1:Angle+Vac'
-    # pf_qac = '2:Pflow + Qflow'
-    # pf_vac = '3:Pflow + Vac'
-    #
-    # # Type II
-    # vdc_qac = '4:Vdc+Qflow'
-    # vdc_vac = '5:Vdc+Vac'
-    #
-    # # type III
-    # vdc_droop_qac = '6:VdcDroop+Qac'
-    # vdc_droop_vac = '7:VdcDroop+Vac'
-
-    type_0_free = '0:Free'
-
-    type_I_1 = '1:Vac'
-    type_I_2 = '2:Pdc+Qac'
-    type_I_3 = '3:Pdc+Vac'
-
-    type_II_4 = '4:Vdc+Qac'
-    type_II_5 = '5:Vdc+Vac'
-
-    type_III_6 = '6:Droop+Qac'
-    type_III_7 = '7:Droop+Vac'
-
-    type_IV_I = '8:Vdc'
-    type_IV_II = '9:Pdc'
+    Vm_dc = 'Vm_dc'
+    Vm_ac = 'Vm_ac'
+    Va_ac = 'Va_ac'
+    Qac = 'Q_ac'
+    Pdc = 'P_dc'
+    Pac = 'P_ac'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -745,45 +724,45 @@ class ActionType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class GpfControlType(Enum):
-    """
-    GENERALISED PF Control types
-    """
-    type_None = '0:None'
-    type_Vm = '1:Vm'
-    type_Va = '2:Va'
-    type_Pzip = '3:Pzip'
-    type_Qzip = '4:Qzip'
-    type_Pf = '5:Pf'
-    type_Qf = '6:Qf'
-    type_Pt = '7:Pt'
-    type_Qt = '8:Qt'
-    type_TapMod = '9:m'
-    type_TapAng = '10:tau'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        """
-        :param s:
-        :return:
-        """
-        try:
-            return GpfControlType[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        """
-        :return:
-        """
-        return list(map(lambda c: c.value, cls))
+# class GpfControlType(Enum):
+#     """
+#     GENERALISED PF Control types
+#     """
+#     type_None = '0:None'
+#     type_Vm = '1:Vm'
+#     type_Va = '2:Va'
+#     type_Pzip = '3:Pzip'
+#     type_Qzip = '4:Qzip'
+#     type_Pf = '5:Pf'
+#     type_Qf = '6:Qf'
+#     type_Pt = '7:Pt'
+#     type_Qt = '8:Qt'
+#     type_TapMod = '9:m'
+#     type_TapAng = '10:tau'
+#
+#     def __str__(self) -> str:
+#         return str(self.value)
+#
+#     def __repr__(self):
+#         return str(self)
+#
+#     @staticmethod
+#     def argparse(s):
+#         """
+#         :param s:
+#         :return:
+#         """
+#         try:
+#             return GpfControlType[s]
+#         except KeyError:
+#             return s
+#
+#     @classmethod
+#     def list(cls):
+#         """
+#         :return:
+#         """
+#         return list(map(lambda c: c.value, cls))
 
 
 class DeviceType(Enum):
@@ -886,6 +865,8 @@ class DeviceType(Enum):
     SimulationOptionsDevice = "SimulationOptionsDevice"
 
     InterAggregationInfo = "InterAggregationInfo"
+
+    BusOrBranch = "BusOrBranch"
 
     def __str__(self) -> str:
         return str(self.value)

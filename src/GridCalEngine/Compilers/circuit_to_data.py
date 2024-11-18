@@ -11,9 +11,9 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode,
-                                        TapModuleControl, TapPhaseControl, HvdcControlType)
-from GridCalEngine.basic_structures import BoolVec
+from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, DeviceType,
+                                        ConverterControlType, TapModuleControl, TapPhaseControl, HvdcControlType)
+from GridCalEngine.basic_structures import BoolVec, IntVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.DataStructures as ds
@@ -1002,7 +1002,7 @@ def get_branch_data(
         control_remote_voltage: bool = True,
         consider_vsc_as_island_links: bool = True,
         logger: Logger = Logger()
-) -> ds.BranchData:
+) -> Tuple[ds.BranchData, Dict[BRANCH_TYPES, int]]:
     """
     Compile BranchData for a time step or the snapshot
     :param circuit: MultiCircuit
@@ -1028,6 +1028,8 @@ def get_branch_data(
                                                         add_switch=False),
                          nbus=circuit.get_bus_number())
 
+    branch_dict: Dict[BRANCH_TYPES, int] = dict()
+
     ii = 0
 
     # Compile the lines
@@ -1043,6 +1045,9 @@ def get_branch_data(
                            time_series=time_series,
                            is_dc_branch=False)
 
+        # store for later
+        branch_dict[elm] = ii
+
         ii += 1
 
     # DC-lines
@@ -1057,6 +1062,9 @@ def get_branch_data(
                            t_idx=t_idx,
                            time_series=time_series,
                            is_dc_branch=True)
+
+        # store for later
+        branch_dict[elm] = ii
 
         ii += 1
 
@@ -1083,6 +1091,9 @@ def get_branch_data(
         data.conn[ii] = elm.conn
         data.m_taps[ii] = elm.tap_changer.tap_modules_array
         data.tau_taps[ii] = elm.tap_changer.tap_angles_array
+
+        # store for later
+        branch_dict[elm] = ii
 
         ii += 1
 
@@ -1112,6 +1123,9 @@ def get_branch_data(
             data.conn[ii] = elm.conn
             data.m_taps[ii] = elm.tap_changer.tap_modules_array
             data.tau_taps[ii] = elm.tap_changer.tap_angles_array
+
+            # store for later
+            branch_dict[elm] = ii
 
             ii += 1
 
@@ -1159,8 +1173,8 @@ def get_branch_data(
         data.R2[ii] = elm.Rs2
         data.X2[ii] = elm.Xs2
 
-        ysh1 = elm.get_ysh1()
-        data.Beq[ii] = ysh1.imag
+        # ysh1 = elm.get_ysh1()
+        # data.Beq[ii] = ysh1.imag
 
         data.Pset[ii] = elm.Pfset / circuit.Sbase
 
@@ -1169,6 +1183,9 @@ def get_branch_data(
 
         data.tap_phase_control_mode[i] = 0
         data.tap_module_control_mode[i] = 0
+
+        # store for later
+        branch_dict[elm] = ii
 
         ii += 1
 
@@ -1184,43 +1201,19 @@ def get_branch_data(
                            t_idx=t_idx,
                            time_series=time_series,
                            is_dc_branch=False)
+
+        # store for later
+        branch_dict[elm] = ii
+
         ii += 1
 
-    # VSC (only added if we want the VSC to be a regular branch: Fubm)
-    if consider_vsc_as_island_links:
-        for i, elm in enumerate(circuit.vsc_devices):
-            # generic stuff
-            fill_controllable_branch(ii=ii,
-                                     elm=elm,
-                                     data=data,
-                                     bus_data=bus_data,
-                                     bus_dict=bus_dict,
-                                     apply_temperature=apply_temperature,
-                                     branch_tolerance_mode=branch_tolerance_mode,
-                                     t_idx=t_idx,
-                                     time_series=time_series,
-                                     opf_results=opf_results,
-                                     use_stored_guess=use_stored_guess,
-                                     bus_voltage_used=bus_voltage_used,
-                                     Sbase=circuit.Sbase,
-                                     control_taps_modules=control_taps_modules,
-                                     control_taps_phase=control_taps_phase,
-                                     control_remote_voltage=control_remote_voltage,
-                                     logger=logger)
-            data.Kdp[ii] = elm.kdp
-            data.is_converter[ii] = True
-            data.alpha1[ii] = elm.alpha1
-            data.alpha2[ii] = elm.alpha2
-            data.alpha3[ii] = elm.alpha3
-            data._any_pf_control = True
-            ii += 1
-
-    return data
+    return data, branch_dict
 
 
 def get_vsc_data(
         circuit: MultiCircuit,
         bus_dict: Dict[Bus, int],
+        branch_dict: Dict[BRANCH_TYPES, int],
         bus_data: ds.BusData,
         bus_voltage_used: BoolVec,
         apply_temperature: bool,
@@ -1238,6 +1231,7 @@ def get_vsc_data(
     Compile VscData for a time step or the snapshot
     :param circuit: MultiCircuit
     :param bus_dict: Dictionary of buses to compute the indices
+    :param branch_dict: Dictionary of branches to compute the indices
     :param bus_data: BusData
     :param bus_voltage_used:
     :param apply_temperature: apply the temperature correction?
@@ -1249,13 +1243,28 @@ def get_vsc_data(
     :param control_taps_modules: Control TapsModules
     :param control_taps_phase: Control TapsPhase
     :param control_remote_voltage: Control RemoteVoltage
-    :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
     :param logger: Logger
     :return: VscData
     """
 
     data = ds.VscData(nelm=circuit.get_vsc_number(),
                       nbus=circuit.get_bus_number())
+
+    def set_control_dev(k, control1_dev: Bus | BRANCH_TYPES | None, control1_bus_idx: IntVec,
+                        control1_branch_idx: IntVec):
+        """
+
+        :param k:
+        :param control1_dev:
+        :param control1_bus_idx:
+        :param control1_branch_idx:
+        :return:
+        """
+        if control1_dev is not None:
+            if control1_dev.device_type == DeviceType.BusDevice:
+                control1_bus_idx[k] = bus_dict[control1_dev]
+            else:
+                control1_branch_idx[k] = branch_dict[control1_dev]
 
     ii = 0
 
@@ -1280,11 +1289,25 @@ def get_vsc_data(
                                  control_remote_voltage=control_remote_voltage,
                                  logger=logger)
         data.Kdp[ii] = elm.kdp
-        data.is_converter[ii] = True
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
-        data._any_pf_control = True
+
+        if time_series:
+            data.control1[ii] = elm.control1_prof[t_idx]
+            data.control2[ii] = elm.control2_prof[t_idx]
+            data.control1_val = elm.control1_val_prof[t_idx]
+            data.control2_val = elm.control2_val_prof[t_idx]
+            set_control_dev(ii, elm.control1_dev_prof[t_idx], data.control1_bus_idx, data.control1_branch_idx)
+            set_control_dev(ii, elm.control2_dev_prof[t_idx], data.control2_bus_idx, data.control2_branch_idx)
+        else:
+            data.control1[ii] = elm.control1
+            data.control2[ii] = elm.control2
+            data.control1_val = elm.control1_val
+            data.control2_val = elm.control2_val
+            set_control_dev(ii, elm.control1_dev, data.control1_bus_idx, data.control1_branch_idx)
+            set_control_dev(ii, elm.control2_dev, data.control2_bus_idx, data.control2_branch_idx)
+
         ii += 1
 
     return data
@@ -1705,7 +1728,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         use_stored_guess=use_stored_guess
     )
 
-    nc.branch_data = get_branch_data(
+    nc.branch_data, branch_dict = get_branch_data(
         circuit=circuit,
         t_idx=t_idx,
         time_series=time_series,
@@ -1722,22 +1745,22 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         consider_vsc_as_island_links=consider_vsc_as_island_links,
     )
 
-    if not consider_vsc_as_island_links:
-        nc.vsc_data = get_vsc_data(
-            circuit=circuit,
-            t_idx=t_idx,
-            time_series=time_series,
-            bus_dict=bus_dict,
-            bus_data=nc.bus_data,
-            bus_voltage_used=bus_voltage_used,
-            apply_temperature=apply_temperature,
-            branch_tolerance_mode=branch_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=use_stored_guess,
-            control_taps_modules=control_taps_modules,
-            control_taps_phase=control_taps_phase,
-            control_remote_voltage=control_remote_voltage,
-        )
+    nc.vsc_data = get_vsc_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=time_series,
+        bus_dict=bus_dict,
+        branch_dict=branch_dict,
+        bus_data=nc.bus_data,
+        bus_voltage_used=bus_voltage_used,
+        apply_temperature=apply_temperature,
+        branch_tolerance_mode=branch_tolerance_mode,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+        control_taps_modules=control_taps_modules,
+        control_taps_phase=control_taps_phase,
+        control_remote_voltage=control_remote_voltage,
+    )
 
     nc.hvdc_data = get_hvdc_data(
         circuit=circuit,
@@ -1788,8 +1811,5 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     nc.bus_dict = bus_dict
     nc.consolidate_information()
-
-    # Dummy call to get the indices and debug them
-    _ = nc.cg_pac
 
     return nc

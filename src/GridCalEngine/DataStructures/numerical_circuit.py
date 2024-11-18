@@ -36,7 +36,8 @@ ALL_STRUCTS = Union[
 ]
 
 
-def CheckArr(arr: Vec | IntVec | BoolVec | CxVec, arr_expected: Vec | IntVec | BoolVec | CxVec,
+def CheckArr(arr: Vec | IntVec | BoolVec | CxVec,
+             arr_expected: Vec | IntVec | BoolVec | CxVec,
              tol: float, name: str, test: str, logger: Logger) -> int:
     """
 
@@ -59,7 +60,7 @@ def CheckArr(arr: Vec | IntVec | BoolVec | CxVec, arr_expected: Vec | IntVec | B
     if np.allclose(arr, arr_expected, atol=tol):
         return 0
     else:
-        if arr.dtype == np.bool:
+        if arr.dtype in (np.bool_, bool):
             diff = arr.astype(int) - arr_expected.astype(int)
             logger.add_error(msg="Numeric differences",
                              device=name,
@@ -1085,7 +1086,7 @@ class NumericalCircuit:
                                     tap_module_control_mode=self.branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
                                     tap_controlled_buses=self.branch_data.tap_controlled_buses,
-                                    is_converter=self.branch_data.is_converter,
+                                    is_converter=np.zeros(self.nbr, dtype=bool),
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
                                     is_dc_bus=self.bus_data.is_dc)
@@ -1131,10 +1132,10 @@ class NumericalCircuit:
             vtap_f=self.branch_data.virtual_tap_f,
             vtap_t=self.branch_data.virtual_tap_t,
             tap_angle=self.branch_data.tap_angle,
-            Beq=self.branch_data.Beq,
+            Beq=np.zeros(self.nbr, dtype=float),
             Cf=self.Cf,
             Ct=self.Ct,
-            Gsw=self.branch_data.G0sw,
+            Gsw=np.zeros(self.nbr, dtype=float),
             Yshunt_bus=self.Yshunt_from_devices,
             conn=self.branch_data.conn,
             seq=1,
@@ -1156,14 +1157,14 @@ class NumericalCircuit:
             vtap_f=self.branch_data.virtual_tap_f,
             vtap_t=self.branch_data.virtual_tap_t,
             tap_angle=self.branch_data.tap_angle,
-            Beq=self.branch_data.Beq,
+            Beq=np.zeros(self.nbr, dtype=float),
             Cf=self.Cf,
             Ct=self.Ct,
-            G0sw=self.branch_data.G0sw,
+            G0sw=np.zeros(self.nbr, dtype=float),
             If=np.zeros(len(self.branch_data)),
-            a=self.branch_data.alpha1,
-            b=self.branch_data.alpha2,
-            c=self.branch_data.alpha3,
+            a=np.zeros(self.nbr, dtype=float),
+            b=np.zeros(self.nbr, dtype=float),
+            c=np.zeros(self.nbr, dtype=float),
             Yshunt_bus=self.Yshunt_from_devices,
         )
 
@@ -1396,7 +1397,8 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.branch_data._any_pf_control
+        # TODO: Remove this everywhere or find a way to find it
+        return False
 
     @property
     def k_pf_tau(self):

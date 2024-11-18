@@ -633,7 +633,7 @@ class GeneralizedSimulationIndices:
         # See how to store this bool_mode
         for iii, _ in enumerate(hvdc_data.active):
 
-            self.add_to_cx_Pf(branch_idx)
+            # self.add_to_cx_Pf(branch_idx)
 
             self.set_bus_vm_simple(bus_local=hvdc_data.F[iii],
                                    device_name=hvdc_data.names[iii])

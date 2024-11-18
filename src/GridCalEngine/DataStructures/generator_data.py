@@ -8,7 +8,6 @@ from typing import Tuple, List, Dict
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import GpfControlType
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec, ObjVec
 
 

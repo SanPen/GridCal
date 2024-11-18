@@ -90,13 +90,15 @@ def solve(nc: NumericalCircuit,
                                            Scalc=S0,
                                            m=nc.branch_data.tap_module,
                                            tau=nc.branch_data.tap_angle,
-                                           Beq=nc.branch_data.Beq,
+                                           Beq=np.zeros(nc.nbr, dtype=float),
                                            Ybus=nc.Ybus,
                                            Yf=nc.Yf,
                                            Yt=nc.Yt,
                                            iterations=0,
                                            elapsed=0)
-        report.add(SolverType.NoSolver, True, 0, 0.0, 0.0)
+
+        # method, converged: bool, error: float, elapsed: float, iterations: int
+        report.add(method=SolverType.NoSolver, converged=True, error=0.0, elapsed=0.0, iterations=0)
         logger.add_error('Not solving power flow because there is no slack bus')
         return solution
 
@@ -107,7 +109,7 @@ def solve(nc: NumericalCircuit,
                                                  Scalc=S0,
                                                  m=nc.branch_data.tap_module,
                                                  tau=nc.branch_data.tap_angle,
-                                                 Beq=nc.branch_data.Beq,
+                                                 Beq=np.zeros(nc.nbr, dtype=float),
                                                  Ybus=nc.Ybus,
                                                  Yf=nc.Yf,
                                                  Yt=nc.Yt,
@@ -297,21 +299,21 @@ def solve(nc: NumericalCircuit,
 
             elif solver_type == SolverType.GENERALISED:
                 problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                S0=S0,
-                                                I0=I0,
-                                                Y0=Y0,
-                                                Qmin=Qmin,
-                                                Qmax=Qmax,
-                                                nc=nc,
-                                                options=options,
-                                                logger=logger)
+                                                   S0=S0,
+                                                   I0=I0,
+                                                   Y0=Y0,
+                                                   Qmin=Qmin,
+                                                   Qmax=Qmax,
+                                                   nc=nc,
+                                                   options=options,
+                                                   logger=logger)
 
                 solution = newton_raphson_fx(problem=problem,
-                                                 tol=options.tolerance,
-                                                 max_iter=options.max_iter,
-                                                 trust=options.trust_radius,
-                                                 verbose=options.verbose,
-                                                 logger=logger)
+                                             tol=options.tolerance,
+                                             max_iter=options.max_iter,
+                                             trust=options.trust_radius,
+                                             verbose=options.verbose,
+                                             logger=logger)
 
             # Newton-Raphson (full, but non-generalized)
             elif solver_type == SolverType.NR:
@@ -459,7 +461,7 @@ def solve(nc: NumericalCircuit,
             final_solution.tap_angle = nc.branch_data.tap_angle
 
         if final_solution.Beq is None:
-            final_solution.Beq = nc.branch_data.Beq
+            final_solution.Beq = np.zeros(nc.nbr, dtype=float),
 
         return final_solution
 

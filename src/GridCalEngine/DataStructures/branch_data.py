@@ -7,15 +7,15 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
+from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec, BoolVec, Logger
-from typing import List, Tuple, Dict, Set
+from GridCalEngine.basic_structures import Vec, IntVec, ObjVec, CxVec, Logger
+from typing import List, Tuple, Set
 
 
-class BranchData:
+class BranchData(BranchParentData):
     """
     Structure to host all branches data for calculation
     """
@@ -26,27 +26,9 @@ class BranchData:
         :param nelm: number of elements
         :param nbus: number of buses
         """
-        self.nelm: int = nelm
-        self.nbus: int = nbus
-
-        self.names: StrVec = np.empty(self.nelm, dtype=object)
-        self.idtag: StrVec = np.empty(self.nelm, dtype=object)
-
-        self.dc: IntVec = np.zeros(self.nelm, dtype=int)
-
-        self.active: IntVec = np.zeros(nelm, dtype=int)
-        self.rates: Vec = np.zeros(nelm, dtype=float)
-        self.contingency_rates: Vec = np.zeros(nelm, dtype=float)
-        self.protection_rates: Vec = np.zeros(nelm, dtype=float)
+        BranchParentData.__init__(self, nelm=nelm, nbus=nbus)
 
         self.branch_idx: IntVec = np.zeros(nelm, dtype=int)
-
-        self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
-        self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
-
-        # reliability
-        self.mttf: Vec = np.zeros(self.nelm, dtype=float)
-        self.mttr: Vec = np.zeros(self.nelm, dtype=float)
 
         self.R: Vec = np.zeros(self.nelm, dtype=float)
         self.X: Vec = np.zeros(self.nelm, dtype=float)
@@ -76,8 +58,9 @@ class BranchData:
         self.tap_angle: Vec = np.zeros(nelm, dtype=float)
         self.tap_angle_min: Vec = np.full(nelm, fill_value=-6.28, dtype=float)
         self.tap_angle_max: Vec = np.full(nelm, fill_value=6.28, dtype=float)
-        self.Beq: Vec = np.zeros(nelm, dtype=float)
-        self.G0sw: Vec = np.zeros(nelm, dtype=float)
+        self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_controlled_buses: IntVec = np.zeros(self.nelm, dtype=int)
 
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
@@ -85,31 +68,6 @@ class BranchData:
         self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
         self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
         self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
-
-        self.Kdp: Vec = np.ones(self.nelm, dtype=float)
-        self.Kdp_va: Vec = np.ones(self.nelm, dtype=float)
-        self.alpha1: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
-        self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
-        self.alpha3: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
-
-        self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.tap_controlled_buses: IntVec = np.zeros(self.nelm, dtype=int)
-        self.is_converter: BoolVec = np.zeros(self.nelm, dtype=bool)
-
-        self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
-        self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
-
-        # connectivity branch with their "from" bus
-        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
-        # connectivity branch with their "to" bus
-        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
-
-        self.overload_cost: Vec = np.zeros(nelm, dtype=float)
-
-        self.original_idx: IntVec = np.zeros(nelm, dtype=int)
-
-        self._any_pf_control = False
 
     def size(self) -> int:
         """
@@ -127,17 +85,11 @@ class BranchData:
         :param logger: Logger
         :return: new BranchData instance
         """
+        data, bus_map = super().slice(elm_idx, bus_idx, logger)
+        data.__class__ = BranchData
+        data: BranchData = data
 
-        data = BranchData(nelm=len(elm_idx), nbus=len(bus_idx))
-
-        if data.nelm == 0:
-            return data
-
-        data.names = self.names[elm_idx]
-        data.idtag = self.idtag[elm_idx]
-
-        data.mttf = self.mttf[elm_idx]
-        data.mttr = self.mttr[elm_idx]
+        data.branch_idx = self.branch_idx[elm_idx]
 
         data.R = self.R[elm_idx]
         data.X = self.X[elm_idx]
@@ -154,76 +106,29 @@ class BranchData:
         data.G2 = self.G2[elm_idx]
         data.B2 = self.B2[elm_idx]
 
-        data.k = self.k[elm_idx]
-        data.virtual_tap_f = self.virtual_tap_f[elm_idx]
-        data.virtual_tap_t = self.virtual_tap_t[elm_idx]
-        data.Kdp = self.Kdp[elm_idx]
-        data.Kdp_va = self.Kdp_va[elm_idx]
-        data.dc = self.dc[elm_idx]
-        data.alpha1 = self.alpha1[elm_idx]
-        data.alpha2 = self.alpha2[elm_idx]
-        data.alpha3 = self.alpha3[elm_idx]
-
         data.conn = self.conn[elm_idx]  # winding connection
+
         data.m_taps = self.m_taps.slice(elm_idx)
         data.tau_taps = self.tau_taps.slice(elm_idx)
 
-        data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
-        data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
-        data.tap_controlled_buses = self.tap_controlled_buses[elm_idx]
-        data.is_converter = self.is_converter[elm_idx]
+        data.k = self.k[elm_idx]
 
-        data.contingency_enabled = self.contingency_enabled[elm_idx]
-        data.monitor_loading = self.monitor_loading[elm_idx]
-
-        data.active = self.active[elm_idx]
-        data.rates = self.rates[elm_idx]
-        data.contingency_rates = self.contingency_rates[elm_idx]
-        data.protection_rates = self.protection_rates[elm_idx]
         data.tap_module = self.tap_module[elm_idx]
-
         data.tap_module_min = self.tap_module_min[elm_idx]
         data.tap_module_max = self.tap_module_max[elm_idx]
         data.tap_angle = self.tap_angle[elm_idx]
         data.tap_angle_min = self.tap_angle_min[elm_idx]
         data.tap_angle_max = self.tap_angle_max[elm_idx]
-        data.Beq = self.Beq[elm_idx]
-        data.G0sw = self.G0sw[elm_idx]
+        data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
+        data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
+        data.tap_controlled_buses = self.tap_controlled_buses[elm_idx]
+
+        data.virtual_tap_f = self.virtual_tap_f[elm_idx]
+        data.virtual_tap_t = self.virtual_tap_t[elm_idx]
+
         data.Pset = self.Pset[elm_idx]
         data.Qset = self.Qset[elm_idx]
         data.vset = self.vset[elm_idx]
-
-        data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
-        data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
-
-        # first slice, then remap
-        data.F = self.F[elm_idx]
-        data.T = self.T[elm_idx]
-        data.branch_idx = self.branch_idx[elm_idx]
-        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
-        for k in range(data.nelm):
-            data.branch_idx[k] = k  # Correct?
-            data.F[k] = bus_map.get(data.F[k], -1)
-
-            if data.F[k] == -1:
-                if logger is not None:
-                    logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
-                                     value=data.F[k])
-                data.active[k] = 0
-
-            data.T[k] = bus_map.get(data.T[k], -1)
-
-            if data.T[k] == -1:
-                if logger is not None:
-                    logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
-                                     value=data.T[k])
-                data.active[k] = 0
-
-        data.overload_cost = self.overload_cost[elm_idx]
-
-        data.original_idx = elm_idx
-
-        data._any_pf_control = self._any_pf_control
 
         return data
 
@@ -232,14 +137,10 @@ class BranchData:
         Get a deep copy of this object
         :return: new BranchData instance
         """
+        data: BranchData = super().copy()
+        data.__class__ = BranchData
 
-        data = BranchData(nelm=self.nelm, nbus=self.nbus)
-
-        data.names = self.names.copy()
-        data.idtag = self.idtag.copy()
-
-        data.mttf = self.mttf.copy()
-        data.mttr = self.mttr.copy()
+        data.branch_idx = self.branch_idx.copy()
 
         data.R = self.R.copy()
         data.X = self.X.copy()
@@ -256,58 +157,27 @@ class BranchData:
         data.G2 = self.G.copy()
         data.B2 = self.B.copy()
 
-        data.k = self.k.copy()
-        data.virtual_tap_f = self.virtual_tap_f.copy()
-        data.virtual_tap_t = self.virtual_tap_t.copy()
-        data.Kdp = self.Kdp.copy()
-        data.Kdp_va = self.Kdp_va.copy()
-        data.dc = self.dc.copy()
-        data.alpha1 = self.alpha1.copy()
-        data.alpha2 = self.alpha2.copy()
-        data.alpha3 = self.alpha3.copy()
-
         data.conn = self.conn.copy()  # winding connection
         data.m_taps = self.m_taps.copy()
         data.tau_taps = self.tau_taps.copy()
+        data.k = self.k.copy()
 
-        data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
-        data.tap_module_control_mode = self.tap_module_control_mode.copy()
-        data.tap_controlled_buses = self.tap_controlled_buses.copy()
-        data.is_converter = self.is_converter.copy()
-
-        data.contingency_enabled = self.contingency_enabled.copy()
-        data.monitor_loading = self.monitor_loading.copy()
-
-        data.active = self.active.copy()
-        data.rates = self.rates.copy()
-        data.contingency_rates = self.contingency_rates.copy()
-        data.protection_rates = self.protection_rates.copy()
         data.tap_module = self.tap_module.copy()
-
-        data.branch_idx = self.branch_idx.copy()
-
         data.tap_module_min = self.tap_module_min.copy()
         data.tap_module_max = self.tap_module_max.copy()
         data.tap_angle = self.tap_angle.copy()
         data.tap_angle_min = self.tap_angle_min.copy()
         data.tap_angle_max = self.tap_angle_max.copy()
-        data.Beq = self.Beq.copy()
-        data.G0sw = self.G0sw.copy()
+        data.tap_module_control_mode = self.tap_module_control_mode.copy()
+        data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
+        data.tap_controlled_buses = self.tap_controlled_buses.copy()
+
+        data.virtual_tap_f = self.virtual_tap_f.copy()
+        data.virtual_tap_t = self.virtual_tap_t.copy()
+
         data.Pset = self.Pset.copy()
         data.Qset = self.Qset.copy()
         data.vset = self.vset.copy()
-
-        data.C_branch_bus_f = self.C_branch_bus_f.copy()
-        data.C_branch_bus_t = self.C_branch_bus_t.copy()
-
-        data.F = self.F.copy()
-        data.T = self.T.copy()
-
-        data.overload_cost = self.overload_cost.copy()
-
-        data.original_idx = self.original_idx.copy()
-
-        data._any_pf_control = self._any_pf_control
 
         return data
 
@@ -426,5 +296,3 @@ class BranchData:
         """
         return self.tap_module * np.exp(1.0j * self.tap_angle)
 
-    def __len__(self) -> int:
-        return self.nelm

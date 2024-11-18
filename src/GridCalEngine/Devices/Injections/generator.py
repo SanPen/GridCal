@@ -9,7 +9,7 @@ import pandas as pd
 from typing import Union
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType, GpfControlType
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
@@ -50,13 +50,7 @@ class Generator(GeneratorParent):
                  capex: float = 0,
                  opex: float = 0,
                  srap_enabled: bool = True,
-                 build_status: BuildStatus = BuildStatus.Commissioned,
-                 gpf_ctrl1_elm=None,
-                 gpf_ctrl1_mode: GpfControlType = GpfControlType.type_None,
-                 gpf_ctrl1_val=0.0,
-                 gpf_ctrl2_elm=None,
-                 gpf_ctrl2_mode: GpfControlType = GpfControlType.type_None,
-                 gpf_ctrl2_val=0.0):
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Voltage controlled generator. This generators supports several reactive power
         :param name: Name of the generator
@@ -88,12 +82,6 @@ class Generator(GeneratorParent):
         :param capex:
         :param opex:
         :param build_status:
-        :param gpf_ctrl1_elm: pointer to the control of the first degree of freedom
-        :param gfp_ctrl1_mode: control magnitude for the first control
-        :param gpf_ctrl1_val: value at which the magnitude is set for the first control
-        :param gpf_ctrl2_elm: pointer to the control of the second degree of freedom
-        :param gfp_ctrl2_mode: control magnitude for the second control
-        :param gpf_ctrl2_val: value at which the magnitude is set for the second control
         """
         GeneratorParent.__init__(self,
                                  name=name,

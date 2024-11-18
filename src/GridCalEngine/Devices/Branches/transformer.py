@@ -12,7 +12,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl,
-                                        TapModuleControl, SubObjectType, TapChangerTypes, GpfControlType)
+                                        TapModuleControl, SubObjectType, TapChangerTypes)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -81,13 +81,7 @@ class Transformer2W(ControllableBranchParent):
                  tc_normal_position: int = 2,
                  tc_dV: float = 0.01,
                  tc_asymmetry_angle=90,
-                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation,
-                 gpf_ctrl1_elm=None,
-                 gpf_ctrl1_mode: GpfControlType = GpfControlType.type_None,
-                 gpf_ctrl1_val=0.0,
-                 gpf_ctrl2_elm=None,
-                 gpf_ctrl2_mode: GpfControlType = GpfControlType.type_None,
-                 gpf_ctrl2_val=0.0):
+                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation):
         """
         Transformer constructor
         :param name: Name of the branch
