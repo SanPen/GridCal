@@ -30,6 +30,16 @@ from GridCalEngine.basic_structures import CxVec, CscMat, Vec
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Compilers.circuit_to_data import VALID_OPF_RESULTS
 
+"""
+multi_island_pf
+  |-> multi_island_pf_nc
+            |-> split_into_islands  (Deals with HvdcLine injections)
+                    |-> for each island:
+                            |-> single_island_pf
+                                    |-> solve
+
+"""
+
 
 def solve(nc: NumericalCircuit,
           options: PowerFlowOptions,
