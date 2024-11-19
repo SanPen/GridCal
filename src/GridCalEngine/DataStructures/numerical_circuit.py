@@ -16,7 +16,7 @@ import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
 import GridCalEngine.Topology.admittance_matrices as ycalc
 from GridCalEngine.DataStructures.battery_data import BatteryData
-from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.generator_data import GeneratorData

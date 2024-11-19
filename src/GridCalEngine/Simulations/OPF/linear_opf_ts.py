@@ -23,7 +23,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.battery_data import BatteryData
 from GridCalEngine.DataStructures.load_data import LoadData
-from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData

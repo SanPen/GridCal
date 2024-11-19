@@ -9,7 +9,7 @@ import numpy as np
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType, ConverterControlType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.bus_data import BusData
-from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.vsc_data import VscData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.generator_data import GeneratorData

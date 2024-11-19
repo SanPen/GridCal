@@ -19,6 +19,8 @@ class ActiveBranchData:
         self.nelm: int = nelm
         self.nbus: int = nbus
 
+        self.is_controlled: IntVec = np.zeros(self.nelm, dtype=int)
+
         self.m_taps = SparseObjectArray(n=self.nelm)
         self.tau_taps = SparseObjectArray(n=self.nelm)
 
@@ -56,6 +58,8 @@ class ActiveBranchData:
 
         data = ActiveBranchData(nelm=len(elm_idx), nbus=len(bus_idx))
 
+        data.is_controlled = self.is_controlled[elm_idx]
+
         data.m_taps = self.m_taps.slice(elm_idx)
         data.tau_taps = self.tau_taps.slice(elm_idx)
 
@@ -83,6 +87,8 @@ class ActiveBranchData:
         :return:
         """
         data = ActiveBranchData(nelm=self.nelm, nbus=self.nbus)
+
+        data.is_controlled = self.is_controlled.copy()
 
         data.m_taps = self.m_taps.copy()
         data.tau_taps = self.tau_taps.copy()
@@ -113,4 +119,9 @@ class ActiveBranchData:
         """
         return self.tap_module * np.exp(1.0j * self.tap_angle)
 
-
+    def get_controlled_idx(self) -> IntVec:
+        """
+        Get the controlled device indices
+        :return: IntVec
+        """
+        return np.where(self.is_controlled == 1)[0]

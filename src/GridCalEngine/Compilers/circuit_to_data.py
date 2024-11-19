@@ -16,7 +16,7 @@ from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGr
 from GridCalEngine.basic_structures import BoolVec, IntVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.DataStructures.battery_data import BatteryData
-from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.generator_data import GeneratorData
@@ -965,6 +965,7 @@ def fill_controllable_branch(
             ctrl_data.tap_module[ii] = elm.tap_module
             ctrl_data.tap_angle[ii] = elm.tap_phase
 
+    ctrl_data.is_controlled[ii] = 1
     ctrl_data.tap_module_min[ii] = elm.tap_module_min
     ctrl_data.tap_module_max[ii] = elm.tap_module_max
     ctrl_data.tap_angle_min[ii] = elm.tap_phase_min

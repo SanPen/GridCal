@@ -19,7 +19,7 @@ from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.load_data import LoadData
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.battery_data import BatteryData
-from GridCalEngine.DataStructures.branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.shunt_data import ShuntData
 import GridCalEngine.Devices as dev
