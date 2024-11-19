@@ -1073,6 +1073,8 @@ class IoMain(ConfigurationMain):
         :param create_diagram:
         :return:
         """
+        self.remove_all_diagrams()
+
         self.circuit = grid
 
         if create_diagram:
