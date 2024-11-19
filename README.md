@@ -129,7 +129,7 @@ All of these are industry tested algoriths, some of which surpass most comemerci
 The aim is to be a drop-in replacement for the expensive and less usable commercial
 software, so that you can work, research and learn with it.
 
-### Resources
+## Resources
 
 In an effort to ease the simulation and construction of grids,
 We have included extra materials to work with. These are included in the standalone setups.
@@ -139,7 +139,7 @@ We have included extra materials to work with. These are included in the standal
 - [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers)
   ready to use in GridCal.
 
-### Tutorials and examples
+## Tutorials and examples
 
 - [Tutorials](https://gridcal.readthedocs.io/en/latest/rst_source/tutorials/tutorials_module.html)
 
@@ -150,6 +150,25 @@ We have included extra materials to work with. These are included in the standal
 - [GridCal PlayGround repository](https://github.com/yasirroni/GridCalPlayground) with some notebooks and examples.
 
 - [The tests](https://github.com/SanPen/GridCal/tree/master/src/tests) may serve as a valuable source of examples.
+
+
+## Matpower grids
+
+Matpower's excellent formulations and consistency has allowed this and other 
+projects to develop, relying on its sound math. That is why GridCal reads Matpower 
+cases out of the box, without you having to do anything special. 
+And of course, GridCal solves all Matpower 8 provided grids, solving the continental USA case in about 1 second:
+
+
+[![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
+
+Find the results: [All matpower grids.xlsx](Grids_and_profiles/matpower_benchmark/All%20matpower%20grids.xlsx),
+and the benchmark code [matpower_grids.py](Grids_and_profiles/matpower_benchmark/matpower_grids.py).
+_Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
+All solved using Newton-Raphson, and only using the provided solution 
+that comes with the files when the flat start fails.
+
+Cool right?
 
 ## API
 
@@ -193,6 +212,8 @@ It may seem that this extra step is redundant. However the compilation step is c
 which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are
 aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented
 (despite beign packed into objects)
+
+
 
 ### Loading a grid
 
@@ -1138,23 +1159,7 @@ reply_from_server = asyncio.get_event_loop().run_until_complete(
 print(reply_from_server)
 ```
 
-## Matpower grids
 
-Matpower's excellent formulations and consistency has allowed this and other 
-projects to develop, relying on its sound math. That is why GridCal reads Matpower 
-cases out of the box, without you having to do anything special. 
-And of course, GridCal solves all Matpower 8 provided grids, solving the continental USA case in about 1 second:
-
-
-[![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
-
-Find the results: [All matpower grids.xlsx](Grids_and_profiles/matpower_benchmark/All%20matpower%20grids.xlsx),
-and the benchmark code [matpower_grids.py](Grids_and_profiles/matpower_benchmark/matpower_grids.py).
-_Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
-All solved using Newton-Raphson, and only using the provided solution 
-that comes with the files when the flat start fails.
-
-Cool right?
 
 ## Tests
 
