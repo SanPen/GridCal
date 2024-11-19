@@ -66,7 +66,7 @@ def CheckArr(arr: Vec | IntVec | BoolVec | CxVec, arr_expected: Vec | IntVec | B
     if np.allclose(arr, arr_expected, atol=tol):
         return 0
     else:
-        if arr.dtype == np.bool:
+        if arr.dtype == np.bool_:
             diff = arr.astype(int) - arr_expected.astype(int)
             logger.add_error(msg="Numeric differences",
                              device=name,
