@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   id="svg2"
+   version="1.1"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="GridCal5.svg"
+   inkscape:export-filename="/home/santi/Documentos/GitHub/GridCal/src/GridCal/Gui/Main/GridCal_icon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.39774757"
+     inkscape:cx="-203.64675"
+     inkscape:cy="54.054385"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="2509"
+     inkscape:window-height="1011"
+     inkscape:window-x="51"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-540.36216)">
+    <g
+       id="g863"
+       transform="matrix(4.5048925,0,0,4.5048925,-833.80765,-3514.5863)"
+       style="fill:#37c8ab;stroke:#005544;stroke-width:0.798022">
+      <g
+         id="g4541"
+         transform="translate(177.72284,-30.851643)"
+         style="stroke-width:0.798022">
+        <rect
+           style="opacity:1;fill:#37c8ab;fill-opacity:1;stroke:#005544;stroke-width:2.73132;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect4862-9"
+           width="102.96761"
+           height="102.96761"
+           x="13.401784"
+           y="936.46033"
+           ry="14.891859" />
+        <path
+           style="fill:#37c8ab;fill-rule:evenodd;stroke:#005544;stroke-width:2.04031;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 13.799443,1006.1765 c 0,0 2.190698,-46.77138 6.176144,-46.84038 4.125325,-0.0715 3.318087,55.85258 7.698377,55.86228 3.245415,0.01 3.640897,-44.25398 7.143441,-44.37053 2.466569,-0.082 4.008643,35.96363 7.308336,35.89873 2.319133,-0.046 4.554836,-28.55476 8.039476,-28.5991 2.501206,-0.0318 4.328651,25.8757 7.501062,25.798 2.663764,-0.066 5.477277,-21.28662 8.140798,-21.1928 2.315079,0.0815 3.394469,17.05166 6.247406,17.07392 2.183064,0.017 4.355591,-13.58 7.092777,-13.65792 1.976158,-0.0565 2.727108,9.48279 4.812952,9.4304 1.46143,-0.0363 2.72769,-6.04859 4.914286,-5.96179 1.540797,0.0613 2.53687,2.35577 4.053016,2.38478 1.977175,0.0383 3.900719,-0.78826 5.876856,-0.86723 2.16432,-0.0862 4.32006,0.36128 6.48483,0.43356 1.75544,0.0584 5.26891,0 5.26891,0 l 5.72489,-0.0546"
+           id="path4166-1"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cssssssssssssaacc" />
+      </g>
+    </g>
+  </g>
+</svg>

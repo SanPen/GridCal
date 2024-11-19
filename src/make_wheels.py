@@ -12,6 +12,7 @@ twine upload dist/GridCal-2.30.tar.gz
 import os
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 from GridCal.__version__ import __GridCal_VERSION__
+from GridCalServer.__version__ import __GridCalServer_VERSION__
 from gridcal_packaging import build_wheel
 
 if __name__ == "__main__":
@@ -71,6 +72,22 @@ if __name__ == "__main__":
                     long_description=_long_description
                     )
 
+        build_wheel(pkg_name='GridCalServer',
+                    setup_path=os.path.join('GridCalServer', 'setup.py'),
+                    version=__GridCalServer_VERSION__,
+                    summary=_summary,
+                    home_page=_home_page,
+                    author=_author,
+                    email=_author_email,
+                    license_=_license_,
+                    keywords=_keywords,
+                    classifiers_list=_classifiers_list,
+                    requires_pyhon=_requires_pyhon,
+                    description_content_type=_description_content_type,
+                    provides_extra=_provides_extra,
+                    long_description=_long_description
+                    )
+
         build_wheel(pkg_name='GridCal',
                     setup_path=os.path.join('GridCal', 'setup.py'),
                     version=__GridCal_VERSION__,
@@ -84,7 +101,16 @@ if __name__ == "__main__":
                     requires_pyhon=_requires_pyhon,
                     description_content_type=_description_content_type,
                     provides_extra=_provides_extra,
-                    long_description=_long_description
+                    long_description=_long_description,
+                    ext_filter=['py'],
+                    extra_files=[
+                        os.path.join("data", "cables.csv"),
+                        os.path.join("data", "GridCal.ico"),
+                        os.path.join("data", "GridCal.svg"),
+                        os.path.join("data", "sequence_lines.csv"),
+                        os.path.join("data", "transformers.csv"),
+                        os.path.join("data", "wires.csv")
+                    ]
                     )
 
     else:

@@ -118,14 +118,14 @@ class LoadParent(InjectionParent):
 
         :return:
         """
-        return complex(self.P, self.Q)
+        return complex(-self.P, -self.Q)
 
     def get_Sprof(self) -> CxVec:
         """
 
         :return:
         """
-        return self.P_prof.toarray() + 1j * self.Q_prof.toarray()
+        return -self.P_prof.toarray() - 1j * self.Q_prof.toarray()
 
     def plot_profiles(self, time=None, show_fig=True):
         """

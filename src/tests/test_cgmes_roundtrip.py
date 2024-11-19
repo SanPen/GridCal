@@ -30,15 +30,16 @@ def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
                               cgmesProfile.OP,
                               cgmesProfile.TP,
                               cgmesProfile.SV,
-                              cgmesProfile.SSH,
-                              cgmesProfile.SC]
+                              cgmesProfile.SSH]
     options.cgmes_version = CGMESVersions.v2_4_15
     options.cgmes_boundary_set = boundary_zip_path
 
     return options
 
 
-def run_import_export_test(import_path: str | list[str], export_fname: str, boundary_zip_path: str):
+def run_import_export_test(import_path: str | list[str],
+                           export_fname: str,
+                           boundary_zip_path: str):
     """
 
     :param import_path:
@@ -47,6 +48,7 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
     :return:
     """
     logger = Logger()
+    # Import 1 ----------------------------------------------------
     # CGMES model import to MultiCircuit
     circuit_1 = gc.open_file(import_path)
     circuit_1.buses.sort(key=lambda obj: obj.name, reverse=False)      # SORTING
@@ -60,7 +62,8 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
                                    tpe=SimulationTypes.PowerFlow_run,
                                    results=pf_results,
                                    logger=logger)
-    # Export
+
+    # Export -----------------------------------------------------------
     # export_dir = os.path.join(os.path.curdir, "/export_result")
     # export_name = os.path.join(export_dir, export_name)
     options = create_file_save_options(boundary_zip_path)
@@ -71,6 +74,7 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
                             options=options)
     cgmes_export.save_cgmes()
 
+    # Import 2 ---------------------------------------------
     circuit_2 = gc.open_file([export_fname, boundary_zip_path])
     circuit_2.buses.sort(key=lambda obj: obj.name, reverse=False)      # SORTING
     # Move the first element to the last position, if sorting doesn't work
@@ -78,7 +82,7 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
         circuit_2.buses.append(circuit_2.buses.pop(0))
     nc_2 = gc.compile_numerical_circuit_at(circuit_2)
 
-    # COMPARING Multi Circuits
+    # COMPARING Multi Circuits ------------------------------------------------
     ok, logger = circuit_1.compare_circuits(circuit_2)
     if ok:
         print("\nOK! SUCCESS for Multi Circuit!\n")
@@ -124,12 +128,19 @@ def test_cgmes_roundtrip():
 
     :return:
     """
-    test_grid_name = 'micro_grid_NL_T1.zip'
-    # test_grid_name = 'micro_grid_assmb_base.zip'
+    # test_grid_name = 'micro_grid_NL_T1.zip'
+    # boundary_set_name = 'micro_grid_BD.zip'
+
+    test_grid_name = 'micro_grid_assmb_base.zip'
     boundary_set_name = 'micro_grid_BD.zip'
 
+    # test_grid_name = 'TestConfigurations_packageCASv2.0/MicroGrid/Type2_T2/CGMES_v2.4.15_MicroGridTestConfiguration_T2_Assembled_Complete_v2.zip'
+    # boundary_set_name = 'micro_grid_BD.zip'
+
     # test_grid_name = 'IEEE 14 bus.zip'
-    # test_grid_name = 'IEEE14_from_PF.zip'
+    # boundary_set_name = 'BD_IEEE_Grids.zip'
+
+    # test_grid_name = 'IEEE 14 bus_35_3_WINDING_POST_EDITING_IEEE_HVDC_final_nudox_1_hvdc_desf_rates_fs_ss.zip'
     # boundary_set_name = 'BD_IEEE_Grids.zip'
 
     script_path = os.path.abspath(__file__)
@@ -146,6 +157,7 @@ def test_cgmes_roundtrip():
         os.makedirs(os.path.dirname(export_name))
 
     run_import_export_test(cgmes_path, export_name, boundary_path)
+
     # nc_o = gc.compile_numerical_circuit_at(circuit_o)
 
     # export to CGMES

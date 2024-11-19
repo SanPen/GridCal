@@ -456,3 +456,41 @@ def test_fubm() -> None:
         expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
         ok = np.allclose(vm, expected_vm, rtol=1e-4)
         assert ok
+
+
+def test_all_matpower_grids():
+    """
+
+    :return:
+    """
+    folder = os.path.join('data', 'grids', 'Matpower')
+
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith(".m"):
+                path = os.path.join(root, file)
+
+                print(path)
+                grid = gce.open_file(path)
+
+                if grid.get_bus_number() > 0:
+
+                    res = gce.power_flow(
+                        grid=grid,
+                        options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                                     retry_with_other_methods=False,
+                                                     use_stored_guess=False)
+                    )
+                    used_v0 = False
+
+                    if not res.converged:
+                        # if it does not converge, retry with the provided solution
+                        res = gce.power_flow(
+                            grid=grid,
+                            options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                                         retry_with_other_methods=False,
+                                                         use_stored_guess=True)
+                        )
+                        used_v0 = True
+
+                    assert res.converged

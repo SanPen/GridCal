@@ -685,7 +685,6 @@ class MultiCircuit(Assets):
             B = list()
             P_gen = list()
             V_gen = list()
-            E_batt = list()
 
             load_names = list()
             gen_names = list()
@@ -713,7 +712,6 @@ class MultiCircuit(Assets):
                 gen_names.append(elm.name)
                 P_gen.append(elm.P_prof)
                 V_gen.append(elm.Vset_prof)
-                E_batt.append(elm.energy_array)
 
             # form DataFrames
             P = pd.DataFrame(data=np.array(P).transpose(), index=self.time_profile, columns=load_names)
@@ -724,7 +722,6 @@ class MultiCircuit(Assets):
             B = pd.DataFrame(data=np.array(B).transpose(), index=self.time_profile, columns=load_names)
             P_gen = pd.DataFrame(data=np.array(P_gen).transpose(), index=self.time_profile, columns=gen_names)
             V_gen = pd.DataFrame(data=np.array(V_gen).transpose(), index=self.time_profile, columns=gen_names)
-            E_batt = pd.DataFrame(data=np.array(E_batt).transpose(), index=self.time_profile, columns=bat_names)
 
             with pd.ExcelWriter(file_name) as writer:  # pylint: disable=abstract-class-instantiated
                 P.to_excel(writer, 'P loads')
@@ -738,8 +735,6 @@ class MultiCircuit(Assets):
 
                 P_gen.to_excel(writer, 'P generators')
                 V_gen.to_excel(writer, 'V generators')
-
-                E_batt.to_excel(writer, 'Energy batteries')
 
         else:
             raise Exception('There are no time series!')
@@ -1679,6 +1674,21 @@ class MultiCircuit(Assets):
         :return: Mat
         """
         return self.get_Sbus_prof().real
+
+    def get_imbalance(self) -> float:
+        """
+        Get the system imbalance in per unit
+        :return:
+        """
+        P = self.get_Pbus()
+        Pg = P[P > 0].sum()
+        Pl = -P[P < 0].sum()
+        if Pl > 0:
+            ratio = (Pg - Pl) / Pl
+        else:
+            ratio = 1.0
+
+        return ratio
 
     def get_branch_rates_prof_wo_hvdc(self) -> Mat:
         """

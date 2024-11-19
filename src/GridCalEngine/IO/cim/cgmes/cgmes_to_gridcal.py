@@ -398,7 +398,9 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
     :param cgmes_model: CgmesCircuit
     :param gc_model: gcdevCircuit
     :param buses_to_skip:
-    :param skip_dc_import: If simplified HVDC modelling applied, DC buses are not imported.
+    :param skip_dc_import: If simplified HVDC modelling applied,
+                           DC buses are not imported into MultiCircuit model,
+                           but they are added to dc_bus_dict.
     :param buses_to_skip: DCGround buses
     :param logger: DataLogger
     :param default_nominal_voltage: default nominal voltage for DC nodes since CGMES does not have any...
@@ -448,7 +450,9 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
 
     :param cgmes_model: CgmesCircuit
     :param gc_model: gcdevCircuit
-    :param skip_dc_import:
+    :param skip_dc_import: If simplified HVDC modelling applied,
+                           DCNodes are not imported into MultiCircuit model,
+                           but they are added to dc_cn_node_dict.
     :param dc_bus_dict:
     :param logger: DataLogger
     :return:
@@ -635,7 +639,7 @@ def get_gcdev_vsc_converters(cgmes_model: CgmesCircuit,
                 # tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
                 # tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
                 # vset: float = 1.0,
-                # Pset: float = 0.0,
+                Pset=cgmes_elm.p,
                 # Qset: float = 0.0,
                 # cost = 100,
                 # contingency_factor = 1.0,
@@ -734,6 +738,10 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
                                              cn_dict=cn_dict,
                                              logger=logger)
 
+            rated_udc = getattr(vsc_list[0], 'ratedUdc', None)
+            if rated_udc is None:
+                rated_udc = 200.0
+
             gcdev_elm = gcdev.HvdcLine(
                 bus_from=bus_from[0],
                 bus_to=bus_to[0],
@@ -743,14 +751,14 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
                 idtag=dc_line_sgm.uuid,
                 code=dc_line_sgm.description,
                 active=True,
-                Pset=abs(vsc_list[0].p),   # power of the VS converter
+                Pset=abs(vsc_list[0].p),  # power of the VS converter
                 # rate=rate,
                 # rate of DCLine? or ratedP of Converter?
                 # no Limit for DC terminal in XML
-                Vset_f=1.0,             # if not found, 1.0 p.u.
+                Vset_f=1.0,  # if not found, 1.0 p.u.
                 Vset_t=1.0,
                 r=dc_line_sgm.resistance,
-                dc_link_voltage=200, # TODO
+                dc_link_voltage=rated_udc,
             )
 
             gcdev_model.add_hvdc(gcdev_elm)
@@ -769,7 +777,6 @@ def get_gcdev_branch_groups(cgmes_model: CgmesCircuit,
     """
     # convert branch aggregations
     for cgmes_elm in cgmes_model.cgmes_assets.DCLine_list:
-
         gcdev_elm = gcdev.BranchGroup(
             name=cgmes_elm.name,
             idtag=cgmes_elm.uuid,
@@ -2063,11 +2070,35 @@ def get_gcdev_community(cgmes_model: CgmesCircuit,
                 gcdev_model.add_community(gcdev_elm)
 
 
+def get_header_mas(cgmes_model: CgmesCircuit,
+                   gcdev_model: MultiCircuit,
+                   logger: DataLogger) -> None:
+    mas_set = set()
+    for full_model in cgmes_model.cgmes_assets.FullModel_list:
+        if full_model.modelingAuthoritySet is None:
+            logger.add_warning(msg="Missing MAS in header!",
+                               device=full_model.rdfid,
+                               device_property="modelingAuthoritySet")
+            continue
+        if isinstance(full_model.modelingAuthoritySet, list):
+            for mas in full_model.modelingAuthoritySet:
+                mas_set.add(mas)
+        else:
+            mas_set.add(full_model.modelingAuthoritySet)
+    for mas in mas_set:
+        gcdev_elm = gcdev.ModellingAuthority(name=mas)
+        gcdev_model.add_modelling_authority(gcdev_elm)
+
+
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
+                     map_dc_to_hvdc_line: bool,
                      logger: DataLogger) -> MultiCircuit:
     """
-    convert CGMES model to gcdev
+    Convert CGMES model to gcdev
+
     :param cgmes_model: CgmesCircuit
+    :param map_dc_to_hvdc_line: Converters and DC lines from CGMES are converted
+                                to the simplified HvdcLine objects in GridCal
     :param logger: Logger object
     :return: MultiCircuit
     """
@@ -2076,6 +2107,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     Sbase = gc_model.Sbase
     cgmes_model.emit_progress(70)
     cgmes_model.emit_text("Converting CGMES to Gridcal")
+
+    get_header_mas(cgmes_model, gc_model, logger)
 
     get_gcdev_countries(cgmes_model, gc_model)
 
@@ -2180,8 +2213,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     # DC elements  ---------------------------------------------------------
 
-    treat_dc_equipment_as_hvdc_lines = True
-
     dc_device_to_terminal_dict, ground_buses, ground_nodes = get_gcdev_dc_device_to_terminal_dict(
         cgmes_model=cgmes_model,
         logger=logger
@@ -2190,7 +2221,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     dc_bus_dict = get_gcdev_dc_buses(
         cgmes_model=cgmes_model,
         gc_model=gc_model,
-        skip_dc_import=treat_dc_equipment_as_hvdc_lines,
+        skip_dc_import=map_dc_to_hvdc_line,
         buses_to_skip=ground_buses,
         logger=logger
     )
@@ -2198,12 +2229,12 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     dc_cn_dict = get_gcdev_dc_connectivity_nodes(
         cgmes_model=cgmes_model,
         gc_model=gc_model,
-        skip_dc_import=treat_dc_equipment_as_hvdc_lines,
+        skip_dc_import=map_dc_to_hvdc_line,
         dc_bus_dict=dc_bus_dict,
         logger=logger
     )
 
-    if treat_dc_equipment_as_hvdc_lines:
+    if map_dc_to_hvdc_line:
 
         logger.add_info(
             msg="Simplified HVDC modelling",
@@ -2222,6 +2253,10 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
         )
 
     else:
+
+        logger.add_info(
+            msg="Detailed HVDC modelling with VsConverters and DC Lines",
+            comment="DC buses are imported!")
 
         get_gcdev_dc_lines(
             cgmes_model=cgmes_model,
@@ -2246,13 +2281,5 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     cgmes_model.emit_progress(100)
     cgmes_model.emit_text("Cgmes import done!")
-
-    # print('debug')
-    # import os
-    # print(os.getcwd())
-    # cgmes_model.to_excel(fname="cgmes_circuit.xlsx")
-
-    # Run topology progcessing
-    # tp_info = gc_model.process_topology_at()
 
     return gc_model
