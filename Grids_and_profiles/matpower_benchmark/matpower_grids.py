@@ -7,6 +7,11 @@ folder = "/home/santi/matpower8.0b1/data"
 
 
 def run_grid(fname):
+    """
+    Run individual grid
+    :param fname: file name
+    :return: information about the run
+    """
     grid = gce.open_file(fname)
     name = os.path.basename(fname)
 
@@ -42,7 +47,6 @@ def run_grid(fname):
             "time (s)": res.elapsed,
         }
 
-
     else:
         info = {
             "name": name,
@@ -70,7 +74,6 @@ for root, dirs, files in os.walk(folder):
         if file.endswith(".m"):
             path = os.path.join(root, file)
             files_list.append(path)
-
 
 with mp.Pool(mp.cpu_count()) as p:
     data = p.map(run_grid, files_list)
