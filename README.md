@@ -1140,9 +1140,9 @@ print(reply_from_server)
 
 ## Matpower grids
 
-Matpower is the spiritual predecessor of GridCal. It's excellent formulations and consistency has allowed
-other projects to evolve relying of sound math. That is why GridCal reads Matpower cases out of the box, 
-without you having to do anything special. And of course, GridCal solves all Matpower 8 provided grids:
+Matpower's excellent formulations and consistency has allowed this and other projects to evolve relying of sound math. 
+That is why GridCal reads Matpower cases out of the box, without you having to do anything special. 
+And of course, GridCal solves all Matpower 8 provided grids:
 
 | name                | n_buses | n_branches | P imbalance (%) | Used V0 | converged | error (p.u.) | iterations | time (s) |
 |---------------------|---------|------------|-----------------|---------|-----------|--------------|------------|----------|

@@ -510,13 +510,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             fig.suptitle(result_type.value)
             plt.tight_layout()
-            # used_investments = np.zeros(len(self._capex), dtype=object)
-            # for i in range(self._combinations.shape[0]):
-            #     used_investments[i] = ""
-            #     for j in range(self._combinations.shape[1]):
-            #         if self._combinations[i, j] > 0:
-            #             name = self.investment_groups_names[j]
-            #             used_investments[i] += f"{name},"
 
             annots = {}
             for i in range(2):
@@ -531,20 +524,28 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                     annots[(i, j)] = annot
 
             def update_annotation(ind, scatter_plot, ax):
+                """
+
+                :param ind:
+                :param scatter_plot:
+                :param ax:
+                :return:
+                """
                 pos = scatter_plot.get_offsets()[ind["ind"][0]]
                 annot = annots[ax]
                 annot.xy = pos
                 investment_names = used_investments[ind["ind"][0]].replace("Investment", "").replace(" ", "").split(',')
                 text = "Investments:\n{}".format(", ".join(investment_names))
                 wrapped_text = textwrap.fill(text, width=30)
-                # investment_names = used_investments[ind["ind"][0]].split(',')
-                # text = "Investments:\n{}".format("\n".join(investment_names))
-                # investment_indices = [ind["ind"][0]]
-                # text = "Indices:\n{}".format("\n".join(map(str, investment_indices)))
                 annot.set_text(wrapped_text)
                 annot.get_bbox_patch().set_alpha(0.8)
 
             def hover(event):
+                """
+
+                :param event:
+                :return:
+                """
                 if event.inaxes in ax3.flatten():
                     for idx, scatter_plot in enumerate([sc1, sc2, sc3, sc4]):
                         i, j = divmod(idx, 2)
@@ -560,6 +561,11 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                             fig.canvas.draw_idle()
 
             def click_solution(event):
+                """
+
+                :param event:
+                :return:
+                """
                 if event.inaxes is not None:
                     click_x, click_y = event.xdata, event.ydata
 
@@ -647,7 +653,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             # This data will actually be the capex and opex that come out of computation
             data = np.c_[self._financial, technical_score]
-            #    , self._opex]
+
             y_label = ''
             title = ''
 
@@ -662,13 +668,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             fig.suptitle(result_type.value)
             plt.tight_layout()
-            # used_investments = np.zeros(len(self._capex), dtype=object)
-            # for i in range(self._combinations.shape[0]):
-            #     used_investments[i] = ""
-            #     for j in range(self._combinations.shape[1]):
-            #         if self._combinations[i, j] > 0:
-            #             name = self.investment_groups_names[j]
-            #             used_investments[i] += f"{name},"
 
             annot = ax3.annotate("", xy=(0, 0), xytext=(20, 20),
                                  textcoords="offset points",
@@ -679,6 +678,11 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             annot.set_visible(False)
 
             def update_annotation(ind):
+                """
+
+                :param ind:
+                :return:
+                """
                 pos = scatter_plot.get_offsets()[ind["ind"][0]]
                 annot.xy = pos
                 investment_names = used_investments[ind["ind"][0]].replace("Investment", "").replace(" ", "").split(',')
@@ -688,6 +692,11 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                 annot.get_bbox_patch().set_alpha(0.8)
 
             def hover(event):
+                """
+
+                :param event:
+                :return:
+                """
                 if event.inaxes == ax3:
                     cont, ind = scatter_plot.contains(event)
                     if cont:
@@ -700,6 +709,11 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                             fig.canvas.draw_idle()
 
             def click_solution(event):
+                """
+
+                :param event:
+                :return:
+                """
                 if event.inaxes is not None:
                     click_x, click_y = event.xdata, event.ydata
                     tolerance = 0.1 * (ax3.get_xlim()[1] - ax3.get_xlim()[0])
