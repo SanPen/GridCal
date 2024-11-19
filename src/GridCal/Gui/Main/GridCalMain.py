@@ -25,7 +25,7 @@ This class is the handler of the main gui of GridCal.
 # Main Window
 ########################################################################################################################
 
-class MainGUI(ScriptingMain):
+class GridCalMainGUI(ScriptingMain):
     """
     MainGUI
     """
@@ -136,7 +136,7 @@ def runGridCal() -> None:
     app = QApplication(sys.argv)
     # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
 
-    window_ = MainGUI()
+    window_ = GridCalMainGUI()
 
     # process the argument if provided
     if len(sys.argv) > 1:
