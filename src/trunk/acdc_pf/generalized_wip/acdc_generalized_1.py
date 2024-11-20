@@ -1,11 +1,12 @@
 import os
 import GridCalEngine as gce
+# from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import PfAdvancedFormulation
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.basic_structures import Logger
 
-fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
+fname = os.path.join("Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
 grid = gce.open_file(fname)
 # run power flow
 main_nc = gce.compile_numerical_circuit_at(grid)
