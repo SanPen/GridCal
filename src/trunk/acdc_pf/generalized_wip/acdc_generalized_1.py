@@ -2,13 +2,14 @@ import os
 import GridCalEngine as gce
 from GridCalEngine.Topology.generalized_simulation_indices import GeneralizedSimulationIndices
 
+# fname = os.path.join("Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
 fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
 grid = gce.open_file(fname)
-
+#run power flow
 main_nc = gce.compile_numerical_circuit_at(grid)
 
 islands = main_nc.split_into_islands(
-    consider_hvdc_as_island_links=False,
+    consider_hvdc_as_island_links=True,
 )
 
 print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhvdc: {main_nc.nhvdc}")
@@ -22,8 +23,8 @@ for i, island in enumerate(islands):
     """
     for test case fubm_caseHVDC_vt.gridcal, we have the following setpoints (perhaps not real ones but just for testing):
     Name	control1	control2	control1_val	control2_val	control1_dev	control2_dev
-    0:VSC1	Vm_dc	P_ac	1	0	None	None
-    1:VSC2	Vm_dc	P_ac	1	0	None	None
+    0:VSC1	Vm_dc	    P_ac	    1	            0	            None	        None
+    1:VSC2	Vm_dc	    P_ac	    1	            0	            None	        None
         
     expecting the following indices:
     cx_va: [1, 4, 5]
@@ -37,16 +38,9 @@ for i, island in enumerate(islands):
     cx_pta: [4]
     cx_qta: [4, 5]
     """
-    print(f"cx_va: {indices.cx_va}")
-    print(f"cx_vm: {indices.cx_vm}")
-    print(f"cx_tau: {indices.cx_tau}")
-    print(f"cx_m: {indices.cx_m}")
-    print(f"cx_pzip: {indices.cx_pzip}")
-    print(f"cx_qzip: {indices.cx_qzip}")
-    print(f"cx_pfa: {indices.cx_pfa}")
-    print(f"cx_qfa: {indices.cx_qfa}")
-    print(f"cx_pta: {indices.cx_pta}")
-    print(f"cx_qta: {indices.cx_qta}")
 
 
 print()
+options = gce.PowerFlowOptions(solver_type= gce.SolverType.GENERALISED)
+results = gce.power_flow(grid, options)
+print(f"Power flow converged: {results.converged}")

@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    polar_to_rect, get_Sf, get_St,
                                                                                    get_It)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
-
+import GridCalEngine.Topology.generalized_simulation_indices as gsi
 
 # @njit()
 def adv_jacobian(nbus: int,
@@ -196,6 +196,34 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.S0: CxVec = S0
         self.I0: CxVec = I0
         self.Y0: CxVec = Y0
+        self.V0: CxVec = V0
+
+        print(f"self.S0: {self.S0}")
+        print(f"self.I0: {self.I0}")
+        print(f"self.Y0: {self.Y0}")
+        print(f"self.V0: {self.V0}")
+
+        # QUESTION: is there a reason not to do this? I use this in var2x
+        self.Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
+        self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm, dtype=np.complex128)
+        self.St: CxVec = np.zeros(nc.active_branch_data.nelm, dtype=np.complex128)
+
+        self.Pbus = np.real(self.Sbus)
+        self.Qbus = np.imag(self.Sbus)
+        self.Pf = np.real(self.Sf)
+        self.Qf = np.imag(self.Sf)
+        self.Pt = np.real(self.St)
+        self.Qt = np.imag(self.St)
+
+        print(f"self.Pbus: {self.Pbus}")
+        print(f"self.Qbus: {self.Qbus}")
+        print(f"self.Sf: {self.Sf}")
+        print(f"self.Pf: {self.Pf}")
+        print(f"self.Qf: {self.Qf}")
+        print(f"self.St: {self.St}")
+        print(f"self.Pt: {self.Pt}")
+        print(f"self.Qt: {self.Qt}")
+        
 
         self.bus_types = self.nc.bus_data.bus_types.copy()
         self.tap_module_control_mode = self.nc.active_branch_data.tap_module_control_mode.copy()
@@ -222,38 +250,56 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.idx_dPt = np.array(0, dtype=int)
         self.idx_dQt = np.array(0, dtype=int)
 
+        
+
         # Generalized indices
+        generalisedSimulationIndices = gsi.GeneralizedSimulationIndices(self.nc) # CHECK: this is def not where this goes
         # cg sets
-        self.cg_pac = np.array(0, dtype=int) 
-        self.cg_qac = np.array(0, dtype=int) 
-        self.cg_pdc = np.array(0, dtype=int) 
-        self.cg_acdc = np.array(0, dtype=int)  
-        self.cg_hvdc = np.array(0, dtype=int) 
-        self.cg_pftr = np.array(0, dtype=int)  
-        self.cg_pttr = np.array(0, dtype=int)  
-        self.cg_qftr = np.array(0, dtype=int)  
-        self.cg_qttr = np.array(0, dtype=int) 
+        self.cg_pac = generalisedSimulationIndices.cg_pac
+        self.cg_qac = generalisedSimulationIndices.cg_qac
+        self.cg_pdc = generalisedSimulationIndices.cg_pdc
+        self.cg_acdc = generalisedSimulationIndices.cg_acdc
+        self.cg_hvdc = generalisedSimulationIndices.cg_hvdc
+        self.cg_pftr = generalisedSimulationIndices.cg_pftr
+        self.cg_pttr = generalisedSimulationIndices.cg_pttr
+        self.cg_qftr = generalisedSimulationIndices.cg_qftr
+        self.cg_qttr = generalisedSimulationIndices.cg_qttr
 
-        # cx sets
-        self.cx_va = np.array(0, dtype=int)  
-        self.cx_vm = np.array(0, dtype=int)  
-        self.cx_tau = np.array(0, dtype=int) 
-        self.cx_m = np.array(0, dtype=int)  
-        self.cx_pzip = np.array(0, dtype=int) 
-        self.cx_qzip = np.array(0, dtype=int) 
-        self.cx_pta = np.array(0, dtype=int) 
-        self.cx_qfa = np.array(0, dtype=int) 
-        self.cx_qta = np.array(0, dtype=int) 
+        # cx sets [UNKNOWNS] The order of this list is important
+        self.cx_vm = generalisedSimulationIndices.cx_vm
+        self.cx_va = generalisedSimulationIndices.cx_va
+        self.cx_pzip = generalisedSimulationIndices.cx_pzip
+        self.cx_qzip = generalisedSimulationIndices.cx_qzip
+        self.cx_pfa = generalisedSimulationIndices.cx_pfa
+        self.cx_qfa = generalisedSimulationIndices.cx_qfa
+        self.cx_pta = generalisedSimulationIndices.cx_pta
+        self.cx_qta = generalisedSimulationIndices.cx_qta
+        self.cx_m = generalisedSimulationIndices.cx_m
+        self.cx_tau = generalisedSimulationIndices.cx_tau
+         
+        print(f"cx_va:  {self.cx_va}")
+        print(f"cx_vm:  {self.cx_vm}")
+        print(f"cx_tau: {self.cx_tau}")
+        print(f"cx_m:   {self.cx_m}")
+        print(f"cx_pzip: {self.cx_pzip}")
+        print(f"cx_qzip: {self.cx_qzip}")
+        print(f"cx_pfa: {self.cx_pfa}")
+        print(f"cx_qfa: {self.cx_qfa}")
+        print(f"cx_pta: {self.cx_pta}")
+        print(f"cx_qta: {self.cx_qta}")
 
-        k_v_m = self.analyze_branch_controls()  # this fills the indices above
-        self.vd, pq, pv, pqv, p, self.no_slack = compile_types(
-            Pbus=self.nc.Sbus.real,
-            types=self.bus_types
-        )
-        self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
+        # NOT NEEDED?
+        # k_v_m = self.analyze_branch_controls()  # this fills the indices above
+        # self.vd, pq, pv, pqv, p, self.no_slack = compile_types(
+        #     Pbus=self.nc.Sbus.real,
+        #     types=self.bus_types
+        # )
+        # self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
-        self.m: Vec = self.nc.active_branch_data.tap_module[self.idx_dm]
-        self.tau: Vec = self.nc.active_branch_data.tap_angle[self.idx_dtau]
+        self.m: Vec = np.ones(self.nc.active_branch_data.nelm)
+        self.tau: Vec = np.zeros(self.nc.active_branch_data.nelm)
+        # self.m: Vec = self.nc.active_branch_data.tap_module[self.idx_dm] # CHECK: not super sure what self.idx_dm is
+        # self.tau: Vec = self.nc.active_branch_data.tap_angle[self.idx_dtau]
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
 
         self.adm = compute_admittances(
@@ -262,10 +308,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             G=self.nc.passive_branch_data.G,
             B=self.nc.passive_branch_data.B,
             k=self.nc.passive_branch_data.k,
-            tap_module=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
+            tap_module=self.m,
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
+            tap_angle=self.tau,
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
             Yshunt_bus=self.nc.Yshunt_from_devices,
@@ -273,9 +319,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             seq=1,
             add_windings_phase=False
         )
-
-        if not len(self.pqv) >= len(k_v_m):
-            raise ValueError("k_v_m indices must be the same size as pqv indices!")
+        # NOT NEEDED
+        # if not len(self.pqv) >= len(k_v_m):
+        #     raise ValueError("k_v_m indices must be the same size as pqv indices!")
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec) -> None:
         """
@@ -407,42 +453,78 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Convert X to decission variables
         :param x: solution vector
         """
-        a = len(self.idx_dVa)
-        b = a + len(self.idx_dVm)
-        c = b + len(self.idx_dm)
-        d = c + len(self.idx_dtau)
-        e = d + len(self.idx_dbeq)
+        #print all the sets
+        print(f"cx_va: {self.cx_va}")
+        print(f"cx_vm: {self.cx_vm}")
+        print(f"cx_tau: {self.cx_tau}")
+        print(f"cx_m: {self.cx_m}")
+        print(f"cx_pzip: {self.cx_pzip}")
+        print(f"cx_qzip: {self.cx_qzip}")
+        print(f"cx_pfa: {self.cx_pfa}")
+        print(f"cx_qfa: {self.cx_qfa}")
+        print(f"cx_pta: {self.cx_pta}")
+        print(f"cx_qta: {self.cx_qta}")
+        #print all the sets
+
+        a = len(self.cx_vm)
+        b = a + len(self.cx_va)
+        c = b + len(self.cx_pzip)
+        d = c + len(self.cx_qzip)
+        e = d + len(self.cx_pfa)
+        f = e + len(self.cx_qfa)
+        g = f + len(self.cx_pta)
+        h = g + len(self.cx_qta)
+        i = h + len(self.cx_m)
+        j = i + len(self.cx_tau)
 
         # update the vectors
-        self.Va[self.idx_dVa] = x[0:a]
-        self.Vm[self.idx_dVm] = x[a:b]
-        self.m = x[b:c]
-        self.tau = x[c:d]
-        self.beq = x[d:e]
+        self.Vm[self.cx_vm] = x[0:a]
+        self.Va[self.cx_va] = x[a:b]
+        self.Pbus[self.cx_pzip] = x[b:c]
+        self.Qbus[self.cx_qzip] = x[c:d]
+        self.Pf[self.cx_pfa] = x[d:e]
+        self.Qf[self.cx_qfa] = x[e:f]
+        self.Pt[self.cx_pta] = x[f:g]
+        self.Qt[self.cx_qta] = x[g:h]
+        self.m[self.cx_m] = x[h:i]
+        self.tau[self.cx_tau] = x[i:j]
 
+    # DONE
     def var2x(self) -> Vec:
         """
         Convert the internal decission variables into the vector
         :return: Vector
         """
         return np.r_[
-            self.Va[self.idx_dVa],
-            self.Vm[self.idx_dVm],
-            self.m,
-            self.tau,
-            self.beq,
+            self.Vm[self.cx_vm],
+            self.Va[self.cx_va],
+            self.Pbus[self.cx_pzip],
+            self.Qbus[self.cx_qzip],
+            self.Pf[self.cx_pfa],
+            self.Qf[self.cx_qfa],
+            self.Pt[self.cx_pta],
+            self.Qt[self.cx_qta],
+            self.m[self.cx_m],
+            self.tau[self.cx_tau]
         ]
 
+    # DONE
     def size(self) -> int:
         """
         Size of the jacobian matrix
         :return:
         """
-        return (len(self.idx_dVa)
-                + len(self.idx_dVm)
-                + len(self.idx_dm)
-                + len(self.idx_dtau)
-                + len(self.idx_dbeq))
+        return (len(self.cx_vm)
+                + len(self.cx_va)
+                + len(self.cx_pzip)
+                + len(self.cx_qzip)
+                + len(self.cx_pfa)
+                + len(self.cx_qfa)
+                + len(self.cx_pta)
+                + len(self.cx_qta)
+                + len(self.cx_m)
+                + len(self.cx_tau))
+    
 
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
         """
