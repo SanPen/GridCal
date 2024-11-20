@@ -1,11 +1,18 @@
 import os
 import GridCalEngine as gce
 from GridCalEngine.Topology.generalized_simulation_indices import GeneralizedSimulationIndices
-
-fname = os.path.join("Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
-# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
+from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl
+fname = os.path.join("Grids_and_profiles", "grids", "IEEE 14 bus.raw")
 grid = gce.open_file(fname)
-#run power flow
+
+grid.transformers2w[0].tap_module_control_mode = TapModuleControl.Vm
+grid.transformers2w[1].tap_phase_control_mode = TapPhaseControl.Pf
+
+
+# fname = os.path.join("Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
+# # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
+# grid = gce.open_file(fname)
+# #run power flow
 main_nc = gce.compile_numerical_circuit_at(grid)
 
 islands = main_nc.split_into_islands(
