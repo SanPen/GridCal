@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
-from typing import Union
+from typing import Union, List
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, CscMat
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, CscMat, ConvergenceReport
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
@@ -197,7 +197,7 @@ class PowerFlowResults(ResultsTemplate):
         self.shunt_q: Vec = np.zeros(n_sh)
 
         self.plot_bars_limit: int = 100
-        self.convergence_reports = list()
+        self.convergence_reports: List[ConvergenceReport] = list()
 
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
@@ -280,6 +280,17 @@ class PowerFlowResults(ResultsTemplate):
         val = 0.0
         for conv in self.convergence_reports:
             val = max(val, conv.elapsed())
+        return val
+
+    @property
+    def iterations(self):
+        """
+        Check if converged in all modes
+        :return: True / False
+        """
+        val = 0.0
+        for conv in self.convergence_reports:
+            val = max(val, conv.iterations())
         return val
 
     def apply_from_island(self,

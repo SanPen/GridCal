@@ -127,10 +127,14 @@ def test_raw_to_cgmes_cross_roundtrip():
     """
     script_path = os.path.abspath(__file__)
 
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'ENTSOe_boundary_set.zip')
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'ENTSOe_boundary_set.zip')
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
     test_grid_name = 'IEEE 14 bus'            # PASSEED
+
+    # test_grid_name = 'IEEE 14 bus_35_3_WINDING_POST_EDITING_IEEE_HVDC_final_nudox_1_hvdc_desf_rates_fs_ss'
+
     # test_grid_name = 'IEEE 30 bus'              # FAILED
     # Error     Different snapshot values    Transformer      rate  5.9091    65.0
     # Converted line to trafo due to excessice voltage difference !??
@@ -139,7 +143,7 @@ def test_raw_to_cgmes_cross_roundtrip():
     raw_relative_path = os.path.join('data', 'grids', 'RAW', f"{test_grid_name}.raw")
     raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))
 
-    export_relative_path = os.path.join('output/cgmes_export_result', f'{test_grid_name}_GC.zip')
+    export_relative_path = os.path.join('output/cgmes_export_result', f'{test_grid_name}_from_raw_GC.zip')
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))

@@ -4464,7 +4464,10 @@ class Assets:
         Remove diagrams
         :param diagram: MapDiagram, SchematicDiagram device
         """
-        self.diagrams.remove(diagram)
+        try:
+            self.diagrams.remove(diagram)
+        except ValueError as e:
+            print(e)
 
     # ------------------------------------------------------------------------------------------------------------------
     #

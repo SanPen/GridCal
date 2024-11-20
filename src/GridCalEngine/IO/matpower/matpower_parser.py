@@ -16,7 +16,7 @@ import GridCalEngine.IO.matpower.matpower_bus_definitions as matpower_buses
 import GridCalEngine.IO.matpower.matpower_gen_definitions as matpower_gen
 
 
-def find_between(s, first, last):
+def find_between(s: str, first: str, last: str) -> str:
     """
     Find sting between two sub-strings
     Args:
@@ -174,7 +174,7 @@ def parse_buses_data(circuit: MultiCircuit,
                       area=area,
                       is_slack=is_slack,
                       Vm0=table[i, matpower_buses.VM],
-                      Va0=table[i, matpower_buses.VA])
+                      Va0=np.deg2rad(table[i, matpower_buses.VA]))
 
         # store the given bus index in relation to its real index in the table for later
         bus_idx_dict[table[i, matpower_buses.BUS_I]] = i
@@ -257,16 +257,27 @@ def parse_generators(circuit: MultiCircuit,
             n_cost = opf_table[i, 3]
             points = opf_table[i, 4:]
             if curve_model == 2:
-                if len(points) > 1:
+                if len(points) == 3:
                     gen_dict[i].Cost0 = points[2]
                     gen_dict[i].Cost = points[1]
                     gen_dict[i].Cost2 = points[0]
+                elif len(points) == 2:
+                    gen_dict[i].Cost = points[1]
+                    gen_dict[i].Cost0 = points[0]
+                elif len(points) == 1:
+                    gen_dict[i].Cost = points[0]
+                else:
+                    logger.add_warning("No curve points declared", gen_dict[i].name, curve_model)
+
             elif curve_model == 1:
                 # fit a quadratic curve
                 x = points[0::1]
                 y = points[0::2]
-                coeff = np.polyfit(x, y, 2)
-                gen_dict[i].Cost = coeff[1]
+                if len(x) == len(y):
+                    coeff = np.polyfit(x, y, 2)
+                    gen_dict[i].Cost = coeff[1]
+                else:
+                    logger.add_warning("Curve x not the same length as y", gen_dict[i].name, curve_model)
             else:
                 logger.add_warning("Unsupported curve model", gen_dict[i].name, curve_model)
 
@@ -621,10 +632,11 @@ def interpret_data_v1(circuit: MultiCircuit, data, logger: Logger) -> MultiCircu
     return circuit
 
 
-def read_matpower_file(filename: str) -> [MultiCircuit, Logger]:
+def read_matpower_file(filename: str, logger: Logger) -> Dict[str, np.ndarray]:
     """
-
+    Read a Matpower case and return the structures
     :param filename:
+    :param logger:
     :return:
     """
 
@@ -639,6 +651,7 @@ def read_matpower_file(filename: str) -> [MultiCircuit, Logger]:
     circuit = MultiCircuit()
 
     data = dict()
+    matpower_Sbase = 100.0
 
     # further process the loaded text
     for chunk in chunks:
@@ -651,7 +664,7 @@ def read_matpower_file(filename: str) -> [MultiCircuit, Logger]:
 
         if key == "baseMVA":
             v = find_between(chunk, '=', ';')
-            circuit.Sbase = float(v)
+            matpower_Sbase = float(v)
 
         elif key == "bus":
             if chunk.startswith("bus_name"):
@@ -673,6 +686,27 @@ def read_matpower_file(filename: str) -> [MultiCircuit, Logger]:
         elif key == "branch":
             data['branch'] = txt2mat(find_between(chunk, '[', ']'), line_splitter=';')
 
+    if "Ohms to p.u." in text:
+        # convert branch impedance to p.u. like matpower does...
+        bus_data = data['bus']
+        branch_data = data['branch']
+        Vbase = bus_data[0, matpower_buses.BASE_KV] * 1e3
+        Sbase = matpower_Sbase * 1e6
+        branch_data[:, matpower_branches.BR_R] /= (Vbase * Vbase / Sbase)
+        branch_data[:, matpower_branches.BR_X] /= (Vbase * Vbase / Sbase)
+        logger.add_warning("Converted Ohms to p.u.")
+
+    if "kW to MW" in text:
+        bus_data = data['bus']
+        bus_data[:, matpower_buses.PD] /= 1e3
+        bus_data[:, matpower_buses.QD] /= 1e3
+        logger.add_warning("Converted kW to MW")
+
+    if matpower_Sbase != 100.0:
+        logger.add_warning("Sbase was not 100, in GridCal it always should be 100MVA",
+                           value=circuit.Sbase, expected_value=100.0)
+    circuit.Sbase = 100.0
+
     return data
 
 
@@ -692,7 +726,7 @@ def parse_matpower_file(filename, export=False) -> [MultiCircuit, Logger]:
 
     logger = Logger()
 
-    data = read_matpower_file(filename)
+    data = read_matpower_file(filename, logger)
 
     if 'bus' in data.keys():
         circuit = interpret_data_v1(circuit, data, logger)
@@ -715,14 +749,14 @@ def arr_to_dict(hdr, arr):
 
 def get_matpower_case_data(filename, force_linear_cost=False) -> Dict:
     """
-    PArse matpower .m file and get the case data structure
+    Parse matpower .m file and get the case data structure
     :param filename: Name of the file
     :param force_linear_cost: Force linear cost when costs are found?
     :return: Matpower case data dictionary
     """
     logger = Logger()
 
-    data = read_matpower_file(filename)
+    data = read_matpower_file(filename, logger)
 
     bus_data = list()
     bus_arr = data['bus']
