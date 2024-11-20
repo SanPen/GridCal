@@ -125,3 +125,12 @@ class ActiveBranchData:
         :return: IntVec
         """
         return np.where(self.is_controlled == 1)[0]
+    
+    def get_fixed_idx(self) -> IntVec:
+        """
+        Get the fixed device indices
+        :return: IntVec
+        """
+        return np.where(self.is_controlled == 0)[0]
+
+

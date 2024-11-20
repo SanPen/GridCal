@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Union
 import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix, csc_matrix
@@ -16,12 +16,55 @@ from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_f
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
-from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl
+from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl, WindingsConnection
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    polar_to_rect, get_Sf, get_St,
                                                                                    get_It)
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger, ObjVec
 import GridCalEngine.Topology.generalized_simulation_indices as gsi
+
+def recompute_controllable_power(V_f: CxVec,
+                                 V_t: CxVec,
+                                 R: Vec,
+                                 X: Vec,
+                                 G: Vec,
+                                 B: Vec,
+                                 tap_module: Vec,
+                                 vtap_f: Vec,
+                                 vtap_t: Vec,
+                                 tap_angle: Vec):
+    """
+    Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
+    
+    :param V_f: From voltages array
+    :param V_t: To voltages array
+    :param R: array of branch resistance (p.u.)
+    :param X: array of branch reactance (p.u.)
+    :param G: array of branch conductance (p.u.)
+    :param B: array of branch susceptance (p.u.)
+    :param k: array of converter values: 1 for regular Branches, sqrt(3) / 2 for VSC
+    :param tap_module: array of tap modules (for all Branches, regardless of their type)
+    :param vtap_f: array of virtual taps at the "from" side
+    :param vtap_t: array of virtual taps at the "to" side
+    :param tap_angle: array of tap angles (for all Branches, regardless of their type)
+    :param verbose
+    :return: Pf, Qf, Pt, Qt
+    """
+
+    # form the admittance matrices
+    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+    bc2 = (G + 1j * B) / 2.0  # shunt admittance
+    mp = tap_module       
+
+    Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
+    Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+    Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+    Ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+    Sf = V_f * np.conj(V_f) * Yff - V_f * np.conj(V_t) * Yft
+    St = V_t * np.conj(V_t) * Ytt - V_t * np.conj(V_f) * Ytf
+
+    return Sf.real, Sf.imag, St.real, St.imag
 
 # @njit()
 def adv_jacobian(nbus: int,
@@ -193,6 +236,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         self.logger: Logger = logger
 
+        print("(pf_generalized_formulation.py) self.nc.passive_branch_data.nelm: ", self.nc.passive_branch_data.nelm)
+        print("(pf_generalized_formulation.py) self.nc.active_branch_data.nelm: ", self.nc.active_branch_data.nelm)
+        print("(pf_generalized_formulation.py) self.nc.vsc_data.nelm: ", self.nc.vsc_data.nelm)
+
         self.S0: CxVec = S0
         self.I0: CxVec = I0
         self.Y0: CxVec = Y0
@@ -205,8 +252,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # QUESTION: is there a reason not to do this? I use this in var2x
         self.Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm, dtype=np.complex128)
-        self.St: CxVec = np.zeros(nc.active_branch_data.nelm, dtype=np.complex128)
+        # self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm + nc.vsc_data.nelm, dtype=np.complex128)
+        # self.St: CxVec = np.zeros(nc.active_branch_data.nelm + nc.vsc_data.nelm, dtype=np.complex128)
+        self.Sf: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
+        self.St: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
 
         self.Pbus = np.real(self.Sbus)
         self.Qbus = np.imag(self.Sbus)
@@ -254,6 +303,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Generalized indices
         generalisedSimulationIndices = gsi.GeneralizedSimulationIndices(self.nc)
+        self.generalisedSimulationIndices = generalisedSimulationIndices
+        self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
+        self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
         
         # cg sets
         self.cg_pac = generalisedSimulationIndices.cg_pac
@@ -303,16 +355,40 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # self.tau: Vec = self.nc.active_branch_data.tap_angle[self.idx_dtau]
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
 
+        R= np.full(nc.nbr, 1e+20)
+        X= np.full(nc.nbr, 1e+20)
+        G= np.zeros(nc.nbr, dtype=float)
+        B= np.zeros(nc.nbr, dtype=float)
+        k= np.zeros(nc.nbr, dtype=float)
+        tap_module= np.ones(nc.nbr, dtype=float)
+        vtap_f=self.nc.passive_branch_data.virtual_tap_f
+        vtap_t=self.nc.passive_branch_data.virtual_tap_t
+        tap_angle= np.zeros(nc.nbr, dtype=float)
+        Cf=self.nc.Cf
+        Ct=self.nc.Ct
+        Yshunt_bus=self.nc.Yshunt_from_devices
+        conn=self.nc.passive_branch_data.conn
+        seq=1
+        add_windings_phase=False
+
+        # fill the fixed indices with a small value
+        R[self.fixed_idx] = nc.passive_branch_data.R[self.fixed_idx]
+        X[self.fixed_idx] = nc.passive_branch_data.X[self.fixed_idx]
+        G[self.fixed_idx] = nc.passive_branch_data.G[self.fixed_idx]
+        B[self.fixed_idx] = nc.passive_branch_data.B[self.fixed_idx]
+        tap_module[self.fixed_idx] = nc.active_branch_data.tap_module[self.fixed_idx]
+        tap_angle[self.fixed_idx] = nc.active_branch_data.tap_angle[self.fixed_idx]
+
         self.adm = compute_admittances(
-            R=self.nc.passive_branch_data.R,
-            X=self.nc.passive_branch_data.X,
-            G=self.nc.passive_branch_data.G,
-            B=self.nc.passive_branch_data.B,
-            k=self.nc.passive_branch_data.k,
-            tap_module=self.m,
+            R=R,
+            X=X,
+            G=G,
+            B=B,
+            k=k,
+            tap_module=tap_module,
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=self.tau,
+            tap_angle=tap_angle,
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
             Yshunt_bus=self.nc.Yshunt_from_devices,
@@ -527,89 +603,110 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 + len(self.cx_tau))
     
 
+    def compute_f(self, x: Vec) -> Vec:
+        """
+        Compute the residual vector
+        :param x: Solution vector
+        :return: Residual vector
+        """
+
+        a = len(self.cx_vm)
+        b = a + len(self.cx_va)
+        c = b + len(self.cx_pzip)
+        d = c + len(self.cx_qzip)
+        e = d + len(self.cx_pfa)
+        f = e + len(self.cx_qfa)
+        g = f + len(self.cx_pta)
+        h = g + len(self.cx_qta)
+        i = h + len(self.cx_m)
+        j = i + len(self.cx_tau)
+
+        # update the vectors
+        Va = self.Va.copy()
+        Vm = self.Vm.copy()
+        Pbus = self.Pbus.copy()
+        Qbus = self.Qbus.copy()
+        Pf = self.Pf.copy()
+        Qf = self.Qf.copy()
+        Pt = self.Pt.copy()
+        Qt = self.Qt.copy()
+        m = self.m.copy()
+        tau = self.tau.copy()
+
+        Vm[self.cx_vm] = x[0:a]
+        Va[self.cx_va] = x[a:b]
+        Pbus[self.cx_pzip] = x[b:c]
+        Qbus[self.cx_qzip] = x[c:d]
+        Pf[self.cx_pfa] = x[d:e]
+        Qf[self.cx_qfa] = x[e:f]
+        Pt[self.cx_pta] = x[f:g]
+        Qt[self.cx_qta] = x[g:h]
+        m[self.cx_m] = x[h:i]
+        tau[self.cx_tau] = x[i:j]
+
+        # compute the complex voltage
+        V = polar_to_rect(Vm, Va)
+
+        # Update converter losses
+        # It = get_It(k=self.idx_conv, V=V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
+        toBus = self.nc.vsc_data.T
+        It = np.sqrt(Pt*Pt + Qt*Qt)[self.cg_acdc]  /  Vm[toBus]
+        Itm = np.abs(It)
+        Itm2 = Itm * Itm
+        PLoss_IEC = (self.nc.vsc_data.alpha3 * Itm2
+                     + self.nc.vsc_data.alpha2 * Itm2
+                     + self.nc.vsc_data.alpha1)
+        
+        print("Calculated VSC LOSSES", PLoss_IEC)
+
+        ## ACDC Power Loss Residual
+        Ploss_acdc = - PLoss_IEC + self.Pt[self.cg_acdc] + self.Pf[self.cg_acdc]
+
+        # compute the function residual
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm) + self.Pbus[self.cx_pzip] + 1j*self.Qbus[self.cx_qzip]
+        Scalc = compute_power(self.adm.Ybus, V)
+
+        dS = (Scalc - Sbus 
+            + (self.nc.vsc_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.vsc_data.C_branch_bus_t @ (self.Pt + 1j*self.Qt))[self.cg_acdc]  # add contribution of acdc link
+            + (self.nc.passive_branch_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.passive_branch_data.C_branch_bus_t @ (self.Pt + 1j* self.Qt))[self.cg_pttr])  # add contribution of transformer
+        
+        V = Vm * np.exp(1j * Va)
+
+        Pf, Qf, Pt, Qt = recompute_controllable_power(
+            V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
+            V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
+            R=self.nc.passive_branch_data.R[self.controlled_idx], 
+            X=self.nc.passive_branch_data.X[self.controlled_idx], 
+            G=self.nc.passive_branch_data.G[self.controlled_idx], 
+            B=self.nc.passive_branch_data.B[self.controlled_idx], 
+            tap_module=m, 
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx], 
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx], 
+            tap_angle=tau
+        )
+
+        _f = np.r_[
+            dS[self.cg_pac + self.cg_pdc].real,
+            dS[self.cg_qac].imag,
+            Ploss_acdc,
+            Pf[self.cg_pftr] - self.nc.active_branch_data.Pset[self.cg_pftr],
+            Qf[self.cg_qftr] - self.nc.active_branch_data.Qset[self.cg_qftr],
+            Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
+            Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
+        ]
+
+        return _f
+
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
         """
         Check error of the solution without affecting the problem
         :param x: Solution vector
         :return: error
         """
-        a = len(self.idx_dVa)
-        b = a + len(self.idx_dVm)
-        c = b + len(self.idx_dm)
-        d = c + len(self.idx_dtau)
-        e = d + len(self.idx_dbeq)
-
-        # update the vectors
-        Va = self.Va.copy()
-        Vm = self.Vm.copy()
-        Va[self.idx_dVa] = x[0:a]
-        Vm[self.idx_dVm] = x[a:b]
-        m = x[b:c]
-        tau = x[c:d]
-        beq = x[d:e]
-
-        # recompute admittances
-        adm = compute_admittances(
-            R=self.nc.passive_branch_data.R,
-            X=self.nc.passive_branch_data.X,
-            G=self.nc.passive_branch_data.G,
-            B=self.nc.passive_branch_data.B,
-            k=self.nc.passive_branch_data.k,
-            tap_module=expand(self.nc.nbr, m, self.idx_dm, 1.0),
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=expand(self.nc.nbr, tau, self.idx_dtau, 0.0),
-            Cf=self.nc.Cf,
-            Ct=self.nc.Ct,
-            Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False,
-            verbose=self.options.verbose,
-        )
-
-        # compute the complex voltage
-        V = polar_to_rect(Vm, Va)
-
-        # Update converter losses
-        It = get_It(k=self.idx_conv, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T)
-        Itm = np.abs(It)
-        Itm2 = Itm * Itm
-        PLoss_IEC = (self.nc.passive_branch_data.alpha3[self.idx_conv] * Itm2
-                     + self.nc.passive_branch_data.alpha2[self.idx_conv] * Itm2
-                     + self.nc.passive_branch_data.alpha1[self.idx_conv])
-
-        self.Gsw = PLoss_IEC / np.power(Vm[self.nc.F[self.idx_conv]], 2.0)
-
-        # compute the function residual
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
-        Scalc = compute_power(adm.Ybus, V)
-
-        dS = Scalc - Sbus  # compute the mismatch
-
-        Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V,
-                    yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
-
-        Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V,
-                    yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).imag
-
-        Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V,
-                    ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
-
-        Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V,
-                    ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).imag
-
-        _f = np.r_[
-            dS[self.idx_dP].real,
-            dS[self.idx_dQ].imag,
-            Pf - self.nc.passive_branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.passive_branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.passive_branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.passive_branch_data.Qset[self.idx_dQt]
-        ]
+        _res = self.compute_f(x) 
 
         # compute the error
-        return compute_fx_error(_f), x
+        return compute_fx_error(_res), x
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
@@ -621,64 +718,52 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # set the problem state
         self.x2var(x)
 
-        # recompute admittances
-        self.adm = compute_admittances(
-            R=self.nc.passive_branch_data.R,
-            X=self.nc.passive_branch_data.X,
-            G=self.nc.passive_branch_data.G,
-            B=self.nc.passive_branch_data.B,
-            k=self.nc.passive_branch_data.k,
-            tap_module=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-            Cf=self.nc.Cf,
-            Ct=self.nc.Ct,
-            Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False,
-            verbose=self.options.verbose,
-        )
-
         # compute the complex voltage
         self.V = polar_to_rect(self.Vm, self.Va)
 
         # Update converter losses
-        It = get_It(k=self.idx_conv, V=self.V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
+        toBus = self.nc.vsc_data.T
+        It = np.sqrt(self.Pt*self.Pt + self.Qt*self.Qt)[self.cg_acdc]  /  self.Vm[toBus]
         Itm = np.abs(It)
         Itm2 = Itm * Itm
-        PLoss_IEC = (self.nc.passive_branch_data.alpha3[self.idx_conv] * Itm2
-                     + self.nc.passive_branch_data.alpha2[self.idx_conv] * Itm2
-                     + self.nc.passive_branch_data.alpha1[self.idx_conv])
+        PLoss_IEC = (self.nc.vsc_data.alpha3 * Itm2
+                     + self.nc.vsc_data.alpha2 * Itm2
+                     + self.nc.vsc_data.alpha1)
+        
+        print("Calculated VSC LOSSES", PLoss_IEC)
 
-        self.Gsw = PLoss_IEC / np.power(self.Vm[self.nc.F[self.idx_conv]], 2.0)
+        ## ACDC Power Loss Residual
+        Ploss_acdc = - PLoss_IEC + self.Pt[self.cg_acdc] + self.Pf[self.cg_acdc]
 
         # compute the function residual
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        self.Scalc = compute_power(self.adm.Ybus, self.V)
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pbus + 1j*self.Qbus
+        Scalc = compute_power(self.adm.Ybus, self.V)
 
-        dS = self.Scalc - Sbus  # compute the mismatch
+        dS = (Scalc - Sbus 
+            + (self.nc.vsc_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.vsc_data.C_branch_bus_t @ (self.Pt + 1j*self.Qt))[self.cg_acdc]  # add contribution of acdc link
+            + (self.nc.passive_branch_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.passive_branch_data.C_branch_bus_t @ (self.Pt + 1j* self.Qt))[self.cg_pttr])  # add contribution of transformer
 
-        Pf = get_Sf(k=self.idx_dPf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
-
-        Qf = get_Sf(k=self.idx_dQf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).imag
-
-        Pt = get_St(k=self.idx_dPt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).real
-
-        Qt = get_St(k=self.idx_dQt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).imag
+        Pf, Qf, Pt, Qt = recompute_controllable_power(
+            V_f=self.V[self.nc.passive_branch_data.F[self.controlled_idx]],
+            V_t=self.V[self.nc.passive_branch_data.T[self.controlled_idx]],
+            R=self.nc.passive_branch_data.R[self.controlled_idx], 
+            X=self.nc.passive_branch_data.X[self.controlled_idx], 
+            G=self.nc.passive_branch_data.G[self.controlled_idx], 
+            B=self.nc.passive_branch_data.B[self.controlled_idx], 
+            tap_module=self.m, 
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx], 
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx], 
+            tap_angle=self.tau
+        )
 
         self._f = np.r_[
-            dS[self.idx_dP].real,
-            dS[self.idx_dQ].imag,
-            Pf - self.nc.passive_branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.passive_branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.passive_branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.passive_branch_data.Qset[self.idx_dQt]
+            dS[self.cg_pac + self.cg_pdc].real,
+            dS[self.cg_qac].imag,
+            Ploss_acdc,
+            Pf[self.cg_pftr] - self.nc.active_branch_data.Pset[self.cg_pftr],
+            Qf[self.cg_qftr] - self.nc.active_branch_data.Qset[self.cg_qftr],
+            Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
+            Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
         ]
 
         # compute the error
@@ -687,9 +772,14 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if self.options.verbose > 1:
             print("Vm:", self.Vm)
             print("Va:", self.Va)
-            print("tau:", self.tau)
+            print("Pbus:", self.Pbus)
+            print("Qbus:", self.Qbus)
+            print("Pf:", self.Pf)
+            print("Qf:", self.Qf)
+            print("Pt:", self.Pt)
+            print("Qt:", self.Qt)
             print("m:", self.m)
-            print("Gsw:", self.Gsw)
+            print("tau:", self.tau)
 
         # Update controls only below a certain error
         """
@@ -839,65 +929,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param x: solutions vector
         :return: f(x)
         """
-        a = len(self.idx_dVa)
-        b = a + len(self.idx_dVm)
-        c = b + len(self.idx_dm)
-        d = c + len(self.idx_dtau)
-        e = d + len(self.idx_dbeq)
-
-        # update the vectors
-        Va = self.Va.copy()
-        Vm = self.Vm.copy()
-        m = np.ones(self.nc.nbr, dtype=float)
-        tau = np.zeros(self.nc.nbr, dtype=float)
-        beq = np.zeros(self.nc.nbr, dtype=float)
-
-        Va[self.idx_dVa] = x[0:a]
-        Vm[self.idx_dVm] = x[a:b]
-        m[self.idx_dm] = x[b:c]
-        tau[self.idx_dtau] = x[c:d]
-        beq[self.idx_dbeq] = x[d:e]
-
-        # compute the complex voltage
-        V = polar_to_rect(Vm, Va)
-
-        adm = compute_admittances(
-            R=self.nc.passive_branch_data.R,
-            X=self.nc.passive_branch_data.X,
-            G=self.nc.passive_branch_data.G,
-            B=self.nc.passive_branch_data.B,
-            k=self.nc.passive_branch_data.k,
-            tap_module=m,
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=tau,
-            Cf=self.nc.Cf,
-            Ct=self.nc.Ct,
-            Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
-        )
-
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
-        Scalc = compute_power(adm.Ybus, V)
-
-        dS = Scalc - Sbus  # compute the mismatch
-
-        Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
-        Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
-        Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
-        Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
-
-        f = np.r_[
-            dS[self.idx_dP].real,
-            dS[self.idx_dQ].imag,
-            Pf - self.nc.active_branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.active_branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.active_branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.active_branch_data.Qset[self.idx_dQt]
-        ]
-        return f
+        return self.compute_f(x)
 
     def Jacobian(self, autodiff: bool = False) -> CSC:
         """
