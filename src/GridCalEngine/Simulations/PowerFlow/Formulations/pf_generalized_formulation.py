@@ -253,7 +253,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         
 
         # Generalized indices
-        generalisedSimulationIndices = gsi.GeneralizedSimulationIndices(self.nc) # CHECK: this is def not where this goes
+        generalisedSimulationIndices = gsi.GeneralizedSimulationIndices(self.nc)
+        
         # cg sets
         self.cg_pac = generalisedSimulationIndices.cg_pac
         self.cg_qac = generalisedSimulationIndices.cg_qac
