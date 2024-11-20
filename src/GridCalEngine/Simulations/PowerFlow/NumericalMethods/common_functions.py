@@ -62,7 +62,8 @@ def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
     :return: longer array
     """
     x = np.full(n, default)
-    x[idx] = arr
+    if len(arr):
+        x[idx] = arr
     return x
 
 

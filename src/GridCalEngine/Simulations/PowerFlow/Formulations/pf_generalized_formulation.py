@@ -23,6 +23,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger, ObjVec
 import GridCalEngine.Topology.generalized_simulation_indices as gsi
 
+
 def recompute_controllable_power(V_f: CxVec,
                                  V_t: CxVec,
                                  R: Vec,
@@ -32,7 +33,7 @@ def recompute_controllable_power(V_f: CxVec,
                                  tap_module: Vec,
                                  vtap_f: Vec,
                                  vtap_t: Vec,
-                                 tap_angle: Vec):
+                                 tap_angle: Vec) -> Tuple[Vec, Vec, Vec, Vec]:
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
     
@@ -54,7 +55,7 @@ def recompute_controllable_power(V_f: CxVec,
     # form the admittance matrices
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
     bc2 = (G + 1j * B) / 2.0  # shunt admittance
-    mp = tap_module       
+    mp = tap_module
 
     Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
     Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
@@ -65,6 +66,7 @@ def recompute_controllable_power(V_f: CxVec,
     St = V_t * np.conj(V_t) * Ytt - V_t * np.conj(V_f) * Ytf
 
     return Sf.real, Sf.imag, St.real, St.imag
+
 
 # @njit()
 def adv_jacobian(nbus: int,
@@ -272,7 +274,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         print(f"self.St: {self.St}")
         print(f"self.Pt: {self.Pt}")
         print(f"self.Qt: {self.Qt}")
-        
 
         self.bus_types = self.nc.bus_data.bus_types.copy()
         self.tap_module_control_mode = self.nc.active_branch_data.tap_module_control_mode.copy()
@@ -299,14 +300,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.idx_dPt = np.array(0, dtype=int)
         self.idx_dQt = np.array(0, dtype=int)
 
-        
-
         # Generalized indices
         generalisedSimulationIndices = gsi.GeneralizedSimulationIndices(self.nc)
         self.generalisedSimulationIndices = generalisedSimulationIndices
         self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
-        
+
         # cg sets
         self.cg_pac = generalisedSimulationIndices.cg_pac
         self.cg_qac = generalisedSimulationIndices.cg_qac
@@ -329,7 +328,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cx_qta = generalisedSimulationIndices.cx_qta
         self.cx_m = generalisedSimulationIndices.cx_m
         self.cx_tau = generalisedSimulationIndices.cx_tau
-         
+
         print(f"cx_va:  {self.cx_va}")
         print(f"cx_vm:  {self.cx_vm}")
         print(f"cx_tau: {self.cx_tau}")
@@ -341,35 +340,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         print(f"cx_pta: {self.cx_pta}")
         print(f"cx_qta: {self.cx_qta}")
 
-        # NOT NEEDED?
-        # k_v_m = self.analyze_branch_controls()  # this fills the indices above
-        # self.vd, pq, pv, pqv, p, self.no_slack = compile_types(
-        #     Pbus=self.nc.Sbus.real,
-        #     types=self.bus_types
-        # )
-        # self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
+        self.m: Vec = np.ones(len(self.controlled_idx))
+        self.tau: Vec = np.zeros(len(self.controlled_idx))
 
-        self.m: Vec = np.ones(self.nc.active_branch_data.nelm)
-        self.tau: Vec = np.zeros(self.nc.active_branch_data.nelm)
-        # self.m: Vec = self.nc.active_branch_data.tap_module[self.idx_dm] # CHECK: not super sure what self.idx_dm is
-        # self.tau: Vec = self.nc.active_branch_data.tap_angle[self.idx_dtau]
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
 
-        R= np.full(nc.nbr, 1e+20)
-        X= np.full(nc.nbr, 1e+20)
-        G= np.zeros(nc.nbr, dtype=float)
-        B= np.zeros(nc.nbr, dtype=float)
-        k= np.zeros(nc.nbr, dtype=float)
-        tap_module= np.ones(nc.nbr, dtype=float)
-        vtap_f=self.nc.passive_branch_data.virtual_tap_f
-        vtap_t=self.nc.passive_branch_data.virtual_tap_t
-        tap_angle= np.zeros(nc.nbr, dtype=float)
-        Cf=self.nc.Cf
-        Ct=self.nc.Ct
-        Yshunt_bus=self.nc.Yshunt_from_devices
-        conn=self.nc.passive_branch_data.conn
-        seq=1
-        add_windings_phase=False
+        R = np.full(nc.nbr, 1e+20)
+        X = np.full(nc.nbr, 1e+20)
+        G = np.zeros(nc.nbr, dtype=float)
+        B = np.zeros(nc.nbr, dtype=float)
+        k = np.ones(nc.nbr, dtype=float)
+        tap_module = np.ones(nc.nbr, dtype=float)
+        tap_angle = np.zeros(nc.nbr, dtype=float)
 
         # fill the fixed indices with a small value
         R[self.fixed_idx] = nc.passive_branch_data.R[self.fixed_idx]
@@ -396,9 +378,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             seq=1,
             add_windings_phase=False
         )
-        # NOT NEEDED
-        # if not len(self.pqv) >= len(k_v_m):
-        #     raise ValueError("k_v_m indices must be the same size as pqv indices!")
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec) -> None:
         """
@@ -530,7 +509,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Convert X to decission variables
         :param x: solution vector
         """
-        #print all the sets
+        # print all the sets
         print(f"cx_va: {self.cx_va}")
         print(f"cx_vm: {self.cx_vm}")
         print(f"cx_tau: {self.cx_tau}")
@@ -541,7 +520,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         print(f"cx_qfa: {self.cx_qfa}")
         print(f"cx_pta: {self.cx_pta}")
         print(f"cx_qta: {self.cx_qta}")
-        #print all the sets
+        # print all the sets
 
         a = len(self.cx_vm)
         b = a + len(self.cx_va)
@@ -601,7 +580,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 + len(self.cx_qta)
                 + len(self.cx_m)
                 + len(self.cx_tau))
-    
 
     def compute_f(self, x: Vec) -> Vec:
         """
@@ -650,38 +628,46 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Update converter losses
         # It = get_It(k=self.idx_conv, V=V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
         toBus = self.nc.vsc_data.T
-        It = np.sqrt(Pt*Pt + Qt*Qt)[self.cg_acdc]  /  Vm[toBus]
+        It = np.sqrt(Pt * Pt + Qt * Qt)[self.cg_acdc] / Vm[toBus]
         Itm = np.abs(It)
         Itm2 = Itm * Itm
         PLoss_IEC = (self.nc.vsc_data.alpha3 * Itm2
                      + self.nc.vsc_data.alpha2 * Itm2
                      + self.nc.vsc_data.alpha1)
-        
+
         print("Calculated VSC LOSSES", PLoss_IEC)
 
-        ## ACDC Power Loss Residual
+        # ACDC Power Loss Residual
         Ploss_acdc = - PLoss_IEC + self.Pt[self.cg_acdc] + self.Pf[self.cg_acdc]
 
         # compute the function residual
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm) + self.Pbus[self.cx_pzip] + 1j*self.Qbus[self.cx_qzip]
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm) + Pbus + 1j * Qbus
         Scalc = compute_power(self.adm.Ybus, V)
 
-        dS = (Scalc - Sbus 
-            + (self.nc.vsc_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.vsc_data.C_branch_bus_t @ (self.Pt + 1j*self.Qt))[self.cg_acdc]  # add contribution of acdc link
-            + (self.nc.passive_branch_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.passive_branch_data.C_branch_bus_t @ (self.Pt + 1j* self.Qt))[self.cg_pttr])  # add contribution of transformer
-        
+        dS = (
+                Scalc - Sbus
+
+                # add contribution of acdc link
+                + ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
+                   + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+
+                # add contribution of transformer
+                + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
+                   + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
+        )
+
         V = Vm * np.exp(1j * Va)
 
         Pf, Qf, Pt, Qt = recompute_controllable_power(
             V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
-            R=self.nc.passive_branch_data.R[self.controlled_idx], 
-            X=self.nc.passive_branch_data.X[self.controlled_idx], 
-            G=self.nc.passive_branch_data.G[self.controlled_idx], 
-            B=self.nc.passive_branch_data.B[self.controlled_idx], 
-            tap_module=m, 
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx], 
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx], 
+            R=self.nc.passive_branch_data.R[self.controlled_idx],
+            X=self.nc.passive_branch_data.X[self.controlled_idx],
+            G=self.nc.passive_branch_data.G[self.controlled_idx],
+            B=self.nc.passive_branch_data.B[self.controlled_idx],
+            tap_module=m,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx],
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx],
             tap_angle=tau
         )
 
@@ -703,7 +689,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param x: Solution vector
         :return: error
         """
-        _res = self.compute_f(x) 
+        _res = self.compute_f(x)
 
         # compute the error
         return compute_fx_error(_res), x
@@ -723,36 +709,45 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Update converter losses
         toBus = self.nc.vsc_data.T
-        It = np.sqrt(self.Pt*self.Pt + self.Qt*self.Qt)[self.cg_acdc]  /  self.Vm[toBus]
+        It = np.sqrt(self.Pt * self.Pt + self.Qt * self.Qt)[self.cg_acdc] / self.Vm[toBus]
         Itm = np.abs(It)
         Itm2 = Itm * Itm
         PLoss_IEC = (self.nc.vsc_data.alpha3 * Itm2
                      + self.nc.vsc_data.alpha2 * Itm2
                      + self.nc.vsc_data.alpha1)
-        
+
         print("Calculated VSC LOSSES", PLoss_IEC)
 
-        ## ACDC Power Loss Residual
+        # ACDC Power Loss Residual
         Ploss_acdc = - PLoss_IEC + self.Pt[self.cg_acdc] + self.Pf[self.cg_acdc]
 
         # compute the function residual
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pbus + 1j*self.Qbus
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pbus + 1j * self.Qbus
         Scalc = compute_power(self.adm.Ybus, self.V)
 
-        dS = (Scalc - Sbus 
-            + (self.nc.vsc_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.vsc_data.C_branch_bus_t @ (self.Pt + 1j*self.Qt))[self.cg_acdc]  # add contribution of acdc link
-            + (self.nc.passive_branch_data.C_branch_bus_f @ (self.Pf + 1j*self.Qf)  +  self.nc.passive_branch_data.C_branch_bus_t @ (self.Pt + 1j* self.Qt))[self.cg_pttr])  # add contribution of transformer
+        dS = (
+                Scalc - Sbus
+
+                # add contribution of acdc link
+                + ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
+                   + (self.Pt + 1j * self.Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+
+                # add contribution of transformer
+                + ((self.Pf + 1j * self.Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
+                   + (self.Pt + 1j * self.Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr,
+                                                              :])
+        )
 
         Pf, Qf, Pt, Qt = recompute_controllable_power(
             V_f=self.V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=self.V[self.nc.passive_branch_data.T[self.controlled_idx]],
-            R=self.nc.passive_branch_data.R[self.controlled_idx], 
-            X=self.nc.passive_branch_data.X[self.controlled_idx], 
-            G=self.nc.passive_branch_data.G[self.controlled_idx], 
-            B=self.nc.passive_branch_data.B[self.controlled_idx], 
-            tap_module=self.m, 
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx], 
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx], 
+            R=self.nc.passive_branch_data.R[self.controlled_idx],
+            X=self.nc.passive_branch_data.X[self.controlled_idx],
+            G=self.nc.passive_branch_data.G[self.controlled_idx],
+            B=self.nc.passive_branch_data.B[self.controlled_idx],
+            tap_module=self.m,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx],
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx],
             tap_angle=self.tau
         )
 
@@ -931,7 +926,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
         return self.compute_f(x)
 
-    def Jacobian(self, autodiff: bool = False) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:
