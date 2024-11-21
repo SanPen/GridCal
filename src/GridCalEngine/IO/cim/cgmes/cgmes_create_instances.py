@@ -67,7 +67,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
         fm.modelingAuthoritySet = []
         if len(mas_names):
             for mas_name in mas_names:
-                fm.modelingAuthoritySet.append(mas_name.__str__)
+                fm.modelingAuthoritySet.append(mas_name)
         else:
             fm.modelingAuthoritySet.append("http://www.ree.es/OperationalPlanning")
             logger.add_warning(msg="Missing Modeling Authority!",
