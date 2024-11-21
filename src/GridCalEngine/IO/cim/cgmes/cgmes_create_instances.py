@@ -347,11 +347,7 @@ def create_cgmes_regulating_control(cgmes_syn,
     rc.name = f'_RC_{mc_gen.name}'
     rc.shortName = rc.name
     rc.mode = RegulatingControlModeKind.voltage
-    rc.Terminal = create_cgmes_terminal(mc_bus=mc_gen.bus,
-                                        seq_num=1,
-                                        cond_eq=cgmes_syn,
-                                        cgmes_model=cgmes_model,
-                                        logger=logger)
+    rc.Terminal = cgmes_syn.Terminals
 
     rc.RegulatingCondEq = cgmes_syn
     rc.discrete = False
