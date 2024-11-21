@@ -5,8 +5,11 @@ from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.basic_structures import Logger
 
+
+
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
-fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
+fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_raiyan.gridcal")
+# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
 grid = gce.open_file(fname)
 # run power flow
 main_nc = gce.compile_numerical_circuit_at(grid)
@@ -36,7 +39,7 @@ cx_qta: [4, 5]
 
 print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhvdc: {main_nc.nhvdc}")
 
-options = gce.PowerFlowOptions(solver_type= gce.SolverType.GENERALISED)
+options = gce.PowerFlowOptions(solver_type= gce.SolverType.GENERALISED, retry_with_other_methods = False, max_iter= 20)
 logger = Logger()
 
 island = islands[0]

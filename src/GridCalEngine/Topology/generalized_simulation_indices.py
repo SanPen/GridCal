@@ -109,6 +109,33 @@ class GeneralizedSimulationIndices:
         self.cx_qfa: Set[int] = set()  # ONLY transformers controlling Qf
         self.cx_qta: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
 
+
+        # ck sets (the complements of the cx sets)
+        self.ck_va: Set[int] = set()
+        self.ck_vm: Set[int] = set()
+        self.ck_tau: Set[int] = set()
+        self.ck_m: Set[int] = set()
+        self.ck_pzip: Set[int] = set()
+        self.ck_qzip: Set[int] = set()
+        self.ck_pfa: Set[int] = set()
+        self.ck_pta: Set[int] = set()
+        self.ck_qfa: Set[int] = set()
+        self.ck_qta: Set[int] = set()
+
+
+        # setpoints that correspond to the ck sets
+        self.va_setpoints = []
+        self.vm_setpoints = []
+        self.tau_setpoints = []
+        self.m_setpoints = []
+        self.pzip_setpoints = []
+        self.qzip_setpoints = []
+        self.pf_setpoints = []
+        self.pt_setpoints = []
+        self.qf_setpoints = []
+        self.qt_setpoints = []
+
+
         # Ancilliary
         # Source refers to the bus with the controlled device directly connected 
         # Pointer refers to the bus where we control the voltage magnitude 
@@ -433,11 +460,30 @@ class GeneralizedSimulationIndices:
         control1_type = vsc_data.control1[ii]
         control2_type = vsc_data.control2[ii]
 
+        # Extract control magnitudes
+        magnitude1 = vsc_data.control1_val[ii]
+        magnitude2 = vsc_data.control2_val[ii]
+
         # Set flags for active controls
-        for control in [control1_type, control2_type]:
+        for control, control_magnitude in zip([control1_type, control2_type],[magnitude1, magnitude2]):
             try:
                 control_index = list(ConverterControlType).index(control)
                 control_flags[control_index] = True
+
+                if control == ConverterControlType.Vm_dc:
+                    bus_idx = vsc_data.F[ii]
+                    self.ck_vm.add(int(bus_idx))
+                    self.vm_setpoints.append(control_magnitude)
+                elif control == ConverterControlType.Vm_ac:
+                    bus_idx = vsc_data.T[ii]
+                    self.ck_vm.add(int(bus_idx))
+                    self.vm_setpoints.append(control_magnitude)
+                elif control == ConverterControlType.Va_ac:
+                    bus_idx = vsc_data.T[ii]
+                    self.ck_va.add(int(bus_idx))
+                    self.va_setpoints.append(control_magnitude)
+
+
             except ValueError:
                 return  # Skip processing this VSC if control type is invalid
 
@@ -708,6 +754,17 @@ class GeneralizedSimulationIndices:
         self.cx_pta = list(self.cx_pta)
         self.cx_qfa = list(self.cx_qfa)
         self.cx_qta = list(self.cx_qta)
+
+        self.ck_va = list(self.ck_va)
+        self.ck_vm = list(self.ck_vm)
+        self.ck_tau = list(self.ck_tau)
+        self.ck_m = list(self.ck_m)
+        self.ck_pzip = list(self.ck_pzip)
+        self.ck_qzip = list(self.ck_qzip)
+        self.ck_pfa = list(self.ck_pfa)
+        self.ck_pta = list(self.ck_pta)
+        self.ck_qfa = list(self.ck_qfa)
+        self.ck_qta = list(self.ck_qta)
 
     # def fill_x_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
     #     """

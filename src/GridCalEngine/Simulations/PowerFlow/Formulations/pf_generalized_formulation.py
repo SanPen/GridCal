@@ -16,7 +16,7 @@ from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_f
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
-from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl, WindingsConnection
+from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl, ConverterControlType
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    polar_to_rect, get_Sf, get_St,
                                                                                    get_It)
@@ -214,6 +214,23 @@ def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> csc_ma
 
     return jac.tocsc()
 
+def update_setpoints(si: gsi.GeneralizedSimulationIndices, V: CxVec) -> CxVec:
+    """
+    Update the setpoints
+    :param V: Voltage vector
+    :param nc: NumericalCircuit
+    :return: Updated voltage vector
+    """
+    # split up the magnitude and the angle
+    Vm = np.abs(V)
+    Va = np.angle(V)
+
+
+    # Update the setpoints
+    Vm[si.ck_vm] = si.vm_setpoints
+    Va[si.ck_va] = si.va_setpoints
+
+    return polar_to_rect(Vm, Va)
 
 class PfGeneralizedFormulation(PfFormulationTemplate):
 
@@ -329,16 +346,36 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cx_m = generalisedSimulationIndices.cx_m
         self.cx_tau = generalisedSimulationIndices.cx_tau
 
-        print(f"cx_va:  {self.cx_va}")
-        print(f"cx_vm:  {self.cx_vm}")
-        print(f"cx_tau: {self.cx_tau}")
-        print(f"cx_m:   {self.cx_m}")
-        print(f"cx_pzip: {self.cx_pzip}")
-        print(f"cx_qzip: {self.cx_qzip}")
-        print(f"cx_pfa: {self.cx_pfa}")
-        print(f"cx_qfa: {self.cx_qfa}")
-        print(f"cx_pta: {self.cx_pta}")
-        print(f"cx_qta: {self.cx_qta}")
+        # ck sets [KNOWNS]
+        self.ck_vm = generalisedSimulationIndices.ck_vm
+        self.ck_va = generalisedSimulationIndices.ck_va
+        self.ck_pzip = generalisedSimulationIndices.ck_pzip
+        self.ck_qzip = generalisedSimulationIndices.ck_qzip
+        self.ck_pfa = generalisedSimulationIndices.ck_pfa
+        self.ck_qfa = generalisedSimulationIndices.ck_qfa
+        self.ck_pta = generalisedSimulationIndices.ck_pta
+        self.ck_qta = generalisedSimulationIndices.ck_qta
+        self.ck_m = generalisedSimulationIndices.ck_m
+        self.ck_tau = generalisedSimulationIndices.ck_tau
+
+        # setpoints corresponding to the knowns
+        self.va_setpoints = generalisedSimulationIndices.va_setpoints
+        self.vm_setpoints = generalisedSimulationIndices.vm_setpoints
+        self.tau_setpoints = generalisedSimulationIndices.tau_setpoints
+        self.m_setpoints = generalisedSimulationIndices.m_setpoints
+        self.pzip_setpoints = generalisedSimulationIndices.pzip_setpoints
+        self.qzip_setpoints = generalisedSimulationIndices.qzip_setpoints
+        self.pf_setpoints = generalisedSimulationIndices.pf_setpoints
+        self.pt_setpoints = generalisedSimulationIndices.pt_setpoints
+        self.qf_setpoints = generalisedSimulationIndices.qf_setpoints
+        self.qt_setpoints = generalisedSimulationIndices.qt_setpoints
+
+        # Update setpoints
+        self.V0 = update_setpoints(si=self.generalisedSimulationIndices,
+                                   V=self.V0)
+        self.Vm = np.abs(self.V0) #why private?
+        self.Va = np.angle(self.V0)
+
 
         self.m: Vec = np.ones(len(self.controlled_idx))
         self.tau: Vec = np.zeros(len(self.controlled_idx))
@@ -510,19 +547,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Convert X to decission variables
         :param x: solution vector
         """
-        # print all the sets
-        print(f"cx_va: {self.cx_va}")
-        print(f"cx_vm: {self.cx_vm}")
-        print(f"cx_tau: {self.cx_tau}")
-        print(f"cx_m: {self.cx_m}")
-        print(f"cx_pzip: {self.cx_pzip}")
-        print(f"cx_qzip: {self.cx_qzip}")
-        print(f"cx_pfa: {self.cx_pfa}")
-        print(f"cx_qfa: {self.cx_qfa}")
-        print(f"cx_pta: {self.cx_pta}")
-        print(f"cx_qta: {self.cx_qta}")
-        # print all the sets
-
         a = len(self.cx_vm)
         b = a + len(self.cx_va)
         c = b + len(self.cx_pzip)
@@ -681,6 +705,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
             Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
         ]
+
+        print("RESIDUALS: ")
+        print(_f)
 
         return _f
 
@@ -938,6 +965,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
         if autodiff:
             J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-6)
+            print("(pf_generalized_formulation.py) J: ")
+            print(J)
             return scipy_to_mat(J)
         else:
             n_rows = (len(self.idx_dP)
@@ -1011,12 +1040,34 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Names matching fx
         :return:
         """
-        rows = [f'dP {i}' for i in self.idx_dP]
-        rows += [f'dQ {i}' for i in self.idx_dQ]
-        rows += [f'dPf {i}' for i in self.idx_dPf]
-        rows += [f'dQf {i}' for i in self.idx_dQf]
-        rows += [f'dPt {i}' for i in self.idx_dPt]
-        rows += [f'dQt {i}' for i in self.idx_dQt]
+        '''
+        self.cg_pac = generalisedSimulationIndices.cg_pac
+        self.cg_qac = generalisedSimulationIndices.cg_qac
+        self.cg_pdc = generalisedSimulationIndices.cg_pdc
+        self.cg_acdc = generalisedSimulationIndices.cg_acdc
+        self.cg_hvdc = generalisedSimulationIndices.cg_hvdc
+        self.cg_pftr = generalisedSimulationIndices.cg_pftr
+        self.cg_pttr = generalisedSimulationIndices.cg_pttr
+        self.cg_qftr = generalisedSimulationIndices.cg_qftr
+        self.cg_qttr = generalisedSimulationIndices.cg_qttr
+                    dS[self.cg_pac + self.cg_pdc].real,
+            dS[self.cg_qac].imag,
+            Ploss_acdc,
+            Pf[self.cg_pftr] - self.nc.active_branch_data.Pset[self.cg_pftr],
+            Qf[self.cg_qftr] - self.nc.active_branch_data.Qset[self.cg_qftr],
+            Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
+            Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
+        '''
+
+
+        rows = [f'active power balance node {i}' for i in (self.cg_pac.union(self.cg_pdc))]
+        rows += [f'reactive power balance node {i}' for i in self.cg_qac]
+        rows += [f'Ploss_acdc {i}' for i in self.cg_acdc]
+        rows += [f'cg_hvdc {i}' for i in self.cg_hvdc]
+        rows += [f'cg_pftr {i}' for i in self.cg_pttr]
+        rows += [f'cg_pttr {i}' for i in self.cg_pttr]
+        rows += [f'cg_qftr {i}' for i in self.cg_qftr]
+        rows += [f'cg_qttr {i}' for i in self.cg_qttr]
 
         return rows
 
