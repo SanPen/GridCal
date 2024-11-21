@@ -652,10 +652,10 @@ class GeneralizedSimulationIndices:
             #                           branch_idx=branch_idx,
             #                           bus_idx=bus_idx,
             #                           is_conventional=False)
-            self.add_converter_control(nc.vsc_data, ii, ii)
+            self.add_converter_control(nc.vsc_data, branch_idx, ii)
 
-            self.add_to_cg_acdc(ii)
-            branch_idx += 0
+            self.add_to_cg_acdc(branch_idx)
+            branch_idx += 1
         
 
         # DONE -- This is a bit tricky, seems to add some unwanted indices into our sets

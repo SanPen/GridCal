@@ -6,7 +6,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx impo
 from GridCalEngine.basic_structures import Logger
 
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt.gridcal")
-fname = os.path.join("Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
+fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
 grid = gce.open_file(fname)
 # run power flow
 main_nc = gce.compile_numerical_circuit_at(grid)

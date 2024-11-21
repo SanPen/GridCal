@@ -254,10 +254,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # QUESTION: is there a reason not to do this? I use this in var2x
         self.Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        # self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm + nc.vsc_data.nelm, dtype=np.complex128)
-        # self.St: CxVec = np.zeros(nc.active_branch_data.nelm + nc.vsc_data.nelm, dtype=np.complex128)
-        self.Sf: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
-        self.St: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
+        self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc, dtype=np.complex128)
+        self.St: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc, dtype=np.complex128)
+        # self.Sf: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
+        # self.St: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
 
         self.Pbus = np.real(self.Sbus)
         self.Qbus = np.imag(self.Sbus)
@@ -378,6 +378,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             seq=1,
             add_windings_phase=False
         )
+        print()
 
     def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec) -> None:
         """
@@ -635,7 +636,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha2 * Itm2
                      + self.nc.vsc_data.alpha1)
 
-        print("Calculated VSC LOSSES", PLoss_IEC)
+        print("Calculated VSC losses: ", PLoss_IEC)
 
         # ACDC Power Loss Residual
         Ploss_acdc = - PLoss_IEC + self.Pt[self.cg_acdc] + self.Pf[self.cg_acdc]
@@ -690,9 +691,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: error
         """
         _res = self.compute_f(x)
+        err = compute_fx_error(_res)
+        print("Error:", err)
 
         # compute the error
-        return compute_fx_error(_res), x
+        return err, x
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
@@ -881,6 +884,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # converged?
         self._converged = self._error < self.options.tolerance
+        print("Error:", self._error)
 
         return self._error, self._converged, x, self.f
 
@@ -924,7 +928,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param x: solutions vector
         :return: f(x)
         """
-        return self.compute_f(x)
+        ff = self.compute_f(x)
+        return ff
 
     def Jacobian(self, autodiff: bool = True) -> CSC:
         """
@@ -932,7 +937,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return:
         """
         if autodiff:
-            J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-12)
+            J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-6)
             return scipy_to_mat(J)
         else:
             n_rows = (len(self.idx_dP)
