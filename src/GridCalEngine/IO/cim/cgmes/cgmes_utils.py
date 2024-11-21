@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 from typing import List, Tuple, Dict
 import numpy as np
@@ -9,7 +10,7 @@ import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import Base, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
-
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 def find_terms_connections(cgmes_terminal: Base,
                            calc_node_dict: Dict[str, gcdev.Bus],
@@ -21,7 +22,8 @@ def find_terms_connections(cgmes_terminal: Base,
     :param cn_dict:
     :return:
     """
-
+    calc_node = None
+    cn = None
     if cgmes_terminal is not None:
         try:        # Try for AC terminal
             # get the rosetta calculation node if exists
@@ -37,17 +39,23 @@ def find_terms_connections(cgmes_terminal: Base,
                 cn = None
         except:     # Try for DC Terminal
             # get the rosetta calculation node if exists
-            if cgmes_terminal.DCTopologicalNode is not None:
-                calc_node = calc_node_dict.get(
-                    cgmes_terminal.DCTopologicalNode.uuid, None)
+            if hasattr("DCTopologicalNode", cgmes_terminal):
+                if cgmes_terminal.DCTopologicalNode is not None:
+                    calc_node = calc_node_dict.get(
+                        cgmes_terminal.DCTopologicalNode.uuid, None)
+                else:
+                    calc_node = None
             else:
                 calc_node = None
 
             # get the gcdev connectivity node if exists
-            if cgmes_terminal.DCNode is not None:
-                cn = cn_dict.get(cgmes_terminal.DCNode.uuid, None)
+            if hasattr("DCNode", cgmes_terminal):
+                if cgmes_terminal.DCNode is not None:
+                    cn = cn_dict.get(cgmes_terminal.DCNode.uuid, None)
+                else:
+                    cn = None
             else:
-                cn = None
+                calc_node = None
     else:
         calc_node = None
         cn = None
@@ -55,7 +63,7 @@ def find_terms_connections(cgmes_terminal: Base,
     return calc_node, cn
 
 
-def find_object_by_idtag(object_list, target_idtag):
+def find_object_by_idtag(object_list: List[ALL_DEV_TYPES], target_idtag: str) -> ALL_DEV_TYPES | None:
     """
     Finds an object with the specified idtag
      in the given object_list from a Multi Circuit.
@@ -82,8 +90,7 @@ def get_slack_id(machines):
     """
     # Check if machines is a list
     if not isinstance(machines, list):
-        raise TypeError(
-            "Expected 'machines' to be a list of SynchronousMachine objects.")
+        raise TypeError("Expected 'machines' to be a list of SynchronousMachine objects.")
 
     for m in machines:
         # Check if the machine has a referencePriority attribute
