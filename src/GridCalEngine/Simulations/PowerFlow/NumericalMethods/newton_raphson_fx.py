@@ -5,7 +5,7 @@
 import time
 import numpy as np
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Utils.Sparse.csc2 import CSC, spsolve_csc
 from GridCalEngine.basic_structures import Logger
 
