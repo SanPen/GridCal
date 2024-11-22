@@ -680,7 +680,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         V = Vm * np.exp(1j * Va)
 
         # Needed??
-        Pf, Qf, Pt, Qt = recompute_controllable_power(
+        Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
             V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
             R=self.nc.passive_branch_data.R[self.controlled_idx],
@@ -698,10 +698,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
             Ploss_acdc,
-            Pf[self.cg_pftr] - self.nc.active_branch_data.Pset[self.cg_pftr],
-            Qf[self.cg_qftr] - self.nc.active_branch_data.Qset[self.cg_qftr],
-            Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
-            Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
+            Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
+            Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
+            Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
+            Qttr - self.nc.active_branch_data.Qset[self.cg_qttr]
         ]
         #
         # print("RESIDUALS: ")
@@ -769,7 +769,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         )
 
         # Use self.Pf...
-        Pf, Qf, Pt, Qt = recompute_controllable_power(
+        Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
             V_f=self.V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=self.V[self.nc.passive_branch_data.T[self.controlled_idx]],
             R=self.nc.passive_branch_data.R[self.controlled_idx],
@@ -787,10 +787,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
             Ploss_acdc,
-            Pf[self.cg_pftr] - self.nc.active_branch_data.Pset[self.cg_pftr],
-            Qf[self.cg_qftr] - self.nc.active_branch_data.Qset[self.cg_qftr],
-            Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
-            Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
+            Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
+            Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
+            Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
+            Qttr - self.nc.active_branch_data.Qset[self.cg_qttr]
         ]
 
         # compute the error
