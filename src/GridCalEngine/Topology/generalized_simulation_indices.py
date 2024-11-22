@@ -109,7 +109,6 @@ class GeneralizedSimulationIndices:
         self.cx_qfa: Set[int] = set()  # ONLY transformers controlling Qf
         self.cx_qta: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
 
-
         # ck sets (the complements of the cx sets)
         self.ck_va: Set[int] = set()
         self.ck_vm: Set[int] = set()
@@ -122,7 +121,6 @@ class GeneralizedSimulationIndices:
         self.ck_qfa: Set[int] = set()
         self.ck_qta: Set[int] = set()
 
-
         # setpoints that correspond to the ck sets
         self.va_setpoints = []
         self.vm_setpoints = []
@@ -134,7 +132,6 @@ class GeneralizedSimulationIndices:
         self.pt_setpoints = []
         self.qf_setpoints = []
         self.qt_setpoints = []
-
 
         # Ancilliary
         # Source refers to the bus with the controlled device directly connected 
@@ -452,7 +449,7 @@ class GeneralizedSimulationIndices:
         :param vsc_data: VscData object containing VSC-related data.
         :param ii: Index of the current VSC being processed.
         """
-       
+
         # Initialize a boolean array for the six control types, defaulting to False
         control_flags = np.zeros(len(ConverterControlType), dtype=bool)
 
@@ -465,7 +462,7 @@ class GeneralizedSimulationIndices:
         magnitude2 = vsc_data.control2_val[ii]
 
         # Set flags for active controls
-        for control, control_magnitude in zip([control1_type, control2_type],[magnitude1, magnitude2]):
+        for control, control_magnitude in zip([control1_type, control2_type], [magnitude1, magnitude2]):
             try:
                 control_index = list(ConverterControlType).index(control)
                 control_flags[control_index] = True
@@ -501,7 +498,7 @@ class GeneralizedSimulationIndices:
 
         # Ensure exactly two controls are active
         active_control_count = control_flags.sum()
-        assert active_control_count == 2, ( #magic number 2, replace with a constant?
+        assert active_control_count == 2, (  # magic number 2, replace with a constant?
             f"VSC '{vsc_data.names[ii]}' must have exactly two active controls, "
             f"but {active_control_count} were found."
         )
@@ -513,25 +510,23 @@ class GeneralizedSimulationIndices:
                 if control_type == ConverterControlType.Vm_dc:
                     bus_idx = vsc_data.F[ii]
                     self.cx_vm.add(bus_idx)
-                elif control_type == ConverterControlType.Vm_ac:
+                if control_type == ConverterControlType.Vm_ac:
                     bus_idx = vsc_data.T[ii]
                     self.cx_vm.add(bus_idx)
-                elif control_type == ConverterControlType.Va_ac:
+                if control_type == ConverterControlType.Va_ac:
                     bus_idx = vsc_data.T[ii]
                     self.cx_va.add(bus_idx)
-                elif control_type == ConverterControlType.Qac:
-                    branch_idx =  branch_idx
+                if control_type == ConverterControlType.Qac:
+                    branch_idx = branch_idx
                     self.cx_qta.add(branch_idx)
-                elif control_type == ConverterControlType.Pdc:
-                    branch_idx =  branch_idx
+                if control_type == ConverterControlType.Pdc:
+                    branch_idx = branch_idx
                     self.cx_pfa.add(branch_idx)
-                elif control_type == ConverterControlType.Pac:
-                    branch_idx =  branch_idx
+                if control_type == ConverterControlType.Pac:
+                    branch_idx = branch_idx
                     self.cx_pta.add(branch_idx)
-
-
-
-
+                else:
+                    pass
 
     def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
         pass
@@ -683,7 +678,6 @@ class GeneralizedSimulationIndices:
                 self.ck_pzip.add(bus_idx)
                 self.pzip_setpoints.append(dev_tpe.p[i])
 
-
         # DONE
         # -------------- Regular branch search (also applies to trafos) ----------------
         # Ensure VSCs and HVDCs have the flag so that they are not part of this data structure
@@ -725,7 +719,6 @@ class GeneralizedSimulationIndices:
 
             self.add_to_cg_acdc(branch_idx)
             branch_idx += 1
-        
 
         # DONE -- This is a bit tricky, seems to add some unwanted indices into our sets
         # -------------- HvdcLines search ----------------
