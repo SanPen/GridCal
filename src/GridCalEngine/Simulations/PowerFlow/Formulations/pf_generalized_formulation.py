@@ -48,7 +48,6 @@ def recompute_controllable_power(V_f: CxVec,
     :param vtap_f: array of virtual taps at the "from" side
     :param vtap_t: array of virtual taps at the "to" side
     :param tap_angle: array of tap angles (for all Branches, regardless of their type)
-    :param verbose
     :return: Pf, Qf, Pt, Qt
     """
 
@@ -651,7 +650,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
 
         # ACDC Power Loss Residual
-        Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
+        Ploss_acdc = PLoss_IEC - Pt[self.cg_acdc] - Pf[self.cg_acdc]
 
         # compute the function residual
         # Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm) + Pbus + 1j * Qbus
@@ -680,6 +679,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         V = Vm * np.exp(1j * Va)
 
+        # Needed??
         Pf, Qf, Pt, Qt = recompute_controllable_power(
             V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
@@ -693,6 +693,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angle=tau
         )
 
+        # Check this + here
         _f = np.r_[
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
@@ -705,6 +706,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         #
         # print("RESIDUALS: ")
         # print(_f)
+
+        errf = compute_fx_error(_f)
 
         return _f
 
@@ -765,6 +768,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                                               :])
         )
 
+        # Use self.Pf...
         Pf, Qf, Pt, Qt = recompute_controllable_power(
             V_f=self.V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=self.V[self.nc.passive_branch_data.T[self.controlled_idx]],
@@ -778,6 +782,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angle=self.tau
         )
 
+        # Use self.Pf?
         self._f = np.r_[
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
@@ -955,7 +960,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = False) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:
