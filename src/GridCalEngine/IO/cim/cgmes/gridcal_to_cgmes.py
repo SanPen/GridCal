@@ -18,7 +18,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
      create_cgmes_regulating_control, create_cgmes_tap_changer_control,
      create_sv_power_flow, create_cgmes_vsc_converter,
      create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
-     create_cgmes_acdc_converter_terminal, 
+     create_cgmes_acdc_converter_terminal,
      create_cgmes_conform_load_group, create_cgmes_operational_limit_type)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
@@ -1130,6 +1130,52 @@ def get_cgmes_non_linear_shunts(multicircuit_model: MultiCircuit,
         cgmes_model.add(non_lin_sc)
 
 
+def get_cgmes_breakers(multicircuit_model: MultiCircuit,
+                       cgmes_model: CgmesCircuit,
+                       logger: DataLogger):
+    """
+    Converts every Multi Circuit Switch into CGMES Breaker.
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+
+    for mc_elm in multicircuit_model.switch_devices:
+        object_template = cgmes_model.get_class_type("Breaker")
+        br = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        br.Terminals = [create_cgmes_terminal(mc_elm.bus_from, None, br, cgmes_model,
+                                              logger), create_cgmes_terminal(mc_elm.bus_to, None, br, cgmes_model,
+                                                                             logger)]
+        br.name = mc_elm.name
+        br.description = mc_elm.code
+        br.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                                             target_vnom=mc_elm.get_max_bus_nominal_voltage())
+
+        if mc_elm.get_voltage_level_from():
+            vl = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                target_uuid=mc_elm.bus_from.voltage_level.idtag
+            )
+            br.EquipmentContainer = vl
+
+        br.open = not mc_elm.active
+        br.retained = mc_elm.retained
+        br.normalOpen = mc_elm.normal_open
+
+        if br.BaseVoltage is not None:
+            br.ratedCurrent = np.round(
+                (mc_elm.rated_current * 1000.0) / (br.BaseVoltage.nominalVoltage * 1.73205080756888),
+                4)
+        else:
+            logger.add_warning(msg="Couldn't calculate rated current as BaseVoltage missing")
+
+        cgmes_model.add(br)
+
+
 def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
                           logger: DataLogger) -> None:
@@ -1465,7 +1511,7 @@ def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
 
     patl.limitType = LimitTypeKind.patl
     patl.direction = OperationalLimitDirectionKind.absoluteValue
-    
+
     tatl = create_cgmes_operational_limit_type(cgmes_model)
     tatl.name = "Contingency rating in GridCal"
     tatl.shortName = "TATL"
@@ -1474,8 +1520,9 @@ def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
 
     tatl.limitType = LimitTypeKind.tatl
     tatl.direction = OperationalLimitDirectionKind.absoluteValue
-    
+
     return patl, tatl
+
 
 # endregion
 
@@ -1526,6 +1573,9 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
     # TODO controllable shunts to be finished
     # get_cgmes_non_linear_shunts(gc_model, cgmes_model, logger)
+
+    # Switches (Breakers)
+    get_cgmes_breakers(gc_model, cgmes_model, logger)
 
     # DC elements
     convert_hvdc_line_to_cgmes(gc_model, cgmes_model, logger)
