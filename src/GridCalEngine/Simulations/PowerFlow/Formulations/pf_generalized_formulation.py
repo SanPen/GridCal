@@ -214,24 +214,6 @@ def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> csc_ma
 
     return jac.tocsc()
 
-def update_setpoints(si: gsi.GeneralizedSimulationIndices, V: CxVec) -> CxVec:
-    """
-    Update the setpoints
-    :param V: Voltage vector
-    :param nc: NumericalCircuit
-    :return: Updated voltage vector
-    """
-    # split up the magnitude and the angle
-    Vm = np.abs(V)
-    Va = np.angle(V)
-
-
-    # Update the setpoints
-    Vm[si.ck_vm] = si.vm_setpoints
-    Va[si.ck_va] = si.va_setpoints
-
-    return polar_to_rect(Vm, Va)
-
 class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
@@ -259,9 +241,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         print("(pf_generalized_formulation.py) self.nc.active_branch_data.nelm: ", self.nc.active_branch_data.nelm)
         print("(pf_generalized_formulation.py) self.nc.vsc_data.nelm: ", self.nc.vsc_data.nelm)
 
-        self.S0: CxVec = S0
-        self.I0: CxVec = I0
-        self.Y0: CxVec = Y0
+        # TODO: need to take into account every device eventually
+        self.I0: CxVec = self.nc.load_data.get_current_injections_per_bus() / self.nc.Sbase
+        self.Y0: CxVec = self.nc.load_data.get_admittance_injections_per_bus() / self.nc.Sbase
+        self.S0: CxVec = self.nc.load_data.get_injections_per_bus() / self.nc.Sbase
         self.V0: CxVec = V0
 
         print(f"self.S0: {self.S0}")
@@ -276,15 +259,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # self.Sf: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
         # self.St: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
 
-        self.Pbus = np.real(self.Sbus)
-        self.Qbus = np.imag(self.Sbus)
+        self.Pzip = np.zeros(nc.nbus)
+        self.Qzip = np.zeros(nc.nbus)
         self.Pf = np.real(self.Sf)
         self.Qf = np.imag(self.Sf)
         self.Pt = np.real(self.St)
         self.Qt = np.imag(self.St)
 
-        print(f"self.Pbus: {self.Pbus}")
-        print(f"self.Qbus: {self.Qbus}")
+        print(f"self.Pbus: {self.Pzip}")
+        print(f"self.Qbus: {self.Qzip}")
         print(f"self.Sf: {self.Sf}")
         print(f"self.Pf: {self.Pf}")
         print(f"self.Qf: {self.Qf}")
@@ -371,10 +354,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.qt_setpoints = generalisedSimulationIndices.qt_setpoints
 
         # Update setpoints
-        self.V0 = update_setpoints(si=self.generalisedSimulationIndices,
-                                   V=self.V0)
-        self.Vm = np.abs(self.V0) #why private?
-        self.Va = np.angle(self.V0)
+        self.Vm[self.generalisedSimulationIndices.ck_vm] = self.generalisedSimulationIndices.vm_setpoints
+        self.Va[self.generalisedSimulationIndices.ck_va] = self.generalisedSimulationIndices.va_setpoints
+        self.Pzip[self.generalisedSimulationIndices.ck_pzip] = np.array(self.generalisedSimulationIndices.pzip_setpoints) / nc.Sbase
+        idx = np.where(nc.bus_data.bus_types == BusMode.Slack_tpe.value)[0]
+        self.Pzip[idx] = idx
+        self.Qzip[self.generalisedSimulationIndices.ck_qzip] = np.array(self.generalisedSimulationIndices.qzip_setpoints) / nc.Sbase
+        self.Pf[self.generalisedSimulationIndices.ck_pfa] = np.array(self.generalisedSimulationIndices.pf_setpoints) / nc.Sbase
+        self.Pt[self.generalisedSimulationIndices.ck_pta] = np.array(self.generalisedSimulationIndices.pt_setpoints) / nc.Sbase
+        self.Qt[self.generalisedSimulationIndices.ck_qta] = np.array(self.generalisedSimulationIndices.qt_setpoints) / nc.Sbase
 
 
         self.m: Vec = np.ones(len(self.controlled_idx))
@@ -561,8 +549,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # update the vectors
         self.Vm[self.cx_vm] = x[0:a]
         self.Va[self.cx_va] = x[a:b]
-        self.Pbus[self.cx_pzip] = x[b:c]
-        self.Qbus[self.cx_qzip] = x[c:d]
+        self.Pzip[self.cx_pzip] = x[b:c]
+        self.Qzip[self.cx_qzip] = x[c:d]
         self.Pf[self.cx_pfa] = x[d:e]
         self.Qf[self.cx_qfa] = x[e:f]
         self.Pt[self.cx_pta] = x[f:g]
@@ -579,8 +567,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         return np.r_[
             self.Vm[self.cx_vm],
             self.Va[self.cx_va],
-            self.Pbus[self.cx_pzip],
-            self.Qbus[self.cx_qzip],
+            self.Pzip[self.cx_pzip],
+            self.Qzip[self.cx_qzip],
             self.Pf[self.cx_pfa],
             self.Qf[self.cx_qfa],
             self.Pt[self.cx_pta],
@@ -627,8 +615,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # update the vectors
         Va = self.Va.copy()
         Vm = self.Vm.copy()
-        Pbus = self.Pbus.copy()
-        Qbus = self.Qbus.copy()
+        Pbus = self.Pzip.copy()
+        Qbus = self.Qzip.copy()
         Pf = self.Pf.copy()
         Qf = self.Qf.copy()
         Pt = self.Pt.copy()
@@ -653,32 +641,41 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Update converter losses
         # It = get_It(k=self.idx_conv, V=V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
         toBus = self.nc.vsc_data.T
+        fromBus = self.nc.vsc_data.F
         It = np.sqrt(Pt * Pt + Qt * Qt)[self.cg_acdc] / Vm[toBus]
-        Itm = np.abs(It)
-        Itm2 = Itm * Itm
-        PLoss_IEC = (self.nc.vsc_data.alpha3 * Itm2
-                     + self.nc.vsc_data.alpha2 * Itm2
+        # Itm = np.abs(It)
+        It2 = It * It
+        PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
+                     + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
-        print("Calculated VSC losses: ", PLoss_IEC)
 
         # ACDC Power Loss Residual
-        Ploss_acdc = - PLoss_IEC + self.Pt[self.cg_acdc] + self.Pf[self.cg_acdc]
+        Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
 
         # compute the function residual
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm) + Pbus + 1j * Qbus
+        # Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm) + Pbus + 1j * Qbus
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
+        Sbus += Pbus + 1j * Qbus
         Scalc = compute_power(self.adm.Ybus, V)
+
+        converterContribution = ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
+                   + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+
+        transformerContribution = + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
+                   + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
 
         dS = (
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                + ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
+                - ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
                    + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
 
                 # add contribution of transformer
                 + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
                    + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
+
         )
 
         V = Vm * np.exp(1j * Va)
@@ -705,9 +702,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
             Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
         ]
-
-        print("RESIDUALS: ")
-        print(_f)
+        #
+        # print("RESIDUALS: ")
+        # print(_f)
 
         return _f
 
@@ -740,26 +737,26 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Update converter losses
         toBus = self.nc.vsc_data.T
         It = np.sqrt(self.Pt * self.Pt + self.Qt * self.Qt)[self.cg_acdc] / self.Vm[toBus]
-        Itm = np.abs(It)
-        Itm2 = Itm * Itm
-        PLoss_IEC = (self.nc.vsc_data.alpha3 * Itm2
-                     + self.nc.vsc_data.alpha2 * Itm2
+        # It = np.abs(It)
+        It2 = It * It
+        PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
+                     + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
         print("Calculated VSC LOSSES", PLoss_IEC)
 
         # ACDC Power Loss Residual
-        Ploss_acdc = - PLoss_IEC + self.Pt[self.cg_acdc] + self.Pf[self.cg_acdc]
+        Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
 
         # compute the function residual
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pbus + 1j * self.Qbus
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pzip + 1j * self.Qzip
         Scalc = compute_power(self.adm.Ybus, self.V)
 
         dS = (
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                + ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
+                - ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
                    + (self.Pt + 1j * self.Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
 
                 # add contribution of transformer
@@ -797,8 +794,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if self.options.verbose > 1:
             print("Vm:", self.Vm)
             print("Va:", self.Va)
-            print("Pbus:", self.Pbus)
-            print("Qbus:", self.Qbus)
+            print("Pbus:", self.Pzip)
+            print("Qbus:", self.Qzip)
             print("Pf:", self.Pf)
             print("Qf:", self.Qf)
             print("Pt:", self.Pt)
@@ -958,7 +955,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:

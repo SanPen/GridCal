@@ -483,6 +483,18 @@ class GeneralizedSimulationIndices:
                     self.ck_va.add(int(bus_idx))
                     self.va_setpoints.append(control_magnitude)
 
+                elif control == ConverterControlType.Pac:
+                    self.ck_pta.add(int(branch_idx))
+                    self.pt_setpoints.append(control_magnitude)
+
+                elif control == ConverterControlType.Qac:
+                    self.ck_qta.add(int(branch_idx))
+                    self.qt_setpoints.append(control_magnitude)
+
+                elif control == ConverterControlType.Pdc:
+                    self.ck_pfa.add(int(branch_idx))
+                    self.pf_setpoints.append(control_magnitude)
+
 
             except ValueError:
                 return  # Skip processing this VSC if control type is invalid
@@ -633,16 +645,24 @@ class GeneralizedSimulationIndices:
             for i, is_controlled in enumerate(dev_tpe.controllable):
                 bus_idx = dev_tpe.bus_idx[i]
                 ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
+                if dev_tpe.active[i]:
+                    if is_controlled:
+                        remote_control = ctr_bus_idx != -1
 
-                if is_controlled:
-                    remote_control = ctr_bus_idx != -1
+                        self.set_bus_vm_simple(bus_local=bus_idx,
+                                               device_name=dev_tpe.names[i],
+                                               bus_remote=ctr_bus_idx,
+                                               remote_control=remote_control)
 
-                    self.set_bus_vm_simple(bus_local=bus_idx,
-                                           device_name=dev_tpe.names[i],
-                                           bus_remote=ctr_bus_idx,
-                                           remote_control=remote_control)
+                        self.add_to_cx_qzip(bus_idx)
+                        self.ck_pzip.add(bus_idx)
+                        self.pzip_setpoints.append(dev_tpe.p[i])
 
-                    self.add_to_cx_qzip(bus_idx)
+                    else:
+                        self.ck_pzip.add(bus_idx)
+                        self.ck_qzip.add(bus_idx)
+                        self.pzip_setpoints.append(dev_tpe.p[i])
+                        self.qzip_setpoints.append(dev_tpe.get_q_at(i))
 
         # DONE
         # -------------- ControlledShunts search ----------------
@@ -660,6 +680,9 @@ class GeneralizedSimulationIndices:
                                        remote_control=remote_control)
 
                 self.add_to_cx_qzip(bus_idx)
+                self.ck_pzip.add(bus_idx)
+                self.pzip_setpoints.append(dev_tpe.p[i])
+
 
         # DONE
         # -------------- Regular branch search (also applies to trafos) ----------------

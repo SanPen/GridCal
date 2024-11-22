@@ -39,7 +39,7 @@ cx_qta: [4, 5]
 
 print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhvdc: {main_nc.nhvdc}")
 
-options = gce.PowerFlowOptions(solver_type= gce.SolverType.GENERALISED, retry_with_other_methods = False, max_iter= 20)
+options = gce.PowerFlowOptions(solver_type= gce.SolverType.GENERALISED, retry_with_other_methods = False, max_iter= 2)
 logger = Logger()
 
 island = islands[0]
