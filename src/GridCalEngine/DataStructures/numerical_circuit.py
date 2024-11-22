@@ -25,7 +25,7 @@ from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.Aggregation.contingency import Contingency
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+    pass
 
 ALL_STRUCTS = Union[
     ds.BusData,
@@ -66,7 +66,7 @@ def CheckArr(arr: Vec | IntVec | BoolVec | CxVec, arr_expected: Vec | IntVec | B
     if np.allclose(arr, arr_expected, atol=tol):
         return 0
     else:
-        if arr.dtype == np.bool:
+        if arr.dtype == np.bool_:
             diff = arr.astype(int) - arr_expected.astype(int)
             logger.add_error(msg="Numeric differences",
                              device=name,
@@ -1392,7 +1392,7 @@ class NumericalCircuit:
         # idx_dPt = self.simulation_indices_.k_pt_tau
         # idx_dQt = self.simulation_indices_.k_qt_m
 
-        from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import (
+        from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import (
             PfAdvancedFormulation)
         from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 

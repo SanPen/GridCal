@@ -20,7 +20,7 @@ class SeriesReactance(BranchParent):
                  r=1e-20, x=1e-20, rate=1.0, active=True, tolerance=0, cost=100.0,
                  mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
                  temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=None, contingency_factor=1.0, protection_rating_factor: float = 1.4,
+                 contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
                  r0=1e-20, x0=1e-20,  r2=1e-20, x2=1e-20,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
@@ -45,7 +45,6 @@ class SeriesReactance(BranchParent):
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
-        :param template: Basic branch template
         :param contingency_factor: Rating factor in case of contingency
         :param protection_rating_factor: Rating factor before the protections tripping
         :param contingency_enabled: enabled for contingencies (Legacy)

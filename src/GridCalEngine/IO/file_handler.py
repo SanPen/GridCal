@@ -206,7 +206,9 @@ class FileOpen:
                                               cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
                                               progress_func=progress_func, logger=self.cgmes_logger)
             self.cgmes_circuit.parse_files(data_parser=data_parser)
-            self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
+            self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit,
+                                            map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
+                                            logger=self.cgmes_logger)
         else:
 
             if os.path.exists(self.file_name):
@@ -364,7 +366,9 @@ class FileOpen:
                                                           cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
                                                           progress_func=progress_func, logger=self.cgmes_logger)
                         self.cgmes_circuit.parse_files(data_parser=data_parser)
-                        self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
+                        self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit,
+                                                        map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
+                                                        logger=self.cgmes_logger)
                     else:
                         # try CIM
                         parser = CIMImport(text_func=text_func, progress_func=progress_func)
@@ -580,10 +584,12 @@ class FileSave:
                                          pf_results=pf_results,
                                          logger=logger)
         cgmes_circuit = create_cgmes_headers(cgmes_model=cgmes_circuit,
+                                             mas_names=self.circuit.get_modelling_authority_names().astype(str),
                                              profiles_to_export=profiles_to_export,
                                              version="1",
                                              desc="Test description.",
-                                             scenariotime="2021-02-09T19:30:00Z")
+                                             scenariotime="2021-02-09T19:30:00Z",
+                                             logger=logger)
 
         cim_exporter = CimExporter(cgmes_circuit=cgmes_circuit,
                                    profiles_to_export=profiles_to_export,

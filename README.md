@@ -1138,8 +1138,23 @@ reply_from_server = asyncio.get_event_loop().run_until_complete(
 print(reply_from_server)
 ```
 
+## Matpower grids
+
+Matpower's excellent formulations and consistency has allowed this and other 
+projects to develop, relying on its sound math. That is why GridCal reads Matpower 
+cases out of the box, without you having to do anything special. 
+And of course, GridCal solves all Matpower 8 provided grids, solving the continental USA case in about 1 second:
 
 
+[![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
+
+Find the results: [All matpower grids.xlsx](Grids_and_profiles/matpower_benchmark/All%20matpower%20grids.xlsx),
+and the benchmark code [matpower_grids.py](Grids_and_profiles/matpower_benchmark/matpower_grids.py).
+_Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
+All solved using Newton-Raphson, and only using the provided solution 
+that comes with the files when the flat start fails.
+
+Cool right?
 
 ## Tests
 
@@ -1171,19 +1186,19 @@ developments with the community and the maintainers.
 ## Contributing
 
 All contributions to the **GridCal** repository are made through pull requests to the
-`master` branch. You can either submit a pull request from the develop branch of your
+`devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
 want to submit with seperate pull requests. If you only have small, one-time changes
-to submit, you can also use the `master` branch to submit your pull request.
+to submit, you can also use the `devel` branch to submit your pull request.
 
 However, it is best to discuss your contribution before the pull request is ready to be officially
 submitted. We only accept high quality contributions that align with the project design. 
 Those are heavily reviewed, and you may expect joint work with us if your proposal is deemed good enough.
 
-An alternative, maybe easier way to contribute functionality to GridCal, is to use the objects 
-and functions to produce your contribution in a script-like fashion. 
-Again, if that meets the functional and quality standards that we impose, we'll take care of the integration.
+An easier alternative to contribute is to use the GridCal objects and functions to produce your contribution 
+in a script-like fashion. Again, if that meets the functional and quality standards that we impose, 
+we'll take care of the integration.
 
 All contributions must come with testing.
 

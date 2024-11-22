@@ -141,27 +141,40 @@ class HvdcLine(BranchParent):
                  dispatchable=True, angle_droop=0,
                  capex=0, opex=0,
                  build_status: BuildStatus = BuildStatus.Commissioned,
-                 dc_link_voltage: float = 200):
+                 dc_link_voltage: float = 200.0):
         """
         HVDC Line model
         :param bus_from: Bus from
-        :param bus_to: Bus to
-        :param idtag: id tag of the line
+        :param bus_to:  Bus to
+        :param cn_from: Connectivity node from
+        :param cn_to: Connectivity node to
         :param name: name of the line
-        :param active: Is the line active?
-        :param rate: Line rate in MVA
-        :param Pset: Active power set point
-        :param loss_factor: Losses factor (p.u.)
+        :param idtag:  id tag of the line
+        :param active:  Is the line active?
+        :param code: Secondary code for compatibilty
+        :param rate:  Line rate in MVA
+        :param Pset:  Active power set point
+        :param r: Line resistance (Ohm)
+        :param loss_factor:  Losses factor (p.u.)
         :param Vset_f: Voltage set point at the "from" side
         :param Vset_t: Voltage set point at the "to" side
+        :param length: line length in km
+        :param mttf: Mean time to failure in hours
+        :param mttr: Mean time to recovery in hours
+        :param overload_cost: cost of a line overload in EUR/MW
         :param min_firing_angle_f: minimum firing angle at the "from" side
         :param max_firing_angle_f: maximum firing angle at the "from" side
         :param min_firing_angle_t: minimum firing angle at the "to" side
         :param max_firing_angle_t: maximum firing angle at the "to" side
-        :param overload_cost: cost of a line overload in EUR/MW
-        :param mttf: Mean time to failure in hours
-        :param mttr: Mean time to recovery in hours
-        :param length: line length in km
+        :param contingency_factor: factor used for contingency studies
+        :param protection_rating_factor: Rating used for protection tripping limit
+        :param control_mode: HvdcControlType
+        :param dispatchable: is this line dispatchable?
+        :param angle_droop: INELFE angle-droop constant
+        :param capex: Capital expenditures (€)
+        :param opex: Operational expenditures (€)
+        :param build_status: BuildStatus
+        :param dc_link_voltage: line voltage (only for compatibility, not used in calcs.) (kV)
         """
 
         BranchParent.__init__(self,
@@ -197,8 +210,6 @@ class HvdcLine(BranchParent):
 
         self.dc_link_voltage = float(dc_link_voltage)
 
-        # self.n_lines = int(n_lines)
-
         self.angle_droop = float(angle_droop)
 
         self.loss_factor = float(loss_factor)
@@ -232,11 +243,11 @@ class HvdcLine(BranchParent):
 
         self.control_mode: HvdcControlType = control_mode
 
-        self._Pset_prof: Vec = Profile(default_value=Pset, data_type=float)
-        self._active_prof: IntVec = Profile(default_value=active, data_type=bool)
-        self._Vset_f_prof: Vec = Profile(default_value=Vset_f, data_type=float)
-        self._Vset_t_prof: Vec = Profile(default_value=Vset_t, data_type=float)
-        self._angle_droop_prof: Vec = Profile(default_value=angle_droop, data_type=float)
+        self._Pset_prof: Profile = Profile(default_value=Pset, data_type=float)
+        self._active_prof: Profile = Profile(default_value=active, data_type=bool)
+        self._Vset_f_prof: Profile = Profile(default_value=Vset_f, data_type=float)
+        self._Vset_t_prof: Profile = Profile(default_value=Vset_t, data_type=float)
+        self._angle_droop_prof: Profile = Profile(default_value=angle_droop, data_type=float)
 
         # Line locations
         self._locations: LineLocations = LineLocations()
