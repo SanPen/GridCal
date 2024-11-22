@@ -708,6 +708,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # print(_f)
 
         errf = compute_fx_error(_f)
+        if errf < 1e-7:
+            print()
 
         return _f
 

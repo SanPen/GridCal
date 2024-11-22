@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor changes to get longer Pfs">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fix from and to power indexing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_1.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_1.py" afterDir="false" />
@@ -1717,7 +1717,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="570" />
+    <option name="localTasksCounter" value="572" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1763,8 +1763,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="TP and CN for DCGround is not imported" />
-    <MESSAGE value="VSC import from CGMES" />
     <MESSAGE value="Extended IEEE14 test models from Miguel" />
     <MESSAGE value="ConnectivityNode are added to TR3w init" />
     <MESSAGE value="comparing array properties (len)" />
@@ -1788,7 +1786,9 @@
     <MESSAGE value="fixed workings&#10;moved power flow formulations to a new folder" />
     <MESSAGE value="Update fubm 6 bus system with new data model" />
     <MESSAGE value="Minor changes to get longer Pfs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Minor changes to get longer Pfs" />
+    <MESSAGE value="Dummy change in loss eq" />
+    <MESSAGE value="Fix from and to power indexing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix from and to power indexing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2273,7 +2273,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>951</line>
+          <line>953</line>
           <option name="timeStamp" value="2331" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2288,18 +2288,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>968</line>
-          <option name="timeStamp" value="2339" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>971</line>
-          <option name="timeStamp" value="2340" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
           <line>711</line>
-          <option name="timeStamp" value="2343" />
+          <option name="timeStamp" value="2345" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
