@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed print from ac_opf.py&#10;improved find_terms_connections">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Uncomment Matlab .m opening files in testing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -142,12 +142,14 @@
     "Python tests.pytest for src.tests.test_contingency.test_contingency.executor": "Run",
     "Python tests.pytest for src.tests.test_derivatives.test_m_derivatives.executor": "Run",
     "Python tests.pytest for test_power_flow.test_voltage_control_with_ltc.executor": "Run",
+    "Python tests.pytest in test_power_flow.py.executor": "Debug",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
     "Python.acdc_generalized_1.executor": "Debug",
     "Python.adm_primites_test.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
+    "Python.fubm_example.executor": "Run",
     "Python.generalized_simulation_indices.executor": "Debug",
     "Python.new_circuit_objects.executor": "Run",
     "Python.node_widget.executor": "Run",
@@ -1734,7 +1736,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="570" />
+    <option name="localTasksCounter" value="571" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1767,7 +1769,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="320_generalized_acdc_pf" />
+                        <option value="devel" />
                       </list>
                     </value>
                   </entry>
@@ -1780,7 +1782,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="TP and CN for DCGround is not imported" />
     <MESSAGE value="VSC import from CGMES" />
     <MESSAGE value="Extended IEEE14 test models from Miguel" />
     <MESSAGE value="ConnectivityNode are added to TR3w init" />
@@ -1805,7 +1806,8 @@
     <MESSAGE value="fixed workings&#10;moved power flow formulations to a new folder" />
     <MESSAGE value="Update fubm 6 bus system with new data model" />
     <MESSAGE value="Removed print from ac_opf.py&#10;improved find_terms_connections" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed print from ac_opf.py&#10;improved find_terms_connections" />
+    <MESSAGE value="Uncomment Matlab .m opening files in testing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Uncomment Matlab .m opening files in testing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2314,6 +2316,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py</url>
           <line>609</line>
           <option name="timeStamp" value="2284" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_power_flow.py</url>
+          <line>456</line>
+          <option name="timeStamp" value="2346" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
