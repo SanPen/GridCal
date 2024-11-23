@@ -660,25 +660,24 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         if Pcalc_hvdc > 0:
             # Injection
-            Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
+            # Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pf[self.cg_hvdc] + Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase + loss_hvdc / self.nc.Sbase
 
         elif Pcalc_hvdc < 0:
             # Injection
-            Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - Pt[self.cg_hvdc]
+            # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - Pt[self.cg_hvdc]
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * Vm[self.nc.hvdc_data.T])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pf[self.cg_hvdc] + Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
 
         else:
-            Pinj_hvdc = Pf[self.cg_hvdc]
-            Ploss_hvdc = Pf[self.cg_hvdc] + Pt[self.cg_hvdc]
+            Ploss_hvdc = 0
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
@@ -732,7 +731,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.cg_qac].imag,
             Ploss_acdc,
             Ploss_hvdc,
-            Pinj_hvdc,
             Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
             Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
             Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
@@ -789,25 +787,24 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         if Pcalc_hvdc > 0:
             # Injection
-            Pinj_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
+            # Pinj_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * self.Vm[self.nc.hvdc_data.F])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = self.Pf[self.cg_hvdc] + self.Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase + loss_hvdc / self.nc.Sbase
 
         elif Pcalc_hvdc < 0:
             # Injection
-            Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - self.Pt[self.cg_hvdc]
+            # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - self.Pt[self.cg_hvdc]
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * self.Vm[self.nc.hvdc_data.T])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = self.Pf[self.cg_hvdc] + self.Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
 
         else:
-            Pinj_hvdc = self.Pf[self.cg_hvdc]
-            Ploss_hvdc = self.Pf[self.cg_hvdc] + self.Pt[self.cg_hvdc]
+            Ploss_hvdc = 0
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pzip + 1j * self.Qzip
@@ -850,7 +847,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.cg_qac].imag,
             Ploss_acdc,
             Ploss_hvdc,
-            Pinj_hvdc,
             Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
             Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
             Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
