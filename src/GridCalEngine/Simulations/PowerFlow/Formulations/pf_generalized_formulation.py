@@ -645,7 +645,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Itm = np.abs(It)
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
-                     + self.nc.vsc_data.alpha2 * It
+                     + self.nc.vsc_data.alpha2 * It2
                      + self.nc.vsc_data.alpha1)
 
 
@@ -668,7 +668,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                - ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
+                + ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
                    + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
 
                 # add contribution of transformer
@@ -745,7 +745,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # It = np.abs(It)
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
-                     + self.nc.vsc_data.alpha2 * It
+                     + self.nc.vsc_data.alpha2 * It2
                      + self.nc.vsc_data.alpha1)
 
         print("Calculated VSC LOSSES", PLoss_IEC)
@@ -761,7 +761,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                - ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
+                + ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
                    + (self.Pt + 1j * self.Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
 
                 # add contribution of transformer
