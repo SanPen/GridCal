@@ -654,27 +654,27 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Ploss_acdc = PLoss_IEC - Pt[self.cg_acdc] - Pf[self.cg_acdc]
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        dtheta = np.rad2deg(Va[self.nc.hvdc_data.T] - Va[self.nc.hvdc_data.F])
+        dtheta = np.rad2deg(Va[self.nc.hvdc_data.F] - Va[self.nc.hvdc_data.T])
         droop_contr = self.generalisedSimulationIndices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta  # in MW
         Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr  # in MW (check)
 
-        if Pcalc_hvdc > 0:
+        if Pcalc_hvdc > 0.0:
             # Injection
             # Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pt[self.cg_hvdc] - Pcalc_hvdc / self.nc.Sbase + loss_hvdc / self.nc.Sbase
 
-        elif Pcalc_hvdc < 0:
+        elif Pcalc_hvdc < 0.0:
             # Injection
             # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - Pt[self.cg_hvdc]
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * Vm[self.nc.hvdc_data.T])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
 
         else:
             Ploss_hvdc = 0
@@ -781,27 +781,27 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.T] - self.Va[self.nc.hvdc_data.F])
+        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F] - self.Va[self.nc.hvdc_data.F])
         droop_contr = self.generalisedSimulationIndices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta  # in MW
         Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr  # in MW (check)
 
-        if Pcalc_hvdc > 0:
+        if Pcalc_hvdc > 0.0:
             # Injection
             # Pinj_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * self.Vm[self.nc.hvdc_data.F])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = self.Pt[self.cg_hvdc] - Pcalc_hvdc / self.nc.Sbase + loss_hvdc / self.nc.Sbase
 
-        elif Pcalc_hvdc < 0:
+        elif Pcalc_hvdc < 0.0:
             # Injection
             # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - self.Pt[self.cg_hvdc]
 
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * self.Vm[self.nc.hvdc_data.T])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
 
         else:
             Ploss_hvdc = 0
