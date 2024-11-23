@@ -666,8 +666,8 @@
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_derivatives.test_m_derivatives" />
         <item itemvalue="Python tests.pytest for src.tests.test_admittance_matrix.test1" />
-        <item itemvalue="Python.acdc_generalized_1" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.acdc_generalized_1" />
       </list>
     </recent_temporary>
   </component>
@@ -1730,7 +1730,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="570" />
+    <option name="localTasksCounter" value="572" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1776,8 +1776,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="TP and CN for DCGround is not imported" />
-    <MESSAGE value="VSC import from CGMES" />
     <MESSAGE value="Extended IEEE14 test models from Miguel" />
     <MESSAGE value="ConnectivityNode are added to TR3w init" />
     <MESSAGE value="comparing array properties (len)" />
@@ -1801,7 +1799,9 @@
     <MESSAGE value="fixed workings&#10;moved power flow formulations to a new folder" />
     <MESSAGE value="Update fubm 6 bus system with new data model" />
     <MESSAGE value="Removed print from ac_opf.py&#10;improved find_terms_connections" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed print from ac_opf.py&#10;improved find_terms_connections" />
+    <MESSAGE value="Got matching results with lossless vscs" />
+    <MESSAGE value="Update mod2 file (lossless)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update mod2 file (lossless)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2205,21 +2205,6 @@
           <url>file://$PROJECT_DIR$/src/trunk/investments/pymoo_example.py</url>
           <line>8</line>
           <option name="timeStamp" value="1471" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>637</line>
-          <option name="timeStamp" value="1476" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingencies_report.py</url>
-          <line>685</line>
-          <option name="timeStamp" value="1478" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>547</line>
-          <option name="timeStamp" value="1496" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_cgmes_raw_crosstrip.py</url>
