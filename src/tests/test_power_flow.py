@@ -458,39 +458,39 @@ def test_fubm() -> None:
         assert ok
 
 
-# def test_all_matpower_grids():
-#     """
-#
-#     :return:
-#     """
-#     folder = os.path.join('data', 'grids', 'Matpower')
-#
-#     for root, dirs, files in os.walk(folder):
-#         for file in files:
-#             if file.endswith(".m"):
-#                 path = os.path.join(root, file)
-#
-#                 print(path)
-#                 grid = gce.open_file(path)
-#
-#                 if grid.get_bus_number() > 0:
-#
-#                     res = gce.power_flow(
-#                         grid=grid,
-#                         options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
-#                                                      retry_with_other_methods=False,
-#                                                      use_stored_guess=False)
-#                     )
-#                     used_v0 = False
-#
-#                     if not res.converged:
-#                         # if it does not converge, retry with the provided solution
-#                         res = gce.power_flow(
-#                             grid=grid,
-#                             options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
-#                                                          retry_with_other_methods=False,
-#                                                          use_stored_guess=True)
-#                         )
-#                         used_v0 = True
-#
-#                     assert res.converged
+def test_all_matpower_grids():
+    """
+
+    :return:
+    """
+    folder = os.path.join('data', 'grids', 'Matpower')
+
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith(".m"):
+                path = os.path.join(root, file)
+
+                print(path)
+                grid = gce.open_file(path)
+
+                if grid.get_bus_number() > 0:
+
+                    res = gce.power_flow(
+                        grid=grid,
+                        options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                                     retry_with_other_methods=False,
+                                                     use_stored_guess=False)
+                    )
+                    used_v0 = False
+
+                    if not res.converged:
+                        # if it does not converge, retry with the provided solution
+                        res = gce.power_flow(
+                            grid=grid,
+                            options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                                         retry_with_other_methods=False,
+                                                         use_stored_guess=True)
+                        )
+                        used_v0 = True
+
+                    assert res.converged
