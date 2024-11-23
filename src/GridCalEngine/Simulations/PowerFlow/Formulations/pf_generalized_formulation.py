@@ -781,7 +781,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F] - self.Va[self.nc.hvdc_data.F])
+        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F] - self.Va[self.nc.hvdc_data.T])
         droop_contr = self.generalisedSimulationIndices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta  # in MW
         Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr  # in MW (check)
 
