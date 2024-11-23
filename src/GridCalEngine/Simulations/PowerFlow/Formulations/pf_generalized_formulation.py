@@ -213,6 +213,7 @@ def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> csc_ma
 
     return jac.tocsc()
 
+
 class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
@@ -253,8 +254,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # QUESTION: is there a reason not to do this? I use this in var2x
         self.Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc, dtype=np.complex128)
-        self.St: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc, dtype=np.complex128)
+        self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc + nc.nhvdc, dtype=np.complex128)
+        self.St: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc + nc.nhvdc, dtype=np.complex128)
         # self.Sf: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
         # self.St: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
 
@@ -304,6 +305,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.generalisedSimulationIndices = generalisedSimulationIndices
         self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
+        self.hvdc_mode = generalisedSimulationIndices.hvdc_mode
 
         # cg sets
         self.cg_pac = generalisedSimulationIndices.cg_pac
@@ -355,14 +357,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Update setpoints
         self.Vm[self.generalisedSimulationIndices.ck_vm] = self.generalisedSimulationIndices.vm_setpoints
         self.Va[self.generalisedSimulationIndices.ck_va] = self.generalisedSimulationIndices.va_setpoints
-        self.Pzip[self.generalisedSimulationIndices.ck_pzip] = np.array(self.generalisedSimulationIndices.pzip_setpoints) / nc.Sbase
+        self.Pzip[self.generalisedSimulationIndices.ck_pzip] = np.array(
+            self.generalisedSimulationIndices.pzip_setpoints) / nc.Sbase
         idx = np.where(nc.bus_data.bus_types == BusMode.Slack_tpe.value)[0]
-        self.Pzip[idx] = idx
-        self.Qzip[self.generalisedSimulationIndices.ck_qzip] = np.array(self.generalisedSimulationIndices.qzip_setpoints) / nc.Sbase
-        self.Pf[self.generalisedSimulationIndices.ck_pfa] = np.array(self.generalisedSimulationIndices.pf_setpoints) / nc.Sbase
-        self.Pt[self.generalisedSimulationIndices.ck_pta] = np.array(self.generalisedSimulationIndices.pt_setpoints) / nc.Sbase
-        self.Qt[self.generalisedSimulationIndices.ck_qta] = np.array(self.generalisedSimulationIndices.qt_setpoints) / nc.Sbase
-
+        self.Pzip[idx] = self.Sbus[idx].real  # before we were grabbing the idx, seemed wrong to me
+        self.Qzip[self.generalisedSimulationIndices.ck_qzip] = np.array(
+            self.generalisedSimulationIndices.qzip_setpoints) / nc.Sbase
+        self.Pf[self.generalisedSimulationIndices.ck_pfa] = np.array(
+            self.generalisedSimulationIndices.pf_setpoints) / nc.Sbase
+        self.Pt[self.generalisedSimulationIndices.ck_pta] = np.array(
+            self.generalisedSimulationIndices.pt_setpoints) / nc.Sbase
+        self.Qt[self.generalisedSimulationIndices.ck_qta] = np.array(
+            self.generalisedSimulationIndices.qt_setpoints) / nc.Sbase
 
         self.m: Vec = np.ones(len(self.controlled_idx))
         self.tau: Vec = np.zeros(len(self.controlled_idx))
@@ -560,7 +566,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
     # DONE
     def var2x(self) -> Vec:
         """
-        Convert the internal decission variables into the vector
+        Convert the internal decision variables into the vector
         :return: Vector
         """
         return np.r_[
@@ -637,32 +643,57 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # compute the complex voltage
         V = polar_to_rect(Vm, Va)
 
-        # Update converter losses
-        # It = get_It(k=self.idx_conv, V=V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
+        # VSC Loss equation
         toBus = self.nc.vsc_data.T
-        fromBus = self.nc.vsc_data.F
         It = np.sqrt(Pt * Pt + Qt * Qt)[self.cg_acdc] / Vm[toBus]
-        # Itm = np.abs(It)
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
                      + self.nc.vsc_data.alpha2 * It2
                      + self.nc.vsc_data.alpha1)
 
-
-        # ACDC Power Loss Residual
         Ploss_acdc = PLoss_IEC - Pt[self.cg_acdc] - Pf[self.cg_acdc]
 
+        # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
+        dtheta = np.rad2deg(Va[self.nc.hvdc_data.T] - Va[self.nc.hvdc_data.F])
+        droop_contr = self.generalisedSimulationIndices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta  # in MW
+        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr  # in MW (check)
+
+        if Pcalc_hvdc > 0:
+            # Injection
+            Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
+
+            # Loss
+            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
+            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
+            Ploss_hvdc = Pf[self.cg_hvdc] + Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+
+        elif Pcalc_hvdc < 0:
+            # Injection
+            Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - Pt[self.cg_hvdc]
+
+            # Loss
+            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * Vm[self.nc.hvdc_data.T])  # current in kA
+            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
+            Ploss_hvdc = Pf[self.cg_hvdc] + Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+
+        else:
+            Pinj_hvdc = Pf[self.cg_hvdc]
+            Ploss_hvdc = Pf[self.cg_hvdc] + Pt[self.cg_hvdc]
+
         # compute the function residual
-        # Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm) + Pbus + 1j * Qbus
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
         Sbus += Pbus + 1j * Qbus
         Scalc = compute_power(self.adm.Ybus, V)
 
         converterContribution = ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
-                   + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+                                 + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
 
-        transformerContribution = + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
-                   + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
+        hvdcContribution = ((Pf + 1j * Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
+                            + (Pt + 1j * Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
+
+        transformerContribution = + (
+                (Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
+                + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
 
         dS = (
                 Scalc - Sbus
@@ -670,6 +701,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # add contribution of acdc link
                 + ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
                    + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+
+                # add contribution of HVDC link
+                + ((Pf + 1j * Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
+                   + (Pt + 1j * Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
 
                 # add contribution of transformer
                 + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
@@ -679,7 +714,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         V = Vm * np.exp(1j * Va)
 
-        # Needed??
         Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
             V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
@@ -693,19 +727,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angle=tau
         )
 
-        # Check this + here
         _f = np.r_[
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
             Ploss_acdc,
+            Ploss_hvdc,
+            Pinj_hvdc,
             Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
             Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
             Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
             Qttr - self.nc.active_branch_data.Qset[self.cg_qttr]
         ]
-        #
-        # print("RESIDUALS: ")
-        # print(_f)
 
         errf = compute_fx_error(_f)
         if errf < 1e-7:
@@ -742,16 +774,40 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Update converter losses
         toBus = self.nc.vsc_data.T
         It = np.sqrt(self.Pt * self.Pt + self.Qt * self.Qt)[self.cg_acdc] / self.Vm[toBus]
-        # It = np.abs(It)
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
                      + self.nc.vsc_data.alpha2 * It2
                      + self.nc.vsc_data.alpha1)
 
-        print("Calculated VSC LOSSES", PLoss_IEC)
-
         # ACDC Power Loss Residual
         Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
+
+        # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
+        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.T] - self.Va[self.nc.hvdc_data.F])
+        droop_contr = self.generalisedSimulationIndices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta  # in MW
+        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr  # in MW (check)
+
+        if Pcalc_hvdc > 0:
+            # Injection
+            Pinj_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
+
+            # Loss
+            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * self.Vm[self.nc.hvdc_data.F])  # current in kA
+            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
+            Ploss_hvdc = self.Pf[self.cg_hvdc] + self.Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+
+        elif Pcalc_hvdc < 0:
+            # Injection
+            Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - self.Pt[self.cg_hvdc]
+
+            # Loss
+            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * self.Vm[self.nc.hvdc_data.T])  # current in kA
+            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
+            Ploss_hvdc = self.Pf[self.cg_hvdc] + self.Pt[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+
+        else:
+            Pinj_hvdc = self.Pf[self.cg_hvdc]
+            Ploss_hvdc = self.Pf[self.cg_hvdc] + self.Pt[self.cg_hvdc]
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pzip + 1j * self.Qzip
@@ -763,6 +819,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # add contribution of acdc link
                 + ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
                    + (self.Pt + 1j * self.Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+
+                # add contribution of HVDC link
+                + ((self.Pf + 1j * self.Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
+                   + (self.Pt + 1j * self.Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
 
                 # add contribution of transformer
                 + ((self.Pf + 1j * self.Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
@@ -789,6 +849,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
             Ploss_acdc,
+            Ploss_hvdc,
+            Pinj_hvdc,
             Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
             Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
             Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
@@ -921,7 +983,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def fx(self) -> Vec:
         """
-
+        Used?
         :return:
         """
 
@@ -1063,11 +1125,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
         '''
 
-
         rows = [f'active power balance node {i}' for i in (self.cg_pac.union(self.cg_pdc))]
         rows += [f'reactive power balance node {i}' for i in self.cg_qac]
         rows += [f'Ploss_acdc {i}' for i in self.cg_acdc]
-        rows += [f'cg_hvdc {i}' for i in self.cg_hvdc]
+        rows += [f'Ploss_hvdc {i}' for i in self.cg_hvdc]
+        rows += [f'Pinj_hvdc {i}' for i in self.cg_hvdc]
         rows += [f'cg_pftr {i}' for i in self.cg_pttr]
         rows += [f'cg_pttr {i}' for i in self.cg_pttr]
         rows += [f'cg_qftr {i}' for i in self.cg_qftr]

@@ -75,6 +75,7 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
                 # compute update step: J x Δx = Δg
                 J: CSC = problem.Jacobian()
+                jdense = J.todense()
                 dx, ok = spsolve_csc(J, -f)
                 print()
 

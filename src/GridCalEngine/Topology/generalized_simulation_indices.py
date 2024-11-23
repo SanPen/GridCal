@@ -141,6 +141,9 @@ class GeneralizedSimulationIndices:
         self.bus_vm_pointer_used: BoolVec | None = None
         self.bus_unspecified_qzip: BoolVec | None = None
 
+        # 1 if free mode (P as a function of angle drop), 0 if fixed mode (Pset)
+        self.hvdc_mode: BoolVec | None = None
+
         self.logger = Logger()
 
         # Run the search to get the indices
@@ -492,7 +495,6 @@ class GeneralizedSimulationIndices:
                     self.ck_pfa.add(int(branch_idx))
                     self.pf_setpoints.append(control_magnitude)
 
-
             except ValueError:
                 return  # Skip processing this VSC if control type is invalid
 
@@ -613,6 +615,7 @@ class GeneralizedSimulationIndices:
         self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
         self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
         self.bus_unspecified_qzip = np.zeros(nbus, dtype=bool)
+        self.hvdc_mode = np.zeros(len(nc.hvdc_data.active), dtype=bool)
 
         # DONE
         # -------------- Buses search ----------------
@@ -725,17 +728,31 @@ class GeneralizedSimulationIndices:
         # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
         # The control mode does not change the indices sets, only the equation
         # See how to store this bool_mode
-        # for iii, _ in enumerate(nc.hvdc_data.active):
-        #     # self.add_to_cx_Pf(branch_idx)
+        for iii, _ in enumerate(nc.hvdc_data.active):
+            # self.add_to_cx_Pf(branch_idx)
 
-        #     self.set_bus_vm_simple(bus_local=nc.hvdc_data.F[iii],
-        #                            device_name=nc.hvdc_data.names[iii])
+            self.set_bus_vm_simple(bus_local=nc.hvdc_data.F[iii],
+                                   device_name=nc.hvdc_data.names[iii])
 
-        #     self.set_bus_vm_simple(bus_local=nc.hvdc_data.T[iii],
-        #                            device_name=nc.hvdc_data.names[iii])
+            self.set_bus_vm_simple(bus_local=nc.hvdc_data.T[iii],
+                                   device_name=nc.hvdc_data.names[iii])
 
-        #     self.add_to_cg_hvdc(branch_idx)
-        #     branch_idx += 1
+            self.add_to_cg_hvdc(branch_idx)
+
+            # 1 if free mode (P as a function of angle drop), 0 if fixed mode (Pset)
+            if nc.hvdc_data.control_mode[iii] == HvdcControlType.type_0_free:
+                self.hvdc_mode[iii] = 1
+            elif nc.hvdc_data.control_mode[iii] == HvdcControlType.type_1_Pset:
+                self.hvdc_mode[iii] = 0
+            else:
+                pass
+
+            self.add_to_cx_pfa(branch_idx)
+            self.add_to_cx_pta(branch_idx)
+            self.add_to_cx_qfa(branch_idx)
+            self.add_to_cx_qta(branch_idx)
+
+            branch_idx += 1
 
         # # Post-processing
         # for i, val in enumerate(self.bus_vm_pointer_used):
