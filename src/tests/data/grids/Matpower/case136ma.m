@@ -3,9 +3,9 @@ function mpc = case136ma
 %   Please see CASEFORMAT for details on the case file format.
 %
 %   Data from ...
-%       Mantovani JRS, Casari F, Romero RA (2000) Reconfiguração de sistemas
-%       de distribuição radiais utilizando o critério de queda de tensão. Rev
-%       Bras Controle Automação - SBA 11:150-159.
+%       Mantovani JRS, Casari F, Romero RA (2000) Reconfiguracao de sistemas
+%       de distribuicao radiais utilizando o criterio de queda de tensao. Rev
+%       Bras Controle Automacao - SBA 11:150-159.
 
 %% MATPOWER Case Format : Version 2
 mpc.version = '2';
