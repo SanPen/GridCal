@@ -239,18 +239,80 @@ def adv_jacobian(nbus: int,
     dLacdc_dPf = np.ones(nvsc)
 
     # HVDC loss eq.
+    # compute them going through a loop better
+    """
+    Pc = (Pset + (Va[F] - Va[T]) * mode * droop) / Sbase
+    We simplify mode * droop = md
+    Pc = (Pset + (Va[F] - Va[T]) * md) / Sbase
+    Derivatives are dependent on the sign, hence we have two regions to consider
+    Go over a loop to compute them
+    
+    If Pc > 0:
+    ------------
+    dPlosshvdc_dVa[F] = md / Sbase - rpu * (md * md * (2 * Va[F] - 2 * Va[T]) / (Sbase * Sbase * Vm[F] * Vm[F])
+                                            + (2 * Pset * md) / (Sbase * Sbase * Vm[F] * Vm[F]))
+                                            
+    dPlosshvdc_dVa[T] = -md / Sbase - rpu * (md * md * (2 * Va[F] - 2 * Va[T]) / (Sbase * Sbase * Vm[F] * Vm[F])
+                                        - (2 * Pset * md) / (Sbase * Sbase * Vm[F] * Vm[F]))
+                                        
+    dPlosshvdc_dVm[F] = -rpu * (-2 * Pset * Pset / (Sbase * Sbase * Vm[F] * Vm[F] * Vm[F])
+                                -2 * md * md * (Va[F] * Va[F] + Va[T] * Va[T] - 2 * Va[F] * Va[T]) / (Sbase * Sbase * Vm[F] * Vm[F] * Vm[F]) 
+                                -4 * Pset * (Va[F] - Va[T]) * md / (Sbase * Sbase * Vm[F] * Vm[F] * Vm[F]))
+                         
+    dPlosshvdc_dPt[br_hvdc] = 1
+    
+    Elif Pc < 0:
+    ------------
+     dPlosshvdc_dVa[F] = md / Sbase - rpu * (md * md * (2 * Va[F] - 2 * Va[T]) / (Sbase * Sbase * Vm[T] * Vm[T])
+                                            + (2 * Pset * md) / (Sbase * Sbase * Vm[T] * Vm[T]))
+                                            
+     dPlosshvdc_dVa[T] = -md / Sbase - rpu * (md * md * (2 * Va[F] - 2 * Va[T]) / (Sbase * Sbase * Vm[T] * Vm[T])
+                                        - (2 * Pset * md) / (Sbase * Sbase * Vm[T] * Vm[T]))
+                                        
+     dPlosshvdc_dVm[F] = -rpu * (-2 * Pset * Pset / (Sbase * Sbase * Vm[T] * Vm[T] * Vm[T])
+                                -2 * md * md * (Va[F] * Va[F] + Va[T] * Va[T] - 2 * Va[F] * Va[T]) / (Sbase * Sbase * Vm[T] * Vm[T] * Vm[T]) 
+                                -4 * Pset * (Va[F] - Va[T]) * md / (Sbase * Sbase * Vm[T] * Vm[T] * Vm[T]))
+                           
+    dPlosshvdc_dPf[br_hvdc] = 1
+    
+    Else:
+        edge case, simply set derivatives to 0 (very unlikely to take place and could ill-condition J if row of 0s)
+    """
+
+    # HVDC injection equation
+    """
+    Pc = (Pset + (Va[F] - Va[T]) * mode * droop) / Sbase
+    We simplify mode * droop = md
+    Pc = (Pset + (Va[F] - Va[T]) * md) / Sbase
+    Derivatives are dependent on the sign, hence we have two regions to consider
+    Go over a loop to compute them
+    
+    If Pc > 0: Pf - (Pset + (Va[F] - Va[T]) * md) / Sbase = 0
+    ------------
+    dPinjhvdc_dVa[F] = - md / Sbase
+    dPinjhvdc_dVa[T] = md / Sbase
+    dPinjhvdc_dPf[br_hvdc] = 1
+    
+    Elif Pc < 0: Pt - (Pset + (Va[F] - Va[T]) * md) / Sbase = 0 
+    ------------
+    dPinjhvdc_dVa[F] = - md / Sbase
+    dPinjhvdc_dVa[T] = md / Sbase
+    dPinjhvdc_dPt[br_hvdc] = 1
+    """
+
+    # Controllable branches dSft_dmtau already computed in csc_derivatives.py
 
 
-    dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
-    dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
-    dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
-    dQt_dVa = deriv.dSt_dVa_csc(nbus, ig_qttr, ix_va, ytf, V, F, T).imag
+    # dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
+    # dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
+    # dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
+    # dQt_dVa = deriv.dSt_dVa_csc(nbus, ig_qttr, ix_va, ytf, V, F, T).imag
 
     # SLICE
-    dP_dVm = sp_slice(dS_dVm.real, ig_pbus, ix_vm)
-    dQ_dVm = sp_slice(dS_dVm.imag, ig_qbus, ix_vm)
-    dP_dVa = sp_slice(dS_dVa.real, ig_pbus, ix_va)
-    dQ_dVa = sp_slice(dS_dVa.imag, ig_qbus, ix_va)
+    # dP_dVm = sp_slice(dS_dVm.real, ig_pbus, ix_vm)
+    # dQ_dVm = sp_slice(dS_dVm.imag, ig_qbus, ix_vm)
+    # dP_dVa = sp_slice(dS_dVa.real, ig_pbus, ix_va)
+    # dQ_dVa = sp_slice(dS_dVa.imag, ig_qbus, ix_va)
 
     # BUILD FULL J
     J = csc_stack_2d_ff(mats=
@@ -785,42 +847,26 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Pinj_hvdc = np.zeros(self.nc.nhvdc)
         for i in range(self.nc.nhvdc):
             dtheta = np.rad2deg(Va[self.nc.hvdc_data.F[i]] - Va[self.nc.hvdc_data.T[i]])
-            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta  # in MW
-            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr  # in MW (check)
+            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
+            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
 
             if Pcalc_hvdc > 0.0:
-                # Injection
-                # Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
-
-                # Loss
-                # I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
-                # loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-                # Ploss_hvdc = Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
-                # Ploss_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
-
-                # Calc in pu
                 ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F[i]])
                 rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
                 losshvdcpu = rpu * ihvdcpu * ihvdcpu
-                Pinj_hvdc[i] = Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
                 Ploss_hvdc[i] = Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
-
-                print()
+                Pinj_hvdc[i] = Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
 
             elif Pcalc_hvdc < 0.0:
-                # Injection
-                # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - Pt[self.cg_hvdc]
-
-                # Loss
-                I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt[i] * Vm[self.nc.hvdc_data.T[i]])  # current in kA
-                loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
-                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc[i]] - loss_hvdc / self.nc.Sbase
+                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.T[i]])
+                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
+                losshvdcpu = rpu * ihvdcpu * ihvdcpu
+                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc[i]] - losshvdcpu
                 Pinj_hvdc[i] = Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-                # Ploss_hvdc[i = Pcalc_hvdc / self.nc.Sbase + Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
-                print()
 
             else:
                 Ploss_hvdc[i] = 0.0
+                Pinj_hvdc[i] = 0.0
 
 
         # compute the function residual
@@ -932,40 +978,26 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Pinj_hvdc = np.zeros(self.nc.nhvdc)
         for i in range(self.nc.nhvdc):
             dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F[i]] - self.Va[self.nc.hvdc_data.T[i]])
-            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta  # in MW
-            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr  # in MW (check)
+            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
+            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
 
             if Pcalc_hvdc > 0.0:
-                # Injection
-                # Pinj_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
-
-                # Loss
-                I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf[i] * self.Vm[self.nc.hvdc_data.F[i]])  # current in kA
-                loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
-                # Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
-                # Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
-
                 ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
                 rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
                 losshvdcpu = rpu * ihvdcpu * ihvdcpu
                 Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
                 Pinj_hvdc[i] = self.Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-                print()
 
             elif Pcalc_hvdc < 0.0:
-                # Injection
-                # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - self.Pt[self.cg_hvdc]
-
-                # Loss
-                I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt[i] * self.Vm[self.nc.hvdc_data.T[i]])  # current in kA
-                loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
-                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc[i]] - loss_hvdc / self.nc.Sbase
-                # Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
+                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.T[i]])
+                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
+                losshvdcpu = rpu * ihvdcpu * ihvdcpu
+                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc[i]] - losshvdcpu
                 Pinj_hvdc[i] = self.Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-                print()
 
             else:
-                Ploss_hvdc[i] = 0
+                Ploss_hvdc[i] = 0.0
+                Pinj_hvdc[i] = 0.0
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pzip + 1j * self.Qzip

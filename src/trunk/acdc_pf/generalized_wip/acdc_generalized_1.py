@@ -11,12 +11,12 @@ from GridCalEngine.basic_structures import Logger
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_raiyan.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_raiyan_signs.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
-fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6.gridcal")
+# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v2.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v4.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v5.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v3.gridcal")
-# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v6.gridcal")
+fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v6.gridcal")
 
 grid = gce.open_file(fname)
 # run power flow
@@ -47,7 +47,7 @@ cx_qta: [4, 5]
 
 print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhvdc: {main_nc.nhvdc}")
 
-options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, tolerance=1e-12)
+options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, tolerance=1e-11)
 logger = Logger()
 
 island = islands[0]
