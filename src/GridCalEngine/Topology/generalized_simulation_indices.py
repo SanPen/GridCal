@@ -752,6 +752,8 @@ class GeneralizedSimulationIndices:
 
             self.add_to_cx_qfa(branch_idx)
             self.add_to_cx_qta(branch_idx)
+            self.add_to_cx_pfa(branch_idx)
+            self.add_to_cx_pta(branch_idx)
 
             if nc.hvdc_data.Pset[iii] > 0.0:
                 self.pf_setpoints.append(nc.hvdc_data.Pset[iii])
@@ -760,8 +762,6 @@ class GeneralizedSimulationIndices:
                 self.ck_pfa.add(int(branch_idx))
                 self.ck_pta.add(int(branch_idx))
 
-                self.add_to_cx_pta(branch_idx)
-
             else:
                 self.pf_setpoints.append(-nc.hvdc_data.Pset[iii])
                 self.pt_setpoints.append(nc.hvdc_data.Pset[iii])
@@ -769,10 +769,7 @@ class GeneralizedSimulationIndices:
                 self.ck_pfa.add(int(branch_idx))
                 self.ck_pta.add(int(branch_idx))
 
-                self.add_to_cx_pta(branch_idx)
-
             # Initialize Qs to 0, although they will take whatever value
-
 
             branch_idx += 1
 

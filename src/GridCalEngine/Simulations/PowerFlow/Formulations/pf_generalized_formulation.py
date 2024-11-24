@@ -655,6 +655,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
         Ploss_hvdc = np.zeros(self.nc.nhvdc)
+        Pinj_hvdc = np.zeros(self.nc.nhvdc)
         for i in range(self.nc.nhvdc):
             dtheta = np.rad2deg(Va[self.nc.hvdc_data.F[i]] - Va[self.nc.hvdc_data.T[i]])
             droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta  # in MW
@@ -674,6 +675,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F[i]])
                 rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
                 losshvdcpu = rpu * ihvdcpu * ihvdcpu
+                Pinj_hvdc[i] = Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
                 Ploss_hvdc[i] = Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
 
                 print()
@@ -686,6 +688,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt[i] * Vm[self.nc.hvdc_data.T[i]])  # current in kA
                 loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
                 Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc[i]] - loss_hvdc / self.nc.Sbase
+                Pinj_hvdc[i] = Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
                 # Ploss_hvdc[i = Pcalc_hvdc / self.nc.Sbase + Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
                 print()
 
@@ -745,6 +748,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.cg_qac].imag,
             Ploss_acdc,
             Ploss_hvdc,
+            Pinj_hvdc,
             Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
             Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
             Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
@@ -798,6 +802,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
         Ploss_hvdc = np.zeros(self.nc.nhvdc)
+        Pinj_hvdc = np.zeros(self.nc.nhvdc)
         for i in range(self.nc.nhvdc):
             dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F[i]] - self.Va[self.nc.hvdc_data.T[i]])
             droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta  # in MW
@@ -810,13 +815,14 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # Loss
                 I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf[i] * self.Vm[self.nc.hvdc_data.F[i]])  # current in kA
                 loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
-                Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+                # Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
                 # Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
 
                 ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
                 rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
                 losshvdcpu = rpu * ihvdcpu * ihvdcpu
                 Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
+                Pinj_hvdc[i] = self.Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
                 print()
 
             elif Pcalc_hvdc < 0.0:
@@ -828,6 +834,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
                 Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc[i]] - loss_hvdc / self.nc.Sbase
                 # Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
+                Pinj_hvdc[i] = self.Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
                 print()
 
             else:
@@ -874,6 +881,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.cg_qac].imag,
             Ploss_acdc,
             Ploss_hvdc,
+            Pinj_hvdc,
             Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
             Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
             Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
