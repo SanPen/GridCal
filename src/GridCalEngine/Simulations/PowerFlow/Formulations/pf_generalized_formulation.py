@@ -70,17 +70,25 @@ def recompute_controllable_power(V_f: CxVec,
 # @njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
-                 idx_dva: IntVec,
-                 idx_dvm: IntVec,
-                 idx_dm: IntVec,
-                 idx_dtau: IntVec,
-                 idx_dbeq: IntVec,
-                 idx_dP: IntVec,
-                 idx_dQ: IntVec,
-                 idx_dPf: IntVec,
-                 idx_dQf: IntVec,
-                 idx_dPt: IntVec,
-                 idx_dQt: IntVec,
+                 ix_vm: IntVec,
+                 ix_va: IntVec,
+                 ix_pzip: IntVec,
+                 ix_qzip: IntVec,
+                 ix_pf: IntVec,
+                 ix_qf: IntVec,
+                 ix_pt: IntVec,
+                 ix_qt: IntVec,
+                 ix_m: IntVec,
+                 ix_tau: IntVec,
+                 ig_pbus: IntVec,
+                 ig_qbus: IntVec,
+                 ig_plossacdc: IntVec,
+                 ig_plosshvdc: IntVec,
+                 ig_pinjhvdc: IntVec,
+                 ig_pftr: IntVec,
+                 ig_qftr: IntVec,
+                 ig_pttr: IntVec,
+                 ig_qttr: IntVec,
                  F: IntVec,
                  T: IntVec,
                  Ys: CxVec,
@@ -88,7 +96,6 @@ def adv_jacobian(nbus: int,
                  complex_tap: CxVec,
                  tap_modules: Vec,
                  Bc: Vec,
-                 Beq: Vec,
                  V: CxVec,
                  Vm: Vec,
                  Ybus_x: CxVec,
@@ -102,17 +109,25 @@ def adv_jacobian(nbus: int,
     Compute the generalized jacobian
     :param nbus:
     :param nbr:
-    :param idx_dva:
-    :param idx_dvm:
-    :param idx_dm:
-    :param idx_dtau:
-    :param idx_dbeq:
-    :param idx_dP:
-    :param idx_dQ:
-    :param idx_dQf:
-    :param idx_dPf:
-    :param idx_dPt:
-    :param idx_dQt:
+    :param ix_vm:
+    :param ix_va:
+    :param ix_pzip:
+    :param ix_qzip:
+    :param ix_pf:
+    :param ix_qf:
+    :param ix_pt:
+    :param ix_qt:
+    :param ix_m:
+    :param ix_tau:
+    :param ig_pbus:
+    :param ig_qbus:
+    :param ig_plossacdc:
+    :param ig_plosshvdc:
+    :param ig_pinjhvdc:
+    :param ig_pftr:
+    :param ig_qftr:
+    :param ig_pttr:
+    :param ig_qttr:
     :param F:
     :param T:
     :param Ys: Series admittance 1 / (R + jX)
@@ -131,14 +146,73 @@ def adv_jacobian(nbus: int,
     :param ytf:
     :param ytt:
     :return:
+
+    x = [Vm, Va, Pzip, Qzip, Pf, Qf, Pt, Qt, m, tau]
+    g = [Pbus, Qbus, Ploss_acdc, Ploss_hvdc, Pinj_hvdc, Pftr, Qftr, Pttr, Qttr]
+
     """
-    # bus-bus derivatives (always needed)
+    # COMPUTE DERIVATIVES
+
+    # dS_dVma bus-bus derivatives (always needed)
     dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
     dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x)
 
-    dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dva)
-    dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dva)
+    # dS_dSzip
+    ix_szip = ix_pzip + ix_qzip
+    ig_sbus = ig_pbus + ig_qbus
+    nnz_dS_dSzip = union(ix_szip, ig_sbus)  # indices where both have entries, eg: cross([1, 2, 3], [2, 4]) = [2]
+    dS_dSzip = CxCSC(nbus, nbus, nnz_dS_dSzip, False).set(ig_sbus, ix_szip, -1 * np.ones(nnz_dS_dSzip))
+    # dS_dSzip = -1  # Size nbus x nbus, or slice directly
+    # then do the full crossing ig_pbus, ig_qbus, ix_pzip, ix_qzip
+
+    # dS_dSft
+    # I think we need C matrices even if not present in Raiyan's thesis
+    # How are Cs structured? ndev x nbus
+    # ig_conttr = ig_pftr + ig_pttr + ig_qftr + ig_qttr, as if one branch controls something, immediately goes there
+    # when slicing, if we have set some entry we should not have, it will be sorted out as it will not be grabbed
+    dS_dSf = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
+    dS_dSf[range(nbus), ig_plossacdc] = transpose(Cf_acdc)  # fill intersection bus x acdc
+    dS_dSf[range(nbus), ig_plosshvdc] = transpose(Cf_hvdc)  # fill intersection bus x hvdc
+    dS_dSf[range(nbus), ig_conttr] = transpose(Cf_conttr)  # fill intersection bus x controllable trafos
+
+    dS_dSt = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
+    dS_dSt[range(nbus), ig_plossacdc] = transpose(Ct_acdc)  # fill intersection bus x acdc
+    dS_dSt[range(nbus), ig_plosshvdc] = transpose(Ct_hvdc)  # fill intersection bus x hvdc
+    dS_dSt[range(nbus), ig_conttr] = transpose(Ct_conttr)  # fill intersection bus x controllable trafos (or in reality, all classic branches)
+
+    # dS_dtau and dS_dm from csc_derivatives.py, already there
+    # First 2 rows completed up to here
+
+    # VSC loss eq.
+    # Derivatives from Raiyan's thesis, 4 nnz terms, no big deal
+
+
+    dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
+    dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
+    dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
+    dQt_dVa = deriv.dSt_dVa_csc(nbus, ig_qttr, ix_va, ytf, V, F, T).imag
+
+    # SLICE
+    dP_dVm = sp_slice(dS_dVm.real, ig_pbus, ix_vm)
+    dQ_dVm = sp_slice(dS_dVm.imag, ig_qbus, ix_vm)
+    dP_dVa = sp_slice(dS_dVa.real, ig_pbus, ix_va)
+    dQ_dVa = sp_slice(dS_dVa.imag, ig_qbus, ix_va)
+
+    # BUILD FULL J
+    J = csc_stack_2d_ff(mats=
+                        [dP_dVm, dP_dVa, dP_dPzip, dP_dQzip, dP_dPf, dP_dQf, dP_dPt, dP_dQt, dP_dm, dP_dtau,
+                         dQ_dVm, dQ_dVa, dQ_dPzip, dQ_dQzip, dQ_dPf, dQ_dQf, dQ_dPt, dQ_dQt, dQ_dm, dQ_dtau,
+                         dPlacdc_dVm, dPlacdc_dVa, dPlacdc_dPzip, dPlacdc_dQzip, dPlacdc_dPf, dPlacdc_dQf, dPlacdc_dPt, dPlacdc_dQt, dPlacdc_dm, dPlacdc_dtau,
+                         dPlhvdc_dVm, dPlhvdc_dVa, dPlhvdc_dPzip, dPlhvdc_dQzip, dPlhvdc_dPf, dPlhvdc_dQf, dPlhvdc_dPt, dPlhvdc_dQt, dPlhvdc_dm, dPlhvdc_dtau,
+                         dPihvdc_dVm, dPihvdc_dVa, dPihvdc_dPzip, dPihvdc_dQzip, dPihvdc_dPf, dPihvdc_dQf, dPihvdc_dPt, dPihvdc_dQt, dPihvdc_dm, dPihvdc_dtau,
+                         dPftr_dVm, dPftr_dVa, dPftr_dPzip, dPftr_dQzip, dPftr_dPf, dPftr_dQf, dPftr_dPt, dPftr_dQt, dPftr_dm, dPftr_dtau,
+                         dQftr_dVm, dQftr_dVa, dQftr_dPzip, dQftr_dQzip, dQftr_dPf, dQftr_dQf, dQftr_dPt, dQftr_dQt, dQftr_dm, dQftr_dtau,
+                         dPttr_dVm, dPttr_dVa, dPttr_dPzip, dPttr_dQzip, dPttr_dPf, dPttr_dQf, dPttr_dPt, dPttr_dQt, dPttr_dm, dPttr_dtau,
+                         dQttr_dVm, dQttr_dVa, dQttr_dPzip, dQttr_dQzip, dQttr_dPf, dQttr_dQf, dQttr_dPt, dQttr_dQt, dQttr_dm, dQttr_dtau],
+                         n_rows=9, n_cols=10)
+
+
     dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dva, yff, yft, V, F, T).real
     dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dva, yff, yft, V, F, T).imag
     dPt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dPt, idx_dva, ytf, V, F, T).real
@@ -875,7 +949,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angle=self.tau
         )
 
-        # Use self.Pf?
         self._f = np.r_[
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
