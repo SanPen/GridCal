@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Update hvdc to what I think should be">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Converging but check Vm">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" afterDir="false" />
@@ -1724,7 +1724,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="575" />
+    <option name="localTasksCounter" value="578" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1770,9 +1770,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixing and cleaning some TODOS" />
-    <MESSAGE value="function part for getting simpl hvdc from CGMES" />
-    <MESSAGE value="simpl hvdc from CGMES" />
     <MESSAGE value="rename cgmes property py and import DCLine as BranchGroup" />
     <MESSAGE value="working on HVDC export to CGMES" />
     <MESSAGE value="new py file for creating cgmes instances" />
@@ -1795,7 +1792,10 @@
     <MESSAGE value="Getting singular J for some reason" />
     <MESSAGE value="Minor fix but still diverging" />
     <MESSAGE value="Update hvdc to what I think should be" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update hvdc to what I think should be" />
+    <MESSAGE value="Add to setpoints to better initialize but still" />
+    <MESSAGE value="Add grids" />
+    <MESSAGE value="Converging but check Vm" />
+    <option name="LAST_COMMIT_MESSAGE" value="Converging but check Vm" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2275,28 +2275,48 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>812</line>
+          <line>819</line>
           <option name="timeStamp" value="2339" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>823</line>
+          <line>830</line>
           <option name="timeStamp" value="2340" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>676</line>
+          <line>678</line>
           <option name="timeStamp" value="2341" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>687</line>
+          <line>689</line>
           <option name="timeStamp" value="2342" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
           <line>354</line>
           <option name="timeStamp" value="2343" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py</url>
+          <line>816</line>
+          <option name="timeStamp" value="2346" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py</url>
+          <line>778</line>
+          <option name="timeStamp" value="2353" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>759</line>
+          <option name="timeStamp" value="2354" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>757</line>
+          <option name="timeStamp" value="2355" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

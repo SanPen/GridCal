@@ -654,41 +654,44 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Ploss_acdc = PLoss_IEC - Pt[self.cg_acdc] - Pf[self.cg_acdc]
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        dtheta = np.rad2deg(Va[self.nc.hvdc_data.F] - Va[self.nc.hvdc_data.T])
-        droop_contr = self.generalisedSimulationIndices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta  # in MW
-        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr  # in MW (check)
+        Ploss_hvdc = np.zeros(self.nc.nhvdc)
+        for i in range(self.nc.nhvdc):
+            dtheta = np.rad2deg(Va[self.nc.hvdc_data.F[i]] - Va[self.nc.hvdc_data.T[i]])
+            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta  # in MW
+            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr  # in MW (check)
 
-        if Pcalc_hvdc > 0.0:
-            # Injection
-            # Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
+            if Pcalc_hvdc > 0.0:
+                # Injection
+                # Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
 
-            # Loss
-            # I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
-            # loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            # Ploss_hvdc = Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
-            # Ploss_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+                # Loss
+                # I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
+                # loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
+                # Ploss_hvdc = Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+                # Ploss_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
 
-            # Calc in pu
-            ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F])
-            rpu = self.nc.hvdc_data.r * self.nc.Sbase / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf)
-            losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
-            Ploss_hvdc = Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
+                # Calc in pu
+                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F[i]])
+                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
+                losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
+                Ploss_hvdc[i] = Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
 
-            print()
+                print()
 
-        elif Pcalc_hvdc < 0.0:
-            # Injection
-            # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - Pt[self.cg_hvdc]
+            elif Pcalc_hvdc < 0.0:
+                # Injection
+                # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - Pt[self.cg_hvdc]
 
-            # Loss
-            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * Vm[self.nc.hvdc_data.T])  # current in kA
-            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
-            # Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
-            print()
+                # Loss
+                I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt[i] * Vm[self.nc.hvdc_data.T[i]])  # current in kA
+                loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
+                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc[i]] - loss_hvdc / self.nc.Sbase
+                # Ploss_hvdc[i = Pcalc_hvdc / self.nc.Sbase + Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
+                print()
 
-        else:
-            Ploss_hvdc = 0
+            else:
+                Ploss_hvdc[i] = 0.0
+
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
@@ -752,6 +755,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if errf < 1e-7:
             print()
 
+        assert len(_f) == j
+
         return _f
 
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
@@ -792,39 +797,41 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F] - self.Va[self.nc.hvdc_data.T])
-        droop_contr = self.generalisedSimulationIndices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta  # in MW
-        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr  # in MW (check)
+        Ploss_hvdc = np.zeros(self.nc.nhvdc)
+        for i in range(self.nc.nhvdc):
+            dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F[i]] - self.Va[self.nc.hvdc_data.T[i]])
+            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta  # in MW
+            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr  # in MW (check)
 
-        if Pcalc_hvdc > 0.0:
-            # Injection
-            # Pinj_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
+            if Pcalc_hvdc > 0.0:
+                # Injection
+                # Pinj_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
 
-            # Loss
-            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * self.Vm[self.nc.hvdc_data.F])  # current in kA
-            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = self.Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
-            # Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+                # Loss
+                I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf[i] * self.Vm[self.nc.hvdc_data.F[i]])  # current in kA
+                loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
+                Ploss_hvdc = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+                # Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
 
-            ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F])
-            rpu = self.nc.hvdc_data.r * self.nc.Sbase / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf)
-            losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
-            Ploss_hvdc = self.Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
-            print()
+                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
+                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
+                losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
+                Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
+                print()
 
-        elif Pcalc_hvdc < 0.0:
-            # Injection
-            # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - self.Pt[self.cg_hvdc]
+            elif Pcalc_hvdc < 0.0:
+                # Injection
+                # Pinj_hvdc = Pcalc_hvdc / self.nc.Sbase - self.Pt[self.cg_hvdc]
 
-            # Loss
-            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * self.Vm[self.nc.hvdc_data.T])  # current in kA
-            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
-            # Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
-            print()
+                # Loss
+                I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt[i] * self.Vm[self.nc.hvdc_data.T[i]])  # current in kA
+                loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
+                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc[i]] - loss_hvdc / self.nc.Sbase
+                # Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
+                print()
 
-        else:
-            Ploss_hvdc = 0
+            else:
+                Ploss_hvdc[i] = 0
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pzip + 1j * self.Qzip

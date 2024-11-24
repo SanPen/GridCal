@@ -473,10 +473,12 @@ class GeneralizedSimulationIndices:
                 if control == ConverterControlType.Vm_dc:
                     bus_idx = vsc_data.F[ii]
                     self.ck_vm.add(int(bus_idx))
+                    self.set_bus_vm_simple(bus_local=int(bus_idx))
                     self.vm_setpoints.append(control_magnitude)
                 elif control == ConverterControlType.Vm_ac:
                     bus_idx = vsc_data.T[ii]
                     self.ck_vm.add(int(bus_idx))
+                    self.set_bus_vm_simple(bus_local=int(bus_idx))
                     self.vm_setpoints.append(control_magnitude)
                 elif control == ConverterControlType.Va_ac:
                     bus_idx = vsc_data.T[ii]
@@ -511,10 +513,10 @@ class GeneralizedSimulationIndices:
             if not is_controlled:  # If control is inactive
                 if control_type == ConverterControlType.Vm_dc:
                     bus_idx = vsc_data.F[ii]
-                    self.cx_vm.add(bus_idx)
+                    # self.cx_vm.add(bus_idx)
                 if control_type == ConverterControlType.Vm_ac:
                     bus_idx = vsc_data.T[ii]
-                    self.cx_vm.add(bus_idx)
+                    # self.cx_vm.add(bus_idx)
                 if control_type == ConverterControlType.Va_ac:
                     bus_idx = vsc_data.T[ii]
                     self.cx_va.add(bus_idx)
@@ -769,10 +771,10 @@ class GeneralizedSimulationIndices:
 
             branch_idx += 1
 
-        # # Post-processing
-        # for i, val in enumerate(self.bus_vm_pointer_used):
-        #     if not val:
-        #         self.add_to_cx_vm(i)
+        # Post-processing, much needed!
+        for i, val in enumerate(self.bus_vm_pointer_used):
+            if not val:
+                self.add_to_cx_vm(i)
 
         print()
 
