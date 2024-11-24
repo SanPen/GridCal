@@ -28,7 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed print from ac_opf.py&#10;improved find_terms_connections">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor fix but still diverging">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,7 +71,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel" />
+        <entry key="$PROJECT_DIR$" value="1fea8fa525f953ef1f71193c41c5250ff8ded675" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -184,7 +185,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.acdc_generalized_1">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -655,11 +656,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.acdc_generalized_1" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_derivatives.test_m_derivatives" />
         <item itemvalue="Python tests.pytest for src.tests.test_admittance_matrix.test1" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.acdc_generalized_1" />
       </list>
     </recent_temporary>
   </component>
@@ -1722,7 +1723,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="572" />
+    <option name="localTasksCounter" value="574" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1768,8 +1769,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Extended IEEE14 test models from Miguel" />
-    <MESSAGE value="ConnectivityNode are added to TR3w init" />
     <MESSAGE value="comparing array properties (len)" />
     <MESSAGE value="fixing and cleaning some TODOS" />
     <MESSAGE value="function part for getting simpl hvdc from CGMES" />
@@ -1793,7 +1792,9 @@
     <MESSAGE value="Removed print from ac_opf.py&#10;improved find_terms_connections" />
     <MESSAGE value="Got matching results with lossless vscs" />
     <MESSAGE value="Update mod2 file (lossless)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update mod2 file (lossless)" />
+    <MESSAGE value="Getting singular J for some reason" />
+    <MESSAGE value="Minor fix but still diverging" />
+    <option name="LAST_COMMIT_MESSAGE" value="Minor fix but still diverging" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2262,11 +2263,6 @@
           <option name="timeStamp" value="2327" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>1011</line>
-          <option name="timeStamp" value="2331" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py</url>
           <line>78</line>
           <option name="timeStamp" value="2337" />
@@ -2275,21 +2271,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py</url>
           <line>79</line>
           <option name="timeStamp" value="2338" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>590</line>
-          <option name="timeStamp" value="2354" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>1028</line>
-          <option name="timeStamp" value="2355" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>741</line>
-          <option name="timeStamp" value="2356" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
