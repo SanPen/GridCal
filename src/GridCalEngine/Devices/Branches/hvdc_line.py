@@ -210,8 +210,6 @@ class HvdcLine(BranchParent):
 
         self.dc_link_voltage = float(dc_link_voltage)
 
-        # self.n_lines = int(n_lines)
-
         self.angle_droop = float(angle_droop)
 
         self.loss_factor = float(loss_factor)
@@ -245,11 +243,11 @@ class HvdcLine(BranchParent):
 
         self.control_mode: HvdcControlType = control_mode
 
-        self._Pset_prof: Vec = Profile(default_value=Pset, data_type=float)
-        self._active_prof: IntVec = Profile(default_value=active, data_type=bool)
-        self._Vset_f_prof: Vec = Profile(default_value=Vset_f, data_type=float)
-        self._Vset_t_prof: Vec = Profile(default_value=Vset_t, data_type=float)
-        self._angle_droop_prof: Vec = Profile(default_value=angle_droop, data_type=float)
+        self._Pset_prof: Profile = Profile(default_value=Pset, data_type=float)
+        self._active_prof: Profile = Profile(default_value=active, data_type=bool)
+        self._Vset_f_prof: Profile = Profile(default_value=Vset_f, data_type=float)
+        self._Vset_t_prof: Profile = Profile(default_value=Vset_t, data_type=float)
+        self._angle_droop_prof: Profile = Profile(default_value=angle_droop, data_type=float)
 
         # Line locations
         self._locations: LineLocations = LineLocations()
