@@ -673,7 +673,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # Calc in pu
                 ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F[i]])
                 rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
-                losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
+                losshvdcpu = rpu * ihvdcpu * ihvdcpu
                 Ploss_hvdc[i] = Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
 
                 print()
@@ -815,7 +815,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                 ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
                 rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
-                losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
+                losshvdcpu = rpu * ihvdcpu * ihvdcpu
                 Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
                 print()
 
