@@ -810,7 +810,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # Loss
                 I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf[i] * self.Vm[self.nc.hvdc_data.F[i]])  # current in kA
                 loss_hvdc = self.nc.hvdc_data.r[i] * I_hvdc * I_hvdc  # losses in MW
-                Ploss_hvdc = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+                Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
                 # Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
 
                 ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
