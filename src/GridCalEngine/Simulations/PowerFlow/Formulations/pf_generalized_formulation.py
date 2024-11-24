@@ -5,6 +5,7 @@
 from typing import Tuple, List, Callable, Union
 import numpy as np
 import pandas as pd
+import scipy as sp
 from scipy.sparse import lil_matrix, csc_matrix
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -89,6 +90,24 @@ def adv_jacobian(nbus: int,
                  ig_qftr: IntVec,
                  ig_pttr: IntVec,
                  ig_qttr: IntVec,
+                 ig_contrbr: IntVec,
+                 Cf_acdc: sp.sparse,
+                 Ct_acdc: sp.sparse,
+                 Cf_hvdc: sp.sparse,
+                 Ct_hvdc: sp.sparse,
+                 Cf_contbr: sp.sparse,
+                 Ct_contbr: sp.sparse,
+                 alpha1: Vec,
+                 alpha2: Vec,
+                 alpha3: Vec,
+                 F_acdc: IntVec,
+                 T_acdc: IntVec,
+                 F_hvdc: IntVec,
+                 T_hvdc: IntVec,
+                 Pf: Vec,
+                 Qf: Vec,
+                 Pt: Vec,
+                 Qt: Vec,
                  F: IntVec,
                  T: IntVec,
                  Ys: CxVec,
@@ -128,8 +147,26 @@ def adv_jacobian(nbus: int,
     :param ig_qftr:
     :param ig_pttr:
     :param ig_qttr:
-    :param F:
-    :param T:
+    :param ig_contrbr: controllable branch indices (controllable transformers)
+    :param Cf_acdc:
+    :param Ct_acdc:
+    :param Cf_hvdc:
+    :param Ct_hvdc:
+    :param Cf_contbr:
+    :param Ct_contbr:
+    :param alpha1: a
+    :param alpha2: b
+    :param alpha3: c
+    :param F_acdc: from buses for AC/DC VSCs
+    :param T_acdc: to buses for AC/DC VSCs
+    :param F_hvdc: from buses for HVDC
+    :param T_hvdc: to buses for HVDC
+    :param F: for regular branches
+    :param T: for regular branches
+    :param Pf:
+    :param Qf:
+    :param Pt:
+    :param Qt:
     :param Ys: Series admittance 1 / (R + jX)
     :param kconv:
     :param complex_tap:
@@ -161,7 +198,7 @@ def adv_jacobian(nbus: int,
     # dS_dSzip
     ix_szip = ix_pzip + ix_qzip
     ig_sbus = ig_pbus + ig_qbus
-    nnz_dS_dSzip = union(ix_szip, ig_sbus)  # indices where both have entries, eg: cross([1, 2, 3], [2, 4]) = [2]
+    nnz_dS_dSzip = np.intersect1d(ix_szip, ig_sbus)  # indices where both have entries, eg: cross([1, 2, 3], [2, 4]) = [2]
     dS_dSzip = CxCSC(nbus, nbus, nnz_dS_dSzip, False).set(ig_sbus, ix_szip, -1 * np.ones(nnz_dS_dSzip))
     # dS_dSzip = -1  # Size nbus x nbus, or slice directly
     # then do the full crossing ig_pbus, ig_qbus, ix_pzip, ix_qzip
@@ -172,20 +209,36 @@ def adv_jacobian(nbus: int,
     # ig_conttr = ig_pftr + ig_pttr + ig_qftr + ig_qttr, as if one branch controls something, immediately goes there
     # when slicing, if we have set some entry we should not have, it will be sorted out as it will not be grabbed
     dS_dSf = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
-    dS_dSf[range(nbus), ig_plossacdc] = transpose(Cf_acdc)  # fill intersection bus x acdc
-    dS_dSf[range(nbus), ig_plosshvdc] = transpose(Cf_hvdc)  # fill intersection bus x hvdc
-    dS_dSf[range(nbus), ig_conttr] = transpose(Cf_conttr)  # fill intersection bus x controllable trafos
+    dS_dSf[range(nbus), ig_plossacdc] = Cf_acdc.transpose()  # fill intersection bus x acdc
+    dS_dSf[range(nbus), ig_plosshvdc] = Cf_hvdc.transpose()  # fill intersection bus x hvdc
+    dS_dSf[range(nbus), ig_contrbr] = Cf_contbr[ig_contrbr, :].transpose()  # fill intersection bus x controllable trafos
 
     dS_dSt = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
-    dS_dSt[range(nbus), ig_plossacdc] = transpose(Ct_acdc)  # fill intersection bus x acdc
-    dS_dSt[range(nbus), ig_plosshvdc] = transpose(Ct_hvdc)  # fill intersection bus x hvdc
-    dS_dSt[range(nbus), ig_conttr] = transpose(Ct_conttr)  # fill intersection bus x controllable trafos (or in reality, all classic branches)
+    dS_dSt[range(nbus), ig_plossacdc] = Ct_acdc.transpose() # fill intersection bus x acdc
+    dS_dSt[range(nbus), ig_plosshvdc] = Ct_hvdc.transpose() # fill intersection bus x hvdc
+    dS_dSt[range(nbus), ig_contrbr] = Ct_contbr[ig_contrbr, :].transpose()  # fill intersection bus x controllable trafos (or in reality, all classic branches)
 
     # dS_dtau and dS_dm from csc_derivatives.py, already there
+    # where complex_tap = m * e ^ (1j * tau) and tap_modules = m
+    dS_dtau = deriv.dSbus_dtau_csc(nbus, ig_sbus, ix_tau, F, T, Ys, kconv, complex_tap, V).real
+    dS_dm = deriv.dSbus_dm_csc(nbus, ig_sbus, ix_m, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V)
     # First 2 rows completed up to here
 
     # VSC loss eq.
     # Derivatives from Raiyan's thesis, 4 nnz terms, no big deal
+    # Do we want to run njit? And will numba handle it well?
+    nvsc = len(ig_plossacdc)
+    pq_sqrt = np.sqrt(Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc])
+
+    # dLacdc_dVm applies only to the T side
+    dLacdc_dVm = ((alpha2 * pq_sqrt * Qt[ig_plossacdc]) / (Vm[T_acdc] * Vm[T_acdc])
+                  + 2 * alpha3 * (Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]) / (Vm[T_acdc] * Vm[T_acdc] * Vm[T_acdc]))
+
+    dLacdc_dPt = np.ones(nvsc) - alpha2 * Pt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Pt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+    dLacdc_dQt = - alpha2 * Qt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+    dLacdc_dPf = np.ones(nvsc)
+
+    # HVDC loss eq.
 
 
     dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
@@ -722,7 +775,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         It = np.sqrt(Pt * Pt + Qt * Qt)[self.cg_acdc] / Vm[toBus]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
-                     + self.nc.vsc_data.alpha2 * It2
+                     + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
         Ploss_acdc = PLoss_IEC - Pt[self.cg_acdc] - Pf[self.cg_acdc]
@@ -868,7 +921,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         It = np.sqrt(self.Pt * self.Pt + self.Qt * self.Qt)[self.cg_acdc] / self.Vm[toBus]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
-                     + self.nc.vsc_data.alpha2 * It2
+                     + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
         # ACDC Power Loss Residual

@@ -28,10 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Debug fixed mode also working fine">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Started schematizing the Jacobian">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_1.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_1.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1723,7 +1722,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="581" />
+    <option name="localTasksCounter" value="582" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1756,7 +1755,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="320_generalized_acdc_pf" />
+                        <option value="origin/320_generalized_acdc_pf" />
                       </list>
                     </value>
                   </entry>
@@ -1769,7 +1768,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added opf options initialization from 204&#10;Improved Vmin and Vmax analysis" />
     <MESSAGE value="Added new control Q limits option just for the ACOPF" />
     <MESSAGE value="Minor updates" />
     <MESSAGE value="Worked a bit more on the generalized PF indexing" />
@@ -1794,7 +1792,8 @@
     <MESSAGE value="Fix VSC setting Vm and HVDC by index calc" />
     <MESSAGE value="HVDC converging but clean things" />
     <MESSAGE value="Debug fixed mode also working fine" />
-    <option name="LAST_COMMIT_MESSAGE" value="Debug fixed mode also working fine" />
+    <MESSAGE value="Started schematizing the Jacobian" />
+    <option name="LAST_COMMIT_MESSAGE" value="Started schematizing the Jacobian" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2274,12 +2273,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>910</line>
+          <line>958</line>
           <option name="timeStamp" value="2340" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>765</line>
+          <line>813</line>
           <option name="timeStamp" value="2342" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2289,18 +2288,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>832</line>
+          <line>880</line>
           <option name="timeStamp" value="2356" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>1140</line>
+          <line>1188</line>
           <option name="timeStamp" value="2357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>923</line>
+          <line>971</line>
           <option name="timeStamp" value="2358" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>998</line>
+          <option name="timeStamp" value="2359" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/basic_structures.py</url>
+          <line>5</line>
+          <option name="timeStamp" value="2360" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
