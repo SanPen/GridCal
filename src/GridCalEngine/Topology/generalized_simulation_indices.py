@@ -121,7 +121,7 @@ class GeneralizedSimulationIndices:
         self.ck_qfa: Set[int] = set()
         self.ck_qta: Set[int] = set()
 
-        # setpoints that correspond to the ck sets
+        # setpoints that correspond to the ck sets, P and Q in MW
         self.va_setpoints = []
         self.vm_setpoints = []
         self.tau_setpoints = []
@@ -751,6 +751,21 @@ class GeneralizedSimulationIndices:
             self.add_to_cx_pta(branch_idx)
             self.add_to_cx_qfa(branch_idx)
             self.add_to_cx_qta(branch_idx)
+
+            if nc.hvdc_data.Pset[iii] > 0.0:
+                self.pf_setpoints.append(nc.hvdc_data.Pset[iii])
+                self.pt_setpoints.append(-nc.hvdc_data.Pset[iii])
+
+                self.ck_pfa.add(int(branch_idx))
+                self.ck_pta.add(int(branch_idx))
+
+            else:
+                self.pf_setpoints.append(-nc.hvdc_data.Pset[iii])
+                self.pt_setpoints.append(nc.hvdc_data.Pset[iii])
+
+                self.ck_pfa.add(int(branch_idx))
+                self.ck_pta.add(int(branch_idx))
+            # Initialize Qs to 0, although they will take whatever value
 
             branch_idx += 1
 

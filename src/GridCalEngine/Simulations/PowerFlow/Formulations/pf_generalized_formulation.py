@@ -663,9 +663,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # Pinj_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase
 
             # Loss
-            I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
-            loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+            # I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * Vm[self.nc.hvdc_data.F])  # current in kA
+            # loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
+            # Ploss_hvdc = Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+            # Ploss_hvdc = Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+
+            # Calc in pu
+            ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F])
+            rpu = self.nc.hvdc_data.r * self.nc.Sbase / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf)
+            losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
+            Ploss_hvdc = Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
+
             print()
 
         elif Pcalc_hvdc < 0.0:
@@ -675,7 +683,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * Vm[self.nc.hvdc_data.T])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
+            # Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
             print()
 
         else:
@@ -795,6 +804,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnf * self.Vm[self.nc.hvdc_data.F])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
             Ploss_hvdc = self.Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+            # Ploss_hvdc = self.Pf[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - loss_hvdc / self.nc.Sbase
+
+            ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F])
+            rpu = self.nc.hvdc_data.r * self.nc.Sbase / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf)
+            losshvdcpu = rpu * ihvdcpu * ihvdcpu / 3
+            Ploss_hvdc = self.Pt[self.cg_hvdc] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
             print()
 
         elif Pcalc_hvdc < 0.0:
@@ -804,7 +819,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # Loss
             I_hvdc = Pcalc_hvdc / (self.nc.hvdc_data.Vnt * self.Vm[self.nc.hvdc_data.T])  # current in kA
             loss_hvdc = self.nc.hvdc_data.r * I_hvdc * I_hvdc  # losses in MW
-            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc] + loss_hvdc / self.nc.Sbase
+            Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
+            # Ploss_hvdc = Pcalc_hvdc / self.nc.Sbase + self.Pt[self.cg_hvdc] - loss_hvdc / self.nc.Sbase
             print()
 
         else:

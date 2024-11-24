@@ -28,9 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor fix but still diverging">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Update hvdc to what I think should be">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_1.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_1.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -185,7 +187,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.acdc_generalized_1">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -656,19 +658,18 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.acdc_generalized_1" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_derivatives.test_m_derivatives" />
         <item itemvalue="Python tests.pytest for src.tests.test_admittance_matrix.test1" />
-        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
-        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
+        <option value="bundled-python-sdk-c69650fc56ca-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.15619.17" />
       </set>
     </attachedChunks>
   </component>
@@ -1723,7 +1724,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="574" />
+    <option name="localTasksCounter" value="575" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1769,7 +1770,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="comparing array properties (len)" />
     <MESSAGE value="fixing and cleaning some TODOS" />
     <MESSAGE value="function part for getting simpl hvdc from CGMES" />
     <MESSAGE value="simpl hvdc from CGMES" />
@@ -1794,7 +1794,8 @@
     <MESSAGE value="Update mod2 file (lossless)" />
     <MESSAGE value="Getting singular J for some reason" />
     <MESSAGE value="Minor fix but still diverging" />
-    <option name="LAST_COMMIT_MESSAGE" value="Minor fix but still diverging" />
+    <MESSAGE value="Update hvdc to what I think should be" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update hvdc to what I think should be" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2271,6 +2272,31 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py</url>
           <line>79</line>
           <option name="timeStamp" value="2338" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>812</line>
+          <option name="timeStamp" value="2339" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>823</line>
+          <option name="timeStamp" value="2340" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>676</line>
+          <option name="timeStamp" value="2341" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>687</line>
+          <option name="timeStamp" value="2342" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>354</line>
+          <option name="timeStamp" value="2343" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
