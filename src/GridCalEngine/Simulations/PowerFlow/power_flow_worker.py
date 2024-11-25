@@ -249,15 +249,25 @@ def solve(nc: NumericalCircuit,
                 if nc.any_control:
                     # Solve NR with the AC/DC algorithm
 
-                    problem = PfAdvancedFormulation(V0=final_solution.V,
-                                                    S0=S0,
-                                                    I0=I0,
-                                                    Y0=Y0,
-                                                    Qmin=Qmin,
-                                                    Qmax=Qmax,
-                                                    nc=nc,
-                                                    options=options,
-                                                    logger=logger)
+                    # problem = PfAdvancedFormulation(V0=final_solution.V,
+                    #                                 S0=S0,
+                    #                                 I0=I0,
+                    #                                 Y0=Y0,
+                    #                                 Qmin=Qmin,
+                    #                                 Qmax=Qmax,
+                    #                                 nc=nc,
+                    #                                 options=options,
+                    #                                 logger=logger)
+
+                    problem = PfGeneralizedFormulation(V0=final_solution.V,
+                                                       S0=S0,
+                                                       I0=I0,
+                                                       Y0=Y0,
+                                                       Qmin=Qmin,
+                                                       Qmax=Qmax,
+                                                       nc=nc,
+                                                       options=options,
+                                                       logger=logger)
 
                     solution = levenberg_marquadt_fx(problem=problem,
                                                      tol=options.tolerance,
@@ -328,15 +338,25 @@ def solve(nc: NumericalCircuit,
                 if nc.any_control:
                     # Solve NR with the AC/DC algorithm
 
-                    problem = PfAdvancedFormulation(V0=final_solution.V,
-                                                    S0=S0,
-                                                    I0=I0,
-                                                    Y0=Y0,
-                                                    Qmin=Qmin,
-                                                    Qmax=Qmax,
-                                                    nc=nc,
-                                                    options=options,
-                                                    logger=logger)
+                    # problem = PfAdvancedFormulation(V0=final_solution.V,
+                    #                                 S0=S0,
+                    #                                 I0=I0,
+                    #                                 Y0=Y0,
+                    #                                 Qmin=Qmin,
+                    #                                 Qmax=Qmax,
+                    #                                 nc=nc,
+                    #                                 options=options,
+                    #                                 logger=logger)
+
+                    problem = PfGeneralizedFormulation(V0=final_solution.V,
+                                                       S0=S0,
+                                                       I0=I0,
+                                                       Y0=Y0,
+                                                       Qmin=Qmin,
+                                                       Qmax=Qmax,
+                                                       nc=nc,
+                                                       options=options,
+                                                       logger=logger)
 
                     solution = newton_raphson_fx(problem=problem,
                                                  tol=options.tolerance,
@@ -367,15 +387,25 @@ def solve(nc: NumericalCircuit,
                 if nc.any_control:
                     # Solve NR with the AC/DC algorithm
 
-                    problem = PfAdvancedFormulation(V0=final_solution.V,
-                                                    S0=S0,
-                                                    I0=I0,
-                                                    Y0=Y0,
-                                                    Qmin=Qmin,
-                                                    Qmax=Qmax,
-                                                    nc=nc,
-                                                    options=options,
-                                                    logger=logger)
+                    # problem = PfAdvancedFormulation(V0=final_solution.V,
+                    #                                 S0=S0,
+                    #                                 I0=I0,
+                    #                                 Y0=Y0,
+                    #                                 Qmin=Qmin,
+                    #                                 Qmax=Qmax,
+                    #                                 nc=nc,
+                    #                                 options=options,
+                    #                                 logger=logger)
+
+                    problem = PfGeneralizedFormulation(V0=final_solution.V,
+                                                       S0=S0,
+                                                       I0=I0,
+                                                       Y0=Y0,
+                                                       Qmin=Qmin,
+                                                       Qmax=Qmax,
+                                                       nc=nc,
+                                                       options=options,
+                                                       logger=logger)
 
                     solution = powell_fx(problem=problem,
                                          tol=options.tolerance,

@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 
-import GridCalEngine.Devices
 from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
