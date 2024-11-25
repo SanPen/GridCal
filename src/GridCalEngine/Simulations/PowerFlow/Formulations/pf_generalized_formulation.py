@@ -13,7 +13,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, sp_slice_cols, sp_slice_rows
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -188,6 +188,32 @@ def adv_jacobian(nbus: int,
     g = [Pbus, Qbus, Ploss_acdc, Ploss_hvdc, Pinj_hvdc, Pftr, Qftr, Pttr, Qttr]
 
     """
+    # DO SOME IMPORTANT CASTING
+    ix_vm = np.asarray(ix_vm).astype(np.int32)
+    ix_va = np.asarray(ix_va).astype(np.int32)
+    ix_pzip = np.asarray(ix_pzip).astype(np.int32)
+    ix_qzip = np.asarray(ix_qzip).astype(np.int32)
+    ix_pf = np.asarray(ix_pf).astype(np.int32)
+    ix_qf = np.asarray(ix_qf).astype(np.int32)
+    ix_pt = np.asarray(ix_pt).astype(np.int32)
+    ix_qt = np.asarray(ix_qt).astype(np.int32)
+    ix_m = np.asarray(ix_m).astype(np.int32)
+    ix_tau = np.asarray(ix_tau).astype(np.int32)
+
+    ig_pbus = np.asarray(ig_pbus).astype(np.int32)
+    ig_qbus = np.asarray(ig_qbus).astype(np.int32)
+    ig_plossacdc = np.asarray(ig_plossacdc).astype(np.int32)
+    ig_plosshvdc = np.asarray(ig_plosshvdc).astype(np.int32)
+    ig_pinjhvdc = np.asarray(ig_pinjhvdc).astype(np.int32)
+    ig_pftr = np.asarray(ig_pftr).astype(np.int32)
+    ig_qftr = np.asarray(ig_qftr).astype(np.int32)
+    ig_pttr = np.asarray(ig_pttr).astype(np.int32)
+    ig_qttr = np.asarray(ig_qttr).astype(np.int32)
+    ig_contrbr = np.asarray(ig_contrbr).astype(np.int32)
+
+
+
+
     # COMPUTE DERIVATIVES
 
     # dS_dVma bus-bus derivatives (always needed)
@@ -195,14 +221,31 @@ def adv_jacobian(nbus: int,
     dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x)
 
+
+    '''
+    dS_dSzip: remade it as 4 different chunks below: dP_dPzip, dQ_dQzip, dP_dQzip, dQ_dPzip
+    '''
     # dS_dSzip
-    ix_szip = ix_pzip + ix_qzip
-    ig_sbus = ig_pbus + ig_qbus
-    nnz_dS_dSzip = np.intersect1d(ix_szip,
-                                  ig_sbus)  # indices where both have entries, eg: cross([1, 2, 3], [2, 4]) = [2]
-    dS_dSzip = CxCSC(nbus, nbus, nnz_dS_dSzip, False).set(ig_sbus, ix_szip, -1 * np.ones(nnz_dS_dSzip))
+    # ix_szip = ix_pzip + ix_qzip
+    # ig_sbus = ig_pbus + ig_qbus
+    # nnz_dS_dSzip = np.intersect1d(ix_szip,
+                                  # ig_sbus)  # indices where both have entries, eg: cross([1, 2, 3], [2, 4]) = [2]
+    # dS_dSzip = CxCSC(nbus, nbus, nnz_dS_dSzip, False).set(ig_sbus, ix_szip, (-1 + 0j) * np.ones(nnz_dS_dSzip))
     # dS_dSzip = -1  # Size nbus x nbus, or slice directly
     # then do the full crossing ig_pbus, ig_qbus, ix_pzip, ix_qzip
+
+
+
+    nnz_dP_dPzip = np.intersect1d(ix_pzip, ig_pbus)
+    nnz_dQ_dQzip = np.intersect1d(ix_qzip, ig_qbus)
+    pzipData: CxVec = (-1 + 0j) * np.ones(len(nnz_dP_dPzip), dtype=np.float64)
+    qzipData: CxVec = (-1 + 0j) * np.ones(len(nnz_dQ_dQzip), dtype=np.float64)
+    dP_dPzip = CxCSC(len(ig_pbus), len(ix_pzip), len(nnz_dP_dPzip), False).set(ig_pbus, nnz_dP_dPzip, pzipData)
+    dQ_dQzip = CxCSC(len(ig_qbus), len(ix_qzip), len(nnz_dQ_dQzip), False).set(ig_qbus, nnz_dQ_dQzip, qzipData)
+    dP_dQzip = CxCSC(len(ig_pbus), len(ix_qzip), 0, False)
+    dQ_dPzip = CxCSC(len(ig_qbus), len(ix_pzip), 0, False)
+
+    ## Raiyan done till here
 
     # dS_dSft
     # I think we need C matrices even if not present in Raiyan's thesis
@@ -246,6 +289,8 @@ def adv_jacobian(nbus: int,
 
     # HVDC loss eq.
     # compute them going through a loop better
+
+
     """
     Pc = (Pset + (Va[F] - Va[T]) * mode * droop) / Sbase
     We simplify mode * droop = md
@@ -1096,29 +1141,40 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:
         """
         if autodiff:
             J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-6)
-            # print("(pf_generalized_formulation.py) J: ")
-            # print(J)
+            print("(pf_generalized_formulation.py) J: ")
+            print(J)
             return scipy_to_mat(J)
         else:
-            n_rows = (len(self.idx_dP)
-                      + len(self.idx_dQ)
-                      + len(self.idx_dPf)
-                      + len(self.idx_dQf)
-                      + len(self.idx_dPt)
-                      + len(self.idx_dQt))
+            n_rows = (len(self.cg_pac)
+                      + len(self.cg_qac)
+                      + len(self.cg_pdc)
+                      + len(self.cg_acdc)
+                      + len(self.cg_hvdc)
+                      + len(self.cg_pftr)
+                      + len(self.cg_qftr)
+                        + len(self.cg_pttr)
+                        + len(self.cg_qttr))
 
-            n_cols = (len(self.idx_dVa)
-                      + len(self.idx_dVm)
-                      + len(self.idx_dm)
-                      + len(self.idx_dtau)
-                      + len(self.idx_dbeq))
+
+            n_cols = (len(self.cx_vm)
+                      + len(self.cx_va)
+                      + len(self.cx_tau)
+                      + len(self.cx_pzip)
+                      + len(self.cx_qzip)
+                      + len(self.cx_pfa)
+                        + len(self.cx_qfa)
+                        + len(self.cx_pta)
+                        + len(self.cx_qta)
+                        + len(self.cx_m)
+                      + len(self.cx_tau))
+
 
             if n_cols != n_rows:
                 raise ValueError("Incorrect J indices!")
@@ -1127,36 +1183,94 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angles = expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0)
             tap = polar_to_rect(tap_modules, tap_angles)
 
-            J = adv_jacobian(nbus=self.nc.nbus,
-                             nbr=self.nc.nbr,
-                             idx_dva=self.idx_dVa,
-                             idx_dvm=self.idx_dVm,
-                             idx_dm=self.idx_dm,
-                             idx_dtau=self.idx_dtau,
-                             idx_dbeq=self.idx_dbeq,
-                             idx_dP=self.idx_dP,
-                             idx_dQ=self.idx_dQ,
-                             idx_dPf=self.idx_dPf,
-                             idx_dQf=self.idx_dQf,
-                             idx_dPt=self.idx_dPt,
-                             idx_dQt=self.idx_dQt,
-                             F=self.nc.F,
-                             T=self.nc.T,
-                             Ys=self.Ys,
-                             kconv=self.nc.passive_branch_data.k,
-                             complex_tap=tap,
-                             tap_modules=tap_modules,
-                             Bc=self.nc.passive_branch_data.B,
-                             Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
-                             V=self.V,
-                             Vm=self.Vm,
-                             Ybus_x=self.adm.Ybus.data,
-                             Ybus_p=self.adm.Ybus.indptr,
-                             Ybus_i=self.adm.Ybus.indices,
-                             yff=self.adm.yff,
-                             yft=self.adm.yft,
-                             ytf=self.adm.ytf,
-                             ytt=self.adm.ytt)
+            J = adv_jacobian(
+                nbus=self.nc.nbus,
+                nbr=self.nc.nbr,
+                ix_vm=self.indices.cx_vm,
+                ix_va=self.indices.cx_va,
+                ix_pzip=self.indices.cx_pzip,
+                ix_qzip=self.indices.cx_qzip,
+                ix_pf=self.indices.cx_pfa,
+                ix_qf=self.indices.cx_qfa,
+                ix_pt=self.indices.cx_pta,
+                ix_qt=self.indices.ck_qta,
+                ix_m=self.indices.ck_m,
+                ix_tau=self.indices.ck_tau,
+                ig_pbus=self.indices.cg_pac + self.indices.cg_pdc,
+                ig_qbus=self.indices.cg_qac,
+                ig_plossacdc=self.indices.cg_acdc,
+                ig_plosshvdc=self.indices.cg_hvdc,
+                ig_pinjhvdc=self.indices.cg_hvdc, #TODO: clarify this set? I think it should be the same as ig_plosshvdc
+                ig_pftr=self.indices.cg_pftr,
+                ig_qftr=self.indices.cg_qftr,
+                ig_pttr=self.indices.cg_pttr,
+                ig_qttr=self.indices.cg_qttr,
+                ig_contrbr=self.indices.cg_qttr,
+                Cf_acdc=self.nc.vsc_data.C_branch_bus_f,
+                Ct_acdc=self.nc.vsc_data.C_branch_bus_t,
+                Cf_hvdc=self.nc.hvdc_data.C_hvdc_bus_f,
+                Ct_hvdc=self.nc.hvdc_data.C_hvdc_bus_t,
+                Cf_contbr=self.nc.passive_branch_data.C_branch_bus_f,
+                Ct_contbr=self.nc.passive_branch_data.C_branch_bus_t,
+                alpha1=self.nc.vsc_data.alpha1,
+                alpha2=self.nc.vsc_data.alpha2,
+                alpha3=self.nc.vsc_data.alpha3,
+                F_acdc=self.nc.vsc_data.F,
+                T_acdc=self.nc.vsc_data.T,
+                F_hvdc=self.nc.hvdc_data.F,
+                T_hvdc=self.nc.hvdc_data.T,
+                Pf = self.Pf,
+                Qf = self.Qf,
+                Pt = self.Pt,
+                Qt = self.Qt,
+                F=self.nc.F,
+                T=self.nc.T,
+                Ys=self.Ys,
+                kconv=self.nc.passive_branch_data.k,
+                complex_tap=tap,
+                tap_modules=tap_modules,
+                Bc=self.nc.passive_branch_data.B,
+                V=self.V,
+                Vm=np.abs(self.V),
+                 Ybus_x=self.adm.Ybus.data,
+                 Ybus_p=self.adm.Ybus.indptr,
+                 Ybus_i=self.adm.Ybus.indices,
+                 yff=self.adm.yff,
+                 yft=self.adm.yft,
+                 ytf=self.adm.ytf,
+                 ytt=self.adm.ytt)
+
+            # J = adv_jacobian(nbus=self.nc.nbus,
+            #                  nbr=self.nc.nbr,
+            #                  idx_dva=self.idx_dVa,
+            #                  idx_dvm=self.idx_dVm,
+            #                  idx_dm=self.idx_dm,
+            #                  idx_dtau=self.idx_dtau,
+            #                  idx_dbeq=self.idx_dbeq,
+            #                  idx_dP=self.idx_dP,
+            #                  idx_dQ=self.idx_dQ,
+            #                  idx_dPf=self.idx_dPf,
+            #                  idx_dQf=self.idx_dQf,
+            #                  idx_dPt=self.idx_dPt,
+            #                  idx_dQt=self.idx_dQt,
+            #
+            #                  F=self.nc.F,
+            #                  T=self.nc.T,
+            #                  Ys=self.Ys,
+            #                  kconv=self.nc.passive_branch_data.k,
+            #                  complex_tap=tap,
+            #                  tap_modules=tap_modules,
+            #                  Bc=self.nc.passive_branch_data.B,
+            #                  Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
+            #                  V=self.V,
+            #                  Vm=self.Vm,
+            #                  Ybus_x=self.adm.Ybus.data,
+            #                  Ybus_p=self.adm.Ybus.indptr,
+            #                  Ybus_i=self.adm.Ybus.indices,
+            #                  yff=self.adm.yff,
+            #                  yft=self.adm.yft,
+            #                  ytf=self.adm.ytf,
+            #                  ytt=self.adm.ytt)
 
             return J
 
