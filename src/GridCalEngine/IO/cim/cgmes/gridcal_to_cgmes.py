@@ -859,7 +859,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             cgmes_model=cgmes_model,
             logger=logger
         )
-        # tculControlMode not used, but be set to something: volt/react ..
+        # tculControlMode not used, but has to be set to something: volt/react ..
         tap_changer.tculControlMode = TransformerControlMode.volt
         #                   TAP Changer SSH
         tap_changer.controlEnabled = tcc_enabled
