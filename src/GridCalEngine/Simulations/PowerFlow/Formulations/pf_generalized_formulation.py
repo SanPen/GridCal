@@ -198,7 +198,8 @@ def adv_jacobian(nbus: int,
     # dS_dSzip
     ix_szip = ix_pzip + ix_qzip
     ig_sbus = ig_pbus + ig_qbus
-    nnz_dS_dSzip = np.intersect1d(ix_szip, ig_sbus)  # indices where both have entries, eg: cross([1, 2, 3], [2, 4]) = [2]
+    nnz_dS_dSzip = np.intersect1d(ix_szip,
+                                  ig_sbus)  # indices where both have entries, eg: cross([1, 2, 3], [2, 4]) = [2]
     dS_dSzip = CxCSC(nbus, nbus, nnz_dS_dSzip, False).set(ig_sbus, ix_szip, -1 * np.ones(nnz_dS_dSzip))
     # dS_dSzip = -1  # Size nbus x nbus, or slice directly
     # then do the full crossing ig_pbus, ig_qbus, ix_pzip, ix_qzip
@@ -211,12 +212,14 @@ def adv_jacobian(nbus: int,
     dS_dSf = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
     dS_dSf[range(nbus), ig_plossacdc] = Cf_acdc.transpose()  # fill intersection bus x acdc
     dS_dSf[range(nbus), ig_plosshvdc] = Cf_hvdc.transpose()  # fill intersection bus x hvdc
-    dS_dSf[range(nbus), ig_contrbr] = Cf_contbr[ig_contrbr, :].transpose()  # fill intersection bus x controllable trafos
+    dS_dSf[range(nbus), ig_contrbr] = Cf_contbr[ig_contrbr,
+                                      :].transpose()  # fill intersection bus x controllable trafos
 
     dS_dSt = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
-    dS_dSt[range(nbus), ig_plossacdc] = Ct_acdc.transpose() # fill intersection bus x acdc
-    dS_dSt[range(nbus), ig_plosshvdc] = Ct_hvdc.transpose() # fill intersection bus x hvdc
-    dS_dSt[range(nbus), ig_contrbr] = Ct_contbr[ig_contrbr, :].transpose()  # fill intersection bus x controllable trafos (or in reality, all classic branches)
+    dS_dSt[range(nbus), ig_plossacdc] = Ct_acdc.transpose()  # fill intersection bus x acdc
+    dS_dSt[range(nbus), ig_plosshvdc] = Ct_hvdc.transpose()  # fill intersection bus x hvdc
+    dS_dSt[range(nbus), ig_contrbr] = Ct_contbr[ig_contrbr,
+                                      :].transpose()  # fill intersection bus x controllable trafos (or in reality, all classic branches)
 
     # dS_dtau and dS_dm from csc_derivatives.py, already there
     # where complex_tap = m * e ^ (1j * tau) and tap_modules = m
@@ -232,10 +235,13 @@ def adv_jacobian(nbus: int,
 
     # dLacdc_dVm applies only to the T side
     dLacdc_dVm = ((alpha2 * pq_sqrt * Qt[ig_plossacdc]) / (Vm[T_acdc] * Vm[T_acdc])
-                  + 2 * alpha3 * (Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]) / (Vm[T_acdc] * Vm[T_acdc] * Vm[T_acdc]))
+                  + 2 * alpha3 * (Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]) / (
+                              Vm[T_acdc] * Vm[T_acdc] * Vm[T_acdc]))
 
-    dLacdc_dPt = np.ones(nvsc) - alpha2 * Pt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Pt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
-    dLacdc_dQt = - alpha2 * Qt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+    dLacdc_dPt = np.ones(nvsc) - alpha2 * Pt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Pt[ig_plossacdc] / (
+                Vm[T_acdc] * Vm[T_acdc])
+    dLacdc_dQt = - alpha2 * Qt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Qt[ig_plossacdc] / (
+                Vm[T_acdc] * Vm[T_acdc])
     dLacdc_dPf = np.ones(nvsc)
 
     # HVDC loss eq.
@@ -302,7 +308,6 @@ def adv_jacobian(nbus: int,
 
     # Controllable branches dSft_dmtau already computed in csc_derivatives.py
 
-
     # dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
     # dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
     # dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
@@ -318,15 +323,21 @@ def adv_jacobian(nbus: int,
     J = csc_stack_2d_ff(mats=
                         [dP_dVm, dP_dVa, dP_dPzip, dP_dQzip, dP_dPf, dP_dQf, dP_dPt, dP_dQt, dP_dm, dP_dtau,
                          dQ_dVm, dQ_dVa, dQ_dPzip, dQ_dQzip, dQ_dPf, dQ_dQf, dQ_dPt, dQ_dQt, dQ_dm, dQ_dtau,
-                         dPlacdc_dVm, dPlacdc_dVa, dPlacdc_dPzip, dPlacdc_dQzip, dPlacdc_dPf, dPlacdc_dQf, dPlacdc_dPt, dPlacdc_dQt, dPlacdc_dm, dPlacdc_dtau,
-                         dPlhvdc_dVm, dPlhvdc_dVa, dPlhvdc_dPzip, dPlhvdc_dQzip, dPlhvdc_dPf, dPlhvdc_dQf, dPlhvdc_dPt, dPlhvdc_dQt, dPlhvdc_dm, dPlhvdc_dtau,
-                         dPihvdc_dVm, dPihvdc_dVa, dPihvdc_dPzip, dPihvdc_dQzip, dPihvdc_dPf, dPihvdc_dQf, dPihvdc_dPt, dPihvdc_dQt, dPihvdc_dm, dPihvdc_dtau,
-                         dPftr_dVm, dPftr_dVa, dPftr_dPzip, dPftr_dQzip, dPftr_dPf, dPftr_dQf, dPftr_dPt, dPftr_dQt, dPftr_dm, dPftr_dtau,
-                         dQftr_dVm, dQftr_dVa, dQftr_dPzip, dQftr_dQzip, dQftr_dPf, dQftr_dQf, dQftr_dPt, dQftr_dQt, dQftr_dm, dQftr_dtau,
-                         dPttr_dVm, dPttr_dVa, dPttr_dPzip, dPttr_dQzip, dPttr_dPf, dPttr_dQf, dPttr_dPt, dPttr_dQt, dPttr_dm, dPttr_dtau,
-                         dQttr_dVm, dQttr_dVa, dQttr_dPzip, dQttr_dQzip, dQttr_dPf, dQttr_dQf, dQttr_dPt, dQttr_dQt, dQttr_dm, dQttr_dtau],
-                         n_rows=9, n_cols=10)
-
+                         dPlacdc_dVm, dPlacdc_dVa, dPlacdc_dPzip, dPlacdc_dQzip, dPlacdc_dPf, dPlacdc_dQf, dPlacdc_dPt,
+                         dPlacdc_dQt, dPlacdc_dm, dPlacdc_dtau,
+                         dPlhvdc_dVm, dPlhvdc_dVa, dPlhvdc_dPzip, dPlhvdc_dQzip, dPlhvdc_dPf, dPlhvdc_dQf, dPlhvdc_dPt,
+                         dPlhvdc_dQt, dPlhvdc_dm, dPlhvdc_dtau,
+                         dPihvdc_dVm, dPihvdc_dVa, dPihvdc_dPzip, dPihvdc_dQzip, dPihvdc_dPf, dPihvdc_dQf, dPihvdc_dPt,
+                         dPihvdc_dQt, dPihvdc_dm, dPihvdc_dtau,
+                         dPftr_dVm, dPftr_dVa, dPftr_dPzip, dPftr_dQzip, dPftr_dPf, dPftr_dQf, dPftr_dPt, dPftr_dQt,
+                         dPftr_dm, dPftr_dtau,
+                         dQftr_dVm, dQftr_dVa, dQftr_dPzip, dQftr_dQzip, dQftr_dPf, dQftr_dQf, dQftr_dPt, dQftr_dQt,
+                         dQftr_dm, dQftr_dtau,
+                         dPttr_dVm, dPttr_dVa, dPttr_dPzip, dPttr_dQzip, dPttr_dPf, dPttr_dQf, dPttr_dPt, dPttr_dQt,
+                         dPttr_dm, dPttr_dtau,
+                         dQttr_dVm, dQttr_dVa, dQttr_dPzip, dQttr_dQzip, dQttr_dPf, dQttr_dQf, dQttr_dPt, dQttr_dQt,
+                         dQttr_dm, dQttr_dtau],
+                        n_rows=9, n_cols=10)
 
     dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dva, yff, yft, V, F, T).real
     dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dva, yff, yft, V, F, T).imag
@@ -490,77 +501,73 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.idx_dQt = np.array(0, dtype=int)
 
         # Generalized indices
-        generalisedSimulationIndices = gsi.GeneralizedSimulationIndices(self.nc)
-        self.generalisedSimulationIndices = generalisedSimulationIndices
+        self.indices = gsi.GeneralizedSimulationIndices(self.nc)
         self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
-        self.hvdc_mode = generalisedSimulationIndices.hvdc_mode
+        self.hvdc_mode = self.indices.hvdc_mode
 
         # cg sets
-        self.cg_pac = generalisedSimulationIndices.cg_pac
-        self.cg_qac = generalisedSimulationIndices.cg_qac
-        self.cg_pdc = generalisedSimulationIndices.cg_pdc
-        self.cg_acdc = generalisedSimulationIndices.cg_acdc
-        self.cg_hvdc = generalisedSimulationIndices.cg_hvdc
-        self.cg_pftr = generalisedSimulationIndices.cg_pftr
-        self.cg_pttr = generalisedSimulationIndices.cg_pttr
-        self.cg_qftr = generalisedSimulationIndices.cg_qftr
-        self.cg_qttr = generalisedSimulationIndices.cg_qttr
+        self.cg_pac = self.indices.cg_pac
+        self.cg_qac = self.indices.cg_qac
+        self.cg_pdc = self.indices.cg_pdc
+        self.cg_acdc = self.indices.cg_acdc
+        self.cg_hvdc = self.indices.cg_hvdc
+        self.cg_pftr = self.indices.cg_pftr
+        self.cg_pttr = self.indices.cg_pttr
+        self.cg_qftr = self.indices.cg_qftr
+        self.cg_qttr = self.indices.cg_qttr
 
         # cx sets [UNKNOWNS] The order of this list is important
-        self.cx_vm = generalisedSimulationIndices.cx_vm
-        self.cx_va = generalisedSimulationIndices.cx_va
-        self.cx_pzip = generalisedSimulationIndices.cx_pzip
-        self.cx_qzip = generalisedSimulationIndices.cx_qzip
-        self.cx_pfa = generalisedSimulationIndices.cx_pfa
-        self.cx_qfa = generalisedSimulationIndices.cx_qfa
-        self.cx_pta = generalisedSimulationIndices.cx_pta
-        self.cx_qta = generalisedSimulationIndices.cx_qta
-        self.cx_m = generalisedSimulationIndices.cx_m
-        self.cx_tau = generalisedSimulationIndices.cx_tau
+        self.cx_vm = self.indices.cx_vm
+        self.cx_va = self.indices.cx_va
+        self.cx_pzip = self.indices.cx_pzip
+        self.cx_qzip = self.indices.cx_qzip
+        self.cx_pfa = self.indices.cx_pfa
+        self.cx_qfa = self.indices.cx_qfa
+        self.cx_pta = self.indices.cx_pta
+        self.cx_qta = self.indices.cx_qta
+        self.cx_m = self.indices.cx_m
+        self.cx_tau = self.indices.cx_tau
 
         # ck sets [KNOWNS]
-        self.ck_vm = generalisedSimulationIndices.ck_vm
-        self.ck_va = generalisedSimulationIndices.ck_va
-        self.ck_pzip = generalisedSimulationIndices.ck_pzip
-        self.ck_qzip = generalisedSimulationIndices.ck_qzip
-        self.ck_pfa = generalisedSimulationIndices.ck_pfa
-        self.ck_qfa = generalisedSimulationIndices.ck_qfa
-        self.ck_pta = generalisedSimulationIndices.ck_pta
-        self.ck_qta = generalisedSimulationIndices.ck_qta
-        self.ck_m = generalisedSimulationIndices.ck_m
-        self.ck_tau = generalisedSimulationIndices.ck_tau
+        self.ck_vm = self.indices.ck_vm
+        self.ck_va = self.indices.ck_va
+        self.ck_pzip = self.indices.ck_pzip
+        self.ck_qzip = self.indices.ck_qzip
+        self.ck_pfa = self.indices.ck_pfa
+        self.ck_qfa = self.indices.ck_qfa
+        self.ck_pta = self.indices.ck_pta
+        self.ck_qta = self.indices.ck_qta
+        self.ck_m = self.indices.ck_m
+        self.ck_tau = self.indices.ck_tau
 
         # setpoints corresponding to the knowns
-        self.va_setpoints = generalisedSimulationIndices.va_setpoints
-        self.vm_setpoints = generalisedSimulationIndices.vm_setpoints
-        self.tau_setpoints = generalisedSimulationIndices.tau_setpoints
-        self.m_setpoints = generalisedSimulationIndices.m_setpoints
-        self.pzip_setpoints = generalisedSimulationIndices.pzip_setpoints
-        self.qzip_setpoints = generalisedSimulationIndices.qzip_setpoints
-        self.pf_setpoints = generalisedSimulationIndices.pf_setpoints
-        self.pt_setpoints = generalisedSimulationIndices.pt_setpoints
-        self.qf_setpoints = generalisedSimulationIndices.qf_setpoints
-        self.qt_setpoints = generalisedSimulationIndices.qt_setpoints
+        self.va_setpoints = self.indices.va_setpoints
+        self.vm_setpoints = self.indices.vm_setpoints
+        self.tau_setpoints = self.indices.tau_setpoints
+        self.m_setpoints = self.indices.m_setpoints
+        self.pzip_setpoints = self.indices.pzip_setpoints
+        self.qzip_setpoints = self.indices.qzip_setpoints
+        self.pf_setpoints = self.indices.pf_setpoints
+        self.pt_setpoints = self.indices.pt_setpoints
+        self.qf_setpoints = self.indices.qf_setpoints
+        self.qt_setpoints = self.indices.qt_setpoints
 
         # Update setpoints
-        self.Vm[self.generalisedSimulationIndices.ck_vm] = self.generalisedSimulationIndices.vm_setpoints
-        self.Va[self.generalisedSimulationIndices.ck_va] = self.generalisedSimulationIndices.va_setpoints
-        self.Pzip[self.generalisedSimulationIndices.ck_pzip] = np.array(
-            self.generalisedSimulationIndices.pzip_setpoints) / nc.Sbase
+        self.Vm[self.indices.ck_vm] = self.indices.vm_setpoints
+        self.Va[self.indices.ck_va] = self.indices.va_setpoints
+        self.Pzip[self.indices.ck_pzip] = np.array(self.indices.pzip_setpoints) / nc.Sbase
         idx = np.where(nc.bus_data.bus_types == BusMode.Slack_tpe.value)[0]
         self.Pzip[idx] = self.Sbus[idx].real  # before we were grabbing the idx, seemed wrong to me
-        self.Qzip[self.generalisedSimulationIndices.ck_qzip] = np.array(
-            self.generalisedSimulationIndices.qzip_setpoints) / nc.Sbase
-        self.Pf[self.generalisedSimulationIndices.ck_pfa] = np.array(
-            self.generalisedSimulationIndices.pf_setpoints) / nc.Sbase
-        self.Pt[self.generalisedSimulationIndices.ck_pta] = np.array(
-            self.generalisedSimulationIndices.pt_setpoints) / nc.Sbase
-        self.Qt[self.generalisedSimulationIndices.ck_qta] = np.array(
-            self.generalisedSimulationIndices.qt_setpoints) / nc.Sbase
+        self.Qzip[self.indices.ck_qzip] = np.array(self.indices.qzip_setpoints) / nc.Sbase
+        self.Pf[self.indices.ck_pfa] = np.array(self.indices.pf_setpoints) / nc.Sbase
+        self.Pt[self.indices.ck_pta] = np.array(self.indices.pt_setpoints) / nc.Sbase
+        self.Qt[self.indices.ck_qta] = np.array(self.indices.qt_setpoints) / nc.Sbase
 
-        self.m: Vec = np.ones(len(self.controlled_idx))
-        self.tau: Vec = np.zeros(len(self.controlled_idx))
+        self.cx_m_indexing = np.arange(len(self.cx_m))
+        self.cx_tau_indexing = np.arange(len(self.cx_tau))
+        self.m: Vec = np.ones(len(self.cx_m))
+        self.tau: Vec = np.zeros(len(self.cx_tau))
 
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
 
@@ -597,132 +604,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             seq=1,
             add_windings_phase=False
         )
-        print()
-
-    def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec) -> None:
-        """
-        Update the bus types
-        :param pq: Array of PQ indices
-        :param pv: Array of PV indices
-        :param pqv: Array of PQV indices
-        :param p: Array of P indices
-        """
-        self.pq = pq
-        self.pv = pv
-        self.pqv = pqv
-        self.p = p
-
-        self.idx_dVa = np.r_[self.pqv, self.pv, self.pq, self.p]
-        self.idx_dVm = np.r_[self.pq, self.p]
-        self.idx_dP = self.idx_dVa
-        self.idx_dQ = np.r_[self.pq, self.pqv]
-
-    def analyze_branch_controls(self) -> List[int]:
-        """
-        Analyze the control branches and compute the indices
-        :return: k_v_m for later comparison with pqv
-        """
-        k_pf_tau = list()
-        k_pt_tau = list()
-        k_qf_m = list()
-        k_qt_m = list()
-        k_qfzero_beq = list()
-        k_v_m = list()
-        k_v_beq = list()
-        k_vsc = list()
-
-        nbr = len(self.tap_phase_control_mode)
-        for k in range(nbr):
-
-            ctrl_m = self.tap_module_control_mode[k]
-            ctrl_tau = self.tap_phase_control_mode[k]
-            is_conv = self.nc.passive_branch_data.is_converter[k]
-
-            conv_type = 1 if is_conv else 0
-
-            # analyze tap-module controls
-            if ctrl_m == TapModuleControl.Vm:
-
-                # Every bus controlled by m has to become a PQV bus
-                bus_idx = self.nc.passive_branch_data.tap_controlled_buses[k]
-                self.bus_types[bus_idx] = BusMode.PQV_tpe.value
-
-                if is_conv and bus_idx == self.nc.passive_branch_data.F[k]:
-                    # if this is a converter,
-                    # the voltage can be managed with Beq
-                    # if the control bus is the "From" bus
-                    k_v_beq.append(k)
-                    conv_type = 2
-                else:
-                    # In any other case, the voltage is managed by the tap module
-                    k_v_m.append(k)
-
-            elif ctrl_m == TapModuleControl.Qf:
-
-                if not is_conv:
-                    k_qf_m.append(k)
-
-            elif ctrl_m == TapModuleControl.Qt:
-                k_qt_m.append(k)
-
-            elif ctrl_m == TapModuleControl.fixed:
-                pass
-
-            elif ctrl_m == 0:
-                pass
-
-            else:
-                raise Exception(f"Unknown tap phase module mode {ctrl_m}")
-
-            # analyze tap-phase controls
-            if ctrl_tau == TapPhaseControl.Pf:
-                k_pf_tau.append(k)
-                # conv_type = 1
-
-            elif ctrl_tau == TapPhaseControl.Pt:
-                k_pt_tau.append(k)
-                # conv_type = 1
-
-            elif ctrl_tau == TapPhaseControl.fixed:
-                if ctrl_m == TapModuleControl.fixed:
-                    conv_type = 1
-
-            # elif ctrl_tau == TapPhaseControl.Droop:
-            #     pass
-
-            elif ctrl_tau == 0:
-                pass
-
-            else:
-                raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
-
-            # Beq->qf=0
-            if conv_type == 1:
-                k_qfzero_beq.append(k)
-
-            if is_conv:
-                k_vsc.append(k)
-
-        # turn the lists into the final arrays
-        self.idx_conv = np.array(k_vsc, dtype=int)
-
-        self.idx_dm = np.r_[k_v_m, k_qf_m, k_qt_m].astype(int)
-        self.idx_dtau = np.r_[k_pf_tau, k_pt_tau].astype(int)
-        self.idx_dbeq = np.r_[k_qfzero_beq, k_v_beq].astype(int)
-
-        self.idx_dPf = np.array(k_pf_tau, dtype=int)
-        self.idx_dQf = np.r_[k_qf_m, k_qfzero_beq].astype(int)
-
-        self.idx_dPt = np.array(k_pt_tau, dtype=int)
-        self.idx_dQt = np.array(k_qt_m, dtype=int)
-
-        self.m: Vec = self.nc.passive_branch_data.tap_module[self.idx_dm]
-        self.tau: Vec = self.nc.passive_branch_data.tap_angle[self.idx_dtau]
-        self.beq: Vec = self.nc.passive_branch_data.Beq[self.idx_dbeq]
-
-        self.Gsw = self.nc.passive_branch_data.G0sw[self.idx_conv]
-
-        return k_v_m
 
     def x2var(self, x: Vec) -> None:
         """
@@ -749,8 +630,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qf[self.cx_qfa] = x[e:f]
         self.Pt[self.cx_pta] = x[f:g]
         self.Qt[self.cx_qta] = x[g:h]
-        self.m[self.cx_m] = x[h:i]
-        self.tau[self.cx_tau] = x[i:j]
+        self.m = x[h:i]
+        self.tau = x[i:j]
 
     # DONE
     def var2x(self) -> Vec:
@@ -767,8 +648,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             self.Qf[self.cx_qfa],
             self.Pt[self.cx_pta],
             self.Qt[self.cx_qta],
-            self.m[self.cx_m],
-            self.tau[self.cx_tau]
+            self.m,
+            self.tau
         ]
 
     # DONE
@@ -815,8 +696,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Qf = self.Qf.copy()
         Pt = self.Pt.copy()
         Qt = self.Qt.copy()
-        m = self.m.copy()
-        tau = self.tau.copy()
+        # m = self.m.copy()
+        # tau = self.tau.copy()
 
         Vm[self.cx_vm] = x[0:a]
         Va[self.cx_va] = x[a:b]
@@ -826,8 +707,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Qf[self.cx_qfa] = x[e:f]
         Pt[self.cx_pta] = x[f:g]
         Qt[self.cx_qta] = x[g:h]
-        m[self.cx_m] = x[h:i]
-        tau[self.cx_tau] = x[i:j]
+        m = x[h:i]
+        tau = x[i:j]
 
         # compute the complex voltage
         V = polar_to_rect(Vm, Va)
@@ -847,7 +728,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Pinj_hvdc = np.zeros(self.nc.nhvdc)
         for i in range(self.nc.nhvdc):
             dtheta = np.rad2deg(Va[self.nc.hvdc_data.F[i]] - Va[self.nc.hvdc_data.T[i]])
-            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
+            droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
             Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
 
             if Pcalc_hvdc > 0.0:
@@ -868,21 +749,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Ploss_hvdc[i] = 0.0
                 Pinj_hvdc[i] = 0.0
 
-
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
         Sbus += Pbus + 1j * Qbus
         Scalc = compute_power(self.adm.Ybus, V)
-
-        converterContribution = ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
-                                 + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
-
-        hvdcContribution = ((Pf + 1j * Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
-                            + (Pt + 1j * Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
-
-        transformerContribution = + (
-                (Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
-                + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
 
         dS = (
                 Scalc - Sbus
@@ -903,6 +773,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         V = Vm * np.exp(1j * Va)
 
+        # remapping of indices
+        m2 = np.ones(self.nc.nbr)
+        m2[self.cx_m] = m.copy()
+        tau2 = np.zeros(self.nc.nbr)
+        tau2[self.cx_tau] = tau.copy()
+
         Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
             V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
@@ -910,10 +786,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             X=self.nc.passive_branch_data.X[self.controlled_idx],
             G=self.nc.passive_branch_data.G[self.controlled_idx],
             B=self.nc.passive_branch_data.B[self.controlled_idx],
-            tap_module=m,
+            tap_module=m2[self.controlled_idx],
             vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx],
             vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx],
-            tap_angle=tau
+            tap_angle=tau2[self.controlled_idx]
         )
 
         _f = np.r_[
@@ -978,7 +854,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Pinj_hvdc = np.zeros(self.nc.nhvdc)
         for i in range(self.nc.nhvdc):
             dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F[i]] - self.Va[self.nc.hvdc_data.T[i]])
-            droop_contr = self.generalisedSimulationIndices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
+            droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
             Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
 
             if Pcalc_hvdc > 0.0:
@@ -1020,6 +896,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                                               :])
         )
 
+        # remapping of indices
+        m2 = np.ones(self.nc.nbr)
+        m2[self.cx_m] = self.m.copy()
+        tau2 = np.zeros(self.nc.nbr)
+        tau2[self.cx_tau] = self.tau.copy()
+
         # Use self.Pf...
         Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
             V_f=self.V[self.nc.passive_branch_data.F[self.controlled_idx]],
@@ -1028,10 +910,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             X=self.nc.passive_branch_data.X[self.controlled_idx],
             G=self.nc.passive_branch_data.G[self.controlled_idx],
             B=self.nc.passive_branch_data.B[self.controlled_idx],
-            tap_module=self.m,
+            tap_module=m2[self.controlled_idx],
             vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx],
             vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx],
-            tap_angle=self.tau
+            tap_angle=tau2[self.controlled_idx]
         )
 
         self._f = np.r_[
@@ -1060,6 +942,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             print("Qt:", self.Qt)
             print("m:", self.m)
             print("tau:", self.tau)
+            print("error:", self._error)
 
         # Update controls only below a certain error
         """
@@ -1220,8 +1103,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
         if autodiff:
             J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-6)
-            print("(pf_generalized_formulation.py) J: ")
-            print(J)
+            # print("(pf_generalized_formulation.py) J: ")
+            # print(J)
             return scipy_to_mat(J)
         else:
             n_rows = (len(self.idx_dP)

@@ -342,6 +342,8 @@ class GeneralizedSimulationIndices:
                                branch_idx: int = None,
                                is_conventional: bool = True):
         """
+
+        :param branch_name:
         :param branch_idx:
         :param mode:
         :param branch_idx:
@@ -375,7 +377,10 @@ class GeneralizedSimulationIndices:
         else:
             # Handle conventional conditions (regular transformers)
             if mode == TapPhaseControl.fixed:
-                pass
+                self.add_to_cg_pftr(branch_idx)
+                self.add_to_cg_pttr(branch_idx)
+                self.add_to_cg_qftr(branch_idx)
+                self.add_to_cg_qttr(branch_idx)
             elif mode == TapPhaseControl.Pf:
                 self.add_to_cg_pftr(branch_idx)
                 self.add_to_cx_tau(branch_idx)
@@ -423,6 +428,12 @@ class GeneralizedSimulationIndices:
             self.set_bus_vm_simple(bus_local=bus_idx, device_name=branch_name)
             if is_conventional:
                 self.add_to_cx_m(branch_idx)
+
+                self.add_to_cg_pftr(branch_idx)
+                self.add_to_cg_pttr(branch_idx)
+                self.add_to_cg_qftr(branch_idx)
+                self.add_to_cg_qttr(branch_idx)
+
             if not is_conventional:
                 self.add_to_cx_qta(branch_idx)
 
@@ -449,6 +460,7 @@ class GeneralizedSimulationIndices:
         """
         Add controls for a VSC to the appropriate unknown sets based on control types.
 
+        :param branch_idx: branch index
         :param vsc_data: VscData object containing VSC-related data.
         :param ii: Index of the current VSC being processed.
         """
