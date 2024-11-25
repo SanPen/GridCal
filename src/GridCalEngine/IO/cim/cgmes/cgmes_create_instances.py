@@ -16,7 +16,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     DCConverterOperatingModeKind,
                                                     VsPpccControlKind,
                                                     VsQpccControlKind)
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, \
+    get_voltage_terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
@@ -410,14 +411,14 @@ def create_cgmes_tap_changer_control(
 
 
 def create_cgmes_current_limit(terminal,
-                               rate: float,
+                               rate_mw: float,
                                op_limit_type: Base,
                                cgmes_model: CgmesCircuit,
                                logger: DataLogger):
     """
 
     :param terminal: Cgmes Terminal
-    :param rate: current rate for cgmes
+    :param rate_mw: rating in GridCal in MW/MVA
     :param op_limit_type: Operational Limit Type
     :param cgmes_model: CgmesModel
     :param logger: DataLogger
@@ -430,7 +431,12 @@ def create_cgmes_current_limit(terminal,
     curr_lim.shortName = f'CL-1'
     curr_lim.description = f'Ratings for element {terminal.ConductingEquipment.name} - Limit'
 
-    curr_lim.value = rate
+    voltage = get_voltage_terminal(terminal, logger)
+    sqrt_3 = 1.73205080756888
+    current_rate = rate_mw * 1e3 / (voltage * sqrt_3)
+    current_rate = np.round(current_rate, 4)
+
+    curr_lim.value = current_rate   # Current rate in Amps
 
     op_lim_set_1 = create_operational_limit_set(terminal, cgmes_model, logger)
     if op_lim_set_1 is not None:

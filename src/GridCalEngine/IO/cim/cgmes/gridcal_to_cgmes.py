@@ -9,6 +9,7 @@ import numpy as np
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import MultiCircuit
+from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, Base
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
@@ -392,7 +393,7 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
     """
     Converts every Multi Circuit load into CGMES ConformLoad.
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
     :param logger:
     :return:
@@ -444,7 +445,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
     Converts every Multi Circuit external grid
     into CGMES equivalent injection.
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
     :param logger:
     :return:
@@ -469,15 +470,15 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
 
 def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                cgmes_model: CgmesCircuit,
-                               patl_type: Base,
+                               op_lim_types: list,
                                logger: DataLogger):
     """
     Converts every Multi Circuit line
     into CGMES AC line segment.
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model: CgmesModel
-    :param patl_type: PATL type for normal rating
+    :param op_lim_types: Operational Limit types like PATL and TATL900, TATL60
     :param logger: DataLogger
     :return:
     """
@@ -507,18 +508,12 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         ]
         line.length = mc_elm.length
 
-        # Rates
-        current_rate = mc_elm.rate * 1e3 / (
-                mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
-        current_rate = np.round(current_rate, 4)
-        create_cgmes_current_limit(terminal=line.Terminals[0],
-                                   rate=current_rate,
-                                   op_limit_type=patl_type,
-                                   cgmes_model=cgmes_model, logger=logger)
-        create_cgmes_current_limit(terminal=line.Terminals[1],
-                                   rate=current_rate,
-                                   op_limit_type=patl_type,
-                                   cgmes_model=cgmes_model, logger=logger)
+        # RATES
+        get_cgmes_current_limits(cgmes_model=cgmes_model,
+                                 cgmes_elm=line,
+                                 mc_elm=mc_elm,
+                                 logger=logger)
+
 
         vnom = line.BaseVoltage.nominalVoltage
 
@@ -546,7 +541,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
     Converts Multi Circuit generators
     into approriate CGMES Generating Unit.
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
     :param logger:
     :return:
@@ -686,14 +681,12 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
 
 def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
-                                 patl_type: Base,
                                  logger: DataLogger):
     """
     Creates all transformer related CGMES classes from GridCal transformer.
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model: CgmesModel
-    :param patl_type: PATL type
     :param logger: DataLogger
     :return:
     """
@@ -717,9 +710,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             )
 
         cm_transformer.PowerTransformerEnd = list()
+        # Winding 1 ---------------------------------------------------------
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
         pte1 = object_template()
-        pte1.name = mc_elm.name
+        pte1.name = f"Winding 1 - {mc_elm.name}"
         pte1.PowerTransformer = cm_transformer
         pte1.Terminal = cm_transformer.Terminals[0]
         pte1.BaseVoltage = find_object_by_vnom(
@@ -728,18 +722,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             target_vnom=mc_elm.bus_from.Vnom
         )
 
-        # Rates
-        current_rate = mc_elm.rate * 1e3 / (
-                mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
-        current_rate = np.round(current_rate, 4)
-        create_cgmes_current_limit(terminal=cm_transformer.Terminals[0],
-                                   rate=current_rate,
-                                   op_limit_type=patl_type,
-                                   cgmes_model=cgmes_model, logger=logger)
-        create_cgmes_current_limit(terminal=cm_transformer.Terminals[1],
-                                   rate=current_rate,
-                                   op_limit_type=patl_type,
-                                   cgmes_model=cgmes_model, logger=logger)
+        # RATES
+        get_cgmes_current_limits(cgmes_model=cgmes_model,
+                                 cgmes_elm=cm_transformer,
+                                 mc_elm=mc_elm,
+                                 logger=logger)
 
         (pte1.r,
          pte1.x,
@@ -763,8 +750,9 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte1.ratedS = mc_elm.Sn
         pte1.endNumber = 1
 
+        # Winding 2 ---------------------------------------------------------
         pte2 = object_template()
-        pte2.name = mc_elm.name
+        pte2.name = f"Winding 2 - {mc_elm.name}"
         pte2.PowerTransformer = cm_transformer
         pte2.Terminal = cm_transformer.Terminals[1]
         pte2.BaseVoltage = find_object_by_vnom(
@@ -902,10 +890,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             create_cgmes_terminal(mc_elm.bus2, 2, cm_transformer, cgmes_model,
                                   logger),
             create_cgmes_terminal(mc_elm.bus3, 3, cm_transformer, cgmes_model,
-                                  logger)]
-
-        cm_transformer.PowerTransformerEnd = []
-        object_template = cgmes_model.get_class_type("PowerTransformerEnd")
+                                  logger)
+        ]
 
         if mc_elm.bus1.substation:
             cm_transformer.EquipmentContainer = find_object_by_uuid(
@@ -920,7 +906,9 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         # create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate, cgmes_model, logger)
         # create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate, cgmes_model, logger)
 
-        # Winding 1 ----------------------------------------------------------------------------------------------------
+        cm_transformer.PowerTransformerEnd = []
+        object_template = cgmes_model.get_class_type("PowerTransformerEnd")
+        # Winding 1 ---------------------------------------------------------
         pte1 = object_template()
         pte1.name = mc_elm.name
         pte1.PowerTransformer = cm_transformer
@@ -952,7 +940,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      nominal_power=mc_elm.winding1.rate,
                                                      rated_voltage=mc_elm.winding1.HV)
 
-        # Winding 2 ----------------------------------------------------------------------------------------------------
+        # Winding 2 ---------------------------------------------------------
         pte2 = object_template()
         pte2.name = mc_elm.name
         pte2.PowerTransformer = cm_transformer
@@ -984,7 +972,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                                      nominal_power=mc_elm.winding2.rate,
                                                      rated_voltage=mc_elm.winding2.HV)
 
-        # Winding 3 ----------------------------------------------------------------------------------------------------
+        # Winding 3 ---------------------------------------------------------
         pte3 = object_template()
         pte3.name = mc_elm.name
         pte3.PowerTransformer = cm_transformer
@@ -1027,6 +1015,124 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cgmes_model.add(cm_transformer)
 
 
+def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
+                             cgmes_elm: Base,
+                             mc_elm: BranchParent,
+                             logger: DataLogger):
+    """
+    Export Current Limits to CGMES for Branches.
+
+    :param cgmes_model: CgmesCircuit
+    :param mc_elm: GcDev Transformer 2W/3W or ACLineSegment
+    :param cgmes_elm: CGMES Transformer 2W or ACLineSegment
+    :param logger: DataLogger
+    :return: None
+    """
+
+    def create_limits_for_terminal(termnl, rate_and_type):
+        """
+        Helper function to create current limits for a terminal.
+
+        :param termnl: The terminal object
+        :param rate_and_type: List of (rate_mw, op_limit_type) tuples
+        """
+        for rate_mw, op_limit_type in rate_and_type:
+            create_cgmes_current_limit(
+                terminal=termnl,
+                rate_mw=rate_mw,
+                op_limit_type=op_limit_type,
+                cgmes_model=cgmes_model,
+                logger=logger
+            )
+
+    # Get operational limit types
+    patl, tatl_900, tatl_60 = get_cgmes_operational_limit_types(cgmes_model)
+
+    # Rate Mapping
+    rates = [
+        (mc_elm.rate, patl),
+        # Normal rate
+        (mc_elm.contingency_factor * mc_elm.rate, tatl_900),
+        # Contingency rate - TATL 900
+        (mc_elm.protection_rating_factor * mc_elm.rate, tatl_60)
+        # Contingency rate - TATL 60
+    ]
+
+    # Apply current limits to each terminal: 2 for TR2W/Lines, 3 for TR3W
+    for terminal in cgmes_elm.Terminals:
+        if terminal is not None:  # Skip if the terminal does not exist
+            create_limits_for_terminal(terminal, rates)
+
+
+# def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
+#                              cgmes_elm: Base,
+#                              mc_elm: BranchParent,
+#                              logger: DataLogger):
+#     """
+#     Exporting Current limits to CGMES for Branches
+#
+#     :param cgmes_model: CgmesCircuit
+#     :param mc_elm: GcDev Transformer 2W/3W or ACLineSegment
+#     :param cgmes_elm: CGMES Transformer 2W/3W or ACLineSegment
+#     :param logger: DataLogger
+#     :return:
+#     """
+#
+#     for terminal in cgmes_elm.Terminals:
+#         if terminal is not None:
+#             create_cgmes_terminal_limits(terminal, rates)
+#
+#     op_lim_types = get_cgmes_operational_limit_types(cgmes_model)
+#     # RATES
+#     [patl, tatl_900, tatl_60] = op_lim_types
+#     # Normal rate - PATL
+#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[0],
+#                                rate_mw=mc_elm.rate,
+#                                op_limit_type=patl,
+#                                cgmes_model=cgmes_model, logger=logger)
+#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[1],
+#                                rate_mw=mc_elm.rate,
+#                                op_limit_type=patl,
+#                                cgmes_model=cgmes_model, logger=logger)
+#
+#     # Contingency rate - TATL 900
+#     rate_2 = mc_elm.contingency_factor * mc_elm.rate
+#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[0],
+#                                rate_mw=rate_2,
+#                                op_limit_type=tatl_900,
+#                                cgmes_model=cgmes_model, logger=logger)
+#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[1],
+#                                rate_mw=rate_2,
+#                                op_limit_type=tatl_900,
+#                                cgmes_model=cgmes_model, logger=logger)
+#
+#     # Contingency rate - TATL 60
+#     rate_3 = mc_elm.protection_rating_factor * mc_elm.rate
+#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[0],
+#                                rate_mw=rate_3,
+#                                op_limit_type=tatl_60,
+#                                cgmes_model=cgmes_model, logger=logger)
+#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[1],
+#                                rate_mw=rate_3,
+#                                op_limit_type=tatl_60,
+#                                cgmes_model=cgmes_model, logger=logger)
+#
+#     # For 3-winding-transformer
+#     if cgmes_elm.Terminals[2] is not None:
+#         create_cgmes_current_limit(terminal=cgmes_elm.Terminals[2],
+#                                    rate_mw=mc_elm.rate,
+#                                    op_limit_type=patl,
+#                                    cgmes_model=cgmes_model, logger=logger)
+#         create_cgmes_current_limit(terminal=cgmes_elm.Terminals[2],
+#                                    rate_mw=rate_2,
+#                                    op_limit_type=tatl_900,
+#                                    cgmes_model=cgmes_model, logger=logger)
+#         create_cgmes_current_limit(terminal=cgmes_elm.Terminals[2],
+#                                    rate_mw=rate_3,
+#                                    op_limit_type=tatl_60,
+#                                    cgmes_model=cgmes_model, logger=logger)
+
+
 def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
                             cgmes_model: CgmesCircuit,
                             logger: DataLogger):
@@ -1034,7 +1140,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
     Converts Multi Circuit shunts
     into CGMES Linear shunt compensator
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
     :param logger:
     :return:
@@ -1136,7 +1242,7 @@ def get_cgmes_breakers(multicircuit_model: MultiCircuit,
     """
     Converts every Multi Circuit Switch into CGMES Breaker.
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
     :param logger:
     :return:
@@ -1165,13 +1271,15 @@ def get_cgmes_breakers(multicircuit_model: MultiCircuit,
         br.open = not mc_elm.active
         br.retained = mc_elm.retained
         br.normalOpen = mc_elm.normal_open
+        br.aggregate = False
 
-        if br.BaseVoltage is not None:
-            br.ratedCurrent = np.round(
-                (mc_elm.rated_current * 1000.0) / (br.BaseVoltage.nominalVoltage * 1.73205080756888),
-                4)
-        else:
-            logger.add_warning(msg="Couldn't calculate rated current as BaseVoltage missing")
+        # .ratedCurrent is optional attr, not sure is it in Amps or an enum
+        # if br.BaseVoltage is not None:
+        #     br.ratedCurrent = np.round(
+        #         (mc_elm.rated_current * 1000.0) / (br.BaseVoltage.nominalVoltage * 1.73205080756888),
+        #         4)
+        # else:
+        #     logger.add_warning(msg="Couldn't calculate rated current as BaseVoltage missing")
 
         cgmes_model.add(br)
 
@@ -1404,7 +1512,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
     DCNodes, DCTopologicalNodes are also created here from scratch
     as there is no DC part in the simplified modelling.
 
-    :param multicircuit_model:
+    :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
     :param logger:
     :return:
@@ -1498,11 +1606,12 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
 
 def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
     """
-    Creates two kind of Operational limit type for Cgmes Export.
+    Creates three kind of Operational limit type for Cgmes Export.
 
     :param cgmes_model: CgmesModel
     :return:
     """
+    # PATL      -----
     patl = create_cgmes_operational_limit_type(cgmes_model)
     patl.name = "Normal rating"
     patl.shortName = "PATL"
@@ -1512,16 +1621,27 @@ def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
     patl.limitType = LimitTypeKind.patl
     patl.direction = OperationalLimitDirectionKind.absoluteValue
 
-    tatl = create_cgmes_operational_limit_type(cgmes_model)
-    tatl.name = "Contingency rating in GridCal"
-    tatl.shortName = "TATL"
-    tatl.description = "Temporarily Admissible Transmission Loading"
-    tatl.acceptableDuration = 60
+    # TATL 900  ------
+    tatl_900 = create_cgmes_operational_limit_type(cgmes_model)
+    tatl_900.name = "Contingency rating in GridCal"
+    tatl_900.shortName = "TATL"
+    tatl_900.description = "Temporarily Admissible Transmission Loading"
+    tatl_900.acceptableDuration = 900
 
-    tatl.limitType = LimitTypeKind.tatl
-    tatl.direction = OperationalLimitDirectionKind.absoluteValue
+    tatl_900.limitType = LimitTypeKind.tatl
+    tatl_900.direction = OperationalLimitDirectionKind.absoluteValue
+    
+    # TATL 60   ------
+    tatl_60 = create_cgmes_operational_limit_type(cgmes_model)
+    tatl_60.name = "Protection rating in GridCal"
+    tatl_60.shortName = "TATL"
+    tatl_60.description = "Temporarily Admissible Transmission Loading"
+    tatl_60.acceptableDuration = 60
 
-    return patl, tatl
+    tatl_60.limitType = LimitTypeKind.tatl
+    tatl_60.direction = OperationalLimitDirectionKind.absoluteValue
+
+    return [patl, tatl_900, tatl_60]
 
 
 # endregion
@@ -1563,11 +1683,10 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_generators(gc_model, cgmes_model, logger)
 
     # BRANCHES
-    patl_type, tatl_type = get_cgmes_operational_limit_types(cgmes_model)
     # lines
-    get_cgmes_ac_line_segments(gc_model, cgmes_model, patl_type, logger)
+    get_cgmes_ac_line_segments(gc_model, cgmes_model, op_lim_types, logger)
     # transformers, windings
-    get_cgmes_power_transformers(gc_model, cgmes_model, patl_type, logger)
+    get_cgmes_power_transformers(gc_model, cgmes_model, op_lim_types, logger)
 
     # SHUNTS
     get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
