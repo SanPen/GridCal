@@ -808,7 +808,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if errf < 1e-7:
             print()
 
-        assert len(_f) == j
+        assert len(_f) == j, f"len(_f)={len(_f)} != j={j}"
 
         return _f
 

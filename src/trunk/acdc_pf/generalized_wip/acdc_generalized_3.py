@@ -18,6 +18,7 @@ grid = gce.open_file(fname)
 bus_dict = grid.get_bus_index_dict()
 ctrl_idx = bus_dict[grid.transformers2w[0].regulation_bus]
 
+
 for control_taps_modules in [True, False]:
     for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
