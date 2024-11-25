@@ -1065,3 +1065,26 @@ class IoMain(ConfigurationMain):
 
         if filename != "":
             save_catalogue(fname=filename, grid=self.circuit)
+
+    def set_circuit(self, grid: MultiCircuit, create_diagram: bool = True):
+        """
+
+        :param grid:
+        :param create_diagram:
+        :return:
+        """
+        self.remove_all_diagrams()
+
+        self.circuit = grid
+
+        if create_diagram:
+            self.add_complete_bus_branch_diagram()
+
+        self.update_date_dependent_combos()
+        self.update_from_to_list_views()
+        self.clear_results()
+        self.collect_memory()
+        self.setup_time_sliders()
+        self.get_circuit_snapshot_datetime()
+        self.change_theme_mode()
+

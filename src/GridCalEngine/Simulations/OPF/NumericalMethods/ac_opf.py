@@ -1126,5 +1126,5 @@ def run_nonlinear_opf(grid: MultiCircuit,
             results.error = island_res.error
             results.iterations = island_res.iterations
             results.converged = island_res.converged
-    print('Converged: ' + str(results.converged))
+
     return results
