@@ -39,7 +39,7 @@ def find_terms_connections(cgmes_terminal: Base,
                 cn = None
         except:     # Try for DC Terminal
             # get the rosetta calculation node if exists
-            if hasattr("DCTopologicalNode", cgmes_terminal):
+            if hasattr(cgmes_terminal, "DCTopologicalNode"):
                 if cgmes_terminal.DCTopologicalNode is not None:
                     calc_node = calc_node_dict.get(
                         cgmes_terminal.DCTopologicalNode.uuid, None)
@@ -49,7 +49,7 @@ def find_terms_connections(cgmes_terminal: Base,
                 calc_node = None
 
             # get the gcdev connectivity node if exists
-            if hasattr("DCNode", cgmes_terminal):
+            if hasattr(cgmes_terminal, "DCNode"):
                 if cgmes_terminal.DCNode is not None:
                     cn = cn_dict.get(cgmes_terminal.DCNode.uuid, None)
                 else:
