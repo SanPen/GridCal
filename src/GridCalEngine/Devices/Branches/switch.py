@@ -13,7 +13,7 @@ from GridCalEngine.Devices.Parents.editable_device import DeviceType
 class Switch(BranchParent):
     """
     The **Switch** class represents the connections between nodes (i.e.
-    :ref:`buses<bus>`) in **GridCal**. A Switch is an devices that cuts or allows the flow.
+    :ref:`buses<bus>`) in **GridCal**. A Switch is a devices that cuts or allows the flow.
     """
 
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
@@ -80,7 +80,7 @@ class Switch(BranchParent):
 
         self.register(key='normal_open', units="", tpe=bool,
                       definition='Normal position of the switch')
-        self.register(key='rated_current', units="KA", tpe=float,
+        self.register(key='rated_current', units="kA", tpe=float,
                       definition='Rated current of the switch device.')
 
     def copy(self, bus_dict=None):
