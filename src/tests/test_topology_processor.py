@@ -214,25 +214,6 @@ def test_topology_reduction():
                 assert t.bus3, "Transformer3w without bus3 associated"
 
 
-# def test_topology_rts() -> None:
-#     """
-#     This function tests topology reduction for Bus/branch model networks
-#     """
-#     for fname in [os.path.join('data', 'grids', 'case24_ieee_rts.m')]:
-#         grid = FileOpen(fname).open()
-#
-#         # Original grid to compare its topology with reduced topology after creating a Node/Breaker model from it
-#         original_grid = grid.copy()
-#
-#         grid.convert_to_node_breaker_adding_switches()  # Converting to Node/Breaker model
-#         processor_info = grid.process_topology_at(t_idx=None)  # Processing topology from new grid
-#
-#         # Comparing bus considering bus number assigned
-#         for loriginal, lnb in zip(grid.get_lines(), original_grid.get_lines()):
-#             assert loriginal.bus_to.code == lnb.bus_to.code
-#             assert loriginal.bus_from.code == lnb.bus_from.code
-
-
 def test_topology_NL_microgrid() -> None:
     fname = os.path.join('data', 'grids', 'CGMES_2_4_15', 'micro_grid_NL_T1.zip')
     grid = FileOpen(fname).open()
@@ -805,3 +786,56 @@ def test_topology_4_nodes_D2():
     assert l2.bus_from == b1 and l2.bus_to == b3
     assert sw1.bus_from == b0 and sw1.bus_to == b1
     assert sw2.bus_from == b2 and sw2.bus_to == b3
+
+
+def test_topology_2_nodes_A1():
+    """
+    Topology test 2 Node A1
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=True))
+    grid.add_switch(sw1)
+
+    g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
+    ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b1)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    The switch is closed, hence B0 == B1
+    the generator and the load must be connected to B0
+    """
+
+    assert g1.bus == b0 and ld1.bus == b0
+
+
+def test_topology_2_nodes_A2():
+    """
+    Topology test 2 Node A2
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=False))
+    grid.add_switch(sw1)
+
+    g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
+    ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b1)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    The switch is open, the original buses must remain
+    """
+
+    assert g1.bus == b0 and ld1.bus == b1

@@ -487,7 +487,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         Itm = np.abs(It)
         Itm2 = Itm * Itm
         PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm
                      + self.nc.branch_data.alpha1[self.idx_conv])
 
         self.Gsw = PLoss_IEC / np.power(Vm[self.nc.F[self.idx_conv]], 2.0)
