@@ -11,7 +11,10 @@ faulthandler.enable() #start @ the beginning
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_raiyan.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_raiyan_signs.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
-fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6.gridcal")
+# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6.gridcal") #this one works with symbolic
+# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6_diffcontrols.gridcal") #this one works with symbolic
+# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_case_57_14_2MTDC_ctrls_raiyan.gridcal") #does not work with autodiff
+
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v2.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v4.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "5bus_HVDC_v5.gridcal")
@@ -68,3 +71,8 @@ solution = newton_raphson_fx(problem=problem,
                              trust=options.trust_radius,
                              verbose=options.verbose,
                              logger=logger)
+
+
+print(solution.V)
+print(solution.converged)
+print(solution.iterations)

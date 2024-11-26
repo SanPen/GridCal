@@ -483,7 +483,7 @@ class GeneralizedSimulationIndices:
         # Extract control magnitudes
         magnitude1 = vsc_data.control1_val[ii]
         magnitude2 = vsc_data.control2_val[ii]
-
+        print()
         # Set flags for active controls
         for control, control_magnitude in zip([control1_type, control2_type], [magnitude1, magnitude2]):
             try:
@@ -539,7 +539,7 @@ class GeneralizedSimulationIndices:
                     # self.cx_vm.add(bus_idx)
                 if control_type == ConverterControlType.Va_ac:
                     bus_idx = vsc_data.T[ii]
-                    self.cx_va.add(bus_idx)
+                    # self.cx_va.add(bus_idx)
                 if control_type == ConverterControlType.Qac:
                     branch_idx = branch_idx
                     self.cx_qta.add(branch_idx)
@@ -648,7 +648,7 @@ class GeneralizedSimulationIndices:
             if not (nc.bus_data.is_dc[i]):
                 self.add_to_cg_pac(i)
                 self.add_to_cg_qac(i)
-
+                print()
                 if bus_type == BusMode.Slack_tpe.value:
                     self.add_to_cx_pzip(i)
                     self.add_to_cx_qzip(i)
@@ -731,8 +731,8 @@ class GeneralizedSimulationIndices:
             # Here we start to throw stuff into the unknown sets. previously we were simply putting known sets and setpoints
             mode1 = nc.active_branch_data.tap_module_control_mode[i]
             mode2 = nc.active_branch_data.tap_phase_control_mode[i]
-
-            if mode1 != 0 or mode2 != 0:
+            print()
+            if (mode1 != 0 or mode2 != 0):
                 if mode2 == 0:
                     mode2 = TapPhaseControl.fixed
                 # Initialize control flags
@@ -767,7 +767,6 @@ class GeneralizedSimulationIndices:
                         elif control_type == TapPhaseControl.Pt:
                             self.cx_pta.add(branch_idx)
 
-                print("HELLO ADDING TO THE SETS")
                 self.cg_pftr.add(branch_idx)
                 self.cg_pttr.add(branch_idx)
                 self.cg_qftr.add(branch_idx)

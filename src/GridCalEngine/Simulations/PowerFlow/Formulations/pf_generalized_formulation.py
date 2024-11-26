@@ -6,14 +6,14 @@ from typing import Tuple, List, Callable, Union
 import numpy as np
 import pandas as pd
 import scipy as sp
-from scipy.sparse import lil_matrix, csc_matrix
+from scipy.sparse import lil_matrix, csc_matrix, hstack, vstack, csr_matrix
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, sp_slice_cols, sp_slice_rows, pack_4_by_4
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, sp_slice_cols, sp_slice_rows, pack_4_by_4, mat_to_scipy
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -97,6 +97,8 @@ def adv_jacobian(nbus: int,
                  Ct_hvdc: sp.sparse,
                  Cf_contbr: sp.sparse,
                  Ct_contbr: sp.sparse,
+                 Cf_branch: sp.sparse,
+                    Ct_branch: sp.sparse,
                  alpha1: Vec,
                  alpha2: Vec,
                  alpha3: Vec,
@@ -188,6 +190,8 @@ def adv_jacobian(nbus: int,
     g = [Pbus, Qbus, Ploss_acdc, Ploss_hvdc, Pinj_hvdc, Pftr, Qftr, Pttr, Qttr]
 
     """
+    print()
+    # print("ix_qt", ix_qt)
     # DO SOME IMPORTANT CASTING
     ix_vm = np.asarray(ix_vm).astype(np.int32)
     ix_va = np.asarray(ix_va).astype(np.int32)
@@ -228,7 +232,23 @@ def adv_jacobian(nbus: int,
     dP_dVa = dS_dVa.real
     dQ_dVa = dS_dVa.imag
 
-    dS_dV = csc_stack_2d_ff(mats=[dP_dVm, dQ_dVm, dP_dVa, dQ_dVa], n_rows=2, n_cols=2)
+    dP_dVm_lil = mat_to_scipy(dP_dVm).tocsr().tolil()
+    dQ_dVm_lil = mat_to_scipy(dQ_dVm).tocsr().tolil()
+    dP_dVa_lil = mat_to_scipy(dP_dVa).tocsr().tolil()
+    dQ_dVa_lil = mat_to_scipy(dQ_dVa).tocsr().tolil()
+    dP_dVm_lil = dP_dVm_lil[ig_pbus, :][:, ix_vm]
+    dQ_dVm_lil = dQ_dVm_lil[ig_qbus, :][:, ix_vm]
+    dP_dVa_lil = dP_dVa_lil[ig_pbus, :][:, ix_va]
+    dQ_dVa_lil = dQ_dVa_lil[ig_qbus, :][:, ix_va]
+
+
+
+    dS_dVm_lil = vstack([dP_dVm_lil, dQ_dVm_lil])
+    dS_dVa_lil = vstack([dP_dVa_lil, dQ_dVa_lil])
+    dS_dV_lil = hstack([dS_dVm_lil, dS_dVa_lil])
+    assert dS_dV_lil.shape == (len(ig_sbus), len(ix_vm) + len(ix_va)), f"Shape is {dS_dV_lil.shape}, it should be {len(ig_sbus), len(ix_vm) + len(ix_va)}"
+
+    # dS_dV = csc_stack_2d_ff(mats=[dP_dVm, dQ_dVm, dP_dVa, dQ_dVa], n_rows=2, n_cols=2)
 
     '''
     dS_dSzip: remade it as 4 different chunks below: dP_dPzip, dQ_dQzip, dP_dQzip, dQ_dPzip
@@ -242,18 +262,27 @@ def adv_jacobian(nbus: int,
     # then do the full crossing ig_pbus, ig_qbus, ix_pzip, ix_qzip
     '''
 
-    nnz_dP_dPzip = np.intersect1d(ix_pzip, ig_pbus)
-    nnz_dQ_dQzip = np.intersect1d(ix_qzip, ig_qbus)
-    pzipData: CxVec = (-1 + 0j) * np.ones(len(nnz_dP_dPzip), dtype=np.float64)
-    qzipData: CxVec = (0 - 1j) * np.ones(len(nnz_dQ_dQzip), dtype=np.float64)
-    dS_dPzip = CxCSC(len(ig_pbus), len(ix_pzip), len(nnz_dP_dPzip), False).set(ig_pbus, nnz_dP_dPzip, pzipData)
-    dS_dQzip = CxCSC(len(ig_qbus), len(ix_qzip), len(nnz_dQ_dQzip), False).set(ig_qbus, nnz_dQ_dQzip, qzipData)
-    dP_dPzip = dS_dPzip.real
-    dQ_dPzip = CSC(len(ig_qbus), len(ix_pzip), 0, False)
-    dQ_dQzip = dS_dQzip.imag
-    dP_dQzip = CSC(len(ig_pbus), len(ix_qzip), 0, False)
+    pzipData = -1 * np.ones(len(ix_pzip), dtype=np.float64)
+    qzipData = -1 * np.ones(len(ix_qzip), dtype=np.float64)
+    # csc_matrix((data, indices, indptr), shape=(3, 3)).toarray()
 
-    dS_dSzip = csc_stack_2d_ff(mats=[dP_dPzip, dP_dQzip, dQ_dQzip, dQ_dPzip], n_rows=2, n_cols=2)
+    dP_dPzip = csc_matrix((pzipData, ix_pzip, np.arange(len(ix_pzip) + 1)), shape=(nbus, len(ix_pzip)))
+    dQ_dQzip = csc_matrix((qzipData, ix_qzip, np.arange(len(ix_qzip) + 1)), shape=(nbus, len(ix_qzip)))
+    dQ_dPzip = csc_matrix((len(ig_qbus), len(ix_pzip)), dtype=np.float64)
+    dP_dQzip = csc_matrix((len(ig_pbus), len(ix_qzip)), dtype=np.float64)
+
+    # turn everything into lil
+    dP_dPzip_lil = dP_dPzip.tocsr()[ig_pbus, :].tolil()
+    dQ_dPzip_lil = dQ_dPzip.tocsr().tolil()
+    dQ_dQzip_lil = dQ_dQzip.tocsr()[ig_qbus, :].tolil()
+    dP_dQzip_lil = dP_dQzip.tocsr().tolil()
+
+
+    dS_dPzip_lil = vstack([dP_dPzip_lil, dQ_dPzip_lil])
+    dS_dQzip_lil = vstack([dP_dQzip_lil, dQ_dQzip_lil])
+    ds_dSzip_lil = hstack([dS_dPzip_lil, dS_dQzip_lil])
+    assert ds_dSzip_lil.shape == (len(ig_sbus), len(ix_pzip) + len(ix_qzip)), f"Shape is {ds_dSzip_lil.shape}, it should be {len(ig_sbus), len(ix_pzip) + len(ix_qzip)}"
+
 
 
     '''
@@ -277,57 +306,71 @@ def adv_jacobian(nbus: int,
                                       :].transpose()  # fill intersection bus x controllable trafos (or in reality, all classic branches)
 
     '''
-    dS_dSf_acdc: CxCSC = (1.0 + 0j) * Cf_acdc.transpose()
-    dS_dSf_hvdc: CxCSC = (1.0 + 0j) * Cf_hvdc.transpose()
-    dS_dSf_contbr: CxCSC = (1.0 + 1j) * Cf_contbr[ig_contrbr, :].transpose()
-
-    print()
-
-    # dP_dPf_acdc = scipy_to_mat(dS_dSf_acdc.real)
-    # dQ_dQf_acdc = scipy_to_mat(dS_dSf_acdc.imag)
-    # dP_dPf_hvdc = scipy_to_mat(dS_dSf_hvdc.real)
-    # dQ_dQf_hvdc = scipy_to_mat(dS_dSf_hvdc.imag)
-    # dP_dPf_contbr = scipy_to_mat(dS_dSf_contbr.real)
-    # dQ_dQf_contbr= scipy_to_mat(dS_dSf_contbr.imag)
-
-    # TODO: fix segfault here?
-    dP_dPf_acdc = CSC(len(ig_pbus), len(ix_pf), Cf_acdc.nnz, False)
-    dP_dPf_acdc = dP_dPf_acdc.set(Cf_acdc.indices, Cf_acdc.indptr, Cf_acdc.data.astype(np.float64))
-    dQ_dQf_acdc = CxCSC(len(ig_qbus), len(ix_qf), Cf_acdc.nnz, False)
-    dP_dPf_hvdc = CSC(len(ig_pbus), len(ix_pf), Cf_hvdc.nnz, False)
-    dP_dPf_hvdc = dP_dPf_hvdc.set(Cf_hvdc.indices, Cf_hvdc.indptr, Cf_hvdc.data.astype(np.float64))
-    dQ_dQf_hvdc = CxCSC(len(ig_qbus), len(ix_qf), Cf_hvdc.nnz, False)
-    dP_dPf_contbr = CxCSC(len(ig_pbus), len(ix_pf), Cf_contbr.nnz, False).set(Cf_contbr.indices, Cf_contbr.indptr, Cf_contbr.data.astype(np.float64))
-    dQ_dQf_contbr= CxCSC(len(ig_qbus), len(ix_qf), Cf_contbr.nnz, False).set(Cf_contbr.indices, Cf_contbr.indptr, Cf_contbr.data.astype(np.float64))
-
-    dP_dPf = csc_stack_2d_ff(mats=[dP_dPf_acdc, dP_dPf_hvdc, dP_dPf_contbr], n_rows=1, n_cols=3)
-    dQ_dQf = csc_stack_2d_ff(mats=[dQ_dQf_acdc, dQ_dQf_hvdc, dQ_dQf_contbr], n_rows=1, n_cols=3)
-    dP_dQf = CSC(len(ig_sbus), len(ix_qf), 0, False)
-    dQ_dPf = CSC(len(ig_qbus), len(ix_pt), 0, False)
-    dS_dSf = csc_stack_2d_ff(mats=[dP_dPf, dQ_dQf, dP_dQf, dQ_dPf], n_rows=2, n_cols=2)
+    # FROM POWERS
+    dP_dPf_branch = 0.0 * Cf_branch.transpose()
+    dQ_dQf_branch = 0.0 * Cf_branch.transpose()
+    dP_dPf_branch_lil = dP_dPf_branch.tocsr().tolil()
+    dQ_dQf_branch_lil = dQ_dQf_branch.tocsr().tolil()
 
 
-    dS_dSt_acdc: CxCSC = (1.0 + 1j) * Ct_acdc.transpose()
-    dS_dSt_hvdc: CxCSC = (1.0 + 1j) * Ct_hvdc.transpose()
-    dS_dSt_contbr: CxCSC = (1.0 + 1j) * Ct_contbr[ig_contrbr, :].transpose()
-    dP_dPt_acdc = scipy_to_mat(dS_dSt_acdc.real)
-    dQ_dQt_acdc = scipy_to_mat(dS_dSt_acdc.imag)
-    dP_dPt_hvdc = scipy_to_mat(dS_dSt_hvdc.real)
-    dQ_dQt_hvdc = scipy_to_mat(dS_dSt_hvdc.imag)
-    dP_dPt_contbr = scipy_to_mat(dS_dSt_contbr.real)
-    dQ_dQt_contbr = scipy_to_mat(dS_dSt_contbr.imag)
-    # dP_dPt_acdc = dS_dSt_acdc.real
-    # dQ_dQt_acdc = dS_dSt_acdc.imag
-    # dP_dPt_hvdc = dS_dSt_hvdc.real
-    # dQ_dQt_hvdc = dS_dSt_hvdc.imag
-    # dP_dPt_contbr = dS_dSt_contbr.real
-    # dQ_dQt_contbr = dS_dSt_contbr.imag
-    dP_dPt = csc_stack_2d_ff(mats=[dP_dPt_acdc, dP_dPt_hvdc, dP_dPt_contbr], n_rows=1, n_cols=3)
-    dQ_dQt = csc_stack_2d_ff(mats=[dQ_dQt_acdc, dQ_dQt_hvdc, dQ_dQt_contbr], n_rows=1, n_cols=3)
-    dP_dQt = CSC(len(ig_pbus), len(ix_qt), 0, False)
-    dQ_dPt = CSC(len(ig_qbus), len(ix_pt), 0, False)
+    dP_dPf_acdc = 1.0 * Cf_acdc.transpose()
+    dQ_dQf_acdc = 0.0 * Cf_acdc.transpose()
+    dP_dPf_acdc_lil = dP_dPf_acdc.tocsr().tolil()
+    dQ_dQf_acdc_lil = dQ_dQf_acdc.tocsr().tolil()
 
-    dS_dSt = csc_stack_2d_ff(mats=[dP_dPt, dQ_dQt, dP_dQt, dQ_dPt], n_rows=2, n_cols=2)
+    dP_dPf_hvdc_lil = 1.0 * Cf_hvdc.transpose()
+    dQ_dQf_hvdc_lil = 0.0 * Cf_hvdc.transpose()
+
+
+    dP_dPf_contbr = 1.0 * Cf_contbr[ig_contrbr, :].transpose()
+    dQ_dQf_contbr = 1.0 * Cf_contbr[ig_contrbr, :].transpose()
+    dP_dPf_contbr_lil = dP_dPf_contbr.tocsr().tolil()
+    dQ_dQf_contbr_lil = dQ_dQf_contbr.tocsr().tolil()
+
+    dP_dPf_lil = hstack([dP_dPf_branch_lil, dP_dPf_acdc_lil, dP_dPf_hvdc_lil, dP_dPf_contbr_lil]).tolil()
+    dP_dPf_lil = dP_dPf_lil[ig_pbus, :][:, ix_pf]
+    dQ_dQf_lil = hstack([dQ_dQf_branch_lil, dQ_dQf_acdc_lil, dQ_dQf_hvdc_lil, dQ_dQf_contbr_lil]).tolil()
+    dQ_dQf_lil = dQ_dQf_lil[ig_qbus, :][:, ix_qf]
+    dP_dQf_lil = csc_matrix((len(ig_pbus), len(ix_qf)), dtype=np.float64).tocsr().tolil()
+    dQ_dPf_lil = csc_matrix((len(ig_qbus), len(ix_pf)), dtype=np.float64).tocsr().tolil()
+
+    dS_dPf_lil = vstack([dP_dPf_lil, dQ_dPf_lil])
+    dS_dQf_lil = vstack([dQ_dQf_lil, dP_dQf_lil])
+    dS_dSf_lil = hstack([dS_dPf_lil, dS_dQf_lil])
+    assert dS_dSf_lil.shape == (len(ig_sbus), len(ix_pf) + len(ix_qf)), f"Shape is {dS_dSf_lil.shape}, it should be {len(ig_sbus), len(ix_pf) + len(ix_qf)}"
+
+    # TO POWERS
+
+    dP_dPt_branch = 0.0 * Ct_branch.transpose()
+    dQ_dQt_branch = 0.0 * Ct_branch.transpose()
+    dP_dPt_branch_lil = dP_dPt_branch.tocsr().tolil()
+    dQ_dQt_branch_lil = dQ_dQt_branch.tocsr().tolil()
+
+    dP_dPt_acdc = 1.0 * Ct_acdc.transpose()
+    dQ_dQt_acdc = 1.0 * Ct_acdc.transpose()
+    dP_dPt_acdc_lil = dP_dPt_acdc.tocsr().tolil()
+    dQ_dQt_acdc_lil = dQ_dQt_acdc.tocsr().tolil()
+
+    dP_dPt_hvdc = 1.0 * Ct_hvdc.transpose()
+    dQ_dQt_hvdc = 0.0 * Ct_hvdc.transpose()
+
+    dP_dPt_contbr = 1.0 * Ct_contbr[ig_contrbr, :].transpose()
+    dQ_dQt_contbr = 1.0 * Ct_contbr[ig_contrbr, :].transpose()
+    dP_dPt_contbr_lil = dP_dPt_contbr.tocsr().tolil()
+    dQ_dQt_contbr_lil = dQ_dQt_contbr.tocsr().tolil()
+
+    dP_dPt_lil = hstack([dP_dPt_branch_lil, dP_dPt_acdc_lil, dP_dPt_hvdc, dP_dPt_contbr_lil]).tolil()
+    dP_dPt_lil = dP_dPt_lil[ig_pbus, :][:, ix_pt]
+    dQ_dQt_lil = hstack([dQ_dQt_branch_lil, dQ_dQt_acdc_lil, dQ_dQt_hvdc, dQ_dQt_contbr_lil]).tolil()
+    dQ_dQt_lil = dQ_dQt_lil[ig_qbus, :][:, ix_qt]
+
+    dP_dQt_lil = csc_matrix((len(ig_pbus), len(ix_qt)), dtype=np.float64).tocsr().tolil()
+    dQ_dPt_lil = csc_matrix((len(ig_qbus), len(ix_pt)), dtype=np.float64).tocsr().tolil()
+
+    dS_dPt_lil = vstack([dP_dPt_lil, dQ_dPt_lil])
+    dS_dQt_lil = vstack([dP_dQt_lil, dQ_dQt_lil])
+    dS_dSt_lil = hstack([dS_dPt_lil, dS_dQt_lil])
+    assert dS_dSt_lil.shape == (len(ig_sbus), len(ix_pt) + len(ix_qt)), f"Shape is {dS_dSt_lil.shape}, it should be {len(ig_sbus), len(ix_pt) + len(ix_qt)}"
     print()
 
     '''
@@ -340,16 +383,34 @@ def adv_jacobian(nbus: int,
     dS_dm = deriv.dSbus_dm_csc(nbus, ig_sbus, ix_m, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V)
     dP_dm = dS_dm.real
     dQ_dm = dS_dm.imag
-    ds_dbr = csc_stack_2d_ff(mats=[dP_dtau, dQ_dtau, dP_dm, dQ_dm], n_rows=2, n_cols=2)
+    # ds_dbr = csc_stack_2d_ff(mats=[dP_dtau, dQ_dtau, dP_dm, dQ_dm], n_rows=2, n_cols=2)
+
+    dP_dtau_lil = mat_to_scipy(dP_dtau).tocsr().tolil()
+    dQ_dtau_lil = mat_to_scipy(dQ_dtau).tocsr().tolil()
+    dP_dtau_lil = dP_dtau_lil[ig_pbus, :][:, ix_tau]
+    dQ_dtau_lil = dQ_dtau_lil[ig_qbus, :][:, ix_tau]
+    dP_dm_lil = mat_to_scipy(dP_dm).tocsr().tolil()
+    dQ_dm_lil = mat_to_scipy(dQ_dm).tocsr().tolil()
+    dP_dm_lil = dP_dm_lil[ig_pbus, :][:, ix_m]
+    dQ_dm_lil = dQ_dm_lil[ig_qbus, :][:, ix_m]
+
+    dS_dtau_lil = vstack([dP_dtau_lil, dQ_dtau_lil])
+    dS_dm_lil = vstack([dP_dm_lil, dQ_dm_lil])
+    assert dS_dtau_lil.shape == (len(ig_sbus), len(ix_tau)), f"Shape is {dS_dtau_lil.shape}, it should be {len(ig_sbus), len(ix_tau)}"
+    assert dS_dm_lil.shape == (len(ig_sbus), len(ix_m)), f"Shape is {dS_dm_lil.shape}, it should be {len(ig_sbus), len(ix_m)}"
 
     print()
-    J2rows = csc_stack_2d_ff(mats=
-                        [dS_dV, dS_dSzip, dS_dSf, dS_dSt, ds_dbr],
-                        n_rows=2, n_cols=10)
-
 
     # First 2 rows completed up to here
+    J2rows = hstack([dS_dV_lil, ds_dSzip_lil, dS_dSf_lil, dS_dSt_lil, dS_dtau_lil, dS_dm_lil])
 
+    # print("J2rows")
+    # print(J2rows.toarray())
+
+    ##### First 2 rows completed up to here ###########
+
+
+    '''
     # VSC loss eq.
     # Derivatives from Raiyan's thesis, 4 nnz terms, no big deal
     # Do we want to run njit? And will numba handle it well?
@@ -366,6 +427,70 @@ def adv_jacobian(nbus: int,
     dLacdc_dQt = - alpha2 * Qt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Qt[ig_plossacdc] / (
                 Vm[T_acdc] * Vm[T_acdc])
     dLacdc_dPf = np.ones(nvsc)
+    
+    '''
+    nvsc = len(ig_plossacdc)
+    pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
+    pq_sqrt = np.sqrt(pq)
+    pq_sqrt += 1e-20
+    dLacdc_dVm = alpha2 * pq_sqrt / (Vm[T_acdc] * Vm[T_acdc]) + 2 * alpha3 * (pq) / (Vm[T_acdc] * Vm[T_acdc] * Vm[T_acdc])
+    dLacdc_dVm *= -1
+
+    dLacdc_dPt = np.ones(nvsc) - alpha2 * Pt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Pt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+    dLacdc_dPt *= -1
+
+    _a = alpha2 * Qt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt)
+    _b = 2 * alpha3 * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+    dLacdc_dQt = - _a - _b
+    dLacdc_dQt *= -1
+
+    dLacdc_dPf = np.ones(nvsc)
+    dLacdc_dPf *= -1
+
+    I = np.eye(nvsc)
+    j_L_Vt = np.multiply(Ct_acdc.transpose().toarray(), dLacdc_dVm)
+    j_L_Pt = np.multiply(I, dLacdc_dPt)
+    j_L_Qt = np.multiply(I, dLacdc_dQt)
+    j_L_Pf = np.multiply(I, dLacdc_dPf)
+    j_L_Vt_trimmed = csr_matrix(j_L_Vt)[ix_vm, :].transpose()
+    vsc_ix_pf = np.intersect1d(ig_plossacdc, ix_pf)
+    vsc_ix_qf = np.intersect1d(ig_plossacdc, ix_qf)
+    vsc_ix_pt = np.intersect1d(ig_plossacdc, ix_pt)
+    vsc_ix_qt = np.intersect1d(ig_plossacdc, ix_qt)
+    remapped_ix_pf = vsc_ix_pf - nbr
+    remapped_ix_qf = vsc_ix_qf - nbr
+    remapped_ix_pt = vsc_ix_pt - nbr
+    remapped_ix_qt = vsc_ix_qt - nbr
+    j_L_Pf_trimmed = csr_matrix(j_L_Pf)[:, remapped_ix_pf]
+    j_L_Pt_trimmed = csr_matrix(j_L_Pt)[:, remapped_ix_pt]
+    j_L_Qt_trimmed = csr_matrix(j_L_Qt)[:, remapped_ix_qt]
+
+    #now we make the chunks of zeros
+    ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_ix_pf)
+    ncontBr_hvdc_ix_qf = len(ix_qf) - len(remapped_ix_qf)
+    ncontBr_hvdc_ix_pt = len(ix_pt) - len(remapped_ix_pt)
+    ncontBr_hvdc_ix_qt = len(ix_qt) - len(remapped_ix_qt)
+    print()
+    dL_dVa = csc_matrix((nvsc, len(ix_va)))
+    dL_dPzip = csc_matrix((nvsc, len(ix_pzip)))
+    dL_dQzip = csc_matrix((nvsc, len(ix_qzip)))
+    dL_dPfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pf))
+    dL_dQfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qf))
+    dL_dPto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pt))
+    dL_dQto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qt))
+    dL_dMod_Trafo = csc_matrix((nvsc, len(ix_m)))
+    dL_dTau_Trafo = csc_matrix((nvsc, len(ix_tau)))
+
+    '''
+    |j_L_Vt_trimmed|dL_dVa|dL_dPzip|dL_dQzip|j_L_Pf_trimmed|j_L_Pt_trimmed|j_L_Qt_trimmed|dL_dPfrom_Trafo|dL_dQfrom_Trafo|dL_dPto_Trafo|dL_dQto_Trafo|dL_dMod_Trafo|dL_dTau_Trafo|
+    '''
+    hChunk0 = hstack([j_L_Vt_trimmed.tocsc(), dL_dVa, dL_dPzip, dL_dQzip, j_L_Pf_trimmed.tocsc(), j_L_Pt_trimmed.tocsc(),
+         j_L_Qt_trimmed.tocsc(), dL_dPfrom_Trafo, dL_dQfrom_Trafo, dL_dPto_Trafo, dL_dQto_Trafo, dL_dMod_Trafo,
+         dL_dTau_Trafo])
+
+    # BUILD J (without hvdc)
+    J = scipy_to_mat(vstack([J2rows, hChunk0]).tocsc())
+    return J
 
     #probably need to transpose and then turn them into CxCSC, but let me see at the stacking part
 
@@ -450,7 +575,7 @@ def adv_jacobian(nbus: int,
     dQ_dVa = sp_slice(dS_dVa.imag, ig_qbus, ix_va)
 
 
-    # BUILD FULL J (without hvdc)
+    # BUILD J (without hvdc)
     J = csc_stack_2d_ff(mats=
                         [dP_dVm, dP_dVa, dP_dPzip, dP_dQzip, dP_dPf, dP_dQf, dP_dPt, dP_dQt, dP_dm, dP_dtau,
                          dQ_dVm, dQ_dVa, dQ_dPzip, dQ_dQzip, dQ_dPf, dQ_dQf, dQ_dPt, dQ_dQt, dQ_dm, dQ_dtau,
@@ -653,7 +778,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
         self.hvdc_mode = self.indices.hvdc_mode
-
+        print()
         # cg sets
         self.cg_pac = self.indices.cg_pac
         self.cg_qac = self.indices.cg_qac
@@ -1063,7 +1188,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx],
             tap_angle=tau2[self.controlled_idx]
         )
-
         self._f = np.r_[
             dS[self.cg_pac + self.cg_pdc].real,
             dS[self.cg_qac].imag,
@@ -1278,7 +1402,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         + len(self.cx_m)
                       + len(self.cx_tau))
 
-
+            print()
             if n_cols != n_rows:
                 raise ValueError("Incorrect J indices!")
 
@@ -1286,6 +1410,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angles = expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0)
             tap = polar_to_rect(tap_modules, tap_angles)
 
+            # print("self.indices.cx_qta", self.indices.cx_qta)
             J = adv_jacobian(
                 nbus=self.nc.nbus,
                 nbr=self.nc.nbr,
@@ -1296,7 +1421,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 ix_pf=self.indices.cx_pfa,
                 ix_qf=self.indices.cx_qfa,
                 ix_pt=self.indices.cx_pta,
-                ix_qt=self.indices.ck_qta,
+                ix_qt=self.indices.cx_qta,
                 ix_m=self.indices.ck_m,
                 ix_tau=self.indices.ck_tau,
                 ig_pbus=self.indices.cg_pac + self.indices.cg_pdc,
@@ -1315,6 +1440,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Ct_hvdc=self.nc.hvdc_data.C_hvdc_bus_t,
                 Cf_contbr=self.nc.passive_branch_data.C_branch_bus_f,
                 Ct_contbr=self.nc.passive_branch_data.C_branch_bus_t,
+                Cf_branch= self.nc.passive_branch_data.C_branch_bus_f,
+                Ct_branch= self.nc.passive_branch_data.C_branch_bus_t,
                 alpha1=self.nc.vsc_data.alpha1,
                 alpha2=self.nc.vsc_data.alpha2,
                 alpha3=self.nc.vsc_data.alpha3,
@@ -1426,7 +1553,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return rows
 
-    def get_jacobian_df(self, autodiff=True) -> pd.DataFrame:
+    def get_jacobian_df(self, autodiff=False) -> pd.DataFrame:
         """
         Get the Jacobian DataFrame
         :return: DataFrame
