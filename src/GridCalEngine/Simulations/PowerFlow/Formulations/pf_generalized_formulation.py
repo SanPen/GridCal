@@ -13,7 +13,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, sp_slice_cols, sp_slice_rows
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, sp_slice_cols, sp_slice_rows, pack_4_by_4
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -200,8 +200,11 @@ def adv_jacobian(nbus: int,
     ix_m = np.asarray(ix_m).astype(np.int32)
     ix_tau = np.asarray(ix_tau).astype(np.int32)
 
+    ig_sbus = ig_pbus + ig_qbus
     ig_pbus = np.asarray(ig_pbus).astype(np.int32)
     ig_qbus = np.asarray(ig_qbus).astype(np.int32)
+    ig_sbus = np.asarray(ig_sbus).astype(np.int32)
+
     ig_plossacdc = np.asarray(ig_plossacdc).astype(np.int32)
     ig_plosshvdc = np.asarray(ig_plosshvdc).astype(np.int32)
     ig_pinjhvdc = np.asarray(ig_pinjhvdc).astype(np.int32)
@@ -220,11 +223,15 @@ def adv_jacobian(nbus: int,
     dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
     dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x)
+    dP_dVm = dS_dVm.real
+    dQ_dVm = dS_dVm.imag
+    dP_dVa = dS_dVa.real
+    dQ_dVa = dS_dVa.imag
 
+    dS_dV = csc_stack_2d_ff(mats=[dP_dVm, dQ_dVm, dP_dVa, dQ_dVa], n_rows=2, n_cols=2)
 
     '''
     dS_dSzip: remade it as 4 different chunks below: dP_dPzip, dQ_dQzip, dP_dQzip, dQ_dPzip
-    '''
     # dS_dSzip
     # ix_szip = ix_pzip + ix_qzip
     # ig_sbus = ig_pbus + ig_qbus
@@ -233,41 +240,114 @@ def adv_jacobian(nbus: int,
     # dS_dSzip = CxCSC(nbus, nbus, nnz_dS_dSzip, False).set(ig_sbus, ix_szip, (-1 + 0j) * np.ones(nnz_dS_dSzip))
     # dS_dSzip = -1  # Size nbus x nbus, or slice directly
     # then do the full crossing ig_pbus, ig_qbus, ix_pzip, ix_qzip
-
-
+    '''
 
     nnz_dP_dPzip = np.intersect1d(ix_pzip, ig_pbus)
     nnz_dQ_dQzip = np.intersect1d(ix_qzip, ig_qbus)
     pzipData: CxVec = (-1 + 0j) * np.ones(len(nnz_dP_dPzip), dtype=np.float64)
-    qzipData: CxVec = (-1 + 0j) * np.ones(len(nnz_dQ_dQzip), dtype=np.float64)
-    dP_dPzip = CxCSC(len(ig_pbus), len(ix_pzip), len(nnz_dP_dPzip), False).set(ig_pbus, nnz_dP_dPzip, pzipData)
-    dQ_dQzip = CxCSC(len(ig_qbus), len(ix_qzip), len(nnz_dQ_dQzip), False).set(ig_qbus, nnz_dQ_dQzip, qzipData)
-    dP_dQzip = CxCSC(len(ig_pbus), len(ix_qzip), 0, False)
-    dQ_dPzip = CxCSC(len(ig_qbus), len(ix_pzip), 0, False)
+    qzipData: CxVec = (0 - 1j) * np.ones(len(nnz_dQ_dQzip), dtype=np.float64)
+    dS_dPzip = CxCSC(len(ig_pbus), len(ix_pzip), len(nnz_dP_dPzip), False).set(ig_pbus, nnz_dP_dPzip, pzipData)
+    dS_dQzip = CxCSC(len(ig_qbus), len(ix_qzip), len(nnz_dQ_dQzip), False).set(ig_qbus, nnz_dQ_dQzip, qzipData)
+    dP_dPzip = dS_dPzip.real
+    dQ_dPzip = CSC(len(ig_qbus), len(ix_pzip), 0, False)
+    dQ_dQzip = dS_dQzip.imag
+    dP_dQzip = CSC(len(ig_pbus), len(ix_qzip), 0, False)
 
-    ## Raiyan done till here
+    dS_dSzip = csc_stack_2d_ff(mats=[dP_dPzip, dP_dQzip, dQ_dQzip, dQ_dPzip], n_rows=2, n_cols=2)
 
+
+    '''
     # dS_dSft
     # I think we need C matrices even if not present in Raiyan's thesis
     # How are Cs structured? ndev x nbus
     # ig_conttr = ig_pftr + ig_pttr + ig_qftr + ig_qttr, as if one branch controls something, immediately goes there
     # when slicing, if we have set some entry we should not have, it will be sorted out as it will not be grabbed
     dS_dSf = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
-    dS_dSf[range(nbus), ig_plossacdc] = Cf_acdc.transpose()  # fill intersection bus x acdc
+
+
+    dS_dSf[range(nbus), ig_plossacdc] = Cf_acdc.transpose()  # indexing not allowed for sparse matrices
     dS_dSf[range(nbus), ig_plosshvdc] = Cf_hvdc.transpose()  # fill intersection bus x hvdc
     dS_dSf[range(nbus), ig_contrbr] = Cf_contbr[ig_contrbr,
                                       :].transpose()  # fill intersection bus x controllable trafos
-
+                                      
     dS_dSt = CxCSC(nbus, nbr, 0, False)  # keep it all empty with no set zeros
     dS_dSt[range(nbus), ig_plossacdc] = Ct_acdc.transpose()  # fill intersection bus x acdc
     dS_dSt[range(nbus), ig_plosshvdc] = Ct_hvdc.transpose()  # fill intersection bus x hvdc
     dS_dSt[range(nbus), ig_contrbr] = Ct_contbr[ig_contrbr,
                                       :].transpose()  # fill intersection bus x controllable trafos (or in reality, all classic branches)
 
-    # dS_dtau and dS_dm from csc_derivatives.py, already there
-    # where complex_tap = m * e ^ (1j * tau) and tap_modules = m
-    dS_dtau = deriv.dSbus_dtau_csc(nbus, ig_sbus, ix_tau, F, T, Ys, kconv, complex_tap, V).real
+    '''
+    dS_dSf_acdc: CxCSC = (1.0 + 0j) * Cf_acdc.transpose()
+    dS_dSf_hvdc: CxCSC = (1.0 + 0j) * Cf_hvdc.transpose()
+    dS_dSf_contbr: CxCSC = (1.0 + 1j) * Cf_contbr[ig_contrbr, :].transpose()
+
+    print()
+
+    # dP_dPf_acdc = scipy_to_mat(dS_dSf_acdc.real)
+    # dQ_dQf_acdc = scipy_to_mat(dS_dSf_acdc.imag)
+    # dP_dPf_hvdc = scipy_to_mat(dS_dSf_hvdc.real)
+    # dQ_dQf_hvdc = scipy_to_mat(dS_dSf_hvdc.imag)
+    # dP_dPf_contbr = scipy_to_mat(dS_dSf_contbr.real)
+    # dQ_dQf_contbr= scipy_to_mat(dS_dSf_contbr.imag)
+
+    # TODO: fix segfault here?
+    dP_dPf_acdc = CSC(len(ig_pbus), len(ix_pf), Cf_acdc.nnz, False)
+    dP_dPf_acdc = dP_dPf_acdc.set(Cf_acdc.indices, Cf_acdc.indptr, Cf_acdc.data.astype(np.float64))
+    dQ_dQf_acdc = CxCSC(len(ig_qbus), len(ix_qf), Cf_acdc.nnz, False)
+    dP_dPf_hvdc = CSC(len(ig_pbus), len(ix_pf), Cf_hvdc.nnz, False)
+    dP_dPf_hvdc = dP_dPf_hvdc.set(Cf_hvdc.indices, Cf_hvdc.indptr, Cf_hvdc.data.astype(np.float64))
+    dQ_dQf_hvdc = CxCSC(len(ig_qbus), len(ix_qf), Cf_hvdc.nnz, False)
+    dP_dPf_contbr = CxCSC(len(ig_pbus), len(ix_pf), Cf_contbr.nnz, False).set(Cf_contbr.indices, Cf_contbr.indptr, Cf_contbr.data.astype(np.float64))
+    dQ_dQf_contbr= CxCSC(len(ig_qbus), len(ix_qf), Cf_contbr.nnz, False).set(Cf_contbr.indices, Cf_contbr.indptr, Cf_contbr.data.astype(np.float64))
+
+    dP_dPf = csc_stack_2d_ff(mats=[dP_dPf_acdc, dP_dPf_hvdc, dP_dPf_contbr], n_rows=1, n_cols=3)
+    dQ_dQf = csc_stack_2d_ff(mats=[dQ_dQf_acdc, dQ_dQf_hvdc, dQ_dQf_contbr], n_rows=1, n_cols=3)
+    dP_dQf = CSC(len(ig_sbus), len(ix_qf), 0, False)
+    dQ_dPf = CSC(len(ig_qbus), len(ix_pt), 0, False)
+    dS_dSf = csc_stack_2d_ff(mats=[dP_dPf, dQ_dQf, dP_dQf, dQ_dPf], n_rows=2, n_cols=2)
+
+
+    dS_dSt_acdc: CxCSC = (1.0 + 1j) * Ct_acdc.transpose()
+    dS_dSt_hvdc: CxCSC = (1.0 + 1j) * Ct_hvdc.transpose()
+    dS_dSt_contbr: CxCSC = (1.0 + 1j) * Ct_contbr[ig_contrbr, :].transpose()
+    dP_dPt_acdc = scipy_to_mat(dS_dSt_acdc.real)
+    dQ_dQt_acdc = scipy_to_mat(dS_dSt_acdc.imag)
+    dP_dPt_hvdc = scipy_to_mat(dS_dSt_hvdc.real)
+    dQ_dQt_hvdc = scipy_to_mat(dS_dSt_hvdc.imag)
+    dP_dPt_contbr = scipy_to_mat(dS_dSt_contbr.real)
+    dQ_dQt_contbr = scipy_to_mat(dS_dSt_contbr.imag)
+    # dP_dPt_acdc = dS_dSt_acdc.real
+    # dQ_dQt_acdc = dS_dSt_acdc.imag
+    # dP_dPt_hvdc = dS_dSt_hvdc.real
+    # dQ_dQt_hvdc = dS_dSt_hvdc.imag
+    # dP_dPt_contbr = dS_dSt_contbr.real
+    # dQ_dQt_contbr = dS_dSt_contbr.imag
+    dP_dPt = csc_stack_2d_ff(mats=[dP_dPt_acdc, dP_dPt_hvdc, dP_dPt_contbr], n_rows=1, n_cols=3)
+    dQ_dQt = csc_stack_2d_ff(mats=[dQ_dQt_acdc, dQ_dQt_hvdc, dQ_dQt_contbr], n_rows=1, n_cols=3)
+    dP_dQt = CSC(len(ig_pbus), len(ix_qt), 0, False)
+    dQ_dPt = CSC(len(ig_qbus), len(ix_pt), 0, False)
+
+    dS_dSt = csc_stack_2d_ff(mats=[dP_dPt, dQ_dQt, dP_dQt, dQ_dPt], n_rows=2, n_cols=2)
+    print()
+
+    '''
+    dS_dtau and dS_dm from csc_derivatives.py, already there
+    where complex_tap = m * e ^ (1j * tau) and tap_modules = m 
+    '''
+    dS_dtau = deriv.dSbus_dtau_csc(nbus, ig_sbus, ix_tau, F, T, Ys, kconv, complex_tap, V)
+    dP_dtau = dS_dtau.real
+    dQ_dtau = dS_dtau.imag
     dS_dm = deriv.dSbus_dm_csc(nbus, ig_sbus, ix_m, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V)
+    dP_dm = dS_dm.real
+    dQ_dm = dS_dm.imag
+    ds_dbr = csc_stack_2d_ff(mats=[dP_dtau, dQ_dtau, dP_dm, dQ_dm], n_rows=2, n_cols=2)
+
+    print()
+    J2rows = csc_stack_2d_ff(mats=
+                        [dS_dV, dS_dSzip, dS_dSf, dS_dSt, ds_dbr],
+                        n_rows=2, n_cols=10)
+
+
     # First 2 rows completed up to here
 
     # VSC loss eq.
@@ -275,7 +355,7 @@ def adv_jacobian(nbus: int,
     # Do we want to run njit? And will numba handle it well?
     nvsc = len(ig_plossacdc)
     pq_sqrt = np.sqrt(Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc])
-
+    pq_sqrt += 1e-20 #add a tiny tiny number to avoid division by zero
     # dLacdc_dVm applies only to the T side
     dLacdc_dVm = ((alpha2 * pq_sqrt * Qt[ig_plossacdc]) / (Vm[T_acdc] * Vm[T_acdc])
                   + 2 * alpha3 * (Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]) / (
@@ -287,10 +367,11 @@ def adv_jacobian(nbus: int,
                 Vm[T_acdc] * Vm[T_acdc])
     dLacdc_dPf = np.ones(nvsc)
 
+    #probably need to transpose and then turn them into CxCSC, but let me see at the stacking part
+
+
     # HVDC loss eq.
     # compute them going through a loop better
-
-
     """
     Pc = (Pset + (Va[F] - Va[T]) * mode * droop) / Sbase
     We simplify mode * droop = md
@@ -351,29 +432,30 @@ def adv_jacobian(nbus: int,
     dPinjhvdc_dPt[br_hvdc] = 1
     """
 
-    # Controllable branches dSft_dmtau already computed in csc_derivatives.py
 
-    # dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
-    # dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
-    # dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
-    # dQt_dVa = deriv.dSt_dVa_csc(nbus, ig_qttr, ix_va, ytf, V, F, T).imag
+
+
+    '''
+    Controllable branches dSft_dmtau already computed in csc_derivatives.py
+    '''
+    dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
+    dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
+    dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
+    dQt_dVa = deriv.dSt_dVa_csc(nbus, ig_qttr, ix_va, ytf, V, F, T).imag
 
     # SLICE
-    # dP_dVm = sp_slice(dS_dVm.real, ig_pbus, ix_vm)
-    # dQ_dVm = sp_slice(dS_dVm.imag, ig_qbus, ix_vm)
-    # dP_dVa = sp_slice(dS_dVa.real, ig_pbus, ix_va)
-    # dQ_dVa = sp_slice(dS_dVa.imag, ig_qbus, ix_va)
+    dP_dVm = sp_slice(dS_dVm.real, ig_pbus, ix_vm)
+    dQ_dVm = sp_slice(dS_dVm.imag, ig_qbus, ix_vm)
+    dP_dVa = sp_slice(dS_dVa.real, ig_pbus, ix_va)
+    dQ_dVa = sp_slice(dS_dVa.imag, ig_qbus, ix_va)
 
-    # BUILD FULL J
+
+    # BUILD FULL J (without hvdc)
     J = csc_stack_2d_ff(mats=
                         [dP_dVm, dP_dVa, dP_dPzip, dP_dQzip, dP_dPf, dP_dQf, dP_dPt, dP_dQt, dP_dm, dP_dtau,
                          dQ_dVm, dQ_dVa, dQ_dPzip, dQ_dQzip, dQ_dPf, dQ_dQf, dQ_dPt, dQ_dQt, dQ_dm, dQ_dtau,
                          dPlacdc_dVm, dPlacdc_dVa, dPlacdc_dPzip, dPlacdc_dQzip, dPlacdc_dPf, dPlacdc_dQf, dPlacdc_dPt,
                          dPlacdc_dQt, dPlacdc_dm, dPlacdc_dtau,
-                         dPlhvdc_dVm, dPlhvdc_dVa, dPlhvdc_dPzip, dPlhvdc_dQzip, dPlhvdc_dPf, dPlhvdc_dQf, dPlhvdc_dPt,
-                         dPlhvdc_dQt, dPlhvdc_dm, dPlhvdc_dtau,
-                         dPihvdc_dVm, dPihvdc_dVa, dPihvdc_dPzip, dPihvdc_dQzip, dPihvdc_dPf, dPihvdc_dQf, dPihvdc_dPt,
-                         dPihvdc_dQt, dPihvdc_dm, dPihvdc_dtau,
                          dPftr_dVm, dPftr_dVa, dPftr_dPzip, dPftr_dQzip, dPftr_dPf, dPftr_dQf, dPftr_dPt, dPftr_dQt,
                          dPftr_dm, dPftr_dtau,
                          dQftr_dVm, dQftr_dVa, dQftr_dPzip, dQftr_dQzip, dQftr_dPf, dQftr_dQf, dQftr_dPt, dQftr_dQt,
@@ -382,50 +464,71 @@ def adv_jacobian(nbus: int,
                          dPttr_dm, dPttr_dtau,
                          dQttr_dVm, dQttr_dVa, dQttr_dPzip, dQttr_dQzip, dQttr_dPf, dQttr_dQf, dQttr_dPt, dQttr_dQt,
                          dQttr_dm, dQttr_dtau],
-                        n_rows=9, n_cols=10)
+                        n_rows=7, n_cols=10)
 
-    dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dva, yff, yft, V, F, T).real
-    dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dva, yff, yft, V, F, T).imag
-    dPt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dPt, idx_dva, ytf, V, F, T).real
-    dQt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dQt, idx_dva, ytf, V, F, T).imag
 
-    dP_dVm__ = sp_slice(dS_dVm.real, idx_dP, idx_dvm)
-    dQ_dVm__ = sp_slice(dS_dVm.imag, idx_dQ, idx_dvm)
-    dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dvm, yff, yft, V, F, T).real
-    dQf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dQf, idx_dvm, yff, yft, V, F, T).imag
-    dPt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dPt, idx_dvm, ytt, ytf, V, F, T).real
-    dQt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dQt, idx_dvm, ytt, ytf, V, F, T).imag
+    # BUILD FULL J
+    # J = csc_stack_2d_ff(mats=
+    #                     [dP_dVm, dP_dVa, dP_dPzip, dP_dQzip, dP_dPf, dP_dQf, dP_dPt, dP_dQt, dP_dm, dP_dtau,
+    #                      dQ_dVm, dQ_dVa, dQ_dPzip, dQ_dQzip, dQ_dPf, dQ_dQf, dQ_dPt, dQ_dQt, dQ_dm, dQ_dtau,
+    #                      dPlacdc_dVm, dPlacdc_dVa, dPlacdc_dPzip, dPlacdc_dQzip, dPlacdc_dPf, dPlacdc_dQf, dPlacdc_dPt,
+    #                      dPlacdc_dQt, dPlacdc_dm, dPlacdc_dtau,
+    #                      dPlhvdc_dVm, dPlhvdc_dVa, dPlhvdc_dPzip, dPlhvdc_dQzip, dPlhvdc_dPf, dPlhvdc_dQf, dPlhvdc_dPt,
+    #                      dPlhvdc_dQt, dPlhvdc_dm, dPlhvdc_dtau,
+    #                      dPihvdc_dVm, dPihvdc_dVa, dPihvdc_dPzip, dPihvdc_dQzip, dPihvdc_dPf, dPihvdc_dQf, dPihvdc_dPt,
+    #                      dPihvdc_dQt, dPihvdc_dm, dPihvdc_dtau,
+    #                      dPftr_dVm, dPftr_dVa, dPftr_dPzip, dPftr_dQzip, dPftr_dPf, dPftr_dQf, dPftr_dPt, dPftr_dQt,
+    #                      dPftr_dm, dPftr_dtau,
+    #                      dQftr_dVm, dQftr_dVa, dQftr_dPzip, dQftr_dQzip, dQftr_dPf, dQftr_dQf, dQftr_dPt, dQftr_dQt,
+    #                      dQftr_dm, dQftr_dtau,
+    #                      dPttr_dVm, dPttr_dVa, dPttr_dPzip, dPttr_dQzip, dPttr_dPf, dPttr_dQf, dPttr_dPt, dPttr_dQt,
+    #                      dPttr_dm, dPttr_dtau,
+    #                      dQttr_dVm, dQttr_dVa, dQttr_dPzip, dQttr_dQzip, dQttr_dPf, dQttr_dQf, dQttr_dPt, dQttr_dQt,
+    #                      dQttr_dm, dQttr_dtau],
+    #                     n_rows=9, n_cols=10)
 
-    dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
-    dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
-    dPf_dm_ = deriv.dSf_dm_csc(nbr, idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
-    dQf_dm_ = deriv.dSf_dm_csc(nbr, idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
-    dPt_dm_ = deriv.dSt_dm_csc(nbr, idx_dPt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).real
-    dQt_dm_ = deriv.dSt_dm_csc(nbr, idx_dQt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).imag
-
-    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dPt, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dQt, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-
-    dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
-    dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
-    dPf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
-    dQf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dQf, idx_dbeq, F, kconv, tap_modules, V).imag
-    dPt_dbeq_ = deriv.dSt_dbeq_csc(idx_dPt, idx_dbeq).real
-    dQt_dbeq_ = deriv.dSt_dbeq_csc(idx_dQt, idx_dbeq).imag
-
-    # compose the Jacobian
-    J = csc_stack_2d_ff(mats=
-                        [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__, dP_dbeq__,
-                         dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__, dQ_dbeq__,
-                         dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_, dPf_dbeq_,
-                         dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_, dQf_dbeq_,
-                         dPt_dVa_, dPt_dVm_, dPt_dm_, dPt_dtau_, dPt_dbeq_,
-                         dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_, dQt_dbeq_],
-                        n_rows=6, n_cols=5)
+    # dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dva, yff, yft, V, F, T).real
+    # dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dva, yff, yft, V, F, T).imag
+    # dPt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dPt, idx_dva, ytf, V, F, T).real
+    # dQt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dQt, idx_dva, ytf, V, F, T).imag
+    #
+    # dP_dVm__ = sp_slice(dS_dVm.real, idx_dP, idx_dvm)
+    # dQ_dVm__ = sp_slice(dS_dVm.imag, idx_dQ, idx_dvm)
+    # dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dvm, yff, yft, V, F, T).real
+    # dQf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dQf, idx_dvm, yff, yft, V, F, T).imag
+    # dPt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dPt, idx_dvm, ytt, ytf, V, F, T).real
+    # dQt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dQt, idx_dvm, ytt, ytf, V, F, T).imag
+    #
+    # dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
+    # dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
+    # dPf_dm_ = deriv.dSf_dm_csc(nbr, idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
+    # dQf_dm_ = deriv.dSf_dm_csc(nbr, idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
+    # dPt_dm_ = deriv.dSt_dm_csc(nbr, idx_dPt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).real
+    # dQt_dm_ = deriv.dSt_dm_csc(nbr, idx_dQt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).imag
+    #
+    # dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
+    # dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+    # dPf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
+    # dQf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+    # dPt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dPt, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
+    # dQt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dQt, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+    #
+    # dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
+    # dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
+    # dPf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
+    # dQf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dQf, idx_dbeq, F, kconv, tap_modules, V).imag
+    # dPt_dbeq_ = deriv.dSt_dbeq_csc(idx_dPt, idx_dbeq).real
+    # dQt_dbeq_ = deriv.dSt_dbeq_csc(idx_dQt, idx_dbeq).imag
+    #
+    # # compose the Jacobian
+    # J = csc_stack_2d_ff(mats=
+    #                     [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__, dP_dbeq__,
+    #                      dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__, dQ_dbeq__,
+    #                      dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_, dPf_dbeq_,
+    #                      dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_, dQf_dbeq_,
+    #                      dPt_dVa_, dPt_dVm_, dPt_dm_, dPt_dtau_, dPt_dbeq_,
+    #                      dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_, dQt_dbeq_],
+    #                     n_rows=6, n_cols=5)
 
     return J
 
