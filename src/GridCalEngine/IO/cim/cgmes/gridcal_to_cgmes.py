@@ -470,7 +470,6 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
 
 def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                cgmes_model: CgmesCircuit,
-                               op_lim_types: list,
                                logger: DataLogger):
     """
     Converts every Multi Circuit line
@@ -1064,73 +1063,44 @@ def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
             create_limits_for_terminal(terminal, rates)
 
 
-# def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
-#                              cgmes_elm: Base,
-#                              mc_elm: BranchParent,
-#                              logger: DataLogger):
-#     """
-#     Exporting Current limits to CGMES for Branches
-#
-#     :param cgmes_model: CgmesCircuit
-#     :param mc_elm: GcDev Transformer 2W/3W or ACLineSegment
-#     :param cgmes_elm: CGMES Transformer 2W/3W or ACLineSegment
-#     :param logger: DataLogger
-#     :return:
-#     """
-#
-#     for terminal in cgmes_elm.Terminals:
-#         if terminal is not None:
-#             create_cgmes_terminal_limits(terminal, rates)
-#
-#     op_lim_types = get_cgmes_operational_limit_types(cgmes_model)
-#     # RATES
-#     [patl, tatl_900, tatl_60] = op_lim_types
-#     # Normal rate - PATL
-#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[0],
-#                                rate_mw=mc_elm.rate,
-#                                op_limit_type=patl,
-#                                cgmes_model=cgmes_model, logger=logger)
-#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[1],
-#                                rate_mw=mc_elm.rate,
-#                                op_limit_type=patl,
-#                                cgmes_model=cgmes_model, logger=logger)
-#
-#     # Contingency rate - TATL 900
-#     rate_2 = mc_elm.contingency_factor * mc_elm.rate
-#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[0],
-#                                rate_mw=rate_2,
-#                                op_limit_type=tatl_900,
-#                                cgmes_model=cgmes_model, logger=logger)
-#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[1],
-#                                rate_mw=rate_2,
-#                                op_limit_type=tatl_900,
-#                                cgmes_model=cgmes_model, logger=logger)
-#
-#     # Contingency rate - TATL 60
-#     rate_3 = mc_elm.protection_rating_factor * mc_elm.rate
-#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[0],
-#                                rate_mw=rate_3,
-#                                op_limit_type=tatl_60,
-#                                cgmes_model=cgmes_model, logger=logger)
-#     create_cgmes_current_limit(terminal=cgmes_elm.Terminals[1],
-#                                rate_mw=rate_3,
-#                                op_limit_type=tatl_60,
-#                                cgmes_model=cgmes_model, logger=logger)
-#
-#     # For 3-winding-transformer
-#     if cgmes_elm.Terminals[2] is not None:
-#         create_cgmes_current_limit(terminal=cgmes_elm.Terminals[2],
-#                                    rate_mw=mc_elm.rate,
-#                                    op_limit_type=patl,
-#                                    cgmes_model=cgmes_model, logger=logger)
-#         create_cgmes_current_limit(terminal=cgmes_elm.Terminals[2],
-#                                    rate_mw=rate_2,
-#                                    op_limit_type=tatl_900,
-#                                    cgmes_model=cgmes_model, logger=logger)
-#         create_cgmes_current_limit(terminal=cgmes_elm.Terminals[2],
-#                                    rate_mw=rate_3,
-#                                    op_limit_type=tatl_60,
-#                                    cgmes_model=cgmes_model, logger=logger)
+def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
+    """
+    Creates three kind of Operational limit type for Cgmes Export.
+
+    :param cgmes_model: CgmesModel
+    :return:
+    """
+    # PATL      -----
+    patl = create_cgmes_operational_limit_type(cgmes_model)
+    patl.name = "Normal rating"
+    patl.shortName = "PATL"
+    patl.description = "Permanent Admissible Transmission Loading"
+    patl.acceptableDuration = None  # unlimited
+
+    patl.limitType = LimitTypeKind.patl
+    patl.direction = OperationalLimitDirectionKind.absoluteValue
+
+    # TATL 900  ------
+    tatl_900 = create_cgmes_operational_limit_type(cgmes_model)
+    tatl_900.name = "Contingency rating in GridCal"
+    tatl_900.shortName = "TATL"
+    tatl_900.description = "Temporarily Admissible Transmission Loading"
+    tatl_900.acceptableDuration = 900
+
+    tatl_900.limitType = LimitTypeKind.tatl
+    tatl_900.direction = OperationalLimitDirectionKind.absoluteValue
+
+    # TATL 60   ------
+    tatl_60 = create_cgmes_operational_limit_type(cgmes_model)
+    tatl_60.name = "Protection rating in GridCal"
+    tatl_60.shortName = "TATL"
+    tatl_60.description = "Temporarily Admissible Transmission Loading"
+    tatl_60.acceptableDuration = 60
+
+    tatl_60.limitType = LimitTypeKind.tatl
+    tatl_60.direction = OperationalLimitDirectionKind.absoluteValue
+
+    return [patl, tatl_900, tatl_60]
 
 
 def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
@@ -1604,46 +1574,6 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
     return
 
 
-def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
-    """
-    Creates three kind of Operational limit type for Cgmes Export.
-
-    :param cgmes_model: CgmesModel
-    :return:
-    """
-    # PATL      -----
-    patl = create_cgmes_operational_limit_type(cgmes_model)
-    patl.name = "Normal rating"
-    patl.shortName = "PATL"
-    patl.description = "Permanent Admissible Transmission Loading"
-    patl.acceptableDuration = None  # unlimited
-
-    patl.limitType = LimitTypeKind.patl
-    patl.direction = OperationalLimitDirectionKind.absoluteValue
-
-    # TATL 900  ------
-    tatl_900 = create_cgmes_operational_limit_type(cgmes_model)
-    tatl_900.name = "Contingency rating in GridCal"
-    tatl_900.shortName = "TATL"
-    tatl_900.description = "Temporarily Admissible Transmission Loading"
-    tatl_900.acceptableDuration = 900
-
-    tatl_900.limitType = LimitTypeKind.tatl
-    tatl_900.direction = OperationalLimitDirectionKind.absoluteValue
-    
-    # TATL 60   ------
-    tatl_60 = create_cgmes_operational_limit_type(cgmes_model)
-    tatl_60.name = "Protection rating in GridCal"
-    tatl_60.shortName = "TATL"
-    tatl_60.description = "Temporarily Admissible Transmission Loading"
-    tatl_60.acceptableDuration = 60
-
-    tatl_60.limitType = LimitTypeKind.tatl
-    tatl_60.direction = OperationalLimitDirectionKind.absoluteValue
-
-    return [patl, tatl_900, tatl_60]
-
-
 # endregion
 
 
@@ -1684,9 +1614,9 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     # BRANCHES
     # lines
-    get_cgmes_ac_line_segments(gc_model, cgmes_model, op_lim_types, logger)
+    get_cgmes_ac_line_segments(gc_model, cgmes_model, logger)
     # transformers, windings
-    get_cgmes_power_transformers(gc_model, cgmes_model, op_lim_types, logger)
+    get_cgmes_power_transformers(gc_model, cgmes_model, logger)
 
     # SHUNTS
     get_cgmes_linear_shunts(gc_model, cgmes_model, logger)

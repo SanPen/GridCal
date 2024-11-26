@@ -316,7 +316,9 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         else:
             V2 = psse_elm.NOMV2
 
-        contingency_factor = psse_elm.RATE1_1 / psse_elm.RATE1_2 if psse_elm.RATE1_2 > 0.0 else 1.0
+        contingency_factor = psse_elm.RATE1_2 / psse_elm.RATE1_1 if psse_elm.RATE1_2 > 0.0 else 1.0
+
+        protection_factor = psse_elm.RATE1_3 / psse_elm.RATE1_1 if psse_elm.RATE1_3 > 0.0 else 1.4
 
         r, x, g, b, tap_module, tap_angle = psse_elm.get_2w_pu_impedances(Sbase=Sbase,
                                                                           v_bus_i=bus_from.Vnom,
@@ -344,6 +346,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             b=b,
             rate=psse_elm.RATE1_1,
             contingency_factor=round(contingency_factor, 6),
+            protection_rating_factor=round(protection_factor, 6),
             tap_module=1.0,  # it is modified afterwards to account for PSSe not having virtual taps
             tap_phase=tap_angle,
             active=bool(psse_elm.STAT),
@@ -494,6 +497,11 @@ def get_gridcal_line(psse_elm: RawBranch,
     if contingency_factor == 0:
         contingency_factor = 1.0
 
+    protection_factor = psse_elm.RATE3 / psse_elm.RATE1 if psse_elm.RATE1 > 0.0 else 1.4
+
+    if protection_factor == 0:
+        protection_factor = 1.4
+
     branch = dev.Line(bus_from=bus_from,
                       bus_to=bus_to,
                       idtag=psse_elm.idtag,
@@ -504,6 +512,7 @@ def get_gridcal_line(psse_elm: RawBranch,
                       b=psse_elm.B,
                       rate=psse_elm.RATE1,
                       contingency_factor=round(contingency_factor, 6),
+                      protection_rating_factor=round(protection_factor, 6),
                       active=bool(psse_elm.ST),
                       mttf=0,
                       mttr=0,
