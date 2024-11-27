@@ -6,15 +6,10 @@
 
 from typing import Set
 import numpy as np
-from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl, BusMode, HvdcControlType, ConverterControlType
+from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, BusMode, HvdcControlType,
+                                        ConverterControlType)
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.DataStructures.bus_data import BusData
-from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.vsc_data import VscData
-from GridCalEngine.DataStructures.hvdc_data import HvdcData
-from GridCalEngine.DataStructures.generator_data import GeneratorData
-from GridCalEngine.DataStructures.battery_data import BatteryData
-from GridCalEngine.DataStructures.shunt_data import ShuntData
 from GridCalEngine.basic_structures import Logger, BoolVec
 
 
@@ -348,6 +343,8 @@ class GeneralizedSimulationIndices:
         :param branch_name:
         :param branch_idx:
         :param mode:
+        :param tap_phase:
+        :param Pset:
         :param branch_idx:
         :param is_conventional: True of transformers and all branches, False for VSCs
         :return:
@@ -390,9 +387,6 @@ class GeneralizedSimulationIndices:
             else:
                 pass
 
-
-
-
     def add_m_control_branch(self,
                              branch_name: str = "",
                              mode: TapModuleControl = TapModuleControl.fixed,
@@ -409,6 +403,9 @@ class GeneralizedSimulationIndices:
         :param branch_idx:
         :param bus_idx:
         :param is_conventional: True of transformers and all branches, False for VSCs
+        :param Vm:
+        :param Qset:
+        :param m:
         :return:
         """
 
@@ -426,14 +423,12 @@ class GeneralizedSimulationIndices:
                 self.logger.add_warning(msg='Fixed mode for VSCs can be problematic in a generalized power flow',
                                         device=branch_name,
                                         value=mode,
-                                        device_property=VscData.tap_module_control_mode,
-                                        device_class=VscData)
+                                        device_property="VscData.tap_module_control_mode",
+                                        device_class="VscData")
             else:
-                #in this case we have to add the tap_phase to the tau set
+                # in this case we have to add the tap_phase to the tau set
                 self.ck_m.add(branch_idx)
                 self.tau_setpoints.append(m)
-
-
 
         elif mode == TapModuleControl.Vm:
             self.set_bus_vm_simple(bus_local=bus_idx, device_name=branch_name)
@@ -538,7 +533,7 @@ class GeneralizedSimulationIndices:
                     bus_idx = vsc_data.T[ii]
                     # self.cx_vm.add(bus_idx)
                 if control_type == ConverterControlType.Va_ac:
-                    bus_idx = vsc_data.T[ii]
+                    bus_idx: int = vsc_data.T[ii]
                     # self.cx_va.add(bus_idx)
                 if control_type == ConverterControlType.Qac:
                     branch_idx = branch_idx
@@ -551,9 +546,6 @@ class GeneralizedSimulationIndices:
                     self.cx_pta.add(branch_idx)
                 else:
                     pass
-
-    def add_generator_behaviour(self, bus_idx: int, is_v_controlled: bool):
-        pass
 
     def rem_bus_qzip_simple(self,
                             bus_idx: int):
@@ -663,7 +655,7 @@ class GeneralizedSimulationIndices:
         # -------------- Generators and Batteries search ----------------
         for dev_tpe in (nc.generator_data, nc.battery_data):
             for i, is_controlled in enumerate(dev_tpe.controllable):
-                bus_idx = dev_tpe.bus_idx[i]
+                bus_idx: int = dev_tpe.bus_idx[i]
                 ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
                 if dev_tpe.active[i]:
                     if is_controlled:
@@ -712,21 +704,21 @@ class GeneralizedSimulationIndices:
         for i, _ in enumerate(nc.passive_branch_data.active):
             self.add_tau_control_branch(branch_name=nc.passive_branch_data.names[i],
                                         mode=nc.active_branch_data.tap_phase_control_mode[i],
-                                        tap_phase = nc.active_branch_data.tap_angle[i],
-                                        Pset = nc.active_branch_data.Pset[i],
+                                        tap_phase=nc.active_branch_data.tap_angle[i],
+                                        Pset=nc.active_branch_data.Pset[i],
                                         branch_idx=branch_idx,
                                         is_conventional=True)
 
-            bus_idx = nc.active_branch_data.tap_controlled_buses[i]
+            bus_idx: int = nc.active_branch_data.tap_controlled_buses[i]
 
             self.add_m_control_branch(branch_name=nc.passive_branch_data.names[i],
                                       mode=nc.active_branch_data.tap_module_control_mode[i],
                                       branch_idx=branch_idx,
                                       bus_idx=bus_idx,
                                       is_conventional=True,
-                                        Vm = nc.active_branch_data.vset[i],
-                                        Qset=nc.active_branch_data.Qset[i],
-                                        m = nc.active_branch_data.tap_module[i])
+                                      Vm=nc.active_branch_data.vset[i],
+                                      Qset=nc.active_branch_data.Qset[i],
+                                      m=nc.active_branch_data.tap_module[i])
 
             # Here we start to throw stuff into the unknown sets. previously we were simply putting known sets and setpoints
             mode1 = nc.active_branch_data.tap_module_control_mode[i]
@@ -743,8 +735,8 @@ class GeneralizedSimulationIndices:
                 phase_control_flags[list(TapPhaseControl).index(mode2)] = True
 
                 # assert that exactly one control in each flag list
-                assert module_control_flags.sum() == 1, ("Exactly one module control should be active")
-                assert phase_control_flags.sum() == 1, ("Exactly one phase control should be active")
+                assert module_control_flags.sum() == 1, "Exactly one module control should be active"
+                assert phase_control_flags.sum() == 1, "Exactly one phase control should be active"
 
                 # Add to unknown sets based on inactive control flags
                 for index, is_controlled in enumerate(module_control_flags):
@@ -804,7 +796,6 @@ class GeneralizedSimulationIndices:
                 self.hvdc_mode[iii] = 0
             else:
                 pass
-
 
             self.add_to_cx_qfa(branch_idx)
             self.add_to_cx_qta(branch_idx)
@@ -873,14 +864,3 @@ class GeneralizedSimulationIndices:
         self.ck_pta = list(self.ck_pta)
         self.ck_qfa = list(self.ck_qfa)
         self.ck_qta = list(self.ck_qta)
-
-    # def fill_x_sets(self, nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
-    #     """
-    #     Populate going over the elements, probably harder than the g_sets
-    #     Better to have a single method to fill sets, this way we avoid double searches
-
-    #     :param nc:
-    #     :return:
-    #     """
-
-    #     return self
