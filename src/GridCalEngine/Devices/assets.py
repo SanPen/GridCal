@@ -5786,6 +5786,18 @@ class Assets:
 
         return found
 
+    def get_all_elements_iter(self) -> Generator[ALL_DEV_TYPES, None, None]:
+        """
+        Get all elements
+        :return: ALL_DEV_TYPES
+        """
+
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(device_type=tpe)
+
+            for elm in elements:
+                yield elm
+
     def get_all_elements_dict(self, logger=Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
         """
         Get a dictionary of all elements

@@ -229,6 +229,10 @@ class EditableDevice:
         # dictionary with property name -> profile name
         self.properties_with_profile: Dict[str, str] = dict()
 
+        # some devices have an auto update of a property when another property changes
+        # (i.e. Line's R, X, B when the length changes) this controls that behaviour and disables it during loading
+        self.__auto_update_enabled = False
+
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
@@ -236,6 +240,28 @@ class EditableDevice:
                       definition='Object action to perform.\nOnly used for model merging.',
                       display=False)
         self.register(key='comment', units='', tpe=str, definition='User comment')
+
+    @property
+    def auto_update_enabled(self):
+        """
+
+        :return:
+        """
+        return self.__auto_update_enabled
+
+    def enable_auto_updates(self):
+        """
+
+        :return:
+        """
+        self.__auto_update_enabled = True
+
+    def disable_auto_updates(self):
+        """
+
+        :return:
+        """
+        self.__auto_update_enabled = False
 
     def get_uuid(self) -> str:
         """

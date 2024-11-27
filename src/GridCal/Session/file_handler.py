@@ -105,15 +105,19 @@ class FileOpenThread(QThread):
                                 previous_circuit=self._previous_circuit,
                                 options=self.options)
 
-        try:
+        if self.options.crash_on_errors:
             self.circuit = file_handler.open(text_func=self.progress_text.emit,
                                              progress_func=self.progress_signal.emit)
-        except ValueError as e:
-            self.valid = False
-            self.logger.add_error(msg=str(e))
-            self.progress_text.emit('Error loading')
-            self.done_signal.emit()
-            return
+        else:
+            try:
+                self.circuit = file_handler.open(text_func=self.progress_text.emit,
+                                                 progress_func=self.progress_signal.emit)
+            except ValueError as e:
+                self.valid = False
+                self.logger.add_error(msg=str(e))
+                self.progress_text.emit('Error loading')
+                self.done_signal.emit()
+                return
 
         self.json_files = file_handler.json_files
 

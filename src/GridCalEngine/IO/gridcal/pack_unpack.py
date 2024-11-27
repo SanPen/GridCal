@@ -1012,7 +1012,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
     for json_entry in data_list:
         idtag = json_entry['idtag']
-        elm = type(template_elm)(idtag=idtag)
+        elm: ALL_DEV_TYPES = type(template_elm)(idtag=idtag)
 
         # ensure the profiles existence
         if time_profile is not None:
@@ -1185,7 +1185,6 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         # save the element in the dictionary for later
         devices_dict[elm.idtag] = elm
         devices.append(elm)
-
     return devices, devices_dict
 
 
@@ -1475,5 +1474,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
 
     if circuit.has_time_series:
         circuit.ensure_profiles_exist()
+
+    # Enable auto updates internally only after everything has been filled
+    for elm in circuit.get_all_elements_iter():
+        elm.enable_auto_updates()
 
     return circuit

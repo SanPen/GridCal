@@ -178,9 +178,10 @@ def build_tar_gz_pkg(pkg_name: str,
     :param long_description:
     :param folder_to_save:
     :param ext_filter:
+    :param extra_files:
     :return:
     """
-    pkg_name2 = pkg_name + '-' + version
+    pkg_name2 = pkg_name.lower() + '-' + version
     filename = pkg_name2 + '.tar.gz'
     output_filename = os.path.join(folder_to_save, filename)
 
