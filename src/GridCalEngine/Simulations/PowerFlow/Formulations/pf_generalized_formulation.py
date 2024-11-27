@@ -840,10 +840,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.hvdc_mode = self.indices.hvdc_mode
         print()
         # cg sets
-        self.cg_pac = self.indices.cg_pac
+        self.cg_pac = self.indices.cg_ac
         self.cg_qac = self.indices.cg_qac
         self.cg_pdc = self.indices.cg_pdc
-        self.cg_acdc = self.indices.cg_acdc
+        self.cg_acdc = self.indices.cg_converters
         self.cg_hvdc = self.indices.cg_hvdc
         self.cg_pftr = self.indices.cg_pftr
         self.cg_pttr = self.indices.cg_pttr
@@ -853,12 +853,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # cx sets [UNKNOWNS] The order of this list is important
         self.cx_vm = self.indices.cx_vm
         self.cx_va = self.indices.cx_va
-        self.cx_pzip = self.indices.cx_pzip
-        self.cx_qzip = self.indices.cx_qzip
-        self.cx_pfa = self.indices.cx_pfa
-        self.cx_qfa = self.indices.cx_qfa
-        self.cx_pta = self.indices.cx_pta
-        self.cx_qta = self.indices.cx_qta
+        self.cx_pzip = self.indices.cx_pinj
+        self.cx_qzip = self.indices.cx_qinj
+        self.cx_pfa = self.indices.cx_pf
+        self.cx_qfa = self.indices.cx_qf
+        self.cx_pta = self.indices.cx_pt
+        self.cx_qta = self.indices.cx_qt
         self.cx_m = self.indices.cx_m
         self.cx_tau = self.indices.cx_tau
 
@@ -1477,17 +1477,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 nbr=self.nc.nbr,
                 ix_vm=self.indices.cx_vm,
                 ix_va=self.indices.cx_va,
-                ix_pzip=self.indices.cx_pzip,
-                ix_qzip=self.indices.cx_qzip,
-                ix_pf=self.indices.cx_pfa,
-                ix_qf=self.indices.cx_qfa,
-                ix_pt=self.indices.cx_pta,
-                ix_qt=self.indices.cx_qta,
+                ix_pzip=self.indices.cx_pinj,
+                ix_qzip=self.indices.cx_qinj,
+                ix_pf=self.indices.cx_pf,
+                ix_qf=self.indices.cx_qf,
+                ix_pt=self.indices.cx_pt,
+                ix_qt=self.indices.cx_qt,
                 ix_m=self.indices.ck_m,
                 ix_tau=self.indices.ck_tau,
-                ig_pbus=self.indices.cg_pac + self.indices.cg_pdc,
+                ig_pbus=self.indices.cg_ac + self.indices.cg_pdc,
                 ig_qbus=self.indices.cg_qac,
-                ig_plossacdc=self.indices.cg_acdc,
+                ig_plossacdc=self.indices.cg_converters,
                 ig_plosshvdc=self.indices.cg_hvdc,
                 ig_pinjhvdc=self.indices.cg_hvdc,
                 # TODO: clarify this set? I think it should be the same as ig_plosshvdc

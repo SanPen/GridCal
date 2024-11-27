@@ -77,10 +77,10 @@ class GeneralizedSimulationIndices:
         """
 
         # cg sets
-        self.cg_pac: Set[int] = set()  # All AC buses (AC P balance)
+        self.cg_ac: Set[int] = set()  # Indices of the ac buses.
         self.cg_qac: Set[int] = set()  # All AC buses (AC Q balance)
         self.cg_pdc: Set[int] = set()  # All DC buses (DC P balance)
-        self.cg_acdc: Set[int] = set()  # All VSCs (loss equation)
+        self.cg_converters: Set[int] = set()  # All VSCs (loss equation)
         self.cg_hvdc: Set[int] = set()  # All HVDC lines (loss equation + control equation)
         self.cg_pftr: Set[int] = set()  # All controllable transformers
         self.cg_pttr: Set[int] = set()  # All controllable transformers
@@ -88,21 +88,16 @@ class GeneralizedSimulationIndices:
         self.cg_qttr: Set[int] = set()  # All controllable transformers
 
         # cx sets
-
-        # All AC minus slack buses
-        self.cx_va: Set[int] = set()
-
-        # All minus slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers
-        self.cx_vm: Set[int] = set()
-
+        self.cx_va: Set[int] = set()  # All AC minus slack buses
+        self.cx_vm: Set[int] = set()  # Indices of the buses where the voltage modules are unknown.
+        self.cx_pinj: Set[int] = set()  # Slack buses
+        self.cx_qinj: Set[int] = set()  # Slack buses and those AC with uncontrollable generators/batteries/shunts
+        self.cx_pf: Set[int] = set()  # VSCs controlling Pf, transformers controlling Pf
+        self.cx_pt: Set[int] = set()  # VSCs controlling Pt, transformers controlling Pt
+        self.cx_qf: Set[int] = set()  # ONLY transformers controlling Qf
+        self.cx_qt: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
         self.cx_tau: Set[int] = set()  # All controllable transformers that do not use the tap phase control mode
         self.cx_m: Set[int] = set()  # All controllable transformers that do not use the tap module control mode
-        self.cx_pzip: Set[int] = set()  # Slack buses
-        self.cx_qzip: Set[int] = set()  # Slack buses and those AC with uncontrollable generators/batteries/shunts
-        self.cx_pfa: Set[int] = set()  # VSCs controlling Pf, transformers controlling Pf
-        self.cx_pta: Set[int] = set()  # VSCs controlling Pt, transformers controlling Pt
-        self.cx_qfa: Set[int] = set()  # ONLY transformers controlling Qf
-        self.cx_qta: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
 
         # ck sets (the complements of the cx sets)
         self.ck_va: Set[int] = set()
@@ -156,7 +151,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cg_pac.add(value)
+        self.cg_ac.add(value)
 
     def add_to_cg_qac(self, value: int):
         """
@@ -183,7 +178,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cg_acdc.add(value)
+        self.cg_converters.add(value)
 
     def add_to_cg_hvdc(self, value: int):
         """
@@ -274,7 +269,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cx_pzip.add(value)
+        self.cx_pinj.add(value)
 
     def add_to_cx_qzip(self, value: int):
         """
@@ -283,7 +278,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cx_qzip.add(value)
+        self.cx_qinj.add(value)
 
     def del_from_cx_qzip(self, value: int):
         """
@@ -292,7 +287,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cx_qzip.remove(value)
+        self.cx_qinj.remove(value)
 
     def add_to_cx_pfa(self, value: int):
         """
@@ -301,7 +296,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cx_pfa.add(value)
+        self.cx_pf.add(value)
 
     def add_to_cx_pta(self, value: int):
         """
@@ -310,7 +305,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cx_pta.add(value)
+        self.cx_pt.add(value)
 
     def add_to_cx_qfa(self, value: int):
         """
@@ -319,7 +314,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cx_qfa.add(value)
+        self.cx_qf.add(value)
 
     def add_to_cx_qta(self, value: int):
         """
@@ -328,7 +323,7 @@ class GeneralizedSimulationIndices:
         :param value:
         :return: None
         """
-        self.cx_qta.add(value)
+        self.cx_qt.add(value)
 
     # Non-primitive additions
     def add_tau_control_branch(self,
@@ -537,13 +532,13 @@ class GeneralizedSimulationIndices:
                     # self.cx_va.add(bus_idx)
                 if control_type == ConverterControlType.Qac:
                     branch_idx = branch_idx
-                    self.cx_qta.add(branch_idx)
+                    self.cx_qt.add(branch_idx)
                 if control_type == ConverterControlType.Pdc:
                     branch_idx = branch_idx
-                    self.cx_pfa.add(branch_idx)
+                    self.cx_pf.add(branch_idx)
                 if control_type == ConverterControlType.Pac:
                     branch_idx = branch_idx
-                    self.cx_pta.add(branch_idx)
+                    self.cx_pt.add(branch_idx)
                 else:
                     pass
 
@@ -557,7 +552,7 @@ class GeneralizedSimulationIndices:
         :param bus_idx:
         """
         self.bus_unspecified_qzip[bus_idx] = True
-        if bus_idx in self.cx_qzip:
+        if bus_idx in self.cx_qinj:
             self.del_from_cx_qzip(bus_idx)
 
     def set_bus_qzip_simple(self,
@@ -745,9 +740,9 @@ class GeneralizedSimulationIndices:
                         if control_type == TapModuleControl.fixed:
                             self.cx_m.add(branch_idx)
                         elif control_type == TapModuleControl.Qf:
-                            self.cx_qfa.add(branch_idx)
+                            self.cx_qf.add(branch_idx)
                         elif control_type == TapModuleControl.Qt:
-                            self.cx_qta.add(branch_idx)
+                            self.cx_qt.add(branch_idx)
 
                 for index, is_controlled in enumerate(phase_control_flags):
                     control_type = list(TapPhaseControl)[index]
@@ -755,9 +750,9 @@ class GeneralizedSimulationIndices:
                         if control_type == TapPhaseControl.fixed:
                             self.cx_tau.add(branch_idx)
                         elif control_type == TapPhaseControl.Pf:
-                            self.cx_pfa.add(branch_idx)
+                            self.cx_pf.add(branch_idx)
                         elif control_type == TapPhaseControl.Pt:
-                            self.cx_pta.add(branch_idx)
+                            self.cx_pt.add(branch_idx)
 
                 self.cg_pftr.add(branch_idx)
                 self.cg_pttr.add(branch_idx)
@@ -833,10 +828,10 @@ class GeneralizedSimulationIndices:
         """
         Finalize the sets, converting from sets to lists
         """
-        self.cg_pac = list(self.cg_pac)
+        self.cg_ac = list(self.cg_ac)
         self.cg_qac = list(self.cg_qac)
         self.cg_pdc = list(self.cg_pdc)
-        self.cg_acdc = list(self.cg_acdc)
+        self.cg_converters = list(self.cg_converters)
         self.cg_hvdc = list(self.cg_hvdc)
         self.cg_pftr = list(self.cg_pftr)
         self.cg_pttr = list(self.cg_pttr)
@@ -847,12 +842,12 @@ class GeneralizedSimulationIndices:
         self.cx_vm = list(self.cx_vm)
         self.cx_tau = list(self.cx_tau)
         self.cx_m = list(self.cx_m)
-        self.cx_pzip = list(self.cx_pzip)
-        self.cx_qzip = list(self.cx_qzip)
-        self.cx_pfa = list(self.cx_pfa)
-        self.cx_pta = list(self.cx_pta)
-        self.cx_qfa = list(self.cx_qfa)
-        self.cx_qta = list(self.cx_qta)
+        self.cx_pinj = list(self.cx_pinj)
+        self.cx_qinj = list(self.cx_qinj)
+        self.cx_pf = list(self.cx_pf)
+        self.cx_pt = list(self.cx_pt)
+        self.cx_qf = list(self.cx_qf)
+        self.cx_qt = list(self.cx_qt)
 
         self.ck_va = list(self.ck_va)
         self.ck_vm = list(self.ck_vm)

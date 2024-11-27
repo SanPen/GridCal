@@ -36,82 +36,79 @@ of Raiyan Bin Zulkifli in 2024 (Generalised AC/DC Power Flow at UPC university).
         \end{bmatrix}
         \times
         \begin{bmatrix}
-            \Delta Va \in iu_Va \\
-            \Delta Vm \in iu_Vm \\
-            \Delta \tau \in ku_{\tau}\\
-            \Delta m \in ku_m\\
-            \Delta P^{zip} \in iu_{P_zip}\\
-            \Delta Q^{zip} \in iu_{Q_zip}\\
-            \Delta P_f \in ku_{P_f} \\
-            \Delta P_t \in ku_{P_t} \\
-            \Delta Q_f \in ku_{Q_f} \\
-            \Delta Q_t \in ku_{Q_t}
+            \Delta Va \in cx_va \\
+            \Delta Vm \in cx_vm \\
+            \Delta P^{zip_{calc}} \in cx_{pinj}\\
+            \Delta Q^{zip_{calc}} \in cx_{qinj}\\
+            \Delta P_f \in cx_{pf} \\
+            \Delta P_t \in cx_{pt} \\
+            \Delta Q_f \in cx_{qf} \\
+            \Delta Q_t \in cx_{qt} \\
+            \Delta m \in cx_m\\
+            \Delta \tau \in cx_{\tau}\\
         \end{bmatrix}
         =
         \begin{bmatrix}
-            \Delta P \in in_P \\
-            \Delta Q \in in_Q \\
-            g_loss \in kn_acdc \\
-            \Delta P_f \in kn_{P_f} \\
-            \Delta P_t \in kn_{P_t} \\
-            \Delta Q_f \in kn_{Q_f} \\
-            \Delta Q_t \in kn_{Q_t}
+            \Delta P \in cg_{acdc} \\
+            \Delta Q \in cg_{ac} \\
+            vsc_{loss} \in cg_{vsc}\\
+            hvdc_{loss} \in cg_{hvdc} \\
+            \Delta Pdroop_{hvdc} \in cg_{hvdc} \\
+            \Delta TapP_f \in k\_controllable\_branches \\
+            \Delta TapQ_f \in k\_controllable\_branches \\
+            \Delta TapP_t \in k\_controllable\_branches \\
+            \Delta TapQ_t \in k\_controllable\_branches
         \end{bmatrix}
     \end{equation}
 
 
+Indices of the variables (X):
 
-Specified variables' sets:
+- :math:`cx_{va}` -> Indices of the buses where the voltage angles are unknown.
+- :math:`cx_{vm}` -> Indices of the buses where the voltage modules are unknown.
+- :math:`cx_{pinj}` -> Indices of the buses (with injection devices) where the active power injection are unknown.
+- :math:`cx_{qinj}` -> Indices of the buses (with injection devices) where the reactive power injection are unknown.
+- :math:`cx_{pf}` -> Indices of the controllable branches where Pf is unknown.
+- :math:`cx_{pt}` -> Indices of the controllable branches where Pt is unknown.
+- :math:`cx_{qf}` -> Indices of the controllable branches where Qf is unknown.
+- :math:`cx_{qt}` -> Indices of the controllable branches where Qt is unknown.
+- :math:`cx_{\tau}` -> Indices of the controllable branches where the tap angles are unknown.
+- :math:`cx_{m}` -> Indices of the controllable branches where the tap modules are unknown.
 
-- :math:`\mathcal{C}_{Va}` -> Indices of the buses where the voltage angles are specified.
-- :math:`\mathcal{C}_{Vm}` -> Indices of the buses where the voltage modules are specified.
-- :math:`\mathcal{C}_{\tau}` -> Indices of the controllable branches where the phase shift angles are specified.
-- :math:`\mathcal{C}_{m}` -> Indices of the controllable branches where the tap ratios are specified.
-- :math:`\mathcal{C}_{P_zip}` -> Indices of the buses where the ZIP active power injection are specified.
-- :math:`\mathcal{C}_{Q_zip}` -> Indices of the buses where the ZIP reactive power injection are specified.
-- :math:`\mathcal{C}{P_f}` -> Indices of the controllable branches where Pf is specified.
-- :math:`\mathcal{C}{P_t}` -> Indices of the controllable branches where Pt is specified.
-- :math:`\mathcal{C}{Q_f}` -> Indices of the controllable branches where Qf is specified.
-- :math:`\mathcal{C}{Q_t}` -> Indices of the controllable branches where Qt is specified.
-- :math:`\mathcal{C}{Inj_P}` -> Indices of the injection devices where the P is specified.
-- :math:`\mathcal{C}{Inj_Q}` -> Indices of the injection devices where the Q is specified.
-
-Global sets:
-
+Indices of the controls (RHS):
+- :math:`cg_{acdc}` -> All the buses (AC and DC)
 - :math:`ac` -> Indices of the ac buses.
-- :math:`dc` -> Indices of the dc buses.
-- :math:`cbr` -> Indices of the controllable branches.
-- :math:`vsc` -> Indices of the ACDC converters.
-- :math:`Inj_P` -> Indices of the injection devices where the P is specified.
-- :math:`Inj_Q` -> Indices of the injection devices where the Q is specified.
+- :math:`cg_{vsc}` -> all VSC converters.
+- :math:`cg_{hvdc}` -> all Hvdc lines.
+- :math:`k\_controllable\_branches` -> indices of the branches with impedance that are controllable using the tap.
+
+.. math::
+
+    S_{zip} = S0 + I0^* \cdot Vm + Y0^* \cdot Vm^2 + P_{zip_{calc}} + 1j \cdot Q_{zip_{calc}}
 
 
-Set operations:
+.. math::
 
-- :math:`\cup` : Set union.
-- :math:`\setminus` : Set exclusion.
+    \Delta S = V \cdot (Y \times V)^* - S_{zip}
+                + {S_f}[cg_{vsc}] \times C_{vsc_f} + {S_t}[cg_{vsc}] \times C_{vsc_t}
+                + {S_f}[cg_{hvdc}] \times C_{hvdc_f} + {S_t}[cg_{hvdc}] \times C_{hvdc_t}
+                + {S_f}[k\_controllable\_branches] \times C_f[k\_controllable\_branches, :]
+                + {S_t}[k\_controllable\_branches] \times C_t[k\_controllable\_branches, :]
 
-Unknowns:
 
-The indices of the unknowns are found by obtaining the
+.. math::
 
-- :math:`iu_Va = ac \setminus \mathcal{C}_{Va}` -> Voltage angle increments for the AC buses where Va is not specified.
-- :math:`iu_Vm = (ac \cup dc) \setminus \mathcal{C}_{Vm}` -> Voltage angle increments for the AC & DC buses where Vm is not specified.
-- :math:`ku_{\tau} = cbr \setminus \mathcal{C}_{\tau}` -> Set of controllable branches where the phase shift angles are not specified.
-- :math:`ku_m = cbr \setminus \mathcal{C}_{m}` -> Set of controllable branches where the tap ratios are not specified.
-- :math:`iu_{P_zip} = Inj_P \setminus \mathcal{C}{Inj_P}` -> Set of injections where :math:`P_{zip}` is not specified.
-- :math:`iu_{Q_zip} = Inj_q \setminus \mathcal{C}{Inj_q}` -> Set of injections where :math:`Q_{zip}` is not specified.
-- :math:`ku_{P_f} = cbr \setminus \mathcal{C}{P_f}` -> Set of branch indices where :math:`P_f` is not specified.
-- :math:`ku_{P_t} = cbr \setminus \mathcal{C}{P_t}` -> Set of branch indices where :math:`P_t` is not specified.
-- :math:`ku_{Q_f} = cbr \setminus \mathcal{C}{Q_f}` -> Set of branch indices where :math:`Q_f` is not specified.
-- :math:`ku_{Q_t} = cbr \setminus \mathcal{C}{Q_t}` -> Set of branch indices where :math:`Q_t` is not specified.
+    \Delta P = real(\Delta S)
 
-Knowns:
+.. math::
 
-- :math:`in_P = ac \cup dc` -> Active power mismatch for the set of all AC and DC
-- :math:`in_Q = ac` -> Reactive power mismatch for Ac buses
-- :math:`kn_acdc = vsc` -> Power loss equation mismatch for the VSC devices
-- :math:`kn_{P_f} = cbr` -> Pf mismatch for all controllable branches (without ACDC converters)
-- :math:`kn_{P_t} = cbr` -> Pt mismatch for all controllable branches (without ACDC converters)
-- :math:`kn_{Q_f} = cbr` -> Qf mismatch for all controllable branches (without ACDC converters)
-- :math:`kn_{Q_t} = cbr` -> Qt mismatch for all controllable branches (without ACDC converters)
+    \Delta P = imag(\Delta S)
+
+.. math::
+
+    vsc_{loss} =
+
+
+- :math:`P0` -> Specified nodal active power (p.u.)
+- :math:`Q0` -> Specified nodal reactive power (p.u.)
+
