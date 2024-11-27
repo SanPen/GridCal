@@ -1262,6 +1262,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # compute the error
         self._error = compute_fx_error(self._f)
+        print()
 
         if self.options.verbose > 1:
             print("Vm:", self.Vm)

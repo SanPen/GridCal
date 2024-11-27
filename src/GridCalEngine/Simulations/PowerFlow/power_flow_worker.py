@@ -747,6 +747,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
     # compute islands
     islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
+                                    consider_hvdc_as_island_links=True,
                                     logger=logger)
 
     # initialize the all controls var
