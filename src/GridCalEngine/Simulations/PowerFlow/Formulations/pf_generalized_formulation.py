@@ -63,8 +63,8 @@ def recompute_controllable_power(V_f: CxVec,
     Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
     Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
-    Sf: CxVec = V_f * np.conj(V_f) * Yff - V_f * np.conj(V_t) * Yft
-    St: CxVec = V_t * np.conj(V_t) * Ytt - V_t * np.conj(V_f) * Ytf
+    Sf: CxVec = V_f * np.conj(V_f * Yff) + V_f * np.conj(V_t * Yft)
+    St: CxVec = V_t * np.conj(V_t * Ytt) + V_t * np.conj(V_f * Ytf)
 
     return Sf.real, Sf.imag, St.real, St.imag
 
@@ -1131,10 +1131,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Ploss_acdc,
             Ploss_hvdc,
             Pinj_hvdc,
-            Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
-            Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
-            Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
-            Qttr - self.nc.active_branch_data.Qset[self.cg_qttr]
+            Pf[self.cg_pttr] - Pftr,
+            Qf[self.cg_pttr] - Qftr,
+            Pt[self.cg_pttr] - Pttr,
+            Qt[self.cg_pttr] - Qttr
         ]
 
         errf = compute_fx_error(_f)
@@ -1254,10 +1254,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Ploss_acdc,
             Ploss_hvdc,
             Pinj_hvdc,
-            Pftr - self.nc.active_branch_data.Pset[self.cg_pftr],
-            Qftr - self.nc.active_branch_data.Qset[self.cg_qftr],
-            Pttr - self.nc.active_branch_data.Pset[self.cg_pttr],
-            Qttr - self.nc.active_branch_data.Qset[self.cg_qttr]
+            self.Pf[self.cg_pftr] - Pftr,
+            self.Qf[self.cg_pftr] - Qftr,
+            self.Pt[self.cg_pftr] - Pttr,
+            self.Qt[self.cg_pftr] - Qttr
         ]
 
         # compute the error
@@ -1428,7 +1428,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = False) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:
