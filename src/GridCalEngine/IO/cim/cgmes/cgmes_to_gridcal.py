@@ -18,7 +18,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_slack_id,
                                                     find_object_by_idtag,
                                                     find_terms_connections,
-                                                    build_rates_dict)
+                                                    build_cgmes_limit_dicts)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import TapChangerTypes, TapPhaseControl, TapModuleControl
@@ -1110,26 +1110,32 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
     """
 
     # build the ratings dictionary
-    rates_dict = dict()
-    acline_type = cgmes_model.get_class_type("ACLineSegment")
-    for e in cgmes_model.cgmes_assets.CurrentLimit_list:
-        if e.OperationalLimitSet is None:
-            logger.add_error(msg='OperationalLimitSet missing.',
-                             device=e.rdfid,
-                             device_class=e.tpe,
-                             device_property="OperationalLimitSet",
-                             value="None")
-            continue
-        if not isinstance(e.OperationalLimitSet, str):
-            if isinstance(e.OperationalLimitSet, list):
-                for ols in e.OperationalLimitSet:
-                    if isinstance(ols.Terminal.ConductingEquipment, acline_type):
-                        branch_id = ols.Terminal.ConductingEquipment.uuid
-                        rates_dict[branch_id] = e.value
-            else:
-                if isinstance(e.OperationalLimitSet.Terminal.ConductingEquipment, acline_type):
-                    branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
-                    rates_dict[branch_id] = e.value
+    (patl_dict, tatl_900_dict, tatl_60_dict) = build_cgmes_limit_dicts(
+        cgmes_model=cgmes_model,
+        device_type=cgmes_model.get_class_type("ACLineSegment"),
+        logger=logger
+    )
+    # # build the ratings dictionary
+    # rates_dict = dict()
+    # acline_type = cgmes_model.get_class_type("ACLineSegment")
+    # for e in cgmes_model.cgmes_assets.CurrentLimit_list:
+    #     if e.OperationalLimitSet is None:
+    #         logger.add_error(msg='OperationalLimitSet missing.',
+    #                          device=e.rdfid,
+    #                          device_class=e.tpe,
+    #                          device_property="OperationalLimitSet",
+    #                          value="None")
+    #         continue
+    #     if not isinstance(e.OperationalLimitSet, str):
+    #         if isinstance(e.OperationalLimitSet, list):
+    #             for ols in e.OperationalLimitSet:
+    #                 if isinstance(ols.Terminal.ConductingEquipment, acline_type):
+    #                     branch_id = ols.Terminal.ConductingEquipment.uuid
+    #                     rates_dict[branch_id] = e.value
+    #         else:
+    #             if isinstance(e.OperationalLimitSet.Terminal.ConductingEquipment, acline_type):
+    #                 branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
+    #                 rates_dict[branch_id] = e.value
 
     # convert ac lines
     for device_list in [cgmes_model.cgmes_assets.ACLineSegment_list]:
@@ -1146,17 +1152,24 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 cn_f = cns[0]
                 cn_t = cns[1]
 
-                # get per unit vlaues
+                # get per unit values
                 r, x, g, b, r0, x0, g0, b0 = get_pu_values_ac_line_segment(ac_line_segment=cgmes_elm, logger=logger,
                                                                            Sbase=Sbase)
 
-                current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
-                if current_rate and cgmes_elm.BaseVoltage is not None:
-                    # rate in MVA = kA * kV * sqrt(3)
-                    rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
-                                    4)
+                normal_rate_mva = patl_dict.get(cgmes_elm.uuid, 9999.0)
+                # min PATL rate in MW/MVA
+                cont_rate_mva = tatl_900_dict.get(cgmes_elm.uuid, 9999.0)
+                # min TATL900 rate in MW/MVA
+                if cont_rate_mva != 9999.0:
+                    cont_factor = cont_rate_mva / normal_rate_mva
                 else:
-                    rate = 1e-20
+                    cont_factor = 1.0
+                prot_rate_mva = tatl_60_dict.get(cgmes_elm.uuid, 9999.0)
+                # min TATL60 rate in MW/MVA
+                if prot_rate_mva != 9999.0:
+                    prot_factor = prot_rate_mva / normal_rate_mva
+                else:
+                    prot_factor = 1.4
 
                 if cgmes_elm.length is None:
                     length = 1.0
@@ -1164,22 +1177,26 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 else:
                     length = float(cgmes_elm.length)
 
-                gcdev_elm = gcdev.Line(idtag=cgmes_elm.uuid,
-                                       code=cgmes_elm.description,
-                                       name=cgmes_elm.name,
-                                       active=True,
-                                       cn_from=cn_f,
-                                       cn_to=cn_t,
-                                       bus_from=calc_node_f,
-                                       bus_to=calc_node_t,
-                                       r=r,
-                                       x=x,
-                                       b=b,
-                                       r0=r0,
-                                       x0=x0,
-                                       b0=b0,
-                                       rate=rate,
-                                       length=length)
+                gcdev_elm = gcdev.Line(
+                    idtag=cgmes_elm.uuid,
+                    code=cgmes_elm.description,
+                    name=cgmes_elm.name,
+                    active=True,
+                    cn_from=cn_f,
+                    cn_to=cn_t,
+                    bus_from=calc_node_f,
+                    bus_to=calc_node_t,
+                    r=r,
+                    x=x,
+                    b=b,
+                    r0=r0,
+                    x0=x0,
+                    b0=b0,
+                    rate=normal_rate_mva,
+                    contingency_factor=cont_factor,
+                    protection_rating_factor=prot_factor,
+                    length=length,
+                )
 
                 gcdev_model.add_line(gcdev_elm, logger=logger)
             else:
@@ -1301,7 +1318,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
 
     # build the ratings dictionary
     trafo_type = cgmes_model.get_class_type("PowerTransformer")
-    rates_dict = build_rates_dict(cgmes_model, trafo_type, logger)
+    (patl_dict, tatl_900_dict, tatl_60_dict) = build_cgmes_limit_dicts(cgmes_model, trafo_type, logger)
 
     # convert transformers
     for device_list in [cgmes_model.cgmes_assets.PowerTransformer_list]:
@@ -1316,7 +1333,17 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                         windings[i - 1] = pte
             windings = [x for x in windings if x is not None]
 
-            rate_mva = rates_dict.get(cgmes_elm.uuid, 9999.0)  # min PATL rate in MW/MVA
+            normal_rate_mva = patl_dict.get(cgmes_elm.uuid, 9999.0)  # min PATL rate in MW/MVA
+            cont_rate_mva = tatl_900_dict.get(cgmes_elm.uuid, 9999.0)  # min TATL900 rate in MW/MVA
+            if cont_rate_mva != 9999.0:
+                cont_factor = cont_rate_mva / normal_rate_mva
+            else:
+                cont_factor = 1.0
+            prot_rate_mva = tatl_60_dict.get(cgmes_elm.uuid, 9999.0)  # min TATL60 rate in MW/MVA
+            if prot_rate_mva != 9999.0:
+                prot_factor = prot_rate_mva / normal_rate_mva
+            else:
+                prot_factor = 1.4
 
             calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
                                                device_to_terminal_dict=device_to_terminal_dict,
@@ -1339,36 +1366,41 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
                     rated_s = windings[0].ratedS
 
-                    gcdev_elm = gcdev.Transformer2W(idtag=cgmes_elm.uuid,
-                                                    code=cgmes_elm.description,
-                                                    name=cgmes_elm.name,
-                                                    active=True,
-                                                    cn_from=cn_f,
-                                                    cn_to=cn_t,
-                                                    bus_from=calc_node_f,
-                                                    bus_to=calc_node_t,
-                                                    nominal_power=rated_s,
-                                                    HV=HV,
-                                                    LV=LV,
-                                                    r=r,
-                                                    x=x,
-                                                    g=g,
-                                                    b=b,
-                                                    r0=r0,
-                                                    x0=x0,
-                                                    g0=g0,
-                                                    b0=b0,
-                                                    # tap_module=tap_m,
-                                                    # # tap_phase=0.0,
-                                                    # # tap_module_control_mode=,  # leave fixed
-                                                    # # tap_angle_control_mode=,
-                                                    # tc_total_positions=total_pos,
-                                                    # tc_neutral_position=neutral_pos,
-                                                    # tc_normal_position=normal_pos,
-                                                    # tc_dV=dV,
-                                                    # # tc_asymmetry_angle = 90,
-                                                    # tc_type=tc_type,
-                                                    rate=rate_mva)
+                    gcdev_elm = gcdev.Transformer2W(
+                        idtag=cgmes_elm.uuid,
+                        code=cgmes_elm.description,
+                        name=cgmes_elm.name,
+                        active=True,
+                        cn_from=cn_f,
+                        cn_to=cn_t,
+                        bus_from=calc_node_f,
+                        bus_to=calc_node_t,
+                        nominal_power=rated_s,
+                        HV=HV,
+                        LV=LV,
+                        r=r,
+                        x=x,
+                        g=g,
+                        b=b,
+                        r0=r0,
+                        x0=x0,
+                        g0=g0,
+                        b0=b0,
+                        # tap_module=tap_m,
+                        # # tap_phase=0.0,
+                        # # tap_module_control_mode=,  # leave fixed
+                        # # tap_angle_control_mode=,
+                        # tc_total_positions=total_pos,
+                        # tc_neutral_position=neutral_pos,
+                        # tc_normal_position=normal_pos,
+                        # tc_dV=dV,
+                        # # tc_asymmetry_angle = 90,
+                        # tc_type=tc_type,
+                        rate=normal_rate_mva,
+                        contingency_factor=cont_factor,
+                        protection_rating_factor=prot_factor,
+                    )
+
 
                     # # get Tap data from CGMES
                     # tap_m, total_pos, neutral_pos, normal_pos, dV, tc_type, tap_pos = get_tap_changer_values(windings)

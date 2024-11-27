@@ -9,7 +9,7 @@ import os
 import numpy as np
 from GridCalEngine.IO import FileSave
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
-from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions
+from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileOpen
 from GridCalEngine.Simulations import PowerFlowOptions
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
@@ -32,6 +32,17 @@ def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
                               cgmesProfile.SSH]
     options.cgmes_version = CGMESVersions.v2_4_15
     options.cgmes_boundary_set = boundary_zip_path
+
+    return options
+
+
+def create_file_open_options() -> FileOpenOptions:
+    """
+    :return:
+    """
+    options = FileOpenOptions()
+    options.cgmes_map_areas_like_raw = True
+    options.try_to_map_dc_to_hvdc_line = False
 
     return options
 
@@ -70,7 +81,14 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
                             options=options)
     cgmes_export.save_cgmes()
 
-    circuit2 = gce.open_file([export_fname, boundary_zip_path])
+    open_options = create_file_open_options()
+    file_open = FileOpen(file_name=[export_fname, boundary_zip_path],
+                         options=open_options)
+
+    circuit2 = file_open.open()
+
+    # run power flow
+    gce.power_flow(circuit2, pf_options)
 
     ok, logger = circuit.compare_circuits(circuit2)
     if not ok:
@@ -80,7 +98,7 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
     nc2 = gce.compile_numerical_circuit_at(circuit2)
 
     # COMPARING Numerical Circuits
-    ok, logger = nc1.compare(nc_2=nc2, tol=1e-6)        # 1e-6
+    ok, logger = nc1.compare(nc_2=nc2, tol=1e-6)  # 1e-6
 
     if ok:
         print("\nOK! SUCCESS for Numerical Circuit!\n")
@@ -117,7 +135,7 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
 
     assert ok
 
-    
+
 def test_raw_to_cgmes_cross_roundtrip():
     """
     Importing from RAW and export to CGMES, importing back it.
@@ -127,23 +145,24 @@ def test_raw_to_cgmes_cross_roundtrip():
     """
     script_path = os.path.abspath(__file__)
 
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'ENTSOe_boundary_set.zip')
+    # test_grid_name = 'IEEE 14 bus'  # PASSEED
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
-    boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
-    test_grid_name = 'IEEE 14 bus'            # PASSEED
-
-    # test_grid_name = 'IEEE 14 bus_35_3_WINDING_POST_EDITING_IEEE_HVDC_final_nudox_1_hvdc_desf_rates_fs_ss'
 
     # test_grid_name = 'IEEE 30 bus'              # FAILED
     # Error     Different snapshot values    Transformer      rate  5.9091    65.0
     # Converted line to trafo due to excessice voltage difference !??
     # test_grid_name = 'IEEE 118 Bus' # v2?     # PASSEED
 
+    boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
+
     raw_relative_path = os.path.join('data', 'grids', 'RAW', f"{test_grid_name}.raw")
     raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))
 
-    export_relative_path = os.path.join('output/cgmes_export_result', f'{test_grid_name}_from_raw_GC.zip')
+    export_relative_path = os.path.join('data/output/raw_to_cgmes_export_results', f'{test_grid_name}_from_raw_GC.zip')
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))

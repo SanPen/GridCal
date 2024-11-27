@@ -64,7 +64,12 @@ class RawSubstation(RawObject):
 
         if version >= 35:
 
-            self.IS, self.NAME, self.LATI, self.LONG, self.SGR = data[0]
+            if len(data[0]) == 5:
+                self.IS, self.NAME, self.LATI, self.LONG, self.SGR = data[0]
+            elif len(data[0]) == 4:
+                self.IS, self.NAME, self.LATI, self.LONG = data[0]
+            else:
+                logger.add_warning('Substation line length could not be identified :/', value=",".join(data[0]))
 
         else:
             logger.add_warning('Areas not defined for version', str(version))

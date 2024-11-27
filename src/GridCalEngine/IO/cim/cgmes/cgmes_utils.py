@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 from typing import List, Tuple, Dict
 import numpy as np
@@ -9,7 +10,8 @@ import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import Base, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
-
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind
 
 def find_terms_connections(cgmes_terminal: Base,
                            calc_node_dict: Dict[str, gcdev.Bus],
@@ -21,7 +23,8 @@ def find_terms_connections(cgmes_terminal: Base,
     :param cn_dict:
     :return:
     """
-
+    calc_node = None
+    cn = None
     if cgmes_terminal is not None:
         try:        # Try for AC terminal
             # get the rosetta calculation node if exists
@@ -37,17 +40,23 @@ def find_terms_connections(cgmes_terminal: Base,
                 cn = None
         except:     # Try for DC Terminal
             # get the rosetta calculation node if exists
-            if cgmes_terminal.DCTopologicalNode is not None:
-                calc_node = calc_node_dict.get(
-                    cgmes_terminal.DCTopologicalNode.uuid, None)
+            if hasattr(cgmes_terminal, "DCTopologicalNode"):
+                if cgmes_terminal.DCTopologicalNode is not None:
+                    calc_node = calc_node_dict.get(
+                        cgmes_terminal.DCTopologicalNode.uuid, None)
+                else:
+                    calc_node = None
             else:
                 calc_node = None
 
             # get the gcdev connectivity node if exists
-            if cgmes_terminal.DCNode is not None:
-                cn = cn_dict.get(cgmes_terminal.DCNode.uuid, None)
+            if hasattr(cgmes_terminal, "DCNode"):
+                if cgmes_terminal.DCNode is not None:
+                    cn = cn_dict.get(cgmes_terminal.DCNode.uuid, None)
+                else:
+                    cn = None
             else:
-                cn = None
+                calc_node = None
     else:
         calc_node = None
         cn = None
@@ -55,7 +64,7 @@ def find_terms_connections(cgmes_terminal: Base,
     return calc_node, cn
 
 
-def find_object_by_idtag(object_list, target_idtag):
+def find_object_by_idtag(object_list: List[ALL_DEV_TYPES], target_idtag: str) -> ALL_DEV_TYPES | None:
     """
     Finds an object with the specified idtag
      in the given object_list from a Multi Circuit.
@@ -82,8 +91,7 @@ def get_slack_id(machines):
     """
     # Check if machines is a list
     if not isinstance(machines, list):
-        raise TypeError(
-            "Expected 'machines' to be a list of SynchronousMachine objects.")
+        raise TypeError("Expected 'machines' to be a list of SynchronousMachine objects.")
 
     for m in machines:
         # Check if the machine has a referencePriority attribute
@@ -114,7 +122,9 @@ def get_slack_id(machines):
     return None
 
 
-def build_rates_dict(cgmes_model, device_type, logger):
+def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
+                            device_type,
+                            logger: DataLogger):
     """
     Builds Rating dictionary for given device type from OperationalLimitSets
 
@@ -123,7 +133,11 @@ def build_rates_dict(cgmes_model, device_type, logger):
     :param logger:
     :return:
     """
-    rates_dict = dict()
+    sqrt_3 = 1.73205080756888
+    patl_dict = dict()
+    tatl_900_dict = dict()
+    tatl_60_dict = dict()
+
     for cl in cgmes_model.cgmes_assets.CurrentLimit_list:
 
         if cl.OperationalLimitSet is None:
@@ -132,46 +146,82 @@ def build_rates_dict(cgmes_model, device_type, logger):
                              device_class=cl.tpe,
                              device_property="OperationalLimitSet",
                              value="None")
-            continue
-        if not isinstance(cl.OperationalLimitSet, str):
-            if isinstance(cl.OperationalLimitSet, list):
-                for ols in cl.OperationalLimitSet:
-                    volt = get_voltage_terminal(ols.Terminal, logger)
-                    rate_mva = np.round(cl.value * volt * 1.73205080756888 / 1000, 4)
-                    # TODO type check: put min PATL to the dict
-                    if isinstance(ols.Terminal.ConductingEquipment,
-                                  device_type):
-                        branch_id = ols.Terminal.ConductingEquipment.uuid
-                        act_lim = rates_dict.get(branch_id, None)
-                        if act_lim is None:
-                            rates_dict[branch_id] = rate_mva
-                        elif cl.value < act_lim:
-                            rates_dict[branch_id] = rate_mva
-                    else:
-                        logger.add_error(msg='ConductingEquipment is missing for terminal.',
-                                         device=ols.Terminal.rdfid,
-                                         device_class=ols.Terminal.tpe,
-                                         device_property="ConductingEquipment",
-                                         value="None")
-            else:
-                if isinstance(cl.OperationalLimitSet.Terminal.ConductingEquipment,
-                              device_type):
-                    volt = get_voltage_terminal(cl.OperationalLimitSet.Terminal,
-                                                logger)
-                    rate_mva = np.round(cl.value * volt * 1.73205080756888 / 1000, 4)
 
-                    branch_id = cl.OperationalLimitSet.Terminal.ConductingEquipment.uuid
-                    act_lim = rates_dict.get(branch_id, None)
+        else:
+            ols = cl.OperationalLimitSet
+            op_lim_type = cl.OperationalLimitType
+
+            volt = get_voltage_terminal(ols.Terminal, logger)
+            rate_mva = np.round(cl.value * volt * sqrt_3 / 1e3, 4)
+
+            if isinstance(ols.Terminal.ConductingEquipment,
+                          device_type):
+                branch_id = ols.Terminal.ConductingEquipment.uuid
+
+                if op_lim_type.limitType == LimitTypeKind.patl:
+
+                    act_lim = patl_dict.get(branch_id, None)
                     if act_lim is None:
-                        rates_dict[branch_id] = rate_mva
-                    elif cl.value < act_lim:
-                        rates_dict[branch_id] = rate_mva
+                        patl_dict[branch_id] = rate_mva
+                    elif rate_mva < act_lim:
+                        patl_dict[branch_id] = rate_mva
 
-    # TODO ActivePowerLimit_list, ApparentPowerLimit_list
-    # for al in [cgmes_model.cgmes_assets.ActivePowerLimit_list,
-    #            cgmes_model.cgmes_assets.ApparentPowerLimit_list]:
+                elif op_lim_type.limitType == LimitTypeKind.tatl:
 
-    return rates_dict
+                    if op_lim_type.acceptableDuration == 900:
+
+                        act_lim = tatl_900_dict.get(branch_id, None)
+                        if act_lim is None:
+                            tatl_900_dict[branch_id] = rate_mva
+                        elif rate_mva < act_lim:
+                            tatl_900_dict[branch_id] = rate_mva
+
+                    elif op_lim_type.acceptableDuration == 60:
+
+                        act_lim = tatl_60_dict.get(branch_id, None)
+                        if act_lim is None:
+                            tatl_60_dict[branch_id] = rate_mva
+                        elif rate_mva < act_lim:
+                            tatl_60_dict[branch_id] = rate_mva
+
+                    else:
+                        logger.add_info(
+                            msg="Not supported .acceptable duration for OperationalLimitType",
+                            device=op_lim_type,
+                            device_class=op_lim_type.tpe,
+                            value=op_lim_type.acceptableDuration,
+                            comment="Currently only 900 and 60 is imported for TATL limits",
+                        )
+                else:
+                    logger.add_info(
+                        msg="Not supported .limitType duration for OperationalLimitType",
+                        device=op_lim_type,
+                        device_class=op_lim_type.tpe,
+                        value=op_lim_type.limitType,
+                        comment="Currently only PATL and TATL (900, 60) type are imported",
+                    )
+
+            else:
+                logger.add_info(msg='ConductingEquipment is missing for terminal.',
+                                device=ols.Terminal.rdfid,
+                                device_class=ols.Terminal.tpe,
+                                device_property="ConductingEquipment",
+                                value=ols.Terminal)
+
+    # later development
+    for al in cgmes_model.cgmes_assets.ActivePowerLimit_list:
+        logger.add_info(msg='ActivePowerLimit is not supported yet.',
+                        device=al,
+                        device_class=al.tpe,
+                        comment="Only CurrentLimit is imported!")
+
+    for app_lim in cgmes_model.cgmes_assets.ApparentPowerLimit_list:
+        logger.add_info(msg='ApparentPowerLimit is not supported yet.',
+                        device=app_lim,
+                        device_class=app_lim.tpe,
+                        comment="Only CurrentLimit is imported!")
+
+    return patl_dict, tatl_900_dict, tatl_60_dict
 
 
 # region PowerTransformer

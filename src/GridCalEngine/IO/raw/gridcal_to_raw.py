@@ -212,6 +212,8 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
 
     psse_transformer.SBASE1_2 = transformer.Sn
     psse_transformer.RATE1_1 = transformer.rate
+    psse_transformer.RATE1_2 = transformer.rate * transformer.contingency_factor
+    psse_transformer.RATE1_3 = transformer.rate * transformer.protection_rating_factor
 
     # i, j, ckt = transformer.code.split("_", 2)
     psse_transformer.I = bus_dict[transformer.bus_from]
@@ -265,6 +267,14 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.RATE2_1 = transformer.rate2
     psse_transformer.RATE3_1 = transformer.rate3
 
+    psse_transformer.RATE1_2 = transformer.rate1 * transformer.winding1.contingency_factor
+    psse_transformer.RATE2_2 = transformer.rate2 * transformer.winding2.contingency_factor
+    psse_transformer.RATE3_2 = transformer.rate3 * transformer.winding3.contingency_factor
+
+    psse_transformer.RATE1_3 = transformer.rate1 * transformer.winding1.protection_rating_factor
+    psse_transformer.RATE2_3 = transformer.rate2 * transformer.winding2.protection_rating_factor
+    psse_transformer.RATE3_3 = transformer.rate3 * transformer.winding3.protection_rating_factor
+
     psse_transformer.ANG1 = transformer.winding1.tap_phase
     psse_transformer.ANG2 = transformer.winding2.tap_phase
     psse_transformer.ANG3 = transformer.winding3.tap_phase
@@ -304,6 +314,8 @@ def get_psse_branch(branch: dev.Line, bus_dict: Dict[dev.Bus, int], ckt: int) ->
     psse_branch.idtag = branch.idtag
     psse_branch.LEN = branch.length
     psse_branch.RATE1 = branch.rate
+    psse_branch.RATE2 = branch.rate * branch.contingency_factor
+    psse_branch.RATE3 = branch.rate * branch.protection_rating_factor
 
     return psse_branch
 
