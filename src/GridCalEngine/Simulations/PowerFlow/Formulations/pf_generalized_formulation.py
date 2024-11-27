@@ -63,8 +63,8 @@ def recompute_controllable_power(V_f: CxVec,
     Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
     Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
-    Sf = V_f * np.conj(V_f) * Yff - V_f * np.conj(V_t) * Yft
-    St = V_t * np.conj(V_t) * Ytt - V_t * np.conj(V_f) * Ytf
+    Sf: CxVec = V_f * np.conj(V_f) * Yff - V_f * np.conj(V_t) * Yft
+    St: CxVec = V_t * np.conj(V_t) * Ytt - V_t * np.conj(V_f) * Ytf
 
     return Sf.real, Sf.imag, St.real, St.imag
 
@@ -1249,7 +1249,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angle=tau2[self.controlled_idx]
         )
         self._f = np.r_[
-            dS[self.cg_pac + self.cg_pdc].real,
+            dS[self.cg_pac + self.cg_pdc].real,  # TODO what does + mean here?
             dS[self.cg_qac].imag,
             Ploss_acdc,
             Ploss_hvdc,

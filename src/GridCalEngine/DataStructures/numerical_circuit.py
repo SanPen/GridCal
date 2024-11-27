@@ -1179,7 +1179,7 @@ class NumericalCircuit:
 
         :return:
         """
-        return self.active_branch_data.any_pf_control
+        return self.active_branch_data.any_pf_control or self.nvsc > 0
 
     @property
     def k_pf_tau(self):
