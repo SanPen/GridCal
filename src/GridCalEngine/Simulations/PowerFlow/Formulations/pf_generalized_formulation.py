@@ -407,7 +407,7 @@ def adv_jacobian(nbus: int,
     print()
 
     # First 2 rows completed up to here
-    J2rows = hstack([dS_dV_lil, ds_dSzip_lil, dS_dSf_lil, dS_dSt_lil, dS_dtau_lil, dS_dm_lil])
+    JdPQbus = hstack([dS_dV_lil, ds_dSzip_lil, dS_dSf_lil, dS_dSt_lil, dS_dtau_lil, dS_dm_lil])
 
     '''
     # VSC loss eq.
@@ -484,7 +484,7 @@ def adv_jacobian(nbus: int,
     '''
     |j_L_Vt_trimmed|dL_dVa|dL_dPzip|dL_dQzip|j_L_Pf_trimmed|j_L_Pt_trimmed|j_L_Qt_trimmed|dL_dPfrom_Trafo|dL_dQfrom_Trafo|dL_dPto_Trafo|dL_dQto_Trafo|dL_dMod_Trafo|dL_dTau_Trafo|
     '''
-    hChunk0 = hstack(
+    Jloss_acdc = hstack(
         [j_L_Vt_trimmed.tocsc(), dL_dVa, dL_dPzip, dL_dQzip, j_L_Pf_trimmed.tocsc(), j_L_Pt_trimmed.tocsc(),
          j_L_Qt_trimmed.tocsc(), dL_dPfrom_Trafo, dL_dQfrom_Trafo, dL_dPto_Trafo, dL_dQto_Trafo, dL_dMod_Trafo,
          dL_dTau_Trafo])
@@ -600,6 +600,7 @@ def adv_jacobian(nbus: int,
 
 
         elif pCalc < 0:
+            rpu = hvdc_r[i] * Sbase / (hvdc_Vnf[i] * hvdc_Vnt[i])
             dPlosshvdc_dVa[F] = (md / Sbase)
             dPlosshvdc_dVa[F] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
                         Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]]))
@@ -680,14 +681,14 @@ def adv_jacobian(nbus: int,
     dBuffer_dMod_Trafo = csc_matrix((nhvdc, len(ix_m)))
     dBuffer_dTau_Trafo = csc_matrix((nhvdc, len(ix_tau)))
 
-    pLoss = hstack([j_Ploss_Vm_trimmed.tocsc(), j_Ploss_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip,
+    Jloss_hvdc = hstack([j_Ploss_Vm_trimmed.tocsc(), j_Ploss_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip,
                     j_Ploss_Pf_trimmed.tocsc(), dBuffer_dPfrom_Trafo,
                     dBuffer_dQfrom_vsc, dBuffer_dQfrom_hvdc, dBuffer_dQfrom_Trafo, dBuffer_dPto_vsc,
                     j_Ploss_Pt_trimmed.tocsc(), dBuffer_dPto_Trafo, dBuffer_dQto_vsc, dBuffer_dQto_hvdc,
                     dBuffer_dQto_Trafo,
                     dBuffer_dMod_Trafo, dBuffer_dTau_Trafo])
 
-    pInj = hstack([dBuffer_dVm, j_Pinj_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip, dBuffer_dPfrom_vsc,
+    Jinj_hvdc = hstack([dBuffer_dVm, j_Pinj_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip, dBuffer_dPfrom_vsc,
                    j_Pinj_Pf_trimmed.tocsc(), dBuffer_dPfrom_Trafo,
                    dBuffer_dQfrom_vsc, dBuffer_dQfrom_hvdc, dBuffer_dQfrom_Trafo, dBuffer_dPto_vsc,
                    j_Pinj_Pt_trimmed.tocsc(), dBuffer_dPto_Trafo, dBuffer_dQto_vsc, dBuffer_dQto_hvdc,
@@ -696,7 +697,7 @@ def adv_jacobian(nbus: int,
 
     print()
     # BUILD J (with hvdc without trafo)
-    J = scipy_to_mat(vstack([J2rows, hChunk0, pLoss, pInj]).tocsc())
+    J = scipy_to_mat(vstack([JdPQbus, Jloss_acdc, Jloss_hvdc, Jinj_hvdc]).tocsc())
     print("J")
     print(J.toarray())
     return J
@@ -1429,7 +1430,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:
@@ -1446,7 +1447,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                       + len(self.cg_qac)
                       + len(self.cg_pdc)
                       + len(self.cg_acdc)
-                      + (2 * len(self.cg_hvdc))  # hvdc has 2 equations: Pinj and Ploss
+                      + (2 * len(self.cg_hvdc))  # hvdc has 2 equations: Ploss and Pinj
                       + len(self.cg_pftr)
                       + len(self.cg_qftr)
                       + len(self.cg_pttr)
@@ -1491,7 +1492,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 ig_plossacdc=self.indices.cg_acdc,
                 ig_plosshvdc=self.indices.cg_hvdc,
                 ig_pinjhvdc=self.indices.cg_hvdc,
-                # TODO: clarify this set? I think it should be the same as ig_plosshvdc
+                # TODO: clarify this set? I think it should be the same as ig_plosshvdc. Yes, true
                 ig_pftr=self.indices.cg_pftr,
                 ig_qftr=self.indices.cg_qftr,
                 ig_pttr=self.indices.cg_pttr,
