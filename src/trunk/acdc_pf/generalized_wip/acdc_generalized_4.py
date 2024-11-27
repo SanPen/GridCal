@@ -13,7 +13,8 @@ import GridCalEngine.api as gce
 Check that a transformer can regulate the voltage at a bus
 """
 # fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', '12Bus AC-DC test grid Raiyan_Josep.gridcal')
-fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', '12Bus AC-DC Josep v4.gridcal')
+# fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', '12Bus AC-DC Josep v4.gridcal')
+fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', 'AC-DC with all and DCload.gridcal')
 # fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', '12Bus AC-DC Josep v3.gridcal')
 
 grid = gce.open_file(fname)
