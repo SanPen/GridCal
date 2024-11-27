@@ -390,8 +390,8 @@ def adv_jacobian(nbus: int,
 
     dP_dtau_lil = mat_to_scipy(dP_dtau).tocsr().tolil()
     dQ_dtau_lil = mat_to_scipy(dQ_dtau).tocsr().tolil()
-    dP_dtau_lil = dP_dtau_lil[ig_pbus, :][:, ix_tau]
-    dQ_dtau_lil = dQ_dtau_lil[ig_qbus, :][:, ix_tau]
+    dP_dtau_lil = dP_dtau_lil[ig_pbus, :]
+    dQ_dtau_lil = dQ_dtau_lil[ig_qbus, :]
     dP_dm_lil = mat_to_scipy(dP_dm).tocsr().tolil()
     dQ_dm_lil = mat_to_scipy(dQ_dm).tocsr().tolil()
     dP_dm_lil = dP_dm_lil[ig_pbus, :][:, ix_m]
@@ -407,7 +407,7 @@ def adv_jacobian(nbus: int,
     print()
 
     # First 2 rows completed up to here
-    J2rows = hstack([dS_dV_lil, ds_dSzip_lil, dS_dSf_lil, dS_dSt_lil, dS_dtau_lil, dS_dm_lil])
+    J = hstack([dS_dV_lil, ds_dSzip_lil, dS_dSf_lil, dS_dSt_lil, dS_dtau_lil, dS_dm_lil])
 
     '''
     # VSC loss eq.
@@ -429,69 +429,68 @@ def adv_jacobian(nbus: int,
     
     '''
     nvsc = len(ig_plossacdc)
-    pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
-    pq_sqrt = np.sqrt(pq)
-    pq_sqrt += 1e-20
-    dLacdc_dVm = alpha2 * pq_sqrt / (Vm[T_acdc] * Vm[T_acdc]) + 2 * alpha3 * (pq) / (
-                Vm[T_acdc] * Vm[T_acdc] * Vm[T_acdc])
-    dLacdc_dVm *= -1
+    if nvsc > 0:
+        pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
+        pq_sqrt = np.sqrt(pq)
+        pq_sqrt += 1e-20
+        dLacdc_dVm = alpha2 * pq_sqrt / (Vm[T_acdc] * Vm[T_acdc]) + 2 * alpha3 * (pq) / (
+                    Vm[T_acdc] * Vm[T_acdc] * Vm[T_acdc])
+        dLacdc_dVm *= -1
 
-    dLacdc_dPt = np.ones(nvsc) - alpha2 * Pt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Pt[ig_plossacdc] / (
-                Vm[T_acdc] * Vm[T_acdc])
-    dLacdc_dPt *= -1
+        dLacdc_dPt = np.ones(nvsc) - alpha2 * Pt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt) - 2 * alpha3 * Pt[ig_plossacdc] / (
+                    Vm[T_acdc] * Vm[T_acdc])
+        dLacdc_dPt *= -1
 
-    _a = alpha2 * Qt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt)
-    _b = 2 * alpha3 * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
-    dLacdc_dQt = - _a - _b
-    dLacdc_dQt *= -1
+        _a = alpha2 * Qt[ig_plossacdc] / (Vm[T_acdc] * pq_sqrt)
+        _b = 2 * alpha3 * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+        dLacdc_dQt = - _a - _b
+        dLacdc_dQt *= -1
 
-    dLacdc_dPf = np.ones(nvsc)
-    dLacdc_dPf *= -1
+        dLacdc_dPf = np.ones(nvsc)
+        dLacdc_dPf *= -1
 
-    I = np.eye(nvsc)
-    j_L_Vt = np.multiply(Ct_acdc.transpose().toarray(), dLacdc_dVm)
-    j_L_Pt = np.multiply(I, dLacdc_dPt)
-    j_L_Qt = np.multiply(I, dLacdc_dQt)
-    j_L_Pf = np.multiply(I, dLacdc_dPf)
-    j_L_Vt_trimmed = csr_matrix(j_L_Vt)[ix_vm, :].transpose()
-    vsc_ix_pf = np.intersect1d(ig_plossacdc, ix_pf)
-    vsc_ix_qf = np.intersect1d(ig_plossacdc, ix_qf)
-    vsc_ix_pt = np.intersect1d(ig_plossacdc, ix_pt)
-    vsc_ix_qt = np.intersect1d(ig_plossacdc, ix_qt)
-    remapped_ix_pf = vsc_ix_pf - nbr
-    remapped_ix_qf = vsc_ix_qf - nbr
-    remapped_ix_pt = vsc_ix_pt - nbr
-    remapped_ix_qt = vsc_ix_qt - nbr
-    j_L_Pf_trimmed = csr_matrix(j_L_Pf)[:, remapped_ix_pf]
-    j_L_Pt_trimmed = csr_matrix(j_L_Pt)[:, remapped_ix_pt]
-    j_L_Qt_trimmed = csr_matrix(j_L_Qt)[:, remapped_ix_qt]
+        I = np.eye(nvsc)
+        j_L_Vt = np.multiply(Ct_acdc.transpose().toarray(), dLacdc_dVm)
+        j_L_Pt = np.multiply(I, dLacdc_dPt)
+        j_L_Qt = np.multiply(I, dLacdc_dQt)
+        j_L_Pf = np.multiply(I, dLacdc_dPf)
+        j_L_Vt_trimmed = csr_matrix(j_L_Vt)[ix_vm, :].transpose()
+        vsc_ix_pf = np.intersect1d(ig_plossacdc, ix_pf)
+        vsc_ix_qf = np.intersect1d(ig_plossacdc, ix_qf)
+        vsc_ix_pt = np.intersect1d(ig_plossacdc, ix_pt)
+        vsc_ix_qt = np.intersect1d(ig_plossacdc, ix_qt)
+        remapped_ix_pf = vsc_ix_pf - nbr
+        remapped_ix_qf = vsc_ix_qf - nbr
+        remapped_ix_pt = vsc_ix_pt - nbr
+        remapped_ix_qt = vsc_ix_qt - nbr
+        j_L_Pf_trimmed = csr_matrix(j_L_Pf)[:, remapped_ix_pf]
+        j_L_Pt_trimmed = csr_matrix(j_L_Pt)[:, remapped_ix_pt]
+        j_L_Qt_trimmed = csr_matrix(j_L_Qt)[:, remapped_ix_qt]
 
-    # now we make the chunks of zeros
-    ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_ix_pf)
-    ncontBr_hvdc_ix_qf = len(ix_qf) - len(remapped_ix_qf)
-    ncontBr_hvdc_ix_pt = len(ix_pt) - len(remapped_ix_pt)
-    ncontBr_hvdc_ix_qt = len(ix_qt) - len(remapped_ix_qt)
-    dL_dVa = csc_matrix((nvsc, len(ix_va)))
-    dL_dPzip = csc_matrix((nvsc, len(ix_pzip)))
-    dL_dQzip = csc_matrix((nvsc, len(ix_qzip)))
-    dL_dPfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pf))
-    dL_dQfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qf))
-    dL_dPto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pt))
-    dL_dQto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qt))
-    dL_dMod_Trafo = csc_matrix((nvsc, len(ix_m)))
-    dL_dTau_Trafo = csc_matrix((nvsc, len(ix_tau)))
+        # now we make the chunks of zeros
+        ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_ix_pf)
+        ncontBr_hvdc_ix_qf = len(ix_qf) - len(remapped_ix_qf)
+        ncontBr_hvdc_ix_pt = len(ix_pt) - len(remapped_ix_pt)
+        ncontBr_hvdc_ix_qt = len(ix_qt) - len(remapped_ix_qt)
+        dL_dVa = csc_matrix((nvsc, len(ix_va)))
+        dL_dPzip = csc_matrix((nvsc, len(ix_pzip)))
+        dL_dQzip = csc_matrix((nvsc, len(ix_qzip)))
+        dL_dPfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pf))
+        dL_dQfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qf))
+        dL_dPto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pt))
+        dL_dQto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qt))
+        dL_dMod_Trafo = csc_matrix((nvsc, len(ix_m)))
+        dL_dTau_Trafo = csc_matrix((nvsc, len(ix_tau)))
 
-    '''
-    |j_L_Vt_trimmed|dL_dVa|dL_dPzip|dL_dQzip|j_L_Pf_trimmed|j_L_Pt_trimmed|j_L_Qt_trimmed|dL_dPfrom_Trafo|dL_dQfrom_Trafo|dL_dPto_Trafo|dL_dQto_Trafo|dL_dMod_Trafo|dL_dTau_Trafo|
-    '''
-    hChunk0 = hstack(
-        [j_L_Vt_trimmed.tocsc(), dL_dVa, dL_dPzip, dL_dQzip, j_L_Pf_trimmed.tocsc(), j_L_Pt_trimmed.tocsc(),
-         j_L_Qt_trimmed.tocsc(), dL_dPfrom_Trafo, dL_dQfrom_Trafo, dL_dPto_Trafo, dL_dQto_Trafo, dL_dMod_Trafo,
-         dL_dTau_Trafo])
+        '''
+        |j_L_Vt_trimmed|dL_dVa|dL_dPzip|dL_dQzip|j_L_Pf_trimmed|j_L_Pt_trimmed|j_L_Qt_trimmed|dL_dPfrom_Trafo|dL_dQfrom_Trafo|dL_dPto_Trafo|dL_dQto_Trafo|dL_dMod_Trafo|dL_dTau_Trafo|
+        '''
+        vsc_loss = hstack(
+            [j_L_Vt_trimmed.tocsc(), dL_dVa, dL_dPzip, dL_dQzip, j_L_Pf_trimmed.tocsc(), j_L_Pt_trimmed.tocsc(),
+             j_L_Qt_trimmed.tocsc(), dL_dPfrom_Trafo, dL_dQfrom_Trafo, dL_dPto_Trafo, dL_dQto_Trafo, dL_dMod_Trafo,
+             dL_dTau_Trafo])
 
-    # # BUILD J (without hvdc)
-    # J = scipy_to_mat(vstack([J2rows, hChunk0]).tocsc())
-    # return J
+        J = vstack([J, vsc_loss])
 
     """
     # HVDC loss eq. (work in progress)
@@ -556,165 +555,322 @@ def adv_jacobian(nbus: int,
     """
     # jac = lil_matrix((n_rows, nx))
     nhvdc = len(ig_plosshvdc)
-    dPlosshvdc_dVa = np.zeros(nbus)
-    dPlosshvdc_dVm = np.zeros(nbus)
-    dPlosshvdc_dPf = np.zeros(nhvdc)
-    dPlosshvdc_dPt = np.zeros(nhvdc)
-    dPinjhvdc_dVa = np.zeros(nbus)
-    dPinjhvdc_dPf = np.zeros(nhvdc)
-    dPinjhvdc_dPt = np.zeros(nhvdc)
+    if nhvdc > 0:
+        dPlosshvdc_dVa = np.zeros(nbus)
+        dPlosshvdc_dVm = np.zeros(nbus)
+        dPlosshvdc_dPf = np.zeros(nhvdc)
+        dPlosshvdc_dPt = np.zeros(nhvdc)
+        dPinjhvdc_dVa = np.zeros(nbus)
+        dPinjhvdc_dPf = np.zeros(nhvdc)
+        dPinjhvdc_dPt = np.zeros(nhvdc)
 
-    for i in range(nhvdc):
-        dtheta = np.rad2deg(Va[T_hvdc[i]] - Va[F_hvdc[i]])
-        droop_contr = hvdc_mode[i] * hvdc_angle_droop[i] * dtheta
-        pCalc = hvdc_pset[i] + droop_contr
-        md = hvdc_mode[i] * hvdc_angle_droop[i]
-        F = F_hvdc[i]
-        T = T_hvdc[i]
+        for i in range(nhvdc):
+            dtheta = np.rad2deg(Va[T_hvdc[i]] - Va[F_hvdc[i]])
+            droop_contr = hvdc_mode[i] * hvdc_angle_droop[i] * dtheta
+            pCalc = hvdc_pset[i] + droop_contr
+            md = hvdc_mode[i] * hvdc_angle_droop[i]
+            F = F_hvdc[i]
+            T = T_hvdc[i]
 
-        if pCalc > 0:
-            rpu = hvdc_r[i] * Sbase / (hvdc_Vnf[i] * hvdc_Vnt[i])
-            dPlosshvdc_dVa[F] = (md / Sbase)
-            dPlosshvdc_dVa[F] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
-                        Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]]))
-            dPlosshvdc_dVa[F] += (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
+            if pCalc > 0:
+                rpu = hvdc_r[i] * Sbase / (hvdc_Vnf[i] * hvdc_Vnt[i])
+                dPlosshvdc_dVa[F] = (md / Sbase)
+                dPlosshvdc_dVa[F] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
+                            Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]]))
+                dPlosshvdc_dVa[F] += (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
 
-            dPlosshvdc_dVa[T] = (-md / Sbase)
-            dPlosshvdc_dVa[T] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
-                        Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]]))
-            dPlosshvdc_dVa[T] -= (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
+                dPlosshvdc_dVa[T] = (-md / Sbase)
+                dPlosshvdc_dVa[T] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
+                            Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]]))
+                dPlosshvdc_dVa[T] -= (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
 
-            dPlosshvdc_dVm[F] = -rpu * (-2 * hvdc_pset[i] * hvdc_pset[i] / (
-                        Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]] * Vm[F_hvdc[i]]))
-            dPlosshvdc_dVm[F] -= 2 * md * md * (
-                        Va[F_hvdc[i]] * Va[F_hvdc[i]] + Va[T_hvdc[i]] * Va[T_hvdc[i]] - 2 * Va[F_hvdc[i]] * Va[
-                    T_hvdc[i]]) / (Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
-            dPlosshvdc_dVm[F] -= 4 * hvdc_pset[i] * (Va[F_hvdc[i]] - Va[T_hvdc[i]]) * md / (
-                        Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
+                dPlosshvdc_dVm[F] = -rpu * (-2 * hvdc_pset[i] * hvdc_pset[i] / (
+                            Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]] * Vm[F_hvdc[i]]))
+                dPlosshvdc_dVm[F] -= 2 * md * md * (
+                            Va[F_hvdc[i]] * Va[F_hvdc[i]] + Va[T_hvdc[i]] * Va[T_hvdc[i]] - 2 * Va[F_hvdc[i]] * Va[
+                        T_hvdc[i]]) / (Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
+                dPlosshvdc_dVm[F] -= 4 * hvdc_pset[i] * (Va[F_hvdc[i]] - Va[T_hvdc[i]]) * md / (
+                            Sbase * Sbase * Vm[F_hvdc[i]] * Vm[F_hvdc[i]] * Vm[F_hvdc[i]])
 
-            dPlosshvdc_dPt[i] = 1
+                dPlosshvdc_dPt[i] = 1
 
-            dPinjhvdc_dVa[F] = -md / Sbase
-            dPinjhvdc_dVa[T] = md / Sbase
-            dPinjhvdc_dPf[i] = 1
+                dPinjhvdc_dVa[F] = -md / Sbase
+                dPinjhvdc_dVa[T] = md / Sbase
+                dPinjhvdc_dPf[i] = 1
 
 
-        elif pCalc < 0:
-            dPlosshvdc_dVa[F] = (md / Sbase)
-            dPlosshvdc_dVa[F] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
-                        Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]]))
-            dPlosshvdc_dVa[F] += (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
+            elif pCalc < 0:
+                dPlosshvdc_dVa[F] = (md / Sbase)
+                dPlosshvdc_dVa[F] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
+                            Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]]))
+                dPlosshvdc_dVa[F] += (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
 
-            dPlosshvdc_dVa[T] = (-md / Sbase)
-            dPlosshvdc_dVa[T] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
-                        Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]]))
-            dPlosshvdc_dVa[T] -= (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
+                dPlosshvdc_dVa[T] = (-md / Sbase)
+                dPlosshvdc_dVa[T] -= rpu * (md * md * (2 * Va[F_hvdc[i]] - 2 * Va[T_hvdc[i]]) / (
+                            Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]]))
+                dPlosshvdc_dVa[T] -= (2 * hvdc_pset[i] * md) / (Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
 
-            dPlosshvdc_dVm[F] = -rpu * (-2 * hvdc_pset[i] * hvdc_pset[i] / (
-                        Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]] * Vm[T_hvdc[i]]))
-            dPlosshvdc_dVm[F] -= 2 * md * md * (
-                        Va[F_hvdc[i]] * Va[F_hvdc[i]] + Va[T_hvdc[i]] * Va[T_hvdc[i]] - 2 * Va[F_hvdc[i]] * Va[
-                    T_hvdc[i]]) / (Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
-            dPlosshvdc_dVm[F] -= 4 * hvdc_pset[i] * (Va[F_hvdc[i]] - Va[T_hvdc[i]]) * md / (
-                        Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
+                dPlosshvdc_dVm[F] = -rpu * (-2 * hvdc_pset[i] * hvdc_pset[i] / (
+                            Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]] * Vm[T_hvdc[i]]))
+                dPlosshvdc_dVm[F] -= 2 * md * md * (
+                            Va[F_hvdc[i]] * Va[F_hvdc[i]] + Va[T_hvdc[i]] * Va[T_hvdc[i]] - 2 * Va[F_hvdc[i]] * Va[
+                        T_hvdc[i]]) / (Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
+                dPlosshvdc_dVm[F] -= 4 * hvdc_pset[i] * (Va[F_hvdc[i]] - Va[T_hvdc[i]]) * md / (
+                            Sbase * Sbase * Vm[T_hvdc[i]] * Vm[T_hvdc[i]] * Vm[T_hvdc[i]])
 
-            dPlosshvdc_dPf[i] = 1
+                dPlosshvdc_dPf[i] = 1
 
-            dPinjhvdc_dVa[F] = -md / Sbase
-            dPinjhvdc_dVa[T] = md / Sbase
-            dPinjhvdc_dPt[i] = 1
+                dPinjhvdc_dVa[F] = -md / Sbase
+                dPinjhvdc_dVa[T] = md / Sbase
+                dPinjhvdc_dPt[i] = 1
 
-        else:
-            pass
+            else:
+                pass
 
-    # slice Ct_hvdc using ig_plosshvdc
-    conn_hvdc = Ct_hvdc[:, ig_plosshvdc]
+        # slice Ct_hvdc using ig_plosshvdc
+        conn_hvdc = Ct_hvdc[:, ig_plosshvdc]
 
-    j_Ploss_Vm = np.multiply(conn_hvdc.transpose().toarray(), dPlosshvdc_dVm)
-    j_Ploss_Va = np.multiply(conn_hvdc.transpose().toarray(), dPlosshvdc_dVa)
-    j_Ploss_Pt = np.multiply(np.eye(nhvdc), dPlosshvdc_dPt)
-    j_Ploss_Pf = np.multiply(np.eye(nhvdc), dPlosshvdc_dPf)
-    j_Pinj_Va = np.multiply(conn_hvdc.transpose().toarray(), dPinjhvdc_dVa)
-    j_Pinj_Pf = np.multiply(np.eye(nhvdc), dPinjhvdc_dPf)
-    j_Pinj_Pt = np.multiply(np.eye(nhvdc), dPinjhvdc_dPt)
+        j_Ploss_Vm = np.multiply(conn_hvdc.transpose().toarray(), dPlosshvdc_dVm)
+        j_Ploss_Va = np.multiply(conn_hvdc.transpose().toarray(), dPlosshvdc_dVa)
+        j_Ploss_Pt = np.multiply(np.eye(nhvdc), dPlosshvdc_dPt)
+        j_Ploss_Pf = np.multiply(np.eye(nhvdc), dPlosshvdc_dPf)
+        j_Pinj_Va = np.multiply(conn_hvdc.transpose().toarray(), dPinjhvdc_dVa)
+        j_Pinj_Pf = np.multiply(np.eye(nhvdc), dPinjhvdc_dPf)
+        j_Pinj_Pt = np.multiply(np.eye(nhvdc), dPinjhvdc_dPt)
 
-    j_Ploss_Vm_trimmed = csr_matrix(j_Ploss_Vm)[:, ix_vm].transpose()
-    j_Ploss_Va_trimmed = csr_matrix(j_Ploss_Va)[:, ix_va]
-    j_Pinj_Va_trimmed = csr_matrix(j_Pinj_Va)[:, ix_va]
+        j_Ploss_Vm_trimmed = csr_matrix(j_Ploss_Vm)[:, ix_vm].transpose()
+        j_Ploss_Va_trimmed = csr_matrix(j_Ploss_Va)[:, ix_va]
+        j_Pinj_Va_trimmed = csr_matrix(j_Pinj_Va)[:, ix_va]
 
-    hvdc_ix_pf = np.intersect1d(ig_plosshvdc, ix_pf)
-    hvdc_ix_qf = np.intersect1d(ig_plosshvdc, ix_qf)
-    hvdc_ix_pt = np.intersect1d(ig_plosshvdc, ix_pt)
-    hvdc_ix_qt = np.intersect1d(ig_plosshvdc, ix_qt)
+        hvdc_ix_pf = np.intersect1d(ig_plosshvdc, ix_pf)
+        hvdc_ix_qf = np.intersect1d(ig_plosshvdc, ix_qf)
+        hvdc_ix_pt = np.intersect1d(ig_plosshvdc, ix_pt)
+        hvdc_ix_qt = np.intersect1d(ig_plosshvdc, ix_qt)
 
-    remapped_hvdc_ix_pf = hvdc_ix_pf - nbr - nvsc
-    remapped_hvdc_ix_qf = hvdc_ix_qf - nbr - nvsc
-    remapped_hvdc_ix_pt = hvdc_ix_pt - nbr - nvsc
-    remapped_hvdc_ix_qt = hvdc_ix_qt - nbr - nvsc
+        remapped_hvdc_ix_pf = hvdc_ix_pf - nbr - nvsc
+        remapped_hvdc_ix_qf = hvdc_ix_qf - nbr - nvsc
+        remapped_hvdc_ix_pt = hvdc_ix_pt - nbr - nvsc
+        remapped_hvdc_ix_qt = hvdc_ix_qt - nbr - nvsc
 
-    # TODO: When slicing by column, CSC is best
-    j_Ploss_Pf_trimmed = csr_matrix(j_Ploss_Pf)[:, remapped_hvdc_ix_pf]
-    j_Ploss_Pt_trimmed = csr_matrix(j_Ploss_Pt)[:, remapped_hvdc_ix_pt]
-    j_Pinj_Pf_trimmed = csr_matrix(j_Pinj_Pf)[:, remapped_hvdc_ix_pf]
-    j_Pinj_Pt_trimmed = csr_matrix(j_Pinj_Pt)[:, remapped_hvdc_ix_pt]
+        # TODO: When slicing by column, CSC is best
+        j_Ploss_Pf_trimmed = csr_matrix(j_Ploss_Pf)[:, remapped_hvdc_ix_pf]
+        j_Ploss_Pt_trimmed = csr_matrix(j_Ploss_Pt)[:, remapped_hvdc_ix_pt]
+        j_Pinj_Pf_trimmed = csr_matrix(j_Pinj_Pf)[:, remapped_hvdc_ix_pf]
+        j_Pinj_Pt_trimmed = csr_matrix(j_Pinj_Pt)[:, remapped_hvdc_ix_pt]
 
-    # now we pad zeros
-    ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_hvdc_ix_pf)
-    ncontBr_hvdc_ix_qf = len(ix_qf) - len(remapped_hvdc_ix_qf)
-    ncontBr_hvdc_ix_pt = len(ix_pt) - len(remapped_hvdc_ix_pt)
-    ncontBr_hvdc_ix_qt = len(ix_qt) - len(remapped_hvdc_ix_qt)
-    dBuffer_dVm = csc_matrix((nhvdc, len(ix_vm)))
-    dBuffer_dVa = csc_matrix((nhvdc, len(ix_va)))
-    dBuffer_dPzip = csc_matrix((nhvdc, len(ix_pzip)))
-    dBuffer_dQzip = csc_matrix((nhvdc, len(ix_qzip)))
-    dBuffer_dPfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_pf)))
-    dBuffer_dQfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_qf)))
-    dBuffer_dPto_vsc = csc_matrix((nhvdc, len(remapped_ix_pt)))
-    dBuffer_dQto_vsc = csc_matrix((nhvdc, len(remapped_ix_qt)))
-    dBuffer_dQfrom_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_qf)))
-    dBuffer_dQto_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_pt)))
-    dBuffer_dPfrom_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_pf))
-    dBuffer_dQfrom_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_qf))
-    dBuffer_dPto_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_pt))
-    dBuffer_dQto_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_qt))
-    dBuffer_dMod_Trafo = csc_matrix((nhvdc, len(ix_m)))
-    dBuffer_dTau_Trafo = csc_matrix((nhvdc, len(ix_tau)))
+        # now we pad zeros
+        ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_hvdc_ix_pf)
+        ncontBr_hvdc_ix_qf = len(ix_qf) - len(remapped_hvdc_ix_qf)
+        ncontBr_hvdc_ix_pt = len(ix_pt) - len(remapped_hvdc_ix_pt)
+        ncontBr_hvdc_ix_qt = len(ix_qt) - len(remapped_hvdc_ix_qt)
+        dBuffer_dVm = csc_matrix((nhvdc, len(ix_vm)))
+        dBuffer_dVa = csc_matrix((nhvdc, len(ix_va)))
+        dBuffer_dPzip = csc_matrix((nhvdc, len(ix_pzip)))
+        dBuffer_dQzip = csc_matrix((nhvdc, len(ix_qzip)))
+        dBuffer_dPfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_pf)))
+        dBuffer_dQfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_qf)))
+        dBuffer_dPto_vsc = csc_matrix((nhvdc, len(remapped_ix_pt)))
+        dBuffer_dQto_vsc = csc_matrix((nhvdc, len(remapped_ix_qt)))
+        dBuffer_dQfrom_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_qf)))
+        dBuffer_dQto_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_pt)))
+        dBuffer_dPfrom_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_pf))
+        dBuffer_dQfrom_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_qf))
+        dBuffer_dPto_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_pt))
+        dBuffer_dQto_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_qt))
+        dBuffer_dMod_Trafo = csc_matrix((nhvdc, len(ix_m)))
+        dBuffer_dTau_Trafo = csc_matrix((nhvdc, len(ix_tau)))
 
-    pLoss = hstack([j_Ploss_Vm_trimmed.tocsc(), j_Ploss_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip,
-                    j_Ploss_Pf_trimmed.tocsc(), dBuffer_dPfrom_Trafo,
-                    dBuffer_dQfrom_vsc, dBuffer_dQfrom_hvdc, dBuffer_dQfrom_Trafo, dBuffer_dPto_vsc,
-                    j_Ploss_Pt_trimmed.tocsc(), dBuffer_dPto_Trafo, dBuffer_dQto_vsc, dBuffer_dQto_hvdc,
-                    dBuffer_dQto_Trafo,
-                    dBuffer_dMod_Trafo, dBuffer_dTau_Trafo])
+        pLoss = hstack([j_Ploss_Vm_trimmed.tocsc(), j_Ploss_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip,
+                        j_Ploss_Pf_trimmed.tocsc(), dBuffer_dPfrom_Trafo,
+                        dBuffer_dQfrom_vsc, dBuffer_dQfrom_hvdc, dBuffer_dQfrom_Trafo, dBuffer_dPto_vsc,
+                        j_Ploss_Pt_trimmed.tocsc(), dBuffer_dPto_Trafo, dBuffer_dQto_vsc, dBuffer_dQto_hvdc,
+                        dBuffer_dQto_Trafo,
+                        dBuffer_dMod_Trafo, dBuffer_dTau_Trafo])
 
-    pInj = hstack([dBuffer_dVm, j_Pinj_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip, dBuffer_dPfrom_vsc,
-                   j_Pinj_Pf_trimmed.tocsc(), dBuffer_dPfrom_Trafo,
-                   dBuffer_dQfrom_vsc, dBuffer_dQfrom_hvdc, dBuffer_dQfrom_Trafo, dBuffer_dPto_vsc,
-                   j_Pinj_Pt_trimmed.tocsc(), dBuffer_dPto_Trafo, dBuffer_dQto_vsc, dBuffer_dQto_hvdc,
-                   dBuffer_dQto_Trafo,
-                   dBuffer_dMod_Trafo, dBuffer_dTau_Trafo])
+        pInj = hstack([dBuffer_dVm, j_Pinj_Va_trimmed.tocsc(), dBuffer_dPzip, dBuffer_dQzip, dBuffer_dPfrom_vsc,
+                       j_Pinj_Pf_trimmed.tocsc(), dBuffer_dPfrom_Trafo,
+                       dBuffer_dQfrom_vsc, dBuffer_dQfrom_hvdc, dBuffer_dQfrom_Trafo, dBuffer_dPto_vsc,
+                       j_Pinj_Pt_trimmed.tocsc(), dBuffer_dPto_Trafo, dBuffer_dQto_vsc, dBuffer_dQto_hvdc,
+                       dBuffer_dQto_Trafo,
+                       dBuffer_dMod_Trafo, dBuffer_dTau_Trafo])
 
-    print()
-    # BUILD J (with hvdc without trafo)
-    J = scipy_to_mat(vstack([J2rows, hChunk0, pLoss, pInj]).tocsc())
-    print("J")
-    print(J.toarray())
-    return J
+        J = vstack([J, pLoss, pInj])
 
     """
     Controllable branches dSft_dmtau already computed in csc_derivatives.py (Not finished yet)
     """
-    dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
-    dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
-    dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
-    dQt_dVa = deriv.dSt_dVa_csc(nbus, ig_qttr, ix_va, ytf, V, F, T).imag
+    ncontrBr_trafo = len(ig_pttr)
+    if ncontrBr_trafo > 0:
+        dPf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, yff, yft, V, F, T).real
+        dQf_dVa = deriv.dSf_dVa_csc(nbus, ig_qftr, ix_va, yff, yft, V, F, T).imag
+        dPt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, ytf, V, F, T).real
+        dQt_dVa = deriv.dSt_dVa_csc(nbus, ig_qttr, ix_va, ytf, V, F, T).imag
 
-    # SLICE
-    dP_dVm = sp_slice(dS_dVm.real, ig_pbus, ix_vm)
-    dQ_dVm = sp_slice(dS_dVm.imag, ig_qbus, ix_vm)
-    dP_dVa = sp_slice(dS_dVa.real, ig_pbus, ix_va)
-    dQ_dVa = sp_slice(dS_dVa.imag, ig_qbus, ix_va)
+        dPf_dVm = deriv.dSf_dVm_csc(nbus, ig_pftr, ix_vm, yff, yft, V, F, T).real
+        dQf_dVm = deriv.dSf_dVm_csc(nbus, ig_qftr, ix_vm, yff, yft, V, F, T).imag
+        dPt_dVm = deriv.dSt_dVm_csc(nbus, ig_pttr, ix_vm, ytf, V, F, T).real
+        dQt_dVm = deriv.dSt_dVm_csc(nbus, ig_qttr, ix_vm, ytf, V, F, T).imag
 
+        dPf_dm = deriv.dSf_dm_csc(nbus, ig_pftr, ix_m, yff, yft, V, F, T).real
+        dQf_dm = deriv.dSf_dm_csc(nbus, ig_qftr, ix_m, yff, yft, V, F, T).imag
+        dPt_dm = deriv.dSt_dm_csc(nbus, ig_pttr, ix_m, ytf, V, F, T).real
+        dQt_dm = deriv.dSt_dm_csc(nbus, ig_qttr, ix_m, ytf, V, F, T).imag
+
+        dPf_dtau = deriv.dSf_dtau_csc(nbus, ig_pftr, ix_tau, yff, yft, V, F, T).real
+        dQf_dtau = deriv.dSf_dtau_csc(nbus, ig_qftr, ix_tau, yff, yft, V, F, T).imag
+        dPt_dtau = deriv.dSt_dtau_csc(nbus, ig_pttr, ix_tau, ytf, V, F, T).real
+        dQt_dtau = deriv.dSt_dtau_csc(nbus, ig_qttr, ix_tau, ytf, V, F, T).imag
+
+
+
+        conn_trafo = Ct_hvdc[:, ig_pttr]
+
+
+        dPf_dPf_trafo = 1.0 * conn_trafo.tranpose()
+        dPf_dQf_trafo = 0.0 * conn_trafo.tranpose()
+        dPf_dPt_trafo = 0.0 * conn_trafo.tranpose()
+        dPf_dQt_trafo = 0.0 * conn_trafo.tranpose()
+
+        dQf_dPf_trafo = 0.0 * conn_trafo.tranpose()
+        dQf_dQf_trafo = 1.0 * conn_trafo.tranpose()
+        dQf_dPt_trafo = 0.0 * conn_trafo.tranpose()
+        dQf_dQt_trafo = 0.0 * conn_trafo.tranpose()
+
+        dPt_dPf_trafo = 0.0 * conn_trafo.tranpose()
+        dPt_dQf_trafo = 0.0 * conn_trafo.tranpose()
+        dPt_dPt_trafo = 1.0 * conn_trafo.tranpose()
+        dPt_dQt_trafo = 0.0 * conn_trafo.tranpose()
+
+        dQt_dPf_trafo = 0.0 * conn_trafo.tranpose()
+        dQt_dQf_trafo = 0.0 * conn_trafo.tranpose()
+        dQt_dPt_trafo = 0.0 * conn_trafo.tranpose()
+        dQt_dQt_trafo = 1.0 * conn_trafo.tranpose()
+
+
+        trafo_ix_pf = np.intersect1d(ig_pttr, ix_pf)
+        trafo_ix_qf = np.intersect1d(ig_pttr, ix_qf)
+        trafo_ix_pt = np.intersect1d(ig_pttr, ix_pt)
+        trafo_ix_qt = np.intersect1d(ig_pttr, ix_qt)
+
+        remapped_trafo_ix_pf = trafo_ix_pf - nbr - nvsc - nhvdc
+        remapped_trafo_ix_qf = trafo_ix_qf - nbr - nvsc - nhvdc
+        remapped_trafo_ix_pt = trafo_ix_pt - nbr - nvsc - nhvdc
+        remapped_trafo_ix_qt = trafo_ix_qt - nbr - nvsc - nhvdc
+
+        j_Pf_trafo_Pf = csr_matrix(dPf_dPf_trafo)[:, remapped_trafo_ix_pf]
+        j_Pf_trafo_Qf = csr_matrix(dPf_dQf_trafo)[:, remapped_trafo_ix_qf]
+        j_Pf_trafo_Pt = csr_matrix(dPf_dPt_trafo)[:, remapped_trafo_ix_pt]
+        j_Pf_trafo_Qt = csr_matrix(dPf_dQt_trafo)[:, remapped_trafo_ix_qt]
+
+        j_Qf_trafo_Pf = csr_matrix(dQf_dPf_trafo)[:, remapped_trafo_ix_pf]
+        j_Qf_trafo_Qf = csr_matrix(dQf_dQf_trafo)[:, remapped_trafo_ix_qf]
+        j_Qf_trafo_Pt = csr_matrix(dQf_dPt_trafo)[:, remapped_trafo_ix_pt]
+        j_Qf_trafo_Qt = csr_matrix(dQf_dQt_trafo)[:, remapped_trafo_ix_qt]
+
+        j_Pt_trafo_Pf = csr_matrix(dPt_dPf_trafo)[:, remapped_trafo_ix_pf]
+        j_Pt_trafo_Qf = csr_matrix(dPt_dQf_trafo)[:, remapped_trafo_ix_qf]
+        j_Pt_trafo_Pt = csr_matrix(dPt_dPt_trafo)[:, remapped_trafo_ix_pt]
+        j_Pt_trafo_Qt = csr_matrix(dPt_dQt_trafo)[:, remapped_trafo_ix_qt]
+
+        j_Qt_trafo_Pf = csr_matrix(dQt_dPf_trafo)[:, remapped_trafo_ix_pf]
+        j_Qt_trafo_Qf = csr_matrix(dQt_dQf_trafo)[:, remapped_trafo_ix_qf]
+        j_Qt_trafo_Pt = csr_matrix(dQt_dPt_trafo)[:, remapped_trafo_ix_pt]
+        j_Qt_trafo_Qt = csr_matrix(dQt_dQt_trafo)[:, remapped_trafo_ix_qt]
+
+        # now we pad zeros
+        ncontBr_trafo_ix_pf = len(ix_pf) - len(remapped_trafo_ix_pf)
+        ncontBr_trafo_ix_qf = len(ix_qf) - len(remapped_trafo_ix_qf)
+        ncontBr_trafo_ix_pt = len(ix_pt) - len(remapped_trafo_ix_pt)
+        ncontBr_trafo_ix_qt = len(ix_qt) - len(remapped_trafo_ix_qt)
+        dPf_dPzip = csc_matrix((ncontrBr_trafo, len(ix_pzip)))
+        dPf_dQzip = csc_matrix((ncontrBr_trafo, len(ix_qzip)))
+        dQf_dPzip = csc_matrix((ncontrBr_trafo, len(ix_pzip)))
+        dQf_dQzip = csc_matrix((ncontrBr_trafo, len(ix_qzip)))
+        dPt_dPzip = csc_matrix((ncontrBr_trafo, len(ix_pzip)))
+        dPt_dQzip = csc_matrix((ncontrBr_trafo, len(ix_qzip)))
+        dQt_dPzip = csc_matrix((ncontrBr_trafo, len(ix_pzip)))
+        dQt_dQzip = csc_matrix((ncontrBr_trafo, len(ix_qzip)))
+        dBuffer_dPf_vsc_hvdc = csc_matrix((ncontrBr_trafo, len(remapped_vsc_ix_pf) + len(remapped_hvdc_ix_pf)))
+        dBuffer_dQf_vsc_hvdc = csc_matrix((ncontrBr_trafo, len(remapped_vsc_ix_qf) + len(remapped_hvdc_ix_qf)))
+        dBuffer_dPt_vsc_hvdc = csc_matrix((ncontrBr_trafo, len(remapped_vsc_ix_pt) + len(remapped_hvdc_ix_pt)))
+        dBuffer_dQt_vsc_hvdc = csc_matrix((ncontrBr_trafo, len(remapped_vsc_ix_qt) + len(remapped_hvdc_ix_qt)))
+
+        #ok lets start building slowly |Vm|Va|Pzip|Qzip|Pf|Qf|Pt|Qt|Mod_Trafo, Tau_Trafo
+
+        dPf_trafo = hstack([
+            dPf_dVm[ig_pttr, :][:, ix_vm],
+            dPf_dVa[ig_pttr, :][:, ix_va],
+            dPf_dPzip,
+            dPf_dQzip,
+            dBuffer_dPf_vsc_hvdc,
+            j_Pf_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc,
+            j_Pf_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc,
+            j_Pf_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc,
+            j_Pf_trafo_Qt,
+            dPf_dm[ig_pttr, :][:, ix_m],
+            dPf_dtau[ig_pttr, :][:, ix_tau]
+        ])
+
+        dQf_trafo = hstack([
+            dQf_dVm[ig_pttr, :][:, ix_vm],
+            dQf_dVa[ig_pttr, :][:, ix_va],
+            dQf_dPzip,
+            dQf_dQzip,
+            dBuffer_dPf_vsc_hvdc,
+            j_Qf_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc,
+            j_Qf_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc,
+            j_Qf_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc,
+            j_Qf_trafo_Qt,
+            dQf_dm[ig_pttr, :][:, ix_m],
+            dQf_dtau[ig_pttr, :][:, ix_tau]
+        ])
+
+        dPt_trafo = hstack([
+            dPt_dVm[ig_pttr, :][:, ix_vm],
+            dPt_dVa[ig_pttr, :][:, ix_va],
+            dPt_dPzip,
+            dPt_dQzip,
+            dBuffer_dPf_vsc_hvdc,
+            j_Pt_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc,
+            j_Pt_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc,
+            j_Pt_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc,
+            j_Pt_trafo_Qt,
+            dPt_dm[ig_pttr, :][:, ix_m],
+            dPt_dtau[ig_pttr, :][:, ix_tau]
+        ])
+
+        dQt_trafo = hstack([
+            dQt_dVm[ig_pttr, :][:, ix_vm],
+            dQt_dVa[ig_pttr, :][:, ix_va],
+            dQt_dPzip,
+            dQt_dQzip,
+            dBuffer_dPf_vsc_hvdc,
+            j_Qt_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc,
+            j_Qt_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc,
+            j_Qt_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc,
+            j_Qt_trafo_Qt,
+            dQt_dm[ig_pttr, :][:, ix_m],
+            dQt_dtau[ig_pttr, :][:, ix_tau]
+        ])
+
+        J = vstack([J, dPf_trafo, dQf_trafo, dPt_trafo, dQt_trafo])
+
+    print()
+    J = scipy_to_mat((J).tocsc())
+    print("J")
+    print(J.toarray())
     return J
 
 
@@ -1429,7 +1585,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:
