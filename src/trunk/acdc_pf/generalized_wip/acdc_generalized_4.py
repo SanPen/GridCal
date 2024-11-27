@@ -50,4 +50,5 @@ options = PowerFlowOptions(SolverType.NR,
 
 results = gce.power_flow(grid, options)
 
+print(abs(results.voltage))
 assert results.converged
