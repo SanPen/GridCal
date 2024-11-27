@@ -288,6 +288,7 @@ class Line(BranchParent):
                     self.X2 *= factor
                     self.B2 *= factor
 
+                # set the value
                 self._length = val
             else:
                 print('The length cannot be zero, ignoring value')
