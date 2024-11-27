@@ -1140,91 +1140,19 @@ print(reply_from_server)
 
 ## Matpower grids
 
-Matpower's excellent formulations and consistency has allowed this and other projects to evolve relying of sound math. 
-That is why GridCal reads Matpower cases out of the box, without you having to do anything special. 
-And of course, GridCal solves all Matpower 8 provided grids:
+Matpower's excellent formulations and consistency has allowed this and other 
+projects to develop, relying on its sound math. That is why GridCal reads Matpower 
+cases out of the box, without you having to do anything special. 
+And of course, GridCal solves all Matpower 8 provided grids, solving the continental USA case in about 1 second:
 
-| name                | n_buses | n_branches | P imbalance (%) | Used V0 | converged | error (p.u.) | iterations | time (s) |
-|---------------------|---------|------------|-----------------|---------|-----------|--------------|------------|----------|
-| case_SyntheticUSA.m | 82000   | 104121     | -0.1            | TRUE    | TRUE      | 9.90E-07     | 3          | 1.03154  |
-| case_ACTIVSg70k.m   | 70000   | 88207      | 0.6             | TRUE    | TRUE      | 8.00E-07     | 7          | 1.73622  |
-| case_ACTIVSg25k.m   | 25000   | 32230      | -2.7            | FALSE   | TRUE      | 1.45E-09     | 5          | 0.37424  |
-| case13659pegase.m   | 13659   | 20467      | 2411.0          | FALSE   | TRUE      | 1.75E-07     | 6          | 0.16958  |
-| case_ACTIVSg10k.m   | 10000   | 12706      | -7.6            | TRUE    | TRUE      | 1.03E-07     | 1          | 0.02221  |
-| case9241pegase.m    | 9241    | 16049      | 683.5           | FALSE   | TRUE      | 9.38E-08     | 11         | 0.23802  |
-| case8387pegase.m    | 8387    | 14561      | -44.2           | FALSE   | TRUE      | 4.34E-10     | 7          | 0.13024  |
-| case6515rte.m       | 6515    | 9037       | -47.5           | TRUE    | TRUE      | 1.05E-07     | 2          | 0.02758  |
-| case6495rte.m       | 6495    | 9019       | -48.9           | TRUE    | TRUE      | 1.12E-07     | 7          | 0.09349  |
-| case6470rte.m       | 6470    | 9005       | -48.0           | TRUE    | TRUE      | 3.86E-08     | 2          | 0.02659  |
-| case6468rte.m       | 6468    | 9000       | -46.3           | TRUE    | TRUE      | 1.11E-08     | 2          | 0.02708  |
-| case3375wp.m        | 3374    | 4161       | -73.3           | TRUE    | TRUE      | 9.83E-07     | 1          | 0.00804  |
-| case3120sp.m        | 3120    | 3693       | -100.0          | FALSE   | TRUE      | 3.27E-11     | 9          | 0.05893  |
-| case3012wp.m        | 3012    | 3572       | -98.9           | TRUE    | TRUE      | 3.47E-08     | 2          | 0.01262  |
-| case2869pegase.m    | 2869    | 4582       | 561.4           | FALSE   | TRUE      | 1.07E-08     | 10         | 0.06973  |
-| case2868rte.m       | 2868    | 3808       | -46.0           | FALSE   | TRUE      | 3.96E-09     | 15         | 0.08018  |
-| case2848rte.m       | 2848    | 3776       | -41.3           | FALSE   | TRUE      | 1.91E-08     | 19         | 0.10530  |
-| case2746wop.m       | 2746    | 3514       | -96.5           | FALSE   | TRUE      | 2.78E-07     | 11         | 0.06114  |
-| case2746wp.m        | 2746    | 3514       | -95.8           | FALSE   | TRUE      | 9.13E-09     | 11         | 0.06028  |
-| case2737sop.m       | 2737    | 3506       | -94.2           | FALSE   | TRUE      | 1.87E-07     | 5          | 0.02754  |
-| case2736sp.m        | 2736    | 3504       | -95.2           | FALSE   | TRUE      | 7.90E-08     | 8          | 0.04321  |
-| case2383wp.m        | 2383    | 2896       | -97.4           | FALSE   | TRUE      | 2.64E-09     | 4          | 0.01960  |
-| case_ACTIVSg2000.m  | 2000    | 3206       | 10.8            | FALSE   | TRUE      | 1.22E-08     | 9          | 0.04812  |
-| case1951rte.m       | 1951    | 2596       | -46.0           | TRUE    | TRUE      | 7.86E-08     | 2          | 0.00723  |
-| case1888rte.m       | 1888    | 2531       | -47.1           | TRUE    | TRUE      | 6.27E-07     | 1          | 0.00369  |
-| case1354pegase.m    | 1354    | 1991       | 862.8           | FALSE   | TRUE      | 7.43E-09     | 10         | 0.02611  |
-| case_ACTIVSg500.m   | 500     | 597        | 2.8             | FALSE   | TRUE      | 4.17E-09     | 9          | 0.00896  |
-| case300.m           | 300     | 411        | -38.6           | FALSE   | TRUE      | 1.54E-09     | 10         | 0.00656  |
-| case_ACTIVSg200.m   | 200     | 245        | 6.5             | FALSE   | TRUE      | 1.82E-07     | 3          | 0.00140  |
-| case145.m           | 145     | 453        | -100.0          | FALSE   | TRUE      | 6.24E-10     | 5          | 0.00191  |
-| case141.m           | 141     | 140        | -100.0          | FALSE   | TRUE      | 4.69E-09     | 2          | 0.00060  |
-| case136ma.m         | 136     | 156        | -100.0          | FALSE   | TRUE      | 1.14E-08     | 2          | 0.00059  |
-| case118zh.m         | 118     | 132        | -100.0          | FALSE   | TRUE      | 1.46E-08     | 2          | 0.00054  |
-| case118.m           | 118     | 186        | -28.3           | FALSE   | TRUE      | 1.94E-07     | 9          | 0.00253  |
-| case94pi.m          | 94      | 93         | -100.0          | FALSE   | TRUE      | 2.08E-11     | 2          | 0.00051  |
-| case89pegase.m      | 89      | 210        | 4.2             | FALSE   | TRUE      | 2.81E-09     | 4          | 0.00133  |
-| case85.m            | 85      | 84         | -100.0          | FALSE   | TRUE      | 7.90E-12     | 2          | 0.00050  |
-| case74ds.m          | 74      | 73         | -100.0          | FALSE   | TRUE      | 8.74E-07     | 1          | 0.00024  |
-| case_RTS_GMLC.m     | 73      | 120        | -80.5           | FALSE   | TRUE      | 1.62E-07     | 9          | 0.00172  |
-| case70da.m          | 70      | 76         | -100.0          | FALSE   | TRUE      | 2.17E-12     | 2          | 0.00031  |
-| case69.m            | 69      | 68         | -100.0          | FALSE   | TRUE      | 7.20E-09     | 2          | 0.00039  |
-| case60nordic.m      | 60      | 88         | 96.3            | FALSE   | TRUE      | 5.15E-08     | 4          | 0.00074  |
-| case57.m            | 57      | 80         | -100.0          | FALSE   | TRUE      | 2.82E-10     | 9          | 0.00172  |
-| case51ga.m          | 51      | 50         | -100.0          | FALSE   | TRUE      | 1.85E-12     | 2          | 0.00034  |
-| case51he.m          | 51      | 50         | -100.0          | FALSE   | TRUE      | 6.16E-07     | 1          | 0.00021  |
-| case39.m            | 39      | 46         | -26.1           | FALSE   | TRUE      | 1.93E-11     | 9          | 0.00130  |
-| case38si.m          | 38      | 37         | -100.0          | FALSE   | TRUE      | 7.26E-12     | 2          | 0.00030  |
-| case34sa.m          | 34      | 33         | -100.0          | FALSE   | TRUE      | 8.24E-13     | 2          | 0.00030  |
-| case33bw.m          | 33      | 37         | -100.0          | FALSE   | TRUE      | 7.38E-09     | 2          | 0.00033  |
-| case33mg.m          | 33      | 37         | -100.0          | FALSE   | TRUE      | 7.46E-12     | 2          | 0.00030  |
-| case30.m            | 30      | 41         | -39.6           | FALSE   | TRUE      | 9.57E-10     | 3          | 0.00046  |
-| case30Q.m           | 30      | 41         | -39.6           | FALSE   | TRUE      | 9.57E-10     | 3          | 0.00043  |
-| case30pwl.m         | 30      | 41         | -39.6           | FALSE   | TRUE      | 9.57E-10     | 3          | 0.00070  |
-| case_ieee30.m       | 30      | 41         | -3.2            | FALSE   | TRUE      | 5.18E-08     | 3          | 0.00049  |
-| case28da.m          | 28      | 27         | -100.0          | FALSE   | TRUE      | 6.85E-07     | 1          | 0.00018  |
-| case24_ieee_rts.m   | 24      | 38         | -70.5           | FALSE   | TRUE      | 1.63E-08     | 6          | 0.00078  |
-| case22.m            | 22      | 21         | -100.0          | FALSE   | TRUE      | 2.13E-07     | 1          | 0.00016  |
-| case18nbr.m         | 18      | 17         | -100.0          | FALSE   | TRUE      | 1.35E-07     | 2          | 0.00028  |
-| case18.m            | 18      | 17         | -100.0          | FALSE   | TRUE      | 1.27E-08     | 3          | 0.00039  |
-| case17me.m          | 17      | 16         | -100.0          | FALSE   | TRUE      | 3.19E-08     | 3          | 0.00035  |
-| case16ci.m          | 16      | 16         | -100.0          | FALSE   | TRUE      | 1.38E-09     | 2          | 0.00022  |
-| case16am.m          | 15      | 14         | -100.0          | FALSE   | TRUE      | 1.22E-07     | 2          | 0.00029  |
-| case15da.m          | 15      | 14         | -100.0          | FALSE   | TRUE      | 8.57E-07     | 1          | 0.00019  |
-| case15nbr.m         | 15      | 14         | -100.0          | FALSE   | TRUE      | 5.43E-08     | 2          | 0.00025  |
-| case14.m            | 14      | 20         | 1.3             | FALSE   | TRUE      | 5.98E-08     | 3          | 0.00040  |
-| case12da.m          | 12      | 11         | -100.0          | FALSE   | TRUE      | 2.71E-07     | 1          | 0.00018  |
-| case10ba.m          | 10      | 9          | -100.0          | FALSE   | TRUE      | 6.22E-08     | 2          | 0.00024  |
-| case9_gurobi_test.m | 9       | 9          | 1.7             | FALSE   | TRUE      | 3.42E-07     | 3          | 0.00031  |
-| case9target.m       | 9       | 9          | -41.1           | FALSE   | TRUE      | 1.40E-07     | 5          | 0.00050  |
-| case9.m             | 9       | 9          | 1.7             | FALSE   | TRUE      | 3.42E-07     | 3          | 0.00031  |
-| case9Q.m            | 9       | 9          | -21.3           | FALSE   | TRUE      | 5.71E-07     | 3          | 0.00031  |
-| case6ww.m           | 6       | 11         | -47.6           | FALSE   | TRUE      | 2.09E-10     | 3          | 0.00030  |
-| case5.m             | 5       | 6          | -36.3           | FALSE   | TRUE      | 6.42E-11     | 3          | 0.00030  |
-| case4_dist.m        | 4       | 3          | -100.0          | FALSE   | TRUE      | 5.70E-09     | 3          | 0.00032  |
-| case4gs.m           | 4       | 4          | -100.0          | FALSE   | TRUE      | 1.07E-09     | 3          | 0.00031  |
 
+[![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
+
+Find the results: [All matpower grids.xlsx](Grids_and_profiles/matpower_benchmark/All%20matpower%20grids.xlsx),
+and the benchmark code [matpower_grids.py](Grids_and_profiles/matpower_benchmark/matpower_grids.py).
 _Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
 All solved using Newton-Raphson, and only using the provided solution 
-that comes with the files when the flat start fails. That is what `Used V0` means._
+that comes with the files when the flat start fails.
 
 Cool right?
 
@@ -1258,19 +1186,19 @@ developments with the community and the maintainers.
 ## Contributing
 
 All contributions to the **GridCal** repository are made through pull requests to the
-`master` branch. You can either submit a pull request from the develop branch of your
+`devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
 want to submit with seperate pull requests. If you only have small, one-time changes
-to submit, you can also use the `master` branch to submit your pull request.
+to submit, you can also use the `devel` branch to submit your pull request.
 
 However, it is best to discuss your contribution before the pull request is ready to be officially
 submitted. We only accept high quality contributions that align with the project design. 
 Those are heavily reviewed, and you may expect joint work with us if your proposal is deemed good enough.
 
-An alternative, maybe easier way to contribute functionality to GridCal, is to use the objects 
-and functions to produce your contribution in a script-like fashion. 
-Again, if that meets the functional and quality standards that we impose, we'll take care of the integration.
+An easier alternative to contribute is to use the GridCal objects and functions to produce your contribution 
+in a script-like fashion. Again, if that meets the functional and quality standards that we impose, 
+we'll take care of the integration.
 
 All contributions must come with testing.
 

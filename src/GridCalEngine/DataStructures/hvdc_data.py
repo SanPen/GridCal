@@ -299,7 +299,7 @@ class HvdcData:
                 else:
                     Losses[i] = 0
                     Pf[i] = 0
-                    Pt[0] = 0
+                    Pt[i] = 0
 
                 # compute loading
                 loading[i] = Pf[i] / (self.rate[i] + 1e-20)

@@ -19,7 +19,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    polar_to_rect, get_Sf, get_St,
@@ -487,7 +487,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         Itm = np.abs(It)
         Itm2 = Itm * Itm
         PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm
                      + self.nc.branch_data.alpha1[self.idx_conv])
 
         self.Gsw = PLoss_IEC / np.power(Vm[self.nc.F[self.idx_conv]], 2.0)

@@ -22,7 +22,6 @@ class Switch(BranchParent):
                  rate=1.0,
                  active=True,
                  contingency_factor=1.0, protection_rating_factor: float = 1.4,
-                 # is_open=False,
                  retained=True,
                  normal_open=False,
                  rated_current=0.0):

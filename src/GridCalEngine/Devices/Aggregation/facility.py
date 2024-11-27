@@ -26,6 +26,6 @@ class Facility(GenericAreaGroup):
                                   name=name,
                                   idtag=idtag,
                                   code=code,
-                                  device_type=DeviceType.AreaDevice,
+                                  device_type=DeviceType.FacilityDevice,
                                   latitude=latitude,
                                   longitude=longitude)

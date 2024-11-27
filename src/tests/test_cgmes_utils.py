@@ -246,4 +246,4 @@ def test_get_nominal_voltage_basevoltage_is_string_log_error():
     logger = DataLogger()
     get_nominal_voltage(tn, logger)
     assert len(logger.entries) == 1
-    assert logger.entries[0].msg == "Missing refference"
+    assert logger.entries[0].msg == "Missing reference"

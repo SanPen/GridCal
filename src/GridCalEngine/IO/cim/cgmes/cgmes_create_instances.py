@@ -3,6 +3,8 @@ Collection of functions to create new CGMES instances for CGMES export.
 """
 import numpy as np
 from datetime import datetime
+
+from GridCalEngine import StrVec
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -25,18 +27,21 @@ from typing import List, Union
 
 
 def create_cgmes_headers(cgmes_model: CgmesCircuit,
+                         mas_names: StrVec,
                          profiles_to_export: List[cgmesProfile],
+                         logger: DataLogger,
                          desc: str = "",
-                         scenariotime: str = "",
-                         modelingauthorityset: str = "", version: str = ""):
+                         scenariotime: str = "", version: str = ""):
     """
 
     :param cgmes_model:
+    :param mas_names:
     :param profiles_to_export:
     :param desc:
     :param scenariotime:
     :param modelingauthorityset:
     :param version:
+    :param logger:
     :return:
     """
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
@@ -59,8 +64,14 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
 
     for fm in fm_list:
         fm.scenarioTime = scenariotime
-        if modelingauthorityset != "":
-            fm.modelingAuthoritySet = modelingauthorityset
+        fm.modelingAuthoritySet = []
+        if len(mas_names):
+            for mas_name in mas_names:
+                fm.modelingAuthoritySet.append(mas_name)
+        else:
+            fm.modelingAuthoritySet.append("http://www.ree.es/OperationalPlanning")
+            logger.add_warning(msg="Missing Modeling Authority!",
+                               comment="Default value used. (http://www.ree.es/OperationalPlanning)")
         current_time = datetime.now()
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         fm.created = formatted_time
@@ -336,11 +347,7 @@ def create_cgmes_regulating_control(cgmes_syn,
     rc.name = f'_RC_{mc_gen.name}'
     rc.shortName = rc.name
     rc.mode = RegulatingControlModeKind.voltage
-    rc.Terminal = create_cgmes_terminal(mc_bus=mc_gen.bus,
-                                        seq_num=1,
-                                        cond_eq=cgmes_syn,
-                                        cgmes_model=cgmes_model,
-                                        logger=logger)
+    rc.Terminal = cgmes_syn.Terminals
 
     rc.RegulatingCondEq = cgmes_syn
     rc.discrete = False
@@ -388,7 +395,10 @@ def create_cgmes_tap_changer_control(
     tcc.targetValueUnitMultiplier = UnitMultiplier.k
     tcc.enabled = tcc_enabled
     if tcc.enabled:
-        tcc.targetValue = 0.0  # TODO # if enabled it should be calculated
+        if mc_trafo:
+            tcc.targetValue = mc_trafo.vset * mc_trafo.get_max_bus_nominal_voltage()
+        else:
+            tcc.targetValue = mc_trafo.Pset
     else:
         tcc.targetValue = None
     # tcc.RegulatingCondEq not required .?
@@ -401,12 +411,18 @@ def create_cgmes_tap_changer_control(
 
 def create_cgmes_current_limit(terminal,
                                rate: float,
-                               # mc_elm: Union[gcdev.Line,
-                               #               # gcdev.Transformer2W,
-                               #               # gcdev.Transformer3W
-                               #               ],
+                               op_limit_type: Base,
                                cgmes_model: CgmesCircuit,
                                logger: DataLogger):
+    """
+
+    :param terminal: Cgmes Terminal
+    :param rate: current rate for cgmes
+    :param op_limit_type: Operational Limit Type
+    :param cgmes_model: CgmesModel
+    :param logger: DataLogger
+    :return:
+    """
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("CurrentLimit")
     curr_lim = object_template(rdfid=new_rdf_id)
@@ -420,9 +436,11 @@ def create_cgmes_current_limit(terminal,
     if op_lim_set_1 is not None:
         curr_lim.OperationalLimitSet = op_lim_set_1
     else:
-        logger.add_error(msg='No operational limit created')
+        logger.add_error(msg='No operational limit created',
+                         device=op_lim_set_1,
+                         comment="create_cgmes_current_limit")
 
-    # curr_lim.OperationalLimitType
+    curr_lim.OperationalLimitType = op_limit_type
 
     cgmes_model.add(curr_lim)
     return
@@ -453,18 +471,14 @@ def create_operational_limit_set(terminal,
     return op_lim_set
 
 
-def create_cgmes_operational_limit_type(mc_elm: gcdev.Line,
-                                        cgmes_model: CgmesCircuit,
-                                        logger: DataLogger):
+def create_cgmes_operational_limit_type(cgmes_model: CgmesCircuit):
     """
 
-    :param mc_elm:
-    :param cgmes_model:
-    :param logger:
+    :param cgmes_model: CgmesModel
     :return:
     """
     new_rdf_id = get_new_rdfid()
-    object_template = cgmes_model.get_class_type("OperationalLimitSet")
+    object_template = cgmes_model.get_class_type("OperationalLimitType")
     op_lim_type = object_template(rdfid=new_rdf_id)
 
     cgmes_model.add(op_lim_type)
@@ -550,8 +564,8 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
         vs_converter.description = gc_vsc.code
     else:
         i = len(cgmes_model.cgmes_assets.VsConverter_list)
-        vs_converter.name = f'VSC_{i+1}'
-        vs_converter.description = f'VSC_{i+1}'
+        vs_converter.name = f'VSC_{i + 1}'
+        vs_converter.description = f'VSC_{i + 1}'
 
     # EQ
     vs_converter.baseS = 9999
@@ -760,7 +774,7 @@ def create_cgmes_dc_terminal(cgmes_model: CgmesCircuit,
 
     # EQ
     i = len(cgmes_model.cgmes_assets.DCTerminal_list)
-    dc_term.name = f'DC_term_{i+1}'
+    dc_term.name = f'DC_term_{i + 1}'
     if isinstance(dc_node, cgmes_model.get_class_type("DCNode")):
         dc_term.DCNode = dc_node
 
@@ -834,7 +848,6 @@ def create_cgmes_location(cgmes_model: CgmesCircuit,
     return
 
 
-
 def create_sv_power_flow(cgmes_model: CgmesCircuit,
                          p: float,
                          q: float,
@@ -904,3 +917,66 @@ def create_sv_status(cgmes_model: CgmesCircuit,
     # TODO sv_status.ConductingEquipment = cgmes_conducting_equipment
 
     cgmes_model.add(sv_status)
+
+
+def create_cgmes_conform_load_group(
+        cgmes_model: CgmesCircuit,
+        logger: DataLogger):
+    """
+
+    :param mc_elm:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("ConformLoadGroup")
+    c_load_group = object_template(rdfid=new_rdf_id)
+    c_load_group.name = "_CLG_"
+    c_load_group.description = "_CLG_"
+    c_load_group.EnergyConsumers = []
+    c_load_group.SubLoadArea = create_cgmes_sub_load_area(cgmes_model, logger)
+
+    cgmes_model.add(c_load_group)
+    return c_load_group
+
+
+def create_cgmes_sub_load_area(
+        cgmes_model: CgmesCircuit,
+        logger: DataLogger):
+    """
+
+    :param mc_elm:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("SubLoadArea")
+    sub_load_area = object_template(rdfid=new_rdf_id)
+    sub_load_area.name = "_SLA_"
+    sub_load_area.description = "_SLA_"
+    sub_load_area.LoadArea = create_cgmes_load_area(cgmes_model, logger)
+
+    cgmes_model.add(sub_load_area)
+    return sub_load_area
+
+
+def create_cgmes_load_area(
+        cgmes_model: CgmesCircuit,
+        logger: DataLogger):
+    """
+
+    :param mc_elm:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("LoadArea")
+    sub_load_area = object_template(rdfid=new_rdf_id)
+    sub_load_area.name = "_LA_"
+    sub_load_area.description = "_LA_"
+
+    cgmes_model.add(sub_load_area)
+    return sub_load_area

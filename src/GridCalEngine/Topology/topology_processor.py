@@ -42,6 +42,9 @@ class TopologyProcessorInfo:
         # map of ConnectivityNodes to final Buses
         self._cn_to_final_bus: dict[ConnectivityNode, Bus] = dict()
 
+        # map of Bus to final Buses
+        self._bus_to_final_bus: dict[Bus, Bus] = dict()
+
     def register_branch_indices(self, k: int, f: int | None, t: int | None) -> None:
         """
         Register the branch to its candidate indices
@@ -348,11 +351,15 @@ class TopologyProcessorInfo:
         :return: list of final buses
         """
         final_buses = list()
-        # print("Islands:")
+
         for island in islands:
-            # print(",".join([grid.candidates[i].name for i in island]))
 
             island_bus = self._candidates[island[0]]
+
+            # map all buses to the final counterpart
+            for i in island:
+                bus = self._candidates[i]
+                self._bus_to_final_bus[bus] = island_bus
 
             # pick the first bus from each island
             final_buses.append(island_bus)
@@ -364,13 +371,18 @@ class TopologyProcessorInfo:
 
         return final_buses
 
-    def get_final_bus(self, cn: ConnectivityNode) -> Bus:
+    def get_final_bus(self, elm: ConnectivityNode | Bus) -> Bus:
         """
         Get the final Bus that should map to a connectivity node
-        :param cn: ConnectivityNode
+        :param elm: ConnectivityNode or Bus
         :return: Final calculation Bus
         """
-        return self._cn_to_final_bus[cn]
+        if isinstance(elm, ConnectivityNode):
+            return self._cn_to_final_bus[elm]
+        elif isinstance(elm, Bus):
+            return self._bus_to_final_bus[elm]
+        else:
+            raise Exception(f"Unrecognised element type: {elm} of type {type(elm)}")
 
     def get_cn_lists_per_bus(self) -> Dict[Bus, List[ConnectivityNode]]:
         """
@@ -534,14 +546,20 @@ def process_grid_topology_at(grid: MultiCircuit,
     for i, elm in enumerate(grid.get_all_branches_iter()):
         if elm.cn_from is not None:
             elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
+        else:
+            elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus_from))
 
         if elm.cn_to is not None:
             elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
+        else:
+            elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus_to))
 
     for dev_lst in grid.get_injection_devices_lists():
         for elm in dev_lst:
             if elm.cn is not None:
                 elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
+            else:
+                elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus))
 
     # return the TopologyProcessorInfo
     return process_info
