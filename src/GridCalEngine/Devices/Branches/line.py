@@ -275,7 +275,7 @@ class Line(BranchParent):
         """
         if isinstance(val, float):
             if val > 0.0:
-                if self._length != 0 and self._auto_update_enabled:
+                if self._length != 0 and self.auto_update_enabled:
                     factor = np.round(val / self._length, 6)  # new length / old length
 
                     self.R *= factor
