@@ -103,17 +103,17 @@ class Line(BranchParent):
         self.fault_pos = float(fault_pos)
 
         # total impedance and admittance in p.u.
-        self.R = float(r)
-        self.X = float(x)
-        self.B = float(b)
+        self._R = float(r)
+        self._X = float(x)
+        self._B = float(b)
 
-        self.R0 = float(r0)
-        self.X0 = float(x0)
-        self.B0 = float(b0)
+        self._R0 = float(r0)
+        self._X0 = float(x0)
+        self._B0 = float(b0)
 
-        self.R2 = float(r2)
-        self.X2 = float(x2)
-        self.B2 = float(b2)
+        self._R2 = float(r2)
+        self._X2 = float(x2)
+        self._B2 = float(b2)
 
         # Conductor base and operating temperatures in ºC
         self.temp_base = float(temp_base)
@@ -146,7 +146,6 @@ class Line(BranchParent):
         self.register(key='tolerance', units='%', tpe=float,
                       definition='Tolerance expected for the impedance values % is expected '
                                  'for transformers0% for lines.')
-
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
@@ -180,6 +179,78 @@ class Line(BranchParent):
                       display=False)
 
     @property
+    def R(self):
+        return self._R
+
+    @R.setter
+    def R(self, value):
+        self._R = float(value)
+
+    @property
+    def X(self):
+        return self._X
+
+    @X.setter
+    def X(self, value):
+        self._X = float(value)
+
+    @property
+    def B(self):
+        return self._B
+
+    @B.setter
+    def B(self, value):
+        self._B = float(value)
+
+    @property
+    def R0(self):
+        return self._R0
+
+    @R0.setter
+    def R0(self, value):
+        self._R0 = float(value)
+
+    @property
+    def X0(self):
+        return self._X0
+
+    @X0.setter
+    def X0(self, value):
+        self._X0 = float(value)
+
+    @property
+    def B0(self):
+        return self._B0
+
+    @B0.setter
+    def B0(self, value):
+        self._B0 = float(value)
+
+    @property
+    def R2(self):
+        return self._R2
+
+    @R2.setter
+    def R2(self, value):
+        self._R2 = float(value)
+
+    @property
+    def X2(self):
+        return self._X2
+
+    @X2.setter
+    def X2(self, value):
+        self._X2 = float(value)
+
+    @property
+    def B2(self):
+        return self._B2
+
+    @B2.setter
+    def B2(self, value):
+        self._B2 = float(value)
+
+    @property
     def length(self) -> float:
         """
         Line length in km
@@ -194,18 +265,17 @@ class Line(BranchParent):
         :param val:
         :return:
         """
-        self.set_length(val, update_electrical_values=True)
+        self.set_length(val)
 
-    def set_length(self, val: float, update_electrical_values: bool = True):
+    def set_length(self, val: float):
         """
 
         :param val:
-        :param update_electrical_values:
         :return:
         """
         if isinstance(val, float):
             if val > 0.0:
-                if self._length != 0 and update_electrical_values:
+                if self._length != 0 and self._auto_update_enabled:
                     factor = np.round(val / self._length, 6)  # new length / old length
 
                     self.R *= factor
@@ -408,7 +478,7 @@ class Line(BranchParent):
         elm.temperature_prof = self.temp_oper_prof
         return elm
 
-    def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase, apply_to_profile: bool = True,):
+    def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase, apply_to_profile: bool = True, ):
         """
         Fill R, X, B from not-in-per-unit parameters
         :param r_ohm: Resistance per km in OHM/km
