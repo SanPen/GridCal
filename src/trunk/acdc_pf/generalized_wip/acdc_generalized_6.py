@@ -3,6 +3,8 @@ import os
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 import GridCalEngine.api as gce
+import faulthandler
+faulthandler.enable() #start @ the beginning
 
 """
 Check that a transformer can regulate the voltage at a bus
