@@ -66,4 +66,3 @@ if __name__ == '__main__':
     # acopf_driver.run()
     # gc_res = acopf_driver.results
 
-    print()

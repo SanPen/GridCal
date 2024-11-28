@@ -1,12 +1,10 @@
 import os
-
-import numpy as np
-
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 import GridCalEngine.api as gce
 import faulthandler
-faulthandler.enable() #start @ the beginning
+
+faulthandler.enable()  # start @ the beginning
 
 """
 Check that a transformer can regulate the voltage at a bus
@@ -22,11 +20,10 @@ options = PowerFlowOptions(SolverType.PowellDogLeg,
                            control_taps_phase=True,
                            control_taps_modules=True,
                            max_iter=80,
-                           tolerance=1e-12,)
+                           tolerance=1e-12, )
 
 results = gce.power_flow(grid, options)
 
-print(abs(results.voltage))
+print(results.get_bus_df())
+print(results.error)
 assert results.converged
-
-print(np.array2string(results.voltage))

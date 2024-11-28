@@ -77,7 +77,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 J: CSC = problem.Jacobian()
 
                 dx, ok = spsolve_csc(J, -f)
-                print('')
 
                 if verbose > 1:
                     import pandas as pd

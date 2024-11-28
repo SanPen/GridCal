@@ -255,4 +255,3 @@ class SimulationIndices:
         self.k_v_m = np.array(k_v_m, dtype=int)
         self.k_v_beq = np.array(k_v_beq, dtype=int)
         self.k_vsc = np.array(k_vsc, dtype=int)
-        print()

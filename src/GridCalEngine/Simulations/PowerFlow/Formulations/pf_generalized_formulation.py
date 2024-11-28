@@ -65,7 +65,7 @@ def recompute_controllable_power(V_f: CxVec,
 
     Sf: CxVec = V_f * np.conj(V_f * Yff) + V_f * np.conj(V_t * Yft)
     St: CxVec = V_t * np.conj(V_t * Ytt) + V_t * np.conj(V_f * Ytf)
-    print()
+
     return Sf.real, Sf.imag, St.real, St.imag
 
 
@@ -208,8 +208,7 @@ def adv_jacobian(nbus: int,
     g = [Pbus, Qbus, Ploss_acdc, Ploss_hvdc, Pinj_hvdc, Pftr, Qftr, Pttr, Qttr]
 
     """
-    print()
-    # print("ix_qt", ix_qt)
+
     # DO SOME IMPORTANT CASTING
     ix_vm = np.asarray(ix_vm).astype(np.int32)
     ix_va = np.asarray(ix_va).astype(np.int32)
@@ -401,7 +400,6 @@ def adv_jacobian(nbus: int,
     dS_dSt_lil = hstack([dS_dPt_lil, dS_dQt_lil])
     assert dS_dSt_lil.shape == (len(ig_sbus), len(ix_pt) + len(
         ix_qt)), f"Shape is {dS_dSt_lil.shape}, it should be {len(ig_sbus), len(ix_pt) + len(ix_qt)}"
-    print()
 
     '''
     dS_dtau and dS_dm from csc_derivatives.py, already there
@@ -431,14 +429,11 @@ def adv_jacobian(nbus: int,
     assert dS_dm_lil.shape == (
         len(ig_sbus), len(ix_m)), f"Shape is {dS_dm_lil.shape}, it should be {len(ig_sbus), len(ix_m)}"
 
-    print()
-
     # First 2 rows completed up to here
     J = hstack([dS_dV_lil, ds_dSzip_lil, dS_dSf_lil, dS_dSt_lil, dS_dtau_lil, dS_dm_lil])
-    J2r = np.array(J.todense())
-    dfJ2r = pd.DataFrame(J2r)
-    dfJ2r.to_excel("J2r_v2.xlsx")
-    print()
+    # J2r = np.array(J.todense())
+    # dfJ2r = pd.DataFrame(J2r)
+    # dfJ2r.to_excel("J2r_v2.xlsx")
 
     '''
     # VSC loss eq.
@@ -464,12 +459,13 @@ def adv_jacobian(nbus: int,
         pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
         pq_sqrt = np.sqrt(pq)
         pq_sqrt += 1e-20
-        dLacdc_dVm = (alpha2[vsc_order] * pq_sqrt * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc]) + 2 * alpha3[
-            vsc_order] * (pq) / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
+        dLacdc_dVm = (alpha2[vsc_order] * pq_sqrt * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+                      + 2 * alpha3[vsc_order] * (pq) / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
         dLacdc_dVm *= -1
 
-        dLacdc_dPt = np.ones(nvsc) - alpha2[vsc_order] * Pt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * pq_sqrt) - 2 * \
-                     alpha3[vsc_order] * Pt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]])
+        dLacdc_dPt = (np.ones(nvsc)
+                      - alpha2[vsc_order] * Pt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * pq_sqrt)
+                      - 2 * alpha3[vsc_order] * Pt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
         dLacdc_dPt *= -1
 
         _a = alpha2[vsc_order] * Qt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * pq_sqrt)
@@ -554,7 +550,6 @@ def adv_jacobian(nbus: int,
 
         J = vstack([J, vsc_loss])
         J3r = np.array(vsc_loss.todense())
-        print()
 
     """
     # HVDC loss eq. (work in progress)
@@ -896,7 +891,6 @@ def adv_jacobian(nbus: int,
         remapped_trafo_ix_pt = trafo_ix_pt - nbr - nvsc - nhvdc
         remapped_trafo_ix_qt = trafo_ix_qt - nbr - nvsc - nhvdc
 
-        print()
         j_Pf_trafo_Pf = csr_matrix(dPf_dPf_trafo)[:, trafo_ix_pf]
         j_Pf_trafo_Qf = csr_matrix(dPf_dQf_trafo)[:, trafo_ix_qf]
         j_Pf_trafo_Pt = csr_matrix(dPf_dPt_trafo)[:, trafo_ix_pt]
@@ -917,8 +911,6 @@ def adv_jacobian(nbus: int,
         j_Qt_trafo_Pt = csr_matrix(dQt_dPt_trafo)[:, trafo_ix_pt]
         j_Qt_trafo_Qt = csr_matrix(dQt_dQt_trafo)[:, trafo_ix_qt]
 
-        print()
-
         # now we pad zeros
         ncontBr_trafo_ix_pf = len(ix_pf) - len(trafo_ix_pf)
         ncontBr_trafo_ix_qf = len(ix_qf) - len(trafo_ix_qf)
@@ -938,7 +930,6 @@ def adv_jacobian(nbus: int,
         dBuffer_dQt_vsc_hvdc = csc_matrix((ncontrBr_trafo, len(ix_qt) - len(trafo_ix_qt)))
 
         # ok lets start building slowly |Vm|Va|Pzip|Qzip|Pf|Qf|Pt|Qt|Mod_Trafo, Tau_Trafo
-        print()
         dPf_trafo = hstack([
             dPf_dVm_lil,
             dPf_dVa_lil,
@@ -992,10 +983,8 @@ def adv_jacobian(nbus: int,
         ])
 
         J = vstack([J, dPf_trafo, dQf_trafo, dPt_trafo, dQt_trafo])
-    print()
-    J = scipy_to_mat((J).tocsc())
-    print("J")
-    print(J.toarray())
+
+    J = scipy_to_mat(J.tocsc())
     return J
 
 
@@ -1051,9 +1040,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         self.logger: Logger = logger
 
-        print("(pf_generalized_formulation.py) self.nc.passive_branch_data.nelm: ", self.nc.passive_branch_data.nelm)
-        print("(pf_generalized_formulation.py) self.nc.active_branch_data.nelm: ", self.nc.active_branch_data.nelm)
-        print("(pf_generalized_formulation.py) self.nc.vsc_data.nelm: ", self.nc.vsc_data.nelm)
+        if self.options.verbose > 1:
+            print("(pf_generalized_formulation.py) self.nc.passive_branch_data.nelm: ", self.nc.passive_branch_data.nelm)
+            print("(pf_generalized_formulation.py) self.nc.active_branch_data.nelm: ", self.nc.active_branch_data.nelm)
+            print("(pf_generalized_formulation.py) self.nc.vsc_data.nelm: ", self.nc.vsc_data.nelm)
 
         # TODO: need to take into account every device eventually
         self.I0: CxVec = self.nc.load_data.get_current_injections_per_bus() / self.nc.Sbase
@@ -1061,10 +1051,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.S0: CxVec = self.nc.load_data.get_injections_per_bus() / self.nc.Sbase
         self.V0: CxVec = V0
 
-        print(f"self.S0: {self.S0}")
-        print(f"self.I0: {self.I0}")
-        print(f"self.Y0: {self.Y0}")
-        print(f"self.V0: {self.V0}")
+        if self.options.verbose > 1:
+            print(f"self.S0: {self.S0}")
+            print(f"self.I0: {self.I0}")
+            print(f"self.Y0: {self.Y0}")
+            print(f"self.V0: {self.V0}")
 
         # QUESTION: is there a reason not to do this? I use this in var2x
         self.Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
@@ -1080,14 +1071,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Pt = np.real(self.St)
         self.Qt = np.imag(self.St)
 
-        print(f"self.Pbus: {self.Pzip}")
-        print(f"self.Qbus: {self.Qzip}")
-        print(f"self.Sf: {self.Sf}")
-        print(f"self.Pf: {self.Pf}")
-        print(f"self.Qf: {self.Qf}")
-        print(f"self.St: {self.St}")
-        print(f"self.Pt: {self.Pt}")
-        print(f"self.Qt: {self.Qt}")
+        if self.options.verbose > 1:
+            print(f"self.Pbus: {self.Pzip}")
+            print(f"self.Qbus: {self.Qzip}")
+            print(f"self.Sf: {self.Sf}")
+            print(f"self.Pf: {self.Pf}")
+            print(f"self.Qf: {self.Qf}")
+            print(f"self.St: {self.St}")
+            print(f"self.Pt: {self.Pt}")
+            print(f"self.Qt: {self.Qt}")
 
         self.bus_types = self.nc.bus_data.bus_types.copy()
         self.tap_module_control_mode = self.nc.active_branch_data.tap_module_control_mode.copy()
@@ -1119,7 +1111,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
         self.hvdc_mode = self.indices.hvdc_mode
-        print()
+
         # cg sets
         self.cg_pac = self.indices.cg_pac
         self.cg_qac = self.indices.cg_qac
@@ -1419,9 +1411,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ]
 
         errf = compute_fx_error(_f)
-        if errf < 1e-7:
-            print()
-
         assert len(_f) == j, f"len(_f)={len(_f)} != j={j}"
 
         return _f
@@ -1434,7 +1423,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
         _res = self.compute_f(x)
         err = compute_fx_error(_res)
-        print("Error:", err)
 
         # compute the error
         return err, x
@@ -1543,7 +1531,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # compute the error
         self._error = compute_fx_error(self._f)
-        print()
 
         if self.options.verbose > 1:
             print("Vm:", self.Vm)
@@ -1663,7 +1650,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # converged?
         self._converged = self._error < self.options.tolerance
-        print("Error:", self._error)
+
+        if self.options.verbose > 1:
+            print("Error:", self._error)
 
         return self._error, self._converged, x, self.f
 
@@ -1717,10 +1706,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
         if autodiff:
             J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-6)
-            print("(pf_generalized_formulation.py) J: ")
-            print(J)
-            # print shape of J
-            print("J shape: ", J.shape)
+
+            if self.options.verbose > 1:
+                print("(pf_generalized_formulation.py) J: ")
+                print(J)
+                print("J shape: ", J.shape)
+
             Jdense = np.array(J.todense())
             dff = pd.DataFrame(Jdense)
             dff.to_excel("Jacobian_Raiyan.xlsx")
@@ -1747,15 +1738,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                       + len(self.cx_m)
                       + len(self.cx_tau))
 
-            print()
             if n_cols != n_rows:
                 raise ValueError("Incorrect J indices!")
 
             tap_modules = expand(self.nc.nbr, self.m, self.cg_pttr, 1.0)
             tap_angles = expand(self.nc.nbr, self.tau, self.cg_pttr, 0.0)
             tap = polar_to_rect(tap_modules, tap_angles)
-            print()
-            # print("self.indices.cx_qta", self.indices.cx_qta)
+
             J = adv_jacobian(
                 nbus=self.nc.nbus,
                 nbr=self.nc.nbr,
@@ -1831,8 +1820,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 yft=self.adm.yft,
                 ytf=self.adm.ytf,
                 ytt=self.adm.ytt)
-
-            print()
 
             return J
 
