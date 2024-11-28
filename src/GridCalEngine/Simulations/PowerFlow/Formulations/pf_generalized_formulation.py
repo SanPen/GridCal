@@ -16,7 +16,7 @@ from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, sp_slice_cols, \
     sp_slice_rows, pack_4_by_4, mat_to_scipy
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_fx_error, power_flow_post_process_nonlinear)
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl, ConverterControlType
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
@@ -461,14 +461,17 @@ def adv_jacobian(nbus: int,
         pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
         pq_sqrt = np.sqrt(pq)
         pq_sqrt += 1e-20
-        dLacdc_dVm = (alpha2[vsc_order] * pq_sqrt * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc]) + 2 * alpha3[vsc_order] * (pq) / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
+        dLacdc_dVm = alpha2[vsc_order] * pq_sqrt / (Vm[T_acdc] * Vm[T_acdc]) + 2 * alpha3[vsc_order] * (pq) / (
+                Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]])
         dLacdc_dVm *= -1
 
-        dLacdc_dPt = np.ones(nvsc) - alpha2[vsc_order] * Pt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * pq_sqrt) - 2 * alpha3[vsc_order] * Pt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]])
+        dLacdc_dPt = np.ones(nvsc) - alpha2[vsc_order] * Pt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * pq_sqrt) - 2 * \
+                     alpha3[vsc_order] * Pt[ig_plossacdc] / (
+                             Vm[T_acdc[[vsc_order]]] * Vm[T_acdc])
         dLacdc_dPt *= -1
 
-        _a = alpha2[vsc_order] * Qt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * pq_sqrt)
-        _b = 2 * alpha3[vsc_order] * Qt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]])
+        _a = alpha2[vsc_order] * Qt[ig_plossacdc] / (Vm[T_acdc[[vsc_order]]] * pq_sqrt)
+        _b = 2 * alpha3[[vsc_order]] * Qt[ig_plossacdc] / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]])
         dLacdc_dQt = - _a - _b
         dLacdc_dQt *= -1
 
@@ -486,42 +489,13 @@ def adv_jacobian(nbus: int,
         vsc_ix_qf = np.intersect1d(ig_plossacdc, ix_qf)
         vsc_ix_pt = np.intersect1d(ig_plossacdc, ix_pt)
         vsc_ix_qt = np.intersect1d(ig_plossacdc, ix_qt)
-
-        remapped_ix_pf = vsc_ix_pf - nbr + ncontbr
-        remapped_ix_qf = vsc_ix_qf - nbr + ncontbr
-        remapped_ix_pt = vsc_ix_pt - nbr + ncontbr
-        remapped_ix_qt = vsc_ix_qt - nbr + ncontbr
-
-        remapped_ix_vsc_pf = vsc_ix_pf - nbr
-        remapped_ix_vsc_qf = vsc_ix_qf - nbr
-        remapped_ix_vsc_pt = vsc_ix_pt - nbr
-        remapped_ix_vsc_qt = vsc_ix_qt - nbr
-
-        vector = ix_pt
-        target_entries = vsc_ix_pt
-
-        ix_pf_point = np.where(np.isin(ix_pf, vsc_ix_pf))[0]
-        ix_pt_point = np.where(np.isin(ix_pt, vsc_ix_pt))[0]
-        ix_qt_point = np.where(np.isin(ix_qt, vsc_ix_qt))[0]
-
-        dLacdc_Pf = np.zeros(nvsc)
-        dLacdc_Pt = np.zeros(nvsc)
-        dLacdc_Qt = np.zeros(nvsc)
-
-        # j_L_Pf_josep = csc_matrix((dLacdc_Pf, (range(len(vsc_ix_pf)), vsc_ix_pf)))
-        # j_L_Pf_josep = csc_matrix((dLacdc_Pf, (range(nvsc), col_ind)), shape = (nvsc, len(ix_pf)))
-
-        j_L_Pf_trimmed = csr_matrix((dLacdc_dPf[remapped_ix_vsc_pf], (remapped_ix_vsc_pf, ix_pf_point)),
-                                    shape=(nvsc, len(ix_pf)))
-        j_L_Pt_trimmed = csr_matrix((dLacdc_dPt[remapped_ix_vsc_pt], (remapped_ix_vsc_pt, ix_pt_point)),
-                                    shape=(nvsc, len(ix_pt)))
-        j_L_Qt_trimmed = csr_matrix((dLacdc_dQt[remapped_ix_vsc_qt], (remapped_ix_vsc_qt, ix_qt_point)),
-                                    shape=(nvsc, len(ix_qt)))
-        # j_L_Qt_trimmed = csr_matrix((dLacdc_dQt[remapped_ix_vsc_qt], (remapped_ix_vsc_qt, remapped_ix_qt)), shape=(nvsc, len(ix_qt)))
-
-        # j_L_Pf_trimmed = csr_matrix(j_L_Pf[vsc_order,:])[:, remapped_ix_pf]
-        # j_L_Pt_trimmed = csr_matrix(j_L_Pt[vsc_order,:])[:, remapped_ix_pt]
-        # j_L_Qt_trimmed = csr_matrix(j_L_Qt[vsc_order,:])[:, remapped_ix_qt]
+        remapped_ix_pf = vsc_ix_pf - nbr
+        remapped_ix_qf = vsc_ix_qf - nbr
+        remapped_ix_pt = vsc_ix_pt - nbr
+        remapped_ix_qt = vsc_ix_qt - nbr
+        j_L_Pf_trimmed = csr_matrix(j_L_Pf[vsc_order, :])[:, remapped_ix_pf]
+        j_L_Pt_trimmed = csr_matrix(j_L_Pt[vsc_order, :])[:, remapped_ix_pt]
+        j_L_Qt_trimmed = csr_matrix(j_L_Qt[vsc_order, :])[:, remapped_ix_qt]
 
         # now we make the chunks of zeros
         ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_ix_pf)
@@ -531,11 +505,10 @@ def adv_jacobian(nbus: int,
         dL_dVa = csc_matrix((nvsc, len(ix_va)))
         dL_dPzip = csc_matrix((nvsc, len(ix_pzip)))
         dL_dQzip = csc_matrix((nvsc, len(ix_qzip)))
-        dL_dQfvsc = csc_matrix((nvsc, len(ix_qf)))
-        # dL_dPfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pf))
-        # dL_dQfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qf))
-        # dL_dPto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pt))
-        # dL_dQto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qt))
+        dL_dPfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pf))
+        dL_dQfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qf))
+        dL_dPto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pt))
+        dL_dQto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qt))
         dL_dMod_Trafo = csc_matrix((nvsc, len(ix_m)))
         dL_dTau_Trafo = csc_matrix((nvsc, len(ix_tau)))
 
@@ -543,13 +516,11 @@ def adv_jacobian(nbus: int,
         |j_L_Vt_trimmed|dL_dVa|dL_dPzip|dL_dQzip|j_L_Pf_trimmed|j_L_Pt_trimmed|j_L_Qt_trimmed|dL_dPfrom_Trafo|dL_dQfrom_Trafo|dL_dPto_Trafo|dL_dQto_Trafo|dL_dMod_Trafo|dL_dTau_Trafo|
         '''
         vsc_loss = hstack(
-            [j_L_Vt_trimmed.tocsc(), dL_dVa, dL_dPzip, dL_dQzip, j_L_Pf_trimmed.tocsc(), dL_dQfvsc,
-             j_L_Pt_trimmed.tocsc(),
-             j_L_Qt_trimmed.tocsc(), dL_dMod_Trafo, dL_dTau_Trafo])
+            [j_L_Vt_trimmed.tocsc(), dL_dVa, dL_dPzip, dL_dQzip, j_L_Pf_trimmed.tocsc(), j_L_Pt_trimmed.tocsc(),
+             j_L_Qt_trimmed.tocsc(), dL_dPfrom_Trafo, dL_dQfrom_Trafo, dL_dPto_Trafo, dL_dQto_Trafo, dL_dMod_Trafo,
+             dL_dTau_Trafo])
 
         J = vstack([J, vsc_loss])
-        J3r = np.array(vsc_loss.todense())
-        print()
 
     """
     # HVDC loss eq. (work in progress)
@@ -1903,14 +1874,32 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param iterations: Iteration number
         :return: NumericPowerFlowResults
         """
+        # Compute the Branches power and the slack buses power
+        # TODO: figure out how to compute power flows, losses etc.
+        # Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        #     Sbus=self.Scalc,
+        #     V=self.V,
+        #     F=self.nc.passive_branch_data.F,
+        #     T=self.nc.passive_branch_data.T,
+        #     pv=self.pv,  # TODO: figure this stuff out
+        #     vd=self.vd,  # TODO: figure this stuff out
+        #     Ybus=self.adm.Ybus,
+        #     Yf=self.adm.Yf,
+        #     Yt=self.adm.Yt,
+        #     branch_rates=self.nc.passive_branch_data.rates,
+        #     Sbase=self.nc.Sbase)
+
         return NumericPowerFlowResults(V=self.V,
-                                       converged=self.converged,
-                                       norm_f=self.error,
                                        Scalc=self.Scalc,
                                        m=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
                                        tau=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-                                       Ybus=self.adm.Ybus,
-                                       Yf=self.adm.Yf,
-                                       Yt=self.adm.Yt,
+                                       Sf=np.zeros(self.nc.nbr, dtype=complex),
+                                       St=np.zeros(self.nc.nbr, dtype=complex),
+                                       If=np.zeros(self.nc.nbr, dtype=complex),
+                                       It=np.zeros(self.nc.nbr, dtype=complex),
+                                       loading=np.zeros(self.nc.nbr, dtype=complex),
+                                       losses=np.zeros(self.nc.nbr, dtype=complex),
+                                       norm_f=self.error,
+                                       converged=self.converged,
                                        iterations=iterations,
                                        elapsed=elapsed)

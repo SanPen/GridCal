@@ -9,7 +9,8 @@ from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import create_J_vc_csc
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_fx_error,
+                                                                                   power_flow_post_process_nonlinear)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -37,7 +38,7 @@ class PfBasicFormulation(PfFormulationTemplate):
         PfFormulationTemplate.__init__(self, V0=V0, options=options)
 
         self.nc = nc
-        self.adm: AdmittanceMatrices = nc.admittances_
+        self.adm: AdmittanceMatrices = nc.get_admittance_matrices()
 
         self.S0: CxVec = S0
         self.I0: CxVec = I0
@@ -246,14 +247,31 @@ class PfBasicFormulation(PfFormulationTemplate):
         :param iterations: Iteration number
         :return: NumericPowerFlowResults
         """
+        # Compute the Branches power and the slack buses power
+        Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+            Sbus=self.Scalc,
+            V=self.V,
+            F=self.nc.passive_branch_data.F,
+            T=self.nc.passive_branch_data.T,
+            pv=self.pv,
+            vd=self.vd,
+            Ybus=self.adm.Ybus,
+            Yf=self.adm.Yf,
+            Yt=self.adm.Yt,
+            branch_rates=self.nc.passive_branch_data.rates,
+            Sbase=self.nc.Sbase)
+
         return NumericPowerFlowResults(V=self.V,
-                                       converged=self.converged,
-                                       norm_f=self.error,
                                        Scalc=self.Scalc,
-                                       m=None,
-                                       tau=None,
-                                       Ybus=self.adm.Ybus,
-                                       Yf=self.adm.Yf,
-                                       Yt=self.adm.Yt,
+                                       m=np.ones(self.nc.nbr, dtype=float),
+                                       tau=np.zeros(self.nc.nbr, dtype=float),
+                                       Sf=Sf,
+                                       St=St,
+                                       If=If,
+                                       It=It,
+                                       loading=loading,
+                                       losses=losses,
+                                       norm_f=self.error,
+                                       converged=self.converged,
                                        iterations=iterations,
                                        elapsed=elapsed)

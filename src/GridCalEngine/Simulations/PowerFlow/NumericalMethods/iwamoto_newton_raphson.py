@@ -10,9 +10,11 @@ from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, g
 from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobianVc, CSC
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, CscMat
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -20,7 +22,7 @@ scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
-def mu(Ybus, J: CSC, incS: Vec, dV: CxVec, dx: Vec, block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec):
+def mu(Ybus: CscMat, J: CSC, incS: Vec, dV: CxVec, dx: Vec, block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
@@ -56,11 +58,18 @@ def mu(Ybus, J: CSC, incS: Vec, dV: CxVec, dx: Vec, block1_idx: IntVec, block2_i
     return roots[2].real
 
 
-def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15,
-              control_q=False, robust=False, logger: Logger = None) -> NumericPowerFlowResults:
+def IwamotoNR(nc: NumericalCircuit,
+              Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+              S0: CxVec, V0: CxVec, I0: CxVec, Y0: CxVec,
+              pv_: IntVec, pq_: IntVec, pqv_: IntVec, p_: IntVec, vd_: IntVec,
+              Qmin: Vec, Qmax: Vec, tol: float, max_it: int = 15,
+              control_q: bool = False, robust: bool = False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
+    :param nc: NumericalCircuit instance
     :param Ybus: Admittance matrix
+    :param Yf: Admittance from matrix
+    :param Yt: Admittance to matrix
     :param S0: Array of nodal power Injections
     :param V0: Array of nodal voltages (initial solution)
     :param I0: Array of nodal current Injections
@@ -69,6 +78,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
     :param pq_: Array with the indices of the PQ buses
     :param pqv_: Array with the indices of the PQV buses
     :param p_: Array with the indices of the P buses
+    :param vd_: Array with the indices of the slack buses
     :param Qmin: Array of nodal minimum reactive power injections
     :param Qmax: Array of nodal maximum reactive power injections
     :param tol: Tolerance
@@ -81,7 +91,6 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
     start = time.time()
 
     # initialize
-    converged = 0
     iter_ = 0
     V = V0
     Va = np.angle(V)
@@ -127,21 +136,40 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
                     elapsed = end - start
                     logger.add_error('NR Singular matrix @iter:'.format(iter_))
 
-                    return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
-                                                   Scalc=S0, m=None, tau=None,
-                                                   Ybus=None, Yf=None, Yt=None,
-                                                   iterations=iter_, elapsed=elapsed)
+                    return NumericPowerFlowResults(V=V,
+                                                   Scalc=Scalc,
+                                                   m=np.ones(nc.nbr, dtype=float),
+                                                   tau=np.zeros(nc.nbr, dtype=float),
+                                                   Sf=np.zeros(nc.nbr, dtype=complex),
+                                                   St=np.zeros(nc.nbr, dtype=complex),
+                                                   If=np.zeros(nc.nbr, dtype=complex),
+                                                   It=np.zeros(nc.nbr, dtype=complex),
+                                                   loading=np.zeros(nc.nbr, dtype=complex),
+                                                   losses=np.zeros(nc.nbr, dtype=complex),
+                                                   norm_f=norm_f,
+                                                   converged=converged,
+                                                   iterations=iter_,
+                                                   elapsed=elapsed)
 
             except RuntimeError:
-                # print(J)
                 converged = False
                 iter_ = max_it + 1  # exit condition
                 end = time.time()
                 elapsed = end - start
-                return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                               Scalc=Scalc, m=None, tau=None,
-                                               Ybus=None, Yf=None, Yt=None,
-                                               iterations=iter_, elapsed=elapsed)
+                return NumericPowerFlowResults(V=V,
+                                               Scalc=Scalc,
+                                               m=np.ones(nc.nbr, dtype=float),
+                                               tau=np.zeros(nc.nbr, dtype=float),
+                                               Sf=np.zeros(nc.nbr, dtype=complex),
+                                               St=np.zeros(nc.nbr, dtype=complex),
+                                               If=np.zeros(nc.nbr, dtype=complex),
+                                               It=np.zeros(nc.nbr, dtype=complex),
+                                               loading=np.zeros(nc.nbr, dtype=complex),
+                                               losses=np.zeros(nc.nbr, dtype=complex),
+                                               norm_f=norm_f,
+                                               converged=converged,
+                                               iterations=iter_,
+                                               elapsed=elapsed)
 
             # assign the solution vector
             dVa[blck1_idx] = dx[:n_block1]
@@ -198,7 +226,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
             converged = norm_f < tol
 
             # check for absurd values
-            if np.isnan(V).any() or (Vm == 0).any():
+            if np.any(np.isnan(V)) or np.any(Vm == 0):
                 converged = False
                 break
 
@@ -210,8 +238,31 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
     end = time.time()
     elapsed = end - start
 
-    # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
-    return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None,
-                                   Ybus=None, Yf=None, Yt=None,
-                                   iterations=iter_, elapsed=elapsed)
+    # Compute the Branches power and the slack buses power
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sbus=Scalc,
+        V=V,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        pv=pv,
+        vd=vd_,
+        Ybus=Ybus,
+        Yf=Yf,
+        Yt=Yt,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase)
+
+    return NumericPowerFlowResults(V=V,
+                                   Scalc=Scalc,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Sf,
+                                   St=St,
+                                   If=If,
+                                   It=It,
+                                   loading=loading,
+                                   losses=losses,
+                                   norm_f=norm_f,
+                                   converged=converged,
+                                   iterations=iter_,
+                                   elapsed=elapsed)

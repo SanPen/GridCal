@@ -13,6 +13,7 @@ import GridCalEngine.api as gce
 Check that a transformer can regulate the voltage at a bus
 """
 
+
 def run_pf(file, results_abs=None, results_angle=None):
     print("Running", file)
     fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", file)
@@ -30,7 +31,8 @@ def run_pf(file, results_abs=None, results_angle=None):
         assert np.allclose(np.abs(results.voltage), results_abs), "results_abs are not equal"
         assert np.allclose(np.angle(results.voltage), results_angle), "results_angle are not equal"
     print(file, "passed")
-    print("##########################################################################################################################")
+    print(
+        "##########################################################################################################################")
     return results.iterations, results.error
 
 
@@ -93,5 +95,6 @@ def run_cases():
     print("All test cases passed")
     print("iterations", iterations)
     print("errors", errors)
+
 
 run_cases()

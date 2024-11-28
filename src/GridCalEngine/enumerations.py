@@ -189,7 +189,6 @@ class SolverType(Enum):
     BFS_linear = 'Backwards-Forward substitution (linear)'
     Constant_Impedance_linear = 'Constant impedance linear'
     NoSolver = 'No Solver'
-    GENERALISED = 'AC/DC Generalised Method'
 
     def __str__(self) -> str:
         """

@@ -8,16 +8,25 @@ import time
 import numpy as np
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, CxVec, IntVec, Vec, CscMat
 
 
-def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, p, pqv, vd, bus_installed_power, Qmin, Qmax, tol=1e-3, max_it=50,
+def gausspf(nc: NumericalCircuit,
+            Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+            S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec,
+            pv: IntVec, pq: IntVec, p: IntVec, pqv: IntVec, vd: IntVec,
+            bus_installed_power: Vec, Qmin: Vec, Qmax: Vec, tol=1e-3, max_it=50,
             control_q=False, distribute_slack=False, verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Gauss-Seidel Power flow
+    :param nc: NumericalCircuit
     :param Ybus: Admittance matrix
+    :param Yf: Admittance from matrix
+    :param Yt: Admittance to matrix
     :param S0: Power Injections array
     :param I0: Current Injections array
     :param Y0: Admittance Injections array
@@ -134,7 +143,31 @@ def gausspf(Ybus, S0, I0, Y0, V0, pv, pq, p, pqv, vd, bus_installed_power, Qmin,
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
-                                   Scalc=Scalc, m=None, tau=None,
-                                   Ybus=None, Yf=None, Yt=None,
-                                   iterations=iter_, elapsed=elapsed)
+    # compute the flows
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sbus=Scalc,
+        V=V,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        pv=pv,
+        vd=vd,
+        Ybus=Ybus,
+        Yf=Yf,
+        Yt=Yt,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase)
+
+    return NumericPowerFlowResults(V=V,
+                                   Scalc=Scalc,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Sf,
+                                   St=St,
+                                   If=If,
+                                   It=It,
+                                   loading=loading,
+                                   losses=losses,
+                                   norm_f=normF,
+                                   converged=converged,
+                                   iterations=iter_,
+                                   elapsed=elapsed)

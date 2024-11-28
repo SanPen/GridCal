@@ -9,7 +9,11 @@ from scipy.sparse import hstack as sphs, vstack as spvs, csc_matrix, csr_matrix
 from scipy.sparse.linalg import spsolve
 import numpy as np
 from numpy import conj, arange
+from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import StateEstimationInput
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCalEngine.basic_structures import CscMat, IntVec
 
 
 def dSbus_dV(Ybus, V):
@@ -291,16 +295,20 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     return H, h, S
 
 
-def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowResults:
+def solve_se_lm(nc: NumericalCircuit,
+                Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+                F: IntVec, T: IntVec, se_input: StateEstimationInput,
+                vd: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
     Solve the state estimation problem using the Levenberg-Marquadt method
+    :param nc: instance of NumericalCircuit
     :param Ybus: Admittance matrix
     :param Yf: Admittance matrix of the from Branches
     :param Yt: Admittance matrix of the to Branches
-    :param f: array with the from bus indices of all the Branches
-    :param t: array with the to bus indices of all the Branches
+    :param F: array with the from bus indices of all the Branches
+    :param T: array with the to bus indices of all the Branches
     :param se_input: state estimation input instance (contains the measurements)
-    :param ref: array of slack node indices
+    :param vd: array of slack node indices
     :param pq: array of pq node indices
     :param pv: array of pv node indices
     :return: NumericPowerFlowResults instance
@@ -309,7 +317,7 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
     pvpq = np.r_[pv, pq]
     npvpq = len(pvpq)
     npq = len(pq)
-    nvd = len(ref)
+    nvd = len(vd)
     n = Ybus.shape[0]
     V = np.ones(n, dtype=complex)
 
@@ -330,11 +338,11 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
     f_obj_prev = 1e9  # very large number
 
     converged = False
-    err = 1e20
+    norm_f = 1e20
     nu = 2.0
 
     # first computation of the jacobian and free term
-    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
+    H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, pvpq)
 
     while not converged and iter_ < max_iter:
 
@@ -380,15 +388,15 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
             V = Vm * np.exp(1j * Va)
 
             # update Jacobian
-            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, f, t, se_input, pvpq)
+            H, h, Scalc = Jacobian_SE(Ybus, Yf, Yt, V, F, T, se_input, pvpq)
 
         else:
             lbmda = lbmda * nu
             nu = nu * 2
 
         # compute the convergence
-        err = np.linalg.norm(dx, np.inf)
-        converged = err < tol
+        norm_f = np.linalg.norm(dx, np.inf)
+        converged = norm_f < tol
 
         # update loops
         f_obj_prev = f_obj
@@ -396,8 +404,31 @@ def solve_se_lm(Ybus, Yf, Yt, f, t, se_input, ref, pq, pv) -> NumericPowerFlowRe
 
     elapsed = time.time() - start_time
 
-    # return NumericPowerFlowResults(V, converged, err, Scalc, None, None, None, None, None, None, iter_, elapsed)
-    return NumericPowerFlowResults(V=V, converged=converged, norm_f=err,
-                                   Scalc=Scalc, m=None, tau=None,
-                                   Ybus=None, Yf=None, Yt=None,
-                                   iterations=iter_, elapsed=elapsed)
+    # Compute the Branches power and the slack buses power
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sbus=Scalc,
+        V=V,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        pv=pv,
+        vd=vd,
+        Ybus=Ybus,
+        Yf=Yf,
+        Yt=Yt,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase)
+
+    return NumericPowerFlowResults(V=V,
+                                   Scalc=Scalc,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Sf,
+                                   St=St,
+                                   If=If,
+                                   It=It,
+                                   loading=loading,
+                                   losses=losses,
+                                   norm_f=norm_f,
+                                   converged=converged,
+                                   iterations=iter_,
+                                   elapsed=elapsed)

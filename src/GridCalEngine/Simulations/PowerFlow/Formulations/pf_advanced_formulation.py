@@ -15,8 +15,8 @@ import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
 from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (expand, compute_fx_error,
+                                                                                   power_flow_post_process_nonlinear)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -884,14 +884,32 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param iterations: Iteration number
         :return: NumericPowerFlowResults
         """
+        # Compute the Branches power and the slack buses power
+        Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+            Sbus=self.Scalc,
+            V=self.V,
+            F=self.nc.passive_branch_data.F,
+            T=self.nc.passive_branch_data.T,
+            pv=self.pv,
+            vd=self.vd,
+            Ybus=self.adm.Ybus,
+            Yf=self.adm.Yf,
+            Yt=self.adm.Yt,
+            branch_rates=self.nc.passive_branch_data.rates,
+            Sbase=self.nc.Sbase
+        )
+
         return NumericPowerFlowResults(V=self.V,
-                                       converged=self.converged,
-                                       norm_f=self.error,
                                        Scalc=self.Scalc,
                                        m=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
                                        tau=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-                                       Ybus=self.adm.Ybus,
-                                       Yf=self.adm.Yf,
-                                       Yt=self.adm.Yt,
+                                       Sf=Sf,
+                                       St=St,
+                                       If=If,
+                                       It=It,
+                                       loading=loading,
+                                       losses=losses,
+                                       norm_f=self.error,
+                                       converged=self.converged,
                                        iterations=iterations,
                                        elapsed=elapsed)

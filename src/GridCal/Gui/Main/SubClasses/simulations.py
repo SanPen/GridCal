@@ -64,7 +64,7 @@ class SimulationsMain(TimeEventsMain):
         self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
         self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
         self.solvers_dict[SolverType.DC.value] = SolverType.DC
-        self.solvers_dict[SolverType.GENERALISED.value] = SolverType.GENERALISED
+        # self.solvers_dict[SolverType.GENERALISED.value] = SolverType.GENERALISED
 
         self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
         self.ui.solver_comboBox.setCurrentIndex(0)
