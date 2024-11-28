@@ -1882,7 +1882,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return rows
 
-    def get_jacobian_df(self, autodiff=True) -> pd.DataFrame:
+    def get_jacobian_df(self, autodiff=False) -> pd.DataFrame:
         """
         Get the Jacobian DataFrame
         :return: DataFrame
