@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
         _license_ = 'MPL2'
 
-        build_wheel(pkg_name='GridCalEngine'.lower(),
+        build_wheel(pkg_name='GridCalEngine',
                     setup_path=os.path.join('GridCalEngine', 'setup.py'),
                     version=__GridCalEngine_VERSION__,
                     summary=_summary,
@@ -72,7 +72,7 @@ if __name__ == "__main__":
                     long_description=_long_description
                     )
 
-        build_wheel(pkg_name='GridCalServer'.lower(),
+        build_wheel(pkg_name='GridCalServer',
                     setup_path=os.path.join('GridCalServer', 'setup.py'),
                     version=__GridCalServer_VERSION__,
                     summary=_summary,
@@ -88,7 +88,7 @@ if __name__ == "__main__":
                     long_description=_long_description
                     )
 
-        build_wheel(pkg_name='GridCal'.lower(),
+        build_wheel(pkg_name='GridCal',
                     setup_path=os.path.join('GridCal', 'setup.py'),
                     version=__GridCal_VERSION__,
                     summary=_summary,
