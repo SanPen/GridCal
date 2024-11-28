@@ -325,12 +325,15 @@ def adv_jacobian(nbus: int,
     dQ_dQf_branch_lil = lil_matrix((nbus, (nbr - nhvdc - ncontbr)), dtype=np.float64)
 
     vsc_order = ig_plossacdc - np.min(ig_plossacdc) if ig_plossacdc.size > 0 else ig_plossacdc
+    hvdc_order = ig_plosshvdc - np.min(ig_plosshvdc) if ig_plosshvdc.size > 0 else ig_plosshvdc
 
     dP_dPf_acdc = 1.0 * Cf_acdc[vsc_order, :].transpose()
     dQ_dQf_acdc = 0.0 * Cf_acdc[vsc_order, :].transpose()
     dP_dPf_acdc_lil = dP_dPf_acdc.tocsr().tolil()
     dQ_dQf_acdc_lil = dQ_dQf_acdc.tocsr().tolil()
 
+    dP_dPf_hvdc = 1.0 * Cf_hvdc[hvdc_order, :].transpose()
+    dQ_dQf_hvdc = 1.0 * Cf_hvdc[hvdc_order, :].transpose()
     dP_dPf_hvdc_lil = 1.0 * Cf_hvdc.transpose()
     dQ_dQf_hvdc_lil = 1.0 * Cf_hvdc.transpose()
 
@@ -339,15 +342,19 @@ def adv_jacobian(nbus: int,
     dP_dPf_contbr_lil = dP_dPf_contbr.tocsr().tolil()
     dQ_dQf_contbr_lil = dQ_dQf_contbr.tocsr().tolil()
 
-    dP_dPf_lil = hstack([dP_dPf_branch_lil, dP_dPf_acdc_lil, dP_dPf_hvdc_lil, dP_dPf_contbr_lil]).tolil()
-    dP_dPf_lil = dP_dPf_lil[ig_pbus, :][:, ix_pf]
-    dQ_dQf_lil = hstack([dQ_dQf_branch_lil, dQ_dQf_acdc_lil, dQ_dQf_hvdc_lil, dQ_dQf_contbr_lil]).tolil()
-    dQ_dQf_lil = dQ_dQf_lil[ig_qbus, :][:, ix_qf]
+    # dP_dPf_lil = hstack([dP_dPf_branch_lil, dP_dPf_acdc_lil, dP_dPf_hvdc_lil, dP_dPf_contbr_lil]).tolil()
+    dP_dPf_nonlil = hstack([dP_dPf_branch, dP_dPf_acdc, dP_dPf_hvdc, dP_dPf_contbr])
+    dP_dPf_nonlil = dP_dPf_nonlil[:, ix_pf][ig_pbus, :]
+
+    # dQ_dQf_lil = hstack([dQ_dQf_branch_lil, dQ_dQf_acdc_lil, dQ_dQf_hvdc_lil, dQ_dQf_contbr_lil]).tolil()
+    dQ_dQf_nonlil = hstack([dQ_dQf_branch, dQ_dQf_acdc, dQ_dQf_hvdc, dQ_dQf_contbr])
+    dQ_dQf_nonlil = dQ_dQf_nonlil[:, ix_qf][ig_qbus, :]
+
     dP_dQf_lil = csc_matrix((len(ig_pbus), len(ix_qf)), dtype=np.float64).tocsr().tolil()
     dQ_dPf_lil = csc_matrix((len(ig_qbus), len(ix_pf)), dtype=np.float64).tocsr().tolil()
 
-    dS_dPf_lil = vstack([dP_dPf_lil, dQ_dPf_lil])
-    dS_dQf_lil = vstack([dP_dQf_lil, dQ_dQf_lil])
+    dS_dPf_lil = vstack([dP_dPf_nonlil, dQ_dPf_lil])
+    dS_dQf_lil = vstack([dP_dQf_lil, dQ_dQf_nonlil])
     dS_dSf_lil = hstack([dS_dPf_lil, dS_dQf_lil])
     assert dS_dSf_lil.shape == (len(ig_sbus), len(ix_pf) + len(
         ix_qf)), f"Shape is {dS_dSf_lil.shape}, it should be {len(ig_sbus), len(ix_pf) + len(ix_qf)}"
@@ -364,18 +371,20 @@ def adv_jacobian(nbus: int,
     dP_dPt_acdc_lil = dP_dPt_acdc.tocsr().tolil()
     dQ_dQt_acdc_lil = dQ_dQt_acdc.tocsr().tolil()
 
-    dP_dPt_hvdc = 1.0 * Ct_hvdc.transpose()
-    dQ_dQt_hvdc = 1.0 * Ct_hvdc.transpose()
+    dP_dPt_hvdc = 1.0 * Ct_hvdc[hvdc_order, :].transpose()
+    dQ_dQt_hvdc = 1.0 * Ct_hvdc[hvdc_order, :].transpose()
 
     dP_dPt_contbr = 1.0 * Ct_contbr[ig_contrbr, :].transpose()
     dQ_dQt_contbr = 1.0 * Ct_contbr[ig_contrbr, :].transpose()
     dP_dPt_contbr_lil = dP_dPt_contbr.tocsr().tolil()
     dQ_dQt_contbr_lil = dQ_dQt_contbr.tocsr().tolil()
 
-    dP_dPt_lil = hstack([dP_dPt_branch_lil, dP_dPt_acdc_lil, dP_dPt_hvdc, dP_dPt_contbr_lil]).tolil()
-    dP_dPt_lil = dP_dPt_lil[ig_pbus, :][:, ix_pt]
-    dQ_dQt_lil = hstack([dQ_dQt_branch_lil, dQ_dQt_acdc_lil, dQ_dQt_hvdc, dQ_dQt_contbr_lil]).tolil()
-    dQ_dQt_lil = dQ_dQt_lil[ig_qbus, :][:, ix_qt]
+    # dP_dPt_lil = hstack([dP_dPt_branch_lil, dP_dPt_acdc_lil, dP_dPt_hvdc, dP_dPt_contbr_lil]).tolil()
+    dP_dPt_lil = hstack([dP_dPt_branch, dP_dPt_acdc, dP_dPt_hvdc, dP_dPt_contbr]).tolil()
+    dP_dPt_lil = dP_dPt_lil[:, ix_pt][ig_pbus, :]
+    # dQ_dQt_lil = hstack([dQ_dQt_branch_lil, dQ_dQt_acdc_lil, dQ_dQt_hvdc, dQ_dQt_contbr_lil]).tolil()
+    dQ_dQt_lil = hstack([dQ_dQt_branch, dQ_dQt_acdc, dQ_dQt_hvdc, dQ_dQt_contbr]).tolil()
+    dQ_dQt_lil = dQ_dQt_lil[:, ix_qt][ig_qbus, :]
 
     dP_dQt_lil = csc_matrix((len(ig_pbus), len(ix_qt)), dtype=np.float64).tocsr().tolil()
     dQ_dPt_lil = csc_matrix((len(ig_qbus), len(ix_pt)), dtype=np.float64).tocsr().tolil()
@@ -419,6 +428,10 @@ def adv_jacobian(nbus: int,
 
     # First 2 rows completed up to here
     J = hstack([dS_dV_lil, ds_dSzip_lil, dS_dSf_lil, dS_dSt_lil, dS_dtau_lil, dS_dm_lil])
+    J2r = np.array(J.todense())
+    dfJ2r = pd.DataFrame(J2r)
+    dfJ2r.to_excel("J2r_v2.xlsx")
+    print()
 
     '''
     # VSC loss eq.
@@ -1674,6 +1687,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             print(J)
             # print shape of J
             print("J shape: ", J.shape)
+            Jdense = np.array(J.todense())
+            dff = pd.DataFrame(Jdense)
+            dff.to_excel("Jacobian_Raiyan.xlsx")
             return scipy_to_mat(J)
         else:
             n_rows = (len(self.cg_pac)
