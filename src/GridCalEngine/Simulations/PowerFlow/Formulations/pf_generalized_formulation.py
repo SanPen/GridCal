@@ -120,8 +120,8 @@ def adv_jacobian(nbus: int,
                  Qf: Vec,
                  Pt: Vec,
                  Qt: Vec,
-                 F: IntVec,
-                 T: IntVec,
+                 Fbr: IntVec,
+                 Tbr: IntVec,
                  Ys: CxVec,
                  R: Vec,
                  X: Vec,
@@ -181,8 +181,8 @@ def adv_jacobian(nbus: int,
     :param T_acdc: to buses for AC/DC VSCs
     :param F_hvdc: from buses for HVDC
     :param T_hvdc: to buses for HVDC
-    :param F: for regular branches
-    :param T: for regular branches
+    :param Fbr: for regular branches
+    :param Tbr: for regular branches
     :param Pf:
     :param Qf:
     :param Pt:
@@ -404,10 +404,10 @@ def adv_jacobian(nbus: int,
     dS_dtau and dS_dm from csc_derivatives.py, already there
     where complex_tap = m * e ^ (1j * tau) and tap_modules = m 
     '''
-    dS_dtau = deriv.dSbus_dtau_csc(nbus, ig_sbus, ix_tau, F, T, Ys, kconv, complex_tap, V)
+    dS_dtau = deriv.dSbus_dtau_csc(nbus, ig_sbus, ix_tau, Fbr, Tbr, Ys, kconv, complex_tap, V)
     dP_dtau = dS_dtau.real
     dQ_dtau = dS_dtau.imag
-    dS_dm = deriv.dSbus_dm_csc(nbus, ig_sbus, ix_m, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V)
+    dS_dm = deriv.dSbus_dm_csc(nbus, ig_sbus, ix_m, Fbr, Tbr, Ys, Bc, kconv, complex_tap, tap_modules, V)
     dP_dm = dS_dm.real
     dQ_dm = dS_dm.imag
     # ds_dbr = csc_stack_2d_ff(mats=[dP_dtau, dQ_dtau, dP_dm, dQ_dm], n_rows=2, n_cols=2)
@@ -780,33 +780,37 @@ def adv_jacobian(nbus: int,
             -1.0j * tap_angle) * vtap_t * vtap_f)  # minus sign here is not a bug, it improves convergence somehow
         Ytt_active = (ys + bc2) / (vtap_t * vtap_t)
 
-        dSf_dVm = deriv.dSf_dVm_csc(nbus, ig_pftr, ix_vm, Yff_active, Yft_active, V, F, T)
+        # dSf_dVm = deriv.dSf_dVm_csc(nbus, ig_pftr, ix_vm, Yff_active, Yft_active, V, F, T)
+        dSf_dVm = deriv.dSf_dVm_csc(nbus, ig_pftr, ix_vm, Yff_active, Yft_active, V, Fbr, Tbr)
         dPf_dVm = dSf_dVm.real
         dQf_dVm = dSf_dVm.imag
-        dSt_dVm = deriv.dSt_dVm_csc(nbus, ig_pttr, ix_vm, Ytt_active, Ytf_active, V, F, T)
+        # dPf_dVm = csr_matrix(dPf_dVm)[:, ix_vm]
+
+        dSt_dVm = deriv.dSt_dVm_csc(nbus, ig_pttr, ix_vm, Ytt_active, Ytf_active, V, Fbr, Tbr)
         dPt_dVm = dSt_dVm.real
         dQt_dVm = dSt_dVm.imag
         # dQt_dVm.data *= -1
 
-        dSf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, Yff_active, Yft_active, V, F, T)
+        dSf_dVa = deriv.dSf_dVa_csc(nbus, ig_pftr, ix_va, Yff_active, Yft_active, V, Fbr, Tbr)
         dPf_dVa = dSf_dVa.real
         dQf_dVa = dSf_dVa.imag
-        dSt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, Ytf_active, V, F, T)
+
+        dSt_dVa = deriv.dSt_dVa_csc(nbus, ig_pttr, ix_va, Ytf_active, V, Fbr, Tbr)
         dPt_dVa = dSt_dVa.real
         dQt_dVa = dSt_dVa.imag
         # dQt_dVa.data *= -1
 
-        dSf_dm = deriv.dSf_dm_csc(nbr, ig_pttr, ix_m, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V)
+        dSf_dm = deriv.dSf_dm_csc(nbr, ig_pttr, ix_m, Fbr, Tbr, Ys, Bc, kconv, complex_tap, tap_modules, V)
         dPf_dm = dSf_dm.real
         dQf_dm = dSf_dm.imag
-        dSt_dm = deriv.dSt_dm_csc(nbr, ig_pttr, ix_m, F, T, Ys, kconv, complex_tap, tap_modules, V)
+        dSt_dm = deriv.dSt_dm_csc(nbr, ig_pttr, ix_m, Fbr, Tbr, Ys, kconv, complex_tap, tap_modules, V)
         dPt_dm = dSt_dm.real
         dQt_dm = dSt_dm.imag
 
-        dSf_dtau = deriv.dSf_dtau_csc(nbr, ig_pttr, ix_tau, F, T, Ys, kconv, complex_tap, V)
+        dSf_dtau = deriv.dSf_dtau_csc(nbr, ig_pttr, ix_tau, Fbr, Tbr, Ys, kconv, complex_tap, V)
         dPf_dtau = dSf_dtau.real
         dQf_dtau = dSf_dtau.imag
-        dSt_dtau = deriv.dSt_dtau_csc(nbr, ig_pttr, ix_tau, F, T, Ys, kconv, complex_tap, V)
+        dSt_dtau = deriv.dSt_dtau_csc(nbr, ig_pttr, ix_tau, Fbr, Tbr, Ys, kconv, complex_tap, V)
         dPt_dtau = dSt_dtau.real
         dQt_dtau = dSt_dtau.imag
 
@@ -935,14 +939,10 @@ def adv_jacobian(nbus: int,
             dPf_dVa_lil,
             dPf_dPzip,
             dPf_dQzip,
-            dBuffer_dPf_vsc_hvdc,
-            j_Pf_trafo_Pf,
-            dBuffer_dQf_vsc_hvdc,
-            j_Pf_trafo_Qf,
-            dBuffer_dPt_vsc_hvdc,
-            j_Pf_trafo_Pt,
-            dBuffer_dQt_vsc_hvdc,
-            j_Pf_trafo_Qt,
+            dBuffer_dPf_vsc_hvdc, j_Pf_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc, j_Pf_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc, j_Pf_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc, j_Pf_trafo_Qt,
             dPf_dm_lil,
             dPf_dtau_lil
         ])
@@ -952,14 +952,10 @@ def adv_jacobian(nbus: int,
             dQf_dVa_lil,
             dQf_dPzip,
             dQf_dQzip,
-            dBuffer_dPf_vsc_hvdc,
-            j_Qf_trafo_Pf,
-            dBuffer_dQf_vsc_hvdc,
-            j_Qf_trafo_Qf,
-            dBuffer_dPt_vsc_hvdc,
-            j_Qf_trafo_Pt,
-            dBuffer_dQt_vsc_hvdc,
-            j_Qf_trafo_Qt,
+            dBuffer_dPf_vsc_hvdc, j_Qf_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc, j_Qf_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc, j_Qf_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc, j_Qf_trafo_Qt,
             dQf_dm_lil,
             dQf_dtau_lil
         ])
@@ -969,14 +965,10 @@ def adv_jacobian(nbus: int,
             dPt_dVa_lil,
             dPt_dPzip,
             dPt_dQzip,
-            dBuffer_dPf_vsc_hvdc,
-            j_Pt_trafo_Pf,
-            dBuffer_dQf_vsc_hvdc,
-            j_Pt_trafo_Qf,
-            dBuffer_dPt_vsc_hvdc,
-            j_Pt_trafo_Pt,
-            dBuffer_dQt_vsc_hvdc,
-            j_Pt_trafo_Qt,
+            dBuffer_dPf_vsc_hvdc, j_Pt_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc, j_Pt_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc, j_Pt_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc, j_Pt_trafo_Qt,
             dPt_dm_lil,
             dPt_dtau_lil
         ])
@@ -986,14 +978,10 @@ def adv_jacobian(nbus: int,
             dQt_dVa_lil,
             dQt_dPzip,
             dQt_dQzip,
-            dBuffer_dPf_vsc_hvdc,
-            j_Qt_trafo_Pf,
-            dBuffer_dQf_vsc_hvdc,
-            j_Qt_trafo_Qf,
-            dBuffer_dPt_vsc_hvdc,
-            j_Qt_trafo_Pt,
-            dBuffer_dQt_vsc_hvdc,
-            j_Qt_trafo_Qt,
+            dBuffer_dPf_vsc_hvdc, j_Qt_trafo_Pf,
+            dBuffer_dQf_vsc_hvdc, j_Qt_trafo_Qf,
+            dBuffer_dPt_vsc_hvdc, j_Qt_trafo_Pt,
+            dBuffer_dQt_vsc_hvdc, j_Qt_trafo_Qt,
             dQt_dm_lil,
             dQt_dtau_lil
         ])
@@ -1814,8 +1802,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Qf=self.Qf,
                 Pt=self.Pt,
                 Qt=self.Qt,
-                F=self.nc.F,
-                T=self.nc.T,
+                Fbr=self.nc.F,
+                Tbr=self.nc.T,
                 Ys=self.Ys,
                 R=self.nc.passive_branch_data.R,
                 X=self.nc.passive_branch_data.X,
