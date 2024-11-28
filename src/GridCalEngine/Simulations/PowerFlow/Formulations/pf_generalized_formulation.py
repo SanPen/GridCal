@@ -319,86 +319,26 @@ def adv_jacobian(nbus: int,
 
     '''
     # FROM POWERS
-    dP_dPf_branch = 0.0 * Cf_branch.transpose()
-    dQ_dQf_branch = 0.0 * Cf_branch.transpose()
-    dP_dPf_branch_lil = csr_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
-    dQ_dQf_branch_lil = csr_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
-
-    vsc_order = ig_plossacdc - np.min(ig_plossacdc) if ig_plossacdc.size > 0 else ig_plossacdc
-    hvdc_order = ig_plosshvdc - np.min(ig_plosshvdc) if ig_plosshvdc.size > 0 else ig_plosshvdc
-
-    dP_dPf_acdc = 1.0 * Cf_acdc[vsc_order, :].transpose()
-    dQ_dQf_acdc = 0.0 * Cf_acdc[vsc_order, :].transpose()
-    dP_dPf_acdc_lil = dP_dPf_acdc.tocsr().tolil()
-    dQ_dQf_acdc_lil = dQ_dQf_acdc.tocsr().tolil()
-
-    dP_dPf_hvdc = 1.0 * Cf_hvdc[hvdc_order, :].transpose()
-    dQ_dQf_hvdc = 1.0 * Cf_hvdc[hvdc_order, :].transpose()
-    dP_dPf_hvdc_lil = 1.0 * Cf_hvdc.transpose()
-    dQ_dQf_hvdc_lil = 1.0 * Cf_hvdc.transpose()
-
-    dP_dPf_contbr = 1.0 * Cf_contbr[ig_contrbr, :].transpose()
-    dQ_dQf_contbr = 1.0 * Cf_contbr[ig_contrbr, :].transpose()
-    dP_dPf_contbr_lil = dP_dPf_contbr.tocsr().tolil()
-    dQ_dQf_contbr_lil = dQ_dQf_contbr.tocsr().tolil()
-
-    # dP_dPf_lil = hstack([dP_dPf_branch_lil, dP_dPf_acdc_lil, dP_dPf_hvdc_lil, dP_dPf_contbr_lil]).tolil()
-    dP_dPf_nonlil = hstack([dP_dPf_branch_lil, dP_dPf_contbr, dP_dPf_acdc, dP_dPf_hvdc])
-    dP_dPf_nonlil = dP_dPf_nonlil[ig_pbus, :][:, ix_pf]
-    # dP_dPf_nonlil2 = dP_dPf_nonlil1[:, ix_pf]
-    # dP_dPf_nonlil = dP_dPf_nonlil[:, ix_pf][ig_pbus, :]
-
-    # dQ_dQf_lil = hstack([dQ_dQf_branch_lil, dQ_dQf_acdc_lil, dQ_dQf_hvdc_lil, dQ_dQf_contbr_lil]).tolil()
-    dQ_dQf_nonlil = hstack([dQ_dQf_branch_lil, dQ_dQf_contbr, dQ_dQf_acdc, dQ_dQf_hvdc])[ig_qbus, :][:, ix_qf]
-    # dQ_dQf_nonlil = dQ_dQf_nonlil[:, ix_qf][ig_qbus, :]
-    # dQ_dQf_nonlil = dQ_dQf_nonlil[ig_qbus, :][:, ix_qf]
-
-    dP_dQf_lil = csc_matrix((len(ig_pbus), len(ix_qf)), dtype=np.float64).tocsr().tolil()
-    dQ_dPf_lil = csc_matrix((len(ig_qbus), len(ix_pf)), dtype=np.float64).tocsr().tolil()
-
-    dS_dPf_lil = vstack([dP_dPf_nonlil, dQ_dPf_lil])
-    dS_dQf_lil = vstack([dP_dQf_lil, dQ_dQf_nonlil])
-    dS_dSf_lil = hstack([dS_dPf_lil, dS_dQf_lil])
-    assert dS_dSf_lil.shape == (len(ig_sbus), len(ix_pf) + len(
-        ix_qf)), f"Shape is {dS_dSf_lil.shape}, it should be {len(ig_sbus), len(ix_pf) + len(ix_qf)}"
+    Cf_full = hstack([Cf_branch.transpose(), Cf_acdc.transpose(), Cf_hvdc.transpose()])
+    Cf_full = Cf_full.tocsc()
+    dP_dPf = Cf_full[ig_pbus, :][:, ix_pf]
+    dQ_dPf = 0 * Cf_full[ig_qbus, :][:, ix_pf]
+    dP_dQf = 0 * Cf_full[ig_pbus, :][:, ix_qf]
+    dQ_dQf = Cf_full[ig_qbus, :][:, ix_qf]
+    dS_dSf = hstack([vstack([dP_dPf, dQ_dPf]), vstack([dP_dQf, dQ_dQf])])
+    dS_dSf_lil = dS_dSf.tolil()
+    assert dS_dSf.shape == (len(ig_sbus), len(ix_pf) + len(ix_qf)), f"Shape is {dS_dSf.shape}, it should be {len(ig_sbus), len(ix_pf) + len(ix_qf)}"
 
     # TO POWERS
-
-    dP_dPt_branch = 0.0 * Ct_branch.transpose()
-    dQ_dQt_branch = 0.0 * Ct_branch.transpose()
-    dP_dPt_branch_lil = lil_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
-    dQ_dQt_branch_lil = lil_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
-
-    dP_dPt_acdc = 1.0 * Ct_acdc[vsc_order, :].transpose()
-    dQ_dQt_acdc = 1.0 * Ct_acdc[vsc_order, :].transpose()
-    dP_dPt_acdc_lil = dP_dPt_acdc.tocsr().tolil()
-    dQ_dQt_acdc_lil = dQ_dQt_acdc.tocsr().tolil()
-
-    dP_dPt_hvdc = 1.0 * Ct_hvdc[hvdc_order, :].transpose()
-    dQ_dQt_hvdc = 1.0 * Ct_hvdc[hvdc_order, :].transpose()
-
-    dP_dPt_contbr = 1.0 * Ct_contbr[ig_contrbr, :].transpose()
-    dQ_dQt_contbr = 1.0 * Ct_contbr[ig_contrbr, :].transpose()
-    dP_dPt_contbr_lil = dP_dPt_contbr.tocsr().tolil()
-    dQ_dQt_contbr_lil = dQ_dQt_contbr.tocsr().tolil()
-
-    # dP_dPt_lil = hstack([dP_dPt_branch_lil, dP_dPt_acdc_lil, dP_dPt_hvdc, dP_dPt_contbr_lil]).tolil()
-    dP_dPt_lil = hstack([dP_dPt_branch_lil, dP_dPt_contbr, dP_dPt_acdc, dP_dPt_hvdc]).tocsc()
-    dP_dPt_lil = dP_dPt_lil[ig_pbus, :][:, ix_pt]
-    # dQ_dQt_lil = hstack([dQ_dQt_branch_lil, dQ_dQt_acdc_lil, dQ_dQt_hvdc, dQ_dQt_contbr_lil]).tolil()
-    dQ_dQt_lil = hstack([dQ_dQt_branch_lil, dQ_dQt_contbr, dQ_dQt_acdc, dQ_dQt_hvdc]).tocsc()
-    dQ_dQt_lil = dQ_dQt_lil[ig_qbus, :][:, ix_qt]
-    # dQ_dQt_lil = dQ_dQt_lil[:, ix_qt][ig_qbus, :]
-
-    dP_dQt_lil = csc_matrix((len(ig_pbus), len(ix_qt)), dtype=np.float64).tocsr().tolil()
-    dQ_dPt_lil = csc_matrix((len(ig_qbus), len(ix_pt)), dtype=np.float64).tocsr().tolil()
-
-    dS_dPt_lil = vstack([dP_dPt_lil, dQ_dPt_lil])
-    dS_dQt_lil = vstack([dP_dQt_lil, dQ_dQt_lil])
-    dS_dSt_lil = hstack([dS_dPt_lil, dS_dQt_lil])
-    assert dS_dSt_lil.shape == (len(ig_sbus), len(ix_pt) + len(
-        ix_qt)), f"Shape is {dS_dSt_lil.shape}, it should be {len(ig_sbus), len(ix_pt) + len(ix_qt)}"
-    print()
+    Ct_full = hstack([Ct_branch.transpose(), Ct_acdc.transpose(), Ct_hvdc.transpose()])
+    Ct_full = Ct_full.tocsc()
+    dP_dPt = Ct_full[ig_pbus, :][:, ix_pt]
+    dQ_dPt = 0 * Ct_full[ig_qbus, :][:, ix_pt]
+    dP_dQt = 0 * Ct_full[ig_pbus, :][:, ix_qt]
+    dQ_dQt = Ct_full[ig_qbus, :][:, ix_qt]
+    dS_dSt = hstack([vstack([dP_dPt, dQ_dPt]), vstack([dP_dQt, dQ_dQt])])
+    dS_dSt_lil = dS_dSt.tolil()
+    assert dS_dSt.shape == (len(ig_sbus), len(ix_pt) + len(ix_qt)), f"Shape is {dS_dSt.shape}, it should be {len(ig_sbus), len(ix_pt) + len(ix_qt)}"
 
     '''
     dS_dtau and dS_dm from csc_derivatives.py, already there
@@ -457,6 +397,7 @@ def adv_jacobian(nbus: int,
     
     '''
     nvsc = len(ig_plossacdc)
+    vsc_i = ig_plossacdc - np.min(ig_plossacdc) if ig_plossacdc.size > 0 else ig_plossacdc
     if nvsc > 0:
         pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
         pq_sqrt = np.sqrt(pq)
@@ -486,6 +427,13 @@ def adv_jacobian(nbus: int,
         vsc_ix_qf = np.intersect1d(ig_plossacdc, ix_qf)
         vsc_ix_pt = np.intersect1d(ig_plossacdc, ix_pt)
         vsc_ix_qt = np.intersect1d(ig_plossacdc, ix_qt)
+        remapped_vsc_ix_pf = vsc_ix_pf - np.min(vsc_ix_pf) if vsc_ix_pf.size > 0 else vsc_ix_pf
+        remapped_vsc_ix_qf = vsc_ix_qf - np.min(vsc_ix_qf) if vsc_ix_qf.size > 0 else vsc_ix_qf
+        remapped_vsc_ix_pt = vsc_ix_pt - np.min(vsc_ix_pt) if vsc_ix_pt.size > 0 else vsc_ix_pt
+        remapped_vsc_ix_qt = vsc_ix_qt - np.min(vsc_ix_qt) if vsc_ix_qt.size > 0 else vsc_ix_qt
+        j_L_Pf_trimmed = csr_matrix(j_L_Pf[vsc_i, :])[:, remapped_vsc_ix_pf]
+        j_L_Pt_trimmed = csr_matrix(j_L_Pt[vsc_i, :])[:, remapped_vsc_ix_pt]
+        j_L_Qt_trimmed = csr_matrix(j_L_Qt[vsc_i, :])[:, remapped_vsc_ix_qt]
 
         remapped_ix_pf = vsc_ix_pf - nbr + ncontbr
         remapped_ix_qf = vsc_ix_qf - nbr + ncontbr
@@ -524,18 +472,18 @@ def adv_jacobian(nbus: int,
         # j_L_Qt_trimmed = csr_matrix(j_L_Qt[vsc_order,:])[:, remapped_ix_qt]
 
         # now we make the chunks of zeros
-        ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_ix_pf)
-        ncontBr_hvdc_ix_qf = len(ix_qf) - len(remapped_ix_qf)
-        ncontBr_hvdc_ix_pt = len(ix_pt) - len(remapped_ix_pt)
-        ncontBr_hvdc_ix_qt = len(ix_qt) - len(remapped_ix_qt)
+        ntrafo_ix_pf = len(ix_pf) - len(remapped_vsc_ix_pf)
+        ntrafo_ix_qf = len(ix_qf) - len(remapped_vsc_ix_qf)
+        ntrafo_ix_pt = len(ix_pt) - len(remapped_vsc_ix_pt)
+        ntrafo_ix_qt = len(ix_qt) - len(remapped_vsc_ix_qt)
         dL_dVa = csc_matrix((nvsc, len(ix_va)))
         dL_dPzip = csc_matrix((nvsc, len(ix_pzip)))
         dL_dQzip = csc_matrix((nvsc, len(ix_qzip)))
         dL_dQfvsc = csc_matrix((nvsc, len(ix_qf)))
-        # dL_dPfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pf))
-        # dL_dQfrom_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qf))
-        # dL_dPto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_pt))
-        # dL_dQto_Trafo = csc_matrix((nvsc, ncontBr_hvdc_ix_qt))
+        # dL_dPfrom_Trafo = csc_matrix((nvsc, ntrafo_ix_pf))
+        # dL_dQfrom_Trafo = csc_matrix((nvsc, ntrafo_ix_qf))
+        # dL_dPto_Trafo = csc_matrix((nvsc, ntrafo_ix_pt))
+        # dL_dQto_Trafo = csc_matrix((nvsc, ntrafo_ix_qt))
         dL_dMod_Trafo = csc_matrix((nvsc, len(ix_m)))
         dL_dTau_Trafo = csc_matrix((nvsc, len(ix_tau)))
 
@@ -724,24 +672,33 @@ def adv_jacobian(nbus: int,
         j_Pinj_Pt_trimmed = csr_matrix(j_Pinj_Pt)[:, remapped_hvdc_ix_pt]
 
         # now we pad zeros
-        ncontBr_hvdc_ix_pf = len(ix_pf) - len(remapped_hvdc_ix_pf)
-        ncontBr_hvdc_ix_qf = len(ix_qf) - len(remapped_hvdc_ix_qf)
-        ncontBr_hvdc_ix_pt = len(ix_pt) - len(remapped_hvdc_ix_pt)
-        ncontBr_hvdc_ix_qt = len(ix_qt) - len(remapped_hvdc_ix_qt)
+        trafo_ix_pf = np.intersect1d(ig_pttr, ix_pf)
+        trafo_ix_qf = np.intersect1d(ig_pttr, ix_qf)
+        trafo_ix_pt = np.intersect1d(ig_pttr, ix_pt)
+        trafo_ix_qt = np.intersect1d(ig_pttr, ix_qt)
+        remapped_trafo_ix_pf = trafo_ix_pf - np.min(trafo_ix_pf) if trafo_ix_pf.size > 0 else trafo_ix_pf
+        remapped_trafo_ix_qf = trafo_ix_qf - np.min(trafo_ix_qf) if trafo_ix_qf.size > 0 else trafo_ix_qf
+        remapped_trafo_ix_pt = trafo_ix_pt - np.min(trafo_ix_pt) if trafo_ix_pt.size > 0 else trafo_ix_pt
+        remapped_trafo_ix_qt = trafo_ix_qt - np.min(trafo_ix_qt) if trafo_ix_qt.size > 0 else trafo_ix_qt
+
+        ntrafo_ix_pf = len(trafo_ix_pf)
+        ntrafo_ix_qf = len(trafo_ix_qf)
+        ntrafo_ix_pt = len(trafo_ix_pt)
+        ntrafo_ix_qt = len(trafo_ix_qt)
         dBuffer_dVm = csc_matrix((nhvdc, len(ix_vm)))
         dBuffer_dVa = csc_matrix((nhvdc, len(ix_va)))
         dBuffer_dPzip = csc_matrix((nhvdc, len(ix_pzip)))
         dBuffer_dQzip = csc_matrix((nhvdc, len(ix_qzip)))
-        dBuffer_dPfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_pf)))
-        dBuffer_dQfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_qf)))
-        dBuffer_dPto_vsc = csc_matrix((nhvdc, len(remapped_ix_pt)))
-        dBuffer_dQto_vsc = csc_matrix((nhvdc, len(remapped_ix_qt)))
+        dBuffer_dPfrom_vsc = csc_matrix((nhvdc, len(remapped_vsc_ix_pf)))
+        dBuffer_dQfrom_vsc = csc_matrix((nhvdc, len(remapped_vsc_ix_qf)))
+        dBuffer_dPto_vsc = csc_matrix((nhvdc, len(remapped_vsc_ix_pt)))
+        dBuffer_dQto_vsc = csc_matrix((nhvdc, len(remapped_vsc_ix_qt)))
         dBuffer_dQfrom_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_qf)))
         dBuffer_dQto_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_pt)))
-        dBuffer_dPfrom_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_pf))
-        dBuffer_dQfrom_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_qf))
-        dBuffer_dPto_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_pt))
-        dBuffer_dQto_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_qt))
+        dBuffer_dPfrom_Trafo = csc_matrix((nhvdc, ntrafo_ix_pf))
+        dBuffer_dQfrom_Trafo = csc_matrix((nhvdc, ntrafo_ix_qf))
+        dBuffer_dPto_Trafo = csc_matrix((nhvdc, ntrafo_ix_pt))
+        dBuffer_dQto_Trafo = csc_matrix((nhvdc, ntrafo_ix_qt))
         dBuffer_dMod_Trafo = csc_matrix((nhvdc, len(ix_m)))
         dBuffer_dTau_Trafo = csc_matrix((nhvdc, len(ix_tau)))
 

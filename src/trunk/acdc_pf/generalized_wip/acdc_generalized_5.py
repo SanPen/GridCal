@@ -46,6 +46,7 @@ def run_cases():
     results2_abs = [1.01, 1.0333, 1.04608061, 1.05, 1.02521801, 1.02]
     results2_angle = [0, -0.00476848, 0, 0, -0.02481211, -0.02380485]
     iteration, error = run_pf("fubm_caseHVDC_vt_mod6.gridcal", results2_abs, results2_angle)
+    iteration, error = run_pf("fubm_caseHVDC_vt_mod6.gridcal")
     iterations.append(iteration)
     errors.append(error)
 
@@ -76,14 +77,22 @@ def run_cases():
     iterations.append(iteration)
     errors.append(error)
 
-    # symbolic not working for this case
-    # results7_abs = [1.0, 1.0, 0.99918761, 0.99962913, 1.00000645, 0.99999161, 1.0, 0.99999613, 0.99991786, 0.99983582, 1.0, 1.0]
-    # results7_angle = [0, 0.00051981, -0.00000531, 0.00003945, 0, 0, 0, 0, -0.00041348, -0.00032589, 0, 0.00043712]
-    # iteration, error = run_pf("ACDC_Josep.gridcal", results7_abs, results7_angle)
+    # # VSC + Trafo test case (FAILED)
+    results7_abs = [1.01, 1.0333, 1.04608061, 1.05, 1.02521801, 1.02]
+    results7_angle = [0, -0.00476848, 0, 0, -0.02481211, -0.02380485]
+    iteration, error = run_pf("fubm_caseHVDC_vt_wTrafo.gridcal", results7_abs, results7_angle)
+    iterations.append(iteration)
+    errors.append(error)
+
+    # Out-of-order indexing is a problem (FAILED)
+    # results8_abs = [1.0, 1.0, 0.99918761, 0.99962913, 1.00000645, 0.99999161, 1.0, 0.99999613, 0.99991786, 0.99983582, 1.0, 1.0]
+    # results8_angle = [0, 0.00051981, -0.00000531, 0.00003945, 0, 0, 0, 0, -0.00041348, -0.00032589, 0, 0.00043712]
+    # iteration, error = run_pf("ACDC_Josep.gridcal", results8_abs, results8_angle)
     # iterations.append(iteration)
     # errors.append(error)
 
-    # joseps test case without hvdc
+    # joseps test case without hvdc (FAILED)
+    # results.voltage [1.01       1.0333     1.04608061 1.05       1.02521801 1.02      ]
     # results8_abs = [1.0, 1.0, 0.99987996, 0.99985993, 0.99998306, 0.99998952, 1.0, 0.99999516, 0.99922554, 0.99960503, 1.0, 1.0, 0.99997713, 1.0]
     # results8_angle = [0, 0.00052527, 0.0000272, 0.00005047, 0, 0, 0, 0, -0.00048425, -0.00041804, 0, 0.00023161, -0.00009023, 0.00031899]
     # iteration, error = run_pf("12Bus AC-DC Josep v4noHVDC.gridcal", results8_abs, results8_angle)
