@@ -321,8 +321,8 @@ def adv_jacobian(nbus: int,
     # FROM POWERS
     dP_dPf_branch = 0.0 * Cf_branch.transpose()
     dQ_dQf_branch = 0.0 * Cf_branch.transpose()
-    dP_dPf_branch_lil = lil_matrix((nbus, (nbr - nhvdc - ncontbr)), dtype=np.float64)
-    dQ_dQf_branch_lil = lil_matrix((nbus, (nbr - nhvdc - ncontbr)), dtype=np.float64)
+    dP_dPf_branch_lil = csr_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
+    dQ_dQf_branch_lil = csr_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
 
     vsc_order = ig_plossacdc - np.min(ig_plossacdc) if ig_plossacdc.size > 0 else ig_plossacdc
     hvdc_order = ig_plosshvdc - np.min(ig_plosshvdc) if ig_plosshvdc.size > 0 else ig_plosshvdc
@@ -343,12 +343,15 @@ def adv_jacobian(nbus: int,
     dQ_dQf_contbr_lil = dQ_dQf_contbr.tocsr().tolil()
 
     # dP_dPf_lil = hstack([dP_dPf_branch_lil, dP_dPf_acdc_lil, dP_dPf_hvdc_lil, dP_dPf_contbr_lil]).tolil()
-    dP_dPf_nonlil = hstack([dP_dPf_branch, dP_dPf_acdc, dP_dPf_hvdc, dP_dPf_contbr])
-    dP_dPf_nonlil = dP_dPf_nonlil[:, ix_pf][ig_pbus, :]
+    dP_dPf_nonlil = hstack([dP_dPf_branch_lil, dP_dPf_contbr, dP_dPf_acdc, dP_dPf_hvdc])
+    dP_dPf_nonlil = dP_dPf_nonlil[ig_pbus, :][:, ix_pf]
+    # dP_dPf_nonlil2 = dP_dPf_nonlil1[:, ix_pf]
+    # dP_dPf_nonlil = dP_dPf_nonlil[:, ix_pf][ig_pbus, :]
 
     # dQ_dQf_lil = hstack([dQ_dQf_branch_lil, dQ_dQf_acdc_lil, dQ_dQf_hvdc_lil, dQ_dQf_contbr_lil]).tolil()
-    dQ_dQf_nonlil = hstack([dQ_dQf_branch, dQ_dQf_acdc, dQ_dQf_hvdc, dQ_dQf_contbr])
-    dQ_dQf_nonlil = dQ_dQf_nonlil[:, ix_qf][ig_qbus, :]
+    dQ_dQf_nonlil = hstack([dQ_dQf_branch_lil, dQ_dQf_contbr, dQ_dQf_acdc, dQ_dQf_hvdc])[ig_qbus, :][:, ix_qf]
+    # dQ_dQf_nonlil = dQ_dQf_nonlil[:, ix_qf][ig_qbus, :]
+    # dQ_dQf_nonlil = dQ_dQf_nonlil[ig_qbus, :][:, ix_qf]
 
     dP_dQf_lil = csc_matrix((len(ig_pbus), len(ix_qf)), dtype=np.float64).tocsr().tolil()
     dQ_dPf_lil = csc_matrix((len(ig_qbus), len(ix_pf)), dtype=np.float64).tocsr().tolil()
@@ -363,8 +366,8 @@ def adv_jacobian(nbus: int,
 
     dP_dPt_branch = 0.0 * Ct_branch.transpose()
     dQ_dQt_branch = 0.0 * Ct_branch.transpose()
-    dP_dPt_branch_lil = lil_matrix((nbus, (nbr - nhvdc - ncontbr)), dtype=np.float64)
-    dQ_dQt_branch_lil = lil_matrix((nbus, (nbr - nhvdc - ncontbr)), dtype=np.float64)
+    dP_dPt_branch_lil = lil_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
+    dQ_dQt_branch_lil = lil_matrix((nbus, (nbr - ncontbr)), dtype=np.float64)
 
     dP_dPt_acdc = 1.0 * Ct_acdc[vsc_order, :].transpose()
     dQ_dQt_acdc = 1.0 * Ct_acdc[vsc_order, :].transpose()
@@ -380,11 +383,12 @@ def adv_jacobian(nbus: int,
     dQ_dQt_contbr_lil = dQ_dQt_contbr.tocsr().tolil()
 
     # dP_dPt_lil = hstack([dP_dPt_branch_lil, dP_dPt_acdc_lil, dP_dPt_hvdc, dP_dPt_contbr_lil]).tolil()
-    dP_dPt_lil = hstack([dP_dPt_branch, dP_dPt_acdc, dP_dPt_hvdc, dP_dPt_contbr]).tolil()
-    dP_dPt_lil = dP_dPt_lil[:, ix_pt][ig_pbus, :]
+    dP_dPt_lil = hstack([dP_dPt_branch_lil, dP_dPt_contbr, dP_dPt_acdc, dP_dPt_hvdc]).tocsc()
+    dP_dPt_lil = dP_dPt_lil[ig_pbus, :][:, ix_pt]
     # dQ_dQt_lil = hstack([dQ_dQt_branch_lil, dQ_dQt_acdc_lil, dQ_dQt_hvdc, dQ_dQt_contbr_lil]).tolil()
-    dQ_dQt_lil = hstack([dQ_dQt_branch, dQ_dQt_acdc, dQ_dQt_hvdc, dQ_dQt_contbr]).tolil()
-    dQ_dQt_lil = dQ_dQt_lil[:, ix_qt][ig_qbus, :]
+    dQ_dQt_lil = hstack([dQ_dQt_branch_lil, dQ_dQt_contbr, dQ_dQt_acdc, dQ_dQt_hvdc]).tocsc()
+    dQ_dQt_lil = dQ_dQt_lil[ig_qbus, :][:, ix_qt]
+    # dQ_dQt_lil = dQ_dQt_lil[:, ix_qt][ig_qbus, :]
 
     dP_dQt_lil = csc_matrix((len(ig_pbus), len(ix_qt)), dtype=np.float64).tocsr().tolil()
     dQ_dPt_lil = csc_matrix((len(ig_qbus), len(ix_pt)), dtype=np.float64).tocsr().tolil()
