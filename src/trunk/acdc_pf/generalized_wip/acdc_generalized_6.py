@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 import GridCalEngine.api as gce
@@ -26,3 +28,5 @@ results = gce.power_flow(grid, options)
 
 print(abs(results.voltage))
 assert results.converged
+
+print(np.array2string(results.voltage))

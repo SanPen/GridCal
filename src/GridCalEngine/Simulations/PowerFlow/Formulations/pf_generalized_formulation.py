@@ -344,12 +344,15 @@ def adv_jacobian(nbus: int,
 
     # dP_dPf_lil = hstack([dP_dPf_branch_lil, dP_dPf_acdc_lil, dP_dPf_hvdc_lil, dP_dPf_contbr_lil]).tolil()
     dP_dPf_nonlil = hstack([dP_dPf_branch_lil, dP_dPf_contbr, dP_dPf_acdc, dP_dPf_hvdc])
+    dP_dPf_nonlil = dP_dPf_nonlil.tocsc()
     dP_dPf_nonlil = dP_dPf_nonlil[ig_pbus, :][:, ix_pf]
     # dP_dPf_nonlil2 = dP_dPf_nonlil1[:, ix_pf]
     # dP_dPf_nonlil = dP_dPf_nonlil[:, ix_pf][ig_pbus, :]
 
     # dQ_dQf_lil = hstack([dQ_dQf_branch_lil, dQ_dQf_acdc_lil, dQ_dQf_hvdc_lil, dQ_dQf_contbr_lil]).tolil()
-    dQ_dQf_nonlil = hstack([dQ_dQf_branch_lil, dQ_dQf_contbr, dQ_dQf_acdc, dQ_dQf_hvdc])[ig_qbus, :][:, ix_qf]
+    dQ_dQf_nonlil = hstack([dQ_dQf_branch_lil, dQ_dQf_contbr, dQ_dQf_acdc, dQ_dQf_hvdc])
+    dQ_dQf_nonlil = dQ_dQf_nonlil.tocsc()
+    dQ_dQf_nonlil = dQ_dQf_nonlil[ig_qbus, :][:, ix_qf]
     # dQ_dQf_nonlil = dQ_dQf_nonlil[:, ix_qf][ig_qbus, :]
     # dQ_dQf_nonlil = dQ_dQf_nonlil[ig_qbus, :][:, ix_qf]
 

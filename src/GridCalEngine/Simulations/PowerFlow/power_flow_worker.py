@@ -548,7 +548,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
             # call the numerical methods
             solution, report = solve(
-                nc=nc,
+                nc=island,
                 options=options,
                 V0=island.Vbus if V_guess is None else V_guess[island.original_bus_idx],
                 S0=Sbus,
