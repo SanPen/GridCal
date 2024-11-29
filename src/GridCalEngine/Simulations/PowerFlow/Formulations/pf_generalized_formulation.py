@@ -1107,7 +1107,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.idx_dQt = np.array(0, dtype=int)
 
         # Generalized indices
-        self.indices = gsi.GeneralizedSimulationIndices(self.nc)
+        self.indices = gsi.GeneralizedSimulationIndices(nc=self.nc, pf_options=self.options)
         self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
         self.hvdc_mode = self.indices.hvdc_mode
@@ -1399,7 +1399,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         )
 
         _f = np.r_[
-            dS[self.cg_pac + self.cg_pdc].real,
+            dS[self.cg_pac + self.cg_pdc].real,  # TODO remove this operation here
             dS[self.cg_qac].imag,
             Ploss_acdc,
             Ploss_hvdc,
@@ -1699,7 +1699,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = False) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:

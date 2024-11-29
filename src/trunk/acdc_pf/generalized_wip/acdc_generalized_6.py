@@ -14,7 +14,7 @@ fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', 'AC-DC with all
 grid = gce.open_file(fname)
 
 options = PowerFlowOptions(SolverType.PowellDogLeg,
-                           verbose=0,
+                           verbose=3,
                            control_q=False,
                            retry_with_other_methods=False,
                            control_taps_phase=True,
