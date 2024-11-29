@@ -497,13 +497,13 @@ class GeneralizedSimulationIndices:
         self.cg_qttr.add(branch_idx)
 
         # Check the module_mode first
-        if module_mode == TapModuleControl.fixed or not pf_opt.control_taps_modules:
+        if module_mode == TapModuleControl.fixed or not pf_opt.control_taps_modules or module_mode == 0:
 
             # in this case we have to add the tap_phase to the tau set
             self.ck_m.add(branch_idx)
             self.tau_setpoints.append(m)
 
-            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase:
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
                 self.ck_tau.add(branch_idx)
                 self.tau_setpoints.append(tap_phase)
 
@@ -549,11 +549,11 @@ class GeneralizedSimulationIndices:
             self.ck_vm.add(bus_idx)
             self.vm_setpoints.append(Vm)
 
-            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase:
-                self.ck_tau.add(branch_idx)
-                self.tau_setpoints.append(tap_phase)
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
+                # self.ck_m.add(branch_idx)
+                # self.m_setpoints.append(tap_phase)
 
-                # self.cx_m.add(branch_idx)
+                self.cx_m.add(branch_idx)
                 self.cx_qfa.add(branch_idx)
                 self.cx_qta.add(branch_idx)
                 # self.cx_tau.add(branch_idx)
@@ -594,7 +594,7 @@ class GeneralizedSimulationIndices:
             self.ck_qfa.add(branch_idx)
             self.qf_setpoints.append(Qset)
 
-            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase:
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
                 self.ck_tau.add(branch_idx)
                 self.tau_setpoints.append(tap_phase)
 
@@ -639,7 +639,7 @@ class GeneralizedSimulationIndices:
             self.ck_qta.add(branch_idx)
             self.qt_setpoints.append(Qset)
 
-            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase:
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
                 self.ck_tau.add(branch_idx)
                 self.tau_setpoints.append(tap_phase)
 
@@ -812,10 +812,10 @@ class GeneralizedSimulationIndices:
         """
 
         if is_slack:
-            # self.add_to_cx_vm(bus_local)
             self.bus_vm_pointer_used[bus_local] = True
 
         else:
+
             # First check if we are setting a remote bus voltage
             if remote_control and bus_remote > -1 and bus_remote != bus_local:
                 if not self.bus_vm_pointer_used[bus_remote]:
@@ -886,17 +886,10 @@ class GeneralizedSimulationIndices:
                 if dev_tpe.active[i]:
                     if is_controlled:
 
-                        if pf_options.control_remote_voltage:
-                            remote_control = ctr_bus_idx != -1
-                        else:
-                            # if the options control_remote_voltage var in the options is false,
-                            # we force to not control remotely
-                            remote_control = -1
-
                         self.set_bus_vm_simple(bus_local=bus_idx,
                                                device_name=dev_tpe.names[i],
                                                bus_remote=ctr_bus_idx,
-                                               remote_control=remote_control)
+                                               remote_control=pf_options.control_remote_voltage)
 
                         self.add_to_cx_qzip(bus_idx)
                         self.ck_pzip.add(bus_idx)
@@ -916,18 +909,10 @@ class GeneralizedSimulationIndices:
             ctr_bus_idx = nc.shunt_data.controllable_bus_idx[i]
 
             if is_controlled:
-
-                if pf_options.control_remote_voltage:
-                    remote_control = ctr_bus_idx != -1
-                else:
-                    # if the options control_remote_voltage var in the options is false,
-                    # we force to not control remotely
-                    remote_control = -1
-
                 self.set_bus_vm_simple(bus_local=bus_idx,
                                        device_name=nc.shunt_data.names[i],
                                        bus_remote=ctr_bus_idx,
-                                       remote_control=remote_control)
+                                       remote_control=pf_options.control_remote_voltage)
 
                 self.add_to_cx_qzip(bus_idx)
                 self.ck_pzip.add(bus_idx)
@@ -1015,7 +1000,7 @@ class GeneralizedSimulationIndices:
                     phase_mode=nc.active_branch_data.tap_phase_control_mode[k],
                     module_mode=nc.active_branch_data.tap_module_control_mode[k],
                     branch_idx=k,
-                    bus_idx=bus_idx,
+                    bus_idx=nc.active_branch_data.tap_controlled_buses[k],
                     m=nc.active_branch_data.tap_module[k],
                     tap_phase=nc.active_branch_data.tap_angle[k],
                     Pset=nc.active_branch_data.Pset[k],
