@@ -403,7 +403,7 @@ class BranchParent(PhysicalDevice):
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
-        Always unit vitual taps (unless proven otherwise)
+        Always unit virtual taps (unless proven otherwise)
         :return: tap_f, tap_t
         """
         return 1.0, 1.0

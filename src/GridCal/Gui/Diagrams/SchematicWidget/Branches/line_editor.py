@@ -210,9 +210,10 @@ class LineEditor(QDialog):
         if length != 0.0:
 
             if self.selected_template is not None:
-                self.line.set_length(val=length, update_electrical_values=False)
+                self.line.disable_auto_updates()
+                self.line.set_length(val=length)
                 self.line.apply_template(obj=self.selected_template, Sbase=self.Sbase)
-
+                self.line.enable_auto_updates()
             else:
                 wf = 2 * np.pi * self.frequency
                 self.line.fill_design_properties(

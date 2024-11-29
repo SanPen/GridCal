@@ -5,12 +5,11 @@
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
-import GridCalEngine.Devices as dev
 
 
 class RawGenerator(RawObject):
 
-    def __init__(self):
+    def __init__(self) -> None:
         RawObject.__init__(self, "Generator")
 
         self.I = 0
@@ -173,14 +172,14 @@ class RawGenerator(RawObject):
                                max_value=2)
 
         for i in range(4):
-            self.register_property(property_name="O{}".format(i+1),
-                                   rawx_key="o{}".format(i+1),
+            self.register_property(property_name="O{}".format(i + 1),
+                                   rawx_key="o{}".format(i + 1),
                                    class_type=int,
                                    description="Owner number",
                                    min_value=1,
                                    max_value=9999)
-            self.register_property(property_name="F{}".format(i+1),
-                                   rawx_key="f{}".format(i+1),
+            self.register_property(property_name="F{}".format(i + 1),
+                                   rawx_key="f{}".format(i + 1),
                                    class_type=float,
                                    description="Ownership fraction",
                                    min_value=0.0,
@@ -217,18 +216,18 @@ class RawGenerator(RawObject):
             # ZR,         ZX,         RT,         XT,     GTAP,STAT, RMPCT,      PT,        PB,
             # O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4,
             # WMOD,  WPF
-            self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.NREG, self.MBASE, \
-                self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, self.BASLOD, \
-                *var, self.WMOD, self.WPF = data[0]
+            (self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.NREG, self.MBASE,
+             self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, self.BASLOD,
+             *var, self.WMOD, self.WPF) = data[0]
 
         elif 30 <= version <= 34:
             # I,'ID',      PG,        QG,        QB,     VS,    IREG,     MBASE,
             # ZR,         ZX,         RT,         XT,     GTAP,STAT, RMPCT,      PT,        PB,
             # O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4,
             # WMOD,  WPF
-            self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var, \
-                self.WMOD, self.WPF = data[0]
+            (self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE,
+             self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var,
+             self.WMOD, self.WPF) = data[0]
 
         elif version in [29]:
             """
@@ -237,8 +236,8 @@ class RawGenerator(RawObject):
             O1,F1,...,O4,F4
             """
 
-            self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, \
-                self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var = data[0]
+            (self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG, self.MBASE, 
+                self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT, self.RMPCT, self.PT, self.PB, *var) = data[0]
 
         else:
             logger.add_warning('Generator not implemented for version', str(version))
@@ -258,7 +257,7 @@ class RawGenerator(RawObject):
             return self.format_raw_line([self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG,
                                          self.NREG, self.MBASE, self.ZR, self.ZX, self.RT, self.XT, self.GTAP,
                                          self.STAT, self.RMPCT, self.PT, self.PB, self.BASLOD] + var +
-                                         [self.WMOD, self.WPF])
+                                        [self.WMOD, self.WPF])
 
         elif 30 <= version <= 34:
             # I,'ID',      PG,        QG,        QB,     VS,    IREG,     MBASE,
@@ -283,12 +282,9 @@ class RawGenerator(RawObject):
         else:
             raise Exception('Generator not implemented for version ' + str(version))
 
-    def get_id(self):
+    def get_id(self) -> str:
         """
         Get the element PSSE ID
         :return:
         """
         return "{0}_{1}".format(self.I, self.ID)
-
-
-
