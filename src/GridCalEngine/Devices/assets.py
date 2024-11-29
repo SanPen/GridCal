@@ -802,6 +802,12 @@ class Assets:
         """
         return len(self._vsc_devices)
 
+    def get_vsc_names(self)-> StrVec:
+        """
+        Get Vsc names
+        """
+        return np.array([e.name for e in self.vsc_devices])
+
     def add_vsc(self, obj: dev.VSC):
         """
         Add a hvdc line object

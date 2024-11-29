@@ -107,10 +107,10 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             time_series_results.Vbranch[it, :] = pf_res.Vbranch
             time_series_results.loading[it, :] = pf_res.loading
             time_series_results.losses[it, :] = pf_res.losses
-            time_series_results.hvdc_losses[it, :] = pf_res.hvdc_losses
-            time_series_results.hvdc_Pf[it, :] = pf_res.hvdc_Pf
-            time_series_results.hvdc_Pt[it, :] = pf_res.hvdc_Pt
-            time_series_results.hvdc_loading[it, :] = pf_res.hvdc_loading
+            time_series_results.hvdc_losses[it, :] = pf_res.losses_hvdc
+            time_series_results.hvdc_Pf[it, :] = pf_res.Pf_hvdc
+            time_series_results.hvdc_Pt[it, :] = pf_res.Pt_hvdc
+            time_series_results.hvdc_loading[it, :] = pf_res.loading_hvdc
             time_series_results.error_values[it] = pf_res.error
             time_series_results.converged_values[it] = pf_res.converged
 

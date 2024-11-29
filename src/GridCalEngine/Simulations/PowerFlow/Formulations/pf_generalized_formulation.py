@@ -1890,23 +1890,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param iterations: Iteration number
         :return: NumericPowerFlowResults
         """
-        # Compute the Branches power and the slack buses power
-        # TODO: figure out how to compute power flows, losses etc.
-        # Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
-        #     Sbus=self.Scalc,
-        #     V=self.V,
-        #     F=self.nc.passive_branch_data.F,
-        #     T=self.nc.passive_branch_data.T,
-        #     pv=self.pv,  # TODO: figure this stuff out
-        #     vd=self.vd,  # TODO: figure this stuff out
-        #     Ybus=self.adm.Ybus,
-        #     Yf=self.adm.Yf,
-        #     Yt=self.adm.Yt,
-        #     branch_rates=self.nc.passive_branch_data.rates,
-        #     Sbase=self.nc.Sbase)
-
-        # power at the slack nodes
-        Sbus = self.Sbus
 
         # Branches current, loading, etc
         V = self.Vm * np.exp(1j * self.Va)
@@ -1939,10 +1922,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_vsc = (self.Pt + 1j * self.Qt)[self.cg_acdc]
         If_vsc = Pf_vsc / np.abs(V[self.nc.vsc_data.F])
         It_vsc = St_vsc / np.conj(V[self.nc.vsc_data.T])
+        loading_vsc = Pf_vsc / (self.nc.vsc_data.rates + 1e-20)
 
         # HVDC
         Sf_hvdc = (self.Pf + 1j * self.Qf)[self.cg_hvdc] * self.nc.Sbase
         St_hvdc = (self.Pt + 1j * self.Qt)[self.cg_hvdc] * self.nc.Sbase
+        loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rate + 1e-20)
 
         return NumericPowerFlowResults(
             V=self.V,
@@ -1960,9 +1945,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             If_vsc=If_vsc,
             It_vsc=It_vsc,
             losses_vsc=Pf_vsc + St_vsc.real,
+            loading_vsc=loading_vsc,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
             losses_hvdc=Sf_hvdc + Sf_hvdc,
+            loading_hvdc=loading_hvdc,
             norm_f=self.error,
             converged=self.converged,
             iterations=iterations,
