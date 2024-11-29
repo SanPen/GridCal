@@ -490,11 +490,11 @@ class GeneralizedSimulationIndices:
         :return:
         """
 
-        def register_controllable_br():
-            self.cg_pftr.add(branch_idx)
-            self.cg_pttr.add(branch_idx)
-            self.cg_qftr.add(branch_idx)
-            self.cg_qttr.add(branch_idx)
+        # def register_controllable_br():
+        self.cg_pftr.add(branch_idx)
+        self.cg_pttr.add(branch_idx)
+        self.cg_qftr.add(branch_idx)
+        self.cg_qttr.add(branch_idx)
 
         # Check the module_mode first
         if module_mode == TapModuleControl.fixed or not pf_opt.control_taps_modules:
@@ -514,7 +514,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pf:
                 self.ck_pfa.add(branch_idx)
@@ -527,7 +527,7 @@ class GeneralizedSimulationIndices:
                 # self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pt:
                 self.ck_pta.add(branch_idx)
@@ -540,7 +540,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 # self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
             else:
                 raise Exception("Undefined TapPhaseControl")
 
@@ -560,7 +560,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pf:
                 self.ck_pfa.add(branch_idx)
@@ -573,7 +573,7 @@ class GeneralizedSimulationIndices:
                 # self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pt:
                 self.ck_pta.add(branch_idx)
@@ -586,7 +586,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 # self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
             else:
                 raise Exception("Undefined TapPhaseControl")
 
@@ -605,7 +605,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pf:
                 self.ck_pfa.add(branch_idx)
@@ -618,7 +618,7 @@ class GeneralizedSimulationIndices:
                 # self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pt:
                 self.ck_pta.add(branch_idx)
@@ -631,7 +631,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 # self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
             else:
                 raise Exception("Undefined TapPhaseControl")
 
@@ -650,7 +650,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pf:
                 self.ck_pfa.add(branch_idx)
@@ -663,7 +663,7 @@ class GeneralizedSimulationIndices:
                 # self.cx_pfa.add(branch_idx)
                 self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
 
             elif phase_mode == TapPhaseControl.Pt:
                 self.ck_pta.add(branch_idx)
@@ -676,7 +676,7 @@ class GeneralizedSimulationIndices:
                 self.cx_pfa.add(branch_idx)
                 # self.cx_pta.add(branch_idx)
 
-                register_controllable_br()
+                # register_controllable_br()
             else:
                 raise Exception("Undefined TapPhaseControl")
 
@@ -1008,7 +1008,7 @@ class GeneralizedSimulationIndices:
             #     self.cg_qftr.add(branch_idx)
             #     self.cg_qttr.add(branch_idx)
 
-            if (nc.active_branch_data.tap_phase_control_mode[k] != 0 and
+            if (nc.active_branch_data.tap_phase_control_mode[k] != 0 or
                     nc.active_branch_data.tap_module_control_mode[k] != 0):
                 self.add_branch_control(
                     branch_name=nc.passive_branch_data.names[k],
