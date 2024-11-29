@@ -178,7 +178,7 @@ def test_load_and_run_pf() -> None:
         files = data['Files']
 
         for fname in files:
-            if bd is "":
+            if bd == "":
                 lst = [fname]
             else:
                 lst = [bd, fname]

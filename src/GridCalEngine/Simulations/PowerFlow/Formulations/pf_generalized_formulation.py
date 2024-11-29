@@ -12,17 +12,14 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
-from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, sp_slice_cols, \
-    sp_slice_rows, pack_4_by_4, mat_to_scipy
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
-from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl, ConverterControlType
+from GridCalEngine.enumerations import BusMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
-                                                                                   polar_to_rect, get_Sf, get_St,
-                                                                                   get_It)
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger, ObjVec
+                                                                                   polar_to_rect, get_Sf, get_St)
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 import GridCalEngine.Topology.generalized_simulation_indices as gsi
 
 
@@ -461,7 +458,7 @@ def adv_jacobian(nbus: int,
         pq_sqrt += 1e-20
         dLacdc_dVm = (alpha2[vsc_order] * pq_sqrt * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
                       + 2 * alpha3[vsc_order] * (pq) / (
-                                  Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
+                              Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
         dLacdc_dVm *= -1
 
         dLacdc_dPt = (np.ones(nvsc)
@@ -1126,40 +1123,40 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cg_qttr = self.indices.cg_qttr
 
         # cx sets [UNKNOWNS] The order of this list is important
-        self.cx_vm = self.indices.cx_vm
-        self.cx_va = self.indices.cx_va
-        self.cx_pzip = self.indices.cx_pzip
-        self.cx_qzip = self.indices.cx_qzip
-        self.cx_pfa = self.indices.cx_pfa
-        self.cx_qfa = self.indices.cx_qfa
-        self.cx_pta = self.indices.cx_pta
-        self.cx_qta = self.indices.cx_qta
-        self.cx_m = self.indices.cx_m
-        self.cx_tau = self.indices.cx_tau
+        self.cx_vm: IntVec = self.indices.cx_vm
+        self.cx_va: IntVec = self.indices.cx_va
+        self.cx_pzip: IntVec = self.indices.cx_pzip
+        self.cx_qzip: IntVec = self.indices.cx_qzip
+        self.cx_pfa: IntVec = self.indices.cx_pfa
+        self.cx_qfa: IntVec = self.indices.cx_qfa
+        self.cx_pta: IntVec = self.indices.cx_pta
+        self.cx_qta: IntVec = self.indices.cx_qta
+        self.cx_m: IntVec = self.indices.cx_m
+        self.cx_tau: IntVec = self.indices.cx_tau
 
         # ck sets [KNOWNS]
-        self.ck_vm = self.indices.ck_vm
-        self.ck_va = self.indices.ck_va
-        self.ck_pzip = self.indices.ck_pzip
-        self.ck_qzip = self.indices.ck_qzip
-        self.ck_pfa = self.indices.ck_pfa
-        self.ck_qfa = self.indices.ck_qfa
-        self.ck_pta = self.indices.ck_pta
-        self.ck_qta = self.indices.ck_qta
-        self.ck_m = self.indices.ck_m
-        self.ck_tau = self.indices.ck_tau
+        self.ck_vm: IntVec = self.indices.ck_vm
+        self.ck_va: IntVec = self.indices.ck_va
+        self.ck_pzip: IntVec = self.indices.ck_pzip
+        self.ck_qzip: IntVec = self.indices.ck_qzip
+        self.ck_pfa: IntVec = self.indices.ck_pfa
+        self.ck_qfa: IntVec = self.indices.ck_qfa
+        self.ck_pta: IntVec = self.indices.ck_pta
+        self.ck_qta: IntVec = self.indices.ck_qta
+        self.ck_m: IntVec = self.indices.ck_m
+        self.ck_tau: IntVec = self.indices.ck_tau
 
         # setpoints corresponding to the knowns
-        self.va_setpoints = self.indices.va_setpoints
-        self.vm_setpoints = self.indices.vm_setpoints
-        self.tau_setpoints = self.indices.tau_setpoints
-        self.m_setpoints = self.indices.m_setpoints
-        self.pzip_setpoints = self.indices.pzip_setpoints
-        self.qzip_setpoints = self.indices.qzip_setpoints
-        self.pf_setpoints = self.indices.pf_setpoints
-        self.pt_setpoints = self.indices.pt_setpoints
-        self.qf_setpoints = self.indices.qf_setpoints
-        self.qt_setpoints = self.indices.qt_setpoints
+        self.va_setpoints: Vec = self.indices.va_setpoints
+        self.vm_setpoints: Vec = self.indices.vm_setpoints
+        self.tau_setpoints: Vec = self.indices.tau_setpoints
+        self.m_setpoints: Vec = self.indices.m_setpoints
+        self.pzip_setpoints: Vec = self.indices.pzip_setpoints
+        self.qzip_setpoints: Vec = self.indices.qzip_setpoints
+        self.pf_setpoints: Vec = self.indices.pf_setpoints
+        self.pt_setpoints: Vec = self.indices.pt_setpoints
+        self.qf_setpoints: Vec = self.indices.qf_setpoints
+        self.qt_setpoints: Vec = self.indices.qt_setpoints
 
         # Update setpoints
         self.Vm[self.indices.ck_vm] = self.indices.vm_setpoints
@@ -1934,32 +1931,40 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # branch voltage increment
         Vbranch = Vf - Vt
 
-        # Branch power in MVA
-        Sfb = Sf * self.nc.Sbase
-        Stb = St * self.nc.Sbase
-
         # Branch loading in p.u.
-        loading = Sfb / (self.nc.passive_branch_data.rates + 1e-9)
+        loading = Sf * self.nc.Sbase / (self.nc.passive_branch_data.rates + 1e-9)
 
         # VSC
-        Sf_vsc = (self.Pf + 1j * self.Qf)[self.cg_acdc] * self.nc.Sbase
-        St_vsc = (self.Pt + 1j * self.Qt)[self.cg_acdc] * self.nc.Sbase
+        Pf_vsc = self.Pf[self.cg_acdc]
+        St_vsc = (self.Pt + 1j * self.Qt)[self.cg_acdc]
+        If_vsc = Pf_vsc / np.abs(V[self.nc.vsc_data.F])
+        It_vsc = St_vsc / np.conj(V[self.nc.vsc_data.T])
 
         # HVDC
         Sf_hvdc = (self.Pf + 1j * self.Qf)[self.cg_hvdc] * self.nc.Sbase
         St_hvdc = (self.Pt + 1j * self.Qt)[self.cg_hvdc] * self.nc.Sbase
 
-        return NumericPowerFlowResults(V=self.V,
-                                       Scalc=self.Scalc,
-                                       m=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
-                                       tau=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-                                       Sf=Sfb,
-                                       St=Stb,
-                                       If=If,
-                                       It=It,
-                                       loading=loading,
-                                       losses=losses,
-                                       norm_f=self.error,
-                                       converged=self.converged,
-                                       iterations=iterations,
-                                       elapsed=elapsed)
+        return NumericPowerFlowResults(
+            V=self.V,
+            Scalc=self.Scalc,
+            m=expand(self.nc.nbr, self.m, self.cx_m, 1.0),
+            tau=expand(self.nc.nbr, self.tau, self.cx_tau, 0.0),
+            Sf=Sf * self.nc.Sbase,
+            St=St * self.nc.Sbase,
+            If=If,
+            It=It,
+            loading=loading,
+            losses=losses,
+            Pf_vsc=Pf_vsc * self.nc.Sbase,
+            St_vsc=St_vsc * self.nc.Sbase,
+            If_vsc=If_vsc,
+            It_vsc=It_vsc,
+            losses_vsc=Pf_vsc + St_vsc.real,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            losses_hvdc=Sf_hvdc + Sf_hvdc,
+            norm_f=self.error,
+            converged=self.converged,
+            iterations=iterations,
+            elapsed=elapsed
+        )

@@ -31,6 +31,14 @@ class NumericPowerFlowResults:
                  It: CxVec,
                  loading: CxVec,
                  losses: CxVec,
+                 Pf_vsc: Vec,
+                 St_vsc: CxVec,
+                 If_vsc: Vec,
+                 It_vsc: CxVec,
+                 losses_vsc: Vec,
+                 Sf_hvdc: CxVec,
+                 St_hvdc: CxVec,
+                 losses_hvdc: CxVec,
                  norm_f: float,
                  converged: bool,
                  iterations: int,
@@ -47,6 +55,14 @@ class NumericPowerFlowResults:
         :param It: Current to vector for all the Branches
         :param loading: Loading vector for all the Branches
         :param losses: Losses vector for all the Branches
+        :param Pf_vsc:
+        :param St_vsc:
+        :param If_vsc:
+        :param It_vsc:
+        :param losses_vsc:
+        :param Sf_hvdc:
+        :param St_hvdc:
+        :param losses_hvdc:
         :param norm_f: error
         :param converged: converged?
         :param iterations: number of iterations
@@ -55,17 +71,31 @@ class NumericPowerFlowResults:
         self.V = V
         self.Scalc = Scalc
 
-        self.tap_module = m
-        self.tap_angle = tau
-
+        # regular branches
         self.Sf = Sf
         self.St = St
         self.If = If
         self.It = It
-
         self.loading = loading
         self.losses = losses
 
+        # controllable branches
+        self.tap_module = m
+        self.tap_angle = tau
+
+        # VSC
+        self.Pf_vsc = Pf_vsc
+        self.St_vsc = St_vsc
+        self.If_vsc = If_vsc
+        self.It_vsc = It_vsc
+        self.losses_vsc = losses_vsc
+
+        # Hvdc
+        self.Sf_hvdc = Sf_hvdc
+        self.St_hvdc = St_hvdc
+        self.losses_hvdc = losses_hvdc
+
+        # convergence metrics
         self.converged = converged
         self.norm_f = norm_f
         self.iterations = iterations
