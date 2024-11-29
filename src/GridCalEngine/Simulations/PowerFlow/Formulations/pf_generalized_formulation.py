@@ -460,7 +460,8 @@ def adv_jacobian(nbus: int,
         pq_sqrt = np.sqrt(pq)
         pq_sqrt += 1e-20
         dLacdc_dVm = (alpha2[vsc_order] * pq_sqrt * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
-                      + 2 * alpha3[vsc_order] * (pq) / (Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
+                      + 2 * alpha3[vsc_order] * (pq) / (
+                                  Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
         dLacdc_dVm *= -1
 
         dLacdc_dPt = (np.ones(nvsc)
@@ -1041,7 +1042,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.logger: Logger = logger
 
         if self.options.verbose > 1:
-            print("(pf_generalized_formulation.py) self.nc.passive_branch_data.nelm: ", self.nc.passive_branch_data.nelm)
+            print("(pf_generalized_formulation.py) self.nc.passive_branch_data.nelm: ",
+                  self.nc.passive_branch_data.nelm)
             print("(pf_generalized_formulation.py) self.nc.active_branch_data.nelm: ", self.nc.active_branch_data.nelm)
             print("(pf_generalized_formulation.py) self.nc.vsc_data.nelm: ", self.nc.vsc_data.nelm)
 
@@ -1906,16 +1908,57 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         #     branch_rates=self.nc.passive_branch_data.rates,
         #     Sbase=self.nc.Sbase)
 
+        # power at the slack nodes
+        Sbus = self.Sbus
+
+        # Branches current, loading, etc
+        V = self.Vm * np.exp(1j * self.Va)
+        Vf = V[self.nc.passive_branch_data.F]
+        Vt = V[self.nc.passive_branch_data.T]
+        If = self.adm.Yf @ V
+        It = self.adm.Yt @ V
+        Sf = Vf * np.conj(If)
+        St = Vt * np.conj(It)
+
+        Sf_contrl_br = (self.Pf + 1j * self.Qf)[self.cg_pttr]
+        St_contrl_br = (self.Pt + 1j * self.Qt)[self.cg_pttr]
+
+        If[self.cg_pftr] = np.conj(Sf_contrl_br / Vf[self.cg_pftr])
+        It[self.cg_pftr] = np.conj(St_contrl_br / Vt[self.cg_pftr])
+        Sf[self.cg_pftr] = Sf_contrl_br
+        St[self.cg_pftr] = St_contrl_br
+
+        # Branch losses in MVA
+        losses = (Sf + St) * self.nc.Sbase
+
+        # branch voltage increment
+        Vbranch = Vf - Vt
+
+        # Branch power in MVA
+        Sfb = Sf * self.nc.Sbase
+        Stb = St * self.nc.Sbase
+
+        # Branch loading in p.u.
+        loading = Sfb / (self.nc.passive_branch_data.rates + 1e-9)
+
+        # VSC
+        Sf_vsc = (self.Pf + 1j * self.Qf)[self.cg_acdc] * self.nc.Sbase
+        St_vsc = (self.Pt + 1j * self.Qt)[self.cg_acdc] * self.nc.Sbase
+
+        # HVDC
+        Sf_hvdc = (self.Pf + 1j * self.Qf)[self.cg_hvdc] * self.nc.Sbase
+        St_hvdc = (self.Pt + 1j * self.Qt)[self.cg_hvdc] * self.nc.Sbase
+
         return NumericPowerFlowResults(V=self.V,
                                        Scalc=self.Scalc,
                                        m=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
                                        tau=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-                                       Sf=np.zeros(self.nc.nbr, dtype=complex),
-                                       St=np.zeros(self.nc.nbr, dtype=complex),
-                                       If=np.zeros(self.nc.nbr, dtype=complex),
-                                       It=np.zeros(self.nc.nbr, dtype=complex),
-                                       loading=np.zeros(self.nc.nbr, dtype=complex),
-                                       losses=np.zeros(self.nc.nbr, dtype=complex),
+                                       Sf=Sfb,
+                                       St=Stb,
+                                       If=If,
+                                       It=It,
+                                       loading=loading,
+                                       losses=losses,
                                        norm_f=self.error,
                                        converged=self.converged,
                                        iterations=iterations,
