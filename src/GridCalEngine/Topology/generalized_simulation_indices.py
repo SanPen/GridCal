@@ -134,6 +134,8 @@ class GeneralizedSimulationIndices:
         # Unspecified zqip is true if slack or bus with controllable gen/batt/shunt
         self.bus_vm_source_used: BoolVec | None = None
         self.bus_vm_pointer_used: BoolVec | None = None
+        self.bus_va_source_used: BoolVec | None = None
+        self.bus_va_pointer_used: BoolVec | None = None
         self.bus_unspecified_qzip: BoolVec | None = None
 
         # 1 if free mode (P as a function of angle drop), 0 if fixed mode (Pset)
@@ -498,6 +500,7 @@ class GeneralizedSimulationIndices:
                 elif control == ConverterControlType.Va_ac:
                     bus_idx = vsc_data.T[ii]
                     self.ck_va.add(int(bus_idx))
+                    self.set_bus_va_simple(bus_local=int(bus_idx))
                     self.va_setpoints.append(control_magnitude)
 
                 elif control == ConverterControlType.Pac:
@@ -617,6 +620,53 @@ class GeneralizedSimulationIndices:
                                       device=device_name,
                                       device_property='Vm')
 
+    def set_bus_va_simple(self,
+                          bus_local: int,
+                          device_name="",
+                          bus_remote: int = -1,
+                          remote_control: bool = False,
+                          is_slack: bool = False):
+        """
+        Set the bus control voltage checking incompatibilities
+        No point in setting the voltage magnitude, already did in the circuit_to_data
+
+        :param bus_local: Local bus index
+        :param device_name: Name to store in the logger
+        :param bus_remote: Remote bus index
+        :param remote_control: Remote control?
+        :param is_slack: Is it a slack bus?
+        """
+
+        if is_slack:
+            # self.add_to_cx_vm(bus_local)
+            self.bus_va_pointer_used[bus_local] = True
+
+        else:
+            # First check if we are setting a remote bus voltage
+            if remote_control and bus_remote > -1 and bus_remote != bus_local:
+                if not self.bus_va_pointer_used[bus_remote]:
+                    # initialize the remote bus voltage to the control value
+                    self.bus_va_pointer_used[bus_remote] = True
+                    # self.add_to_cx_vm(bus_remote)
+                else:
+                    self.logger.add_error(msg='Trying to set an already fixed voltage angle, duplicity of controls',
+                                          device=device_name,
+                                          device_property='Va')
+            elif remote_control:
+                self.logger.add_error(msg='Remote control without a valid remote bus',
+                                      device=device_name,
+                                      device_property='Va')
+
+            # Not a remote bus control
+            elif not self.bus_va_pointer_used[bus_local]:
+                # initialize the local bus voltage to the control value
+                self.bus_va_pointer_used[bus_local] = True
+                # self.add_to_cx_vm(bus_local)
+            else:
+                self.logger.add_error(msg='Trying to set an already fixed voltage angle, duplicity of controls',
+                                      device=device_name,
+                                      device_property='Va')
+
     def fill_gx_sets(self,
                      nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
         """
@@ -628,6 +678,8 @@ class GeneralizedSimulationIndices:
 
         self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
         self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
+        self.bus_va_pointer_used = np.zeros(nbus, dtype=bool)
+        self.bus_va_source_used = np.zeros(nbus, dtype=bool)
         self.bus_unspecified_qzip = np.zeros(nbus, dtype=bool)
         self.hvdc_mode = np.zeros(len(nc.hvdc_data.active), dtype=bool)
 
@@ -646,8 +698,11 @@ class GeneralizedSimulationIndices:
                     self.add_to_cx_qzip(i)
                     self.set_bus_vm_simple(bus_local=i,
                                            is_slack=True)
+                    self.set_bus_va_simple(bus_local=i,
+                                           is_slack=True)
                 else:
-                    self.add_to_cx_va(i)
+                    pass
+                    # self.add_to_cx_va(i)
             else:
                 self.add_to_cg_pdc(i)
 
@@ -824,6 +879,10 @@ class GeneralizedSimulationIndices:
         for i, val in enumerate(self.bus_vm_pointer_used):
             if not val:
                 self.add_to_cx_vm(i)
+
+        for i, val in enumerate(self.bus_va_pointer_used):
+            if not val and not nc.bus_data.is_dc[i]:
+                self.add_to_cx_va(i)
 
         return self
 
