@@ -105,16 +105,27 @@ class GeneralizedSimulationIndices:
         self.cx_qta: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
 
         # ck sets (the complements of the cx sets)
-        self.ck_va: Set[int] = set()
-        self.ck_vm: Set[int] = set()
-        self.ck_tau: Set[int] = set()
-        self.ck_m: Set[int] = set()
-        self.ck_pzip: Set[int] = set()
-        self.ck_qzip: Set[int] = set()
-        self.ck_pfa: Set[int] = set()
-        self.ck_pta: Set[int] = set()
-        self.ck_qfa: Set[int] = set()
-        self.ck_qta: Set[int] = set()
+        # NOTE: implement them as lists, otherwise messed up order with setpoints lists
+        self.ck_va = []
+        self.ck_vm = []
+        self.ck_tau = []
+        self.ck_m = []
+        self.ck_pzip = []
+        self.ck_qzip = []
+        self.ck_pfa = []
+        self.ck_qfa = []
+        self.ck_pta = []
+        self.ck_qta = []
+        # self.ck_va: Set[int] = set()
+        # self.ck_vm: Set[int] = set()
+        # self.ck_tau: Set[int] = set()
+        # self.ck_m: Set[int] = set()
+        # self.ck_pzip: Set[int] = set()
+        # self.ck_qzip: Set[int] = set()
+        # self.ck_pfa: Set[int] = set()
+        # self.ck_pta: Set[int] = set()
+        # self.ck_qfa: Set[int] = set()
+        # self.ck_qta: Set[int] = set()
 
         # setpoints that correspond to the ck sets, P and Q in MW
         self.va_setpoints = []
@@ -339,7 +350,8 @@ class GeneralizedSimulationIndices:
                                tap_phase: float = 0.0,
                                Pset: float = 0.0,
                                branch_idx: int = None,
-                               is_conventional: bool = True):
+                               is_conventional: bool = True,
+                               ):
         """
 
         :param branch_name:
@@ -378,13 +390,13 @@ class GeneralizedSimulationIndices:
         else:
             # Handle conventional conditions (regular transformers)
             if mode == TapPhaseControl.fixed:
-                self.ck_tau.add(branch_idx)
+                self.ck_tau.append(branch_idx)
                 self.tau_setpoints.append(tap_phase)
             elif mode == TapPhaseControl.Pf:
-                self.ck_pfa.add(branch_idx)
+                self.ck_pfa.append(branch_idx)
                 self.pf_setpoints.append(Pset)
             elif mode == TapPhaseControl.Pt:
-                self.ck_pta.add(branch_idx)
+                self.ck_pta.append(branch_idx)
                 self.pt_setpoints.append(Pset)
             else:
                 pass
@@ -397,7 +409,8 @@ class GeneralizedSimulationIndices:
                              is_conventional: bool = True,
                              Vm: float = 1.0,
                              Qset: float = 0.0,
-                             m: float = 1.0):
+                             m: float = 1.0,
+                             ):
 
         """
         :param branch_name:
@@ -429,13 +442,13 @@ class GeneralizedSimulationIndices:
                                         device_class="VscData")
             else:
                 # in this case we have to add the tap_phase to the tau set
-                self.ck_m.add(branch_idx)
-                self.tau_setpoints.append(m)
+                self.ck_m.append(branch_idx)
+                self.m_setpoints.append(m)
 
         elif mode == TapModuleControl.Vm:
             self.set_bus_vm_simple(bus_local=bus_idx, device_name=branch_name)
             if is_conventional:
-                self.ck_vm.add(bus_idx)
+                self.ck_vm.append(bus_idx)
                 self.vm_setpoints.append(Vm)
 
             if not is_conventional:
@@ -445,11 +458,11 @@ class GeneralizedSimulationIndices:
             if is_conventional:
                 # If conventional, add
                 if mode == TapModuleControl.Qf:
-                    self.ck_qfa.add(branch_idx)
+                    self.ck_qfa.append(branch_idx)
                     self.qf_setpoints.append(Qset)
 
                 else:  # TapModuleControl.Qt
-                    self.ck_qta.add(branch_idx)
+                    self.ck_qta.append(branch_idx)
                     self.qt_setpoints.append(Qset)
             else:
                 # If not conventional, add only to cx_q*
@@ -468,6 +481,7 @@ class GeneralizedSimulationIndices:
         :param branch_idx: branch index
         :param vsc_data: VscData object containing VSC-related data.
         :param ii: Index of the current VSC being processed.
+        :param Sbase:
         """
 
         # Initialize a boolean array for the six control types, defaulting to False
@@ -489,30 +503,30 @@ class GeneralizedSimulationIndices:
 
                 if control == ConverterControlType.Vm_dc:
                     bus_idx = vsc_data.F[ii]
-                    self.ck_vm.add(int(bus_idx))
+                    self.ck_vm.append(int(bus_idx))
                     self.set_bus_vm_simple(bus_local=int(bus_idx))
                     self.vm_setpoints.append(control_magnitude)
                 elif control == ConverterControlType.Vm_ac:
                     bus_idx = vsc_data.T[ii]
-                    self.ck_vm.add(int(bus_idx))
+                    self.ck_vm.append(int(bus_idx))
                     self.set_bus_vm_simple(bus_local=int(bus_idx))
                     self.vm_setpoints.append(control_magnitude)
                 elif control == ConverterControlType.Va_ac:
                     bus_idx = vsc_data.T[ii]
-                    self.ck_va.add(int(bus_idx))
+                    self.ck_va.append(int(bus_idx))
                     self.set_bus_va_simple(bus_local=int(bus_idx))
                     self.va_setpoints.append(control_magnitude)
 
                 elif control == ConverterControlType.Pac:
-                    self.ck_pta.add(int(branch_idx))
+                    self.ck_pta.append(int(branch_idx))
                     self.pt_setpoints.append(control_magnitude)
 
                 elif control == ConverterControlType.Qac:
-                    self.ck_qta.add(int(branch_idx))
+                    self.ck_qta.append(int(branch_idx))
                     self.qt_setpoints.append(control_magnitude)
 
                 elif control == ConverterControlType.Pdc:
-                    self.ck_pfa.add(int(branch_idx))
+                    self.ck_pfa.append(int(branch_idx))
                     self.pf_setpoints.append(control_magnitude)
 
             except ValueError:
@@ -696,10 +710,18 @@ class GeneralizedSimulationIndices:
                 if bus_type == BusMode.Slack_tpe.value:
                     self.add_to_cx_pzip(i)
                     self.add_to_cx_qzip(i)
+
                     self.set_bus_vm_simple(bus_local=i,
                                            is_slack=True)
+                    # It will be the generator at this bus the one to specify it
+                    # self.ck_vm.append(i)
+                    # self.vm_setpoints.append(abs(nc.bus_data.Vbus[i]))
+                    # As it is not well done, avoid setting the setpoint here
+
                     self.set_bus_va_simple(bus_local=i,
                                            is_slack=True)
+                    self.ck_va.append(i)
+                    self.va_setpoints.append(np.angle(nc.bus_data.Vbus[i]))
                 else:
                     pass
                     # self.add_to_cx_va(i)
@@ -720,15 +742,17 @@ class GeneralizedSimulationIndices:
                                                device_name=dev_tpe.names[i],
                                                bus_remote=ctr_bus_idx,
                                                remote_control=remote_control)
+                        self.ck_vm.append(bus_idx)
+                        self.vm_setpoints.append(dev_tpe.v[i])
 
                         self.add_to_cx_qzip(bus_idx)
-                        self.ck_pzip.add(bus_idx)
+                        self.ck_pzip.append(bus_idx)
                         self.pzip_setpoints.append(dev_tpe.p[i])
 
                     else:
-                        self.ck_pzip.add(bus_idx)
-                        self.ck_qzip.add(bus_idx)
-                        self.pzip_setpoints.append(dev_tpe.p[i])
+                        self.ck_pzip.append(bus_idx)
+                        self.ck_qzip.append(bus_idx)
+                        self.pzip_setpoints.append(dev_tpe.p[i] / nc.Sbase)
                         self.qzip_setpoints.append(dev_tpe.get_q_at(i))
 
         # DONE
@@ -746,8 +770,12 @@ class GeneralizedSimulationIndices:
                                        bus_remote=ctr_bus_idx,
                                        remote_control=remote_control)
 
+                self.ck_vm.append(bus_idx)
+                self.vm_setpoints.append(nc.shunt_data.vset[i])
+
                 self.add_to_cx_qzip(bus_idx)
-                self.ck_pzip.add(bus_idx)
+
+                self.ck_pzip.append(bus_idx)
                 self.pzip_setpoints.append(dev_tpe.p[i])
 
         # DONE
@@ -762,7 +790,8 @@ class GeneralizedSimulationIndices:
                                         tap_phase=nc.active_branch_data.tap_angle[i],
                                         Pset=nc.active_branch_data.Pset[i],
                                         branch_idx=branch_idx,
-                                        is_conventional=True)
+                                        is_conventional=True,
+                                        )
 
             bus_idx: int = nc.active_branch_data.tap_controlled_buses[i]
 
@@ -773,7 +802,8 @@ class GeneralizedSimulationIndices:
                                       is_conventional=True,
                                       Vm=nc.active_branch_data.vset[i],
                                       Qset=nc.active_branch_data.Qset[i],
-                                      m=nc.active_branch_data.tap_module[i])
+                                      m=nc.active_branch_data.tap_module[i],
+                                      )
 
             # Here we start to throw stuff into the unknown sets. previously we were simply putting known sets and setpoints
             mode1 = nc.active_branch_data.tap_module_control_mode[i]
@@ -861,15 +891,15 @@ class GeneralizedSimulationIndices:
                 self.pf_setpoints.append(nc.hvdc_data.Pset[iii])
                 self.pt_setpoints.append(-nc.hvdc_data.Pset[iii])
 
-                self.ck_pfa.add(int(branch_idx))
-                self.ck_pta.add(int(branch_idx))
+                self.ck_pfa.append(int(branch_idx))
+                self.ck_pta.append(int(branch_idx))
 
             else:
                 self.pf_setpoints.append(-nc.hvdc_data.Pset[iii])
                 self.pt_setpoints.append(nc.hvdc_data.Pset[iii])
 
-                self.ck_pfa.add(int(branch_idx))
-                self.ck_pta.add(int(branch_idx))
+                self.ck_pfa.append(int(branch_idx))
+                self.ck_pta.append(int(branch_idx))
 
             # Initialize Qs to 0, although they will take whatever value
 

@@ -9,11 +9,12 @@ faulthandler.enable()  # start @ the beginning
 """
 Check that a transformer can regulate the voltage at a bus
 """
-fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', 'AC-DC with all and DCload.gridcal')
+# fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', 'AC-DC with all and DCload.gridcal')
+fname = "G:/.shortcut-targets-by-id/1B4zzyZBFXXFuEGTYGLt-sPLVc6VD2iL4/eRoots Analytics Shared Drive/Development/Project ACDC1 AC-DC Power Flow/Training grids/17bus_w_fixes.gridcal"
 
 grid = gce.open_file(fname)
 
-options = PowerFlowOptions(SolverType.PowellDogLeg,
+options = PowerFlowOptions(SolverType.NR,
                            verbose=0,
                            control_q=False,
                            retry_with_other_methods=False,
