@@ -28,11 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Deactivate autodiff">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fix coloring with VSCs in the GUI">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1832,7 +1831,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="582" />
+    <option name="localTasksCounter" value="583" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1879,7 +1878,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Removed unnecessary NSGA time fix" />
     <MESSAGE value="Improved the TapChanger handling inside the TransformerType" />
     <MESSAGE value="moved find_closest_number to the Utils" />
     <MESSAGE value="Implemented basic plugin reading" />
@@ -1904,7 +1902,8 @@
     <MESSAGE value="5.2.5" />
     <MESSAGE value="more topology tests" />
     <MESSAGE value="basic block editor demo" />
-    <option name="LAST_COMMIT_MESSAGE" value="basic block editor demo" />
+    <MESSAGE value="Fix coloring with VSCs in the GUI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix coloring with VSCs in the GUI" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2400,6 +2399,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py</url>
           <line>3601</line>
           <option name="timeStamp" value="2384" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
+          <line>1927</line>
+          <option name="timeStamp" value="2385" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

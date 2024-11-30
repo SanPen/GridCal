@@ -1922,7 +1922,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_vsc = (self.Pt + 1j * self.Qt)[self.cg_acdc]
         If_vsc = Pf_vsc / np.abs(V[self.nc.vsc_data.F])
         It_vsc = St_vsc / np.conj(V[self.nc.vsc_data.T])
-        loading_vsc = Pf_vsc / (self.nc.vsc_data.rates + 1e-20)
+        loading_vsc = abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20) * self.nc.Sbase
 
         # HVDC
         Sf_hvdc = (self.Pf + 1j * self.Qf)[self.cg_hvdc] * self.nc.Sbase

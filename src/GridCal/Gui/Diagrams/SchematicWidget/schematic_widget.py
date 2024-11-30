@@ -3548,7 +3548,7 @@ class SchematicWidget(BaseDiagramWidget):
         # VSC lines
         if vsc_Pf is not None:
 
-            vsc_sending_power_norm = np.abs(vsc_Pf) / (max_flow + 1e-20)
+            vsc_sending_power_norm = np.abs(vsc_Pt + 1j * vsc_Qt) / (max_flow + 1e-20)
 
             if self.circuit.get_vsc_number() == len(vsc_Pf):
                 for i, elm in enumerate(self.circuit.vsc_devices):
