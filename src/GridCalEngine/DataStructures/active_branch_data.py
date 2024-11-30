@@ -38,7 +38,19 @@ class ActiveBranchData:
         self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
         self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
 
-        self.any_pf_control = False
+        self._any_pf_control = False
+
+    @property
+    def any_pf_control(self):
+        """
+
+        :return:
+        """
+        return self._any_pf_control
+
+    @any_pf_control.setter
+    def any_pf_control(self, value):
+        self._any_pf_control = value
 
     def size(self) -> int:
         """
