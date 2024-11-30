@@ -16,17 +16,17 @@ Numeric = Union[int, float, bool, complex]
 
 NumericVec = npt.NDArray[np.float64]
 DateVec = npt.NDArray[np.datetime64]
-IntVec = npt.NDArray[int]
-BoolVec = npt.NDArray[bool]
+IntVec = npt.NDArray[np.int_]
+BoolVec = npt.NDArray[np.bool_]
 Vec = npt.NDArray[np.float_]
 CxVec = npt.NDArray[np.complex_]
-StrVec = npt.NDArray[str]
-ObjVec = npt.NDArray[object]
-Mat = npt.NDArray[float]  # no way yet to say it is 2D
-CxMat = npt.NDArray[complex]  # no way yet to say it is 2D
-IntMat = npt.NDArray[int]  # no way yet to say it is 2D
-StrMat = npt.NDArray[str]  # no way yet to say it is 2D
-ObjMat = npt.NDArray[object]  # no way yet to say it is 2D
+StrVec = npt.NDArray[np.str_]
+ObjVec = npt.NDArray[np.object_]
+Mat = npt.NDArray[np.float_]  # no way yet to say it is 2D
+CxMat = npt.NDArray[np.complex_]  # no way yet to say it is 2D
+IntMat = npt.NDArray[np.int_]  # no way yet to say it is 2D
+StrMat = npt.NDArray[np.str_]  # no way yet to say it is 2D
+ObjMat = npt.NDArray[np.object_]  # no way yet to say it is 2D
 
 CscMat = csc_matrix
 CsrMat = csr_matrix
