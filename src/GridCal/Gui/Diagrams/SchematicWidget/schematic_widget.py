@@ -3304,9 +3304,14 @@ class SchematicWidget(BaseDiagramWidget):
                        hvdc_loading: Vec = None,
                        hvdc_active: IntVec = None,
                        loading_label: str = 'loading',
+                       vsc_Pf: Vec = None,
+                       vsc_Pt: Vec = None,
+                       vsc_Qt: Vec = None,
+                       vsc_losses: Vec = None,
+                       vsc_loading: Vec = None,
+                       vsc_active: IntVec = None,
                        ma: Vec = None,
                        theta: Vec = None,
-                       Beq: Vec = None,
                        fluid_node_p2x_flow: Vec = None,
                        fluid_node_current_level: Vec = None,
                        fluid_node_spillage: Vec = None,
@@ -3336,6 +3341,12 @@ class SchematicWidget(BaseDiagramWidget):
         :param hvdc_losses: HVDC branch losses [MW]
         :param hvdc_loading: HVDC Branch loading [%]
         :param hvdc_active: HVDC Branch status
+        :param vsc_Pf: VSC branch flows "from" [MW]
+        :param vsc_Pt: VSC branch flows "to" [MW]
+        :param vsc_Qt: VSC branch flows "to" [Mvar]
+        :param vsc_losses: VSC branch losses [MW]
+        :param vsc_loading: VSC Branch loading [%]
+        :param vsc_active: VSC Branch status
         :param loading_label: String saling whatever the loading label means
         :param ma: branch phase shift angle (rad)
         :param theta: branch tap module (p.u.)
@@ -3446,8 +3457,8 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     Sfnorm = Sfabs
 
-                if self.circuit.get_branch_number_wo_hvdc() == len(Sf):
-                    for i, branch in enumerate(self.circuit.get_branches_wo_hvdc_iter()):
+                if self.circuit.get_branch_number_wo_vsc_hvdc() == len(Sf):
+                    for i, branch in enumerate(self.circuit.get_branches_wo_vsc_hvdc_iter()):
 
                         # try to find the diagram object of the DB object
                         graphic_object = self.graphics_manager.query(branch)
@@ -3503,15 +3514,15 @@ class SchematicWidget(BaseDiagramWidget):
                                     if theta is not None:
                                         tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
-                                if branch.device_type == DeviceType.VscDevice:
-                                    if ma is not None:
-                                        tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+                                # if branch.device_type == DeviceType.VscDevice:
+                                #     if ma is not None:
+                                #         tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
+                                #
+                                #     if theta is not None:
+                                #         tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
-                                    if theta is not None:
-                                        tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
-
-                                    if Beq is not None:
-                                        tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
+                                    # if Beq is not None:
+                                    #     tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
 
                                 graphic_object.setToolTipText(tooltip)
                                 graphic_object.set_colour(color, w, style)
@@ -3531,8 +3542,84 @@ class SchematicWidget(BaseDiagramWidget):
                             pass
                 else:
                     error_msg("Branch results length differs from the number of branch results. \n"
-                              "Did you change the numbe rof devices? If so, re-run the simulation.")
+                              "Did you change the number of devices? If so, re-run the simulation.")
                     return
+
+        # VSC lines
+        if vsc_Pf is not None:
+
+            vsc_sending_power_norm = np.abs(vsc_Pf) / (max_flow + 1e-20)
+
+            if self.circuit.get_vsc_number() == len(vsc_Pf):
+                for i, elm in enumerate(self.circuit.vsc_devices):
+
+                    # try to find the diagram object of the DB object
+                    graphic_object = self.graphics_manager.query(elm)
+
+                    if graphic_object:
+
+                        if vsc_active[i]:
+
+                            if use_flow_based_width:
+                                w = int(np.floor(
+                                    min_branch_width + vsc_sending_power_norm[i] * (
+                                            max_branch_width - min_branch_width)))
+                            else:
+                                w = graphic_object.pen_width
+
+                            if elm.active:
+                                style = Qt.PenStyle.SolidLine
+
+                                a = 1
+                                if cmap == palettes.Colormaps.Green2Red:
+                                    b, g, r = palettes.green_to_red_bgr(abs(vsc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.Heatmap:
+                                    b, g, r = palettes.heatmap_palette_bgr(abs(vsc_loading[i]))
+
+                                elif cmap == palettes.Colormaps.TSO:
+                                    b, g, r = palettes.tso_line_palette_bgr(elm.get_max_bus_nominal_voltage(),
+                                                                            abs(vsc_loading[i]))
+
+                                else:
+                                    r, g, b, a = loading_cmap(abs(vsc_loading[i]))
+                                    r *= 255
+                                    g *= 255
+                                    b *= 255
+                                    a *= 255
+
+                                color = QColor(r, g, b, a)
+                            else:
+                                style = Qt.PenStyle.DashLine
+                                color = QColor(115, 115, 115, 255)  # gray
+
+                            tooltip = str(i) + ': ' + elm.name
+                            tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                                abs(vsc_loading[i]) * 100) + ' [%]'
+
+                            tooltip += '\nPower (from):\t' + "{:10.4f}".format(vsc_Pf[i]) + ' [MW]'
+
+                            if vsc_losses is not None:
+                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
+                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
+                                tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
+                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0, St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                            else:
+                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0, St=-vsc_Pf[i] + 1j * vsc_Qt[i])
+
+                            graphic_object.setToolTipText(tooltip)
+                            graphic_object.set_colour(color, w, style)
+                        else:
+                            w = graphic_object.pen_width
+                            style = Qt.PenStyle.DashLine
+                            color = QColor(115, 115, 115, 255)  # gray
+                            graphic_object.set_pen(QPen(color, w, style))
+                    else:
+                        # No diagram object
+                        pass
+            else:
+                error_msg("VSC results length differs from the number of VSC results. \n"
+                          "Did you change the number of devices? If so, re-run the simulation.")
 
         # HVDC lines
         if hvdc_Pf is not None:
@@ -3607,7 +3694,7 @@ class SchematicWidget(BaseDiagramWidget):
                         pass
             else:
                 error_msg("HVDC results length differs from the number of HVDC results. \n"
-                          "Did you change the numbe rof devices? If so, re-run the simulation.")
+                          "Did you change the number of devices? If so, re-run the simulation.")
 
         # fluid paths
         if fluid_path_flow is not None:

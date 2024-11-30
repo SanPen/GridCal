@@ -462,12 +462,14 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_wo_vsc_hvdc()
         hvdc_lines = self.circuit.hvdc_lines
+        vsc_devs = self.circuit.vsc_devices
 
         bus_active = [bus.active for bus in buses]
         br_active = [br.active for br in branches]
         hvdc_active = [hvdc.active for hvdc in hvdc_lines]
+        vsc_active = [vsc.active for vsc in vsc_devs]
 
         return diagram_widget.colour_results(Sbus=results.Sbus,
                                              bus_active=bus_active,
@@ -483,9 +485,14 @@ class DiagramsMain(CompiledArraysMain):
                                              hvdc_losses=results.losses_hvdc,
                                              hvdc_loading=results.loading_hvdc,
                                              hvdc_active=hvdc_active,
+                                             vsc_Pf=results.Pf_vsc,
+                                             vsc_Pt=results.St_vsc.real,
+                                             vsc_Qt=results.St_vsc.imag,
+                                             vsc_losses=results.losses_vsc,
+                                             vsc_loading=results.loading_vsc,
+                                             vsc_active=vsc_active,
                                              ma=results.tap_module,
                                              theta=results.tap_angle,
-                                             Beq=results.Beq,
                                              use_flow_based_width=use_flow_based_width,
                                              min_branch_width=min_branch_width,
                                              max_branch_width=max_branch_width,

@@ -4690,12 +4690,26 @@ class Assets:
         """
         return self.get_branches(add_vsc=True, add_hvdc=False, add_switch=False)
 
+    def get_branches_wo_vsc_hvdc(self) -> list[BRANCH_TYPES]:
+        """
+        Return all the real branch objects.
+        :return: lines + transformers 2w
+        """
+        return self.get_branches(add_vsc=False, add_hvdc=False, add_switch=False)
+
     def get_branch_names_wo_hvdc(self) -> StrVec:
         """
         Get all branch names without HVDC devices
         :return: StrVec
         """
         return self.get_branch_names(add_vsc=True, add_hvdc=False, add_switch=False)
+
+    def get_branch_names_wo_vsc_hvdc(self) -> StrVec:
+        """
+        Get all branch names without VSC nor HVDC devices
+        :return: StrVec
+        """
+        return self.get_branch_names(add_vsc=False, add_hvdc=False, add_switch=False)
 
     def get_branch_number_wo_hvdc(self) -> int:
         """
@@ -4704,12 +4718,26 @@ class Assets:
         """
         return self.get_branch_number(add_vsc=True, add_hvdc=False, add_switch=False)
 
+    def get_branch_number_wo_vsc_hvdc(self) -> int:
+        """
+        return the number of Branches (of all types)
+        :return: number
+        """
+        return self.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=False)
+
     def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
         """
         Iterator all the real branch objects.
         :return: lines + transformers 2w + hvdc
         """
         return self.get_branches_iter(add_vsc=True, add_hvdc=False, add_switch=False)
+
+    def get_branches_wo_vsc_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator all the real branch objects.
+        :return: lines + transformers 2w + hvdc + vsc
+        """
+        return self.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=False)
 
     def get_branches_wo_hvdc_index_dict(self) -> Dict[BRANCH_TYPES, int]:
         """
