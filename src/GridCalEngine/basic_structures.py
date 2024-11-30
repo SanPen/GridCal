@@ -37,16 +37,15 @@ class CDF:
     Inverse Cumulative density function of a given array of data
     """
 
-    def __init__(self, data: Vec):
+    def __init__(self, data: Vec | pd.Series):
         """
         Constructor
-        @param data: Array (list or numpy array)
+        @param data: Array (DataFrame or numpy array)
         """
         # Create the CDF of the data
         # sort the data:
-        if type(data) is pd.DataFrame:
+        if isinstance(data, pd.Series):
             self.arr = np.sort(np.ndarray.flatten(data.values))
-
         else:
             self.arr = np.sort(data, axis=0)
 

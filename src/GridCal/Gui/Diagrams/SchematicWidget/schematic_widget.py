@@ -3350,7 +3350,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param loading_label: String saling whatever the loading label means
         :param ma: branch phase shift angle (rad)
         :param theta: branch tap module (p.u.)
-        :param Beq: Branch equivanet susceptance (p.u.)
         :param fluid_node_p2x_flow: P2X flow rate (m3)
         :param fluid_node_current_level: Current level (m3)
         :param fluid_node_spillage: Spillage (m3)

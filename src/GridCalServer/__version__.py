@@ -6,7 +6,7 @@ import datetime
 _current_year_ = datetime.datetime.now().year
 
 # do not forget to keep a three-number version!!!
-__GridCalServer_VERSION__ = "5.3.0"
+__GridCalServer_VERSION__ = "5.3.0a1"
 
 url = 'https://github.com/SanPen/GridCal'
 
@@ -14,8 +14,7 @@ about_msg = "GridCalServer v" + str(__GridCalServer_VERSION__) + '\n\n'
 
 about_msg += """
 GridCal has been carefully crafted since 2015 to 
-serve as a platform for research and consultancy. 
-Visit https://www.advancedgridinsights.com/gridcal for more details.\n"""
+serve as a platform for research and consultancy.\n"""
 
 about_msg += """
 This program is free software; you can redistribute it and/or
