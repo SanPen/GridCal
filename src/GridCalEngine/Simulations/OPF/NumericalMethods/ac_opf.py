@@ -890,7 +890,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                          't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
                                          't_mult', 't_steps', 't_cond', 't_iter'])
 
-        print()
         print("Bus:\n", df_bus)
         print("V-Trafos:\n", df_trafo_m)
         print("Tau-Trafos:\n", df_trafo_tau)

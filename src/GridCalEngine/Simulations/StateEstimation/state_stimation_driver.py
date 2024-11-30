@@ -31,12 +31,14 @@ class StateEstimationResults(PowerFlowResults):
                                   n=n,
                                   m=m,
                                   n_hvdc=0,
+                                  n_vsc=0,
                                   n_gen=0,
                                   n_batt=0,
                                   n_sh=0,
                                   bus_names=bus_names,
                                   branch_names=branch_names,
                                   hvdc_names=hvdc_names,
+                                  vsc_names=np.array([]),
                                   gen_names=np.empty(0, dtype=object),
                                   batt_names=np.empty(0, dtype=object),
                                   sh_names=np.empty(0, dtype=object),
@@ -144,8 +146,12 @@ class StateEstimation(DriverTemplate):
 
             self.results.convergence_reports.append(report)
 
-            self.results.apply_from_island(solution,
-                                           island.original_bus_idx,
-                                           island.original_branch_idx)
+            self.results.apply_from_island(
+                results=solution,
+                b_idx=island.bus_data.original_idx,
+                br_idx=island.passive_branch_data.original_idx,
+                hvdc_idx=island.hvdc_data.original_idx,
+                vsc_idx=island.vsc_data.original_idx
+            )
 
         self.toc()

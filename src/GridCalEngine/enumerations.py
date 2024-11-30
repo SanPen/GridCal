@@ -1287,6 +1287,11 @@ class ResultTypes(Enum):
     HvdcLoading = 'HVDC loading'
     HvdcPowerTo = 'HVDC power "to"'
 
+    VscLosses = 'Vsc losses'
+    VscPowerFrom = 'Vsc power "from"'
+    VscLoading = 'Vsc loading'
+    VscPowerTo = 'Vsc power "to"'
+
     # StochasticPowerFlowDriver
     BusVoltageAverage = 'Bus voltage avg'
     BusVoltageStd = 'Bus voltage std'
@@ -1483,6 +1488,7 @@ class ResultTypes(Enum):
     BusResults = 'Bus'
     BranchResults = 'Branch'
     HvdcResults = 'Hvdc'
+    VscResults = 'Vsc'
     AreaResults = 'Area'
     InfoResults = 'Information'
     ReportsResults = 'Reports'

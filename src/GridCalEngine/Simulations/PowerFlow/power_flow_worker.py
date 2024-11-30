@@ -137,6 +137,16 @@ def solve(nc: NumericalCircuit,
                                            It=np.zeros(nc.nbr, dtype=complex),
                                            loading=np.zeros(nc.nbr, dtype=complex),
                                            losses=np.zeros(nc.nbr, dtype=complex),
+                                           Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                            converged=False,
                                            norm_f=1e200,
                                            iterations=0,
@@ -160,6 +170,16 @@ def solve(nc: NumericalCircuit,
                                                  It=np.zeros(nc.nbr, dtype=complex),
                                                  loading=np.zeros(nc.nbr, dtype=complex),
                                                  losses=np.zeros(nc.nbr, dtype=complex),
+                                                 Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                                 If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                                 losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                                  iterations=0,
                                                  elapsed=0)
 
@@ -514,12 +534,14 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         n=nc.nbus,
         m=nc.nbr,
         n_hvdc=nc.nhvdc,
+        n_vsc=nc.nvsc,
         n_gen=nc.ngen,
         n_batt=nc.nbatt,
         n_sh=nc.nshunt,
         bus_names=nc.bus_data.names,
         branch_names=nc.passive_branch_data.names,
         hvdc_names=nc.hvdc_data.names,
+        vsc_names=nc.vsc_data.names,
         gen_names=nc.generator_names,
         batt_names=nc.battery_names,
         sh_names=nc.shunt_names,
@@ -558,8 +580,10 @@ def multi_island_pf_nc(nc: NumericalCircuit,
             # merge the results from this island
             results.apply_from_island(
                 results=solution,
-                b_idx=island.original_bus_idx,
-                br_idx=island.original_branch_idx,
+                b_idx=island.bus_data.original_idx,
+                br_idx=island.passive_branch_data.original_idx,
+                hvdc_idx=island.hvdc_data.original_idx,
+                vsc_idx=island.vsc_data.original_idx
             )
             results.convergence_reports.append(report)
 
@@ -570,10 +594,10 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     # formulated are split objects
     # Pt is the "generation" at the sending point
     # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc
-    results.hvdc_Pf = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
-    results.hvdc_Pt = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
-    results.hvdc_loading = loading_hvdc
-    results.hvdc_losses = Losses_hvdc * nc.Sbase
+    results.Pf_hvdc = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
+    results.Pt_hvdc = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
+    results.loading_hvdc = loading_hvdc
+    results.losses_hvdc = Losses_hvdc * nc.Sbase
 
     # do the reactive power partition and store the values
     split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)

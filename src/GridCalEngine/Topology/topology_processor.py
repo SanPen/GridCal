@@ -516,7 +516,6 @@ def process_grid_topology_at(grid: MultiCircuit,
 
         df = pd.DataFrame(data=A.toarray(), columns=candidate_names, index=candidate_names)
         print(df.replace(to_replace=0.0, value="-"))
-        print()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Perform the topology search, this will find candidate buses that reduce to be the same bus

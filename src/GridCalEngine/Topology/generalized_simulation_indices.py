@@ -478,7 +478,7 @@ class GeneralizedSimulationIndices:
         # Extract control magnitudes
         magnitude1 = vsc_data.control1_val[ii]
         magnitude2 = vsc_data.control2_val[ii]
-        print()
+
         # Set flags for active controls
         for control, control_magnitude in zip([control1_type, control2_type], [magnitude1, magnitude2]):
             try:
@@ -640,7 +640,7 @@ class GeneralizedSimulationIndices:
             if not (nc.bus_data.is_dc[i]):
                 self.add_to_cg_pac(i)
                 self.add_to_cg_qac(i)
-                print()
+
                 if bus_type == BusMode.Slack_tpe.value:
                     self.add_to_cx_pzip(i)
                     self.add_to_cx_qzip(i)
@@ -723,8 +723,8 @@ class GeneralizedSimulationIndices:
             # Here we start to throw stuff into the unknown sets. previously we were simply putting known sets and setpoints
             mode1 = nc.active_branch_data.tap_module_control_mode[i]
             mode2 = nc.active_branch_data.tap_phase_control_mode[i]
-            print()
-            if (mode1 != 0 or mode2 != 0):
+
+            if mode1 != 0 or mode2 != 0:
                 if mode2 == 0:
                     mode2 = TapPhaseControl.fixed
                 # Initialize control flags
@@ -824,8 +824,6 @@ class GeneralizedSimulationIndices:
         for i, val in enumerate(self.bus_vm_pointer_used):
             if not val:
                 self.add_to_cx_vm(i)
-
-        print()
 
         return self
 

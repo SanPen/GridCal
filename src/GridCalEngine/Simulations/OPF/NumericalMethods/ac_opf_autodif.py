@@ -282,7 +282,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
     df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
 
     if verbose > 0:
-        print()
         print("Bus:\n", df_bus)
         print("Gen:\n", df_gen)
         print("Error", result.error)

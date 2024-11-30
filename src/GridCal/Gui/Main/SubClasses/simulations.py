@@ -1344,7 +1344,7 @@ class SimulationsMain(TimeEventsMain):
                     _, pf_results = self.session.power_flow
                     if pf_results is not None:
                         Pf = pf_results.Sf.real
-                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        Pf_hvdc = pf_results.Pf_hvdc.real
                         use_provided_flows = True
                     else:
                         warning_msg('There were no power flow values available. Linear flows will be used.')
