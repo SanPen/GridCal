@@ -1713,7 +1713,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             Jdense = np.array(J.todense())
             dff = pd.DataFrame(Jdense)
-            dff.to_excel("Jacobian_Raiyan.xlsx")
+            # dff.to_excel("Jacobian_autodiff.xlsx")
             return scipy_to_mat(J)
         else:
             n_rows = (len(self.cg_pac)
@@ -1820,6 +1820,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 ytf=self.adm.ytf,
                 ytt=self.adm.ytt)
 
+            # Jdense = np.array(J.todense())
+            # dff = pd.DataFrame(Jdense)
+            # dff.to_excel("Jacobian_symbolic.xlsx")
             return J
 
     def get_x_names(self) -> List[str]:
