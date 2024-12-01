@@ -19,15 +19,14 @@ DateVec = npt.NDArray[np.datetime64]
 IntVec = npt.NDArray[np.int_]
 BoolVec = npt.NDArray[np.bool_]
 Vec = npt.NDArray[np.float64]
-CxVec = npt.NDArray[np.complex64]
+CxVec = npt.NDArray[np.complex128]
 StrVec = npt.NDArray[np.str_]
 ObjVec = npt.NDArray[np.object_]
 Mat = npt.NDArray[np.float64]  # no way yet to say it is 2D
-CxMat = npt.NDArray[np.complex64]  # no way yet to say it is 2D
+CxMat = npt.NDArray[np.complex128]  # no way yet to say it is 2D
 IntMat = npt.NDArray[np.int_]  # no way yet to say it is 2D
 StrMat = npt.NDArray[np.str_]  # no way yet to say it is 2D
 ObjMat = npt.NDArray[np.object_]  # no way yet to say it is 2D
-
 
 CscMat = csc_matrix
 CsrMat = csr_matrix
