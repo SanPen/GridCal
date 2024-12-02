@@ -1564,6 +1564,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                                        device_class=tap_changer.tpe,
                                        device_property="control for TapChanger",
                                        value=type(tap_changer))
+
             elif isinstance(tap_changer, phase_sy_class):
                 tc_type = TapChangerTypes.Symmetrical
 
@@ -1599,7 +1600,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                                        value=type(tap_changer))
 
             else:
-                logger.add_warning(msg="No control found for TapChanger",
+                logger.add_warning(msg="TapChanger Class not recognized.",
                                    device=tap_changer.rdfid,
                                    device_class=tap_changer.tpe,
                                    device_property="control for TapChanger",
@@ -1632,9 +1633,14 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                     tc_type=tc_type
                 )
 
-                # SET tap_module and tap_phase from its own TapChanger object
-                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-                gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                if gcdev_trafo.tap_changer.tc_type == TapChangerTypes.NoRegulation:
+                    # SET tap_module and tap_phase from dV
+                    gcdev_trafo.tap_module = 1 - gcdev_trafo.tap_changer.dV
+                    gcdev_trafo.tap_phase = 0
+                else:
+                    # SET tap_module and tap_phase from its own TapChanger object
+                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                    gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
                 winding_id = tap_changer.TransformerEnd.uuid

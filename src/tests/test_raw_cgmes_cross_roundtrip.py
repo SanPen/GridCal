@@ -42,7 +42,7 @@ def create_file_open_options() -> FileOpenOptions:
     """
     options = FileOpenOptions()
     options.cgmes_map_areas_like_raw = True
-    options.try_to_map_dc_to_hvdc_line = False
+    options.try_to_map_dc_to_hvdc_line = True
 
     return options
 
@@ -145,12 +145,11 @@ def test_raw_to_cgmes_cross_roundtrip():
     """
     script_path = os.path.abspath(__file__)
 
-    # test_grid_name = 'IEEE 14 bus'  # PASSEED
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
-
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
+    test_grid_name = 'IEEE 14 bus'  # PASSEED
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
+    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # test_grid_name = 'IEEE 30 bus'              # FAILED
     # Error     Different snapshot values    Transformer      rate  5.9091    65.0
