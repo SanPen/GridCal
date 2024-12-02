@@ -134,6 +134,10 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
                    code=name,
                    active=bool(psse_load.STATUS),
                    P=p, Q=q, Ir=ir, Ii=ii, G=g, B=b)
+    if psse_load.SCALE == 1.0:
+        elm.scalable = True
+    else:
+        elm.scalable = False
 
     return elm
 
