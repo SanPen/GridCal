@@ -433,7 +433,6 @@ def process_grid_topology_at(grid: MultiCircuit,
     process_info = TopologyProcessorInfo()
 
     # get a list of all branches
-    # all_branches = grid.get_switches() + grid.get_branches()
     nbr = grid.get_branch_number() + grid.get_switches_number()
 
     # ------------------------------------------------------------------------------------------------------------------

@@ -88,6 +88,8 @@ class InjectionParent(PhysicalDevice):
 
         self.technologies: Associations = Associations(device_type=DeviceType.Technology)
 
+        self.scalable: bool = True
+
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus',
                       editable=False, profile_name="bus_prof")
 
@@ -114,6 +116,9 @@ class InjectionParent(PhysicalDevice):
 
         self.register(key='technologies', units='p.u.', tpe=SubObjectType.Associations,
                       definition='List of technologies', display=False)
+
+        self.register(key='scalable', units='', tpe=bool, definition='Is the load scalable?', editable=False,
+                      display=False)
 
     @property
     def bus(self) -> Bus:

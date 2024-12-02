@@ -20,7 +20,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
      create_sv_power_flow, create_cgmes_vsc_converter,
      create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
      create_cgmes_acdc_converter_terminal,
-     create_cgmes_conform_load_group, create_cgmes_operational_limit_type)
+     create_cgmes_conform_load_group, create_cgmes_operational_limit_type, create_cgmes_sub_load_area,
+     create_cgmes_non_conform_load_group)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
@@ -399,14 +400,20 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
     :return:
     """
 
+    create_cgmes_sub_load_area(cgmes_model, logger)
     c_load_group = create_cgmes_conform_load_group(cgmes_model, logger)
+    nc_load_group = create_cgmes_non_conform_load_group(cgmes_model, logger)
 
     for mc_elm in multicircuit_model.loads:
-        object_template = cgmes_model.get_class_type("ConformLoad")
-        cl = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        cl.Terminals = create_cgmes_terminal(mc_elm.bus, None, cl, cgmes_model,
+        if mc_elm.scalable:
+            object_template = cgmes_model.get_class_type("ConformLoad")
+        else:
+            object_template = cgmes_model.get_class_type("NonConformLoad")
+        load = object_template(rdfid=form_rdfid(mc_elm.idtag))
+
+        load.Terminals = create_cgmes_terminal(mc_elm.bus, None, load, cgmes_model,
                                              logger)
-        cl.name = mc_elm.name
+        load.name = mc_elm.name
 
         if mc_elm.bus.voltage_level:
             vl = find_object_by_uuid(
@@ -414,28 +421,32 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
                 object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                 target_uuid=mc_elm.bus.voltage_level.idtag
             )
-            cl.EquipmentContainer = vl
+            load.EquipmentContainer = vl
 
-        cl.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+        load.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
 
         if mc_elm.Ii != 0.0:
-            cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm,
+            load.LoadResponse = create_cgmes_load_response_char(load=mc_elm,
                                                               cgmes_model=cgmes_model,
                                                               logger=logger)
-            cl.p = mc_elm.P / cl.LoadResponse.pConstantPower
-            cl.q = mc_elm.Q / cl.LoadResponse.qConstantPower
+            load.p = mc_elm.P / load.LoadResponse.pConstantPower
+            load.q = mc_elm.Q / load.LoadResponse.qConstantPower
         else:
-            cl.p = mc_elm.P
-            cl.q = mc_elm.Q
+            load.p = mc_elm.P
+            load.q = mc_elm.Q
 
-        cl.description = mc_elm.code
+        load.description = mc_elm.code
 
-        cl.LoadGroup = c_load_group
-        c_load_group.EnergyConsumers.append(cl)
+        if mc_elm.scalable:
+            load.LoadGroup = c_load_group
+            c_load_group.EnergyConsumers.append(load)
+        else:
+            load.LoadGroup = nc_load_group
+            nc_load_group.EnergyConsumers.append(load)
 
-        cgmes_model.add(cl)
+        cgmes_model.add(load)
 
 
 def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,

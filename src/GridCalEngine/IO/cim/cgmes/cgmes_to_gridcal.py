@@ -913,6 +913,11 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                                        G=g,
                                        B=b)
 
+                if isinstance(cgmes_elm, cgmes_model.get_class_type("ConformLoad")):
+                    gcdev_elm.scalable = True
+                else:
+                    gcdev_elm.scalable = False
+
                 gcdev_model.add_load(bus=calc_node, api_obj=gcdev_elm, cn=cn)
 
             else:
