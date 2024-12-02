@@ -209,6 +209,9 @@ class CimExporter:
                         f_zip_ptr.writestr(f"{name}_{prof}_001.xml", buffer.getvalue())
 
     def serialize(self, stream, profile):
+        if not self.supports_profile(profile):
+            raise NotImplementedError("Unsupported CGMES profile to export: " + profile)
+
         root = Et.Element("rdf:RDF", self.namespaces)
         full_model_elements = self.generate_full_model_elements(profile)
         root.extend(full_model_elements)
@@ -231,6 +234,12 @@ class CimExporter:
         stream.write("\n".join(xml_content).encode("utf-8"))
 
         stream.seek(0)
+
+    def supports_profile(self, profile):
+        if profile in self.profile_uris:
+            return True
+        else:
+            return False
 
     def is_in_profile(self, instance_profiles, model_profile):
         if isinstance(instance_profiles, list):
