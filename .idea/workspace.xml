@@ -28,10 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved CGMES current limit IMPORT-EXPORT (patl, tatl900, tatl60), also for RAW">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixing tap_module import (RAW, CGMES)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/tap_changer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/tap_changer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_raw_cgmes_cross_roundtrip.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_raw_cgmes_cross_roundtrip.py" afterDir="false" />
     </list>
@@ -179,7 +180,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests in test_raw_cgmes_cross_roundtrip.py">
+  <component name="RunManager" selected="Python tests.Python tests in test_cgmes_roundtrip.py">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -388,6 +389,28 @@
       <option name="ADDITIONAL_ARGS" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -424,28 +447,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="tap_changer_steps" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/controls/scripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/controls/scripts/tap_changer_steps.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -629,8 +630,8 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.raw_to_gridcal" />
-      <item itemvalue="Python.tap_changer_steps" />
       <item itemvalue="Python tests.pytest CGMES" />
       <item itemvalue="Python tests.Python tests in test_raw_cgmes_cross_roundtrip.py" />
       <item itemvalue="Python tests.Python tests for test_raw_cgmes_cross_roundtrip.test_raw_to_cgmes_cross_roundtrip" />
@@ -638,11 +639,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Python tests in test_cgmes_roundtrip.py" />
+        <item itemvalue="Python tests.Python tests for test_raw_cgmes_cross_roundtrip.test_raw_to_cgmes_cross_roundtrip" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Python tests in test_raw_cgmes_cross_roundtrip.py" />
         <item itemvalue="Python.raw_to_gridcal" />
-        <item itemvalue="Python tests.Python tests for test_raw_cgmes_cross_roundtrip.test_raw_to_cgmes_cross_roundtrip" />
-        <item itemvalue="Python.tap_changer_steps" />
-        <item itemvalue="Python tests.Python tests in test_cgmes_roundtrip.py" />
       </list>
     </recent_temporary>
   </component>
@@ -1363,7 +1364,7 @@
       <workItem from="1732194846527" duration="19559000" />
       <workItem from="1732539111152" duration="38489000" />
       <workItem from="1732874151431" duration="3215000" />
-      <workItem from="1733135159231" duration="21153000" />
+      <workItem from="1733135159231" duration="38679000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1708,7 +1709,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="567" />
+    <option name="localTasksCounter" value="569" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1742,8 +1743,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="improved tap changer export and SvTapStep func" />
-    <MESSAGE value="DC topology import from CGMES" />
     <MESSAGE value="fixed HVDC bugs at RAW import" />
     <MESSAGE value="TP and CN for DCGround is not imported" />
     <MESSAGE value="VSC import from CGMES" />
@@ -1766,8 +1765,10 @@
     <MESSAGE value="fix hasattr() func call" />
     <MESSAGE value="fixing typos" />
     <MESSAGE value="improced cgmes current limit export (patl, tatl900, tatl60)" />
+    <MESSAGE value="bugfix at set_tap_module" />
     <MESSAGE value="improved CGMES current limit IMPORT-EXPORT (patl, tatl900, tatl60), also for RAW" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved CGMES current limit IMPORT-EXPORT (patl, tatl900, tatl60), also for RAW" />
+    <MESSAGE value="fixing tap_module import (RAW, CGMES)" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing tap_module import (RAW, CGMES)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2194,7 +2195,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>623</line>
+          <line>624</line>
           <option name="timeStamp" value="1496" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2214,7 +2215,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1664</line>
+          <line>1716</line>
           <option name="timeStamp" value="1603" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2239,12 +2240,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1283</line>
+          <line>1335</line>
           <option name="timeStamp" value="1652" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>2322</line>
+          <line>2454</line>
           <option name="timeStamp" value="1653" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2254,28 +2255,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_utils.py</url>
-          <line>115</line>
+          <line>116</line>
           <option name="timeStamp" value="1662" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1340</line>
+          <line>1392</line>
           <option name="timeStamp" value="1671" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py</url>
-          <line>436</line>
+          <line>441</line>
           <option name="timeStamp" value="1677" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py</url>
-          <line>402</line>
-          <option name="timeStamp" value="1678" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
+          <line>1187</line>
+          <option name="timeStamp" value="1686" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
-          <line>1638</line>
-          <option name="timeStamp" value="1684" />
+          <url>file://$PROJECT_DIR$/src/tests/test_cgmes_roundtrip.py</url>
+          <line>85</line>
+          <option name="timeStamp" value="1687" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2346,7 +2347,7 @@
     <SUITE FILE_PATH="coverage/GridCal$update_gui_file.coverage" NAME="update_gui_file Coverage Results" MODIFIED="1721070658621" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$topology_driver.coverage" NAME="topology_driver Coverage Results" MODIFIED="1590932816525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Topology" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_profiles_test_py.coverage" NAME="Nosetests in profiles_test.py Coverage Results" MODIFIED="1701346671216" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1732694986164" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1733211162840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$5_node.coverage" NAME="5_node Coverage Results" MODIFIED="1694035681161" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_voltage_controlled_generator_py.coverage" NAME="Nosetests in test_voltage_controlled_generator.py Coverage Results" MODIFIED="1616959365012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_api_helm_test_api_helm.coverage" NAME="Nosetests for tests.test_api_helm.test_api_helm Coverage Results" MODIFIED="1687725548984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2550,7 +2551,7 @@
     <SUITE FILE_PATH="coverage/GridCal$branch_power_3.coverage" NAME="branch_power_3 Coverage Results" MODIFIED="1659198918844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$V1_refractored.coverage" NAME="V1_refractored Coverage Results" MODIFIED="1617214204840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PGD" />
     <SUITE FILE_PATH="coverage/GridCal$filtering_example1.coverage" NAME="filtering_example1 Coverage Results" MODIFIED="1708704156149" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/filtering" />
-    <SUITE FILE_PATH="coverage/GridCal$pytest_CGMES.coverage" NAME="pytest CGMES Coverage Results" MODIFIED="1732876933076" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_CGMES.coverage" NAME="pytest CGMES Coverage Results" MODIFIED="1733232404336" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/GridCal$new_circuit_objects.coverage" NAME="new_circuit_objects Coverage Results" MODIFIED="1709062045633" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/code_generation" />
     <SUITE FILE_PATH="coverage/GridCal$zip_interface.coverage" NAME="zip_interface Coverage Results" MODIFIED="1620029421103" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
     <SUITE FILE_PATH="coverage/GridCal$sparse_solve.coverage" NAME="sparse_solve Coverage Results" MODIFIED="1698396568619" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalEngine/Simulations" />
@@ -2576,7 +2577,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_power_flow_test_dc_pf_ieee14.coverage" NAME="Nosetests for test_power_flow.test_dc_pf_ieee14 Coverage Results" MODIFIED="1708459374133" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_short_circuit_test_short_circuit.coverage" NAME="Nosetests for tests.test_short_circuit.test_short_circuit Coverage Results" MODIFIED="1660897112809" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$dc_linear_opf_ts.coverage" NAME="dc_linear_opf_ts_example Coverage Results" MODIFIED="1688466918477" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
-    <SUITE FILE_PATH="coverage/GridCal$.coverage" NAME=" Coverage Results" MODIFIED="1733167259972" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$.coverage" NAME=" Coverage Results" MODIFIED="1733232872878" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$gui.coverage" NAME="gui Coverage Results" MODIFIED="1649779929647" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/AboutDialogue" />
     <SUITE FILE_PATH="coverage/GridCal$state_estimation_run.coverage" NAME="state_estimation_run Coverage Results" MODIFIED="1696328917395" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$switch_reduction_sparse.coverage" NAME="switch_reduction_sparse Coverage Results" MODIFIED="1615742705813" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/grid_reduction/substation_reduction" />

@@ -13,7 +13,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_values_shunt,
                                                     get_pu_values_power_transformer,
                                                     get_pu_values_power_transformer3w,
-                                                    get_regulating_control,
+                                                    get_regulating_control_params,
                                                     get_pu_values_power_transformer_end,
                                                     get_slack_id,
                                                     find_object_by_idtag,
@@ -988,7 +988,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                 if cgmes_elm.GeneratingUnit is not None:
 
                     v_set, is_controlled, controlled_bus, controlled_cn = (
-                        get_regulating_control(
+                        get_regulating_control_params(
                             cgmes_elm=cgmes_elm,
                             cgmes_enums=cgmes_enums,
                             calc_node_dict=calc_node_dict,
@@ -1689,7 +1689,8 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                      logger: DataLogger,
                      Sbase: float) -> None:
     """
-    Convert the CGMES shunts to gcdev
+    Convert the CGMES equivalent shunts to gcdev shunts,
+    simple shunts without control
 
     :param cgmes_model: CgmesCircuit
     :param gcdev_model: gcdevCircuit
@@ -1700,7 +1701,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
     :param Sbase:
     """
     # convert shunts
-    for device_list in [cgmes_model.cgmes_assets.LinearShuntCompensator_list]:
+    for device_list in [cgmes_model.cgmes_assets.EquivalentShunt_list]:
 
         for cgmes_elm in device_list:
 
@@ -1714,19 +1715,12 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                 calc_node = calc_nodes[0]
                 cn = cns[0]
 
-                # conversion
-                G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
-                                                logger=logger,
-                                                Sbase=Sbase)
-
                 gcdev_elm = gcdev.Shunt(
                     idtag=cgmes_elm.uuid,
                     name=cgmes_elm.name,
                     code=cgmes_elm.description,
-                    G=G * cgmes_elm.sections,
-                    B=B * cgmes_elm.sections,
-                    G0=G0 * cgmes_elm.sections,
-                    B0=B0 * cgmes_elm.sections,
+                    G=cgmes_elm.g,
+                    B=cgmes_elm.b,
                     active=True,
                 )
                 gcdev_model.add_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
@@ -1749,7 +1743,8 @@ def get_gcdev_controllable_shunts(
         logger: DataLogger,
         Sbase: float) -> None:
     """
-    Convert the CGMES non-linear shunt compensators to gcdev Controllable shunts.
+    Convert the CGMES linear and non-linear shunt compensators
+    to gcdev Controllable shunts.
 
     :param cgmes_model: CgmesCircuit
     :param gcdev_model: gcdevCircuit
@@ -1759,14 +1754,139 @@ def get_gcdev_controllable_shunts(
     :param Sbase: base power (100 MVA)
     :param logger:
     """
-    # comes later
-    for device_list in [cgmes_model.cgmes_assets.NonlinearShuntCompensator_list]:
-        # ...
-        # v_set, is_controlled = get_regulating_control(
-        #     cgmes_elm=cgmes_elm,
-        #     cgmes_enums=cgmes_enums,
-        #     logger=logger)
-        pass
+    # LINEAR
+    for cgmes_elm in cgmes_model.cgmes_assets.LinearShuntCompensator_list:
+
+        calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
+                                           device_to_terminal_dict=device_to_terminal_dict,
+                                           calc_node_dict=calc_node_dict,
+                                           cn_dict=cn_dict,
+                                           logger=logger)
+
+        if len(calc_nodes) == 1:
+            calc_node = calc_nodes[0]
+            cn = cns[0]
+
+            # conversion
+            G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
+                                            logger=logger,
+                                            Sbase=Sbase)
+
+            v_set, is_controlled, controlled_bus, controlled_cn = (
+                get_regulating_control_params(
+                    cgmes_elm=cgmes_elm,
+                    cgmes_enums=cgmes_enums,
+                    calc_node_dict=calc_node_dict,
+                    cn_dict=cn_dict,
+                    logger=logger
+                ))
+
+            gcdev_elm = gcdev.ControllableShunt(
+                idtag=cgmes_elm.uuid,
+                name=cgmes_elm.name,
+                code=cgmes_elm.description,
+                active=True,
+                is_nonlinear=False,                        # it is Linear!
+                number_of_steps=cgmes_elm.maximumSections,
+                step=cgmes_elm.normalSections,
+                g_per_step=G,
+                b_per_step=B,
+                G=G,
+                B=B,
+                G0=G0,
+                B0=B0,
+                vset=v_set,
+                is_controlled=is_controlled,
+                control_bus=controlled_bus,
+            )
+            # gcdev_elm = gcdev.Shunt(
+            #     idtag=cgmes_elm.uuid,
+            #     name=cgmes_elm.name,
+            #     code=cgmes_elm.description,
+            #     G=G * cgmes_elm.sections,
+            #     B=B * cgmes_elm.sections,
+            #     G0=G0 * cgmes_elm.sections,
+            #     B0=B0 * cgmes_elm.sections,
+            #     active=True,
+            # )
+            gcdev_model.add_controllable_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
+
+        else:
+            logger.add_error(msg='Not exactly one terminal',
+                             device=cgmes_elm.rdfid,
+                             device_class=cgmes_elm.tpe,
+                             device_property="number of associated terminals",
+                             value=len(calc_nodes),
+                             expected_value=1)
+
+    # NON - LINEAR
+    for cgmes_elm in cgmes_model.cgmes_assets.NonlinearShuntCompensator_list:
+
+        calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
+                                           device_to_terminal_dict=device_to_terminal_dict,
+                                           calc_node_dict=calc_node_dict,
+                                           cn_dict=cn_dict,
+                                           logger=logger)
+
+        if len(calc_nodes) == 1:
+            calc_node = calc_nodes[0]
+            cn = cns[0]
+
+            # conversion
+            G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
+                                            logger=logger,
+                                            Sbase=Sbase)
+
+            v_set, is_controlled, controlled_bus, controlled_cn = (
+                get_regulating_control_params(
+                    cgmes_elm=cgmes_elm,
+                    cgmes_enums=cgmes_enums,
+                    calc_node_dict=calc_node_dict,
+                    cn_dict=cn_dict,
+                    logger=logger
+                ))
+
+            gcdev_elm = gcdev.ControllableShunt(
+                idtag=cgmes_elm.uuid,
+                name=cgmes_elm.name,
+                code=cgmes_elm.description,
+                active=True,
+                is_nonlinear=True,  # it is Linear!
+                number_of_steps=cgmes_elm.maximumSections,
+                step=cgmes_elm.normalSections,
+                # g_per_step=G,
+                # b_per_step=B,
+                G=G,
+                B=B,
+                G0=G0,
+                B0=B0,
+                vset=v_set,
+                is_controlled=is_controlled,
+                control_bus=controlled_bus,
+            )
+
+            # n_list = []
+            # b_list = []
+            #
+            # for i in range(1, 9):
+            #     s = getattr(psse_elm, f"S{i}")
+            #     n = getattr(psse_elm, f"N{i}")
+            #
+            #     if s == 1:
+            #         n_list.append(n)
+            #         b_list.append(getattr(psse_elm, f"B{i}"))
+            #
+            # elm.set_blocks(n_list, b_list)
+
+            gcdev_model.add_controllable_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
+
+        else:
+            logger.add_error(msg='Not exactly one terminal',
+                             device=cgmes_elm.rdfid,
+                             device_class=cgmes_elm.tpe,
+                             device_property="number of associated terminals",
+                             value=len(calc_nodes),
+                             expected_value=1)
 
 
 def get_gcdev_switches(cgmes_model: CgmesCircuit,
@@ -2241,8 +2361,15 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                      logger=logger,
                      Sbase=Sbase)
 
-    # get_gcdev_controllable_shunts()  TODO controllable shunts
-
+    get_gcdev_controllable_shunts(
+        cgmes_model=cgmes_model,
+        gcdev_model=gc_model,
+        calc_node_dict=calc_node_dict,
+        cn_dict=cn_dict,
+        device_to_terminal_dict=device_to_terminal_dict,
+        logger=logger,
+        Sbase=Sbase
+    )
     get_gcdev_switches(cgmes_model=cgmes_model,
                        gcdev_model=gc_model,
                        calc_node_dict=calc_node_dict,

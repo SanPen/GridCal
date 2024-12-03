@@ -1114,12 +1114,13 @@ def get_cgmes_operational_limit_types(cgmes_model: CgmesCircuit):
     return [patl, tatl_900, tatl_60]
 
 
-def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
-                            cgmes_model: CgmesCircuit,
-                            logger: DataLogger):
+def get_cgmes_equivalent_shunts(multicircuit_model: MultiCircuit,
+                                cgmes_model: CgmesCircuit,
+                                logger: DataLogger):
     """
     Converts Multi Circuit shunts
-    into CGMES Linear shunt compensator
+    into CGMES EquivalentShunt.
+    No control, like FixShunt in RAW.
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model:
@@ -1129,92 +1130,132 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
 
     for mc_elm in multicircuit_model.shunts:
 
-        object_template = cgmes_model.get_class_type("LinearShuntCompensator")
-        lsc = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        lsc.name = mc_elm.name
-        lsc.description = mc_elm.code
+        object_template = cgmes_model.get_class_type("EquivalentShunt")
+        eq_shunt = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        eq_shunt.name = mc_elm.name
+        eq_shunt.description = mc_elm.code
+
         if mc_elm.bus.voltage_level:
             vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
                 target_uuid=mc_elm.bus.voltage_level.idtag
             )
-            lsc.EquipmentContainer = vl
+            if vl is not None:
+                eq_shunt.EquipmentContainer = vl
 
-        lsc.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
-                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-                                              target_vnom=mc_elm.bus.Vnom)
-        # lsc.RegulatingControl = False  # TODO: Should be an object
-        lsc.controlEnabled = False
-        lsc.maximumSections = 1
+        base_voltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.bus.Vnom)
+        if base_voltage is not None:
+            eq_shunt.BaseVoltage = base_voltage
 
-        lsc.nomU = mc_elm.bus.Vnom
-        lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
-        lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
-        if mc_elm.active:
-            lsc.sections = 1
-        else:
-            lsc.sections = 0
-        lsc.normalSections = lsc.sections
+        eq_shunt.b = mc_elm.B
+        eq_shunt.g = mc_elm.G
 
-        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, None, lsc,
-                                              cgmes_model, logger)
+        create_cgmes_terminal(mc_bus=mc_elm.bus,
+                              seq_num=1,
+                              cond_eq=eq_shunt,
+                              cgmes_model=cgmes_model,
+                              logger=logger)
 
-        cgmes_model.add(lsc)
+        cgmes_model.add(eq_shunt)
 
 
-def get_cgmes_non_linear_shunts(multicircuit_model: MultiCircuit,
-                                cgmes_model: CgmesCircuit,
-                                logger: DataLogger):
+def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
+                                           cgmes_model: CgmesCircuit,
+                                           logger: DataLogger):
     """
     Converts Multi Circuit Controllable Shunts
-    into CGMES Non-Linear shunt compensates
+    into CGMES Linear or Non-Linear shunt compensators
+    (depending on is_linear flag)
 
     :param multicircuit_model: MultiCircuit model in GridCal
     :param cgmes_model: CgmesModel
     :param logger: DataLogger
     :return:
     """
-    nl_sc_templ = cgmes_model.get_class_type("NonLinearShuntCompensator")
-    nl_sc_p_templ = cgmes_model.get_class_type("NonLinearShuntCompensatorPoint")
+    lin_templ = cgmes_model.get_class_type("LinearShuntCompensator")
+
+    nl_sc_templ = cgmes_model.get_class_type("NonlinearShuntCompensator")
+    nl_sc_p_templ = cgmes_model.get_class_type("NonlinearShuntCompensatorPoint")
 
     for mc_elm in multicircuit_model.controllable_shunts:
 
-        non_lin_sc = nl_sc_templ(rdfid=form_rdfid(mc_elm.idtag))
-        non_lin_sc.name = mc_elm.name
-        non_lin_sc.description = mc_elm.code
-        if mc_elm.bus.voltage_level:
-            vl = find_object_by_uuid(
+        if mc_elm.is_nonlinear:
+
+            non_lin_sc = nl_sc_templ(rdfid=form_rdfid(mc_elm.idtag))
+            non_lin_sc.name = mc_elm.name
+            non_lin_sc.description = mc_elm.code
+            if mc_elm.bus.voltage_level:
+                vl = find_object_by_uuid(
+                    cgmes_model=cgmes_model,
+                    object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                    target_uuid=mc_elm.bus.voltage_level.idtag
+                )
+                if vl is not None:
+                    non_lin_sc.EquipmentContainer = vl
+
+            non_lin_sc.BaseVoltage = find_object_by_vnom(
                 cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-                target_uuid=mc_elm.bus.voltage_level.idtag
+                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                target_vnom=mc_elm.bus.Vnom)
+
+            # CONTROL
+            # non_lin_sc.RegulatingControl = False  # TODO: Should be an object
+            non_lin_sc.controlEnabled = False
+            non_lin_sc.maximumSections = 1
+
+            # non_lin_sc.nomU = mc_elm.bus.Vnom
+            # non_lin_sc.bPerSection = mc_elm.B / (non_lin_sc.nomU ** 2)
+            # non_lin_sc.gPerSection = mc_elm.G / (non_lin_sc.nomU ** 2)
+            # if mc_elm.active:
+            #     non_lin_sc.sections = 1
+            # else:
+            #     non_lin_sc.sections = 0
+            # non_lin_sc.normalSections = non_lin_sc.sections
+
+            non_lin_sc.Terminals = create_cgmes_terminal(
+                mc_elm.bus, None, non_lin_sc, cgmes_model, logger
             )
-            non_lin_sc.EquipmentContainer = vl
 
-        non_lin_sc.BaseVoltage = find_object_by_vnom(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-            target_vnom=mc_elm.bus.Vnom)
+            cgmes_model.add(non_lin_sc)
 
-        # CONTROL
-        # non_lin_sc.RegulatingControl = False  # TODO: Should be an object
-        non_lin_sc.controlEnabled = False
-        non_lin_sc.maximumSections = 1
+        else:   # LINEAR controllable shunts
 
-        # non_lin_sc.nomU = mc_elm.bus.Vnom
-        # non_lin_sc.bPerSection = mc_elm.B / (non_lin_sc.nomU ** 2)
-        # non_lin_sc.gPerSection = mc_elm.G / (non_lin_sc.nomU ** 2)
-        # if mc_elm.active:
-        #     non_lin_sc.sections = 1
-        # else:
-        #     non_lin_sc.sections = 0
-        # non_lin_sc.normalSections = non_lin_sc.sections
+            # object_template = cgmes_model.get_class_type("LinearShuntCompensator")
+            lsc = lin_templ(rdfid=form_rdfid(mc_elm.idtag))
+            lsc.name = mc_elm.name
+            lsc.description = mc_elm.code
+            if mc_elm.bus.voltage_level:
+                vl = find_object_by_uuid(
+                    cgmes_model=cgmes_model,
+                    object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                    target_uuid=mc_elm.bus.voltage_level.idtag
+                )
+                lsc.EquipmentContainer = vl
 
-        non_lin_sc.Terminals = create_cgmes_terminal(
-            mc_elm.bus, None, non_lin_sc, cgmes_model, logger
-        )
+            lsc.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                                  object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                                                  target_vnom=mc_elm.bus.Vnom)
+            # lsc.RegulatingControl = False  # TODO: Should be an object
+            lsc.controlEnabled = False
+            lsc.maximumSections = 1
 
-        cgmes_model.add(non_lin_sc)
+            lsc.nomU = mc_elm.bus.Vnom
+            lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
+            lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
+            if mc_elm.active:
+                lsc.sections = 1
+            else:
+                lsc.sections = 0
+            lsc.normalSections = lsc.sections
+
+            lsc.Terminals = create_cgmes_terminal(mc_elm.bus, None, lsc,
+                                                  cgmes_model, logger)
+
+            cgmes_model.add(lsc)
 
 
 def get_cgmes_breakers(multicircuit_model: MultiCircuit,
@@ -1630,9 +1671,9 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_power_transformers(gc_model, cgmes_model, logger)
 
     # SHUNTS
-    get_cgmes_linear_shunts(gc_model, cgmes_model, logger)
+    get_cgmes_equivalent_shunts(gc_model, cgmes_model, logger)
     # TODO controllable shunts to be finished
-    # get_cgmes_non_linear_shunts(gc_model, cgmes_model, logger)
+    get_cgmes_linear_and_non_linear_shunts(gc_model, cgmes_model, logger)
 
     # Switches (Breakers)
     get_cgmes_breakers(gc_model, cgmes_model, logger)
