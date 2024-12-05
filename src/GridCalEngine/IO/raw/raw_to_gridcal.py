@@ -196,17 +196,18 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
         logger.add_error('Voltage equal to zero in shunt conversion', name)
 
     if psse_elm.MODSW in [1, 2]:
-        b = psse_elm.BINIT * psse_elm.RMPCT / 100.0
+        b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
     else:
-        b = psse_elm.BINIT
+        b_init = psse_elm.BINIT
 
     vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
 
     elm = dev.ControllableShunt(name='Switched shunt ' + name,
                                 active=bool(psse_elm.STAT),
-                                B=b,
+                                # B=b_init,   # TODO Binit
                                 vset=vset,
-                                code=name)
+                                code=name,
+                                is_nonlinear=True)
 
     if psse_elm.SWREG > 0:
         if psse_elm.SWREG != psse_elm.I:
@@ -222,6 +223,9 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
         if s == 1:
             n_list.append(n)
             b_list.append(getattr(psse_elm, f"B{i}"))
+
+    if len(n_list) == 1:
+        elm.is_nonlinear = False
 
     elm.set_blocks(n_list, b_list)
 
@@ -338,13 +342,31 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             HV = V2
             LV = V1
 
-        tc_total_positions = psse_elm.NTP1
-        tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
-        tc_normal_position = np.floor(psse_elm.NTP1 / 2)
-        tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (
-                psse_elm.NTP1 - 1) if (psse_elm.NTP1 - 1) > 0 else 0.01
-        distance_from_low = tap_module - psse_elm.VMI1
-        tc_step = distance_from_low / tc_dV
+        # could be nicer..
+        if psse_elm.VMA1 != 0:
+            tc_total_positions = psse_elm.NTP1
+            tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
+            tc_normal_position = np.floor(psse_elm.NTP1 / 2)
+            tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1) \
+                if (psse_elm.NTP1 - 1) > 0 else 0.01
+            distance_from_low = tap_module - psse_elm.VMI1
+            tc_step = distance_from_low / tc_dV  if tc_dV != 0 else 0.5
+        elif psse_elm.VMA2 != 0:
+            tc_total_positions = psse_elm.NTP2
+            tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
+            tc_normal_position = np.floor(psse_elm.NTP2 / 2)
+            tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (psse_elm.NTP2 - 1) \
+                if (psse_elm.NTP2 - 1) > 0 else 0.01
+            distance_from_low = tap_module - psse_elm.VMI2
+            tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+        else:
+            tc_total_positions = psse_elm.NTP3
+            tc_neutral_position = np.floor(psse_elm.NTP3 / 2)
+            tc_normal_position = np.floor(psse_elm.NTP3 / 2)
+            tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (psse_elm.NTP3 - 1) \
+                if (psse_elm.NTP3 - 1) > 0 else 0.01
+            distance_from_low = tap_module - psse_elm.VMI3
+            tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
 
         if round(tc_step, 2) != int(tc_step):
             # the calculated step is not an integer

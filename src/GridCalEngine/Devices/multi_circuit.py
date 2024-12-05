@@ -1917,9 +1917,9 @@ class MultiCircuit(Assets):
                                     value=v2,
                                     expected_value=v1)
                             else:
-                                if not np.isclose(v1, v2, atol=tolerance):
+                                if not np.all(np.isclose(v1, v2, atol=tolerance)):
                                     logger.add_error(
-                                        msg="Different snapshot values",
+                                        msg="Different array values",
                                         device_class=template_elm.device_type.value,
                                         device_property=prop.name,
                                         value=v2,

@@ -395,13 +395,12 @@ def create_cgmes_tap_changer_control(
     tcc.targetDeadband = 0.5
     tcc.targetValueUnitMultiplier = UnitMultiplier.k
     tcc.enabled = tcc_enabled
-    # if tcc.enabled:
-    #     if mc_trafo:
-    #         tcc.targetValue = mc_trafo.vset * mc_trafo.get_max_bus_nominal_voltage()
-    #     else:
-    #         tcc.targetValue = mc_trafo.Pset
-    # else:
-    #     tcc.targetValue = None
+    voltage = get_voltage_terminal(tcc.Terminal, logger)
+    tcc.targetValue = mc_trafo.vset * voltage
+
+    # TODO consider other control types
+    # if mc_trafo.tap_module_control_mode ...:
+    #     tcc.targetValue = mc_trafo.Pset
     # tcc.RegulatingCondEq not required .?
     # control_cn.Vnom ?
 
@@ -1008,3 +1007,34 @@ def create_cgmes_load_area(
 
     cgmes_model.add(sub_load_area)
     return sub_load_area
+
+
+def create_cgmes_nonlinear_sc_point(
+        section_num: int,
+        b: float,
+        g: float,
+        nl_sc: Base,
+        cgmes_model: CgmesCircuit,
+    ):
+    """
+    
+    :param section_num: 
+    :param b: b in Siemens
+    :param g: g in 
+    :param nl_sc: NonlinearShuntCompensator object
+    :param cgmes_model: CgmesModel
+    :param logger: DataLogger
+    :return: 
+    """""
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("NonlinearShuntCompensatorPoint")
+    nl_sc_p = object_template(rdfid=new_rdf_id)
+
+    nl_sc_p.sectionNumber = section_num
+    nl_sc_p.b = b
+    nl_sc_p.g = g
+    nl_sc_p.b0 = 0.0
+    nl_sc_p.g0 = 0.0
+    nl_sc_p.NonlinearShuntCompensator = nl_sc
+
+    cgmes_model.add(nl_sc_p)

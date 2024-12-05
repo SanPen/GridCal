@@ -21,7 +21,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
      create_cgmes_dc_line_segment, create_cgmes_dc_line, create_cgmes_dc_node,
      create_cgmes_acdc_converter_terminal,
      create_cgmes_conform_load_group, create_cgmes_operational_limit_type, create_cgmes_sub_load_area,
-     create_cgmes_non_conform_load_group)
+     create_cgmes_non_conform_load_group, create_cgmes_nonlinear_sc_point)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
@@ -1151,8 +1151,8 @@ def get_cgmes_equivalent_shunts(multicircuit_model: MultiCircuit,
         if base_voltage is not None:
             eq_shunt.BaseVoltage = base_voltage
 
-        eq_shunt.b = mc_elm.B
-        eq_shunt.g = mc_elm.G
+        eq_shunt.b = mc_elm.B / (mc_elm.bus.Vnom ** 2)
+        eq_shunt.g = mc_elm.G / (mc_elm.bus.Vnom ** 2)
 
         create_cgmes_terminal(mc_bus=mc_elm.bus,
                               seq_num=1,
@@ -1179,7 +1179,6 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
     lin_templ = cgmes_model.get_class_type("LinearShuntCompensator")
 
     nl_sc_templ = cgmes_model.get_class_type("NonlinearShuntCompensator")
-    nl_sc_p_templ = cgmes_model.get_class_type("NonlinearShuntCompensatorPoint")
 
     for mc_elm in multicircuit_model.controllable_shunts:
 
@@ -1204,21 +1203,39 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
 
             # CONTROL
             # non_lin_sc.RegulatingControl = False  # TODO: Should be an object
+            # SSH
             non_lin_sc.controlEnabled = False
-            non_lin_sc.maximumSections = 1
-
-            # non_lin_sc.nomU = mc_elm.bus.Vnom
-            # non_lin_sc.bPerSection = mc_elm.B / (non_lin_sc.nomU ** 2)
-            # non_lin_sc.gPerSection = mc_elm.G / (non_lin_sc.nomU ** 2)
+            #    sections: Shunt compensator sections in use.
+            non_lin_sc.sections = 1
             # if mc_elm.active:
             #     non_lin_sc.sections = 1
             # else:
             #     non_lin_sc.sections = 0
-            # non_lin_sc.normalSections = non_lin_sc.sections
 
-            non_lin_sc.Terminals = create_cgmes_terminal(
-                mc_elm.bus, None, non_lin_sc, cgmes_model, logger
-            )
+            # EQ
+            non_lin_sc.nomU = mc_elm.bus.Vnom
+            b_points_mva, g_points_mva = mc_elm.get_block_points()
+            b_points = [b / (non_lin_sc.nomU ** 2) for b in b_points_mva]
+            g_points = [g / (non_lin_sc.nomU ** 2) for g in g_points_mva]
+            for i in range(len(b_points)):
+                create_cgmes_nonlinear_sc_point(
+                    section_num=i+1,
+                    b=b_points[i],
+                    g=g_points[i],
+                    nl_sc=non_lin_sc,
+                    cgmes_model=cgmes_model
+                )
+            non_lin_sc.normalSections = non_lin_sc.sections
+            non_lin_sc.maximumSections = len(b_points)
+            non_lin_sc.aggregate = False
+
+
+            # non_lin_sc.Terminals =
+            create_cgmes_terminal(mc_bus=mc_elm.bus,
+                                  seq_num=1,
+                                  cond_eq=non_lin_sc,
+                                  cgmes_model=cgmes_model,
+                                  logger=logger)
 
             cgmes_model.add(non_lin_sc)
 
@@ -1240,20 +1257,27 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                                                   object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                                   target_vnom=mc_elm.bus.Vnom)
             # lsc.RegulatingControl = False  # TODO: Should be an object
+            # SSH
             lsc.controlEnabled = False
-            lsc.maximumSections = 1
-
-            lsc.nomU = mc_elm.bus.Vnom
-            lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
-            lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
             if mc_elm.active:
                 lsc.sections = 1
             else:
                 lsc.sections = 0
-            lsc.normalSections = lsc.sections
 
-            lsc.Terminals = create_cgmes_terminal(mc_elm.bus, None, lsc,
-                                                  cgmes_model, logger)
+            # EQ
+            lsc.nomU = mc_elm.bus.Vnom
+            lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
+            lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
+            lsc.normalSections = lsc.sections
+            lsc.maximumSections = 1
+            lsc.aggregate = False
+
+            # lsc.Terminals =
+            create_cgmes_terminal(mc_bus=mc_elm.bus,
+                                  seq_num=1,
+                                  cond_eq=lsc,
+                                  cgmes_model=cgmes_model,
+                                  logger=logger)
 
             cgmes_model.add(lsc)
 
@@ -1672,7 +1696,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     # SHUNTS
     get_cgmes_equivalent_shunts(gc_model, cgmes_model, logger)
-    # TODO controllable shunts to be finished
     get_cgmes_linear_and_non_linear_shunts(gc_model, cgmes_model, logger)
 
     # Switches (Breakers)

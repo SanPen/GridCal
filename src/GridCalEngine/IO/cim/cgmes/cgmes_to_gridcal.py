@@ -18,7 +18,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_slack_id,
                                                     find_object_by_idtag,
                                                     find_terms_connections,
-                                                    build_cgmes_limit_dicts)
+                                                    build_cgmes_limit_dicts,
+                                                    get_voltage_shunt)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import TapChangerTypes, TapPhaseControl, TapModuleControl
@@ -1077,11 +1078,12 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
             if len(calc_nodes) == 1:
                 calc_node = calc_nodes[0]
                 cn = cns[0]
-
+                # TODO define ExternalGrid.mode
                 gcdev_elm = gcdev.ExternalGrid(idtag=cgmes_elm.uuid,
                                                code=cgmes_elm.description,
                                                name=cgmes_elm.name,
                                                active=True,
+                                               # mode=enum.PQ/PV/VD
                                                P=cgmes_elm.p,
                                                Q=cgmes_elm.q)
 
@@ -1715,12 +1717,17 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                 calc_node = calc_nodes[0]
                 cn = cns[0]
 
+                Vnom = get_voltage_shunt(shunt=cgmes_elm, logger=logger)
+
+                G = cgmes_elm.g * (Vnom * Vnom)
+                B = cgmes_elm.b * (Vnom * Vnom)
+
                 gcdev_elm = gcdev.Shunt(
                     idtag=cgmes_elm.uuid,
                     name=cgmes_elm.name,
                     code=cgmes_elm.description,
-                    G=cgmes_elm.g,
-                    B=cgmes_elm.b,
+                    G=round(G, 4),
+                    B=round(B, 4),
                     active=True,
                 )
                 gcdev_model.add_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
@@ -1788,7 +1795,7 @@ def get_gcdev_controllable_shunts(
                 active=True,
                 is_nonlinear=False,                        # it is Linear!
                 number_of_steps=cgmes_elm.maximumSections,
-                step=cgmes_elm.normalSections,
+                step=cgmes_elm.sections,
                 g_per_step=G,
                 b_per_step=B,
                 G=G,
@@ -1832,10 +1839,10 @@ def get_gcdev_controllable_shunts(
             calc_node = calc_nodes[0]
             cn = cns[0]
 
-            # conversion
-            G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
-                                            logger=logger,
-                                            Sbase=Sbase)
+            # # conversion
+            # G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
+            #                                 logger=logger,
+            #                                 Sbase=Sbase)
 
             v_set, is_controlled, controlled_bus, controlled_cn = (
                 get_regulating_control_params(
@@ -1851,32 +1858,33 @@ def get_gcdev_controllable_shunts(
                 name=cgmes_elm.name,
                 code=cgmes_elm.description,
                 active=True,
-                is_nonlinear=True,  # it is Linear!
+                is_nonlinear=True,                  # it is NonLinear!
                 number_of_steps=cgmes_elm.maximumSections,
-                step=cgmes_elm.normalSections,
+                step=cgmes_elm.sections,
                 # g_per_step=G,
                 # b_per_step=B,
-                G=G,
-                B=B,
-                G0=G0,
-                B0=B0,
+                # G=G,
+                # B=B,
                 vset=v_set,
                 is_controlled=is_controlled,
                 control_bus=controlled_bus,
             )
 
-            # n_list = []
-            # b_list = []
-            #
-            # for i in range(1, 9):
-            #     s = getattr(psse_elm, f"S{i}")
-            #     n = getattr(psse_elm, f"N{i}")
-            #
-            #     if s == 1:
-            #         n_list.append(n)
-            #         b_list.append(getattr(psse_elm, f"B{i}"))
-            #
-            # elm.set_blocks(n_list, b_list)
+            point_list = []
+            for nl_sc_p in cgmes_model.cgmes_assets.NonlinearShuntCompensatorPoint_list:
+                if nl_sc_p.NonlinearShuntCompensator == cgmes_elm:
+                    point_list.append(nl_sc_p)
+            point_list.sort(key=lambda obj: obj.sectionNumber)
+
+            Vnom = get_voltage_shunt(shunt=cgmes_elm, logger=logger)
+
+            b_list = [point.b * (Vnom * Vnom) for point in point_list]
+            n_list = [1] * len(b_list)
+
+            gcdev_elm.set_blocks(n_list, b_list)
+
+            # gcdev_elm.B = b_list[0]     # how to consider Binit?
+            # gcdev_elm.G
 
             gcdev_model.add_controllable_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
 

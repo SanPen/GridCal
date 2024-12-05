@@ -460,27 +460,6 @@ def get_values_shunt(shunt,
     :param Sbase: Sbase in MVA
     :return: G, B, G0, B0
     """
-    # if shunt.BaseVoltage is not None:
-    #     Vnom = get_voltage_shunt(shunt, logger=logger)
-    #
-    #     if Vnom is not None:
-    #
-    #         # Zbase = (Vnom * Vnom) / Sbase
-    #         # Ybase = 1.0 / Zbase
-    #
-    #         # at this point g, b are the complete values for all the line length
-    #         G = shunt.gPerSection * (Vnom * Vnom) if shunt.gPerSection is not None else 0
-    #         B = shunt.bPerSection * (Vnom * Vnom) if shunt.bPerSection is not None else 0
-    #         G0 = shunt.g0PerSection * (Vnom * Vnom) if shunt.g0PerSection is not None else 0
-    #         B0 = shunt.b0PerSection * (Vnom * Vnom) if shunt.b0PerSection is not None else 0
-    #
-    #     else:
-    #         G = 0
-    #         B = 0
-    #         G0 = 0
-    #         B0 = 0
-    #
-    # else:
     Vnom = get_voltage_shunt(shunt, logger=logger)
 
     if Vnom is not None:
