@@ -1222,8 +1222,7 @@ In practical terms this means that:
 
 - You can use GridCal for commercial work.
 - You can sell commercial services based on GridCal.
-- If you distrubute GridCal, you must distribute GridCal's source code as well.
-  That is always achieved in practice with python code.
+- If you distrubute GridCal, you don't need to distribute GridCal's source code. However, with python in practice you do.
 - GridCal license does not propagate, even if you use GridCal or pieces of it in your code.
   However, you must retain the individual files licensing.
 
