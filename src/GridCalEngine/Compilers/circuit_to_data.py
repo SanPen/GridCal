@@ -898,15 +898,15 @@ def fill_controllable_branch(
     :param logger:
     :return:
     """
-    _, t = fill_parent_branch(i=ii,
-                              elm=elm,
-                              data=data,
-                              bus_dict=bus_dict,
-                              apply_temperature=apply_temperature,
-                              branch_tolerance_mode=branch_tolerance_mode,
-                              t_idx=t_idx,
-                              time_series=time_series,
-                              is_dc_branch=False)
+    fill_parent_branch(i=ii,
+                       elm=elm,
+                       data=data,
+                       bus_dict=bus_dict,
+                       apply_temperature=apply_temperature,
+                       branch_tolerance_mode=branch_tolerance_mode,
+                       t_idx=t_idx,
+                       time_series=time_series,
+                       is_dc_branch=False)
 
     if time_series:
 

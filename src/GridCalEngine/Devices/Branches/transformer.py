@@ -133,12 +133,6 @@ class Transformer2W(ControllableBranchParent):
         :param capex: Cost of investment (e/MW)
         :param opex: Cost of operation (e/MWh)
         :param build_status: build status (now time)
-        :param gpf_ctrl1_elm: object the first degree of freedom controls
-        :param gpf_ctrl1_mode: magnitude under control for the first degree of freedom
-        :param gpf_ctrl1_val: value at which the magnitude of the first control is set
-        :param gpf_ctrl2_elm: object the second degree of freedom controls
-        :param gpf_ctrl2_mode: magnitude under control for the second degree of freedom
-        :param gpf_ctrl2_val: value at which the magnitude of the second control is set
         """
 
         ControllableBranchParent.__init__(self,

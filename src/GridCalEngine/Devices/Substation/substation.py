@@ -75,8 +75,8 @@ class Substation(GenericAreaGroup):
         self.irradiation: float = float(irradiation)
         self._irradiation_prof = Profile(default_value=self.irradiation, data_type=float)
 
-        self.temparature: float = float(temparature)
-        self._temparature_prof = Profile(default_value=self.temparature, data_type=float)
+        self.temperature: float = float(temparature)
+        self._temperature_prof = Profile(default_value=self.temperature, data_type=float)
 
         self.wind_speed: float = float(wind_speed)
         self._wind_speed_prof = Profile(default_value=self.wind_speed, data_type=float)
@@ -110,7 +110,7 @@ class Substation(GenericAreaGroup):
 
         self.register(key="temparature", units="ºC", tpe=float,
                       definition="Substation temperature",
-                      profile_name="temparature_prof")
+                      profile_name="temperature_prof")
 
         self.register(key="wind_speed", units="m/s", tpe=float,
                       definition="Substation wind speed at 80m above the ground",
@@ -276,21 +276,21 @@ class Substation(GenericAreaGroup):
             raise Exception(str(type(val)) + 'not supported to be set into a irradiation_prof')
 
     @property
-    def temparature_prof(self) -> Profile:
+    def temperature_prof(self) -> Profile:
         """
         Temperature profile
         :return: Profile
         """
-        return self._temparature_prof
+        return self._temperature_prof
 
-    @temparature_prof.setter
-    def temparature_prof(self, val: Union[Profile, np.ndarray]):
+    @temperature_prof.setter
+    def temperature_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._temparature_prof = val
+            self._temperature_prof = val
         elif isinstance(val, np.ndarray):
-            self._temparature_prof.set(arr=val)
+            self._temperature_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a temparature_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a temperature_prof')
 
     @property
     def wind_speed_prof(self) -> Profile:
