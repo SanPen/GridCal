@@ -108,7 +108,7 @@ class Substation(GenericAreaGroup):
                       definition="Substation solar irradiation",
                       profile_name="irradiation_prof")
 
-        self.register(key="temparature", units="ºC", tpe=float,
+        self.register(key="temperature", units="ºC", tpe=float,
                       definition="Substation temperature",
                       profile_name="temperature_prof")
 
