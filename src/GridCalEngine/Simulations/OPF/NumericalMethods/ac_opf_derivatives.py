@@ -528,10 +528,10 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
 
 
 def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, nslcap: int,
-           pq: Vec, k_m: Vec, k_tau: Vec,
+           pq: Vec, k_m: Vec, k_tau: Vec, Cg: csc_matrix, Inom: Vec,
            Vm_max: Vec, Vm_min: Vec, Pg_max: Vec, Pg_min: Vec, Qg_max: Vec, Qg_min: Vec, tapm_max: Vec,
            tapm_min: Vec, tapt_max: Vec, tapt_min: Vec, Pdcmax: Vec, rates: Vec, il: Vec, ig: Vec,
-           tanmax: Vec, ctQ: bool, acopf_mode: AcOpfMode) -> Tuple[Vec, CxVec, CxVec]:
+           ctQ: bool, acopf_mode: AcOpfMode) -> Tuple[Vec, CxVec, CxVec]:
     """
     Calculates the inequality constraints at the current state (given by x)
     :param x: State vector
@@ -567,6 +567,7 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
 
     M, N = Yf.shape
     Ng = len(ig)
+    Ng_nosh = len(Inom)
     ntapm = len(k_m)
     ntapt = len(k_tau)
     ndc = len(Pdcmax)
@@ -625,7 +626,8 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
         ]
 
     if ctQ:  # if reactive power control...
-        hval = np.r_[hval, np.power(Qg, 2.0) - np.power(tanmax, 2.0) * np.power(Pg, 2.0)]
+        v_g = Cg[:, ig[:Ng_nosh]].T @ vm
+        hval = np.r_[hval, np.power(Qg[:Ng_nosh], 2.0) + np.power(Pg[:Ng_nosh], 2.0) - np.power(v_g * Inom, 2.0)]
 
     if ndc != 0:
         hval = np.r_[hval, Pfdc - Pdcmax, - Pdcmax - Pfdc]
@@ -633,10 +635,10 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
     return hval, Sftot, Sttot
 
 
-def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc_matrix, Cf: csc, Ct: csc,
+def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc_matrix, Cf: csc, Ct: csc, Inom: Vec,
                            Yf: csc_matrix, Yt: csc_matrix, Ybus: csc_matrix, Sbase: float, mon_br_idx: IntVec, ig: IntVec,
                            slack: Vec, nslcap: int, nodal_capacity_sign: float, capacity_nodes_idx: IntVec, pq: IntVec,
-                           pv: IntVec, tanmax: Vec, alltapm: Vec, alltapt: Vec, F_hvdc: IntVec, T_hvdc: IntVec,
+                           pv: IntVec, alltapm: Vec, alltapt: Vec, F_hvdc: IntVec, T_hvdc: IntVec, nsh: int,
                            k_m: IntVec, k_tau: IntVec, mu, lmbda, R: Vec, X: Vec, F: IntVec, T: IntVec,
                            ctQ: bool, acopf_mode: AcOpfMode, compute_jac: bool,
                            compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc, Vec]:
@@ -685,6 +687,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
     Mm, N = Yf.shape
     M = len(mon_br_idx)
     Ng = len(ig)
+    Ng_nosh = len(Inom)
     NV = len(x)
     ntapm = len(k_m)
     ntapt = len(k_tau)
@@ -985,13 +988,14 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
 
         if ctQ:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
-            Hqmaxp = - 2 * np.power(tanmax, 2) * Pg
-            Hqmaxq = 2 * Qg
-
-            Hqmax = sp.hstack([lil_matrix((nqct, 2 * N)), diags(Hqmaxp), diags(Hqmaxq),
+            Hqmaxp = np.r_[2 * Pg[:Ng_nosh], np.zeros(nsh)]
+            Hqmaxq = np.r_[2 * Qg[:Ng_nosh], np.zeros(nsh)]
+            Hqmaxv = - 2 * diags(np.power(Inom, 2.0)) * Cg[:, ig[:Ng_nosh]].T @ diags(vm)
+            Hqmax = sp.hstack([lil_matrix((nqct, N)), Hqmaxv, diags(Hqmaxp), diags(Hqmaxq),
                                lil_matrix((nqct, nsl + nslcap + ntapm + ntapt + ndc))])
         else:
             Hqmax = lil_matrix((nqct, NV))
+            Hqmaxv = lil_matrix((nqct, N))
 
         Hdcu = sp.hstack([lil_matrix((ndc, NV - ndc)), diags(np.ones(ndc))])
         Hdcl = sp.hstack([lil_matrix((ndc, NV - ndc)), diags(- np.ones(ndc))])
@@ -1026,6 +1030,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Sttapm = lil_matrix((M, ntapm))
         Sftapt = lil_matrix((M, ntapt))
         Sttapt = lil_matrix((M, ntapt))
+        Hqmaxv = lil_matrix((nqct, N))
 
     # HESSIANS ---------------------------------------------------------------------------------------------------------
 
@@ -1178,11 +1183,14 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Sfvmvm = vm_inv @ Ff @ vm_inv
 
         if ctQ:  # using reactive power control
-            Hqpgpg = diags(-2 * np.power(tanmax, 2) * mu[-Ng:])
-            Hqqgqg = diags(np.array([2] * Ng) * mu[-Ng:])
+            Hqpgpg = diags(np.r_[np.array([2] * Ng_nosh) * mu[- Ng_nosh:], np.zeros(nsh)])
+            Hqqgqg = diags(np.r_[np.array([2] * Ng_nosh) * mu[- Ng_nosh:], np.zeros(nsh)])
+            Hqvmvm = (Cg[:, ig[:Ng_nosh]] @ diags(mu[-Ng_nosh:])
+                      @ (- 2 * diags(np.power(Inom, 2.0)) * Cg[:, ig[:Ng_nosh]].T))
         else:
             Hqpgpg = lil_matrix((Ng, Ng))
             Hqqgqg = lil_matrix((Ng, Ng))
+            Hqvmvm = lil_matrix((N, N))
 
         Hfvava = 2 * (Sfvava + Sfva.T @ muf_mat @ np.conj(Sfva)).real
         Hfvmva = 2 * (Sfvmva + Sfvm.T @ muf_mat @ np.conj(Sfva)).real
@@ -1230,7 +1238,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                             lil_matrix((N, ndc))])
 
             H2 = sp.hstack([Hfvmva + Htvmva,
-                            Hfvmvm + Htvmvm,
+                            Hfvmvm + Htvmvm + Hqvmvm,
                             lil_matrix((N, 2 * Ng + nsl + nslcap)),
                             Hftapmvm.T + Httapmvm.T,
                             Hftaptvm.T + Httaptvm.T,
@@ -1254,7 +1262,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
 
         else:
             H1 = sp.hstack([Hfvava + Htvava, Hfvavm + Htvavm, lil_matrix((N, 2 * Ng + nsl + nslcap + ndc))])
-            H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm, lil_matrix((N, 2 * Ng + nsl + nslcap + ndc))])
+            H2 = sp.hstack([Hfvmva + Htvmva, Hfvmvm + Htvmvm + Hqvmvm, lil_matrix((N, 2 * Ng + nsl + nslcap + ndc))])
             H3 = sp.hstack([lil_matrix((Ng, 2 * N)), Hqpgpg, lil_matrix((Ng, Ng + nsl + nslcap + ndc))])
             H4 = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), Hqqgqg, lil_matrix((Ng, nsl + nslcap + ndc))])
 

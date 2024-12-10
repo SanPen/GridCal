@@ -8,6 +8,7 @@ import GridCalEngine.Devices
 from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.api import power_flow
 
 
 def createExampleGridDiagram1() -> MultiCircuit:
@@ -797,7 +798,6 @@ def test_topology_2_nodes_A1():
     b0 = grid.add_bus(dev.Bus(name="B0"))
     b1 = grid.add_bus(dev.Bus(name="B1"))
 
-
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=True))
     grid.add_switch(sw1)
 
@@ -824,7 +824,6 @@ def test_topology_2_nodes_A2():
     b0 = grid.add_bus(dev.Bus(name="B0"))
     b1 = grid.add_bus(dev.Bus(name="B1"))
 
-
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=False))
     grid.add_switch(sw1)
 
@@ -839,3 +838,55 @@ def test_topology_2_nodes_A2():
     """
 
     assert g1.bus == b0 and ld1.bus == b1
+
+
+def test_topology_3_nodes_A1() -> None:
+    """
+    3 bus grid (closed switch)
+    [bus0] __--__ [bus1] --- [bus2]
+    [gen]                    [load]
+    :return:
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=True))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=b1, bus_to=b2, active=True))
+    g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
+    ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    res = power_flow(grid)
+
+    assert res.voltage[2] != 0
+
+
+def test_topology_3_nodes_A2() -> None:
+    """
+    3 bus grid (open switch)
+    [bus0] __/ __ [bus1] --- [bus2]
+    [gen]                    [load]
+    :return:
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=False))
+    l1 = grid.add_line(dev.Line(name="L1", bus_from=b1, bus_to=b2, active=True))
+    g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
+    ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    res = power_flow(grid)
+
+    assert res.voltage[2] == 0

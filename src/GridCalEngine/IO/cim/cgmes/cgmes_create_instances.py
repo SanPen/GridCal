@@ -395,13 +395,12 @@ def create_cgmes_tap_changer_control(
     tcc.targetDeadband = 0.5
     tcc.targetValueUnitMultiplier = UnitMultiplier.k
     tcc.enabled = tcc_enabled
-    if tcc.enabled:
-        if mc_trafo:
-            tcc.targetValue = mc_trafo.vset * mc_trafo.get_max_bus_nominal_voltage()
-        else:
-            tcc.targetValue = mc_trafo.Pset
-    else:
-        tcc.targetValue = None
+    voltage = get_voltage_terminal(tcc.Terminal, logger)
+    tcc.targetValue = mc_trafo.vset * voltage
+
+    # TODO consider other control types
+    # if mc_trafo.tap_module_control_mode ...:
+    #     tcc.targetValue = mc_trafo.Pset
     # tcc.RegulatingCondEq not required .?
     # control_cn.Vnom ?
 
@@ -436,7 +435,7 @@ def create_cgmes_current_limit(terminal,
     current_rate = rate_mw * 1e3 / (voltage * sqrt_3)
     current_rate = np.round(current_rate, 4)
 
-    curr_lim.value = current_rate   # Current rate in Amps
+    curr_lim.value = current_rate  # Current rate in Amps
 
     op_lim_set_1 = create_operational_limit_set(terminal, cgmes_model, logger)
     if op_lim_set_1 is not None:
@@ -589,7 +588,7 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
     vs_converter.maxValveCurrent = 99999
 
     # SSH
-    vs_converter.p = p_set   # hvdc_line.Pset or VSC.Pset
+    vs_converter.p = p_set  # hvdc_line.Pset or VSC.Pset
     vs_converter.q = 0.0
     vs_converter.targetPpcc = p_set
     vs_converter.targetUdc = 0
@@ -705,7 +704,7 @@ def create_cgmes_dc_line(cgmes_model: CgmesCircuit,
 
 def create_cgmes_dc_line_segment(cgmes_model: CgmesCircuit,
                                  mc_elm: Union[gcdev.HvdcLine,
-                                               gcdev.DcLine],
+                                 gcdev.DcLine],
                                  dc_tp_1: Base,
                                  dc_node_1: Base,
                                  dc_tp_2: Base,
@@ -941,10 +940,32 @@ def create_cgmes_conform_load_group(
     c_load_group.name = "_CLG_"
     c_load_group.description = "_CLG_"
     c_load_group.EnergyConsumers = []
-    c_load_group.SubLoadArea = create_cgmes_sub_load_area(cgmes_model, logger)
+    c_load_group.SubLoadArea = cgmes_model.cgmes_assets.SubLoadArea_list[0]
 
     cgmes_model.add(c_load_group)
     return c_load_group
+
+
+def create_cgmes_non_conform_load_group(
+        cgmes_model: CgmesCircuit,
+        logger: DataLogger):
+    """
+
+    :param mc_elm:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("NonConformLoadGroup")
+    nc_load_group = object_template(rdfid=new_rdf_id)
+    nc_load_group.name = "_NCLG_"
+    nc_load_group.description = "_NCLG_"
+    nc_load_group.EnergyConsumers = []
+    nc_load_group.SubLoadArea = cgmes_model.cgmes_assets.SubLoadArea_list[0]
+
+    cgmes_model.add(nc_load_group)
+    return nc_load_group
 
 
 def create_cgmes_sub_load_area(
@@ -986,3 +1007,34 @@ def create_cgmes_load_area(
 
     cgmes_model.add(sub_load_area)
     return sub_load_area
+
+
+def create_cgmes_nonlinear_sc_point(
+        section_num: int,
+        b: float,
+        g: float,
+        nl_sc: Base,
+        cgmes_model: CgmesCircuit,
+    ):
+    """
+    
+    :param section_num: 
+    :param b: b in Siemens
+    :param g: g in 
+    :param nl_sc: NonlinearShuntCompensator object
+    :param cgmes_model: CgmesModel
+    :param logger: DataLogger
+    :return: 
+    """""
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("NonlinearShuntCompensatorPoint")
+    nl_sc_p = object_template(rdfid=new_rdf_id)
+
+    nl_sc_p.sectionNumber = section_num
+    nl_sc_p.b = b
+    nl_sc_p.g = g
+    nl_sc_p.b0 = 0.0
+    nl_sc_p.g0 = 0.0
+    nl_sc_p.NonlinearShuntCompensator = nl_sc
+
+    cgmes_model.add(nl_sc_p)
