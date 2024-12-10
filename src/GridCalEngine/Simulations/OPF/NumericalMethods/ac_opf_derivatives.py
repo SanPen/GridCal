@@ -988,11 +988,11 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
 
         if ctQ:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
-            Hqmaxp = np.r_[2 * Pg[:Ng_nosh], np.zeros(nsh)]
-            Hqmaxq = np.r_[2 * Qg[:Ng_nosh], np.zeros(nsh)]
+            Hqmaxp = 2 * Pg[:Ng_nosh]
+            Hqmaxq = 2 * Qg[:Ng_nosh]
             Hqmaxv = - 2 * diags(np.power(Inom, 2.0)) * Cg[:, ig[:Ng_nosh]].T @ diags(vm)
-            Hqmax = sp.hstack([lil_matrix((nqct, N)), Hqmaxv, diags(Hqmaxp), diags(Hqmaxq),
-                               lil_matrix((nqct, nsl + nslcap + ntapm + ntapt + ndc))])
+            Hqmax = sp.hstack([lil_matrix((nqct, N)), Hqmaxv, diags(Hqmaxp), lil_matrix((nqct, nsh)), diags(Hqmaxq),
+                               lil_matrix((nqct, nsh)), lil_matrix((nqct, nsl + nslcap + ntapm + ntapt + ndc))])
         else:
             Hqmax = lil_matrix((nqct, NV))
             Hqmaxv = lil_matrix((nqct, N))
