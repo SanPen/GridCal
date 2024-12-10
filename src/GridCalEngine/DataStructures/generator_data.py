@@ -37,6 +37,7 @@ class GeneratorData:
 
         self.qmin: Vec = np.zeros(nelm, dtype=float)
         self.qmax: Vec = np.zeros(nelm, dtype=float)
+        self.snom: Vec = np.zeros(nelm, dtype=float)
         self.q_share: Vec = np.zeros(nelm, dtype=float)
 
         # reliabilty
@@ -95,6 +96,7 @@ class GeneratorData:
 
         data.qmin = self.qmin[elm_idx]
         data.qmax = self.qmax[elm_idx]
+        data.snom = self.snom[elm_idx]
         data.q_share = self.q_share[elm_idx]
 
         data.mttf = self.mttf[elm_idx]
@@ -157,6 +159,7 @@ class GeneratorData:
 
         data.qmin = self.qmin.copy()
         data.qmax = self.qmax.copy()
+        data.snom = self.snom.copy()
         data.q_share = self.q_share.copy()
 
         data.mttf = self.mttf.copy()

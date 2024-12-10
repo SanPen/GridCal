@@ -487,6 +487,7 @@ def get_generator_data(
         data.dispatchable[k] = elm.enabled_dispatch
         data.pmax[k] = elm.Pmax
         data.pmin[k] = elm.Pmin
+        data.snom[k] = elm.Snom
 
         if time_series:
 

@@ -3,7 +3,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
-from GridCalEngine.enumerations import TransformerControlType
+# from GridCalEngine.enumerations import TransformerControlType
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import NodalCapacityTimeSeriesDriver
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_options import NodalCapacityOptions
 import numpy as np
@@ -51,111 +51,111 @@ def example_3bus_acopf():
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True)
 
 
-def case_3bus():
-    """
+# def case_3bus():
+#     """
+#
+#     :return:
+#     """
+#
+#     grid = gce.MultiCircuit()
+#
+#     b1 = gce.Bus(is_slack=True)
+#     b2 = gce.Bus()
+#     b3 = gce.Bus()
+#
+#     grid.add_bus(b1)
+#     grid.add_bus(b2)
+#     grid.add_bus(b3)
+#
+#     # grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='Line 1-2', r=0.001, x=0.05, rate=100))
+#     # grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='Line 2-3', r=0.001, x=0.05, rate=100))
+#     grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='Line 3-1', r=0.001, x=0.05, rate=100))
+#
+#     grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
+#     grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
+#     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
+#
+#     tr1 = gce.Transformer2W(b1, b2, 'Trafo 1', control_mode=TransformerControlType.PtQt,
+#                             tap_module=1.01, tap_phase=0.02, r=0.001, x=0.05, tap_phase_max=0.5, tap_module_max=1.1,
+#                             tap_phase_min=-0.5, tap_module_min=0.9, rate=100)
+#
+#     grid.add_transformer2w(tr1)
+#
+#     tr2 = gce.Transformer2W(b2, b3, 'Trafo 2', control_mode=TransformerControlType.PtV,
+#                             tap_module=1.01, tap_phase=+0.02, r=0.004, x=0.08, tap_phase_max=0.03, tap_module_max=1.02,
+#                             tap_phase_min=-0.02, tap_module_min=0.98, rate=100)
+#     grid.add_transformer2w(tr2)
+#
+#     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
+#     power_flow = gce.PowerFlowDriver(grid, options)
+#     power_flow.run()
+#
+#     # print('\n\n', grid.name)
+#     # print('\tConv:\n', power_flow.results.get_bus_df())
+#     # print('\tConv:\n', power_flow.results.get_branch_df())
+#
+#     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, max_iter=50, verbose=3)
+#     run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
+#     nc = compile_numerical_circuit_at(circuit=grid)
 
-    :return:
-    """
 
-    grid = gce.MultiCircuit()
-
-    b1 = gce.Bus(is_slack=True)
-    b2 = gce.Bus()
-    b3 = gce.Bus()
-
-    grid.add_bus(b1)
-    grid.add_bus(b2)
-    grid.add_bus(b3)
-
-    # grid.add_line(gce.Line(bus_from=b1, bus_to=b2, name='Line 1-2', r=0.001, x=0.05, rate=100))
-    # grid.add_line(gce.Line(bus_from=b2, bus_to=b3, name='Line 2-3', r=0.001, x=0.05, rate=100))
-    grid.add_line(gce.Line(bus_from=b3, bus_to=b1, name='Line 3-1', r=0.001, x=0.05, rate=100))
-
-    grid.add_load(b3, gce.Load(name='L3', P=50, Q=20))
-    grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
-    grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
-
-    tr1 = gce.Transformer2W(b1, b2, 'Trafo 1', control_mode=TransformerControlType.PtQt,
-                            tap_module=1.01, tap_phase=0.02, r=0.001, x=0.05, tap_phase_max=0.5, tap_module_max=1.1,
-                            tap_phase_min=-0.5, tap_module_min=0.9, rate=100)
-
-    grid.add_transformer2w(tr1)
-
-    tr2 = gce.Transformer2W(b2, b3, 'Trafo 2', control_mode=TransformerControlType.PtV,
-                            tap_module=1.01, tap_phase=+0.02, r=0.004, x=0.08, tap_phase_max=0.03, tap_module_max=1.02,
-                            tap_phase_min=-0.02, tap_module_min=0.98, rate=100)
-    grid.add_transformer2w(tr2)
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    # print('\n\n', grid.name)
-    # print('\tConv:\n', power_flow.results.get_bus_df())
-    # print('\tConv:\n', power_flow.results.get_branch_df())
-
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, max_iter=50, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, plot_error=True)
-    nc = compile_numerical_circuit_at(circuit=grid)
-
-
-def linn5bus_example():
-    """
-    Grid from Lynn Powel's book
-    """
-    # declare a circuit object
-    grid = gce.MultiCircuit()
-
-    # Add the buses and the generators and loads attached
-    bus1 = gce.Bus('Bus 1', Vnom=20)
-    # bus1.is_slack = True  # we may mark the bus a slack
-    grid.add_bus(bus1)
-
-    # add a generator to the bus 1
-    gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
-                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
-
-    grid.add_generator(bus1, gen1)
-
-    # add bus 2 with a load attached
-    bus2 = gce.Bus('Bus 2', Vnom=20)
-    grid.add_bus(bus2)
-    grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
-
-    # add bus 3 with a load attached
-    bus3 = gce.Bus('Bus 3', Vnom=20)
-    grid.add_bus(bus3)
-    grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
-
-    # add bus 4 with a load attached
-    bus4 = gce.Bus('Bus 4', Vnom=20)
-    grid.add_bus(bus4)
-    grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
-
-    # add bus 5 with a load attached
-    bus5 = gce.Bus('Bus 5', Vnom=20)
-    grid.add_bus(bus5)
-    grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
-
-    # add Lines connecting the buses
-    grid.add_line(gce.Line(bus1, bus2, name='line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus1, bus3, name='line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus1, bus5, name='line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus2, bus3, name='line 2-3', r=0.04, x=0.09, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02, rate=1000))
-    grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03, rate=1000))
-    grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
-
-    tr1 = gce.Transformer2W(bus1, bus2, 'Trafo 1', control_mode=TransformerControlType.PtQt,
-                            tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
-                            tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
-
-    # grid.add_transformer2w(tr1)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-8,
-                                              ips_iterations=25)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True)
-
+# def linn5bus_example():
+#     """
+#     Grid from Lynn Powel's book
+#     """
+#     # declare a circuit object
+#     grid = gce.MultiCircuit()
+#
+#     # Add the buses and the generators and loads attached
+#     bus1 = gce.Bus('Bus 1', Vnom=20)
+#     # bus1.is_slack = True  # we may mark the bus a slack
+#     grid.add_bus(bus1)
+#
+#     # add a generator to the bus 1
+#     gen1 = gce.Generator('Slack Generator', vset=1.0, Pmin=0, Pmax=1000,
+#                          Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+#
+#     grid.add_generator(bus1, gen1)
+#
+#     # add bus 2 with a load attached
+#     bus2 = gce.Bus('Bus 2', Vnom=20)
+#     grid.add_bus(bus2)
+#     grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
+#
+#     # add bus 3 with a load attached
+#     bus3 = gce.Bus('Bus 3', Vnom=20)
+#     grid.add_bus(bus3)
+#     grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
+#
+#     # add bus 4 with a load attached
+#     bus4 = gce.Bus('Bus 4', Vnom=20)
+#     grid.add_bus(bus4)
+#     grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
+#
+#     # add bus 5 with a load attached
+#     bus5 = gce.Bus('Bus 5', Vnom=20)
+#     grid.add_bus(bus5)
+#     grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
+#
+#     # add Lines connecting the buses
+#     grid.add_line(gce.Line(bus1, bus2, name='line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
+#     grid.add_line(gce.Line(bus1, bus3, name='line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
+#     grid.add_line(gce.Line(bus1, bus5, name='line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
+#     grid.add_line(gce.Line(bus2, bus3, name='line 2-3', r=0.04, x=0.09, b=0.02, rate=1000))
+#     grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02, rate=1000))
+#     grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03, rate=1000))
+#     grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
+#
+#     tr1 = gce.Transformer2W(bus1, bus2, 'Trafo 1', control_mode=TransformerControlType.PtQt,
+#                             tap_module=0.95, tap_phase=-0.02, r=0.05, x=0.11, tap_phase_max=0.5, tap_module_max=1.1,
+#                             tap_phase_min=-0.5, tap_module_min=0.9, rate=1000)
+#
+#     # grid.add_transformer2w(tr1)
+#     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-8,
+#                                               ips_iterations=25)
+#     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+#     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True)
+#
 
 def two_grids_of_3bus():
     """
@@ -303,9 +303,9 @@ def case14():
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=False)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFslacks,
-                                              ips_tolerance=1e-6, ips_iterations=50, verbose=1)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=True)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFstd,
+                                              ips_tolerance=1e-6, ips_iterations=50, ips_control_q_limits=True, verbose=1)
     res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
     print('')
 
