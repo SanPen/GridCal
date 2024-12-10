@@ -695,7 +695,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
     npq = len(pq)
 
     if ctQ:  # if reactive power control...
-        nqct = Ng
+        nqct = Ng_nosh
     else:
         nqct = 0
 
