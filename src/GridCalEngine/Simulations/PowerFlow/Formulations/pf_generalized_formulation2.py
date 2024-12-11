@@ -7,6 +7,7 @@ from typing import Tuple, List, Callable, Union
 import numpy as np
 import pandas as pd
 import scipy as sp
+from GridCalEngine.Topology.generalized_simulation_indices_new import GeneralizedSimulationIndices
 from scipy.sparse import lil_matrix, csc_matrix, hstack, vstack, csr_matrix
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -21,7 +22,6 @@ from GridCalEngine.enumerations import BusMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    polar_to_rect, get_Sf, get_St)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
-import GridCalEngine.Topology.generalized_simulation_indices as gsi
 
 
 def recompute_controllable_power(V_f: CxVec,
@@ -1091,15 +1091,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.p = np.array(0, dtype=int)
         self.idx_conv = np.array(0, dtype=int)
 
-        self.idx_dVa = np.array(0, dtype=int)
-        self.idx_dVm = np.array(0, dtype=int)
-        self.idx_dP = np.array(0, dtype=int)
-        self.idx_dQ = np.array(0, dtype=int)
-
-        self.idx_dm = np.array(0, dtype=int)
-        self.idx_dtau = np.array(0, dtype=int)
-        self.idx_dbeq = np.array(0, dtype=int)
-
         self.idx_dPf = np.array(0, dtype=int)
         self.idx_dQf = np.array(0, dtype=int)
 
@@ -1108,7 +1099,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Generalized indices
         start = time.perf_counter()
-        self.indices = gsi.GeneralizedSimulationIndices(self.nc)
+        self.indices = GeneralizedSimulationIndices(self.nc)
         end = time.perf_counter()
         execution_time = end - start
         print(f"Indices Time: {execution_time} seconds")
@@ -1116,52 +1107,30 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
         self.hvdc_mode = self.indices.hvdc_mode
 
-        # cg sets
-        self.cg_pac = self.indices.cg_pac
-        self.cg_qac = self.indices.cg_qac
-        self.cg_pdc = self.indices.cg_pdc
-        self.cg_acdc = self.indices.cg_acdc
-        self.cg_hvdc = self.indices.cg_hvdc
-        self.cg_pftr = self.indices.cg_pftr
-        self.cg_pttr = self.indices.cg_pttr
-        self.cg_qftr = self.indices.cg_qftr
-        self.cg_qttr = self.indices.cg_qttr
+        # Bus indices
+        self.i_u_vm = self.indices.i_u_vm
+        self.i_u_va = self.indices.i_u_va
+        self.i_k_p = self.indices.i_k_p
+        self.i_k_q = self.indices.i_k_q
 
-        # cx sets [UNKNOWNS] The order of this list is important
-        self.cx_vm: IntVec = self.indices.cx_vm
-        self.cx_va: IntVec = self.indices.cx_va
-        self.cx_pzip: IntVec = self.indices.cx_pzip
-        self.cx_qzip: IntVec = self.indices.cx_qzip
-        self.cx_pfa: IntVec = self.indices.cx_pfa
-        self.cx_qfa: IntVec = self.indices.cx_qfa
-        self.cx_pta: IntVec = self.indices.cx_pta
-        self.cx_qta: IntVec = self.indices.cx_qta
-        self.cx_m: IntVec = self.indices.cx_m
-        self.cx_tau: IntVec = self.indices.cx_tau
+        # Controllable Branch Indices
+        self.cbr_m = self.indices.cbr_m
+        self.cbr_tau = self.indices.cbr_tau
+        self.cbr = np.union1d(self.cbr_m, self.cbr_tau)
+        self.k_cbr_pf = self.indices.k_cbr_pf
+        self.k_cbr_pt = self.indices.k_cbr_pt
+        self.k_cbr_qf = self.indices.k_cbr_qf
+        self.k_cbr_qt = self.indices.k_cbr_qt
 
-        # ck sets [KNOWNS]
-        self.ck_vm: IntVec = self.indices.ck_vm
-        self.ck_va: IntVec = self.indices.ck_va
-        self.ck_pzip: IntVec = self.indices.ck_pzip
-        self.ck_qzip: IntVec = self.indices.ck_qzip
-        self.ck_pfa: IntVec = self.indices.ck_pfa
-        self.ck_qfa: IntVec = self.indices.ck_qfa
-        self.ck_pta: IntVec = self.indices.ck_pta
-        self.ck_qta: IntVec = self.indices.ck_qta
-        self.ck_m: IntVec = self.indices.ck_m
-        self.ck_tau: IntVec = self.indices.ck_tau
+        # VSC Indices
+        self.vsc = self.indices.vsc
+        self.u_vsc_pf = self.indices.u_vsc_pf
+        self.u_vsc_pt = self.indices.u_vsc_pt
+        self.u_vsc_qt = self.indices.u_vsc_qt
 
-        # setpoints corresponding to the knowns
-        self.va_setpoints: Vec = self.indices.va_setpoints
-        self.vm_setpoints: Vec = self.indices.vm_setpoints
-        self.tau_setpoints: Vec = self.indices.tau_setpoints
-        self.m_setpoints: Vec = self.indices.m_setpoints
-        self.pzip_setpoints: Vec = self.indices.pzip_setpoints
-        self.qzip_setpoints: Vec = self.indices.qzip_setpoints
-        self.pf_setpoints: Vec = self.indices.pf_setpoints
-        self.pt_setpoints: Vec = self.indices.pt_setpoints
-        self.qf_setpoints: Vec = self.indices.qf_setpoints
-        self.qt_setpoints: Vec = self.indices.qt_setpoints
+        # HVDC Indices
+        self.hvdc = self.indices.hvdc
+
 
         # Update setpoints
         self.Vm[self.indices.ck_vm] = self.indices.vm_setpoints
@@ -1174,39 +1143,37 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Pt[self.indices.ck_pta] = np.array(self.indices.pt_setpoints) / nc.Sbase
         self.Qt[self.indices.ck_qta] = np.array(self.indices.qt_setpoints) / nc.Sbase
 
-        self.cx_m_indexing = np.arange(len(self.cx_m))
-        self.cx_tau_indexing = np.arange(len(self.cx_tau))
-        self.m: Vec = np.ones(len(self.cx_m))
-        self.tau: Vec = np.zeros(len(self.cx_tau))
+        self.m: Vec = np.ones(len(self.cbr_m))
+        self.tau: Vec = np.zeros(len(self.cbr_tau))
 
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
 
-        R = np.full(nc.nbr, 1e+20)
-        X = np.full(nc.nbr, 1e+20)
-        G = np.zeros(nc.nbr, dtype=float)
-        B = np.zeros(nc.nbr, dtype=float)
-        k = np.ones(nc.nbr, dtype=float)
-        tap_module = np.ones(nc.nbr, dtype=float)
-        tap_angle = np.zeros(nc.nbr, dtype=float)
+        self.R = np.full(nc.nbr, 1e+20)
+        self.X = np.full(nc.nbr, 1e+20)
+        self.G = np.zeros(nc.nbr, dtype=float)
+        self.B = np.zeros(nc.nbr, dtype=float)
+        self.k = np.ones(nc.nbr, dtype=float)
+        self.tap_module = np.ones(nc.nbr, dtype=float)
+        self.tap_angle = np.zeros(nc.nbr, dtype=float)
 
         # fill the fixed indices with a small value
-        R[self.fixed_idx] = nc.passive_branch_data.R[self.fixed_idx]
-        X[self.fixed_idx] = nc.passive_branch_data.X[self.fixed_idx]
-        G[self.fixed_idx] = nc.passive_branch_data.G[self.fixed_idx]
-        B[self.fixed_idx] = nc.passive_branch_data.B[self.fixed_idx]
-        tap_module[self.fixed_idx] = nc.active_branch_data.tap_module[self.fixed_idx]
-        tap_angle[self.fixed_idx] = nc.active_branch_data.tap_angle[self.fixed_idx]
+        self.R[self.fixed_idx] = nc.passive_branch_data.R[self.fixed_idx]
+        self.X[self.fixed_idx] = nc.passive_branch_data.X[self.fixed_idx]
+        self.G[self.fixed_idx] = nc.passive_branch_data.G[self.fixed_idx]
+        self.B[self.fixed_idx] = nc.passive_branch_data.B[self.fixed_idx]
+        self.tap_module[self.fixed_idx] = nc.active_branch_data.tap_module[self.fixed_idx]
+        self.tap_angle[self.fixed_idx] = nc.active_branch_data.tap_angle[self.fixed_idx]
 
         self.adm = compute_admittances(
-            R=R,
-            X=X,
-            G=G,
-            B=B,
-            k=k,
-            tap_module=tap_module,
+            R=self.R,
+            X=self.X,
+            G=self.G,
+            B=self.B,
+            k=self.k,
+            tap_module=self.tap_module,
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=tap_angle,
+            tap_angle=self.tap_angle,
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
             Yshunt_bus=self.nc.Yshunt_from_devices,
@@ -1220,28 +1187,30 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Convert X to decission variables
         :param x: solution vector
         """
-        a = len(self.cx_vm)
-        b = a + len(self.cx_va)
-        c = b + len(self.cx_pzip)
-        d = c + len(self.cx_qzip)
-        e = d + len(self.cx_pfa)
-        f = e + len(self.cx_qfa)
-        g = f + len(self.cx_pta)
-        h = g + len(self.cx_qta)
-        i = h + len(self.cx_m)
-        j = i + len(self.cx_tau)
+        a = len(self.i_u_vm)
+        b = a + len(self.i_u_va)
+        c = b + len(self.u_vsc_pf)
+        d = c + len(self.u_vsc_pt)
+        e = d + len(self.u_vsc_qt)
+        f = e + len(self.hvdc)
+        g = f + len(self.hvdc)
+        h = g + len(self.hvdc)
+        i = h + len(self.hvdc)
+        j = i + len(self.cbr_m)
+        k = j + len(self.cbr_tau)
 
         # update the vectors
-        self.Vm[self.cx_vm] = x[0:a]
-        self.Va[self.cx_va] = x[a:b]
-        self.Pzip[self.cx_pzip] = x[b:c]
-        self.Qzip[self.cx_qzip] = x[c:d]
-        self.Pf[self.cx_pfa] = x[d:e]
-        self.Qf[self.cx_qfa] = x[e:f]
-        self.Pt[self.cx_pta] = x[f:g]
-        self.Qt[self.cx_qta] = x[g:h]
-        self.m = x[h:i]
-        self.tau = x[i:j]
+        self.Vm[self.i_u_vm] = x[0:a]
+        self.Va[self.i_u_va] = x[a:b]
+        self.Pf[self.u_vsc_pf] = x[b:c]
+        self.Pt[self.u_vsc_pt] = x[c:d]
+        self.Qt[self.u_vsc_qt] = x[d:e]
+        self.Pf[self.hvdc] = x[e:f]
+        self.Pt[self.hvdc] = x[f:g]
+        self.Qf[self.hvdc] = x[g:h]
+        self.Qt[self.hvdc] = x[h:i]
+        self.m = x[i:j]
+        self.tau = x[j:k]
 
     # DONE
     def var2x(self) -> Vec:
@@ -1250,14 +1219,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: Vector
         """
         return np.r_[
-            self.Vm[self.cx_vm],
-            self.Va[self.cx_va],
-            self.Pzip[self.cx_pzip],
-            self.Qzip[self.cx_qzip],
-            self.Pf[self.cx_pfa],
-            self.Qf[self.cx_qfa],
-            self.Pt[self.cx_pta],
-            self.Qt[self.cx_qta],
+            self.Vm[self.i_u_vm],
+            self.Va[self.i_u_va],
+            self.Pf[self.u_vsc_pf],
+            self.Pt[self.u_vsc_pt],
+            self.Qt[self.u_vsc_qt],
+            self.Pf[self.hvdc],
+            self.Pt[self.hvdc],
+            self.Qf[self.hvdc],
+            self.Qt[self.hvdc],
             self.m,
             self.tau
         ]
@@ -1268,16 +1238,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Size of the jacobian matrix
         :return:
         """
-        return (len(self.cx_vm)
-                + len(self.cx_va)
-                + len(self.cx_pzip)
-                + len(self.cx_qzip)
-                + len(self.cx_pfa)
-                + len(self.cx_qfa)
-                + len(self.cx_pta)
-                + len(self.cx_qta)
-                + len(self.cx_m)
-                + len(self.cx_tau))
+        return (len(self.i_u_vm)
+                + len(self.i_u_va)
+                + len(self.u_vsc_pf)
+                + len(self.u_vsc_pt)
+                + len(self.u_vsc_qt)
+                + len(self.hvdc)
+                + len(self.hvdc)
+                + len(self.hvdc)
+                + len(self.hvdc)
+                + len(self.m)
+                + len(self.tau))
 
     def compute_f(self, x: Vec) -> Vec:
         """
@@ -1286,109 +1257,141 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: Residual vector
         """
 
-        a = len(self.cx_vm)
-        b = a + len(self.cx_va)
-        c = b + len(self.cx_pzip)
-        d = c + len(self.cx_qzip)
-        e = d + len(self.cx_pfa)
-        f = e + len(self.cx_qfa)
-        g = f + len(self.cx_pta)
-        h = g + len(self.cx_qta)
-        i = h + len(self.cx_m)
-        j = i + len(self.cx_tau)
+        a = len(self.i_u_vm)
+        b = a + len(self.i_u_va)
+        c = b + len(self.u_vsc_pf)
+        d = c + len(self.u_vsc_pt)
+        e = d + len(self.u_vsc_qt)
+        f = e + len(self.hvdc)
+        g = f + len(self.hvdc)
+        h = g + len(self.hvdc)
+        i = h + len(self.hvdc)
+        j = i + len(self.cbr_m)
+        k = j + len(self.cbr_tau)
 
         # update the vectors
-        Va = self.Va.copy()
         Vm = self.Vm.copy()
+        Va = self.Va.copy()
         Pbus = self.Pzip.copy()
         Qbus = self.Qzip.copy()
         Pf = self.Pf.copy()
         Qf = self.Qf.copy()
         Pt = self.Pt.copy()
         Qt = self.Qt.copy()
-        # m = self.m.copy()
-        # tau = self.tau.copy()
 
-        Vm[self.cx_vm] = x[0:a]
-        Va[self.cx_va] = x[a:b]
-        Pbus[self.cx_pzip] = x[b:c]
-        Qbus[self.cx_qzip] = x[c:d]
-        Pf[self.cx_pfa] = x[d:e]
-        Qf[self.cx_qfa] = x[e:f]
-        Pt[self.cx_pta] = x[f:g]
-        Qt[self.cx_qta] = x[g:h]
-        m = x[h:i]
-        tau = x[i:j]
+        Vm[self.i_u_vm] = x[0:a]
+        Va[self.i_u_va] = x[a:b]
+        Pf[self.u_vsc_pf] = x[b:c]
+        Pt[self.u_vsc_pt] = x[c:d]
+        Qt[self.u_vsc_qt] = x[d:e]
+        Pf[self.hvdc] = x[e:f]
+        Pt[self.hvdc] = x[f:g]
+        Qf[self.hvdc] = x[g:h]
+        Qt[self.hvdc] = x[h:i]
+        m = x[i:j]
+        tau = x[j:k]
 
         # compute the complex voltage
         V = polar_to_rect(Vm, Va)
 
         # VSC Loss equation
         toBus = self.nc.vsc_data.T
-        It = np.sqrt(Pt * Pt + Qt * Qt)[self.cg_acdc] / Vm[toBus]
+        It = np.sqrt(Pt * Pt + Qt * Qt)[self.vsc] / Vm[toBus]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
                      + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
-        Ploss_acdc = PLoss_IEC - Pt[self.cg_acdc] - Pf[self.cg_acdc]
+        Ploss_acdc = PLoss_IEC - Pt[self.vsc] - Pf[self.vsc]
+
+
+        # HVDC Loss equation
+        loss_hvdc = self.nc.hvdc_data.r * (Pf[self.hvdc] / Vm[self.nc.hvdc_data.F]) ** 2
+        Ploss_hvdc = Pf[self.hvdc] + Pt[self.hvdc] - loss_hvdc
+
+        # HVDC Injection equation
+        dtheta = np.rad2deg(Va[self.nc.hvdc_data.F] - Va[self.nc.hvdc_data.T])
+        droop_contr = self.indices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta
+        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr
+        inj_hvdc = self.nc.hvdc_data.Pset + Pcalc_hvdc
+        Pinj_hvdc = Pf[self.hvdc] - inj_hvdc/self.nc.Sbase
+
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        Ploss_hvdc = np.zeros(self.nc.nhvdc)
-        Pinj_hvdc = np.zeros(self.nc.nhvdc)
-        for i in range(self.nc.nhvdc):
-            dtheta = np.rad2deg(Va[self.nc.hvdc_data.F[i]] - Va[self.nc.hvdc_data.T[i]])
-            droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
-            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
+        # Ploss_hvdc = np.zeros(self.nc.nhvdc)
+        # Pinj_hvdc = np.zeros(self.nc.nhvdc)
 
-            if Pcalc_hvdc > 0.0:
-                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F[i]])
-                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
-                losshvdcpu = rpu * ihvdcpu * ihvdcpu
-                Ploss_hvdc[i] = Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
-                Pinj_hvdc[i] = Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
+        # for i in range(self.nc.nhvdc):
+        #     dtheta = np.rad2deg(Va[self.nc.hvdc_data.F[i]] - Va[self.nc.hvdc_data.T[i]])
+        #     droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
+        #     Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
+        #
+        #     if Pcalc_hvdc > 0.0:
+        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F[i]])
+        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
+        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
+        #         Ploss_hvdc[i] = Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
+        #         Pinj_hvdc[i] = Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
+        #
+        #     elif Pcalc_hvdc < 0.0:
+        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.T[i]])
+        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
+        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
+        #         Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc[i]] - losshvdcpu
+        #         Pinj_hvdc[i] = Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
+        #
+        #     else:
+        #         Ploss_hvdc[i] = 0.0
+        #         Pinj_hvdc[i] = 0.0
 
-            elif Pcalc_hvdc < 0.0:
-                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.T[i]])
-                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
-                losshvdcpu = rpu * ihvdcpu * ihvdcpu
-                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc[i]] - losshvdcpu
-                Pinj_hvdc[i] = Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-
-            else:
-                Ploss_hvdc[i] = 0.0
-                Pinj_hvdc[i] = 0.0
+        # remapping of indices
+        m2 = np.ones(self.nc.nbr)
+        m2[self.cbr_m] = m.copy()
+        tau2 = np.zeros(self.nc.nbr)
+        tau2[self.cbr_tau] = tau.copy()
 
         # compute the function residual
+        adm = compute_admittances(
+            R=self.R,
+            X=self.X,
+            G=self.G,
+            B=self.B,
+            k=self.k,
+            tap_module=m2,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+            tap_angle=tau2,
+            Cf=self.nc.Cf,
+            Ct=self.nc.Ct,
+            Yshunt_bus=self.nc.Yshunt_from_devices,
+            conn=self.nc.passive_branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
+
+
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
-        Sbus += Pbus + 1j * Qbus
-        Scalc = compute_power(self.adm.Ybus, V)
+        # Sbus += Pbus + 1j * Qbus
+        Scalc = compute_power(adm.Ybus, V)
 
         dS = (
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                + ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
-                   + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+                + ((Pf + 1j * Qf)[self.vsc] @ self.nc.vsc_data.C_branch_bus_f
+                   + (Pt + 1j * Qt)[self.vsc] @ self.nc.vsc_data.C_branch_bus_t)
 
                 # add contribution of HVDC link
-                + ((Pf + 1j * Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
-                   + (Pt + 1j * Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
+                + ((Pf + 1j * Qf)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
+                   + (Pt + 1j * Qt)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
 
                 # add contribution of transformer
-                + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
-                   + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
+                + ((Pf + 1j * Qf)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cbr, :]
+                   + (Pt + 1j * Qt)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cbr, :])
 
         )
 
         V = Vm * np.exp(1j * Va)
-
-        # remapping of indices
-        m2 = np.ones(self.nc.nbr)
-        m2[self.cx_m] = m.copy()
-        tau2 = np.zeros(self.nc.nbr)
-        tau2[self.cx_tau] = tau.copy()
-
         Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
             V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
             V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
@@ -1403,15 +1406,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         )
 
         _f = np.r_[
-            dS[self.cg_pac + self.cg_pdc].real,
-            dS[self.cg_qac].imag,
+            dS[self.i_k_p].real,
+            dS[self.i_k_q].imag,
             Ploss_acdc,
             Ploss_hvdc,
             Pinj_hvdc,
-            Pf[self.cg_pttr] - Pftr,
-            Qf[self.cg_pttr] - Qftr,
-            Pt[self.cg_pttr] - Pttr,
-            Qt[self.cg_pttr] - Qttr
+            Pf[self.k_cbr_pf] - Pftr,
+            Pt[self.k_cbr_pt] - Pttr,
+            Qf[self.k_cbr_qf] - Qftr,
+            Qt[self.k_cbr_qt] - Qttr
         ]
 
         errf = compute_fx_error(_f)
@@ -1446,40 +1449,77 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Update converter losses
         toBus = self.nc.vsc_data.T
-        It = np.sqrt(self.Pt * self.Pt + self.Qt * self.Qt)[self.cg_acdc] / self.Vm[toBus]
+        It = np.sqrt(self.Pt * self.Pt + self.Qt * self.Qt)[self.vsc] / self.Vm[toBus]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
                      + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
         # ACDC Power Loss Residual
-        Ploss_acdc = PLoss_IEC - self.Pt[self.cg_acdc] - self.Pf[self.cg_acdc]
+        Ploss_acdc = PLoss_IEC - self.Pt[self.vsc] - self.Pf[self.vsc]
+
+        # HVDC Loss equation
+        loss_hvdc = self.nc.hvdc_data.r * (self.Pf[self.hvdc] / self.Vm[self.nc.hvdc_data.F]) ** 2
+        Ploss_hvdc = self.Pf[self.hvdc] + self.Pt[self.hvdc] - loss_hvdc
+
+        # HVDC Injection equation
+        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F] - self.Va[self.nc.hvdc_data.T])
+        droop_contr = self.indices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta
+        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr
+        inj_hvdc = self.nc.hvdc_data.Pset + Pcalc_hvdc
+        Pinj_hvdc = self.Pf[self.hvdc] - inj_hvdc / self.nc.Sbase
 
         # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        Ploss_hvdc = np.zeros(self.nc.nhvdc)
-        Pinj_hvdc = np.zeros(self.nc.nhvdc)
-        for i in range(self.nc.nhvdc):
-            dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F[i]] - self.Va[self.nc.hvdc_data.T[i]])
-            droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
-            Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
+        # Ploss_hvdc = np.zeros(self.nc.nhvdc)
+        # Pinj_hvdc = np.zeros(self.nc.nhvdc)
+        # for i in range(self.nc.nhvdc):
+        #     dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F[i]] - self.Va[self.nc.hvdc_data.T[i]])
+        #     droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
+        #     Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
+        #
+        #     if Pcalc_hvdc > 0.0:
+        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
+        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
+        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
+        #         Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
+        #         Pinj_hvdc[i] = self.Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
+        #
+        #     elif Pcalc_hvdc < 0.0:
+        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.T[i]])
+        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
+        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
+        #         Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc[i]] - losshvdcpu
+        #         Pinj_hvdc[i] = self.Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
+        #
+        #     else:
+        #         Ploss_hvdc[i] = 0.0
+        #         Pinj_hvdc[i] = 0.0
 
-            if Pcalc_hvdc > 0.0:
-                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
-                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
-                losshvdcpu = rpu * ihvdcpu * ihvdcpu
-                Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
-                Pinj_hvdc[i] = self.Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
 
-            elif Pcalc_hvdc < 0.0:
-                ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.T[i]])
-                rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
-                losshvdcpu = rpu * ihvdcpu * ihvdcpu
-                Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc[i]] - losshvdcpu
-                Pinj_hvdc[i] = self.Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
+        # remapping of indices
+        m2 = np.ones(self.nc.nbr)
+        m2[self.cbr_m] = self.m.copy()
+        tau2 = np.zeros(self.nc.nbr)
+        tau2[self.cbr_tau] = self.tau.copy()
 
-            else:
-                Ploss_hvdc[i] = 0.0
-                Pinj_hvdc[i] = 0.0
+        # compute the function residual
+        self.adm = compute_admittances(
+            R=self.R,
+            X=self.X,
+            G=self.G,
+            B=self.B,
+            k=self.k,
+            tap_module=m2,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+            tap_angle=tau2,
+            Cf=self.nc.Cf,
+            Ct=self.nc.Ct,
+            Yshunt_bus=self.nc.Yshunt_from_devices,
+            conn=self.nc.passive_branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pzip + 1j * self.Qzip
@@ -1489,24 +1529,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                + ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
-                   + (self.Pt + 1j * self.Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+                + ((self.Pf + 1j * self.Qf)[self.vsc] @ self.nc.vsc_data.C_branch_bus_f
+                   + (self.Pt + 1j * self.Qt)[self.vsc] @ self.nc.vsc_data.C_branch_bus_t)
 
                 # add contribution of HVDC link
-                + ((self.Pf + 1j * self.Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
-                   + (self.Pt + 1j * self.Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
+                + ((self.Pf + 1j * self.Qf)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
+                   + (self.Pt + 1j * self.Qt)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
 
                 # add contribution of transformer
-                + ((self.Pf + 1j * self.Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
-                   + (self.Pt + 1j * self.Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr,
+                + ((self.Pf + 1j * self.Qf)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
+                   + (self.Pt + 1j * self.Qt)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr,
                                                               :])
         )
-
-        # remapping of indices
-        m2 = np.ones(self.nc.nbr)
-        m2[self.cx_m] = self.m.copy()
-        tau2 = np.zeros(self.nc.nbr)
-        tau2[self.cx_tau] = self.tau.copy()
 
         # Use self.Pf...
         Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
@@ -1522,15 +1556,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angle=tau2[self.controlled_idx]
         )
         self._f = np.r_[
-            dS[self.cg_pac + self.cg_pdc].real,  # TODO what does + mean here?
-            dS[self.cg_qac].imag,
+            dS[self.i_k_p].real,  # TODO what does + mean here?
+            dS[self.i_k_q].imag,
             Ploss_acdc,
             Ploss_hvdc,
             Pinj_hvdc,
-            self.Pf[self.cg_pftr] - Pftr,
-            self.Qf[self.cg_pftr] - Qftr,
-            self.Pt[self.cg_pftr] - Pttr,
-            self.Qt[self.cg_pftr] - Qttr
+            self.Pf[self.k_cbr_pf] - Pftr,
+            self.Qf[self.k_cbr_pf] - Qftr,
+            self.Pt[self.k_cbr_pf] - Pttr,
+            self.Qt[self.k_cbr_pf] - Qttr
         ]
 
         # compute the error
@@ -1662,7 +1696,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def fx(self) -> Vec:
         """
-        Used?
+        Used? No
         :return:
         """
 
@@ -1704,7 +1738,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ff = self.compute_f(x)
         return ff
 
-    def Jacobian(self, autodiff: bool = False) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:
