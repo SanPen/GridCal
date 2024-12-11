@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import time
 from typing import Tuple, List, Callable, Union
 import numpy as np
 import pandas as pd
@@ -730,10 +731,10 @@ def adv_jacobian(nbus: int,
         dBuffer_dVa = csc_matrix((nhvdc, len(ix_va)))
         dBuffer_dPzip = csc_matrix((nhvdc, len(ix_pzip)))
         dBuffer_dQzip = csc_matrix((nhvdc, len(ix_qzip)))
-        dBuffer_dPfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_pf)))
-        dBuffer_dQfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_qf)))
-        dBuffer_dPto_vsc = csc_matrix((nhvdc, len(remapped_ix_pt)))
-        dBuffer_dQto_vsc = csc_matrix((nhvdc, len(remapped_ix_qt)))
+        # dBuffer_dPfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_pf)))
+        # dBuffer_dQfrom_vsc = csc_matrix((nhvdc, len(remapped_ix_qf)))
+        # dBuffer_dPto_vsc = csc_matrix((nhvdc, len(remapped_ix_pt)))
+        # dBuffer_dQto_vsc = csc_matrix((nhvdc, len(remapped_ix_qt)))
         dBuffer_dQfrom_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_qf)))
         dBuffer_dQto_hvdc = csc_matrix((nhvdc, len(remapped_hvdc_ix_pt)))
         dBuffer_dPfrom_Trafo = csc_matrix((nhvdc, ncontBr_hvdc_ix_pf))
@@ -1106,7 +1107,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.idx_dQt = np.array(0, dtype=int)
 
         # Generalized indices
+        start = time.perf_counter()
         self.indices = gsi.GeneralizedSimulationIndices(self.nc)
+        end = time.perf_counter()
+        execution_time = end - start
+        print(f"Indices Time: {execution_time} seconds")
         self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
         self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
         self.hvdc_mode = self.indices.hvdc_mode
@@ -1695,6 +1700,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param x: solutions vector
         :return: f(x)
         """
+        # print()
         ff = self.compute_f(x)
         return ff
 
@@ -1711,8 +1717,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 print(J)
                 print("J shape: ", J.shape)
 
-            Jdense = np.array(J.todense())
-            dff = pd.DataFrame(Jdense)
+            # Jdense = np.array(J.todense())
+            # dff = pd.DataFrame(Jdense)
             # dff.to_excel("Jacobian_autodiff.xlsx")
             return scipy_to_mat(J)
         else:

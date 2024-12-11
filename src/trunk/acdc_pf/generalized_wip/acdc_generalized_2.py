@@ -48,6 +48,6 @@ for i, island in enumerate(islands):
 
 
 print()
-options = gce.PowerFlowOptions(solver_type= gce.SolverType.GENERALISED)
+options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
 results = gce.power_flow(grid, options)
 print(f"Power flow converged: {results.converged}")
