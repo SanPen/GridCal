@@ -10,108 +10,205 @@ of Raiyan Bin Zulkifli in 2024 (Generalised AC/DC Power Flow at UPC university).
     :alt: Generalized branch models.
     :scale: 50 %
 
-
-.. math::
-
-    \Delta S = S_calc - S_esp
-
-.. math::
-
-    S_zip = S_zip0 + V \cdot (Ire_zip - j \cdot Iim_zip + V \cdot (G_zip - j \cdot B_zip))
-
-    S_calc = V \cdot (I)^* = V \cdot (Y \times V - I_zip)^*
-
+The linearized system is:
 
 .. math::
 
     \begin{equation}
-        \begin{bmatrix}
-            \frac{\partial \Delta P}{\partial Va} & \frac{\partial \Delta P}{\partial Vm} & \frac{\partial \Delta P}{\partial \tau} & \frac{\partial \Delta P}{\partial m} & \frac{\partial \Delta P}{\partial P^{zip}} & \frac{\partial \Delta P}{\partial Q^{zip}} & \frac{\partial \Delta P}{\partial P_f} & \frac{\partial \Delta P}{\partial P_t} & \frac{\partial \Delta P}{\partial Q_f} & \frac{\partial \Delta P}{\partial Q_t} \\
-            \frac{\partial \Delta Q}{\partial Va} & \frac{\partial \Delta Q}{\partial Vm} & \frac{\partial \Delta Q}{\partial \tau} & \frac{\partial \Delta Q}{\partial m} & \frac{\partial \Delta Q}{\partial P^{zip}} & \frac{\partial \Delta Q}{\partial Q^{zip}} & \frac{\partial \Delta Q}{\partial P_f} & \frac{\partial \Delta Q}{\partial P_t} & \frac{\partial \Delta Q}{\partial Q_f} & \frac{\partial \Delta Q}{\partial Q_t} \\
-            \frac{\partial g_loss}{\partial Va} & \frac{\partial g_loss}{\partial Vm} & \frac{\partial g_loss}{\partial \tau} & \frac{\partial g_loss}{\partial m} & \frac{\partial g_loss}{\partial P^{zip}} & \frac{\partial g_loss}{\partial Q^{zip}} & \frac{\partial g_loss}{\partial P_f} & \frac{\partial g_loss}{\partial P_t} & \frac{\partial g_loss}{\partial Q_f} & \frac{\partial g_loss}{\partial Q_t} \\
-            \frac{\partial P_f}{\partial Va} & \frac{\partial P_f}{\partial Vm} & \frac{\partial P_f}{\partial \tau} & \frac{\partial P_f}{\partial m} & \frac{\partial P_f}{\partial P^{zip}} & \frac{\partial P_f}{\partial Q^{zip}} & \frac{\partial P_f}{\partial P_f} & \frac{\partial P_f}{\partial P_t} & \frac{\partial P_f}{\partial Q_f} & \frac{\partial P_f}{\partial Q_t} \\
-            \frac{\partial P_t}{\partial Va} & \frac{\partial P_t}{\partial Vm} & \frac{\partial P_t}{\partial \tau} & \frac{\partial P_t}{\partial m} & \frac{\partial P_t}{\partial P^{zip}} & \frac{\partial P_t}{\partial Q^{zip}} & \frac{\partial P_t}{\partial P_f} & \frac{\partial P_t}{\partial P_t} & \frac{\partial P_t}{\partial Q_f} & \frac{\partial P_t}{\partial Q_t} \\
-            \frac{\partial Q_f}{\partial Va} & \frac{\partial Q_f}{\partial Vm} & \frac{\partial Q_f}{\partial \tau} & \frac{\partial Q_f}{\partial m} & \frac{\partial Q_f}{\partial P^{zip}} & \frac{\partial Q_f}{\partial Q^{zip}} & \frac{\partial Q_f}{\partial P_f} & \frac{\partial Q_f}{\partial P_t} & \frac{\partial Q_f}{\partial Q_f} & \frac{\partial Q_f}{\partial Q_t} \\
-            \frac{\partial Q_t}{\partial Va} & \frac{\partial Q_t}{\partial Vm} & \frac{\partial Q_t}{\partial \tau} & \frac{\partial Q_t}{\partial m} & \frac{\partial Q_t}{\partial P^{zip}} & \frac{\partial Q_t}{\partial Q^{zip}} & \frac{\partial Q_t}{\partial P_f} & \frac{\partial Q_t}{\partial P_t} & \frac{\partial Q_t}{\partial Q_f} & \frac{\partial Q_t}{\partial Q_t}
-        \end{bmatrix}
+        \left[
+        \begin{matrix}
+            \frac{\partial \Delta P}{\partial Vm} & \frac{\partial \Delta P}{\partial Va} & \frac{\partial \Delta P}{\partial P^{\text{zip}}} & \frac{\partial \Delta P}{\partial Q^{\text{zip}}} & \frac{\partial \Delta P}{\partial P_f} & \frac{\partial \Delta P}{\partial P_t} & \frac{\partial \Delta P}{\partial Q_f} & \frac{\partial \Delta P}{\partial Q_t} & \frac{\partial \Delta P}{\partial m} & \frac{\partial \Delta P}{\partial \tau} \\
+            \frac{\partial \Delta Q}{\partial Vm} & \frac{\partial \Delta Q}{\partial Va} & \frac{\partial \Delta Q}{\partial P^{\text{zip}}} & \frac{\partial \Delta Q}{\partial Q^{\text{zip}}} & \frac{\partial \Delta Q}{\partial P_f} & \frac{\partial \Delta Q}{\partial P_t} & \frac{\partial \Delta Q}{\partial Q_f} & \frac{\partial \Delta Q}{\partial Q_t} & \frac{\partial \Delta Q}{\partial m} & \frac{\partial \Delta Q}{\partial \tau} \\
+            \frac{\partial g_{\text{lossACDC}}}{\partial Vm} & \frac{\partial g_{\text{lossACDC}}}{\partial Va} & \frac{\partial g_{\text{lossACDC}}}{\partial P^{\text{zip}}} & \frac{\partial g_{\text{lossACDC}}}{\partial Q^{\text{zip}}} & \frac{\partial g_{\text{lossACDC}}}{\partial P_f} & \frac{\partial g_{\text{lossACDC}}}{\partial P_t} & \frac{\partial g_{\text{lossACDC}}}{\partial Q_f} & \frac{\partial g_{\text{lossACDC}}}{\partial Q_t} & \frac{\partial g_{\text{lossACDC}}}{\partial m} & \frac{\partial g_{\text{lossACDC}}}{\partial \tau} \\
+            \frac{\partial g_{\text{lossHVDC}}}{\partial Vm} & \frac{\partial g_{\text{lossHVDC}}}{\partial Va} & \frac{\partial g_{\text{lossHVDC}}}{\partial P^{\text{zip}}} & \frac{\partial g_{\text{lossHVDC}}}{\partial Q^{\text{zip}}} & \frac{\partial g_{\text{lossHVDC}}}{\partial P_f} & \frac{\partial g_{\text{lossHVDC}}}{\partial P_t} & \frac{\partial g_{\text{lossHVDC}}}{\partial Q_f} & \frac{\partial g_{\text{lossHVDC}}}{\partial Q_t} & \frac{\partial g_{\text{lossHVDC}}}{\partial m} & \frac{\partial g_{\text{lossHVDC}}}{\partial \tau} \\
+            \frac{\partial g_{\text{injHVDC}}}{\partial Vm} & \frac{\partial g_{\text{injHVDC}}}{\partial Va} & \frac{\partial g_{\text{injHVDC}}}{\partial P^{\text{zip}}} & \frac{\partial g_{\text{injHVDC}}}{\partial Q^{\text{zip}}} & \frac{\partial g_{\text{injHVDC}}}{\partial P_f} & \frac{\partial g_{\text{injHVDC}}}{\partial P_t} & \frac{\partial g_{\text{injHVDC}}}{\partial Q_f} & \frac{\partial g_{\text{injHVDC}}}{\partial Q_t} & \frac{\partial g_{\text{injHVDC}}}{\partial m} & \frac{\partial g_{\text{injHVDC}}}{\partial \tau} \\
+            \frac{\partial P_f}{\partial Vm} & \frac{\partial P_f}{\partial Va} & \frac{\partial P_f}{\partial P^{\text{zip}}} & \frac{\partial P_f}{\partial Q^{\text{zip}}} & \frac{\partial P_f}{\partial P_f} & \frac{\partial P_f}{\partial P_t} & \frac{\partial P_f}{\partial Q_f} & \frac{\partial P_f}{\partial Q_t} & \frac{\partial P_f}{\partial m} & \frac{\partial P_f}{\partial \tau} \\
+            \frac{\partial P_t}{\partial Vm} & \frac{\partial P_t}{\partial Va} & \frac{\partial P_t}{\partial P^{\text{zip}}} & \frac{\partial P_t}{\partial Q^{\text{zip}}} & \frac{\partial P_t}{\partial P_f} & \frac{\partial P_t}{\partial P_t} & \frac{\partial P_t}{\partial Q_f} & \frac{\partial P_t}{\partial Q_t} & \frac{\partial P_t}{\partial m} & \frac{\partial P_t}{\partial \tau} \\
+            \frac{\partial Q_f}{\partial Vm} & \frac{\partial Q_f}{\partial Va} & \frac{\partial Q_f}{\partial P^{\text{zip}}} & \frac{\partial Q_f}{\partial Q^{\text{zip}}} & \frac{\partial Q_f}{\partial P_f} & \frac{\partial Q_f}{\partial P_t} & \frac{\partial Q_f}{\partial Q_f} & \frac{\partial Q_f}{\partial Q_t} & \frac{\partial Q_f}{\partial m} & \frac{\partial Q_f}{\partial \tau} \\
+            \frac{\partial Q_t}{\partial Vm} & \frac{\partial Q_t}{\partial Va} & \frac{\partial Q_t}{\partial P^{\text{zip}}} & \frac{\partial Q_t}{\partial Q^{\text{zip}}} & \frac{\partial Q_t}{\partial P_f} & \frac{\partial Q_t}{\partial P_t} & \frac{\partial Q_t}{\partial Q_f} & \frac{\partial Q_t}{\partial Q_t} & \frac{\partial Q_t}{\partial m} & \frac{\partial Q_t}{\partial \tau}
+        \end{matrix}
+        \right]
         \times
-        \begin{bmatrix}
-            \Delta Va \in iu_Va \\
-            \Delta Vm \in iu_Vm \\
-            \Delta \tau \in ku_{\tau}\\
-            \Delta m \in ku_m\\
-            \Delta P^{zip} \in iu_{P_zip}\\
-            \Delta Q^{zip} \in iu_{Q_zip}\\
-            \Delta P_f \in ku_{P_f} \\
-            \Delta P_t \in ku_{P_t} \\
-            \Delta Q_f \in ku_{Q_f} \\
-            \Delta Q_t \in ku_{Q_t}
-        \end{bmatrix}
+        \left[
+        \begin{matrix}
+            \textcolor{orange}{\Delta Vm \;\; \forall iu_{Vm}}  \\
+            \textcolor{orange}{\Delta Va \;\; \forall iu_{Va}} \\
+            \Delta P_f^{vsc} \;\; \forall u_vsc_{P_f}\\
+            \Delta P_t^{vsc} \;\; \forall u_vsc_{P_t}\\
+            \Delta Q_t^{vsc} \;\; \forall u_vsc_{Q_t}\\
+            \Delta P_f^{hvdc} \;\; \forall hvdc\\
+            \Delta P_t^{hvdc} \;\; \forall hvdc\\
+            \Delta Q_f^{hvdc} \;\; \forall hvdc\\
+            \Delta Q_t^{hvdc} \;\; \forall hvdc\\
+            \textcolor{orange}{\Delta m \;\; \forall ku_{m}}  \\
+            \textcolor{orange}{\Delta \tau \;\; \forall ku_{\tau}}
+        \end{matrix}
+        \right]
         =
-        \begin{bmatrix}
-            \Delta P \in in_P \\
-            \Delta Q \in in_Q \\
-            g_loss \in kn_acdc \\
-            \Delta P_f \in kn_{P_f} \\
-            \Delta P_t \in kn_{P_t} \\
-            \Delta Q_f \in kn_{Q_f} \\
-            \Delta Q_t \in kn_{Q_t}
-        \end{bmatrix}
+        \left[
+        \begin{matrix}
+            \Delta P  \;\; \forall ik_P\\
+            \Delta Q \;\;  \forall ik_Q\\
+            \Delta gloss_{vsc} \;\; \forall vsc}  \\
+            \Delta gloss_{hvdc} \;\; \forall hvdc}   \\
+            \Delta ginj_{hvdc} \;\; \forall hvdc} \\
+            \Delta P_f \;\; \forall k_cbr_{Pf}\\
+            \Delta P_t \;\; \forall k_cbr_{Pt}\\
+            \Delta Q_f \;\; \forall k_cbr_{Qf}\\
+            \Delta Q_t \;\; \forall k_cbr_{Qt}
+        \end{matrix}
+        \right]
     \end{equation}
 
+Global Sets:
+
+- :math:`cbr_{m}` -> Indices of the controllable branches that are using m to control.
+- :math:`cbr_{\tau}` -> Indices of the controllable branches that are using tau to control.
+
+- :math:`cbr=cbr_{m} \cup cbr_{\tau}` -> Indices of the controllable branches controlling with either m or tau.
+
+- :math:`k_cbr_{Pf}` -> Indices of the controllable branches where Pf is controlled.
+- :math:`k_cbr_{Pt}` -> Indices of the controllable branches where Pt is controlled.
+- :math:`k_cbr_{Qt}` -> Indices of the controllable branches where Qf is controlled.
+- :math:`k_cbr_{Qt}` -> Indices of the controllable branches where Qt is controlled.
+
+- :math:`vsc` -> Indices of the VSC converters.
+- :math:`u_vsc_{Pf}` -> Indices of the VSC converters where Pf is unknown.
+- :math:`u_vsc_{Pt}` -> Indices of the VSC converters where Pt is unknown.
+- :math:`u_vsc_{Qt}` -> Indices of the VSC converters where Qt is unknown.
+
+- :math:`hvdc` -> Indices of the HVDC links.
+
+- :math:`Inj_P` -> Indices of the injection devices where P is specified.
+- :math:`Inj_Q` -> Indices of the injection devices where Q is specified.
+
+Variable sets (unknowns):
+
+- :math:`\Delta V_m` -> Voltage modules @ :math:`iu_{Vm}` -> indices of buses where Vm is unknown.
+- :math:`\Delta V_a` -> Voltage angles @ :math:`iu_{Va}` -> indices of buses where Va is unknown.
+
+- :math:`\Delta P_f^{vsc}` -> Active power "from" at VSC converters. @ :math:`u_vsc_{P_f}`
+- :math:`\Delta P_t^{vsc}` -> Active power "to" at VSC converters. @ :math:`u_vsc_{P_t}`
+- :math:`\Delta Q_t^{vsc}` -> Reactive power "to" at VSC converters. @ :math:`u_vsc_{Q_t}`
+
+- :math:`\Delta P_f^{hvdc}` -> Active power "from" at HVDC lines. @ :math:`hvdc`.
+- :math:`\Delta P_t^{hvdc}` -> Active power "to" at HVDC lines. @ :math:`hvdc`.
+- :math:`\Delta Q_f^{hvdc}` -> Reactive power "from" at HVDC lines. @ :math:`hvdc`.
+- :math:`\Delta Q_t^{hvdc}` -> Reactive power "to" at HVDC lines. @ :math:`hvdc`.
+
+- :math:`\Delta m` -> Indices of the injection devices where the P is specified. @ :math:`ku_{m}` -> :math:`cbr_{m}`
+- :math:`\Delta \tau` -> Indices of the injection devices where the Q is specified. @ :math:`ku_{\tau}` -> :math:`cbr_{\tau}`
+
+Controls (knowns)
+
+- :math:`\Delta P` -> Active power mismatch for the buses @ :math:`ik_P` -> indices of nodes where P is set.
+- :math:`\Delta Q` -> Reactive power mismatch for buses @ :math:`ik_Q` -> indices of nodes where Q is set.
+
+- :math:`\Delta gloss_{vsc}` -> Power loss equation mismatch for the VSC devices @ :math:`vsc`
+
+- :math:`\Delta gloss_{hvdc}` -> Power loss equation mismatch for the HVDC devices @ :math:`hvdc`
+- :math:`\Delta ginj_{hvdc}` -> Power injected at the from or to side of HVDC devices depending on the HVDC angle droop eq. sign @ :math:`hvdc`
+
+- :math:`\Delta {P_f}` -> Pf mismatch for controllable branches @ :math:`k_cbr_{Pf}`
+- :math:`\Delta {P_t}` -> Pt mismatch for controllable branches @ :math:`k_cbr_{Pt}`
+- :math:`\Delta {Q_f}` -> Qf mismatch for controllable branches @ :math:`k_cbr_{Qf}`
+- :math:`\Delta {Q_t}` -> Qt mismatch for controllable branches @ :math:`k_cbr_{Qt}`
 
 
-Specified variables' sets:
-
-- :math:`\mathcal{C}_{Va}` -> Indices of the buses where the voltage angles are specified.
-- :math:`\mathcal{C}_{Vm}` -> Indices of the buses where the voltage modules are specified.
-- :math:`\mathcal{C}_{\tau}` -> Indices of the controllable branches where the phase shift angles are specified.
-- :math:`\mathcal{C}_{m}` -> Indices of the controllable branches where the tap ratios are specified.
-- :math:`\mathcal{C}_{P_zip}` -> Indices of the buses where the ZIP active power injection are specified.
-- :math:`\mathcal{C}_{Q_zip}` -> Indices of the buses where the ZIP reactive power injection are specified.
-- :math:`\mathcal{C}{P_f}` -> Indices of the controllable branches where Pf is specified.
-- :math:`\mathcal{C}{P_t}` -> Indices of the controllable branches where Pt is specified.
-- :math:`\mathcal{C}{Q_f}` -> Indices of the controllable branches where Qf is specified.
-- :math:`\mathcal{C}{Q_t}` -> Indices of the controllable branches where Qt is specified.
-- :math:`\mathcal{C}{Inj_P}` -> Indices of the injection devices where the P is specified.
-- :math:`\mathcal{C}{Inj_Q}` -> Indices of the injection devices where the Q is specified.
-
-Global sets:
-
-- :math:`ac` -> Indices of the ac buses.
-- :math:`dc` -> Indices of the dc buses.
-- :math:`cbr` -> Indices of the controllable branches.
-- :math:`vsc` -> Indices of the ACDC converters.
-- :math:`Inj_P` -> Indices of the injection devices where the P is specified.
-- :math:`Inj_Q` -> Indices of the injection devices where the Q is specified.
+Equations:
 
 
-Set operations:
+.. math::
 
-- :math:`\cup` : Set union.
-- :math:`\setminus` : Set exclusion.
+    \Delta S = S_{esp} - S_{calc}
 
-Unknowns:
+.. math::
 
-The indices of the unknowns are found by obtaining the
+    S_{calc} = V \cdot (Y \times V)^*
+                + C_f^{cbr} \times S_f^{cbr} + C_t^{cbr} \times S_t^{cbr}
+                + C_f^{vsc} \times P_f^{vsc} + C_t^{vsc} \times S_t^{vsc}
+                + C_f^{hvdc} \times S_f^{hvdc} + C_t^{hvdc} \times S_t^{hvdc}
 
-- :math:`iu_Va = ac \setminus \mathcal{C}_{Va}` -> Voltage angle increments for the AC buses where Va is not specified.
-- :math:`iu_Vm = (ac \cup dc) \setminus \mathcal{C}_{Vm}` -> Voltage angle increments for the AC & DC buses where Vm is not specified.
-- :math:`ku_{\tau} = cbr \setminus \mathcal{C}_{\tau}` -> Set of controllable branches where the phase shift angles are not specified.
-- :math:`ku_m = cbr \setminus \mathcal{C}_{m}` -> Set of controllable branches where the tap ratios are not specified.
-- :math:`iu_{P_zip} = Inj_P \setminus \mathcal{C}{Inj_P}` -> Set of injections where :math:`P_{zip}` is not specified.
-- :math:`iu_{Q_zip} = Inj_q \setminus \mathcal{C}{Inj_q}` -> Set of injections where :math:`Q_{zip}` is not specified.
-- :math:`ku_{P_f} = cbr \setminus \mathcal{C}{P_f}` -> Set of branch indices where :math:`P_f` is not specified.
-- :math:`ku_{P_t} = cbr \setminus \mathcal{C}{P_t}` -> Set of branch indices where :math:`P_t` is not specified.
-- :math:`ku_{Q_f} = cbr \setminus \mathcal{C}{Q_f}` -> Set of branch indices where :math:`Q_f` is not specified.
-- :math:`ku_{Q_t} = cbr \setminus \mathcal{C}{Q_t}` -> Set of branch indices where :math:`Q_t` is not specified.
 
-Knowns:
+Controlable branches
+_________________________
 
-- :math:`in_P = ac \cup dc` -> Active power mismatch for the set of all AC and DC
-- :math:`in_Q = ac` -> Reactive power mismatch for Ac buses
-- :math:`kn_acdc = vsc` -> Power loss equation mismatch for the VSC devices
-- :math:`kn_{P_f} = cbr` -> Pf mismatch for all controllable branches (without ACDC converters)
-- :math:`kn_{P_t} = cbr` -> Pt mismatch for all controllable branches (without ACDC converters)
-- :math:`kn_{Q_f} = cbr` -> Qf mismatch for all controllable branches (without ACDC converters)
-- :math:`kn_{Q_t} = cbr` -> Qt mismatch for all controllable branches (without ACDC converters)
+.. math::
+
+    S_f^{cbr} = {{V_m}_f^2} \cdot {y_{ff}}_{k}^* + {V_m}_f^{\angle{\theta_f}} \cdot {V_m}_t^{\angle{-\theta_t}}  \cdot  {y_{ft}}_{k}^*
+
+.. math::
+
+    S_t^{cbr} = {{V_m}_t^2} \cdot {{y_{tt}}_{k}^*} + {V_m}_f^{\angle{-\theta_f}} \cdot {V_m}_t^{\angle{\theta_t}}  \cdot  {y_{tf}}_{k}^*
+
+.. math::
+
+    \Delta P_f = P_f_set - P_f^{cbr} \quad \forall k_cbr_{Pf}
+
+.. math::
+
+    \Delta P_t = P_t_set - P_t^{cbr} \quad \forall k_cbr_{Pt}
+
+.. math::
+
+    \Delta Q_f = Q_f_set - Q_f^{cbr} \quad \forall k_cbr_{Qf}
+
+.. math::
+
+    \Delta Q_t = Q_t_set - Q_t^{cbr} \quad \forall k_cbr_{Qt}
+
+
+VSC
+_____
+
+.. math::
+
+    P_f^{vsc} =  gloss_{vsc} - P_t^{vsc}
+
+
+.. math::
+
+    gloss_{vsc} = A + B \cdot \frac{\sqrt{{P_t^{vsc}}^2 + {Q_t^{vsc}}^2}}{Vm_t} + C \cdot \frac{{P_t^{vsc}}^2 + {Q_t^{vsc}}^2}{Vm_t^2}
+
+.. math::
+
+    S_t^{vsc} = P_t^{vsc} + 1j \cdot Q_t^{vsc}
+
+.. math::
+
+    \Delta gloss_{vsc} = P_f^{vsc}  + P_t^{vsc} - gloss_{vsc}
+
+
+HVDC
+__________
+
+.. math::
+
+    P_f^{hvdc} = gloss_{hvdc} - P_t^{hvdc}
+
+.. math::
+
+    gloss_{hvdc} = r \cdot {\frac{P_f^{hvdc}}{Vm_f}}^2
+
+.. math::
+
+    ginj_{hvdc} = P0_{hvdc} + k_{hvdc} \cdot (Va_f - Va_t)
+
+
+.. math::
+
+    S_f^{hvdc} = P_f^{hvdc} + 1j \cdot Q_f^{hvdc}
+
+.. math::
+
+    S_t^{hvdc} = P_t^{hvdc} + 1j \cdot Q_t^{hvdc}
+
+.. math::
+
+    \Delta gloss_{hvdc} = P_f^{hvdc} + P_t^{hvdc} - gloss_{hvdc}
+
+.. math::
+
+    \Delta ginj_{hvdc} = P_f^{hvdc} - ginj_{hvdc}
+
+
