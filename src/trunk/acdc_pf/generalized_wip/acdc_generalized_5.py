@@ -40,68 +40,66 @@ def run_cases():
     iterations = []
     errors = []
     elapseds = []
-    # results1_abs = [1.0234, 1.1234, 1.02343826, 1.0222, 1.0111]
-    # results1_angle = [-0.00171021, -0.0012147, -0.00171077, 0, 0]
-    # iteration, error, elapsed = run_pf("5bus_HVDC_v6.gridcal", results1_abs, results1_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
-    #
-    # results1_abs = [1.0234, 1.1234, 1.02343826, 1.0222, 1.0111]
-    # results1_angle = [-0.00171021, -0.0012147, -0.00171077, 0, 0]
-    # iteration, error, elapsed = run_pf("5bus_HVDC_v6.gridcal", results1_abs, results1_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
-    #
-    #
-    # results2_abs = [1.01, 1.0333, 1.04608061, 1.05, 1.02521801, 1.02]
-    # results2_angle = [0, -0.00476848, 0, 0, -0.02481211, -0.02380485]
-    # iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_mod6.gridcal", results2_abs, results2_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
-    #
-    # results3_abs = [1.01, 1.0333, 1.05390476, 1.05, 1.07016516, 1.02]
-    # results3_angle = [0, -0.00795171, 0, 0, -0.16700929, -0.16562434]
-    # iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_mod6_diffcontrols.gridcal", results3_abs, results3_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
-    #
-    # # LTC test case: tap_module_control_mode = Vm, tap_phase_control_mode = Fixed
-    # results4_abs_old = [1.06, 1.0, 0.96728881, 1.0, 0.96584775, 0.96711307]
-    # results4_angle_old = [0.0, -0.07753742, -0.09242494, -0.03761135, -0.104008, -0.09123176]
-    # results4_abs = [1.06, 1.0, 0.96788061, 1.0, 0.96604488, 0.96756809]
-    # results4_angle = [0.0, -0.07728802, -0.09302293, -0.03767614, -0.10423513, -0.09069765]
-    # iteration, error, elapsed = run_pf("transformerSimpleRaiyan.gridcal", results4_abs, results4_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
-    #
-    # # LTC test case: tap_module_control_mode = Fixed, tap_phase_control_mode = Pf
-    # results5_abs = [1.06, 0.98968571, 0.9801954, 1.0, 0.96997036, 0.98149764]
-    # results5_angle = [0., -0.06216552, -0.11737288, -0.04102584, -0.11426947, -0.11781403]
-    # iteration, error, elapsed = run_pf("transformerSimpleRaiyan_2.gridcal", results5_abs, results5_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
-    #
-    # # LTC test case: tap_module_control_mode = Vm, tap_phase_control_mode = Pf
-    # results6_abs = [1.06, 1., 0.96816084, 1., 0.96588642, 0.96798615]
-    # results6_angle = [0., -0.0649926, -0.11397142, -0.04094719, -0.11328811, -0.1139095 ]
-    # iteration, error, elapsed = run_pf("transformerSimpleRaiyan_3.gridcal", results6_abs, results6_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
+    results1_abs = [1.0234, 1.1234, 1.02343826, 1.0222, 1.0111]
+    results1_angle = [-0.00171021, -0.0012147, -0.00171077, 0, 0]
+    iteration, error, elapsed = run_pf("5bus_HVDC_v6.gridcal", results1_abs, results1_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
+
+    results1_abs = [1.0234, 1.1234, 1.02343826, 1.0222, 1.0111]
+    results1_angle = [-0.00171021, -0.0012147, -0.00171077, 0, 0]
+    iteration, error, elapsed = run_pf("5bus_HVDC_v6.gridcal", results1_abs, results1_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
+
+
+    results2_abs = [1.01, 1.0333, 1.04608061, 1.05, 1.02521801, 1.02]
+    results2_angle = [0, -0.00476848, 0, 0, -0.02481211, -0.02380485]
+    iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_mod6.gridcal", results2_abs, results2_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
+
+    results3_abs = [1.01, 1.0333, 1.05390476, 1.05, 1.07016516, 1.02]
+    results3_angle = [0, -0.00795171, 0, 0, -0.16700929, -0.16562434]
+    iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_mod6_diffcontrols.gridcal", results3_abs, results3_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
+
+    # LTC test case: tap_module_control_mode = Vm, tap_phase_control_mode = Fixed
+    results4_abs_old = [1.06, 1.0, 0.96728881, 1.0, 0.96584775, 0.96711307]
+    results4_angle_old = [0.0, -0.07753742, -0.09242494, -0.03761135, -0.104008, -0.09123176]
+    results4_abs = [1.06, 1.0, 0.96788061, 1.0, 0.96604488, 0.96756809]
+    results4_angle = [0.0, -0.07728802, -0.09302293, -0.03767614, -0.10423513, -0.09069765]
+    iteration, error, elapsed = run_pf("transformerSimpleRaiyan.gridcal", results4_abs, results4_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
+
+    # LTC test case: tap_module_control_mode = Fixed, tap_phase_control_mode = Pf
+    results5_abs = [1.06, 0.98968571, 0.9801954, 1.0, 0.96997036, 0.98149764]
+    results5_angle = [0., -0.06216552, -0.11737288, -0.04102584, -0.11426947, -0.11781403]
+    iteration, error, elapsed = run_pf("transformerSimpleRaiyan_2.gridcal", results5_abs, results5_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
+
+    # LTC test case: tap_module_control_mode = Vm, tap_phase_control_mode = Pf
+    results6_abs = [1.06, 1., 0.96816084, 1., 0.96588642, 0.96798615]
+    results6_angle = [0., -0.0649926, -0.11397142, -0.04094719, -0.11328811, -0.1139095 ]
+    iteration, error, elapsed = run_pf("transformerSimpleRaiyan_3.gridcal", results6_abs, results6_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
 
     # VSC + Trafo test case
     results7_abs = [1.01, 1.0333, 1.04608061, 1.05, 1.02521801, 1.02]
-    #symbolic = [1.01       1.0333     1.04608061 1.05       1.02521803 1.02      ]
     results7_angle = [0, -0.00476848, 0, 0, -0.02481211, -0.02380485]
-    #symbolic =  [ 0.         -0.00476847  0.          0.         -0.02481183 -0.02380457]
-    # iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_wTrafo.gridcal", results7_abs, results7_angle)
-    iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_wTrafo.gridcal")
+    iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_wTrafo.gridcal", results7_abs, results7_angle)
+    # iteration, error, elapsed = run_pf("fubm_caseHVDC_vt_wTrafo.gridcal")
     iterations.append(iteration)
     errors.append(error)
     elapseds.append(elapsed)
@@ -115,12 +113,12 @@ def run_cases():
     elapseds.append(elapsed)
 
     # joseps test case without hvdc
-    # results9_abs = [1., 1., 0.99987995, 0.99985992, 0.99998306, 0.99998952, 1., 0.99999516, 0.99922554, 0.99960503, 1., 1., 0.99997714, 1.]
-    # results9_angle = [ 0., 0.00065027, 0.0000522, 0.00010047, 0., 0., 0., 0., -0.00050546, -0.00046048, 0., 0.00012553, -0.00007508, 0.00028869]
-    # iteration, error, elapsed = run_pf("12Bus AC-DC Josep v4noHVDC.gridcal", results9_abs, results9_angle)
-    # iterations.append(iteration)
-    # errors.append(error)
-    # elapseds.append(elapsed)
+    results9_abs = [1., 1., 0.99987995, 0.99985992, 0.99998306, 0.99998952, 1., 0.99999516, 0.99922554, 0.99960503, 1., 1., 0.99997714, 1.]
+    results9_angle = [ 0., 0.00065027, 0.0000522, 0.00010047, 0., 0., 0., 0., -0.00050546, -0.00046048, 0., 0.00012553, -0.00007508, 0.00028869]
+    iteration, error, elapsed = run_pf("12Bus AC-DC Josep v4noHVDC.gridcal", results9_abs, results9_angle)
+    iterations.append(iteration)
+    errors.append(error)
+    elapseds.append(elapsed)
 
     print("All test cases passed")
     print("iterations", iterations)
@@ -185,8 +183,6 @@ def check_timing():
     print(solution.iterations)
     print(solution.elapsed)
 
-# run_cases()
-check_timing()
-check_timing()
+run_cases()
 # check_timing()
 

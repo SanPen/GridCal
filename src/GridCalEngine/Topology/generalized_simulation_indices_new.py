@@ -6,11 +6,64 @@
 
 from typing import Set
 import numpy as np
+import numba as nb
 from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, BusMode, HvdcControlType,
                                         ConverterControlType)
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.vsc_data import VscData
-from GridCalEngine.basic_structures import Logger, BoolVec
+from GridCalEngine.basic_structures import Logger, BoolVec, IntVec, Vec
+from typing import Tuple, List
+
+@nb.njit(cache=True)
+def compile_types(Pbus: Vec,
+                  types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec, IntVec, IntVec]:
+    """
+    Compile the types.
+    :param Pbus: array of real power Injections per node used to choose the slack as
+                 the node with greater generation if no slack is provided
+    :param types: array of tentative node types (it may be modified internally)
+    :return: ref, pq, pv, pqpv
+    """
+    print("Hello from compile_types")
+
+    # check that Sbus is a 1D array
+    assert (len(Pbus.shape) == 1)
+
+    pq = np.where(types == BusMode.PQ_tpe.value)[0]
+    pv = np.where(types == BusMode.PV_tpe.value)[0]
+    pqv = np.where(types == BusMode.PQV_tpe.value)[0]
+    p = np.where(types == BusMode.P_tpe.value)[0]
+    ref = np.where(types == BusMode.Slack_tpe.value)[0]
+
+    if len(ref) == 0:  # there is no slack!
+
+        if len(pv) == 0:  # there are no pv neither -> blackout grid
+            pass
+        else:  # select the first PV generator as the slack
+
+            mx = max(Pbus[pv])
+            if mx > 0:
+                # find the generator that is injecting the most
+                i = np.where(Pbus == mx)[0][0]
+
+            else:
+                # all the generators are injecting zero, pick the first pv
+                i = pv[0]
+
+            # delete the selected pv bus from the pv list and put it in the slack list
+            pv = np.delete(pv, np.where(pv == i)[0])
+            ref = np.array([i])
+
+        for r in ref:
+            types[r] = BusMode.Slack_tpe.value
+    else:
+        pass  # no problem :)
+
+    no_slack = np.concatenate((pv, pq, p, pqv))
+    no_slack.sort()
+
+    return ref, pq, pv, pqv, p, no_slack
 
 
 class GeneralizedSimulationIndices:
@@ -19,7 +72,8 @@ class GeneralizedSimulationIndices:
     """
 
     def __init__(self,
-                 nc: NumericalCircuit) -> None:
+                 nc: NumericalCircuit,
+                 pf_options: PowerFlowOptions) -> None:
         """
         Pass now the data classes, maybe latter on pass only the necessary attributes
         Specified sets of indices represent those indices where we know the value of the variable.
@@ -73,59 +127,25 @@ class GeneralizedSimulationIndices:
         - Vm: store the indices of already controlled buses, raising an error if we try to set the same bus twice, stopping the program there
 
         :param nc: NumericalCircuit
-
+        return si.SimulationIndices(bus_types=self.bus_data.bus_types,
+                                    Pbus=self.Sbus.real,
+                                    tap_module_control_mode=self.active_branch_data.tap_module_control_mode,
+                                    tap_phase_control_mode=self.active_branch_data.tap_phase_control_mode,
+                                    tap_controlled_buses=self.active_branch_data.tap_controlled_buses,
+                                    is_converter=np.zeros(self.nbr, dtype=bool),
+                                    F=self.passive_branch_data.F,
+                                    T=self.passive_branch_data.T,
+                                    is_dc_bus=self.bus_data.is_dc)
         """
 
-        # # cg sets
-        # self.cg_pac: Set[int] = set()  # All AC buses (AC P balance)
-        # self.cg_qac: Set[int] = set()  # All AC buses (AC Q balance)
-        # self.cg_pdc: Set[int] = set()  # All DC buses (DC P balance)
-        # self.cg_acdc: Set[int] = set()  # All VSCs (loss equation)
-        # self.cg_hvdc: Set[int] = set()  # All HVDC lines (loss equation + control equation)
-        # self.cg_pftr: Set[int] = set()  # All controllable transformers
-        # self.cg_pttr: Set[int] = set()  # All controllable transformers
-        # self.cg_qftr: Set[int] = set()  # All controllable transformers
-        # self.cg_qttr: Set[int] = set()  # All controllable transformers
-        #
-        # # cx sets
-        #
-        # # All AC minus slack buses
-        # self.cx_va: Set[int] = set()
-        #
-        # # All minus slack buses, controlled generators/batteries/shunts, HVDC lines, VSCs, transformers
-        # self.cx_vm: Set[int] = set()
-        #
-        # self.cx_tau: Set[int] = set()  # All controllable transformers that do not use the tap phase control mode
-        # self.cx_m: Set[int] = set()  # All controllable transformers that do not use the tap module control mode
-        # self.cx_pzip: Set[int] = set()  # Slack buses
-        # self.cx_qzip: Set[int] = set()  # Slack buses and those AC with uncontrollable generators/batteries/shunts
-        # self.cx_pfa: Set[int] = set()  # VSCs controlling Pf, transformers controlling Pf
-        # self.cx_pta: Set[int] = set()  # VSCs controlling Pt, transformers controlling Pt
-        # self.cx_qfa: Set[int] = set()  # ONLY transformers controlling Qf
-        # self.cx_qta: Set[int] = set()  # VSCs controlling Qt, transformers controlling Qt
+        self.nc = nc
 
-        # ck sets (the complements of the cx sets)
-        # NOTE: implement them as lists, otherwise messed up order with setpoints lists
-        # self.ck_va = []
-        # self.ck_vm = []
-        # self.ck_tau = []
-        # self.ck_m = []
-        # self.ck_pzip = []
-        # self.ck_qzip = []
-        # self.ck_pfa = []
-        # self.ck_qfa = []
-        # self.ck_pta = []
-        # self.ck_qta = []
-        # self.ck_va: Set[int] = set()
-        # self.ck_vm: Set[int] = set()
-        # self.ck_tau: Set[int] = set()
-        # self.ck_m: Set[int] = set()
-        # self.ck_pzip: Set[int] = set()
-        # self.ck_qzip: Set[int] = set()
-        # self.ck_pfa: Set[int] = set()
-        # self.ck_pta: Set[int] = set()
-        # self.ck_qfa: Set[int] = set()
-        # self.ck_qta: Set[int] = set()
+        # arrays for branch control types (nbr)
+        self.tap_module_control_mode = nc.active_branch_data.tap_module_control_mode
+        self.tap_controlled_buses = nc.active_branch_data.tap_phase_control_mode
+        self.tap_phase_control_mode = nc.active_branch_data.tap_controlled_buses
+        self.F = nc.passive_branch_data.F
+        self.T = nc.passive_branch_data.T
 
 
         # Bus indices
@@ -137,6 +157,7 @@ class GeneralizedSimulationIndices:
         # Controllable Branch Indices
         self.cbr_m = []
         self.cbr_tau = []
+        self.cbr = []
         self.k_cbr_pf = []
         self.k_cbr_pt = []
         self.k_cbr_qf = []
@@ -152,26 +173,55 @@ class GeneralizedSimulationIndices:
         self.hvdc = []
 
 
+        # Bus types
+        self.bus_types = nc.bus_data.bus_types.copy()
+        # self.fill_sets(nc=nc, pf_options=pf_options)
+
+        # Analyze bus controls
+        self.analyze_branch_controls()
+
+
+        # determine the bus indices
+        self.pq: IntVec = np.zeros(0, dtype=int)
+        self.pv: IntVec = np.zeros(0, dtype=int)  # PV-local
+        self.p: IntVec = np.zeros(0, dtype=int)  # PV-remote
+        self.pqv: IntVec = np.zeros(0, dtype=int)  # PV-remote pair
+        self.vd: IntVec = np.zeros(0, dtype=int)  # slack
+        self.no_slack: IntVec = np.zeros(0, dtype=int)  # all bus indices that are not slack, sorted
+        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(
+            Pbus=nc.Sbus.real,
+            types=self.bus_types
+        )
+
+        #print the bus indices
+        print(f"bus types: {self.bus_types}")
+        print(f"pq: {self.pq}")
+        print(f"pv: {self.pv}")
+        print(f"p: {self.p}")
+        print(f"pqv: {self.pqv}")
+        print(f"vd: {self.vd}")
+        print(f"no_slack: {self.no_slack}")
+
+
+
         # setpoints that correspond to the ck sets, P and Q in MW
-        self.va_setpoints = []
-        self.vm_setpoints = []
-        self.tau_setpoints = []
-        self.m_setpoints = []
-        self.pzip_setpoints = []
-        self.qzip_setpoints = []
-        self.pf_setpoints = []
-        self.pt_setpoints = []
-        self.qf_setpoints = []
-        self.qt_setpoints = []
+        self.va_setpoints = list()
+        self.vm_setpoints = list()
+        self.tau_setpoints = list()
+        self.m_setpoints = list()
+        self.pzip_setpoints = list()
+        self.qzip_setpoints = list()
+        self.pf_setpoints = list()
+        self.pt_setpoints = list()
+        self.qf_setpoints = list()
+        self.qt_setpoints = list()
 
         # Ancilliary
-        # Source refers to the bus with the controlled device directly connected 
-        # Pointer refers to the bus where we control the voltage magnitude 
+        # Source refers to the bus with the controlled device directly connected
+        # Pointer refers to the bus where we control the voltage magnitude
         # Unspecified zqip is true if slack or bus with controllable gen/batt/shunt
         self.bus_vm_source_used: BoolVec | None = None
         self.bus_vm_pointer_used: BoolVec | None = None
-        self.bus_va_source_used: BoolVec | None = None
-        self.bus_va_pointer_used: BoolVec | None = None
         self.bus_unspecified_qzip: BoolVec | None = None
 
         # 1 if free mode (P as a function of angle drop), 0 if fixed mode (Pset)
@@ -180,333 +230,419 @@ class GeneralizedSimulationIndices:
         self.logger = Logger()
 
         # Run the search to get the indices
-        self.fill_gx_sets(nc=nc)
+        self.fill_gx_sets(nc=nc, pf_options=pf_options)
 
         # Finally convert to sets
-        self.sets_to_lists()
+        # self.sets_to_lists()
 
-    # Primitive additions
-    # Methods for cg sets
-    def add_to_cg_pac(self, value: int):
+
+    def analyze_branch_controls(self) -> None:
         """
-        Add a value to the cg_pac set.
-        
-        :param value:
+        Analyze the control branches and compute the indices
         :return: None
         """
-        self.cg_pac.add(value)
+        k_pf_tau = list()
+        k_pt_tau = list()
+        k_qf_m = list()
+        k_qt_m = list()
+        k_qfzero_beq = list()
+        k_v_m = list()
+        k_v_beq = list()
+        k_vsc = list()
 
-    def add_to_cg_qac(self, value: int):
-        """
-        Add a value to the cg_qac set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_qac.add(value)
+        nbr = len(self.tap_phase_control_mode)
+        for k in range(nbr):
 
-    def add_to_cg_pdc(self, value: int):
-        """
-        Add a value to the cg_pdc set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_pdc.add(value)
+            ctrl_m = self.tap_module_control_mode[k]
+            ctrl_tau = self.tap_phase_control_mode[k]
+            # is_conv = False
 
-    def add_to_cg_acdc(self, value: int):
-        """
-        Add a value to the cg_acdc set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_acdc.add(value)
+            # conv_type = 1 if is_conv else 0
 
-    def add_to_cg_hvdc(self, value: int):
-        """
-        Add a value to the cg_hvdc set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_hvdc.add(value)
+            # analyze tap-module controls
+            if ctrl_m == TapModuleControl.Vm:
 
-    def add_to_cg_pftr(self, value: int):
-        """
-        Add a value to the cg_pftr set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_pftr.add(value)
+                # Every bus controlled by m has to become a PQV bus
+                bus_idx = self.tap_controlled_buses[k]
+                self.bus_types[bus_idx] = BusMode.PQV_tpe.value
 
-    def add_to_cg_pttr(self, value: int):
-        """
-        Add a value to the cg_pttr set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_pttr.add(value)
+                # if is_conv and bus_idx == self.F[k]:
+                #     # if this is a converter,
+                #     # the voltage can be managed with Beq
+                #     # if the control bus is the "From" bus
+                #     k_v_beq.append(k)
+                #     conv_type = 2
+                # else:
+                    # In any other case, the voltage is managed by the tap module
+                k_v_m.append(k)
 
-    def add_to_cg_qftr(self, value: int):
-        """
-        Add a value to the cg_qftr set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_qftr.add(value)
+            elif ctrl_m == TapModuleControl.Qf:
 
-    def add_to_cg_qttr(self, value: int):
-        """
-        Add a value to the cg_qttr set.
-        
-        :param value:
-        :return: None
-        """
-        self.cg_qttr.add(value)
+                # if not is_conv:
+                k_qf_m.append(k)
 
-    # Methods for cx sets
-    def add_to_cx_va(self, value: int):
-        """
-        Add a value to the cx_va set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_va.add(value)
+            elif ctrl_m == TapModuleControl.Qt:
+                k_qt_m.append(k)
 
-    def add_to_cx_vm(self, value: int):
-        """
-        Add a value to the cx_vm set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_vm.add(value)
-
-    def add_to_cx_tau(self, value: int):
-        """
-        Add a value to the cx_tau set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_tau.add(value)
-
-    def add_to_cx_m(self, value: int):
-        """
-        Add a value to the cx_m set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_m.add(value)
-
-    def add_to_cx_pzip(self, value: int):
-        """
-        Add a value to the cx_pzip set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_pzip.add(value)
-
-    def add_to_cx_qzip(self, value: int):
-        """
-        Add a value to the cx_qzip set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_qzip.add(value)
-
-    def del_from_cx_qzip(self, value: int):
-        """
-        Remove a value of the cx_qzip set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_qzip.remove(value)
-
-    def add_to_cx_pfa(self, value: int):
-        """
-        Add a value to the cx_pfa set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_pfa.add(value)
-
-    def add_to_cx_pta(self, value: int):
-        """
-        Add a value to the cx_pta set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_pta.add(value)
-
-    def add_to_cx_qfa(self, value: int):
-        """
-        Add a value to the cx_qfa set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_qfa.add(value)
-
-    def add_to_cx_qta(self, value: int):
-        """
-        Add a value to the cx_qta set.
-        
-        :param value:
-        :return: None
-        """
-        self.cx_qta.add(value)
-
-    # Non-primitive additions
-    def add_tau_control_branch(self,
-                               branch_name: str = "",
-                               mode: TapPhaseControl = TapPhaseControl.fixed,
-                               tap_phase: float = 0.0,
-                               Pset: float = 0.0,
-                               branch_idx: int = None,
-                               is_conventional: bool = True,
-                               ):
-        """
-
-        :param branch_name:
-        :param branch_idx:
-        :param mode:
-        :param tap_phase:
-        :param Pset:
-        :param branch_idx:
-        :param is_conventional: True of transformers and all branches, False for VSCs
-        :return:
-        """
-        # Check for non-conventional conditions first
-        if not is_conventional:
-            if mode == TapPhaseControl.fixed:
-                # NOTE: in principle, VSCs must have two controls
-                # However, if fixed mode, the system will become unsolvable 
-                # FUBM adds the Beq zero equation but it is not really what we want
-                # To circument this, can we assume a fixed converter sets the Qt?
-                # The risk is if the other degree of freedom controls Qt also, check for that
-
-                self.add_to_cg_qttr(branch_idx)  # NOTE: quick fix for now
-
-                self.add_to_cx_pfa(branch_idx)
-                self.add_to_cx_pta(branch_idx)
-
-                self.logger.add_warning(msg='Fixed mode for VSCs can be problematic in a generalized power flow',
-                                        device=branch_name,
-                                        value=mode,
-                                        device_property=TapPhaseControl,
-                                        device_class=VscData)
-
-            elif mode == TapPhaseControl.Pf:
-                self.add_to_cx_pta(branch_idx)
-            elif mode == TapPhaseControl.Pt:
-                self.add_to_cx_pfa(branch_idx)
-        else:
-            # Handle conventional conditions (regular transformers)
-            if mode == TapPhaseControl.fixed:
-                self.ck_tau.append(branch_idx)
-                self.tau_setpoints.append(tap_phase)
-            elif mode == TapPhaseControl.Pf:
-                self.ck_pfa.append(branch_idx)
-                self.pf_setpoints.append(Pset)
-            elif mode == TapPhaseControl.Pt:
-                self.ck_pta.append(branch_idx)
-                self.pt_setpoints.append(Pset)
-            else:
+            elif ctrl_m == TapModuleControl.fixed:
                 pass
 
-    def add_m_control_branch(self,
-                             branch_name: str = "",
-                             mode: TapModuleControl = TapModuleControl.fixed,
-                             branch_idx: int = None,
-                             bus_idx: int = None,
-                             is_conventional: bool = True,
-                             Vm: float = 1.0,
-                             Qset: float = 0.0,
-                             m: float = 1.0,
-                             ):
+            elif ctrl_m == 0:
+                pass
 
+            else:
+                raise Exception(f"Unknown tap phase module mode {ctrl_m}")
+
+            # analyze tap-phase controls
+            if ctrl_tau == TapPhaseControl.Pf:
+                k_pf_tau.append(k)
+                conv_type = 1
+
+            elif ctrl_tau == TapPhaseControl.Pt:
+                k_pt_tau.append(k)
+                conv_type = 1
+
+            elif ctrl_tau == TapPhaseControl.fixed:
+                if ctrl_m == TapModuleControl.fixed:
+                    conv_type = 1
+
+            # elif ctrl_tau == TapPhaseControl.Droop:
+            #     pass
+
+            elif ctrl_tau == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
+
+
+        # VSC LOOP
+        nvsc = self.nc.vsc_data.nelm
+        for k in range(nvsc):
+
+            control1 = self.nc.vsc_data.control1[k]
+            control2 = self.nc.vsc_data.control2[k]
+            assert control1 != control2, f"VSC control types must be different for VSC indexed at {k}"
+            control1_magnitude = self.nc.vsc_data.control1_val[k]
+            control2_magnitude = self.nc.vsc_data.control2_val[k]
+            # control1_bus_device = self.nc.
+
+            # analyze tap-module controls
+            if ctrl_m == TapModuleControl.Vm:
+
+                # Every bus controlled by m has to become a PQV bus
+                bus_idx = self.tap_controlled_buses[k]
+                self.bus_types[bus_idx] = BusMode.PQV_tpe.value
+
+                # if is_conv and bus_idx == self.F[k]:
+                #     # if this is a converter,
+                #     # the voltage can be managed with Beq
+                #     # if the control bus is the "From" bus
+                #     k_v_beq.append(k)
+                #     conv_type = 2
+                # else:
+                # In any other case, the voltage is managed by the tap module
+                k_v_m.append(k)
+
+            elif ctrl_m == TapModuleControl.Qf:
+
+                # if not is_conv:
+                k_qf_m.append(k)
+
+            elif ctrl_m == TapModuleControl.Qt:
+                k_qt_m.append(k)
+
+            elif ctrl_m == TapModuleControl.fixed:
+                pass
+
+            elif ctrl_m == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase module mode {ctrl_m}")
+
+            # analyze tap-phase controls
+            if ctrl_tau == TapPhaseControl.Pf:
+                k_pf_tau.append(k)
+                conv_type = 1
+
+            elif ctrl_tau == TapPhaseControl.Pt:
+                k_pt_tau.append(k)
+                conv_type = 1
+
+            elif ctrl_tau == TapPhaseControl.fixed:
+                if ctrl_m == TapModuleControl.fixed:
+                    conv_type = 1
+
+            # elif ctrl_tau == TapPhaseControl.Droop:
+            #     pass
+
+            elif ctrl_tau == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
+
+
+            # Beq->qf=0
+            # if conv_type == 1:
+            #     k_qfzero_beq.append(k)
+
+            # if is_conv:
+            #     k_vsc.append(k)
+
+        # determine if there is any control
+        # self.any_control = bool(len(k_pf_tau)
+        #                         + len(k_pt_tau)
+        #                         + len(k_qf_m)
+        #                         + len(k_qt_m)
+        #                         + len(k_qfzero_beq)
+        #                         + len(k_v_m))
+
+        # convert lists to integer arrays
+        self.k_pf_tau = np.array(k_pf_tau, dtype=int)
+        self.k_pt_tau = np.array(k_pt_tau, dtype=int)
+        self.k_qf_m = np.array(k_qf_m, dtype=int)
+        self.k_qt_m = np.array(k_qt_m, dtype=int)
+        self.k_qf_beq = np.array(k_qfzero_beq, dtype=int)
+        self.k_v_m = np.array(k_v_m, dtype=int)
+        self.k_v_beq = np.array(k_v_beq, dtype=int)
+        self.k_vsc = np.array(k_vsc, dtype=int)
+
+    def add_branch_control(self,
+                           branch_name: str,
+                           phase_mode: TapPhaseControl,
+                           module_mode: TapModuleControl,
+                           branch_idx: int,
+                           bus_idx: int,
+                           m: float,
+                           tap_phase: float,
+                           Pset: float,
+                           Vm: float,
+                           Qset: float,
+                           pf_opt: PowerFlowOptions):
         """
+
         :param branch_name:
-        :param mode:
+        :param phase_mode:
+        :param module_mode:
         :param branch_idx:
         :param bus_idx:
-        :param is_conventional: True of transformers and all branches, False for VSCs
+        :param m:
+        :param tap_phase:
+        :param Pset:
         :param Vm:
         :param Qset:
-        :param m:
+        :param pf_opt: PowerFlowOptions
         :return:
         """
 
-        # Check the mode first
-        if mode == TapModuleControl.fixed:
-            if not is_conventional:
-                # NOTE: in principle, VSCs must have two controls
-                # However, if fixed mode, the system will become unsolvable 
-                # FUBM adds the Beq zero equation but it is not really what we want
-                # To circument this, we need an additional equation
-                # We can assume a fixed converter sets the Qt and should remove this Qt from cx, for example
+        # def register_controllable_br():
+        self.cg_pftr.add(branch_idx)
+        self.cg_pttr.add(branch_idx)
+        self.cg_qftr.add(branch_idx)
+        self.cg_qttr.add(branch_idx)
 
-                self.add_to_cg_qttr(branch_idx)  # NOTE: quick fix for now
+        # Check the module_mode first
+        if module_mode == TapModuleControl.fixed or not pf_opt.control_taps_modules or module_mode == 0:
 
-                self.logger.add_warning(msg='Fixed mode for VSCs can be problematic in a generalized power flow',
-                                        device=branch_name,
-                                        value=mode,
-                                        device_property="VscData.tap_module_control_mode",
-                                        device_class="VscData")
+            # in this case we have to add the tap_phase to the tau set
+            self.ck_m.add(branch_idx)
+            self.tau_setpoints.append(m)
+
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
+                self.ck_tau.add(branch_idx)
+                self.tau_setpoints.append(tap_phase)
+
+                # self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                # self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pf:
+                self.ck_pfa.add(branch_idx)
+                self.pf_setpoints.append(Pset)
+
+                # self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                # self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pt:
+                self.ck_pta.add(branch_idx)
+                self.pt_setpoints.append(Pset)
+
+                # self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                # self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
             else:
-                # in this case we have to add the tap_phase to the tau set
-                self.ck_m.append(branch_idx)
-                self.m_setpoints.append(m)
+                raise Exception("Undefined TapPhaseControl")
 
-        elif mode == TapModuleControl.Vm:
+        elif module_mode == TapModuleControl.Vm:
             self.set_bus_vm_simple(bus_local=bus_idx, device_name=branch_name)
-            if is_conventional:
-                self.ck_vm.append(bus_idx)
-                self.vm_setpoints.append(Vm)
+            self.ck_vm.add(bus_idx)
+            self.vm_setpoints.append(Vm)
 
-            if not is_conventional:
-                self.add_to_cx_qta(branch_idx)
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
+                # self.ck_m.add(branch_idx)
+                # self.m_setpoints.append(tap_phase)
 
-        elif mode in (TapModuleControl.Qf, TapModuleControl.Qt):
-            if is_conventional:
-                # If conventional, add
-                if mode == TapModuleControl.Qf:
-                    self.ck_qfa.append(branch_idx)
-                    self.qf_setpoints.append(Qset)
+                self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                # self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
 
-                else:  # TapModuleControl.Qt
-                    self.ck_qta.append(branch_idx)
-                    self.qt_setpoints.append(Qset)
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pf:
+                self.ck_pfa.add(branch_idx)
+                self.pf_setpoints.append(Pset)
+
+                # self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                # self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pt:
+                self.ck_pta.add(branch_idx)
+                self.pt_setpoints.append(Pset)
+
+                # self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                # self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
             else:
-                # If not conventional, add only to cx_q*
-                if mode == TapModuleControl.Qf:
-                    self.add_to_cx_qta(branch_idx)
-                else:  # TapModuleControl.Qt
-                    pass  # no point in the DC side
-                    # self.add_to_cx_qfa(branch_idx)
+                raise Exception("Undefined TapPhaseControl")
+
+        elif module_mode == TapModuleControl.Qf:
+            self.ck_qfa.add(branch_idx)
+            self.qf_setpoints.append(Qset)
+
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
+                self.ck_tau.add(branch_idx)
+                self.tau_setpoints.append(tap_phase)
+
+                self.cx_m.add(branch_idx)
+                # self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                # self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pf:
+                self.ck_pfa.add(branch_idx)
+                self.pf_setpoints.append(Pset)
+
+                self.cx_m.add(branch_idx)
+                # self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                # self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pt:
+                self.ck_pta.add(branch_idx)
+                self.pt_setpoints.append(Pset)
+
+                self.cx_m.add(branch_idx)
+                # self.cx_qfa.add(branch_idx)
+                self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                # self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+            else:
+                raise Exception("Undefined TapPhaseControl")
+
+        elif module_mode == TapModuleControl.Qt:
+            self.ck_qta.add(branch_idx)
+            self.qt_setpoints.append(Qset)
+
+            if phase_mode == TapPhaseControl.fixed or not pf_opt.control_taps_phase or phase_mode == 0:
+                self.ck_tau.add(branch_idx)
+                self.tau_setpoints.append(tap_phase)
+
+                self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                # self.cx_qta.add(branch_idx)
+                # self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pf:
+                self.ck_pfa.add(branch_idx)
+                self.pf_setpoints.append(Pset)
+
+                self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                # self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                # self.cx_pfa.add(branch_idx)
+                self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+
+            elif phase_mode == TapPhaseControl.Pt:
+                self.ck_pta.add(branch_idx)
+                self.pt_setpoints.append(Pset)
+
+                self.cx_m.add(branch_idx)
+                self.cx_qfa.add(branch_idx)
+                # self.cx_qta.add(branch_idx)
+                self.cx_tau.add(branch_idx)
+                self.cx_pfa.add(branch_idx)
+                # self.cx_pta.add(branch_idx)
+
+                # register_controllable_br()
+            else:
+                raise Exception("Undefined TapPhaseControl")
+
         else:
-            pass
+            raise Exception("Undefined TapModuleControl")
 
     def add_converter_control(self, vsc_data: VscData, branch_idx: int, ii: int):
         """
         Add controls for a VSC to the appropriate unknown sets based on control types.
+        In here, you should only be changing the following five attributes:
+         - self.i_u_vm: because a vsc can control the voltage magnitude of a bus
+         - self.i_u_va: because a vsc can control the voltage angle of a bus
+        - self.i_k_p: because a vsc can control (or rather, not control) the active power of a branch
+        - self.i_k_q: because a vsc can control (or rather, not control) the reactive power of a branch
+        - self.i_k_q: because a vsc can control (or rather, not control) the reactive power of a branch
 
         :param branch_idx: branch index
         :param vsc_data: VscData object containing VSC-related data.
         :param ii: Index of the current VSC being processed.
-        :param Sbase:
         """
 
         # Initialize a boolean array for the six control types, defaulting to False
@@ -528,30 +664,29 @@ class GeneralizedSimulationIndices:
 
                 if control == ConverterControlType.Vm_dc:
                     bus_idx = vsc_data.F[ii]
-                    self.ck_vm.append(int(bus_idx))
+                    self.ck_vm.add(int(bus_idx))
                     self.set_bus_vm_simple(bus_local=int(bus_idx))
                     self.vm_setpoints.append(control_magnitude)
                 elif control == ConverterControlType.Vm_ac:
                     bus_idx = vsc_data.T[ii]
-                    self.ck_vm.append(int(bus_idx))
+                    self.ck_vm.add(int(bus_idx))
                     self.set_bus_vm_simple(bus_local=int(bus_idx))
                     self.vm_setpoints.append(control_magnitude)
                 elif control == ConverterControlType.Va_ac:
                     bus_idx = vsc_data.T[ii]
-                    self.ck_va.append(int(bus_idx))
-                    self.set_bus_va_simple(bus_local=int(bus_idx))
+                    self.ck_va.add(int(bus_idx))
                     self.va_setpoints.append(control_magnitude)
 
                 elif control == ConverterControlType.Pac:
-                    self.ck_pta.append(int(branch_idx))
+                    self.ck_pta.add(int(branch_idx))
                     self.pt_setpoints.append(control_magnitude)
 
                 elif control == ConverterControlType.Qac:
-                    self.ck_qta.append(int(branch_idx))
+                    self.ck_qta.add(int(branch_idx))
                     self.qt_setpoints.append(control_magnitude)
 
                 elif control == ConverterControlType.Pdc:
-                    self.ck_pfa.append(int(branch_idx))
+                    self.ck_pfa.add(int(branch_idx))
                     self.pf_setpoints.append(control_magnitude)
 
             except ValueError:
@@ -630,10 +765,10 @@ class GeneralizedSimulationIndices:
         """
 
         if is_slack:
-            # self.add_to_cx_vm(bus_local)
             self.bus_vm_pointer_used[bus_local] = True
 
         else:
+
             # First check if we are setting a remote bus voltage
             if remote_control and bus_remote > -1 and bus_remote != bus_local:
                 if not self.bus_vm_pointer_used[bus_remote]:
@@ -659,149 +794,16 @@ class GeneralizedSimulationIndices:
                                       device=device_name,
                                       device_property='Vm')
 
-    def set_bus_va_simple(self,
-                          bus_local: int,
-                          device_name="",
-                          bus_remote: int = -1,
-                          remote_control: bool = False,
-                          is_slack: bool = False):
-        """
-        Set the bus control voltage checking incompatibilities
-        No point in setting the voltage magnitude, already did in the circuit_to_data
 
-        :param bus_local: Local bus index
-        :param device_name: Name to store in the logger
-        :param bus_remote: Remote bus index
-        :param remote_control: Remote control?
-        :param is_slack: Is it a slack bus?
-        """
+    def fill_sets(self,
+                    nc: NumericalCircuit,
+                    pf_options: PowerFlowOptions) -> "GeneralizedSimulationIndices":
+        # nbus = len(nc.bus_data.Vbus)
 
-        if is_slack:
-            # self.add_to_cx_vm(bus_local)
-            self.bus_va_pointer_used[bus_local] = True
-
-        else:
-            # First check if we are setting a remote bus voltage
-            if remote_control and bus_remote > -1 and bus_remote != bus_local:
-                if not self.bus_va_pointer_used[bus_remote]:
-                    # initialize the remote bus voltage to the control value
-                    self.bus_va_pointer_used[bus_remote] = True
-                    # self.add_to_cx_vm(bus_remote)
-                else:
-                    self.logger.add_error(msg='Trying to set an already fixed voltage angle, duplicity of controls',
-                                          device=device_name,
-                                          device_property='Va')
-            elif remote_control:
-                self.logger.add_error(msg='Remote control without a valid remote bus',
-                                      device=device_name,
-                                      device_property='Va')
-
-            # Not a remote bus control
-            elif not self.bus_va_pointer_used[bus_local]:
-                # initialize the local bus voltage to the control value
-                self.bus_va_pointer_used[bus_local] = True
-                # self.add_to_cx_vm(bus_local)
-            else:
-                self.logger.add_error(msg='Trying to set an already fixed voltage angle, duplicity of controls',
-                                      device=device_name,
-                                      device_property='Va')
-
-    def fill_gx_sets(self,
-                     nc: NumericalCircuit) -> "GeneralizedSimulationIndices":
-        """
-        Populate going over the elements, probably harder than the g_sets
-        Should we filter for only active elements?
-        :param nc: NumericalCircuit
-        """
-        nbus = len(nc.bus_data.Vbus)
-
-        self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
-        self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
-        self.bus_va_pointer_used = np.zeros(nbus, dtype=bool)
-        self.bus_va_source_used = np.zeros(nbus, dtype=bool)
-        self.bus_unspecified_qzip = np.zeros(nbus, dtype=bool)
-        self.hvdc_mode = np.zeros(len(nc.hvdc_data.active), dtype=bool)
-
-        # DONE
-        # -------------- Buses search ----------------
-        # Assume they are all set, but probably need some logic when compiling the numerical circuit to
-        # enforce we have one slack on each AC island, split by the VSCs
-
-        for i, bus_type in enumerate(nc.bus_data.bus_types):
-            if not (nc.bus_data.is_dc[i]):
-                self.add_to_cg_pac(i)
-                self.add_to_cg_qac(i)
-
-                if bus_type == BusMode.Slack_tpe.value:
-                    self.add_to_cx_pzip(i)
-                    self.add_to_cx_qzip(i)
-
-                    self.set_bus_vm_simple(bus_local=i,
-                                           is_slack=True)
-                    # It will be the generator at this bus the one to specify it
-                    # self.ck_vm.append(i)
-                    # self.vm_setpoints.append(abs(nc.bus_data.Vbus[i]))
-                    # As it is not well done, avoid setting the setpoint here
-
-                    self.set_bus_va_simple(bus_local=i,
-                                           is_slack=True)
-                    self.ck_va.append(i)
-                    self.va_setpoints.append(np.angle(nc.bus_data.Vbus[i]))
-                else:
-                    pass
-                    # self.add_to_cx_va(i)
-            else:
-                self.add_to_cg_pdc(i)
-
-        # DONE
-        # -------------- Generators and Batteries search ----------------
-        for dev_tpe in (nc.generator_data, nc.battery_data):
-            for i, is_controlled in enumerate(dev_tpe.controllable):
-                bus_idx: int = dev_tpe.bus_idx[i]
-                ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
-                if dev_tpe.active[i]:
-                    if is_controlled:
-                        remote_control = ctr_bus_idx != -1
-
-                        self.set_bus_vm_simple(bus_local=bus_idx,
-                                               device_name=dev_tpe.names[i],
-                                               bus_remote=ctr_bus_idx,
-                                               remote_control=remote_control)
-                        self.ck_vm.append(bus_idx)
-                        self.vm_setpoints.append(dev_tpe.v[i])
-
-                        self.add_to_cx_qzip(bus_idx)
-                        self.ck_pzip.append(bus_idx)
-                        self.pzip_setpoints.append(dev_tpe.p[i])
-
-                    else:
-                        self.ck_pzip.append(bus_idx)
-                        self.ck_qzip.append(bus_idx)
-                        self.pzip_setpoints.append(dev_tpe.p[i] / nc.Sbase)
-                        self.qzip_setpoints.append(dev_tpe.get_q_at(i))
-
-        # DONE
-        # -------------- ControlledShunts search ----------------
-        # Setting the Vm has already been done before
-        for i, is_controlled in enumerate(nc.shunt_data.controllable):
-            bus_idx = nc.shunt_data.bus_idx[i]
-            ctr_bus_idx = nc.shunt_data.controllable_bus_idx[i]
-
-            if is_controlled:
-                remote_control = ctr_bus_idx != -1
-
-                self.set_bus_vm_simple(bus_local=bus_idx,
-                                       device_name=nc.shunt_data.names[i],
-                                       bus_remote=ctr_bus_idx,
-                                       remote_control=remote_control)
-
-                self.ck_vm.append(bus_idx)
-                self.vm_setpoints.append(nc.shunt_data.vset[i])
-
-                self.add_to_cx_qzip(bus_idx)
-
-                self.ck_pzip.append(bus_idx)
-                self.pzip_setpoints.append(dev_tpe.p[i])
+        # self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
+        # self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
+        # self.bus_unspecified_qzip = np.zeros(nbus, dtype=bool)
+        # self.hvdc_mode = np.zeros(len(nc.hvdc_data.active), dtype=bool)
 
         # DONE
         # -------------- Regular branch search (also applies to trafos) ----------------
@@ -809,70 +811,22 @@ class GeneralizedSimulationIndices:
         # Branches in their most generic sense are stacked as [conventional, VSC, HVDC]
         branch_idx = 0
 
-        for i, _ in enumerate(nc.passive_branch_data.active):
-            self.add_tau_control_branch(branch_name=nc.passive_branch_data.names[i],
-                                        mode=nc.active_branch_data.tap_phase_control_mode[i],
-                                        tap_phase=nc.active_branch_data.tap_angle[i],
-                                        Pset=nc.active_branch_data.Pset[i],
-                                        branch_idx=branch_idx,
-                                        is_conventional=True,
-                                        )
-
-            bus_idx: int = nc.active_branch_data.tap_controlled_buses[i]
-
-            self.add_m_control_branch(branch_name=nc.passive_branch_data.names[i],
-                                      mode=nc.active_branch_data.tap_module_control_mode[i],
-                                      branch_idx=branch_idx,
-                                      bus_idx=bus_idx,
-                                      is_conventional=True,
-                                      Vm=nc.active_branch_data.vset[i],
-                                      Qset=nc.active_branch_data.Qset[i],
-                                      m=nc.active_branch_data.tap_module[i],
-                                      )
-
-            # Here we start to throw stuff into the unknown sets. previously we were simply putting known sets and setpoints
-            mode1 = nc.active_branch_data.tap_module_control_mode[i]
-            mode2 = nc.active_branch_data.tap_phase_control_mode[i]
-
-            if mode1 != 0 or mode2 != 0:
-                if mode2 == 0:
-                    mode2 = TapPhaseControl.fixed
-                # Initialize control flags
-                module_control_flags = np.zeros(len(TapModuleControl), dtype=bool)
-                phase_control_flags = np.zeros(len(TapPhaseControl), dtype=bool)
-                # Set flags for active controls
-                module_control_flags[list(TapModuleControl).index(mode1)] = True
-                phase_control_flags[list(TapPhaseControl).index(mode2)] = True
-
-                # assert that exactly one control in each flag list
-                assert module_control_flags.sum() == 1, "Exactly one module control should be active"
-                assert phase_control_flags.sum() == 1, "Exactly one phase control should be active"
-
-                # Add to unknown sets based on inactive control flags
-                for index, is_controlled in enumerate(module_control_flags):
-                    control_type = list(TapModuleControl)[index]
-                    if not is_controlled:
-                        if control_type == TapModuleControl.fixed:
-                            self.cx_m.add(branch_idx)
-                        elif control_type == TapModuleControl.Qf:
-                            self.cx_qfa.add(branch_idx)
-                        elif control_type == TapModuleControl.Qt:
-                            self.cx_qta.add(branch_idx)
-
-                for index, is_controlled in enumerate(phase_control_flags):
-                    control_type = list(TapPhaseControl)[index]
-                    if not is_controlled:
-                        if control_type == TapPhaseControl.fixed:
-                            self.cx_tau.add(branch_idx)
-                        elif control_type == TapPhaseControl.Pf:
-                            self.cx_pfa.add(branch_idx)
-                        elif control_type == TapPhaseControl.Pt:
-                            self.cx_pta.add(branch_idx)
-
-                self.cg_pftr.add(branch_idx)
-                self.cg_pttr.add(branch_idx)
-                self.cg_qftr.add(branch_idx)
-                self.cg_qttr.add(branch_idx)
+        for k, _ in enumerate(nc.passive_branch_data.active):
+            # if (nc.active_branch_data.tap_phase_control_mode[k] != 0 or
+            #         nc.active_branch_data.tap_module_control_mode[k] != 0):
+            #     self.add_branch_control(
+            #         branch_name=nc.passive_branch_data.names[k],
+            #         phase_mode=nc.active_branch_data.tap_phase_control_mode[k],
+            #         module_mode=nc.active_branch_data.tap_module_control_mode[k],
+            #         branch_idx=k,
+            #         bus_idx=nc.active_branch_data.tap_controlled_buses[k],
+            #         m=nc.active_branch_data.tap_module[k],
+            #         tap_phase=nc.active_branch_data.tap_angle[k],
+            #         Pset=nc.active_branch_data.Pset[k],
+            #         Vm=nc.active_branch_data.vset[k],
+            #         Qset=nc.active_branch_data.Qset[k],
+            #         pf_opt=pf_options
+            #     )
 
             branch_idx += 1
 
@@ -880,10 +834,9 @@ class GeneralizedSimulationIndices:
         # -------------- VSCs search ----------------
         for ii, _ in enumerate(nc.vsc_data.active):
             self.add_converter_control(nc.vsc_data, branch_idx, ii)
-            self.add_to_cg_acdc(branch_idx)
+            self.vsc.append(branch_idx)
             branch_idx += 1
 
-        # DONE -- This is a bit tricky, seems to add some unwanted indices into our sets
         # -------------- HvdcLines search ----------------
         # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
         # The control mode does not change the indices sets, only the equation
@@ -916,15 +869,15 @@ class GeneralizedSimulationIndices:
                 self.pf_setpoints.append(nc.hvdc_data.Pset[iii])
                 self.pt_setpoints.append(-nc.hvdc_data.Pset[iii])
 
-                self.ck_pfa.append(int(branch_idx))
-                self.ck_pta.append(int(branch_idx))
+                self.ck_pfa.add(int(branch_idx))
+                self.ck_pta.add(int(branch_idx))
 
             else:
                 self.pf_setpoints.append(-nc.hvdc_data.Pset[iii])
                 self.pt_setpoints.append(nc.hvdc_data.Pset[iii])
 
-                self.ck_pfa.append(int(branch_idx))
-                self.ck_pta.append(int(branch_idx))
+                self.ck_pfa.add(int(branch_idx))
+                self.ck_pta.add(int(branch_idx))
 
             # Initialize Qs to 0, although they will take whatever value
 
@@ -935,11 +888,173 @@ class GeneralizedSimulationIndices:
             if not val:
                 self.add_to_cx_vm(i)
 
-        for i, val in enumerate(self.bus_va_pointer_used):
-            if not val and not nc.bus_data.is_dc[i]:
-                self.add_to_cx_va(i)
-
         return self
+
+
+
+
+    def fill_gx_sets(self,
+                     nc: NumericalCircuit,
+                     pf_options: PowerFlowOptions) -> "GeneralizedSimulationIndices":
+        """
+        Populate going over the elements, probably harder than the g_sets
+        Should we filter for only active elements?
+        :param nc: NumericalCircuit
+        :param pf_options: PowerFlowOptions
+        """
+        # nbus = len(nc.bus_data.Vbus)
+        #
+        # self.bus_vm_pointer_used = np.zeros(nbus, dtype=bool)
+        # self.bus_vm_source_used = np.zeros(nbus, dtype=bool)
+        # self.bus_unspecified_qzip = np.zeros(nbus, dtype=bool)
+        # self.hvdc_mode = np.zeros(len(nc.hvdc_data.active), dtype=bool)
+        #
+        # # DONE
+        # # -------------- Buses search ----------------
+        # # Assume they are all set, but probably need some logic when compiling the numerical circuit to
+        # # enforce we have one slack on each AC island, split by the VSCs
+        #
+        # for i, bus_type in enumerate(nc.bus_data.bus_types):
+        #     if not (nc.bus_data.is_dc[i]):
+        #         self.add_to_cg_pac(i)
+        #         self.add_to_cg_qac(i)
+        #
+        #         if bus_type == BusMode.Slack_tpe.value:
+        #             self.add_to_cx_pzip(i)
+        #             self.add_to_cx_qzip(i)
+        #             self.set_bus_vm_simple(bus_local=i,
+        #                                    is_slack=True)
+        #         else:
+        #             self.add_to_cx_va(i)
+        #     else:
+        #         self.add_to_cg_pdc(i)
+        #
+        # # DONE
+        # # -------------- Generators and Batteries search ----------------
+        # for dev_tpe in (nc.generator_data, nc.battery_data):
+        #     for i, is_controlled in enumerate(dev_tpe.controllable):
+        #         bus_idx: int = dev_tpe.bus_idx[i]
+        #         ctr_bus_idx = dev_tpe.controllable_bus_idx[i]
+        #         if dev_tpe.active[i]:
+        #             if is_controlled:
+        #
+        #                 self.set_bus_vm_simple(bus_local=bus_idx,
+        #                                        device_name=dev_tpe.names[i],
+        #                                        bus_remote=ctr_bus_idx,
+        #                                        remote_control=pf_options.control_remote_voltage)
+        #
+        #                 self.add_to_cx_qzip(bus_idx)
+        #                 self.ck_pzip.add(bus_idx)
+        #                 self.pzip_setpoints.append(dev_tpe.p[i])
+        #
+        #             else:
+        #                 self.ck_pzip.add(bus_idx)
+        #                 self.ck_qzip.add(bus_idx)
+        #                 self.pzip_setpoints.append(dev_tpe.p[i])
+        #                 self.qzip_setpoints.append(dev_tpe.get_q_at(i))
+        #
+        # # DONE
+        # # -------------- ControlledShunts search ----------------
+        # # Setting the Vm has already been done before
+        # for i, is_controlled in enumerate(nc.shunt_data.controllable):
+        #     bus_idx = nc.shunt_data.bus_idx[i]
+        #     ctr_bus_idx = nc.shunt_data.controllable_bus_idx[i]
+        #
+        #     if is_controlled:
+        #         self.set_bus_vm_simple(bus_local=bus_idx,
+        #                                device_name=nc.shunt_data.names[i],
+        #                                bus_remote=ctr_bus_idx,
+        #                                remote_control=pf_options.control_remote_voltage)
+        #
+        #         self.add_to_cx_qzip(bus_idx)
+        #         self.ck_pzip.add(bus_idx)
+        #         self.pzip_setpoints.append(dev_tpe.p[i])
+        #
+        # # DONE
+        # # -------------- Regular branch search (also applies to trafos) ----------------
+        # # Ensure VSCs and HVDCs have the flag so that they are not part of this data structure
+        # # Branches in their most generic sense are stacked as [conventional, VSC, HVDC]
+        # # branch_idx = 0
+        #
+        # for k, _ in enumerate(nc.passive_branch_data.active):
+        #     if (nc.active_branch_data.tap_phase_control_mode[k] != 0 or
+        #             nc.active_branch_data.tap_module_control_mode[k] != 0):
+        #         self.add_branch_control(
+        #             branch_name=nc.passive_branch_data.names[k],
+        #             phase_mode=nc.active_branch_data.tap_phase_control_mode[k],
+        #             module_mode=nc.active_branch_data.tap_module_control_mode[k],
+        #             branch_idx=k,
+        #             bus_idx=nc.active_branch_data.tap_controlled_buses[k],
+        #             m=nc.active_branch_data.tap_module[k],
+        #             tap_phase=nc.active_branch_data.tap_angle[k],
+        #             Pset=nc.active_branch_data.Pset[k],
+        #             Vm=nc.active_branch_data.vset[k],
+        #             Qset=nc.active_branch_data.Qset[k],
+        #             pf_opt=pf_options
+        #         )
+        #
+        #     # branch_idx += 1
+        #
+        # # DONE
+        # # -------------- VSCs search ----------------
+        # branch_idx = len(nc.passive_branch_data.active)
+        # for ii, _ in enumerate(nc.vsc_data.active):
+        #     self.add_converter_control(nc.vsc_data, branch_idx, ii)
+        #     self.add_to_cg_acdc(branch_idx)
+        #     branch_idx += 1
+        #
+        # # -------------- HvdcLines search ----------------
+        # # The Pf equation looks like: Pf = Pset + bool_mode * kdroop * (angle_F - angle_T)
+        # # The control mode does not change the indices sets, only the equation
+        # # See how to store this bool_mode
+        # for iii, _ in enumerate(nc.hvdc_data.active):
+        #     # self.add_to_cx_Pf(branch_idx)
+        #
+        #     self.set_bus_vm_simple(bus_local=nc.hvdc_data.F[iii],
+        #                            device_name=nc.hvdc_data.names[iii])
+        #
+        #     self.set_bus_vm_simple(bus_local=nc.hvdc_data.T[iii],
+        #                            device_name=nc.hvdc_data.names[iii])
+        #
+        #     self.add_to_cg_hvdc(branch_idx)
+        #
+        #     # 1 if free mode (P as a function of angle drop), 0 if fixed mode (Pset)
+        #     if nc.hvdc_data.control_mode[iii] == HvdcControlType.type_0_free:
+        #         self.hvdc_mode[iii] = 1
+        #     elif nc.hvdc_data.control_mode[iii] == HvdcControlType.type_1_Pset:
+        #         self.hvdc_mode[iii] = 0
+        #     else:
+        #         pass
+        #
+        #     self.add_to_cx_qfa(branch_idx)
+        #     self.add_to_cx_qta(branch_idx)
+        #     self.add_to_cx_pfa(branch_idx)
+        #     self.add_to_cx_pta(branch_idx)
+        #
+        #     if nc.hvdc_data.Pset[iii] > 0.0:
+        #         self.pf_setpoints.append(nc.hvdc_data.Pset[iii])
+        #         self.pt_setpoints.append(-nc.hvdc_data.Pset[iii])
+        #
+        #         self.ck_pfa.add(int(branch_idx))
+        #         self.ck_pta.add(int(branch_idx))
+        #
+        #     else:
+        #         self.pf_setpoints.append(-nc.hvdc_data.Pset[iii])
+        #         self.pt_setpoints.append(nc.hvdc_data.Pset[iii])
+        #
+        #         self.ck_pfa.add(int(branch_idx))
+        #         self.ck_pta.add(int(branch_idx))
+        #
+        #     # Initialize Qs to 0, although they will take whatever value
+        #
+        #     branch_idx += 1
+        #
+        # # Post-processing, much needed!
+        # for i, val in enumerate(self.bus_vm_pointer_used):
+        #     if not val:
+        #         self.add_to_cx_vm(i)
+        #
+        # return self
 
     def sets_to_lists(self) -> None:
         """
