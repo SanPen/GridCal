@@ -136,6 +136,16 @@ class CDF:
         else:
             return np.interp(prob, self.prob, self.arr)
 
+    def expectation(self) -> float:
+        """
+        Returns the CDF expected value (AKA the mean)
+        :return: expectation
+        """
+        if self.iscomplex:
+            return np.sum(self.arr * self.prob)
+        else:
+            return np.sum(self.arr * self.prob)
+
     def plot(self, plt, LINEWIDTH: int, ax=None):
         """
         Plots the CFD
