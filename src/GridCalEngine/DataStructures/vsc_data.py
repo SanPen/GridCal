@@ -34,10 +34,10 @@ class VscData(BranchParentData):
         self.control1_val: Vec = np.ones(self.nelm, dtype=float)
         self.control2_val: Vec = np.ones(self.nelm, dtype=float)
 
-        self.control1_bus_idx: IntVec = np.zeros(nelm, dtype=int)
-        self.control2_bus_idx: IntVec = np.zeros(nelm, dtype=int)
-        self.control1_branch_idx: IntVec = np.zeros(nelm, dtype=int)
-        self.control2_branch_idx: IntVec = np.zeros(nelm, dtype=int)
+        self.control1_bus_idx: IntVec = np.full(nelm, -1, dtype=int)
+        self.control2_bus_idx: IntVec = np.full(nelm, -1, dtype=int)
+        self.control1_branch_idx: IntVec = np.full(nelm, -1, dtype=int)
+        self.control2_branch_idx: IntVec = np.full(nelm, -1, dtype=int)
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "VscData":
         """

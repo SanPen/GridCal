@@ -179,7 +179,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Generalized indices
         start = time.perf_counter()
-        self.indices = GeneralizedSimulationIndices(nc=self.nc, pf_options=options)
+        self.indices = GeneralizedSimulationIndices(nc=self.nc, pf_options=options, logger=logger)
         end = time.perf_counter()
         execution_time = end - start
         print(f"Indices Time: {execution_time} seconds")

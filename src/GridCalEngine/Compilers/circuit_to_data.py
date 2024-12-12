@@ -70,11 +70,14 @@ def set_bus_control_voltage(i: int,
     if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
         if remote_control and j > -1 and j != i:
             # remove voltage control
-            bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
-            bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
+            # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
+            bus_data.set_busmode(j, BusMode.PQV_tpe)
+            # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
+            bus_data.set_busmode(i, BusMode.P_tpe)
         else:
             # local voltage control
-            bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
+            # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
+            bus_data.set_busmode(i, BusMode.PV_tpe)
 
     if not use_stored_guess:
         if not bus_voltage_used[i]:
@@ -110,6 +113,7 @@ def get_bus_data(bus_data: BusData,
     :param use_stored_guess:
     :return:
     """
+
     substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
 
     for i, bus in enumerate(circuit.buses):
@@ -128,10 +132,13 @@ def get_bus_data(bus_data: BusData,
         bus_data.angle_max[i] = bus.angle_max
 
         if bus.is_slack:
-            bus_data.bus_types[i] = BusMode.Slack_tpe.value  # VD
+            # bus_data.bus_types[i] = BusMode.Slack_tpe.value  # VD
+            bus_data.set_busmode(i, BusMode.Slack_tpe)
+
         else:
             # PQ by default, later it is modified by generators and batteries
-            bus_data.bus_types[i] = BusMode.PQ_tpe.value
+            # bus_data.bus_types[i] = BusMode.PQ_tpe.value
+            bus_data.set_busmode(i, BusMode.PQ_tpe)
 
         bus_data.substations[i] = substation_dict.get(bus.substation, 0)
 
@@ -249,7 +256,8 @@ def get_load_data(data: LoadData,
 
         # change stuff depending on the modes
         if elm.mode == ExternalGridMode.VD:
-            bus_data.bus_types[i] = BusMode.Slack_tpe.value  # set as Slack
+            # bus_data.bus_types[i] = BusMode.Slack_tpe.value  # set as Slack
+            bus_data.set_busmode(i, BusMode.Slack_tpe)
 
         elif elm.mode == ExternalGridMode.PV:
 
@@ -1187,6 +1195,86 @@ def get_branch_data(
     return branch_dict
 
 
+
+def set_control_dev(k: int,
+                    f: int,
+                    t: int,
+                    control: ConverterControlType,
+                    control_dev: Bus | BRANCH_TYPES | None,
+                    control_val: float,
+                    control_bus_idx: IntVec,
+                    control_branch_idx: IntVec,
+                    bus_dict: Dict[Bus, int],
+                    branch_dict: Dict[BRANCH_TYPES, int],
+                    bus_data: BusData,
+                    bus_voltage_used: BoolVec,
+                    use_stored_guess: bool,
+                    logger: Logger
+                    ):
+    """
+
+    :param k: device index
+    :param control: ConverterControlType
+    :param control_dev: control device
+    :param control_val: control value
+    :param control_bus_idx: array to be filled in
+    :param control_branch_idx: array to be filled in
+    """
+    if control_dev is not None:
+        if control_dev.device_type == DeviceType.BusDevice:
+
+            bus_idx = bus_dict[control_dev]
+
+            control_bus_idx[k] = bus_idx
+
+            if control == ConverterControlType.Vm_ac: #TODO: think of logic for vsc control
+                set_bus_control_voltage(i=bus_idx,
+                                        j=-1,
+                                        remote_control=False,
+                                        bus_name=str(bus_data.names[bus_idx]),
+                                        bus_voltage_used=bus_voltage_used,
+                                        bus_data=bus_data,
+                                        candidate_Vm=control_val,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
+
+            elif control == ConverterControlType.Vm_dc:
+                set_bus_control_voltage(i=bus_idx,
+                                        j=-1,
+                                        remote_control=False,
+                                        bus_name=str(bus_data.names[bus_idx]),
+                                        bus_voltage_used=bus_voltage_used,
+                                        bus_data=bus_data,
+                                        candidate_Vm=control_val,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
+        else:
+            control_branch_idx[k] = branch_dict[control_dev]
+    else:
+        if control == ConverterControlType.Vm_ac:
+            control_bus_idx[k] = t
+            set_bus_control_voltage(i=t,
+                                    j=-1,
+                                    remote_control=False,
+                                    bus_name=str(bus_data.names[t]),
+                                    bus_voltage_used=bus_voltage_used,
+                                    bus_data=bus_data,
+                                    candidate_Vm=control_val,
+                                    use_stored_guess=use_stored_guess,
+                                    logger=logger)
+
+        elif control == ConverterControlType.Vm_dc:
+            control_bus_idx[k] = f
+            set_bus_control_voltage(i=f,
+                                    j=-1,
+                                    remote_control=False,
+                                    bus_name=str(bus_data.names[f]),
+                                    bus_voltage_used=bus_voltage_used,
+                                    bus_data=bus_data,
+                                    candidate_Vm=control_val,
+                                    use_stored_guess=use_stored_guess,
+                                    logger=logger)
+
 def get_vsc_data(
         data: VscData,
         circuit: MultiCircuit,
@@ -1218,42 +1306,6 @@ def get_vsc_data(
     :return: VscData
     """
 
-    def set_control_dev(k: int,
-                        control: ConverterControlType,
-                        control_dev: Bus | BRANCH_TYPES | None,
-                        control_val: float,
-                        control_bus_idx: IntVec,
-                        control_branch_idx: IntVec):
-        """
-
-        :param k: device index
-        :param control: ConverterControlType
-        :param control_dev: control device
-        :param control_val: control value
-        :param control_bus_idx: array to be filled in
-        :param control_branch_idx: array to be filled in
-        """
-        if control_dev is not None:
-            if control_dev.device_type == DeviceType.BusDevice:
-
-                bus_idx = bus_dict[control_dev]
-
-                control_bus_idx[k] = bus_idx
-
-                if control in (ConverterControlType.Vm_ac, ConverterControlType.Vm_dc):
-                    set_bus_control_voltage(i=bus_idx,
-                                            j=-1,
-                                            remote_control=False,
-                                            bus_name=bus_data.names[bus_idx],
-                                            bus_voltage_used=bus_voltage_used,
-                                            bus_data=bus_data,
-                                            candidate_Vm=control_val,
-                                            use_stored_guess=use_stored_guess,
-                                            logger=logger)
-
-            else:
-                control_branch_idx[k] = branch_dict[control_dev]
-
     ii = 0
 
     # VSC
@@ -1264,6 +1316,12 @@ def get_vsc_data(
 
         data.mttf[i] = elm.mttf
         data.mttr[i] = elm.mttr
+        f = bus_dict[elm.bus_from]
+        t = bus_dict[elm.bus_to]
+        data.C_branch_bus_f[i, f] = 1
+        data.C_branch_bus_t[i, t] = 1
+        data.F[i] = f
+        data.T[i] = t
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
@@ -1277,10 +1335,14 @@ def get_vsc_data(
             data.control2[ii] = elm.control2_prof[t_idx]
             data.control1_val[ii] = elm.control1_val_prof[t_idx]
             data.control2_val[ii] = elm.control2_val_prof[t_idx]
-            set_control_dev(ii, data.control1[ii], elm.control1_dev_prof[t_idx], data.control1_val[ii],
-                            data.control1_bus_idx, data.control1_branch_idx)
-            set_control_dev(ii, data.control2[ii], elm.control2_dev_prof[t_idx], data.control2_val[ii],
-                            data.control2_bus_idx, data.control2_branch_idx)
+            set_control_dev(k=ii, f=f, t=t, control=data.control1[ii], control_dev=elm.control1_dev_prof[t_idx],
+                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx, control_branch_idx=data.control1_branch_idx,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            use_stored_guess=use_stored_guess, logger=logger)
+            set_control_dev(k=ii, f=f, t=t, control=data.control2[ii], control_dev=elm.control2_dev_prof[t_idx], control_val=data.control2_val[ii],
+                            control_bus_idx=data.control2_bus_idx, control_branch_idx=data.control2_branch_idx,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            use_stored_guess=use_stored_guess, logger=logger)
 
         else:
             data.active[i] = elm.active
@@ -1294,17 +1356,16 @@ def get_vsc_data(
             data.control2[ii] = elm.control2
             data.control1_val[ii] = elm.control1_val
             data.control2_val[ii] = elm.control2_val
-            set_control_dev(ii, data.control1[ii], elm.control1_dev, data.control1_val[ii],
-                            data.control1_bus_idx, data.control1_branch_idx)
-            set_control_dev(ii, data.control2[ii], elm.control2_dev, data.control2_val[ii],
-                            data.control2_bus_idx, data.control2_branch_idx)
+            set_control_dev(k=ii, f=f, t=t, control=data.control1[ii], control_dev=elm.control1_dev,
+                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx, control_branch_idx=data.control1_branch_idx,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            use_stored_guess=use_stored_guess, logger=logger)
+            set_control_dev(k=ii, f=f, t=t, control=data.control2[ii], control_dev=elm.control2_dev,
+                            control_val=data.control2_val[ii], control_bus_idx=data.control2_bus_idx, control_branch_idx=data.control2_branch_idx,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            use_stored_guess=use_stored_guess, logger=logger)
 
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-        data.C_branch_bus_f[i, f] = 1
-        data.C_branch_bus_t[i, t] = 1
-        data.F[i] = f
-        data.T[i] = t
+
 
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)

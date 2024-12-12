@@ -66,6 +66,61 @@ def compile_types(Pbus: Vec,
     return ref, pq, pv, pqv, p, no_slack
 
 
+# @nb.njit(cache=True)
+def generalized_compile_types(Pbus: Vec,
+                  is_p_controlled: BoolVec,
+                  is_q_controlled: BoolVec,
+                  is_vm_controlled: BoolVec,
+                  is_va_controlled: BoolVec) -> Tuple[IntVec, IntVec, IntVec, IntVec, IntVec, IntVec]:
+    """
+    Compile the types.
+    :param Pbus: array of real power Injections per node used to choose the slack as
+                 the node with greater generation if no slack is provided
+    :param types: array of tentative node types (it may be modified internally)
+    :return: ref, pq, pv, pqpv
+    """
+    print("Hello from compile_types")
+
+    # check that Sbus is a 1D array
+    assert (len(Pbus.shape) == 1)
+
+    # pq = np.where(types == BusMode.PQ_tpe.value)[0]
+    # pv = np.where(types == BusMode.PV_tpe.value)[0]
+    # pqv = np.where(types == BusMode.PQV_tpe.value)[0]
+    # p = np.where(types == BusMode.P_tpe.value)[0]
+    # ref = np.where(types == BusMode.Slack_tpe.value)[0]
+
+    pv = np.where(is_p_controlled & is_vm_controlled)[0]
+    ref = np.where(is_vm_controlled & is_va_controlled)[0]
+
+    if len(ref) == 0:  # there is no slack!
+
+        if len(pv) == 0:  # there are no pv neither -> blackout grid
+            pass
+        else:  # select the first PV generator as the slack
+
+            mx = max(Pbus[pv])
+            if mx > 0:
+                # find the generator that is injecting the most
+                i = np.where(Pbus == mx)[0][0]
+
+            else:
+                # all the generators are injecting zero, pick the first pv
+                i = pv[0]
+
+
+            # delete the selected pv bus from the pv list and put it in the slack list
+            is_p_controlled[i] = False
+            is_q_controlled[i] = False
+            is_vm_controlled[i] = True
+            is_va_controlled[i] = True
+
+        # for r in ref:
+        #     types[r] = BusMode.Slack_tpe.value
+    else:
+        pass  # no problem :)
+
+
 class GeneralizedSimulationIndices:
     """
     GeneralizedSimulationIndices
@@ -73,7 +128,8 @@ class GeneralizedSimulationIndices:
 
     def __init__(self,
                  nc: NumericalCircuit,
-                 pf_options: PowerFlowOptions) -> None:
+                 pf_options: PowerFlowOptions,
+                 logger: Logger) -> None:
         """
         Pass now the data classes, maybe latter on pass only the necessary attributes
         Specified sets of indices represent those indices where we know the value of the variable.
@@ -139,6 +195,7 @@ class GeneralizedSimulationIndices:
         """
 
         self.nc = nc
+        self.logger = logger
 
         # arrays for branch control types (nbr)
         self.tap_module_control_mode = nc.active_branch_data.tap_module_control_mode
@@ -175,32 +232,45 @@ class GeneralizedSimulationIndices:
 
         # Bus types
         self.bus_types = nc.bus_data.bus_types.copy()
+        self.is_p_controlled = nc.bus_data.is_p_controlled.copy()
+        self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
+        self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
+        self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
+        # self.analyze_bus_types()
         # self.fill_sets(nc=nc, pf_options=pf_options)
 
-        # Analyze bus controls
+
+        # Analyze Branch controls
         self.analyze_branch_controls()
 
-
-        # determine the bus indices
-        self.pq: IntVec = np.zeros(0, dtype=int)
-        self.pv: IntVec = np.zeros(0, dtype=int)  # PV-local
-        self.p: IntVec = np.zeros(0, dtype=int)  # PV-remote
-        self.pqv: IntVec = np.zeros(0, dtype=int)  # PV-remote pair
-        self.vd: IntVec = np.zeros(0, dtype=int)  # slack
-        self.no_slack: IntVec = np.zeros(0, dtype=int)  # all bus indices that are not slack, sorted
-        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(
+        generalized_compile_types(
             Pbus=nc.Sbus.real,
-            types=self.bus_types
+            is_p_controlled=self.is_p_controlled,
+            is_q_controlled=self.is_q_controlled,
+            is_vm_controlled=self.is_vm_controlled,
+            is_va_controlled=self.is_va_controlled
         )
+        #print everything
+        total_controlled_magnitudes = np.sum(
+            self.is_p_controlled.astype(int) + self.is_q_controlled.astype(int) + self.is_vm_controlled.astype(int) + self.is_va_controlled.astype(int))
+        print("total_controlled_magnitudes", total_controlled_magnitudes)
+        print("self.is_p_controlled", self.is_p_controlled)
+        print("self.is_q_controlled", self.is_q_controlled)
+        print("self.is_vm_controlled", self.is_vm_controlled)
+        print("self.is_va_controlled", self.is_va_controlled)
+        print("element wise sum", self.is_p_controlled.astype(int) + self.is_q_controlled.astype(int) + self.is_vm_controlled.astype(int) + self.is_va_controlled.astype(int))
+        assert total_controlled_magnitudes == self.nc.bus_data.nbus*2, f"Sum of all control flags must be equal to 2 times the number of buses, which is {self.nc.bus_data.nbus*2}, got {total_controlled_magnitudes}"
+
+
 
         #print the bus indices
-        print(f"bus types: {self.bus_types}")
-        print(f"pq: {self.pq}")
-        print(f"pv: {self.pv}")
-        print(f"p: {self.p}")
-        print(f"pqv: {self.pqv}")
-        print(f"vd: {self.vd}")
-        print(f"no_slack: {self.no_slack}")
+        # print(f"bus types: {self.bus_types}")
+        # print(f"pq: {self.pq}")
+        # print(f"pv: {self.pv}")
+        # print(f"p: {self.p}")
+        # print(f"pqv: {self.pqv}")
+        # print(f"vd: {self.vd}")
+        # print(f"no_slack: {self.no_slack}")
 
 
 
@@ -227,13 +297,38 @@ class GeneralizedSimulationIndices:
         # 1 if free mode (P as a function of angle drop), 0 if fixed mode (Pset)
         self.hvdc_mode: BoolVec | None = None
 
-        self.logger = Logger()
-
         # Run the search to get the indices
         self.fill_gx_sets(nc=nc, pf_options=pf_options)
 
         # Finally convert to sets
         # self.sets_to_lists()
+
+    def analyze_bus_types(self) -> None:
+        """
+        Analyze the bus types and compute the indices
+        :return: None
+        """
+        for i, bus_type in enumerate(self.bus_types):
+            if bus_type == BusMode.PQ_tpe.value:
+                self.p_control[i] = 1
+                self.q_control[i] = 1
+
+            elif bus_type == BusMode.PV_tpe.value:
+                self.p_control[i] = 1
+                self.vm_control[i] = 1
+
+            elif bus_type == BusMode.Slack_tpe.value:
+                self.vm_control[i] = 1
+                self.va_control[i] = 1
+
+            elif bus_type == BusMode.PQV_tpe.value:
+                self.p_control[i] = 1
+                self.q_control[i] = 1
+                self.vm_control[i] = 1
+
+            elif bus_type == BusMode.P_tpe.value:
+                self.p_control[i] = 1
+
 
 
     def analyze_branch_controls(self) -> None:
@@ -250,35 +345,25 @@ class GeneralizedSimulationIndices:
         k_v_beq = list()
         k_vsc = list()
 
-        nbr = len(self.tap_phase_control_mode)
-        for k in range(nbr):
+        # CONTROLLABLE BRANCH LOOP
+        for k in range(self.nc.passive_branch_data.nelm):
 
             ctrl_m = self.tap_module_control_mode[k]
             ctrl_tau = self.tap_phase_control_mode[k]
-            # is_conv = False
-
-            # conv_type = 1 if is_conv else 0
 
             # analyze tap-module controls
             if ctrl_m == TapModuleControl.Vm:
 
                 # Every bus controlled by m has to become a PQV bus
                 bus_idx = self.tap_controlled_buses[k]
-                self.bus_types[bus_idx] = BusMode.PQV_tpe.value
+                self.is_p_controlled[bus_idx] = True
+                self.is_q_controlled[bus_idx] = True
+                self.is_vm_controlled[bus_idx] = True
+                self.is_va_controlled[bus_idx] = False
 
-                # if is_conv and bus_idx == self.F[k]:
-                #     # if this is a converter,
-                #     # the voltage can be managed with Beq
-                #     # if the control bus is the "From" bus
-                #     k_v_beq.append(k)
-                #     conv_type = 2
-                # else:
-                    # In any other case, the voltage is managed by the tap module
                 k_v_m.append(k)
 
             elif ctrl_m == TapModuleControl.Qf:
-
-                # if not is_conv:
                 k_qf_m.append(k)
 
             elif ctrl_m == TapModuleControl.Qt:
@@ -296,18 +381,12 @@ class GeneralizedSimulationIndices:
             # analyze tap-phase controls
             if ctrl_tau == TapPhaseControl.Pf:
                 k_pf_tau.append(k)
-                conv_type = 1
 
             elif ctrl_tau == TapPhaseControl.Pt:
                 k_pt_tau.append(k)
-                conv_type = 1
 
             elif ctrl_tau == TapPhaseControl.fixed:
-                if ctrl_m == TapModuleControl.fixed:
-                    conv_type = 1
-
-            # elif ctrl_tau == TapPhaseControl.Droop:
-            #     pass
+               pass
 
             elif ctrl_tau == 0:
                 pass
@@ -317,71 +396,505 @@ class GeneralizedSimulationIndices:
 
 
         # VSC LOOP
-        nvsc = self.nc.vsc_data.nelm
-        for k in range(nvsc):
+        for k in range(self.nc.vsc_data.nelm):
 
             control1 = self.nc.vsc_data.control1[k]
             control2 = self.nc.vsc_data.control2[k]
             assert control1 != control2, f"VSC control types must be different for VSC indexed at {k}"
             control1_magnitude = self.nc.vsc_data.control1_val[k]
             control2_magnitude = self.nc.vsc_data.control2_val[k]
-            # control1_bus_device = self.nc.
+            control1_bus_device = self.nc.vsc_data.control1_bus_idx[k]
+            control2_bus_device = self.nc.vsc_data.control2_bus_idx[k]
+            control1_branch_device = self.nc.vsc_data.control1_branch_idx[k]
+            control2_branch_device = self.nc.vsc_data.control2_branch_idx[k]
 
-            # analyze tap-module controls
-            if ctrl_m == TapModuleControl.Vm:
+            """"    
+        
+            Vm_dc = 'Vm_dc'
+            Vm_ac = 'Vm_ac'
+            Va_ac = 'Va_ac'
+            Qac = 'Q_ac'
+            Pdc = 'P_dc'
+            Pac = 'P_ac'
+            
+            
+            """
+            if control1 == ConverterControlType.Vm_dc:
+                if control2 == ConverterControlType.Vm_dc:
+                    self.logger.add_error(
+                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
+                        f" control1: {control1}, control2: {control2}")
+                elif control2 == ConverterControlType.Vm_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Va_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Qac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pdc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                else:
+                    raise Exception(f"Unknown control type {control2}")
 
-                # Every bus controlled by m has to become a PQV bus
-                bus_idx = self.tap_controlled_buses[k]
-                self.bus_types[bus_idx] = BusMode.PQV_tpe.value
+            elif control1 == ConverterControlType.Vm_ac:
+                if control2 == ConverterControlType.Vm_dc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
 
-                # if is_conv and bus_idx == self.F[k]:
-                #     # if this is a converter,
-                #     # the voltage can be managed with Beq
-                #     # if the control bus is the "From" bus
-                #     k_v_beq.append(k)
-                #     conv_type = 2
-                # else:
-                # In any other case, the voltage is managed by the tap module
-                k_v_m.append(k)
+                elif control2 == ConverterControlType.Vm_ac:
+                    self.logger.add_error(
+                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
+                        f" control1: {control1}, control2: {control2}")
 
-            elif ctrl_m == TapModuleControl.Qf:
+                elif control2 == ConverterControlType.Va_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        self.is_va_controlled[control2_bus_device] = True
 
-                # if not is_conv:
-                k_qf_m.append(k)
+                elif control2 == ConverterControlType.Qac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
 
-            elif ctrl_m == TapModuleControl.Qt:
-                k_qt_m.append(k)
+                elif control2 == ConverterControlType.Pdc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                else:
+                    raise Exception(f"Unknown control type {control2}")
 
-            elif ctrl_m == TapModuleControl.fixed:
-                pass
+            elif control1 == ConverterControlType.Va_ac:
+                if control2 == ConverterControlType.Vm_dc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
 
-            elif ctrl_m == 0:
-                pass
+                elif control2 == ConverterControlType.Vm_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+
+                elif control2 == ConverterControlType.Va_ac:
+                    self.logger.add_error(
+                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
+                        f" control1: {control1}, control2: {control2}")
+
+                elif control2 == ConverterControlType.Qac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pdc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        self.is_va_controlled[control1_bus_device] = True
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                else:
+                    raise Exception(f"Unknown control type {control2}")
+
+            elif control1 == ConverterControlType.Qac:
+                if control2 == ConverterControlType.Vm_dc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Vm_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Va_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Qac:
+                    self.logger.add_error(
+                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
+                        f" control1: {control1}, control2: {control2}")
+                elif control2 == ConverterControlType.Pdc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                else:
+                    raise Exception(f"Unknown control type {control2}")
+
+            elif control1 == ConverterControlType.Pdc:
+                if control2 == ConverterControlType.Vm_dc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Vm_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Va_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Qac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                    pass
+                elif control2 == ConverterControlType.Pdc:
+                    self.logger.add_error(
+                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
+                        f" control1: {control1}, control2: {control2}")
+                elif control2 == ConverterControlType.Pac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                else:
+                    raise Exception(f"Unknown control type {control2}")
+
+            elif control1 == ConverterControlType.Pac:
+                if control2 == ConverterControlType.Vm_dc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+
+                elif control2 == ConverterControlType.Vm_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Va_ac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        self.is_va_controlled[control2_bus_device] = True
+                elif control2 == ConverterControlType.Qac:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pdc:
+                    if control1_bus_device > -1:
+                        # self.is_p_controlled[control1_bus_device] = True
+                        # self.is_q_controlled[control1_bus_device] = True
+                        # self.is_vm_controlled[control1_bus_device] = True
+                        # self.is_va_controlled[control1_bus_device] = True
+                        pass
+                    if control2_bus_device > -1:
+                        # self.is_p_controlled[control2_bus_device] = True
+                        # self.is_q_controlled[control2_bus_device] = True
+                        # self.is_vm_controlled[control2_bus_device] = True
+                        # self.is_va_controlled[control2_bus_device] = True
+                        pass
+                elif control2 == ConverterControlType.Pac:
+                    self.logger.add_error(
+                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
+                        f" control1: {control1}, control2: {control2}")
+                else:
+                    raise Exception(f"Unknown control type {control2}")
 
             else:
-                raise Exception(f"Unknown tap phase module mode {ctrl_m}")
+                raise Exception(f"Unknown control type {control1}")
 
-            # analyze tap-phase controls
-            if ctrl_tau == TapPhaseControl.Pf:
-                k_pf_tau.append(k)
-                conv_type = 1
 
-            elif ctrl_tau == TapPhaseControl.Pt:
-                k_pt_tau.append(k)
-                conv_type = 1
-
-            elif ctrl_tau == TapPhaseControl.fixed:
-                if ctrl_m == TapModuleControl.fixed:
-                    conv_type = 1
-
-            # elif ctrl_tau == TapPhaseControl.Droop:
+            # # analyze tap-module controls
+            # if ctrl_m == TapModuleControl.Vm:
+            #
+            #     # Every bus controlled by m has to become a PQV bus
+            #     bus_idx = self.tap_controlled_buses[k]
+            #     self.bus_types[bus_idx] = BusMode.PQV_tpe.value
+            #
+            #     # if is_conv and bus_idx == self.F[k]:
+            #     #     # if this is a converter,
+            #     #     # the voltage can be managed with Beq
+            #     #     # if the control bus is the "From" bus
+            #     #     k_v_beq.append(k)
+            #     #     conv_type = 2
+            #     # else:
+            #     # In any other case, the voltage is managed by the tap module
+            #     k_v_m.append(k)
+            #
+            # elif ctrl_m == TapModuleControl.Qf:
+            #
+            #     # if not is_conv:
+            #     k_qf_m.append(k)
+            #
+            # elif ctrl_m == TapModuleControl.Qt:
+            #     k_qt_m.append(k)
+            #
+            # elif ctrl_m == TapModuleControl.fixed:
             #     pass
-
-            elif ctrl_tau == 0:
-                pass
-
-            else:
-                raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
+            #
+            # elif ctrl_m == 0:
+            #     pass
+            #
+            # else:
+            #     raise Exception(f"Unknown tap phase module mode {ctrl_m}")
+            #
+            # # analyze tap-phase controls
+            # if ctrl_tau == TapPhaseControl.Pf:
+            #     k_pf_tau.append(k)
+            #     conv_type = 1
+            #
+            # elif ctrl_tau == TapPhaseControl.Pt:
+            #     k_pt_tau.append(k)
+            #     conv_type = 1
+            #
+            # elif ctrl_tau == TapPhaseControl.fixed:
+            #     if ctrl_m == TapModuleControl.fixed:
+            #         conv_type = 1
+            #
+            # # elif ctrl_tau == TapPhaseControl.Droop:
+            # #     pass
+            #
+            # elif ctrl_tau == 0:
+            #     pass
+            #
+            # else:
+            #     raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
 
 
             # Beq->qf=0
