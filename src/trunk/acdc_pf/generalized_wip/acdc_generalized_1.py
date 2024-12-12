@@ -1,7 +1,7 @@
 import os
 import GridCalEngine as gce
-# from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import PfAdvancedFormulation
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
+# from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation2 import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.basic_structures import Logger
 import faulthandler
@@ -50,7 +50,7 @@ cx_qta: [4, 5]
 
 print(f"Base: nbus {main_nc.nbus}, nbr: {main_nc.nbr}, nvsc: {main_nc.nvsc}, nhvdc: {main_nc.nhvdc}")
 
-options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, tolerance=1e-11)
+options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-11)
 logger = Logger()
 
 island = islands[0]
