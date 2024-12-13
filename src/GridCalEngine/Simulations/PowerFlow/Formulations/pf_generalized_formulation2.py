@@ -7,6 +7,8 @@ from typing import Tuple, List, Callable, Union
 import numpy as np
 import pandas as pd
 import scipy as sp
+
+from GridCalEngine import HvdcControlType
 from GridCalEngine.Topology.generalized_simulation_indices_new import GeneralizedSimulationIndices
 from scipy.sparse import lil_matrix, csc_matrix, hstack, vstack, csr_matrix
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
@@ -22,6 +24,110 @@ from GridCalEngine.enumerations import BusMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    polar_to_rect, get_Sf, get_St)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
+
+
+def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
+             R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
+    """
+
+    :param k:
+    :param Vm:
+    :param Va:
+    :param F:
+    :param T:
+    :param R:
+    :param X:
+    :param G:
+    :param B:
+    :param m:
+    :param tau:
+    :param vtap_f:
+    :param vtap_t:
+    :return:
+    """
+    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+    bc2 = (G + 1j * B) / 2.0  # shunt admittance
+    yff = (ys + bc2) / (m * m * vtap_f * vtap_f)
+    yft = -ys / (m * np.exp(-1.0j * tau) * vtap_f * vtap_t)
+    ytf = -ys / (m * np.exp(1.0j * tau) * vtap_t * vtap_f)
+    ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+    Yf = sp.diags(yff) * Cf + sp.diags(yft) * Ct
+    Yt = sp.diags(ytf) * Cf + sp.diags(ytt) * Ct
+    Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
+
+    return Ybus
+
+
+def calcSf(k: IntVec, Vm: Vec, Va: Vec, F: IntVec, T: IntVec,
+           R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
+    """
+
+    :param k:
+    :param Vm:
+    :param Va:
+    :param F:
+    :param T:
+    :param R:
+    :param X:
+    :param G:
+    :param B:
+    :param m:
+    :param tau:
+    :param vtap_f:
+    :param vtap_t:
+    :return:
+    """
+    ys = 1.0 / (R[k] + 1.0j * X[k] + 1e-20)  # series admittance
+    bc2 = (G[k] + 1j * B[k]) / 2.0  # shunt admittance
+    yff = (ys + bc2) / (m[k] * m[k] * vtap_f[k] * vtap_f[k])
+    yft = -ys / (m * np.exp(-1.0j * tau[k]) * vtap_f[k] * vtap_t[k])
+
+    Vmf_cbr = Vm[F[k]]
+    Vmt_cbr = Vm[T[k]]
+    Vaf_cbr = Va[F[k]]
+    Vat_cbr = Va[T[k]]
+    Sf_cbr = (np.power(Vmf_cbr, 2.0) * np.conj(yff)
+              + polar_to_rect(Vmf_cbr, Vaf_cbr) * polar_to_rect(Vmt_cbr, Vat_cbr) * np.conj(yft))
+
+    return Sf_cbr
+
+
+def calcSt(k: IntVec, Vm: Vec, Va: Vec, F: IntVec, T: IntVec,
+           R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
+    """
+
+    :param k:
+    :param Vm:
+    :param Va:
+    :param F:
+    :param T:
+    :param R:
+    :param X:
+    :param G:
+    :param B:
+    :param m:
+    :param tau:
+    :param vtap_f:
+    :param vtap_t:
+    :return:
+    """
+    ys = 1.0 / (R[k] + 1.0j * X[k] + 1e-20)  # series admittance
+    bc2 = (G[k] + 1j * B[k]) / 2.0  # shunt admittance
+
+    ytf = -ys / (m * np.exp(1.0j * tau[k]) * vtap_t[k] * vtap_f[k])
+    ytt = (ys + bc2) / (vtap_t[k] * vtap_t[k])
+
+    Vmf_cbr = Vm[F[k]]
+    Vmt_cbr = Vm[T[k]]
+    Vaf_cbr = Va[F[k]]
+    Vat_cbr = Va[T[k]]
+
+    St_cbr = (np.power(Vmt_cbr, 2.0) * np.conj(ytt)
+              + polar_to_rect(Vmt_cbr, Vat_cbr) * polar_to_rect(Vmf_cbr, Vaf_cbr) * np.conj(ytf))
+
+    return St_cbr
+
 
 
 def recompute_controllable_power(V_f: CxVec,
@@ -166,6 +272,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC Indices
         self.hvdc = []
+        hvdc_droop_idx = list()
+        for k, ctrl in enumerate(self.nc.hvdc_data.control_mode):
+            if ctrl == HvdcControlType.type_0_free:
+                hvdc_droop_idx.append(k)
+        self.hvdc_droop_idx = np.array(hvdc_droop_idx)
 
         # Unknowns -----------------------------------------------------------------------------------------------------
         self._Vm = np.zeros(nc.bus_data.nbus)
@@ -186,13 +297,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set
 
         # Controllable branches ----------------------------------------------------------------------------------------
-        ys = 1.0 / (nc.passive_branch_data.R[self.cbr] + 1.0j * nc.passive_branch_data.X[self.cbr] + 1e-20)  # series admittance
+        ys = 1.0 / (nc.passive_branch_data.R[self.cbr] + 1.0j * nc.passive_branch_data.X[
+            self.cbr] + 1e-20)  # series admittance
         bc2 = (nc.passive_branch_data.G[self.cbr] + 1j * nc.passive_branch_data.B[self.cbr]) / 2.0  # shunt admittance
-        Yff = ys / (tap_module * tap_module * vtap_f * vtap_f)
-        Yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        Ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-        Ytt = (ys + bc2) / (vtap_t * vtap_t)
-
+        vtap_f = nc.passive_branch_data.virtual_tap_f[self.cbr]
+        vtap_t = nc.passive_branch_data.virtual_tap_t[self.cbr]
+        self.yff_cbr = ys / (vtap_f * vtap_f)
+        self.yft_cbr = -ys / (vtap_f * vtap_t)
+        self.ytf_cbr = -ys / (vtap_t * vtap_f)
+        self.ytt_cbr = (ys + bc2) / (vtap_t * vtap_t)
+        self.F_cbr = self.nc.passive_branch_data.F[self.cbr]
+        self.T_cbr = self.nc.passive_branch_data.T[self.cbr]
 
     def x2var(self, x: Vec) -> None:
         """
@@ -282,6 +397,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # copy the sliceable vectors
         Vm = self.Vm.copy()
         Va = self.Va.copy()
+        V = polar_to_rect(Vm, Va)
         Pf_vsc = self.Pf_vsc.copy()
         Pt_vsc = self.Pt_vsc.copy()
         Qt_vsc = self.Qt_vsc.copy()
@@ -300,13 +416,133 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         tau = x[j:k]
 
         # Controllable branches ----------------------------------------------------------------------------------------
-        ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
-        bc2 = (G + 1j * B) / 2.0  # shunt admittance
-        Yff = ys / (mp * mp * vtap_f * vtap_f)
-        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-        Ytt = (ys + bc2) / (vtap_t * vtap_t)
-        Sf_cbr =
+
+        yff = (self.yff_cbr * (m * m) / (m * m))
+        yft = self.yft_cbr * (m * np.exp(-1.0j * tau)) / (m * np.exp(-1.0j * tau))
+        ytf = self.ytf_cbr * (m * np.exp(1.0j * tau)) / (m * np.exp(1.0j * tau))
+        ytt = self.ytt_cbr
+        Vmf_cbr = Vm[self.F_cbr]
+        Vmt_cbr = Vm[self.T_cbr]
+        Vaf_cbr = Va[self.F_cbr]
+        Vat_cbr = Va[self.T_cbr]
+        Sf_cbr = (np.power(Vmf_cbr, 2.0) * np.conj(yff)
+                  + polar_to_rect(Vmf_cbr, Vaf_cbr) * polar_to_rect(Vmt_cbr, Vat_cbr) * np.conj(yft))
+        St_cbr = (np.power(Vmt_cbr, 2.0) * np.conj(ytt)
+                  + polar_to_rect(Vmt_cbr, Vat_cbr) * polar_to_rect(Vmf_cbr, Vaf_cbr) * np.conj(ytf))
+        Scalc_cbr = (self.nc.passive_branch_data.C_branch_bus_f @ Sf_cbr
+                     + self.nc.passive_branch_data.C_branch_bus_t @ St_cbr)
+
+        #
+        m2 = self.nc.active_branch_data.tap_module.copy()
+        m2[self.u_cbr_m] = m
+        tau2 = self.nc.active_branch_data.tap_angle.copy()
+        tau2[self.u_cbr_m] = tau
+        Pf_cbr = calcSf(k=self.k_cbr_pf, Vm=Vm, Va=Va,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Pt_cbr = calcSt(k=self.k_cbr_pt, Vm=Vm, Va=Va,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Qf_cbr = calcSf(k=self.k_cbr_qf, Vm=Vm, Va=Va,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+
+        Qt_cbr = calcSt(k=self.k_cbr_qt, Vm=Vm, Va=Va,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+
+        Ybus = calcYbus(Cf=self.nc.passive_branch_data.C_branch_bus_f,
+                        Ct=self.nc.passive_branch_data.C_branch_bus_t,
+                        Yshunt_bus=self.nc.shunt_data.Y / self.nc.Sbase, # TODO: Check p.u.
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t)
+
+        # vsc ----------------------------------------------------------------------------------------------------------
+
+        T_vsc = self.nc.vsc_data.T
+        It = np.sqrt(Pt_vsc * Pt_vsc + Qt_vsc * Qt_vsc) / Vm[T_vsc]
+        It2 = It * It
+        PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
+                     + self.nc.vsc_data.alpha2 * It
+                     + self.nc.vsc_data.alpha1)
+
+        loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
+        St_vsc = Pt_vsc + 1j * Qt_vsc
+
+        Scalc_vsc = self.nc.vsc_data.C_branch_bus_f @ Pf_vsc + self.nc.vsc_data.C_branch_bus_t @ St_vsc
+
+        # HVDC ---------------------------------------------------------------------------------------------------------
+        Vmf_hvdc = Vm[self.nc.hvdc_data.F]
+
+        loss_hvdc = self.nc.hvdc_data.r * np.power(Pf_hvdc / Vmf_hvdc, 2.0)  # TODO: check compatible units!
+
+        inj_hvdc = self.nc.hvdc_data.Pset
+        if len(self.hvdc_droop_idx):
+            Vaf_hvdc = Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
+            Vat_hvdc = Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
+            inj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
+
+        Sf_hvdc = Pf_hvdc + 1j * Qf_hvdc
+        St_hvdc = Pt_hvdc + 1j * Qt_hvdc
+        Scalc_hvdc = self.nc.hvdc_data.C_hvdc_bus_f @ Sf_hvdc + self.nc.hvdc_data.C_hvdc_bus_t @ St_hvdc
+
+        # total nodal power --------------------------------------------------------------------------------------------
+        Scalc_passive = V * np.conj(Ybus @ V)
+        Scalc = Scalc_passive + Scalc_cbr + Scalc_vsc + Scalc_hvdc
+
+        # compose the residuals vector ---------------------------------------------------------------------------------
+
+        _f = np.r_[
+            Scalc[self.i_k_p].real,
+            Scalc[self.i_k_q].real,
+            loss_vsc,
+            loss_hvdc,
+            inj_hvdc,
+            Pf_cbr,
+            Pt_cbr,
+            Qf_cbr,
+            Qt_cbr
+        ]
 
         return _f
 
