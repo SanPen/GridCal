@@ -31,7 +31,7 @@ class Substation(GenericAreaGroup):
                  municipality: Union[Municipality, None] = None,
                  address: str = "",
                  irradiation: float = 0.0,
-                 temparature: float = 0.0,
+                 temperature: float = 0.0,
                  wind_speed: float = 0.0,
                  terrain_roughness: float = 0.20,
                  color: Union[str, None] = "#3d7d95"):
@@ -50,7 +50,7 @@ class Substation(GenericAreaGroup):
         :param municipality:
         :param address:
         :param irradiation:
-        :param temparature:
+        :param temperature:
         :param wind_speed:
         :param terrain_roughness:
         :param color: hexadecimal color string (i.e. #AA00FF)
@@ -75,8 +75,8 @@ class Substation(GenericAreaGroup):
         self.irradiation: float = float(irradiation)
         self._irradiation_prof = Profile(default_value=self.irradiation, data_type=float)
 
-        self.temparature: float = float(temparature)
-        self._temparature_prof = Profile(default_value=self.temparature, data_type=float)
+        self.temperature: float = float(temperature)
+        self._temperature_prof = Profile(default_value=self.temperature, data_type=float)
 
         self.wind_speed: float = float(wind_speed)
         self._wind_speed_prof = Profile(default_value=self.wind_speed, data_type=float)
@@ -108,9 +108,9 @@ class Substation(GenericAreaGroup):
                       definition="Substation solar irradiation",
                       profile_name="irradiation_prof")
 
-        self.register(key="temparature", units="ºC", tpe=float,
+        self.register(key="temperature", units="ºC", tpe=float,
                       definition="Substation temperature",
-                      profile_name="temparature_prof")
+                      profile_name="temperature_prof")
 
         self.register(key="wind_speed", units="m/s", tpe=float,
                       definition="Substation wind speed at 80m above the ground",
@@ -160,7 +160,7 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Zone, None]):
             self._zone = val
 
-            if val is not None:
+            if val is not None and self.auto_update_enabled:
                 if val.area is not None and self.area is None:
                     self.area = val.area
 
@@ -203,7 +203,7 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Community, None]):
             self._community = val
 
-            if val is not None:
+            if val is not None and self.auto_update_enabled:
                 if val.country is not None and self.country is None:
                     self.country = val.country
         else:
@@ -226,7 +226,7 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Region, None]):
             self._region = val
 
-            if val is not None:
+            if val is not None and self.auto_update_enabled:
                 if val.community is not None and self.community is None:
                     self.community = val.community
 
@@ -250,7 +250,7 @@ class Substation(GenericAreaGroup):
         if isinstance(val, Union[Municipality, None]):
             self._municipality = val
 
-            if val is not None:
+            if val is not None and self.auto_update_enabled:
                 if val.region is not None and self.region is None:
                     self.region = val.region
 
@@ -276,21 +276,21 @@ class Substation(GenericAreaGroup):
             raise Exception(str(type(val)) + 'not supported to be set into a irradiation_prof')
 
     @property
-    def temparature_prof(self) -> Profile:
+    def temperature_prof(self) -> Profile:
         """
         Temperature profile
         :return: Profile
         """
-        return self._temparature_prof
+        return self._temperature_prof
 
-    @temparature_prof.setter
-    def temparature_prof(self, val: Union[Profile, np.ndarray]):
+    @temperature_prof.setter
+    def temperature_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._temparature_prof = val
+            self._temperature_prof = val
         elif isinstance(val, np.ndarray):
-            self._temparature_prof.set(arr=val)
+            self._temperature_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a temparature_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a temperature_prof')
 
     @property
     def wind_speed_prof(self) -> Profile:

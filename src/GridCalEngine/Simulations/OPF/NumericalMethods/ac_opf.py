@@ -151,8 +151,8 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
 
 
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, Sd, slack,
-                                from_idx, to_idx, f_nd_dc, t_nd_dc, fdc, tdc, ndc, capacity_nodes_idx,
-                                nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, V_U, V_L,
+                                from_idx, to_idx, f_nd_dc, t_nd_dc, fdc, tdc, ndc, nsh, capacity_nodes_idx,
+                                nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, Inom, V_U, V_L,
                                 P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                 k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
                                 acopf_mode) -> Tuple[IpsFunctionReturn, Vec]:
@@ -254,21 +254,22 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 
     ts_h = timeit.default_timer()
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
-                       Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max,
+                       Cg=Cg, Inom=Inom, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L,
+                       tapm_max=tapm_max,
                        tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
-                       rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ, acopf_mode=acopf_mode)
+                       rates=rates, il=il, ig=ig, ctQ=ctQ, acopf_mode=acopf_mode)
     te_h = timeit.default_timer()
 
     fx, Gx, Hx, fxx, Gxx, Hxx, der_times = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf,
-                                                                  Ct=Ct, Yf=Yf,
+                                                                  Ct=Ct, Inom=Inom, Yf=Yf,
                                                                   Yt=Yt, Ybus=Ybus, Sbase=Sbase, mon_br_idx=il, ig=ig,
                                                                   slack=slack,
                                                                   nslcap=nslcap,
                                                                   nodal_capacity_sign=nodal_capacity_sign,
                                                                   capacity_nodes_idx=capacity_nodes_idx, pq=pq,
-                                                                  pv=pv, tanmax=tanmax, alltapm=alltapm,
-                                                                  alltapt=alltapt, F_hvdc=fdc,
-                                                                  T_hvdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda,
+                                                                  pv=pv, alltapm=alltapm,
+                                                                  alltapt=alltapt, F_hvdc=fdc, T_hvdc=tdc, nsh=nsh,
+                                                                  k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda,
                                                                   R=R, X=X,
                                                                   F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
                                                                   compute_jac=compute_jac, compute_hess=compute_hess)
@@ -594,6 +595,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Qg_max = np.r_[Qg_max, Qsh_max]
     Qg_min = np.r_[Qg_min, Qsh_min]
 
+    Inom = nc.generator_data.snom / Sbase
+
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
 
@@ -608,10 +611,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     if len(id_Vm_max0) != 0:
         for i in id_Vm_max0:
-            logger.add_warning('Uper voltage limits are set lower to the lower limit. Correcting to 1.1 p.u.', device="Bus " + str(i))
+            logger.add_warning('Uper voltage limits are set lower to the lower limit. Correcting to 1.1 p.u.',
+                               device="Bus " + str(i))
             Vm_max[id_Vm_max0] = 1.1
-
-
 
     pf = nc.generator_data.pf
     tanmax = ((1 - pf ** 2) ** (1 / 2)) / (pf + 1e-15)
@@ -711,7 +713,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
     if opf_options.ips_control_q_limits:
-        NI = 2 * n_br_mon + 2 * npq + 5 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
+        NI = 2 * n_br_mon + 2 * npq + ngen + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
     else:
         # No Reactive constraint (power curve)
         NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
@@ -804,19 +806,15 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result, times = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                                   func=compute_analytic_structures,
-                                                  arg=(
-                                                      admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
-                                                      t_nd_hvdc,
-                                                      f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, capacity_nodes_idx,
-                                                      nodal_capacity_sign,
-                                                      nslcap, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
-                                                      Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max,
-                                                      tapt_min,
-                                                      alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
-                                                      br_mon_idx,
-                                                      n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
-                                                      opf_options.ips_control_q_limits,
-                                                      opf_options.acopf_mode),
+                                                  arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
+                                                       t_nd_hvdc, f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, nsh,
+                                                       capacity_nodes_idx, nodal_capacity_sign, nslcap, pq, pv,
+                                                       Pf_nondisp, P_hvdc_max, Inom, Vm_max, Vm_min, Pg_max, Pg_min,
+                                                       tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
+                                                       alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
+                                                       br_mon_idx, n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
+                                                       opf_options.ips_control_q_limits,
+                                                       opf_options.acopf_mode),
                                                   verbose=opf_options.verbose,
                                                   max_iter=opf_options.ips_iterations,
                                                   tol=opf_options.ips_tolerance,
@@ -910,7 +908,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Sf", result.structs.Sf)
 
         if opf_options.verbose > 1:
-
             print('Times:\n', df_times)
             print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
                                                        't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',

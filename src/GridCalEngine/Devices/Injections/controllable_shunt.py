@@ -174,6 +174,26 @@ class ControllableShunt(ShuntParent):
                 for i in range(1, nn):
                     self._b_steps[i] = self._b_steps[i - 1] + n_list[i] * b_list[i]
 
+    def get_block_points(self):
+        """
+        Get B points for CGMES export.
+        :return:
+        :rtype:
+        """
+        b_points = []
+        g_points = []
+        b_points.append(self._b_steps[0])
+        g_points.append(self._g_steps[0])
+
+        for i in range(1, len(self._b_steps)):
+            delta_b = self._b_steps[i] - self._b_steps[i-1]
+            delta_g = self._g_steps[i] - self._g_steps[i-1]
+
+            b_points.append(delta_b)
+            g_points.append(delta_g)
+
+        return b_points, g_points
+
     @property
     def b_steps(self):
         """

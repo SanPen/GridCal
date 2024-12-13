@@ -310,7 +310,7 @@ class TapChanger:
         :param tap_module: float value of the tap module
         """
         if self.tc_type != TapChangerTypes.NoRegulation:
-            _, val = find_closest_number(arr=self._tau_array, target=tap_module)
+            _, val = find_closest_number(arr=self._m_array, target=tap_module)
             return val
 
     def get_tap_module_min(self) -> float:
@@ -424,14 +424,14 @@ class TapChanger:
             high = self.total_positions - self.neutral_position
             normal = self.normal_position + low - 1
             neutral = self.neutral_position + low - 1
-            sVI = self.dV * 100
+            sVI = round(self.dV * 100, 6)
             step = self.tap_position + low - 1
         else:
             low = 0
             high = self.total_positions - 1
             normal = self.normal_position
             neutral = self.neutral_position
-            sVI = self.dV * 100
+            sVI = round(self.dV * 100, 6)
             step = self.tap_position
 
         return low, high, normal, neutral, sVI, step

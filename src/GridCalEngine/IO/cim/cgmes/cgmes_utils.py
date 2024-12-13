@@ -13,6 +13,7 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import LimitTypeKind
 
+
 def find_terms_connections(cgmes_terminal: Base,
                            calc_node_dict: Dict[str, gcdev.Bus],
                            cn_dict: Dict[str, gcdev.ConnectivityNode]) -> Tuple[gcdev.Bus, gcdev.ConnectivityNode]:
@@ -459,48 +460,27 @@ def get_values_shunt(shunt,
     :param Sbase: Sbase in MVA
     :return: G, B, G0, B0
     """
-    if shunt.BaseVoltage is not None:
-        Vnom = get_voltage_shunt(shunt, logger=logger)
+    Vnom = get_voltage_shunt(shunt, logger=logger)
 
-        if Vnom is not None:
+    if Vnom is not None:
 
-            # Zbase = (Vnom * Vnom) / Sbase
-            # Ybase = 1.0 / Zbase
+        # Zbase = (Vnom * Vnom) / Sbase
+        # Ybase = 1.0 / Zbase
 
-            # at this point g, b are the complete values for all the line length
-            G = shunt.gPerSection * (Vnom * Vnom) if shunt.gPerSection is not None else 0
-            B = shunt.bPerSection * (Vnom * Vnom) if shunt.bPerSection is not None else 0
+        # at this point g, b are the complete values for all the line length
+        G = shunt.gPerSection * (Vnom * Vnom)
+        B = shunt.bPerSection * (Vnom * Vnom)
+        if hasattr(shunt, "g0PerSection"):
             G0 = shunt.g0PerSection * (Vnom * Vnom) if shunt.g0PerSection is not None else 0
             B0 = shunt.b0PerSection * (Vnom * Vnom) if shunt.b0PerSection is not None else 0
-
         else:
-            G = 0
-            B = 0
-            G0 = 0
-            B0 = 0
-
+            G0 = 0.0
+            B0 = 0.0
     else:
-        Vnom = get_voltage_shunt(shunt, logger=logger)
-
-        if Vnom is not None:
-
-            # Zbase = (Vnom * Vnom) / Sbase
-            # Ybase = 1.0 / Zbase
-
-            # at this point g, b are the complete values for all the line length
-            G = shunt.gPerSection * (Vnom * Vnom)
-            B = shunt.bPerSection * (Vnom * Vnom)
-            if hasattr(shunt, "g0PerSection"):
-                G0 = shunt.g0PerSection * (Vnom * Vnom) if shunt.g0PerSection is not None else 0
-                B0 = shunt.b0PerSection * (Vnom * Vnom) if shunt.b0PerSection is not None else 0
-            else:
-                G0 = 0
-                B0 = 0
-        else:
-            G = 0
-            B = 0
-            G0 = 0
-            B0 = 0
+        G = 0.0
+        B = 0.0
+        G0 = 0.0
+        B0 = 0.0
 
     return G, B, G0, B0
 
@@ -647,11 +627,11 @@ def base_voltage_to_str(base_voltage):
 
 # endregion
 
-def get_regulating_control(cgmes_elm,
-                           cgmes_enums,
-                           calc_node_dict,
-                           cn_dict,
-                           logger: DataLogger):
+def get_regulating_control_params(cgmes_elm,
+                                  cgmes_enums,
+                                  calc_node_dict,
+                                  cn_dict,
+                                  logger: DataLogger):
     control_bus = None
     if cgmes_elm.RegulatingControl is not None:
 
@@ -702,10 +682,11 @@ def get_regulating_control(cgmes_elm,
             if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
                 # find the control node
                 control_terminal = cgmes_elm.RegulatingControl.Terminal
-                control_node, cn = find_terms_connections(cgmes_terminal=control_terminal,
-                                                          calc_node_dict=calc_node_dict,
-                                                          cn_dict=cn_dict)
-
+                control_bus, control_node = find_terms_connections(
+                    cgmes_terminal=control_terminal,
+                    calc_node_dict=calc_node_dict,
+                    cn_dict=cn_dict
+                )
             else:
                 control_node = None
                 v_set = 1.0
