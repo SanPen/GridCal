@@ -96,6 +96,63 @@ def set_bus_control_voltage(i: int,
                              value=candidate_Vm,
                              expected_value=bus_data.Vbus[i])
 
+def set_bus_control_voltage_vsc(i: int,
+                            j: int,
+                            remote_control: bool,
+                            bus_name: str,
+                            bus_voltage_used: BoolVec,
+                            bus_data: BusData,
+                            candidate_Vm: float,
+                            use_stored_guess: bool,
+                            logger: Logger) -> None:
+    """
+    Set the bus control voltage
+    :param i: Bus index
+    :param j: Remote Bus index
+    :param remote_control: Using remote control?
+    :param bus_name: Bus name
+    :param bus_voltage_used: Array of flags indicating if a bus voltage has been modified before
+    :param bus_data: BusData
+    :param candidate_Vm: Voltage set point that you want to set
+    :param use_stored_guess: Use the stored seed values?
+    :param logger: Logger
+    """
+    if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
+        if remote_control and j > -1 and j != i:
+            # remove voltage control
+            # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
+            # bus_data.set_busmode(j, BusMode.PQV_tpe)
+            bus_data.is_p_controlled[j] = True
+            bus_data.is_q_controlled[j] = True
+            bus_data.is_vm_controlled[j] = True
+
+            # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
+            # bus_data.set_busmode(i, BusMode.P_tpe)
+            bus_data.is_p_controlled[i] = True
+        else:
+            # local voltage control
+            # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
+            # bus_data.set_busmode(i, BusMode.PV_tpe)
+            bus_data.is_p_controlled[i] = True
+            bus_data.is_vm_controlled[i] = True
+
+    if not use_stored_guess:
+        if not bus_voltage_used[i]:
+            if remote_control and j > -1 and j != i:
+                # initialize the remote bus voltage to the control value
+                bus_data.Vbus[j] = complex(candidate_Vm, 0)
+                bus_voltage_used[j] = True
+            else:
+                # initialize the local bus voltage to the control value
+                bus_data.Vbus[i] = complex(candidate_Vm, 0)
+                bus_voltage_used[i] = True
+
+        elif candidate_Vm != bus_data.Vbus[i]:
+            logger.add_error(msg='Different control voltage set points',
+                             device=bus_name,
+                             value=candidate_Vm,
+                             expected_value=bus_data.Vbus[i])
+
 
 def get_bus_data(bus_data: BusData,
                  circuit: MultiCircuit,
@@ -1228,7 +1285,16 @@ def set_control_dev(k: int,
             control_bus_idx[k] = bus_idx
 
             if control == ConverterControlType.Vm_ac: #TODO: think of logic for vsc control
-                set_bus_control_voltage(i=bus_idx,
+                # set_bus_control_voltage(i=bus_idx,
+                #                         j=-1,
+                #                         remote_control=False,
+                #                         bus_name=str(bus_data.names[bus_idx]),
+                #                         bus_voltage_used=bus_voltage_used,
+                #                         bus_data=bus_data,
+                #                         candidate_Vm=control_val,
+                #                         use_stored_guess=use_stored_guess,
+                #                         logger=logger)
+                set_bus_control_voltage_vsc(i=bus_idx,
                                         j=-1,
                                         remote_control=False,
                                         bus_name=str(bus_data.names[bus_idx]),
@@ -1239,7 +1305,16 @@ def set_control_dev(k: int,
                                         logger=logger)
 
             elif control == ConverterControlType.Vm_dc:
-                set_bus_control_voltage(i=bus_idx,
+                # set_bus_control_voltage(i=bus_idx,
+                #                         j=-1,
+                #                         remote_control=False,
+                #                         bus_name=str(bus_data.names[bus_idx]),
+                #                         bus_voltage_used=bus_voltage_used,
+                #                         bus_data=bus_data,
+                #                         candidate_Vm=control_val,
+                #                         use_stored_guess=use_stored_guess,
+                #                         logger=logger)
+                set_bus_control_voltage_vsc(i=bus_idx,
                                         j=-1,
                                         remote_control=False,
                                         bus_name=str(bus_data.names[bus_idx]),
@@ -1248,12 +1323,24 @@ def set_control_dev(k: int,
                                         candidate_Vm=control_val,
                                         use_stored_guess=use_stored_guess,
                                         logger=logger)
+
+
+
         else:
             control_branch_idx[k] = branch_dict[control_dev]
     else:
         if control == ConverterControlType.Vm_ac:
             control_bus_idx[k] = t
-            set_bus_control_voltage(i=t,
+            # set_bus_control_voltage(i=t,
+            #                         j=-1,
+            #                         remote_control=False,
+            #                         bus_name=str(bus_data.names[t]),
+            #                         bus_voltage_used=bus_voltage_used,
+            #                         bus_data=bus_data,
+            #                         candidate_Vm=control_val,
+            #                         use_stored_guess=use_stored_guess,
+            #                         logger=logger)
+            set_bus_control_voltage_vsc(i=t,
                                     j=-1,
                                     remote_control=False,
                                     bus_name=str(bus_data.names[t]),
@@ -1263,9 +1350,19 @@ def set_control_dev(k: int,
                                     use_stored_guess=use_stored_guess,
                                     logger=logger)
 
+
         elif control == ConverterControlType.Vm_dc:
             control_bus_idx[k] = f
-            set_bus_control_voltage(i=f,
+            # set_bus_control_voltage(i=f,
+            #                         j=-1,
+            #                         remote_control=False,
+            #                         bus_name=str(bus_data.names[f]),
+            #                         bus_voltage_used=bus_voltage_used,
+            #                         bus_data=bus_data,
+            #                         candidate_Vm=control_val,
+            #                         use_stored_guess=use_stored_guess,
+            #                         logger=logger)
+            set_bus_control_voltage_vsc(i=f,
                                     j=-1,
                                     remote_control=False,
                                     bus_name=str(bus_data.names[f]),
@@ -1274,6 +1371,9 @@ def set_control_dev(k: int,
                                     candidate_Vm=control_val,
                                     use_stored_guess=use_stored_guess,
                                     logger=logger)
+
+        else:
+            control_branch_idx[k] = len(branch_dict) + k
 
 def get_vsc_data(
         data: VscData,

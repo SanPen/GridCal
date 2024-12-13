@@ -201,27 +201,40 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.k_cbr_pt = self.indices.k_cbr_pt
         self.k_cbr_qf = self.indices.k_cbr_qf
         self.k_cbr_qt = self.indices.k_cbr_qt
+        self.cbr_pf_set = self.indices.cbr_pf_set
+        self.cbr_pt_set = self.indices.cbr_pt_set
+        self.cbr_qf_set = self.indices.cbr_qf_set
+        self.cbr_qt_set = self.indices.cbr_qt_set
 
         # VSC Indices
         self.vsc = self.indices.vsc
         self.u_vsc_pf = self.indices.u_vsc_pf
         self.u_vsc_pt = self.indices.u_vsc_pt
         self.u_vsc_qt = self.indices.u_vsc_qt
+        self.k_vsc_pf = self.indices.k_vsc_pf
+        self.k_vsc_pt = self.indices.k_vsc_pt
+        self.k_vsc_qt = self.indices.k_vsc_qt
+        self.vsc_pf_set = self.indices.vsc_pf_set
+        self.vsc_pt_set = self.indices.vsc_pt_set
+        self.vsc_qt_set = self.indices.vsc_qt_set
 
         # HVDC Indices
         self.hvdc = self.indices.hvdc
 
+        print()
 
         # Update setpoints
-        self.Vm[self.indices.ck_vm] = self.indices.vm_setpoints
-        self.Va[self.indices.ck_va] = self.indices.va_setpoints
-        self.Pzip[self.indices.ck_pzip] = np.array(self.indices.pzip_setpoints) / nc.Sbase
-        idx = np.where(nc.bus_data.bus_types == BusMode.Slack_tpe.value)[0]
-        self.Pzip[idx] = self.Sbus[idx].real  # before we were grabbing the idx, seemed wrong to me
-        self.Qzip[self.indices.ck_qzip] = np.array(self.indices.qzip_setpoints) / nc.Sbase
-        self.Pf[self.indices.ck_pfa] = np.array(self.indices.pf_setpoints) / nc.Sbase
-        self.Pt[self.indices.ck_pta] = np.array(self.indices.pt_setpoints) / nc.Sbase
-        self.Qt[self.indices.ck_qta] = np.array(self.indices.qt_setpoints) / nc.Sbase
+        # self.Vm[self.indices.ck_vm] = self.indices.vm_setpoints
+        # self.Va[self.indices.ck_va] = self.indices.va_setpoints
+        # self.Pzip[self.indices.ck_pzip] = np.array(self.indices.pzip_setpoints) / nc.Sbase
+        # idx = np.where(nc.bus_data.bus_types == BusMode.Slack_tpe.value)[0]
+        # self.Pzip[idx] = self.Sbus[idx].real  # before we were grabbing the idx, seemed wrong to me
+        # self.Qzip[self.indices.ck_qzip] = np.array(self.indices.qzip_setpoints) / nc.Sbase
+        self.Pf[self.k_vsc_pf] = np.array(self.vsc_pf_set) / nc.Sbase
+        self.Pt[self.k_vsc_pt] = np.array(self.vsc_pt_set) / nc.Sbase
+        self.Qt[self.k_vsc_qt] = np.array(self.vsc_qt_set) / nc.Sbase
+
+        print()
 
         self.m: Vec = np.ones(len(self.cbr_m))
         self.tau: Vec = np.zeros(len(self.cbr_tau))
@@ -617,9 +630,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                    + (self.Pt + 1j * self.Qt)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
 
                 # add contribution of transformer
-                + ((self.Pf + 1j * self.Qf)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
-                   + (self.Pt + 1j * self.Qt)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr,
-                                                              :])
+                + ((self.Pf + 1j * self.Qf)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cbr, :]
+                   + (self.Pt + 1j * self.Qt)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cbr, :])
         )
 
         # Use self.Pf...

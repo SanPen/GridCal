@@ -83,6 +83,9 @@ VSC indices:
 - :math:`u_vsc_{Pf}` -> Indices of the VSC converters where Pf is unknown.
 - :math:`u_vsc_{Pt}` -> Indices of the VSC converters where Pt is unknown.
 - :math:`u_vsc_{Qt}` -> Indices of the VSC converters where Qt is unknown.
+- :math:`k_vsc_{Pf}` -> Indices of the VSC converters where Pf is known.
+- :math:`k_vsc_{Pt}` -> Indices of the VSC converters where Pt is known.
+- :math:`k_vsc_{Qt}` -> Indices of the VSC converters where Qt is known.
 
 HVDC indices:
 
@@ -121,6 +124,19 @@ Controls (knowns)
 - :math:`\Delta {Q_f}` -> Qf mismatch for controllable branches @ :math:`k_cbr_{Qf}`
 - :math:`\Delta {Q_t}` -> Qt mismatch for controllable branches @ :math:`k_cbr_{Qt}`
 
+Set points
+- :math:`S_{esp}`: array of nodal specified power
+- :math:`P_f_set_cbr`: Controllable branch Pf set point
+- :math:`P_t_set_cbr`: Controllable branch Pt set point
+- :math:`Q_f_set_cbr`: Controllable branch Qf set point
+- :math:`Q_t_set_cbr`: Controllable branch Qt set point
+
+- :math:`P_f_set_vsc`: VSC Pf set point
+- :math:`P_t_set_vsc`: VSC Pt set point
+- :math:`Q_t_set_vsc`: VSC Qt set point
+
+- :math:`P0_{hvdc}`: HVDC P set point
+
 
 Equations:
 
@@ -153,23 +169,36 @@ _________________________
 
 .. math::
 
-    \Delta P_f = P_f_set - P_f^{cbr} \quad \forall k_cbr_{Pf}
+    \Delta P_f = P_f_set_cbr - P_f^{cbr} \quad \forall k_cbr_{Pf}
 
 .. math::
 
-    \Delta P_t = P_t_set - P_t^{cbr} \quad \forall k_cbr_{Pt}
+    \Delta P_t = P_t_set_cbr - P_t^{cbr} \quad \forall k_cbr_{Pt}
 
 .. math::
 
-    \Delta Q_f = Q_f_set - Q_f^{cbr} \quad \forall k_cbr_{Qf}
+    \Delta Q_f = Q_f_set_cbr - Q_f^{cbr} \quad \forall k_cbr_{Qf}
 
 .. math::
 
-    \Delta Q_t = Q_t_set - Q_t^{cbr} \quad \forall k_cbr_{Qt}
+    \Delta Q_t = Q_t_set_cbr - Q_t^{cbr} \quad \forall k_cbr_{Qt}
 
 
 VSC
 _____
+We compose P_f^{vsc} and P_t^{vsc} and Q_t^{vsc} from the controlled values and the unknown values as follows:
+.. math::
+
+    P_f^{vsc}[k_vsc_{Pf}] = P_f_set_vsc
+    P_t^{vsc}[k_vsc_{Pt}] = P_t_set_vsc
+    Q_t^{vsc}[k_vsc_{Qt}] = Q_t_set_vsc
+
+.. math::
+
+    P_f^{vsc}[u_vsc_{Pf}] = P_f_vsc
+    P_t^{vsc}[u_vsc_{Pt}] = P_t_vsc
+    Q_t^{vsc}[u_vsc_{Qt}] = Q_t_vsc
+
 
 .. math::
 
@@ -187,6 +216,7 @@ _____
 .. math::
 
     \Delta loss_{vsc} = P_f^{vsc}  + P_t^{vsc} - loss_{vsc}
+
 
 
 HVDC

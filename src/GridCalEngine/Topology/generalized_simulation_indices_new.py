@@ -204,12 +204,16 @@ class GeneralizedSimulationIndices:
         self.F = nc.passive_branch_data.F
         self.T = nc.passive_branch_data.T
 
-
         # Bus indices
-        self.i_u_vm = []
-        self.i_u_va = []
-        self.i_k_p = []
-        self.i_k_q = []
+        self.bus_types = nc.bus_data.bus_types.copy()
+        self.is_p_controlled = nc.bus_data.is_p_controlled.copy()
+        self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
+        self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
+        self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
+        self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
+        self.i_u_va = np.where(self.is_va_controlled == 0)[0]
+        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
+        self.i_k_q = np.where(self.is_q_controlled == 1)[0]
 
         # Controllable Branch Indices
         self.cbr_m = []
@@ -219,38 +223,30 @@ class GeneralizedSimulationIndices:
         self.k_cbr_pt = []
         self.k_cbr_qf = []
         self.k_cbr_qt = []
+        self.cbr_pf_set = []
+        self.cbr_pt_set = []
+        self.cbr_qf_set = []
+        self.cbr_qt_set = []
 
         # VSC Indices
         self.vsc = []
         self.u_vsc_pf = []
         self.u_vsc_pt = []
         self.u_vsc_qt = []
+        self.k_vsc_pf = []
+        self.k_vsc_pt = []
+        self.k_vsc_qt = []
+        self.vsc_pf_set = []
+        self.vsc_pt_set = []
+        self.vsc_qt_set = []
 
         # HVDC Indices
         self.hvdc = []
 
-
-        # Bus types
-        self.bus_types = nc.bus_data.bus_types.copy()
-        self.is_p_controlled = nc.bus_data.is_p_controlled.copy()
-        self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
-        self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
-        self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
-        # self.analyze_bus_types()
-        # self.fill_sets(nc=nc, pf_options=pf_options)
-
-
         # Analyze Branch controls
         self.analyze_branch_controls()
 
-        generalized_compile_types(
-            Pbus=nc.Sbus.real,
-            is_p_controlled=self.is_p_controlled,
-            is_q_controlled=self.is_q_controlled,
-            is_vm_controlled=self.is_vm_controlled,
-            is_va_controlled=self.is_va_controlled
-        )
-        #print everything
+        # Check that controlled magnitudes are 2 on average across all buses
         total_controlled_magnitudes = np.sum(
             self.is_p_controlled.astype(int) + self.is_q_controlled.astype(int) + self.is_vm_controlled.astype(int) + self.is_va_controlled.astype(int))
         print("total_controlled_magnitudes", total_controlled_magnitudes)
@@ -262,29 +258,17 @@ class GeneralizedSimulationIndices:
         assert total_controlled_magnitudes == self.nc.bus_data.nbus*2, f"Sum of all control flags must be equal to 2 times the number of buses, which is {self.nc.bus_data.nbus*2}, got {total_controlled_magnitudes}"
 
 
-
-        #print the bus indices
-        # print(f"bus types: {self.bus_types}")
-        # print(f"pq: {self.pq}")
-        # print(f"pv: {self.pv}")
-        # print(f"p: {self.p}")
-        # print(f"pqv: {self.pqv}")
-        # print(f"vd: {self.vd}")
-        # print(f"no_slack: {self.no_slack}")
-
-
-
-        # setpoints that correspond to the ck sets, P and Q in MW
-        self.va_setpoints = list()
-        self.vm_setpoints = list()
-        self.tau_setpoints = list()
-        self.m_setpoints = list()
-        self.pzip_setpoints = list()
-        self.qzip_setpoints = list()
-        self.pf_setpoints = list()
-        self.pt_setpoints = list()
-        self.qf_setpoints = list()
-        self.qt_setpoints = list()
+        # # setpoints that correspond to the ck sets, P and Q in MW
+        # self.va_setpoints = list()
+        # self.vm_setpoints = list()
+        # self.tau_setpoints = list()
+        # self.m_setpoints = list()
+        # self.pzip_setpoints = list()
+        # self.qzip_setpoints = list()
+        # self.pf_setpoints = list()
+        # self.pt_setpoints = list()
+        # self.qf_setpoints = list()
+        # self.qt_setpoints = list()
 
         # Ancilliary
         # Source refers to the bus with the controlled device directly connected
@@ -298,10 +282,7 @@ class GeneralizedSimulationIndices:
         self.hvdc_mode: BoolVec | None = None
 
         # Run the search to get the indices
-        self.fill_gx_sets(nc=nc, pf_options=pf_options)
-
-        # Finally convert to sets
-        # self.sets_to_lists()
+        # self.fill_gx_sets(nc=nc, pf_options=pf_options)
 
     def analyze_bus_types(self) -> None:
         """
@@ -344,6 +325,8 @@ class GeneralizedSimulationIndices:
         k_v_m = list()
         k_v_beq = list()
         k_vsc = list()
+
+        i = 0
 
         # CONTROLLABLE BRANCH LOOP
         for k in range(self.nc.passive_branch_data.nelm):
@@ -393,11 +376,11 @@ class GeneralizedSimulationIndices:
 
             else:
                 raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
-
+            i += 1
 
         # VSC LOOP
         for k in range(self.nc.vsc_data.nelm):
-
+            self.vsc.append(i)
             control1 = self.nc.vsc_data.control1[k]
             control2 = self.nc.vsc_data.control2[k]
             assert control1 != control2, f"VSC control types must be different for VSC indexed at {k}"
@@ -458,6 +441,34 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        self.vsc_qt_set.append(control2_magnitude)
+
                 elif control2 == ConverterControlType.Pdc:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -470,6 +481,34 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 elif control2 == ConverterControlType.Pac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -482,6 +521,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 else:
                     raise Exception(f"Unknown control type {control2}")
 
@@ -497,7 +560,6 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
-
                 elif control2 == ConverterControlType.Vm_ac:
                     self.logger.add_error(
                         f"VSC control1 and control2 are the same for VSC indexed at {k},"
@@ -527,6 +589,29 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        self.vsc_qt_set.append(control2_magnitude)
 
                 elif control2 == ConverterControlType.Pdc:
                     if control1_bus_device > -1:
@@ -540,6 +625,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 elif control2 == ConverterControlType.Pac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -552,6 +661,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 else:
                     raise Exception(f"Unknown control type {control2}")
 
@@ -597,6 +730,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        self.vsc_qt_set.append(control2_magnitude)
+
                 elif control2 == ConverterControlType.Pdc:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -609,6 +766,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 elif control2 == ConverterControlType.Pac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -621,6 +802,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                        pass
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 else:
                     raise Exception(f"Unknown control type {control2}")
 
@@ -637,6 +842,31 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
+
+
                 elif control2 == ConverterControlType.Vm_ac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -649,6 +879,30 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
+
                 elif control2 == ConverterControlType.Va_ac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -661,6 +915,29 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         # self.is_vm_controlled[control2_bus_device] = True
                         self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Qac:
                     self.logger.add_error(
                         f"VSC control1 and control2 are the same for VSC indexed at {k},"
@@ -678,6 +955,31 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Pac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -691,6 +993,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        # self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
                 else:
                     raise Exception(f"Unknown control type {control2}")
 
@@ -707,6 +1033,29 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Vm_ac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -719,6 +1068,29 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Va_ac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -731,6 +1103,29 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         # self.is_vm_controlled[control2_bus_device] = True
                         self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Qac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -744,7 +1139,31 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
-                    pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        self.vsc_qt_set.append(control2_magnitude)
+
                 elif control2 == ConverterControlType.Pdc:
                     self.logger.add_error(
                         f"VSC control1 and control2 are the same for VSC indexed at {k},"
@@ -762,6 +1181,31 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        # self.u_vsc_pf.append(control1_branch_device)
+                        self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        self.k_vsc_pf.append(control1_branch_device)
+                        # self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        self.vsc_pf_set.append(control1_magnitude)
+                        # self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 else:
                     raise Exception(f"Unknown control type {control2}")
 
@@ -778,7 +1222,29 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
 
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Vm_ac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -791,6 +1257,29 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Va_ac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -803,6 +1292,29 @@ class GeneralizedSimulationIndices:
                         # self.is_q_controlled[control2_bus_device] = True
                         # self.is_vm_controlled[control2_bus_device] = True
                         self.is_va_controlled[control2_bus_device] = True
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        # self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+                        pass
                 elif control2 == ConverterControlType.Qac:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -816,6 +1328,30 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        self.u_vsc_pt.append(control2_branch_device)
+                        # self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        # self.k_vsc_pt.append(control2_branch_device)
+                        self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        # self.vsc_pt_set.append(control2_magnitude)
+                        self.vsc_qt_set.append(control2_magnitude)
                 elif control2 == ConverterControlType.Pdc:
                     if control1_bus_device > -1:
                         # self.is_p_controlled[control1_bus_device] = True
@@ -829,6 +1365,31 @@ class GeneralizedSimulationIndices:
                         # self.is_vm_controlled[control2_bus_device] = True
                         # self.is_va_controlled[control2_bus_device] = True
                         pass
+                    if control1_branch_device > -1:
+                        self.u_vsc_pf.append(control1_branch_device)
+                        # self.u_vsc_pt.append(control1_branch_device)
+                        self.u_vsc_qt.append(control1_branch_device)
+
+                        # self.k_vsc_pf.append(control1_branch_device)
+                        self.k_vsc_pt.append(control1_branch_device)
+                        # self.k_vsc_qt.append(control1_branch_device)
+
+                        # self.vsc_pf_set.append(control1_magnitude)
+                        self.vsc_pt_set.append(control1_magnitude)
+                        # self.vsc_qt_set.append(control1_magnitude)
+                    if control2_branch_device > -1:
+                        self.u_vsc_pf.append(control2_branch_device)
+                        # self.u_vsc_pt.append(control2_branch_device)
+                        self.u_vsc_qt.append(control2_branch_device)
+
+                        # self.k_vsc_pf.append(control2_branch_device)
+                        self.k_vsc_pt.append(control2_branch_device)
+                        # self.k_vsc_qt.append(control2_branch_device)
+
+                        # self.vsc_pf_set.append(control2_magnitude)
+                        self.vsc_pt_set.append(control2_magnitude)
+                        # self.vsc_qt_set.append(control2_magnitude)
+
                 elif control2 == ConverterControlType.Pac:
                     self.logger.add_error(
                         f"VSC control1 and control2 are the same for VSC indexed at {k},"
@@ -838,79 +1399,7 @@ class GeneralizedSimulationIndices:
 
             else:
                 raise Exception(f"Unknown control type {control1}")
-
-
-            # # analyze tap-module controls
-            # if ctrl_m == TapModuleControl.Vm:
-            #
-            #     # Every bus controlled by m has to become a PQV bus
-            #     bus_idx = self.tap_controlled_buses[k]
-            #     self.bus_types[bus_idx] = BusMode.PQV_tpe.value
-            #
-            #     # if is_conv and bus_idx == self.F[k]:
-            #     #     # if this is a converter,
-            #     #     # the voltage can be managed with Beq
-            #     #     # if the control bus is the "From" bus
-            #     #     k_v_beq.append(k)
-            #     #     conv_type = 2
-            #     # else:
-            #     # In any other case, the voltage is managed by the tap module
-            #     k_v_m.append(k)
-            #
-            # elif ctrl_m == TapModuleControl.Qf:
-            #
-            #     # if not is_conv:
-            #     k_qf_m.append(k)
-            #
-            # elif ctrl_m == TapModuleControl.Qt:
-            #     k_qt_m.append(k)
-            #
-            # elif ctrl_m == TapModuleControl.fixed:
-            #     pass
-            #
-            # elif ctrl_m == 0:
-            #     pass
-            #
-            # else:
-            #     raise Exception(f"Unknown tap phase module mode {ctrl_m}")
-            #
-            # # analyze tap-phase controls
-            # if ctrl_tau == TapPhaseControl.Pf:
-            #     k_pf_tau.append(k)
-            #     conv_type = 1
-            #
-            # elif ctrl_tau == TapPhaseControl.Pt:
-            #     k_pt_tau.append(k)
-            #     conv_type = 1
-            #
-            # elif ctrl_tau == TapPhaseControl.fixed:
-            #     if ctrl_m == TapModuleControl.fixed:
-            #         conv_type = 1
-            #
-            # # elif ctrl_tau == TapPhaseControl.Droop:
-            # #     pass
-            #
-            # elif ctrl_tau == 0:
-            #     pass
-            #
-            # else:
-            #     raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
-
-
-            # Beq->qf=0
-            # if conv_type == 1:
-            #     k_qfzero_beq.append(k)
-
-            # if is_conv:
-            #     k_vsc.append(k)
-
-        # determine if there is any control
-        # self.any_control = bool(len(k_pf_tau)
-        #                         + len(k_pt_tau)
-        #                         + len(k_qf_m)
-        #                         + len(k_qt_m)
-        #                         + len(k_qfzero_beq)
-        #                         + len(k_v_m))
+            i += 1
 
         # convert lists to integer arrays
         self.k_pf_tau = np.array(k_pf_tau, dtype=int)
