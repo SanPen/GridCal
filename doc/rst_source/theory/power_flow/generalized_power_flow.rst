@@ -32,15 +32,15 @@ The linearized system is:
     \begin{matrix}
         \Delta Vm \quad \forall iu_{Vm}  \\
         \Delta Va \quad \forall iu_{Va} \\
-        \Delta P_f^{vsc} \quad \forall u_vsc_{P_f}\\
-        \Delta P_t^{vsc} \quad \forall u_vsc_{P_t}\\
-        \Delta Q_t^{vsc} \quad \forall u_vsc_{Q_t}\\
+        \Delta P_f_var_vsc \quad \forall u_vsc_{P_f}\\
+        \Delta P_t_var_vsc \quad \forall u_vsc_{P_t}\\
+        \Delta Q_t_var_vsc \quad \forall u_vsc_{Q_t}\\
         \Delta P_f^{hvdc} \quad \forall hvdc\\
         \Delta P_t^{hvdc} \quad \forall hvdc\\
         \Delta Q_f^{hvdc} \quad \forall hvdc\\
         \Delta Q_t^{hvdc} \quad \forall hvdc\\
-        \Delta m \quad \forall ku_{m}  \\
-        \Delta \tau \quad \forall ku_{\tau}
+        \Delta m \quad \forall u_cbr_{m}  \\
+        \Delta \tau \quad \forall u_cbr_{\tau}
     \end{matrix}
     \right]
     =
@@ -106,8 +106,8 @@ Variables (unknowns):
 - :math:`\Delta Q_f^{hvdc}` -> Reactive power "from" at HVDC lines. @ :math:`hvdc`.
 - :math:`\Delta Q_t^{hvdc}` -> Reactive power "to" at HVDC lines. @ :math:`hvdc`.
 
-- :math:`\Delta m` -> Indices of the injection devices where the P is specified. @ :math:`ku_{m}` -> :math:`cbr_{m}`
-- :math:`\Delta \tau` -> Indices of the injection devices where the Q is specified. @ :math:`ku_{\tau}` -> :math:`cbr_{\tau}`
+- :math:`\Delta m` -> Indices of the injection devices where the P is specified. @ :math:`u_cbr_{m}`
+- :math:`\Delta \tau` -> Indices of the injection devices where the Q is specified. @ :math:`u_cbr_{\tau}`
 
 Controls (knowns)
 
@@ -195,9 +195,9 @@ We compose P_f^{vsc} and P_t^{vsc} and Q_t^{vsc} from the controlled values and 
 
 .. math::
 
-    P_f^{vsc}[u_vsc_{Pf}] = P_f_vsc
-    P_t^{vsc}[u_vsc_{Pt}] = P_t_vsc
-    Q_t^{vsc}[u_vsc_{Qt}] = Q_t_vsc
+    P_f^{vsc}[u_vsc_{Pf}] = P_f_var_vsc
+    P_t^{vsc}[u_vsc_{Pt}] = P_t_var_vsc
+    Q_t^{vsc}[u_vsc_{Qt}] = Q_t_var_vsc
 
 
 .. math::

@@ -119,161 +119,80 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         self.logger: Logger = logger
 
-        if self.options.verbose > 1:
-            print("(pf_generalized_formulation.py) self.nc.passive_branch_data.nelm: ",
-                  self.nc.passive_branch_data.nelm)
-            print("(pf_generalized_formulation.py) self.nc.active_branch_data.nelm: ", self.nc.active_branch_data.nelm)
-            print("(pf_generalized_formulation.py) self.nc.vsc_data.nelm: ", self.nc.vsc_data.nelm)
+        # arrays for branch control types (nbr)
+        self.tap_module_control_mode = nc.active_branch_data.tap_module_control_mode
+        self.tap_controlled_buses = nc.active_branch_data.tap_phase_control_mode
+        self.tap_phase_control_mode = nc.active_branch_data.tap_controlled_buses
+        self.F = nc.passive_branch_data.F
+        self.T = nc.passive_branch_data.T
 
-        # TODO: need to take into account every device eventually
-        self.I0: CxVec = self.nc.load_data.get_current_injections_per_bus() / self.nc.Sbase
-        self.Y0: CxVec = self.nc.load_data.get_admittance_injections_per_bus() / self.nc.Sbase
-        self.S0: CxVec = self.nc.load_data.get_injections_per_bus() / self.nc.Sbase
-        self.V0: CxVec = V0
-
-        if self.options.verbose > 1:
-            print(f"self.S0: {self.S0}")
-            print(f"self.I0: {self.I0}")
-            print(f"self.Y0: {self.Y0}")
-            print(f"self.V0: {self.V0}")
-
-        # QUESTION: is there a reason not to do this? I use this in var2x
-        self.Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        self.Sf: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc + nc.nhvdc, dtype=np.complex128)
-        self.St: CxVec = np.zeros(nc.active_branch_data.nelm + nc.nvsc + nc.nhvdc, dtype=np.complex128)
-        # self.Sf: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
-        # self.St: CxVec = np.zeros(nc.nbr, dtype=np.complex128)
-
-        self.Pzip = np.zeros(nc.nbus)
-        self.Qzip = np.zeros(nc.nbus)
-        self.Pf = np.real(self.Sf)
-        self.Qf = np.imag(self.Sf)
-        self.Pt = np.real(self.St)
-        self.Qt = np.imag(self.St)
-
-        if self.options.verbose > 1:
-            print(f"self.Pbus: {self.Pzip}")
-            print(f"self.Qbus: {self.Qzip}")
-            print(f"self.Sf: {self.Sf}")
-            print(f"self.Pf: {self.Pf}")
-            print(f"self.Qf: {self.Qf}")
-            print(f"self.St: {self.St}")
-            print(f"self.Pt: {self.Pt}")
-            print(f"self.Qt: {self.Qt}")
-
-        self.bus_types = self.nc.bus_data.bus_types.copy()
-        self.tap_module_control_mode = self.nc.active_branch_data.tap_module_control_mode.copy()
-        self.tap_phase_control_mode = self.nc.active_branch_data.tap_phase_control_mode.copy()
-
-        self.pq = np.array(0, dtype=int)
-        self.pv = np.array(0, dtype=int)
-        self.pqv = np.array(0, dtype=int)
-        self.p = np.array(0, dtype=int)
-        self.idx_conv = np.array(0, dtype=int)
-
-        self.idx_dPf = np.array(0, dtype=int)
-        self.idx_dQf = np.array(0, dtype=int)
-
-        self.idx_dPt = np.array(0, dtype=int)
-        self.idx_dQt = np.array(0, dtype=int)
-
-        # Generalized indices
-        start = time.perf_counter()
-        self.indices = GeneralizedSimulationIndices(nc=self.nc, pf_options=options, logger=logger)
-        end = time.perf_counter()
-        execution_time = end - start
-        print(f"Indices Time: {execution_time} seconds")
-        self.controlled_idx = self.nc.active_branch_data.get_controlled_idx()
-        self.fixed_idx = self.nc.active_branch_data.get_fixed_idx()
-        self.hvdc_mode = self.indices.hvdc_mode
+        # Indices ------------------------------------------------------------------------------------------------------
 
         # Bus indices
-        self.i_u_vm = self.indices.i_u_vm
-        self.i_u_va = self.indices.i_u_va
-        self.i_k_p = self.indices.i_k_p
-        self.i_k_q = self.indices.i_k_q
+        self.bus_types = nc.bus_data.bus_types.copy()
+        self.is_p_controlled = nc.bus_data.is_p_controlled.copy()
+        self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
+        self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
+        self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
+        self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
+        self.i_u_va = np.where(self.is_va_controlled == 0)[0]
+        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
+        self.i_k_q = np.where(self.is_q_controlled == 1)[0]
 
         # Controllable Branch Indices
-        self.cbr_m = self.indices.cbr_m
-        self.cbr_tau = self.indices.cbr_tau
-        self.cbr = np.union1d(self.cbr_m, self.cbr_tau)
-        self.k_cbr_pf = self.indices.k_cbr_pf
-        self.k_cbr_pt = self.indices.k_cbr_pt
-        self.k_cbr_qf = self.indices.k_cbr_qf
-        self.k_cbr_qt = self.indices.k_cbr_qt
-        self.cbr_pf_set = self.indices.cbr_pf_set
-        self.cbr_pt_set = self.indices.cbr_pt_set
-        self.cbr_qf_set = self.indices.cbr_qf_set
-        self.cbr_qt_set = self.indices.cbr_qt_set
+        self.u_cbr_m = []
+        self.u_cbr_tau = []
+        self.cbr = []
+        self.k_cbr_pf = []
+        self.k_cbr_pt = []
+        self.k_cbr_qf = []
+        self.k_cbr_qt = []
+        self.cbr_pf_set = []
+        self.cbr_pt_set = []
+        self.cbr_qf_set = []
+        self.cbr_qt_set = []
 
         # VSC Indices
-        self.vsc = self.indices.vsc
-        self.u_vsc_pf = self.indices.u_vsc_pf
-        self.u_vsc_pt = self.indices.u_vsc_pt
-        self.u_vsc_qt = self.indices.u_vsc_qt
-        self.k_vsc_pf = self.indices.k_vsc_pf
-        self.k_vsc_pt = self.indices.k_vsc_pt
-        self.k_vsc_qt = self.indices.k_vsc_qt
-        self.vsc_pf_set = self.indices.vsc_pf_set
-        self.vsc_pt_set = self.indices.vsc_pt_set
-        self.vsc_qt_set = self.indices.vsc_qt_set
+        self.vsc = []
+        self.u_vsc_pf = []
+        self.u_vsc_pt = []
+        self.u_vsc_qt = []
+        self.k_vsc_pf = []
+        self.k_vsc_pt = []
+        self.k_vsc_qt = []
+        self.vsc_pf_set = []
+        self.vsc_pt_set = []
+        self.vsc_qt_set = []
 
         # HVDC Indices
-        self.hvdc = self.indices.hvdc
+        self.hvdc = []
 
-        print()
+        # Unknowns -----------------------------------------------------------------------------------------------------
+        self._Vm = np.zeros(nc.bus_data.nbus)
+        self._Va = np.zeros(nc.bus_data.nbus)
+        self.Pf_vsc = np.zeros(nc.vsc_data.nelm)
+        self.Pt_vsc = np.zeros(nc.vsc_data.nelm)
+        self.Qt_vsc = np.zeros(nc.vsc_data.nelm)
+        self.Pf_hvdc = np.zeros(nc.hvdc_data.nelm)
+        self.Qf_hvdc = np.zeros(nc.hvdc_data.nelm)
+        self.Pt_hvdc = np.zeros(nc.hvdc_data.nelm)
+        self.Qt_hvdc = np.zeros(nc.hvdc_data.nelm)
+        self.m = np.zeros(len(self.u_cbr_m))
+        self.tau = np.zeros(len(self.u_cbr_tau))
 
-        # Update setpoints
-        # self.Vm[self.indices.ck_vm] = self.indices.vm_setpoints
-        # self.Va[self.indices.ck_va] = self.indices.va_setpoints
-        # self.Pzip[self.indices.ck_pzip] = np.array(self.indices.pzip_setpoints) / nc.Sbase
-        # idx = np.where(nc.bus_data.bus_types == BusMode.Slack_tpe.value)[0]
-        # self.Pzip[idx] = self.Sbus[idx].real  # before we were grabbing the idx, seemed wrong to me
-        # self.Qzip[self.indices.ck_qzip] = np.array(self.indices.qzip_setpoints) / nc.Sbase
-        self.Pf[self.k_vsc_pf] = np.array(self.vsc_pf_set) / nc.Sbase
-        self.Pt[self.k_vsc_pt] = np.array(self.vsc_pt_set) / nc.Sbase
-        self.Qt[self.k_vsc_qt] = np.array(self.vsc_qt_set) / nc.Sbase
+        # seth the VSC setpoints
+        self.Pf_vsc[self.k_vsc_pf] = self.vsc_pf_set
+        self.Pt_vsc[self.k_vsc_pt] = self.vsc_pt_set
+        self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set
 
-        print()
+        # Controllable branches ----------------------------------------------------------------------------------------
+        ys = 1.0 / (nc.passive_branch_data.R[self.cbr] + 1.0j * nc.passive_branch_data.X[self.cbr] + 1e-20)  # series admittance
+        bc2 = (nc.passive_branch_data.G[self.cbr] + 1j * nc.passive_branch_data.B[self.cbr]) / 2.0  # shunt admittance
+        Yff = ys / (tap_module * tap_module * vtap_f * vtap_f)
+        Yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
-        self.m: Vec = np.ones(len(self.cbr_m))
-        self.tau: Vec = np.zeros(len(self.cbr_tau))
-
-        self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
-
-        self.R = np.full(nc.nbr, 1e+20)
-        self.X = np.full(nc.nbr, 1e+20)
-        self.G = np.zeros(nc.nbr, dtype=float)
-        self.B = np.zeros(nc.nbr, dtype=float)
-        self.k = np.ones(nc.nbr, dtype=float)
-        self.tap_module = np.ones(nc.nbr, dtype=float)
-        self.tap_angle = np.zeros(nc.nbr, dtype=float)
-
-        # fill the fixed indices with a small value
-        self.R[self.fixed_idx] = nc.passive_branch_data.R[self.fixed_idx]
-        self.X[self.fixed_idx] = nc.passive_branch_data.X[self.fixed_idx]
-        self.G[self.fixed_idx] = nc.passive_branch_data.G[self.fixed_idx]
-        self.B[self.fixed_idx] = nc.passive_branch_data.B[self.fixed_idx]
-        self.tap_module[self.fixed_idx] = nc.active_branch_data.tap_module[self.fixed_idx]
-        self.tap_angle[self.fixed_idx] = nc.active_branch_data.tap_angle[self.fixed_idx]
-
-        self.adm = compute_admittances(
-            R=self.R,
-            X=self.X,
-            G=self.G,
-            B=self.B,
-            k=self.k,
-            tap_module=self.tap_module,
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=self.tap_angle,
-            Cf=self.nc.Cf,
-            Ct=self.nc.Ct,
-            Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
-        )
 
     def x2var(self, x: Vec) -> None:
         """
@@ -285,27 +204,26 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         c = b + len(self.u_vsc_pf)
         d = c + len(self.u_vsc_pt)
         e = d + len(self.u_vsc_qt)
-        f = e + len(self.hvdc)
-        g = f + len(self.hvdc)
-        h = g + len(self.hvdc)
-        i = h + len(self.hvdc)
-        j = i + len(self.cbr_m)
-        k = j + len(self.cbr_tau)
+        f = e + self.nc.hvdc_data.nelm
+        g = f + self.nc.hvdc_data.nelm
+        h = g + self.nc.hvdc_data.nelm
+        i = h + self.nc.hvdc_data.nelm
+        j = i + len(self.u_cbr_m)
+        k = j + len(self.u_cbr_tau)
 
         # update the vectors
         self.Vm[self.i_u_vm] = x[0:a]
         self.Va[self.i_u_va] = x[a:b]
-        self.Pf[self.u_vsc_pf] = x[b:c]
-        self.Pt[self.u_vsc_pt] = x[c:d]
-        self.Qt[self.u_vsc_qt] = x[d:e]
-        self.Pf[self.hvdc] = x[e:f]
-        self.Pt[self.hvdc] = x[f:g]
-        self.Qf[self.hvdc] = x[g:h]
-        self.Qt[self.hvdc] = x[h:i]
+        self.Pf_vsc[self.u_vsc_pf] = x[b:c]
+        self.Pt_vsc[self.u_vsc_pt] = x[c:d]
+        self.Qt_vsc[self.u_vsc_qt] = x[d:e]
+        self.Pf_hvdc = x[e:f]
+        self.Pt_hvdc = x[f:g]
+        self.Qf_hvdc = x[g:h]
+        self.Qt_hvdc = x[h:i]
         self.m = x[i:j]
         self.tau = x[j:k]
 
-    # DONE
     def var2x(self) -> Vec:
         """
         Convert the internal decision variables into the vector
@@ -314,18 +232,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         return np.r_[
             self.Vm[self.i_u_vm],
             self.Va[self.i_u_va],
-            self.Pf[self.u_vsc_pf],
-            self.Pt[self.u_vsc_pt],
-            self.Qt[self.u_vsc_qt],
-            self.Pf[self.hvdc],
-            self.Pt[self.hvdc],
-            self.Qf[self.hvdc],
-            self.Qt[self.hvdc],
+            self.Pf_vsc[self.u_vsc_pf],
+            self.Pt_vsc[self.u_vsc_pt],
+            self.Qt_vsc[self.u_vsc_qt],
+            self.Pf_hvdc,
+            self.Pt_hvdc,
+            self.Qf_hvdc,
+            self.Qt_hvdc,
             self.m,
             self.tau
         ]
 
-    # DONE
     def size(self) -> int:
         """
         Size of the jacobian matrix
@@ -336,12 +253,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 + len(self.u_vsc_pf)
                 + len(self.u_vsc_pt)
                 + len(self.u_vsc_qt)
-                + len(self.hvdc)
-                + len(self.hvdc)
-                + len(self.hvdc)
-                + len(self.hvdc)
-                + len(self.m)
-                + len(self.tau))
+                + self.nc.hvdc_data.nelm
+                + self.nc.hvdc_data.nelm
+                + self.nc.hvdc_data.nelm
+                + self.nc.hvdc_data.nelm
+                + len(self.u_cbr_m)
+                + len(self.u_cbr_tau))
 
     def compute_f(self, x: Vec) -> Vec:
         """
@@ -355,163 +272,41 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         c = b + len(self.u_vsc_pf)
         d = c + len(self.u_vsc_pt)
         e = d + len(self.u_vsc_qt)
-        f = e + len(self.hvdc)
-        g = f + len(self.hvdc)
-        h = g + len(self.hvdc)
-        i = h + len(self.hvdc)
-        j = i + len(self.cbr_m)
-        k = j + len(self.cbr_tau)
+        f = e + self.nc.hvdc_data.nelm
+        g = f + self.nc.hvdc_data.nelm
+        h = g + self.nc.hvdc_data.nelm
+        i = h + self.nc.hvdc_data.nelm
+        j = i + len(self.u_cbr_m)
+        k = j + len(self.u_cbr_tau)
 
-        # update the vectors
+        # copy the sliceable vectors
         Vm = self.Vm.copy()
         Va = self.Va.copy()
-        Pbus = self.Pzip.copy()
-        Qbus = self.Qzip.copy()
-        Pf = self.Pf.copy()
-        Qf = self.Qf.copy()
-        Pt = self.Pt.copy()
-        Qt = self.Qt.copy()
+        Pf_vsc = self.Pf_vsc.copy()
+        Pt_vsc = self.Pt_vsc.copy()
+        Qt_vsc = self.Qt_vsc.copy()
 
+        # update the vectors
         Vm[self.i_u_vm] = x[0:a]
         Va[self.i_u_va] = x[a:b]
-        Pf[self.u_vsc_pf] = x[b:c]
-        Pt[self.u_vsc_pt] = x[c:d]
-        Qt[self.u_vsc_qt] = x[d:e]
-        Pf[self.hvdc] = x[e:f]
-        Pt[self.hvdc] = x[f:g]
-        Qf[self.hvdc] = x[g:h]
-        Qt[self.hvdc] = x[h:i]
+        Pf_vsc[self.u_vsc_pf] = x[b:c]
+        Pt_vsc[self.u_vsc_pt] = x[c:d]
+        Qt_vsc[self.u_vsc_qt] = x[d:e]
+        Pf_hvdc = x[e:f]
+        Pt_hvdc = x[f:g]
+        Qf_hvdc = x[g:h]
+        Qt_hvdc = x[h:i]
         m = x[i:j]
         tau = x[j:k]
 
-        # compute the complex voltage
-        V = polar_to_rect(Vm, Va)
-
-        # VSC Loss equation
-        toBus = self.nc.vsc_data.T
-        It = np.sqrt(Pt * Pt + Qt * Qt)[self.vsc] / Vm[toBus]
-        It2 = It * It
-        PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
-                     + self.nc.vsc_data.alpha2 * It
-                     + self.nc.vsc_data.alpha1)
-
-        Ploss_acdc = PLoss_IEC - Pt[self.vsc] - Pf[self.vsc]
-
-
-        # HVDC Loss equation
-        loss_hvdc = self.nc.hvdc_data.r * (Pf[self.hvdc] / Vm[self.nc.hvdc_data.F]) ** 2
-        Ploss_hvdc = Pf[self.hvdc] + Pt[self.hvdc] - loss_hvdc
-
-        # HVDC Injection equation
-        dtheta = np.rad2deg(Va[self.nc.hvdc_data.F] - Va[self.nc.hvdc_data.T])
-        droop_contr = self.indices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta
-        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr
-        inj_hvdc = self.nc.hvdc_data.Pset + Pcalc_hvdc
-        Pinj_hvdc = Pf[self.hvdc] - inj_hvdc/self.nc.Sbase
-
-
-        # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        # Ploss_hvdc = np.zeros(self.nc.nhvdc)
-        # Pinj_hvdc = np.zeros(self.nc.nhvdc)
-
-        # for i in range(self.nc.nhvdc):
-        #     dtheta = np.rad2deg(Va[self.nc.hvdc_data.F[i]] - Va[self.nc.hvdc_data.T[i]])
-        #     droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
-        #     Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
-        #
-        #     if Pcalc_hvdc > 0.0:
-        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.F[i]])
-        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
-        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
-        #         Ploss_hvdc[i] = Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
-        #         Pinj_hvdc[i] = Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-        #
-        #     elif Pcalc_hvdc < 0.0:
-        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (Vm[self.nc.hvdc_data.T[i]])
-        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
-        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
-        #         Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + Pf[self.cg_hvdc[i]] - losshvdcpu
-        #         Pinj_hvdc[i] = Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-        #
-        #     else:
-        #         Ploss_hvdc[i] = 0.0
-        #         Pinj_hvdc[i] = 0.0
-
-        # remapping of indices
-        m2 = np.ones(self.nc.nbr)
-        m2[self.cbr_m] = m.copy()
-        tau2 = np.zeros(self.nc.nbr)
-        tau2[self.cbr_tau] = tau.copy()
-
-        # compute the function residual
-        adm = compute_admittances(
-            R=self.R,
-            X=self.X,
-            G=self.G,
-            B=self.B,
-            k=self.k,
-            tap_module=m2,
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=tau2,
-            Cf=self.nc.Cf,
-            Ct=self.nc.Ct,
-            Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
-        )
-
-
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
-        # Sbus += Pbus + 1j * Qbus
-        Scalc = compute_power(adm.Ybus, V)
-
-        dS = (
-                Scalc - Sbus
-
-                # add contribution of acdc link
-                + ((Pf + 1j * Qf)[self.vsc] @ self.nc.vsc_data.C_branch_bus_f
-                   + (Pt + 1j * Qt)[self.vsc] @ self.nc.vsc_data.C_branch_bus_t)
-
-                # add contribution of HVDC link
-                + ((Pf + 1j * Qf)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
-                   + (Pt + 1j * Qt)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
-
-                # add contribution of transformer
-                + ((Pf + 1j * Qf)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cbr, :]
-                   + (Pt + 1j * Qt)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cbr, :])
-
-        )
-
-        V = Vm * np.exp(1j * Va)
-        Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
-            V_f=V[self.nc.passive_branch_data.F[self.controlled_idx]],
-            V_t=V[self.nc.passive_branch_data.T[self.controlled_idx]],
-            R=self.nc.passive_branch_data.R[self.controlled_idx],
-            X=self.nc.passive_branch_data.X[self.controlled_idx],
-            G=self.nc.passive_branch_data.G[self.controlled_idx],
-            B=self.nc.passive_branch_data.B[self.controlled_idx],
-            tap_module=m2[self.controlled_idx],
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx],
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx],
-            tap_angle=tau2[self.controlled_idx]
-        )
-
-        _f = np.r_[
-            dS[self.i_k_p].real,
-            dS[self.i_k_q].imag,
-            Ploss_acdc,
-            Ploss_hvdc,
-            Pinj_hvdc,
-            Pf[self.k_cbr_pf] - Pftr,
-            Pt[self.k_cbr_pt] - Pttr,
-            Qf[self.k_cbr_qf] - Qftr,
-            Qt[self.k_cbr_qt] - Qttr
-        ]
-
-        errf = compute_fx_error(_f)
-        assert len(_f) == j, f"len(_f)={len(_f)} != j={j}"
+        # Controllable branches ----------------------------------------------------------------------------------------
+        ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+        bc2 = (G + 1j * B) / 2.0  # shunt admittance
+        Yff = ys / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+        Sf_cbr =
 
         return _f
 
@@ -540,244 +335,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # compute the complex voltage
         self.V = polar_to_rect(self.Vm, self.Va)
 
-        # Update converter losses
-        toBus = self.nc.vsc_data.T
-        It = np.sqrt(self.Pt * self.Pt + self.Qt * self.Qt)[self.vsc] / self.Vm[toBus]
-        It2 = It * It
-        PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
-                     + self.nc.vsc_data.alpha2 * It
-                     + self.nc.vsc_data.alpha1)
-
-        # ACDC Power Loss Residual
-        Ploss_acdc = PLoss_IEC - self.Pt[self.vsc] - self.Pf[self.vsc]
-
-        # HVDC Loss equation
-        loss_hvdc = self.nc.hvdc_data.r * (self.Pf[self.hvdc] / self.Vm[self.nc.hvdc_data.F]) ** 2
-        Ploss_hvdc = self.Pf[self.hvdc] + self.Pt[self.hvdc] - loss_hvdc
-
-        # HVDC Injection equation
-        dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F] - self.Va[self.nc.hvdc_data.T])
-        droop_contr = self.indices.hvdc_mode * self.nc.hvdc_data.angle_droop * dtheta
-        Pcalc_hvdc = self.nc.hvdc_data.Pset + droop_contr
-        inj_hvdc = self.nc.hvdc_data.Pset + Pcalc_hvdc
-        Pinj_hvdc = self.Pf[self.hvdc] - inj_hvdc / self.nc.Sbase
-
-        # Legacy HVDC power injection (Pinj_hvdc) equation + loss (Ploss_hvdc) equation
-        # Ploss_hvdc = np.zeros(self.nc.nhvdc)
-        # Pinj_hvdc = np.zeros(self.nc.nhvdc)
-        # for i in range(self.nc.nhvdc):
-        #     dtheta = np.rad2deg(self.Va[self.nc.hvdc_data.F[i]] - self.Va[self.nc.hvdc_data.T[i]])
-        #     droop_contr = self.indices.hvdc_mode[i] * self.nc.hvdc_data.angle_droop[i] * dtheta
-        #     Pcalc_hvdc = self.nc.hvdc_data.Pset[i] + droop_contr
-        #
-        #     if Pcalc_hvdc > 0.0:
-        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.F[i]])
-        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnf[i] * self.nc.hvdc_data.Vnf[i])
-        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
-        #         Ploss_hvdc[i] = self.Pt[self.cg_hvdc[i]] + Pcalc_hvdc / self.nc.Sbase - losshvdcpu
-        #         Pinj_hvdc[i] = self.Pf[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-        #
-        #     elif Pcalc_hvdc < 0.0:
-        #         ihvdcpu = Pcalc_hvdc / self.nc.Sbase / (self.Vm[self.nc.hvdc_data.T[i]])
-        #         rpu = self.nc.hvdc_data.r[i] * self.nc.Sbase / (self.nc.hvdc_data.Vnt[i] * self.nc.hvdc_data.Vnt[i])
-        #         losshvdcpu = rpu * ihvdcpu * ihvdcpu
-        #         Ploss_hvdc[i] = Pcalc_hvdc / self.nc.Sbase + self.Pf[self.cg_hvdc[i]] - losshvdcpu
-        #         Pinj_hvdc[i] = self.Pt[self.cg_hvdc[i]] - Pcalc_hvdc / self.nc.Sbase
-        #
-        #     else:
-        #         Ploss_hvdc[i] = 0.0
-        #         Pinj_hvdc[i] = 0.0
-
-
-        # remapping of indices
-        m2 = np.ones(self.nc.nbr)
-        m2[self.cbr_m] = self.m.copy()
-        tau2 = np.zeros(self.nc.nbr)
-        tau2[self.cbr_tau] = self.tau.copy()
-
-        # compute the function residual
-        self.adm = compute_admittances(
-            R=self.R,
-            X=self.X,
-            G=self.G,
-            B=self.B,
-            k=self.k,
-            tap_module=m2,
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-            tap_angle=tau2,
-            Cf=self.nc.Cf,
-            Ct=self.nc.Ct,
-            Yshunt_bus=self.nc.Yshunt_from_devices,
-            conn=self.nc.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
-        )
-
-        # compute the function residual
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm) + self.Pzip + 1j * self.Qzip
-        Scalc = compute_power(self.adm.Ybus, self.V)
-
-        dS = (
-                Scalc - Sbus
-
-                # add contribution of acdc link
-                + ((self.Pf + 1j * self.Qf)[self.vsc] @ self.nc.vsc_data.C_branch_bus_f
-                   + (self.Pt + 1j * self.Qt)[self.vsc] @ self.nc.vsc_data.C_branch_bus_t)
-
-                # add contribution of HVDC link
-                + ((self.Pf + 1j * self.Qf)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
-                   + (self.Pt + 1j * self.Qt)[self.hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
-
-                # add contribution of transformer
-                + ((self.Pf + 1j * self.Qf)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cbr, :]
-                   + (self.Pt + 1j * self.Qt)[self.cbr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cbr, :])
-        )
-
-        # Use self.Pf...
-        Pftr, Qftr, Pttr, Qttr = recompute_controllable_power(
-            V_f=self.V[self.nc.passive_branch_data.F[self.controlled_idx]],
-            V_t=self.V[self.nc.passive_branch_data.T[self.controlled_idx]],
-            R=self.nc.passive_branch_data.R[self.controlled_idx],
-            X=self.nc.passive_branch_data.X[self.controlled_idx],
-            G=self.nc.passive_branch_data.G[self.controlled_idx],
-            B=self.nc.passive_branch_data.B[self.controlled_idx],
-            tap_module=m2[self.controlled_idx],
-            vtap_f=self.nc.passive_branch_data.virtual_tap_f[self.controlled_idx],
-            vtap_t=self.nc.passive_branch_data.virtual_tap_t[self.controlled_idx],
-            tap_angle=tau2[self.controlled_idx]
-        )
-        self._f = np.r_[
-            dS[self.i_k_p].real,  # TODO what does + mean here?
-            dS[self.i_k_q].imag,
-            Ploss_acdc,
-            Ploss_hvdc,
-            Pinj_hvdc,
-            self.Pf[self.k_cbr_pf] - Pftr,
-            self.Qf[self.k_cbr_pf] - Qftr,
-            self.Pt[self.k_cbr_pf] - Pttr,
-            self.Qt[self.k_cbr_pf] - Qttr
-        ]
-
-        # compute the error
-        self._error = compute_fx_error(self._f)
-
-        if self.options.verbose > 1:
-            print("Vm:", self.Vm)
-            print("Va:", self.Va)
-            print("Pbus:", self.Pzip)
-            print("Qbus:", self.Qzip)
-            print("Pf:", self.Pf)
-            print("Qf:", self.Qf)
-            print("Pt:", self.Pt)
-            print("Qt:", self.Qt)
-            print("m:", self.m)
-            print("tau:", self.tau)
-            print("error:", self._error)
-
-        # Update controls only below a certain error
-        """
-        if update_controls and self._error < self._controls_tol:
-            any_change = False
-            branch_ctrl_change = False
-
-            # review reactive power limits
-            # it is only worth checking Q limits with a low error
-            # since with higher errors, the Q values may be far from realistic
-            # finally, the Q control only makes sense if there are pv nodes
-            if self.options.control_Q and (len(self.pv) + len(self.p)) > 0:
-
-                # check and adjust the reactive power
-                # this function passes pv buses to pq when the limits are violated,
-                # but not pq to pv because that is unstable
-                changed, pv, pq, pqv, p = control_q_inside_method(self.Scalc, self.S0,
-                                                                  self.pv, self.pq,
-                                                                  self.pqv, self.p,
-                                                                  self.Qmin, self.Qmax)
-
-                if len(changed) > 0:
-                    any_change = True
-
-                    # update the bus type lists
-                    self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
-
-                    # the composition of x may have changed, so recompute
-                    x = self.var2x()
-
-            # update Slack control
-            if self.options.distributed_slack:
-                ok, delta = compute_slack_distribution(Scalc=self.Scalc,
-                                                       vd=self.vd,
-                                                       bus_installed_power=self.nc.bus_installed_power)
-                if ok:
-                    any_change = True
-                    # Update the objective power to reflect the slack distribution
-                    self.S0 += delta
-
-            # update the tap module control
-            if self.options.control_taps_modules:
-                for i, k in enumerate(self.idx_dm):
-
-                    m_taps = self.nc.branch_data.m_taps[i]
-
-                    if self.options.orthogonalize_controls and m_taps is not None:
-                        _, self.m[i] = find_closest_number(arr=m_taps, target=self.m[i])
-
-                    if self.m[i] < self.nc.branch_data.tap_module_min[k]:
-                        self.m[i] = self.nc.branch_data.tap_module_min[k]
-                        self.tap_module_control_mode[k] = TapModuleControl.fixed
-                        branch_ctrl_change = True
-                        self.logger.add_info("Min tap module reached",
-                                             device=self.nc.branch_data.names[k],
-                                             value=self.m[i])
-
-                    if self.m[i] > self.nc.branch_data.tap_module_max[k]:
-                        self.m[i] = self.nc.branch_data.tap_module_max[k]
-                        self.tap_module_control_mode[k] = TapModuleControl.fixed
-                        branch_ctrl_change = True
-                        self.logger.add_info("Max tap module reached",
-                                             device=self.nc.branch_data.names[k],
-                                             value=self.m[i])
-
-            # update the tap phase control
-            if self.options.control_taps_phase:
-
-                for i, k in enumerate(self.idx_dtau):
-
-                    tau_taps = self.nc.branch_data.tau_taps[i]
-
-                    if self.options.orthogonalize_controls and tau_taps is not None:
-                        _, self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
-
-                    if self.tau[i] < self.nc.branch_data.tap_angle_min[k]:
-                        self.tau[i] = self.nc.branch_data.tap_angle_min[k]
-                        self.tap_phase_control_mode[k] = TapPhaseControl.fixed
-                        branch_ctrl_change = True
-                        self.logger.add_info("Min tap phase reached",
-                                             device=self.nc.branch_data.names[k],
-                                             value=self.tau[i])
-
-                    if self.tau[i] > self.nc.branch_data.tap_angle_max[k]:
-                        self.tau[i] = self.nc.branch_data.tap_angle_max[k]
-                        self.tap_phase_control_mode[k] = TapPhaseControl.fixed
-                        branch_ctrl_change = True
-                        self.logger.add_info("Max tap phase reached",
-                                             device=self.nc.branch_data.names[k],
-                                             value=self.tau[i])
-
-            if branch_ctrl_change:
-                k_v_m = self.analyze_branch_controls()
-                vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.nc.Sbus.real, types=self.bus_types)
-                self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
-
-            if any_change or branch_ctrl_change:
-                # recompute the error based on the new Scalc and S0
-                self._f = self.fx()
-
-                # compute the error
-                self._error = compute_fx_error(self._f)
-        """
-
         # converged?
         self._converged = self._error < self.options.tolerance
 
@@ -792,32 +349,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return:
         """
 
-        # Assumes the internal vars were updated already with self.x2var()
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        self.Scalc = compute_power(self.adm.Ybus, self.V)
-
-        dS = self.Scalc - Sbus  # compute the mismatch
-
-        Pf = get_Sf(k=self.idx_dPf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
-
-        Qf = get_Sf(k=self.idx_dQf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).imag
-
-        Pt = get_St(k=self.idx_dPt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).real
-
-        Qt = get_St(k=self.idx_dQt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).imag
-
-        self._f = np.r_[
-            dS[self.idx_dP].real,
-            dS[self.idx_dQ].imag,
-            Pf - self.nc.passive_branch_data.Pset[self.idx_dPf],
-            Qf - self.nc.passive_branch_data.Qset[self.idx_dQf],
-            Pt - self.nc.passive_branch_data.Pset[self.idx_dPt],
-            Qt - self.nc.passive_branch_data.Qset[self.idx_dQt]
-        ]
         return self._f
 
     def fx_diff(self, x: Vec) -> Vec:
@@ -848,109 +379,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # dff.to_excel("Jacobian_autodiff.xlsx")
             return scipy_to_mat(J)
         else:
-            n_rows = (len(self.cg_pac)
-                      + len(self.cg_qac)
-                      + len(self.cg_pdc)
-                      + len(self.cg_acdc)
-                      + (2 * len(self.cg_hvdc))  # hvdc has 2 equations: Pinj and Ploss
-                      + len(self.cg_pftr)
-                      + len(self.cg_qftr)
-                      + len(self.cg_pttr)
-                      + len(self.cg_qttr))
-
-            n_cols = (len(self.cx_vm)
-                      + len(self.cx_va)
-                      + len(self.cx_pzip)
-                      + len(self.cx_qzip)
-                      + len(self.cx_pfa)
-                      + len(self.cx_qfa)
-                      + len(self.cx_pta)
-                      + len(self.cx_qta)
-                      + len(self.cx_m)
-                      + len(self.cx_tau))
-
-            if n_cols != n_rows:
-                raise ValueError("Incorrect J indices!")
-
-            tap_modules = expand(self.nc.nbr, self.m, self.cg_pttr, 1.0)
-            tap_angles = expand(self.nc.nbr, self.tau, self.cg_pttr, 0.0)
-            tap = polar_to_rect(tap_modules, tap_angles)
-
-            J = adv_jacobian(
-                nbus=self.nc.nbus,
-                nbr=self.nc.nbr,
-                nvsc=len(self.cg_acdc),
-                nhvdc=len(self.cg_hvdc),
-                ncontbr=len(self.cg_pftr),
-                ix_vm=self.indices.cx_vm,
-                ix_va=self.indices.cx_va,
-                ix_pzip=self.indices.cx_pzip,
-                ix_qzip=self.indices.cx_qzip,
-                ix_pf=self.indices.cx_pfa,
-                ix_qf=self.indices.cx_qfa,
-                ix_pt=self.indices.cx_pta,
-                ix_qt=self.indices.cx_qta,
-                ix_m=self.indices.cx_m,
-                ix_tau=self.indices.cx_tau,
-                ig_pbus=self.indices.cg_pac + self.indices.cg_pdc,
-                ig_qbus=self.indices.cg_qac,
-                ig_plossacdc=self.indices.cg_acdc,
-                ig_plosshvdc=self.indices.cg_hvdc,
-                ig_pinjhvdc=self.indices.cg_hvdc,
-                ig_pftr=self.indices.cg_pftr,
-                ig_qftr=self.indices.cg_qftr,
-                ig_pttr=self.indices.cg_pttr,
-                ig_qttr=self.indices.cg_qttr,
-                ig_contrbr=self.indices.cg_qttr,
-                Cf_acdc=self.nc.vsc_data.C_branch_bus_f,
-                Ct_acdc=self.nc.vsc_data.C_branch_bus_t,
-                Cf_hvdc=self.nc.hvdc_data.C_hvdc_bus_f,
-                Ct_hvdc=self.nc.hvdc_data.C_hvdc_bus_t,
-                Cf_contbr=self.nc.passive_branch_data.C_branch_bus_f,
-                Ct_contbr=self.nc.passive_branch_data.C_branch_bus_t,
-                Cf_branch=self.nc.passive_branch_data.C_branch_bus_f,
-                Ct_branch=self.nc.passive_branch_data.C_branch_bus_t,
-                alpha1=self.nc.vsc_data.alpha1,
-                alpha2=self.nc.vsc_data.alpha2,
-                alpha3=self.nc.vsc_data.alpha3,
-                F_acdc=self.nc.vsc_data.F,
-                T_acdc=self.nc.vsc_data.T,
-                F_hvdc=self.nc.hvdc_data.F,
-                T_hvdc=self.nc.hvdc_data.T,
-                hvdc_mode=self.indices.hvdc_mode,
-                hvdc_angle_droop=self.nc.hvdc_data.angle_droop,
-                hvdc_pset=self.nc.hvdc_data.Pset,
-                hvdc_r=self.nc.hvdc_data.r,
-                hvdc_Vnf=self.nc.hvdc_data.Vnf,
-                hvdc_Vnt=self.nc.hvdc_data.Vnt,
-                Pf=self.Pf,
-                Qf=self.Qf,
-                Pt=self.Pt,
-                Qt=self.Qt,
-                Fbr=self.nc.F,
-                Tbr=self.nc.T,
-                Ys=self.Ys,
-                R=self.nc.passive_branch_data.R,
-                X=self.nc.passive_branch_data.X,
-                G=self.nc.passive_branch_data.G,
-                B=self.nc.passive_branch_data.B,
-                vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-                kconv=self.nc.passive_branch_data.k,
-                complex_tap=tap,
-                tap_modules=tap_modules,
-                Bc=self.nc.passive_branch_data.B,
-                V=self.V,
-                Vm=np.abs(self.V),
-                Va=np.angle(self.V),
-                Sbase=self.nc.Sbase,
-                Ybus_x=self.adm.Ybus.data,
-                Ybus_p=self.adm.Ybus.indptr,
-                Ybus_i=self.adm.Ybus.indices,
-                yff=self.adm.yff,
-                yft=self.adm.yft,
-                ytf=self.adm.ytf,
-                ytt=self.adm.ytt)
+            J = None
 
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)
