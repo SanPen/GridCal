@@ -126,7 +126,7 @@ def calcSt(k: IntVec, Vm: Vec, Va: Vec, F: IntVec, T: IntVec,
     return St_cbr
 
 
-def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> csc_matrix:
+def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
 
@@ -152,7 +152,7 @@ def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> csc_ma
             if row[i] != 0.0:
                 jac[i, j] = row[i]
 
-    return jac.tocsc()
+    return scipy_to_mat(jac.tocsc())
 
 
 class PfGeneralizedFormulation(PfFormulationTemplate):
@@ -1695,23 +1695,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def fx_diff(self, x: Vec) -> Vec:
-        """
-        Fx for autodiff
-        :param x: solutions vector
-        :return: f(x)
-        """
-        # print()
-        ff = self.compute_f(x)
-        return ff
-
     def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:
         """
         if autodiff:
-            J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-6)
+            J = calc_autodiff_jacobian(func=self.compute_f,
+                                       x=self.var2x(),
+                                       h=self.options.tolerance / 100.0)
 
             if self.options.verbose > 1:
                 print("(pf_generalized_formulation.py) J: ")
@@ -1721,7 +1713,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)
             # dff.to_excel("Jacobian_autodiff.xlsx")
-            return scipy_to_mat(J)
+            return J
         else:
             J = None
 
