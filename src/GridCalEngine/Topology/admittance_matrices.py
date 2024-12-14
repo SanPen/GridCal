@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
 
-
 import numpy as np
 import scipy.sparse as sp
 from typing import Union, Tuple, List
@@ -114,7 +113,6 @@ class AdmittanceMatrices:
                                   ytf=self.ytf.copy(),
                                   ytt=self.ytt.copy(),
                                   Yshunt_bus=self.Yshunt_bus.copy())
-
 
 
 def compute_admittances(R: Vec,
