@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Started reworking the generalized formulation v2 (WIP)">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved acdc indexing at pf_generalized_formulation2.py">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices_new.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices_new.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1392,7 +1390,8 @@
       <workItem from="1732026607414" duration="5092000" />
       <workItem from="1732049590425" duration="2739000" />
       <workItem from="1734081975990" duration="12748000" />
-      <workItem from="1734171039703" duration="2229000" />
+      <workItem from="1734171039703" duration="2469000" />
+      <workItem from="1734195450043" duration="3058000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1737,7 +1736,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="574" />
+    <option name="localTasksCounter" value="576" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1783,7 +1782,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixing and cleaning some TODOS" />
     <MESSAGE value="function part for getting simpl hvdc from CGMES" />
     <MESSAGE value="simpl hvdc from CGMES" />
     <MESSAGE value="rename cgmes property py and import DCLine as BranchGroup" />
@@ -1808,7 +1806,8 @@
     <MESSAGE value="5.2.6" />
     <MESSAGE value="added CDF expectation" />
     <MESSAGE value="Started reworking the generalized formulation v2 (WIP)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Started reworking the generalized formulation v2 (WIP)" />
+    <MESSAGE value="Improved acdc indexing at pf_generalized_formulation2.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved acdc indexing at pf_generalized_formulation2.py" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

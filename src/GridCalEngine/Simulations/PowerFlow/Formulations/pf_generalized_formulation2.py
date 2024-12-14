@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 
-from scipy.sparse import lil_matrix, csc_matrix, hstack, vstack, csr_matrix
+from scipy.sparse import lil_matrix
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -18,8 +18,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
-                                                                                   polar_to_rect, get_Sf, get_St)
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import polar_to_rect
 from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, BusMode, HvdcControlType,
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
@@ -56,13 +55,12 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     return Ybus
 
 
-def calcSf(k: IntVec, Vm: Vec, Va: Vec, F: IntVec, T: IntVec,
+def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """
     Compute Sf for pi branches
     :param k:
-    :param Vm:
-    :param Va:
+    :param V:
     :param F:
     :param T:
     :param R:
@@ -80,23 +78,19 @@ def calcSf(k: IntVec, Vm: Vec, Va: Vec, F: IntVec, T: IntVec,
     yff = (ys + bc2) / (m[k] * m[k] * vtap_f[k] * vtap_f[k])
     yft = -ys / (m * np.exp(-1.0j * tau[k]) * vtap_f[k] * vtap_t[k])
 
-    Vmf_cbr = Vm[F[k]]
-    Vmt_cbr = Vm[T[k]]
-    Vaf_cbr = Va[F[k]]
-    Vat_cbr = Va[T[k]]
-    Sf_cbr = (np.power(Vmf_cbr, 2.0) * np.conj(yff)
-              + polar_to_rect(Vmf_cbr, Vaf_cbr) * polar_to_rect(Vmt_cbr, Vat_cbr) * np.conj(yft))
+    Vf = V[F[k]]
+    Vt = V[T[k]]
+    Sf_cbr = (np.power(Vf, 2.0) * np.conj(yff) + Vf * Vt * np.conj(yft))
 
     return Sf_cbr
 
 
-def calcSt(k: IntVec, Vm: Vec, Va: Vec, F: IntVec, T: IntVec,
+def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """
     Compute St for pi branches
     :param k:
-    :param Vm:
-    :param Va:
+    :param V:
     :param F:
     :param T:
     :param R:
@@ -115,13 +109,10 @@ def calcSt(k: IntVec, Vm: Vec, Va: Vec, F: IntVec, T: IntVec,
     ytf = -ys / (m * np.exp(1.0j * tau[k]) * vtap_t[k] * vtap_f[k])
     ytt = (ys + bc2) / (vtap_t[k] * vtap_t[k])
 
-    Vmf_cbr = Vm[F[k]]
-    Vmt_cbr = Vm[T[k]]
-    Vaf_cbr = Va[F[k]]
-    Vat_cbr = Va[T[k]]
+    Vf = V[F[k]]
+    Vt = V[T[k]]
 
-    St_cbr = (np.power(Vmt_cbr, 2.0) * np.conj(ytt)
-              + polar_to_rect(Vmt_cbr, Vat_cbr) * polar_to_rect(Vmf_cbr, Vaf_cbr) * np.conj(ytf))
+    St_cbr = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
 
     return St_cbr
 
@@ -226,7 +217,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.analyze_vsc_controls()
 
         # HVDC Indices
-        self.hvdc = np.zeros(0, dtype=int)
         self.hvdc_droop_idx = np.zeros(0, dtype=int)
         self.analyze_hvdc_controls()
 
@@ -1405,16 +1395,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
 
         # HVDC Indices
-        hvdc = list()
+        # hvdc = list()
         hvdc_droop_idx = list()
 
         # HVDC LOOP
         for k in range(self.nc.hvdc_data.nelm):
-            hvdc.append(k)
+            # hvdc.append(k)
             if self.nc.hvdc_data.control_mode[k] == HvdcControlType.type_0_free:
                 hvdc_droop_idx.append(k)
 
-        self.hvdc = np.array(hvdc, dtype=int)
+        # self.hvdc = np.array(hvdc, dtype=int)
         self.hvdc_droop_idx = np.array(hvdc_droop_idx)
 
     def x2var(self, x: Vec) -> None:
@@ -1529,14 +1519,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         yft = self.yft_cbr * (m * np.exp(-1.0j * tau)) / (m * np.exp(-1.0j * tau))
         ytf = self.ytf_cbr * (m * np.exp(1.0j * tau)) / (m * np.exp(1.0j * tau))
         ytt = self.ytt_cbr
-        Vmf_cbr = Vm[self.F_cbr]
-        Vmt_cbr = Vm[self.T_cbr]
-        Vaf_cbr = Va[self.F_cbr]
-        Vat_cbr = Va[self.T_cbr]
-        Sf_cbr = (np.power(Vmf_cbr, 2.0) * np.conj(yff)
-                  + polar_to_rect(Vmf_cbr, Vaf_cbr) * polar_to_rect(Vmt_cbr, Vat_cbr) * np.conj(yft))
-        St_cbr = (np.power(Vmt_cbr, 2.0) * np.conj(ytt)
-                  + polar_to_rect(Vmt_cbr, Vat_cbr) * polar_to_rect(Vmf_cbr, Vaf_cbr) * np.conj(ytf))
+        Vf_cbr = V[self.F_cbr]
+        Vt_cbr = V[self.T_cbr]
+        Sf_cbr = (np.power(Vf_cbr, 2.0) * np.conj(yff) + Vf_cbr * Vt_cbr * np.conj(yft))
+        St_cbr = (np.power(Vt_cbr, 2.0) * np.conj(ytt) + Vt_cbr * Vf_cbr * np.conj(ytf))
         Scalc_cbr = (self.nc.passive_branch_data.C_branch_bus_f @ Sf_cbr
                      + self.nc.passive_branch_data.C_branch_bus_t @ St_cbr)
 
@@ -1545,7 +1531,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2[self.u_cbr_m] = m
         tau2 = self.nc.active_branch_data.tap_angle.copy()
         tau2[self.u_cbr_m] = tau
-        Pf_cbr = calcSf(k=self.k_cbr_pf, Vm=Vm, Va=Va,
+        Pf_cbr = calcSf(k=self.k_cbr_pf, V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
                         R=self.nc.passive_branch_data.R,
@@ -1557,7 +1543,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
 
-        Pt_cbr = calcSt(k=self.k_cbr_pt, Vm=Vm, Va=Va,
+        Pt_cbr = calcSt(k=self.k_cbr_pt, V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
                         R=self.nc.passive_branch_data.R,
@@ -1569,7 +1555,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
 
-        Qf_cbr = calcSf(k=self.k_cbr_qf, Vm=Vm, Va=Va,
+        Qf_cbr = calcSf(k=self.k_cbr_qf, V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
                         R=self.nc.passive_branch_data.R,
@@ -1581,7 +1567,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
-        Qt_cbr = calcSt(k=self.k_cbr_qt, Vm=Vm, Va=Va,
+        Qt_cbr = calcSt(k=self.k_cbr_qt, V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
                         R=self.nc.passive_branch_data.R,
@@ -1727,11 +1713,20 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Names matching x
         :return:
         """
-        cols = [f'dVa {i}' for i in self.idx_dVa]
-        cols += [f'dVm {i}' for i in self.idx_dVm]
-        cols += [f'dm {i}' for i in self.idx_dm]
-        cols += [f'dtau {i}' for i in self.idx_dtau]
-        cols += [f'dBeq {i}' for i in self.idx_dbeq]
+        cols = [f'dVm {i}' for i in self.i_u_vm]
+        cols += [f'dVa {i}' for i in self.i_u_va]
+
+        cols += [f'dPf_var_vsc {i}' for i in self.u_vsc_pf]
+        cols += [f'dPt_var_vsc {i}' for i in self.u_vsc_pt]
+        cols += [f'dQt_var_vsc {i}' for i in self.u_vsc_qt]
+
+        cols += [f'dPf_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+        cols += [f'dPt_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+        cols += [f'dQf_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+        cols += [f'dQt_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+
+        cols += [f'dm {i}' for i in self.u_cbr_m]
+        cols += [f'dtau {i}' for i in self.u_cbr_tau]
 
         return cols
 
@@ -1740,34 +1735,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Names matching fx
         :return:
         """
-        '''
-        self.cg_pac = generalisedSimulationIndices.cg_pac
-        self.cg_qac = generalisedSimulationIndices.cg_qac
-        self.cg_pdc = generalisedSimulationIndices.cg_pdc
-        self.cg_acdc = generalisedSimulationIndices.cg_acdc
-        self.cg_hvdc = generalisedSimulationIndices.cg_hvdc
-        self.cg_pftr = generalisedSimulationIndices.cg_pftr
-        self.cg_pttr = generalisedSimulationIndices.cg_pttr
-        self.cg_qftr = generalisedSimulationIndices.cg_qftr
-        self.cg_qttr = generalisedSimulationIndices.cg_qttr
-                    dS[self.cg_pac + self.cg_pdc].real,
-            dS[self.cg_qac].imag,
-            Ploss_acdc,
-            Pf[self.cg_pftr] - self.nc.active_branch_data.Pset[self.cg_pftr],
-            Qf[self.cg_qftr] - self.nc.active_branch_data.Qset[self.cg_qftr],
-            Pt[self.cg_pttr] - self.nc.active_branch_data.Pset[self.cg_pttr],
-            Qt[self.cg_qttr] - self.nc.active_branch_data.Qset[self.cg_qttr]
-        '''
 
-        rows = [f'active power balance node {i}' for i in (self.cg_pac.union(self.cg_pdc))]
-        rows += [f'reactive power balance node {i}' for i in self.cg_qac]
-        rows += [f'Ploss_acdc {i}' for i in self.cg_acdc]
-        rows += [f'Ploss_hvdc {i}' for i in self.cg_hvdc]
-        rows += [f'Pinj_hvdc {i}' for i in self.cg_hvdc]
-        rows += [f'cg_pftr {i}' for i in self.cg_pttr]
-        rows += [f'cg_pttr {i}' for i in self.cg_pttr]
-        rows += [f'cg_qftr {i}' for i in self.cg_qftr]
-        rows += [f'cg_qttr {i}' for i in self.cg_qttr]
+        rows = [f'dP {i}' for i in self.i_k_p]
+        rows += [f'dQ {i}' for i in self.i_k_q]
+        rows += [f'dloss_vsc {i}' for i in range(self.nc.vsc_data.nelm)]
+        rows += [f'dloss_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+        rows += [f'dinj_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+
+        rows += [f'dPf {i}' for i in self.k_cbr_pf]
+        rows += [f'dPt {i}' for i in self.k_cbr_pt]
+        rows += [f'dQf {i}' for i in self.k_cbr_qf]
+        rows += [f'dQt {i}' for i in self.k_cbr_qt]
 
         return rows
 
@@ -1791,22 +1769,37 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: NumericPowerFlowResults
         """
 
-        # Branches current, loading, etc
+        # Branches -----------------------------------------------------------------------------------------------------
+        # compute the flows, currents, losses for all branches
+
         V = self.Vm * np.exp(1j * self.Va)
         Vf = V[self.nc.passive_branch_data.F]
         Vt = V[self.nc.passive_branch_data.T]
-        If = self.adm.Yf @ V
-        It = self.adm.Yt @ V
+
+        # compose all taps (m and tau)
+        m = self.nc.active_branch_data.tap_module.copy()
+        m[self.u_cbr_m] = self.m
+        tau = self.nc.active_branch_data.tap_angle.copy()
+        tau[self.u_cbr_m] = self.tau
+
+        R = self.nc.passive_branch_data.R
+        X = self.nc.passive_branch_data.X
+        G = self.nc.passive_branch_data.G
+        B = self.nc.passive_branch_data.B
+        vtap_f = self.nc.passive_branch_data.virtual_tap_f
+        vtap_t = self.nc.passive_branch_data.virtual_tap_t
+
+        ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+        bc2 = (G + 1j * B) / 2.0  # shunt admittance
+        yff = (ys + bc2) / (m * m * vtap_f * vtap_f)
+        yft = -ys / (m * np.exp(-1.0j * tau) * vtap_f * vtap_t)
+        ytf = -ys / (m * np.exp(1.0j * tau) * vtap_t * vtap_f)
+        ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+        If = Vf * np.conj(yff) + Vt * np.conj(yft)  # TODO: review if this must be conj
+        It = Vt * np.conj(ytt) + Vf * np.conj(ytf)  # TODO: review if this must be conj
         Sf = Vf * np.conj(If)
         St = Vt * np.conj(It)
-
-        Sf_contrl_br = (self.Pf + 1j * self.Qf)[self.cg_pttr]
-        St_contrl_br = (self.Pt + 1j * self.Qt)[self.cg_pttr]
-
-        If[self.cg_pftr] = np.conj(Sf_contrl_br / Vf[self.cg_pftr])
-        It[self.cg_pftr] = np.conj(St_contrl_br / Vt[self.cg_pftr])
-        Sf[self.cg_pftr] = Sf_contrl_br
-        St[self.cg_pftr] = St_contrl_br
 
         # Branch losses in MVA
         losses = (Sf + St) * self.nc.Sbase
@@ -1817,23 +1810,23 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Branch loading in p.u.
         loading = Sf * self.nc.Sbase / (self.nc.passive_branch_data.rates + 1e-9)
 
-        # VSC
-        Pf_vsc = self.Pf[self.cg_acdc]
-        St_vsc = (self.Pt + 1j * self.Qt)[self.cg_acdc]
+        # VSC ----------------------------------------------------------------------------------------------------------
+        Pf_vsc = self.Pf_hvdc
+        St_vsc = (self.Pt_vsc + 1j * self.Qt_vsc)
         If_vsc = Pf_vsc / np.abs(V[self.nc.vsc_data.F])
         It_vsc = St_vsc / np.conj(V[self.nc.vsc_data.T])
         loading_vsc = abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20) * self.nc.Sbase
 
-        # HVDC
-        Sf_hvdc = (self.Pf + 1j * self.Qf)[self.cg_hvdc] * self.nc.Sbase
-        St_hvdc = (self.Pt + 1j * self.Qt)[self.cg_hvdc] * self.nc.Sbase
+        # HVDC ---------------------------------------------------------------------------------------------------------
+        Sf_hvdc = (self.Pf_hvdc + 1j * self.Qf_hvdc) * self.nc.Sbase
+        St_hvdc = (self.Pt_hvdc + 1j * self.Qt_hvdc) * self.nc.Sbase
         loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rate + 1e-20)
 
         return NumericPowerFlowResults(
             V=self.V,
             Scalc=self.Scalc,
-            m=expand(self.nc.nbr, self.m, self.cx_m, 1.0),
-            tau=expand(self.nc.nbr, self.tau, self.cx_tau, 0.0),
+            m=expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0),
+            tau=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
             Sf=Sf * self.nc.Sbase,
             St=St * self.nc.Sbase,
             If=If,
