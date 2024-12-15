@@ -64,10 +64,10 @@ def run_raw_to_cgmes(import_path: str | list[str],
     gce.detect_substations(grid=circuit1)
 
     # run power flow
-    # pf_options = PowerFlowOptions()
-    pf_options = None
-    # pf1_res = gce.power_flow(circuit1, pf_options)
-    pf1_res = None
+    pf_options = PowerFlowOptions()
+    pf1_res = gce.power_flow(circuit1, pf_options)
+    # pf_options = None
+    # pf1_res = None
 
     logger_saving = Logger()
     pf_session_data = DriverToSave(name="powerflow results",
@@ -132,8 +132,14 @@ def run_raw_to_cgmes(import_path: str | list[str],
         print(nc1.Ybus.A)
         print('Y2')
         print(nc2.Ybus.A)
-        print('Y_diff')
-        print(nc2.Ybus.A - nc1.Ybus.A)
+        Y_diff = nc2.Ybus.A - nc1.Ybus.A
+        print('Y_diff', Y_diff)
+        # mask = Y_diff != 0
+        mask = ~np.isclose(nc1.Ybus.A, nc2.Ybus.A, atol=1e-4, rtol=0)
+        # print('mask \n', mask)
+        print("Y1_elements", nc1.Ybus.A[mask])
+        print("Y2_elements", nc2.Ybus.A[mask])
+        print("Y_diff", nc1.Ybus.A[mask] - nc2.Ybus.A[mask])
 
     assert np.allclose(np.abs(pf1_res.voltage), np.abs(pf2_res.voltage), atol=1e-5)
 
@@ -152,11 +158,11 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE 14 bus'  # PASSEED
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    test_grid_name = 'DACF_20240404_00_IGM'
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
+    # test_grid_name = 'DACF_20240404_00_IGM'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
 
     # test_grid_name = 'IEEE 30 bus'              # FAILED
     # Error     Different snapshot values    Transformer      rate  5.9091    65.0

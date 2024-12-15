@@ -185,15 +185,14 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
     :param logger:
     :return:
     """
-    name = str(psse_elm.I).replace("'", "")
-    name = name.strip()
+    busnum_id = psse_elm.get_id()
 
     # GL and BL come in MW and MVAr
     # They must be in siemens
     vv = bus.Vnom ** 2.0
 
     if vv == 0:
-        logger.add_error('Voltage equal to zero in shunt conversion', name)
+        logger.add_error('Voltage equal to zero in shunt conversion', busnum_id)
 
     if psse_elm.MODSW in [1, 2]:
         b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
@@ -202,11 +201,11 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
 
     vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
 
-    elm = dev.ControllableShunt(name='Switched shunt ' + name,
+    elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
                                 # B=b_init,   # TODO Binit
                                 vset=vset,
-                                code=name,
+                                code=busnum_id,
                                 is_nonlinear=True)
 
     if psse_elm.SWREG > 0:

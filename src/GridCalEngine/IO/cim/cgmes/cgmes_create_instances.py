@@ -327,15 +327,15 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
     return None
 
 
-def create_cgmes_regulating_control(cgmes_syn,
-                                    mc_gen: gcdev.Generator,
+def create_cgmes_regulating_control(cgmes_elm,
+                                    mc_gen: Union[gcdev.Generator, gcdev.ControllableShunt],
                                     cgmes_model: CgmesCircuit,
                                     logger: DataLogger):
     """
-    Create Regulating Control for Generators
+    Create Regulating Control for a CGMES device
 
-    :param cgmes_syn: Cgmes Synchronous Machine
-    :param mc_gen: MultiCircuit Generator
+    :param cgmes_elm: Cgmes Synchronous Machine or Shunt (Nonlin or Lin)
+    :param mc_gen: MultiCircuit element: Generator or Controllable Shunt
     :param cgmes_model: CgmesCircuit
     :param logger:
     :return:
@@ -348,13 +348,13 @@ def create_cgmes_regulating_control(cgmes_syn,
     rc.name = f'_RC_{mc_gen.name}'
     rc.shortName = rc.name
     rc.mode = RegulatingControlModeKind.voltage
-    rc.Terminal = cgmes_syn.Terminals
+    rc.Terminal = cgmes_elm.Terminals
 
-    rc.RegulatingCondEq = cgmes_syn
+    rc.RegulatingCondEq = cgmes_elm
     rc.discrete = False
     rc.targetDeadband = 0.5
     rc.targetValueUnitMultiplier = UnitMultiplier.k
-    rc.enabled = True  # todo correct?
+    rc.enabled = True
     rc.targetValue = mc_gen.Vset * mc_gen.bus.Vnom
     # TODO control_cn.Vnom
 

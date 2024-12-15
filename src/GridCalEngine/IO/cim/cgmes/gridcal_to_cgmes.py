@@ -1201,10 +1201,26 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                 object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                 target_vnom=mc_elm.bus.Vnom)
 
+            non_lin_sc.Terminals = (
+                create_cgmes_terminal(mc_bus=mc_elm.bus,
+                                      seq_num=1,
+                                      cond_eq=non_lin_sc,
+                                      cgmes_model=cgmes_model,
+                                      logger=logger))
+
             # CONTROL
-            # non_lin_sc.RegulatingControl = False  # TODO: Should be an object
+            # control_type: voltage or power control, ..
+            # is_controlled: enabling flag (already have)
+            if mc_elm.is_controlled:
+                non_lin_sc.RegulatingControl = (
+                    create_cgmes_regulating_control(non_lin_sc, mc_elm,
+                                                    cgmes_model, logger)
+                )
+                non_lin_sc.controlEnabled = True
+            else:
+                non_lin_sc.controlEnabled = False
+
             # SSH
-            non_lin_sc.controlEnabled = False
             #    sections: Shunt compensator sections in use.
             non_lin_sc.sections = 1
             # if mc_elm.active:
@@ -1229,14 +1245,6 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
             non_lin_sc.maximumSections = len(b_points)
             non_lin_sc.aggregate = False
 
-
-            # non_lin_sc.Terminals =
-            create_cgmes_terminal(mc_bus=mc_elm.bus,
-                                  seq_num=1,
-                                  cond_eq=non_lin_sc,
-                                  cgmes_model=cgmes_model,
-                                  logger=logger)
-
             cgmes_model.add(non_lin_sc)
 
         else:   # LINEAR controllable shunts
@@ -1256,9 +1264,7 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
             lsc.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                                   object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                                   target_vnom=mc_elm.bus.Vnom)
-            # lsc.RegulatingControl = False  # TODO: Should be an object
-            # SSH
-            lsc.controlEnabled = False
+
             if mc_elm.active:
                 lsc.sections = 1
             else:
@@ -1272,12 +1278,22 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
             lsc.maximumSections = 1
             lsc.aggregate = False
 
-            # lsc.Terminals =
-            create_cgmes_terminal(mc_bus=mc_elm.bus,
-                                  seq_num=1,
-                                  cond_eq=lsc,
-                                  cgmes_model=cgmes_model,
-                                  logger=logger)
+            lsc.Terminals = (
+                create_cgmes_terminal(mc_bus=mc_elm.bus,
+                                      seq_num=1,
+                                      cond_eq=lsc,
+                                      cgmes_model=cgmes_model,
+                                      logger=logger))
+
+            # CONTROL
+            if mc_elm.is_controlled:
+                lsc.RegulatingControl = (
+                    create_cgmes_regulating_control(lsc, mc_elm,
+                                                    cgmes_model, logger)
+                )
+                lsc.controlEnabled = True
+            else:
+                lsc.controlEnabled = False
 
             cgmes_model.add(lsc)
 
