@@ -60,8 +60,9 @@ def run_raw_to_cgmes(import_path: str | list[str],
     # RAW model import to MultiCircuit
     circuit1 = gce.open_file(import_path)
 
-    # detect substation from the raw file
-    gce.detect_substations(grid=circuit1)
+    # # detect substation from the raw file
+    # gce.detect_substations(grid=circuit1)
+    # already done in raw_to_gridcal.py
 
     # run power flow
     pf_options = PowerFlowOptions()
@@ -158,11 +159,11 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE 14 bus'  # PASSEED
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'DACF_20240404_00_IGM'
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
+    test_grid_name = 'DACF_20240404_00_IGM'
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
 
     # test_grid_name = 'IEEE 30 bus'              # FAILED
     # Error     Different snapshot values    Transformer      rate  5.9091    65.0
