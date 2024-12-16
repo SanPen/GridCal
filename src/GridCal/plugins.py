@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import importlib
 import importlib.util
 import hashlib
@@ -27,6 +28,7 @@ class PluginFunction:
 
         self.name = ""
         self.alias = ""
+        self.call_gui = False
         self.function_ptr = None
 
     def get_pointer_lambda(self, gui_instance: ConfigurationMain) -> Callable:
@@ -42,7 +44,7 @@ class PluginFunction:
             during the iteration and not after the loop since lambdas in a loop are lazy evaluated
         - func(self) is then what I wanted to lambda in the first place
         """
-        return lambda e=True, func=self.function_ptr: func(gui_instance)  # This is not an error, it is correct
+        return lambda e=True, func=self.function_ptr: func(gui_instance)
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -52,6 +54,7 @@ class PluginFunction:
         return {
             "name": self.name,
             "alias": self.alias,
+            "call_gui": self.call_gui,
         }
 
     def parse(self, data: Dict[str, str]) -> None:
@@ -61,6 +64,7 @@ class PluginFunction:
         """
         self.name = data.get('name', '').strip()
         self.alias = data.get('alias', '').strip()
+        self.call_gui = data.get('call_gui', False)
 
     def read_plugin(self, plugin_path: str) -> None:
         """
@@ -185,6 +189,9 @@ class PluginsInfo:
         """
 
         """
+        # add the plugins directory to the pythonpath
+        sys.path.insert(0, plugins_path())
+
         self.plugins: Dict[str, PluginInfo] = dict()
         self.read()
 
