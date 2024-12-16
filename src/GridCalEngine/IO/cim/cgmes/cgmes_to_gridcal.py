@@ -1472,8 +1472,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     V1=windings[0].ratedU,
                                                     V2=windings[1].ratedU,
                                                     V3=windings[2].ratedU,
-                                                    r12=r12, r23=r23, r31=r31,
-                                                    x12=x12, x23=x23, x31=x31,
+                                                    # r12=r12, r23=r23, r31=r31,
+                                                    # x12=x12, x23=x23, x31=x31,
                                                     rate12=windings[0].ratedS,
                                                     rate23=windings[1].ratedS,
                                                     rate31=windings[2].ratedS, )
@@ -1510,6 +1510,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.G0 = g03
                     gcdev_elm.winding3.B0 = b03
                     gcdev_elm.winding3.rate = float(windings[2].ratedS)
+
+                    gcdev_elm.fill_from_star(r1=r1, r2=r2, r3=r3, x1=x1, x2=x2, x3=x3)
 
                     gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=True)
 
