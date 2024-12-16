@@ -219,7 +219,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
-        self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
+
         self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
         self.ui.actionNodal_capacity.triggered.connect(self.run_nodal_capacity)
 
@@ -2664,7 +2664,7 @@ class SimulationsMain(TimeEventsMain):
 
     def run_topology_processor(self):
         """
-        Run the topology processor on the grid completelly
+        Run the topology processor on the grid completely
         """
 
         if not self.session.is_this_running(SimulationTypes.TopologyProcessor_run):

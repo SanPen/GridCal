@@ -15,7 +15,7 @@ about_msg = "GridCalServer v" + str(__GridCalServer_VERSION__) + '\n\n'
 about_msg += """
 GridCal has been carefully crafted since 2015 to 
 serve as a platform for research and consultancy. 
-Visit https://www.advancedgridinsights.com/gridcal for more details.\n"""
+"""
 
 about_msg += """
 This program is free software; you can redistribute it and/or

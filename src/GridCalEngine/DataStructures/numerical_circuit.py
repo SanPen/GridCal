@@ -1815,8 +1815,7 @@ class NumericalCircuit:
 
     def process_topology(self):
         """
-
-        :return:
+        Process the topology (i.e. reduce branches like the switches) in-place
         """
         C = lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
         n_red = 0
@@ -1841,7 +1840,6 @@ class NumericalCircuit:
             bus_map_arr = self.bus_data.original_idx.copy()
 
             for island in islands:
-
                 if len(island):
                     i0 = island[0]
                     for ii in range(1, len(island)):
