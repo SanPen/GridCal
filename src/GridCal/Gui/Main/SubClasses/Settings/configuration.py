@@ -480,7 +480,7 @@ class ConfigurationMain(ResultsMain):
         ret = fcn.get_pointer_lambda(gui_instance=self)()
 
         if fcn.call_gui and ret is not None:
-            self.plugin_windows_list.append(ret)
-            ret.show()
-            print("Plugin show...")
+            if hasattr(ret, "show"):
+                self.plugin_windows_list.append(ret)  # This avoids the window to be garbage collected and display
+                ret.show()
 
