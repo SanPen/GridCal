@@ -96,15 +96,16 @@ def set_bus_control_voltage(i: int,
                              value=candidate_Vm,
                              expected_value=bus_data.Vbus[i])
 
+
 def set_bus_control_voltage_vsc(i: int,
-                            j: int,
-                            remote_control: bool,
-                            bus_name: str,
-                            bus_voltage_used: BoolVec,
-                            bus_data: BusData,
-                            candidate_Vm: float,
-                            use_stored_guess: bool,
-                            logger: Logger) -> None:
+                                j: int,
+                                remote_control: bool,
+                                bus_name: str,
+                                bus_voltage_used: BoolVec,
+                                bus_data: BusData,
+                                candidate_Vm: float,
+                                use_stored_guess: bool,
+                                logger: Logger) -> None:
     """
     Set the bus control voltage
     :param i: Bus index
@@ -1252,7 +1253,6 @@ def get_branch_data(
     return branch_dict
 
 
-
 def set_control_dev(k: int,
                     f: int,
                     t: int,
@@ -1266,16 +1266,23 @@ def set_control_dev(k: int,
                     bus_data: BusData,
                     bus_voltage_used: BoolVec,
                     use_stored_guess: bool,
-                    logger: Logger
-                    ):
+                    logger: Logger):
     """
 
     :param k: device index
+    :param f:
+    :param t:
     :param control: ConverterControlType
     :param control_dev: control device
     :param control_val: control value
     :param control_bus_idx: array to be filled in
     :param control_branch_idx: array to be filled in
+    :param bus_dict: dictionary to be filled in
+    :param branch_dict: dictionary to be filled in
+    :param bus_data: bus data
+    :param bus_voltage_used: used bus voltage
+    :param use_stored_guess:
+    :param logger:
     """
     if control_dev is not None:
         if control_dev.device_type == DeviceType.BusDevice:
@@ -1284,96 +1291,66 @@ def set_control_dev(k: int,
 
             control_bus_idx[k] = bus_idx
 
-            if control == ConverterControlType.Vm_ac: #TODO: think of logic for vsc control
-                # set_bus_control_voltage(i=bus_idx,
-                #                         j=-1,
-                #                         remote_control=False,
-                #                         bus_name=str(bus_data.names[bus_idx]),
-                #                         bus_voltage_used=bus_voltage_used,
-                #                         bus_data=bus_data,
-                #                         candidate_Vm=control_val,
-                #                         use_stored_guess=use_stored_guess,
-                #                         logger=logger)
+            if control == ConverterControlType.Vm_ac:
+
                 set_bus_control_voltage_vsc(i=bus_idx,
-                                        j=-1,
-                                        remote_control=False,
-                                        bus_name=str(bus_data.names[bus_idx]),
-                                        bus_voltage_used=bus_voltage_used,
-                                        bus_data=bus_data,
-                                        candidate_Vm=control_val,
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                                            j=-1,
+                                            remote_control=False,
+                                            bus_name=str(bus_data.names[bus_idx]),
+                                            bus_voltage_used=bus_voltage_used,
+                                            bus_data=bus_data,
+                                            candidate_Vm=control_val,
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
 
             elif control == ConverterControlType.Vm_dc:
-                # set_bus_control_voltage(i=bus_idx,
-                #                         j=-1,
-                #                         remote_control=False,
-                #                         bus_name=str(bus_data.names[bus_idx]),
-                #                         bus_voltage_used=bus_voltage_used,
-                #                         bus_data=bus_data,
-                #                         candidate_Vm=control_val,
-                #                         use_stored_guess=use_stored_guess,
-                #                         logger=logger)
+
                 set_bus_control_voltage_vsc(i=bus_idx,
-                                        j=-1,
-                                        remote_control=False,
-                                        bus_name=str(bus_data.names[bus_idx]),
-                                        bus_voltage_used=bus_voltage_used,
-                                        bus_data=bus_data,
-                                        candidate_Vm=control_val,
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
-
-
+                                            j=-1,
+                                            remote_control=False,
+                                            bus_name=str(bus_data.names[bus_idx]),
+                                            bus_voltage_used=bus_voltage_used,
+                                            bus_data=bus_data,
+                                            candidate_Vm=control_val,
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
 
         else:
-            control_branch_idx[k] = branch_dict[control_dev]
+            # TODO: the formulation does not allow for VSC remote control yet
+            # control_branch_idx[k] = branch_dict[control_dev]
+            control_branch_idx[k] = k
+
     else:
         if control == ConverterControlType.Vm_ac:
             control_bus_idx[k] = t
-            # set_bus_control_voltage(i=t,
-            #                         j=-1,
-            #                         remote_control=False,
-            #                         bus_name=str(bus_data.names[t]),
-            #                         bus_voltage_used=bus_voltage_used,
-            #                         bus_data=bus_data,
-            #                         candidate_Vm=control_val,
-            #                         use_stored_guess=use_stored_guess,
-            #                         logger=logger)
-            set_bus_control_voltage_vsc(i=t,
-                                    j=-1,
-                                    remote_control=False,
-                                    bus_name=str(bus_data.names[t]),
-                                    bus_voltage_used=bus_voltage_used,
-                                    bus_data=bus_data,
-                                    candidate_Vm=control_val,
-                                    use_stored_guess=use_stored_guess,
-                                    logger=logger)
 
+            set_bus_control_voltage_vsc(i=t,
+                                        j=-1,
+                                        remote_control=False,
+                                        bus_name=str(bus_data.names[t]),
+                                        bus_voltage_used=bus_voltage_used,
+                                        bus_data=bus_data,
+                                        candidate_Vm=control_val,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
         elif control == ConverterControlType.Vm_dc:
             control_bus_idx[k] = f
-            # set_bus_control_voltage(i=f,
-            #                         j=-1,
-            #                         remote_control=False,
-            #                         bus_name=str(bus_data.names[f]),
-            #                         bus_voltage_used=bus_voltage_used,
-            #                         bus_data=bus_data,
-            #                         candidate_Vm=control_val,
-            #                         use_stored_guess=use_stored_guess,
-            #                         logger=logger)
+
             set_bus_control_voltage_vsc(i=f,
-                                    j=-1,
-                                    remote_control=False,
-                                    bus_name=str(bus_data.names[f]),
-                                    bus_voltage_used=bus_voltage_used,
-                                    bus_data=bus_data,
-                                    candidate_Vm=control_val,
-                                    use_stored_guess=use_stored_guess,
-                                    logger=logger)
+                                        j=-1,
+                                        remote_control=False,
+                                        bus_name=str(bus_data.names[f]),
+                                        bus_voltage_used=bus_voltage_used,
+                                        bus_data=bus_data,
+                                        candidate_Vm=control_val,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
         else:
-            control_branch_idx[k] = len(branch_dict) + k
+            # control_branch_idx[k] = len(branch_dict) + k  # TODO: why?
+            control_branch_idx[k] = -1
+
 
 def get_vsc_data(
         data: VscData,
@@ -1436,12 +1413,16 @@ def get_vsc_data(
             data.control1_val[ii] = elm.control1_val_prof[t_idx]
             data.control2_val[ii] = elm.control2_val_prof[t_idx]
             set_control_dev(k=ii, f=f, t=t, control=data.control1[ii], control_dev=elm.control1_dev_prof[t_idx],
-                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx, control_branch_idx=data.control1_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx,
+                            control_branch_idx=data.control1_branch_idx,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess, logger=logger)
-            set_control_dev(k=ii, f=f, t=t, control=data.control2[ii], control_dev=elm.control2_dev_prof[t_idx], control_val=data.control2_val[ii],
+            set_control_dev(k=ii, f=f, t=t, control=data.control2[ii], control_dev=elm.control2_dev_prof[t_idx],
+                            control_val=data.control2_val[ii],
                             control_bus_idx=data.control2_bus_idx, control_branch_idx=data.control2_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess, logger=logger)
 
         else:
@@ -1457,15 +1438,17 @@ def get_vsc_data(
             data.control1_val[ii] = elm.control1_val
             data.control2_val[ii] = elm.control2_val
             set_control_dev(k=ii, f=f, t=t, control=data.control1[ii], control_dev=elm.control1_dev,
-                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx, control_branch_idx=data.control1_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx,
+                            control_branch_idx=data.control1_branch_idx,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess, logger=logger)
             set_control_dev(k=ii, f=f, t=t, control=data.control2[ii], control_dev=elm.control2_dev,
-                            control_val=data.control2_val[ii], control_bus_idx=data.control2_bus_idx, control_branch_idx=data.control2_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data, bus_voltage_used=bus_voltage_used,
+                            control_val=data.control2_val[ii], control_bus_idx=data.control2_bus_idx,
+                            control_branch_idx=data.control2_branch_idx,
+                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess, logger=logger)
-
-
 
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)
