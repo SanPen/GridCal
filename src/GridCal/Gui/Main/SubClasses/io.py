@@ -11,7 +11,7 @@ from PySide6 import QtWidgets
 import GridCal.Gui.gui_functions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-
+from GridCal.plugins import install_plugin, get_plugin_info
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.general_dialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -53,7 +53,8 @@ class IoMain(ConfigurationMain):
         self.accepted_extensions = ['.gridcal', '.dgridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
                                     '.ejson2', '.ejson3',
-                                    '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC']
+                                    '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC',
+                                    '.gcplugin']
 
         self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15,
                                                         CGMESVersions.v3_0_0]}
@@ -137,6 +138,9 @@ class IoMain(ConfigurationMain):
 
                         if file_name.endswith('.dgridcal'):
                             any_grid_delta = True
+                        elif file_name.endswith('.gcplugin'):
+                            self.install_plugin_now(file_name)
+                            return
                         else:
                             any_normal_grid = True
 
@@ -424,6 +428,36 @@ class IoMain(ConfigurationMain):
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
         self.change_theme_mode()
+
+    def install_plugin_now(self, fname: str):
+        """
+        Install plugin
+        :param fname: name of the plugin
+        """
+        if fname.endswith('.gcplugin'):
+            info = get_plugin_info(fname)
+
+            if info is not None:
+                found = False
+                for key, plugin in self.plugins_info.plugins.items():
+                    if plugin.name == info.name:
+                        found = True
+
+                if found:
+                    ok = yes_no_question( f"There is a plugin already: "
+                                    f"{plugin.name} {plugin.version} "
+                                    f"The new plugin is {info.version}. "
+                                    f"Install?", "Plugin install")
+                    if not ok:
+                        return
+
+                install_plugin(fname)
+                self.add_plugins()
+                info_msg(f"{info.name} {info.version} installed!", "Plugin install")
+            else:
+                error_msg("There is no manifest :(", "Plugin install")
+        else:
+            error_msg("Does not seem to be a plugin :/", "Plugin install")
 
     def select_csv_file(self, caption='Open CSV file'):
         """

@@ -11,6 +11,8 @@ import importlib.util
 import hashlib
 from typing import List, Dict, TYPE_CHECKING, Callable
 import json
+import zipfile
+import shutil
 from PySide6.QtGui import QPixmap
 
 from GridCalEngine.IO.file_system import plugins_path
@@ -21,7 +23,7 @@ if TYPE_CHECKING:
 
 class PluginFunction:
     """
-    Class to handle external funtion pointers
+    Class to handle external function pointers
     """
 
     def __init__(self) -> None:
@@ -107,6 +109,7 @@ class PluginInfo:
         self.name = ""
         self.code_file_path = ""
         self.icon_path = ""
+        self.version = "0.0.0"
 
         self.main_fcn: PluginFunction = PluginFunction()
 
@@ -114,10 +117,11 @@ class PluginInfo:
 
         self.icon: QPixmap | None = None
 
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-            self.parse(data)
-            self.read_plugin()
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+                self.parse(data)
+                self.read_plugin()
 
     def __repr__(self) -> str:
         return self.name
@@ -132,6 +136,7 @@ class PluginInfo:
         """
         return {
             "name": self.name,
+            "version": self.version,
             "path": self.code_file_path,
             "icon_path": self.icon_path,
             "main_fcn": self.main_fcn.to_dict(),
@@ -144,6 +149,7 @@ class PluginInfo:
         :param data: Data like the one saved
         """
         self.name = data.get('name', '')
+        self.version = data.get('version', '0.0.0')
         self.code_file_path = data.get('path', '')
         self.icon_path = data.get('icon_path', '')
 
@@ -270,3 +276,104 @@ def load_function_from_file_path(file_path: str, function_name: str):
         raise TypeError(f"'{function_name}' in '{file_path}' is not callable")
 
     return func
+
+
+def pack_plugin(name: str,
+                pkg_folder: str,
+                python_file: str,
+                main_name: str,
+                icon_file: str,
+                version: str,
+                call_gui: bool):
+    """
+    Create plugin package
+    :param name: Name of the plugin
+    :param pkg_folder: Source folder of the plugin
+    :param python_file: main python file for the plugin (relative to pkg_folder)
+    :param main_name: name of the main function within the python_file
+    :param icon_file: icon file (relative to pkg_folder)
+    :param version: Version of the plugin
+    :param call_gui: does the main function
+    :return:
+    """
+    plugin_data = {
+        "plugins_tech_version": "1.0.0",
+        "name": name,
+        "path": python_file,
+        "icon_path": icon_file,
+        "version": version,
+        "main_fcn": {
+                        "name": main_name,
+                        "alias": name,
+                        "call_gui": call_gui
+                    }
+    }
+
+    filename_zip = f'{name}_plugin.gcplugin'
+    with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+
+        folder_name = os.path.basename(pkg_folder)
+
+        config_file = os.path.join(folder_name, "config.plugin.json")
+
+        f_zip_ptr.writestr("manifest.json", json.dumps({
+            "name": name,
+            "folder": folder_name,
+            "version": version,
+            "config_file": config_file
+        }))
+
+        # save the config files
+        f_zip_ptr.writestr(config_file, json.dumps(plugin_data))
+
+        # Get the parent directory of the folder
+        parent_folder = os.path.dirname(pkg_folder)
+
+        for root, dirs, files in os.walk(pkg_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Add file to the zip archive, preserving folder structure
+                f_zip_ptr.write(file_path, os.path.relpath(file_path, parent_folder))
+
+    return filename_zip
+
+def get_plugin_info(plugin_file: str) -> PluginInfo | None:
+
+    with zipfile.ZipFile(plugin_file, 'r') as zipf:
+
+        if "manifest.json" in zipf.namelist():
+            # read the manifest
+            with zipf.open("manifest.json") as json_file:
+                data = json.load(json_file)
+                info = PluginInfo("", "")
+                info.parse(data)
+                return info
+        else:
+            return None
+
+def install_plugin(plugin_file: str):
+    """
+
+    :param plugin_file:
+    :return:
+    """
+
+    plugins_pth = plugins_path()
+
+    with zipfile.ZipFile(plugin_file, 'r') as zipf:
+
+        # read the manifest
+        with zipf.open("manifest.json") as json_file:
+            data = json.load(json_file)
+
+            folder_name = data.get("folder", None)
+
+            dst_folder = os.path.join(plugins_pth, folder_name)
+            if os.path.exists(dst_folder):
+                shutil.rmtree(dst_folder)
+
+        if folder_name is not None:
+            for member in zipf.namelist():
+                if member.startswith(f"{folder_name}/"):  # Replace with the folder you want to extract
+                    zipf.extract(member, plugins_pth)
+
