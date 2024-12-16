@@ -12,7 +12,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
-from GridCal.plugins import PluginsInfo
+from GridCal.plugins import PluginsInfo, PluginFunction
 import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.gui_functions import add_menu_entry
 
@@ -436,7 +436,6 @@ class ConfigurationMain(ResultsMain):
 
             # maybe add the main function
             if plugin_info.main_fcn.function_ptr is not None:
-
                 """
                 Really hard core magic to avoid lambdas shadow each other due to late binding
                 
@@ -456,7 +455,8 @@ class ConfigurationMain(ResultsMain):
                     text=plugin_info.name,
                     icon_path=":/Icons/icons/plugin.svg",
                     icon_pixmap=plugin_info.icon,
-                    function_ptr=plugin_info.main_fcn.get_pointer_lambda(gui_instance=self)
+                    # function_ptr=plugin_info.main_fcn.get_pointer_lambda(gui_instance=self)
+                    function_ptr=lambda: self.launch_plugin(plugin_info.main_fcn)
                 )
 
             # maybe add the investments function
@@ -468,3 +468,15 @@ class ConfigurationMain(ResultsMain):
         # create combobox model for the plugin investments
         lst = list(self.plugins_investment_evaluation_method_dict.keys())
         self.ui.plugins_investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
+
+    def launch_plugin(self, fcn: PluginFunction):
+        """
+
+        :param fcn:
+        :return:
+        """
+        ret = fcn.get_pointer_lambda(gui_instance=self)()
+
+        if fcn.call_gui and ret is not None:
+            ret.show()
+
