@@ -1676,6 +1676,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # compute f(x)
         self._f = self.compute_f(x)
 
+        self._error = compute_fx_error(self._f)
+
         # converged?
         self._converged = self._error < self.options.tolerance
 
@@ -1700,7 +1702,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if autodiff:
             J = calc_autodiff_jacobian(func=self.compute_f,
                                        x=self.var2x(),
-                                       h=self.options.tolerance / 100.0)
+                                       h=1e-6)
 
             if self.options.verbose > 1:
                 print("(pf_generalized_formulation.py) J: ")
