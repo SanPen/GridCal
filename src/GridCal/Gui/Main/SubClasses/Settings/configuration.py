@@ -93,6 +93,8 @@ class ConfigurationMain(ResultsMain):
         # DateTime change
         self.ui.snapshot_dateTimeEdit.dateTimeChanged.connect(self.snapshot_datetime_changed)
 
+        self.plugin_windows_list = list()
+
     def change_theme_mode(self) -> None:
         """
         Change the GUI theme
@@ -478,5 +480,7 @@ class ConfigurationMain(ResultsMain):
         ret = fcn.get_pointer_lambda(gui_instance=self)()
 
         if fcn.call_gui and ret is not None:
+            self.plugin_windows_list.append(ret)
             ret.show()
+            print("Plugin show...")
 
