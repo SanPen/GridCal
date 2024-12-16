@@ -449,15 +449,11 @@ class ConfigurationMain(ResultsMain):
                   during the iteration and not after the loop
                 - func(self) is then what I wanted to lambda in the first place                
                 """
-                # func = plugin_info.main_fcn.function_ptr
-                # lmbd = lambda e, func=func: func(self)  # This is not an error, it is correct
-
-                action = add_menu_entry(
+                add_menu_entry(
                     menu=self.ui.menuplugins,
                     text=plugin_info.name,
                     icon_path=":/Icons/icons/plugin.svg",
                     icon_pixmap=plugin_info.icon,
-                    # function_ptr=plugin_info.main_fcn.get_pointer_lambda(gui_instance=self)
                     function_ptr=lambda: self.launch_plugin(plugin_info.main_fcn)
                 )
 
@@ -473,14 +469,15 @@ class ConfigurationMain(ResultsMain):
 
     def launch_plugin(self, fcn: PluginFunction):
         """
-
-        :param fcn:
-        :return:
+        Action wrapper to launch the plugin
+        :param fcn: some PluginFunction
         """
+
+        # call the main fuinction of the plugin
         ret = fcn.get_pointer_lambda(gui_instance=self)()
 
         if fcn.call_gui and ret is not None:
-            self.plugin_windows_list.append(ret)
-            ret.show()
-            print("Plugin show...")
+            if hasattr(ret, "show"):
+                self.plugin_windows_list.append(ret)  # This avoids the window to be garbage collected and be displayed
+                ret.show()
 

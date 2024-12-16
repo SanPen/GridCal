@@ -44,8 +44,8 @@ def star_to_delta(z1: float, z2: float, z3: float) -> Tuple[float, float, float]
     """
     zt = z1 * z2 + z2 * z3 + z3 * z1
     z12 = zt / z3
-    z23 = zt / z2
-    z31 = zt / z1
+    z23 = zt / z1
+    z31 = zt / z2
 
     return z12, z23, z31
 

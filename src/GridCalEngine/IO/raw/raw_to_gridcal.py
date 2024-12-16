@@ -6,6 +6,7 @@ import numpy as np
 from typing import Dict, List, Tuple, Union
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
+from GridCalEngine.Topology import detect_substations
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices.branch import RawBranch
 from GridCalEngine.IO.raw.devices.bus import RawBus
@@ -185,15 +186,14 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
     :param logger:
     :return:
     """
-    name = str(psse_elm.I).replace("'", "")
-    name = name.strip()
+    busnum_id = psse_elm.get_id()
 
     # GL and BL come in MW and MVAr
     # They must be in siemens
     vv = bus.Vnom ** 2.0
 
     if vv == 0:
-        logger.add_error('Voltage equal to zero in shunt conversion', name)
+        logger.add_error('Voltage equal to zero in shunt conversion', busnum_id)
 
     if psse_elm.MODSW in [1, 2]:
         b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
@@ -202,11 +202,11 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
 
     vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
 
-    elm = dev.ControllableShunt(name='Switched shunt ' + name,
+    elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
                                 # B=b_init,   # TODO Binit
                                 vset=vset,
-                                code=name,
+                                code=busnum_id,
                                 is_nonlinear=True)
 
     if psse_elm.SWREG > 0:
@@ -431,29 +431,29 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 == 1:    # for voltage control
+        elif psse_elm.COD1 in [1, -1]:    # for voltage control
 
             elm.tap_module_control_mode = TapModuleControl.Vm
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 == 2:    # for reactive power flow control
+        elif psse_elm.COD1 in [2, -2]:    # for reactive power flow control
 
             elm.tap_module_control_mode = TapModuleControl.Qf
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 == 3:    # for active power flow control
+        elif psse_elm.COD1 in [3, -3]:    # for active power flow control
 
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.Pf
             elm.tap_changer.tc_type = TapChangerTypes.Symmetrical
 
-        elif psse_elm.COD1 == 4:    # for control of a dc line quantity
+        elif psse_elm.COD1 in [4, -4]:    # for control of a dc line quantity
                                     # (valid only for two-windingtransformers)
 
             logger.add_error(msg="Not implemented transformer control. (COD1)",
                              value=psse_elm.COD1)
 
-        elif psse_elm.COD1 == 5:  # for asymmetric active power flow control
+        elif psse_elm.COD1 in [5, -5]:  # for asymmetric active power flow control
 
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
@@ -1030,5 +1030,8 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         # since these may be shunt or series or both, pass the circuit so that the correct device is added
         if psse_elm.is_connected():
             get_upfc_from_facts(psse_elm, psse_bus_dict, psse_circuit.SBASE, logger, circuit=circuit)
+
+    # detect substation from the raw file
+    detect_substations(grid=circuit)
 
     return circuit
