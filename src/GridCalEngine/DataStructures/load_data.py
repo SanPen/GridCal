@@ -85,6 +85,18 @@ class LoadData:
 
         return data
 
+    def remap(self, bus_map_arr: IntVec):
+        """
+        Remapping of the elm buses
+        :param bus_map_arr: array of old-to-new buses
+        """
+        self.C_bus_elm = sp.lil_matrix((self.nbus, self.nelm), dtype=int)
+        for k in range(self.nelm):
+            i = self.bus_idx[k]
+            new_i = bus_map_arr[i]
+            self.bus_idx[k] = new_i
+            self.C_bus_elm[new_i, k] = 1
+
     def copy(self) -> "LoadData":
         """
         Get a deep copy of this structure

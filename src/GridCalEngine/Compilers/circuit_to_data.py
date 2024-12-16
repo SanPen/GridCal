@@ -1251,6 +1251,26 @@ def get_branch_data(
 
         ii += 1
 
+    # Series reactance
+    for i, elm in enumerate(circuit.switch_devices):
+        # generic stuff
+        fill_parent_branch(i=ii,
+                           elm=elm,
+                           data=data,
+                           bus_dict=bus_dict,
+                           apply_temperature=apply_temperature,
+                           branch_tolerance_mode=branch_tolerance_mode,
+                           t_idx=t_idx,
+                           time_series=time_series,
+                           is_dc_branch=False)
+
+        data.reducible[ii] = True
+
+        # store for later
+        branch_dict[elm] = ii
+
+        ii += 1
+
     return branch_dict
 
 
@@ -1790,7 +1810,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         nbus=circuit.get_bus_number(),
         nbr=circuit.get_branch_number(add_vsc=False,
                                       add_hvdc=False,
-                                      add_switch=False),
+                                      add_switch=True),
         nhvdc=circuit.get_hvdc_number(),
         nvsc=circuit.get_vsc_number(),
         nload=circuit.get_load_like_device_number(),

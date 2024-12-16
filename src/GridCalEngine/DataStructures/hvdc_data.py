@@ -133,6 +133,24 @@ class HvdcData:
 
         return data
 
+    def remap(self, bus_map_arr: IntVec):
+        """
+        Remapping of the branch buses
+        :param bus_map_arr: array of old-to-new buses
+        """
+        self.C_hvdc_bus_f = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        self.C_hvdc_bus_t = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        for k in range(self.nelm):
+            f = self.F[k]
+            t = self.T[k]
+            new_f = bus_map_arr[f]
+            new_t = bus_map_arr[t]
+            self.F[k] = new_f
+            self.T[k] = new_t
+
+            self.C_hvdc_bus_f[k, new_f] = 1
+            self.C_hvdc_bus_t[k, new_t] = 1
+
     def copy(self) -> "HvdcData":
         """
         Make a deep copy of this structure

@@ -8,6 +8,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
+from scipy.sparse import lil_matrix
+
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, Logger
 from typing import List, Tuple, Dict, Set
@@ -56,6 +58,7 @@ class BranchParentData:
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+        self.reducible: IntVec = np.zeros(nelm, dtype=bool)
 
     def size(self) -> int:
         """
@@ -122,6 +125,7 @@ class BranchParentData:
         data.overload_cost = self.overload_cost[elm_idx]
 
         data.original_idx = elm_idx
+        data.reducible = self.reducible[elm_idx]
 
         return data, bus_map
 
@@ -156,6 +160,7 @@ class BranchParentData:
         data.overload_cost = self.overload_cost.copy()
 
         data.original_idx = self.original_idx.copy()
+        data.reducible = self.reducible.copy()
 
         return data
 
@@ -230,6 +235,24 @@ class BranchParentData:
             'Contingency rates': self.contingency_rates,
         }
         return pd.DataFrame(data=data)
+
+    def remap(self, bus_map_arr: IntVec):
+        """
+        Remapping of the branch buses
+        :param bus_map_arr: array of old-to-new buses
+        """
+        self.C_branch_bus_f = lil_matrix((self.nelm, self.nbus), dtype=int)
+        self.C_branch_bus_t = lil_matrix((self.nelm, self.nbus), dtype=int)
+        for k in range(self.nelm):
+            f = self.F[k]
+            t = self.T[k]
+            new_f = bus_map_arr[f]
+            new_t = bus_map_arr[t]
+            self.F[k] = new_f
+            self.T[k] = new_t
+
+            self.C_branch_bus_f[k, new_f] = 1
+            self.C_branch_bus_t[k, new_t] = 1
 
     def __len__(self) -> int:
         return self.nelm

@@ -8,7 +8,10 @@ import pandas as pd
 import scipy.sparse as sp
 from typing import List, Tuple, Dict, Union
 
+from scipy.sparse import lil_matrix
+
 from GridCalEngine.Devices import RemedialAction
+from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.enumerations import BusMode, ContingencyOperationTypes
@@ -1810,6 +1813,58 @@ class NumericalCircuit:
 
         return df
 
+    def process_topology(self):
+        """
+
+        :return:
+        """
+        C = lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
+        n_red = 0
+        for k in range(self.passive_branch_data.nelm):
+
+            if self.passive_branch_data.reducible[k] and self.passive_branch_data.active[k]:
+                f = self.passive_branch_data.F[k]
+                t = self.passive_branch_data.T[k]
+                C[f, k] = 1
+                C[t, k] = 1
+                n_red += 1
+
+        if n_red > 0:
+
+            # compute the adjacency matrix
+            A = C.T @ C
+
+            # get the islands formed by the reducible branches
+            islands = find_islands(adj=A, active=self.bus_data.active)
+
+            # compose the bus mapping array where each entry point to the final island bus
+            bus_map_arr = self.bus_data.original_idx.copy()
+
+            for island in islands:
+
+                if len(island):
+                    i0 = island[0]
+                    for ii in range(1, len(island)):
+                        i = island[ii]
+                        bus_map_arr[i] = i0
+
+                        # deactivate the reduced buses
+                        self.bus_data.active[i] = False
+
+            # remap
+            self.passive_branch_data.remap(bus_map_arr)
+            self.vsc_data.remap(bus_map_arr)
+            self.hvdc_data.remap(bus_map_arr)
+            self.load_data.remap(bus_map_arr)
+            self.generator_data.remap(bus_map_arr)
+            self.battery_data.remap(bus_map_arr)
+            self.shunt_data.remap(bus_map_arr)
+
+        else:
+            pass
+
+        return n_red
+
     def get_island(self, bus_idx: IntVec,
                    consider_hvdc_as_island_links: bool = False,
                    consider_vsc_as_island_links: bool = True,
@@ -1825,8 +1880,11 @@ class NumericalCircuit:
         if logger is None:
             logger = Logger()
 
+        # detect the topology reductions
+        n_red = self.process_topology()
+
         # if the island is the same as the original bus indices, no slicing is needed
-        if len(bus_idx) == len(self.bus_data.original_idx):
+        if len(bus_idx) == len(self.bus_data.original_idx) and n_red == 0:
             if np.all(bus_idx == self.bus_data.original_idx):
                 return self
 
