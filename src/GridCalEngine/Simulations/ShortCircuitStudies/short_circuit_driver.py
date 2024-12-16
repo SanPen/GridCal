@@ -18,7 +18,7 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import Line, Bus
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_options import ShortCircuitOptions
 from GridCalEngine.enumerations import FaultType, SimulationTypes
@@ -265,7 +265,7 @@ class ShortCircuitDriver(DriverTemplate):
                                                     fault_type=self.options.fault_type)
 
                     # merge results
-                    results.apply_from_island(res, island.bus_data.original_idx, island.branch_data.original_idx)
+                    results.apply_from_island(res, island.bus_data.original_idx, island.passive_branch_data.original_idx)
 
         else:  # single island
 

@@ -1036,6 +1036,7 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data = NumericalCircuit(nbus=0,
                                 nbr=0,
                                 nhvdc=0,
+                                nvsc=0,
                                 nload=0,
                                 ngen=0,
                                 nbatt=0,
@@ -1060,10 +1061,10 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.Vbus_ = npa_data.Vbus.reshape(-1, 1)
         data.Sbus_ = inj.S0.reshape(-1, 1)
         data.Ibus_ = inj.I0.reshape(-1, 1)
-        data.branch_data.names = np.array(npa_data.branch_data.names)
-        data.branch_data.virtual_tap_f = npa_data.branch_data.vtap_f
-        data.branch_data.virtual_tap_t = npa_data.branch_data.vtap_t
-        data.branch_data.original_idx = npa_data.branch_data.original_indices
+        data.passive_branch_data.names = np.array(npa_data.passive_branch_data.names)
+        data.passive_branch_data.virtual_tap_f = npa_data.passive_branch_data.vtap_f
+        data.passive_branch_data.virtual_tap_t = npa_data.passive_branch_data.vtap_t
+        data.passive_branch_data.original_idx = npa_data.passive_branch_data.original_indices
 
         data.bus_data.names = np.array(npa_data.bus_data.names)
         data.bus_data.original_idx = npa_data.bus_data.original_indices
@@ -1502,12 +1503,14 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
                                n_hvdc=grid.get_hvdc_number(),
+                               n_vsc=grid.get_vsc_number(),
                                n_gen=grid.get_generators_number(),
                                n_batt=grid.get_batteries_number(),
                                n_sh=grid.get_shunt_like_device_number(),
                                bus_names=res.bus_names,
                                branch_names=res.branch_names,
                                hvdc_names=res.hvdc_names,
+                               vsc_names=grid.get_vsc_names(),
                                gen_names=grid.get_generator_names(),
                                batt_names=grid.get_battery_names(),
                                sh_names=grid.get_shunt_like_devices_names(),
@@ -1529,10 +1532,10 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     results.T = res.T
     results.hvdc_F = res.hvdc_F
     results.hvdc_T = res.hvdc_T
-    results.hvdc_Pf = res.hvdc_Pf[0, :]
-    results.hvdc_Pt = res.hvdc_Pt[0, :]
-    results.hvdc_loading = res.hvdc_loading[0, :]
-    results.hvdc_losses = res.hvdc_losses[0, :]
+    results.Pf_hvdc = res.hvdc_Pf[0, :]
+    results.Pt_hvdc = res.hvdc_Pt[0, :]
+    results.loading_hvdc = res.hvdc_loading[0, :]
+    results.losses_hvdc = res.hvdc_losses[0, :]
     results.bus_area_indices = grid.get_bus_area_indices()
     results.area_names = [a.name for a in grid.areas]
     results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists

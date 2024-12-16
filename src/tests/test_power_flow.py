@@ -11,7 +11,7 @@ from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 import GridCalEngine.api as gce
 
 
@@ -458,39 +458,46 @@ def test_fubm() -> None:
         assert ok
 
 
-def test_all_matpower_grids():
+def test_power_flow_12bus_acdc() -> None:
     """
-
-    :return:
+    Check that a transformer can regulate the voltage at a bus
     """
-    folder = os.path.join('data', 'grids', 'Matpower')
+    fname = os.path.join('data', 'grids', 'AC-DC with all and DCload.gridcal')
 
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            if file.endswith(".m"):
-                path = os.path.join(root, file)
+    grid = gce.open_file(fname)
 
-                print(path)
-                grid = gce.open_file(path)
+    expected_v = np.array(
+        [1. + 0.j,
+         0.99992855 - 0.01195389j,
+         0.98147048 - 0.02808957j,
+         0.99960499 - 0.02810458j,
+         0.9970312 + 0.j,
+         0.99212134 + 0.j,
+         1. + 0.j,
+         0.99677598 + 0.j,
+         0.99172174 - 0.02331925j,
+         0.99262885 - 0.02434865j,
+         1. + 0.j,
+         0.99972904 - 0.0232776j,
+         0.99751785 - 0.01550583j,
+         0.99999118 - 0.00419999j,
+         0.99938143 - 0.03516744j,
+         0.99965346 - 0.02632404j,
+         0.99799193 + 0.j]
+    )
 
-                if grid.get_bus_number() > 0:
+    # ------------------------------------------------------------------------------------------------------------------
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
 
-                    res = gce.power_flow(
-                        grid=grid,
-                        options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
-                                                     retry_with_other_methods=False,
-                                                     use_stored_guess=False)
-                    )
-                    used_v0 = False
+        options = PowerFlowOptions(solver_type=solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_phase=True,
+                                   max_iter=80)
 
-                    if not res.converged:
-                        # if it does not converge, retry with the provided solution
-                        res = gce.power_flow(
-                            grid=grid,
-                            options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
-                                                         retry_with_other_methods=False,
-                                                         use_stored_guess=True)
-                        )
-                        used_v0 = True
+        results = gce.power_flow(grid, options)
 
-                    assert res.converged
+        assert np.allclose(expected_v, results.voltage, atol=1e-6)
+
+        assert results.converged

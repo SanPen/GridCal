@@ -10,7 +10,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_input import StochasticPowerFlowInput
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, BranchImpedanceMode
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, BranchImpedanceMode
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
 from GridCalEngine.enumerations import SimulationTypes
@@ -121,12 +121,14 @@ class StochasticPowerFlowDriver(DriverTemplate):
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
                                    m=numerical_circuit.nbr,
                                    n_hvdc=numerical_circuit.nhvdc,
+                                   n_vsc=numerical_circuit.nvsc,
                                    n_gen=numerical_circuit.ngen,
                                    n_batt=numerical_circuit.nbatt,
                                    n_sh=numerical_circuit.nshunt,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
                                    hvdc_names=numerical_circuit.hvdc_names,
+                                   vsc_names=numerical_circuit.vsc_data.names,
                                    gen_names=numerical_circuit.generator_names,
                                    batt_names=numerical_circuit.battery_names,
                                    sh_names=numerical_circuit.shunt_names,

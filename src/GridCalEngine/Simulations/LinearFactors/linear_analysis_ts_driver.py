@@ -10,7 +10,7 @@ from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_results import LinearAnalysisTimeSeriesResults
@@ -53,7 +53,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             time_array=self.grid.time_profile[self.time_indices],
             bus_names=self.grid.get_bus_names(),
             bus_types=self.grid.get_bus_default_types(),
-            branch_names=self.grid.get_branches_wo_hvdc_names(),
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
             clustering_results=self.clustering_results,
         )
 

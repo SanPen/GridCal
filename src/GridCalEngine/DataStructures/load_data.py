@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-
+from typing import Tuple, Dict
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
@@ -36,6 +36,7 @@ class LoadData:
         self.mttr: Vec = np.zeros(nelm, dtype=float)
 
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
+        self.bus_idx = np.zeros(nelm, dtype=int)
 
         self.cost: Vec = np.zeros(nelm, dtype=float)  # load shedding cost
 
@@ -71,6 +72,12 @@ class LoadData:
         data.mttr = self.mttr[elm_idx]
 
         data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
+        data.bus_idx = self.bus_idx[elm_idx]
+
+        # Remapping of the buses
+        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
+        for k in range(data.nelm):
+            data.bus_idx[k] = bus_map.get(data.bus_idx[k], -1)
 
         data.cost = self.cost[elm_idx]
 
@@ -98,6 +105,7 @@ class LoadData:
         data.mttr = self.mttr.copy()
 
         data.C_bus_elm = self.C_bus_elm.copy()
+        data.bus_idx = self.bus_idx.copy()
 
         data.cost = self.cost.copy()
 

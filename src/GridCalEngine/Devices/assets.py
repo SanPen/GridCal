@@ -802,6 +802,12 @@ class Assets:
         """
         return len(self._vsc_devices)
 
+    def get_vsc_names(self)-> StrVec:
+        """
+        Get Vsc names
+        """
+        return np.array([e.name for e in self.vsc_devices])
+
     def add_vsc(self, obj: dev.VSC):
         """
         Add a hvdc line object
@@ -3518,6 +3524,7 @@ class Assets:
     def delete_remedial_action(self, obj, del_group: bool = False):
         """
         Delete RemedialAction
+        :param del_group: Delete the group?
         :param obj: index
         """
         try:
@@ -4533,115 +4540,211 @@ class Assets:
             except ValueError:  # element not found ...
                 pass
 
-    def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
-        """
-        Return all the real branch objects.
-        :return: lines + transformers 2w + hvdc
-        """
-        lst = list()
-        for dev_list in self.get_branch_lists_wo_hvdc():
-            lst += dev_list
-        return lst
-
-    def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
-        """
-        Iterator all the real branch objects.
-        :return: lines + transformers 2w + hvdc
-        """
-        for dev_list in self.get_branch_lists_wo_hvdc():
-            for elm in dev_list:
-                yield elm
-
-    def get_branches_wo_hvdc_names(self) -> StrVec:
-        """
-        Get the non HVDC branches' names
-        :return: list of names
-        """
-        return np.array([e.name for e in self.get_branches_wo_hvdc()])
-
-    def get_branches(self) -> List[BRANCH_TYPES]:
+    def get_branch_lists(self, add_vsc: bool = True,
+                         add_hvdc: bool = True,
+                         add_switch: bool = False) -> List[List[BRANCH_TYPES]]:
         """
         Return all the branch objects
-        :return: lines + transformers 2w + hvdc
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: list of branch devices lists
         """
-        return self.get_branches_wo_hvdc() + self._hvdc_lines
-
-    def get_branches_wo_hvdc_index_dict(self) -> Dict[BRANCH_TYPES, int]:
-        """
-        Get the branch to index dictionary
-        :return:
-        """
-        return {b: i for i, b in enumerate(self.get_branches_wo_hvdc())}
-
-    def get_branch_lists_wo_hvdc(self) -> List[List[BRANCH_TYPES]]:
-        """
-        Get list of the branch lists
-        :return: List[List[BRANCH_TYPES]]
-        """
-
-        # This order must be respected durng the compilation
-
-        return [
+        lst = [
             self._lines,
             self._dc_lines,
             self._transformers2w,
             self._windings,
-            self._vsc_devices,
             self._upfc_devices,
-            self._series_reactances
+            self._series_reactances,
         ]
+
+        if add_vsc:
+            lst.append(self._vsc_devices)
+
+        if add_hvdc:
+            lst.append(self._hvdc_lines)
+
+        if add_switch:
+            lst.append(self._switch_devices)
+
+        return lst
+
+    def get_branches(self, add_vsc: bool = True, add_hvdc: bool = True,
+                     add_switch: bool = False) -> List[BRANCH_TYPES]:
+        """
+        Return all the branch objects
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: list of branch devices
+        """
+        elms = list()
+        for lst in self.get_branch_lists(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch):
+            for elm in lst:
+                elms.append(elm)
+        return elms
+
+    def get_branches_iter(self, add_vsc: bool = True,
+                          add_hvdc: bool = True,
+                          add_switch: bool = False) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Return all the branch objects
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: list of branch devices
+        """
+        for lst in self.get_branch_lists(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch):
+            for elm in lst:
+                yield elm
+
+    def get_branch_number(self, add_vsc: bool = True,
+                          add_hvdc: bool = True,
+                          add_switch: bool = False) -> int:
+        """
+        return the number of Branches (of all types)
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: number
+        """
+        m = 0
+        for branch_list in self.get_branch_lists(add_vsc=add_vsc,
+                                                 add_hvdc=add_hvdc,
+                                                 add_switch=add_switch):
+            m += len(branch_list)
+        return m
+
+    def get_branch_names(self, add_vsc: bool = True,
+                         add_hvdc: bool = True,
+                         add_switch: bool = False) -> StrVec:
+        """
+        Get array of all branch names
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: StrVec
+        """
+
+        names = list()
+        for lst in self.get_branch_lists(add_vsc=add_vsc,
+                                         add_hvdc=add_hvdc,
+                                         add_switch=add_switch):
+            for elm in lst:
+                names.append(elm.name)
+        return np.array(names)
+
+    def get_branches_index_dict(self, add_vsc: bool = True,
+                                add_hvdc: bool = True,
+                                add_switch: bool = False) -> Dict[BRANCH_TYPES, int]:
+        """
+        Get the branch to index dictionary
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return:
+        """
+        return {b: i for i, b in enumerate(self.get_branches_iter(add_vsc=add_vsc,
+                                                                  add_hvdc=add_hvdc,
+                                                                  add_switch=add_switch))}
+
+    def get_branches_dict(self, add_vsc: bool = True,
+                          add_hvdc: bool = True,
+                          add_switch: bool = False) -> Dict[str, int]:
+        """
+        Get dictionary of branches (excluding HVDC)
+        the key is the idtag, the value is the branch position
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: Dict[str, int]
+        """
+        return {e.idtag: ei for ei, e in enumerate(self.get_branches_iter(add_vsc=add_vsc,
+                                                                          add_hvdc=add_hvdc,
+                                                                          add_switch=add_switch))}
+
+    def get_branch_number_FT(self, add_vsc: bool = True,
+                             add_hvdc: bool = True,
+                             add_switch: bool = False) -> Tuple[IntVec, IntVec]:
+        """
+        get the from and to arrays of indices
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: IntVec, IntVec
+        """
+        m = self.get_branch_number(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch)
+        F = np.zeros(m, dtype=int)
+        T = np.zeros(m, dtype=int)
+        bus_dict = self.get_bus_index_dict()
+        for i, elm in enumerate(self.get_branches_iter(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch)):
+            F[i] = bus_dict[elm.bus_from]
+            T[i] = bus_dict[elm.bus_to]
+        return F, T
+
+    def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
+        """
+        Return all the real branch objects.
+        :return: lines + transformers 2w
+        """
+        return self.get_branches(add_vsc=True, add_hvdc=False, add_switch=False)
+
+    def get_branches_wo_vsc_hvdc(self) -> list[BRANCH_TYPES]:
+        """
+        Return all the real branch objects.
+        :return: lines + transformers 2w
+        """
+        return self.get_branches(add_vsc=False, add_hvdc=False, add_switch=False)
 
     def get_branch_names_wo_hvdc(self) -> StrVec:
         """
         Get all branch names without HVDC devices
         :return: StrVec
         """
-        names = list()
-        for lst in self.get_branch_lists_wo_hvdc():
-            for elm in lst:
-                names.append(elm.name)
-        return np.array(names)
+        return self.get_branch_names(add_vsc=True, add_hvdc=False, add_switch=False)
 
-    def get_branch_lists(self) -> List[List[BRANCH_TYPES]]:
+    def get_branch_names_wo_vsc_hvdc(self) -> StrVec:
         """
-        Get list of the branch lists
-        :return: list of lists
-        """
-        lst = self.get_branch_lists_wo_hvdc()
-        lst.append(self._hvdc_lines)
-        return lst
-
-    def get_branch_number(self) -> int:
-        """
-        return the number of Branches (of all types)
-        :return: number
-        """
-        m = 0
-        for branch_list in self.get_branch_lists():
-            m += len(branch_list)
-        return m
-
-    def get_branch_names(self) -> StrVec:
-        """
-        Get array of all branch names
+        Get all branch names without VSC nor HVDC devices
         :return: StrVec
         """
-
-        names = list()
-        for lst in self.get_branch_lists():
-            for elm in lst:
-                names.append(elm.name)
-        return np.array(names)
+        return self.get_branch_names(add_vsc=False, add_hvdc=False, add_switch=False)
 
     def get_branch_number_wo_hvdc(self) -> int:
         """
         return the number of Branches (of all types)
         :return: number
         """
-        count = 0
-        for branch_list in self.get_branch_lists_wo_hvdc():
-            count += len(branch_list)
-        return count
+        return self.get_branch_number(add_vsc=True, add_hvdc=False, add_switch=False)
+
+    def get_branch_number_wo_vsc_hvdc(self) -> int:
+        """
+        return the number of Branches (of all types)
+        :return: number
+        """
+        return self.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=False)
+
+    def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator all the real branch objects.
+        :return: lines + transformers 2w + hvdc
+        """
+        return self.get_branches_iter(add_vsc=True, add_hvdc=False, add_switch=False)
+
+    def get_branches_wo_vsc_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator all the real branch objects.
+        :return: lines + transformers 2w + hvdc + vsc
+        """
+        return self.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=False)
+
+    def get_branches_wo_hvdc_index_dict(self) -> Dict[BRANCH_TYPES, int]:
+        """
+        Get the branch to index dictionary
+        :return:
+        """
+        return self.get_branches_index_dict(add_vsc=True, add_hvdc=False, add_switch=False)
 
     def get_branches_wo_hvdc_dict(self) -> Dict[str, int]:
         """
@@ -4649,22 +4752,14 @@ class Assets:
         the key is the idtag, the value is the branch position
         :return: Dict[str, int]
         """
-        return {e.idtag: ei for ei, e in enumerate(self.get_branches_wo_hvdc())}
+        return self.get_branches_dict(add_vsc=True, add_hvdc=False, add_switch=False)
 
     def get_branch_number_wo_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
         """
         get the from and to arrays of indices
         :return: IntVec, IntVec
         """
-        devices = self.get_branches_wo_hvdc()
-        m = len(devices)
-        F = np.zeros(m, dtype=int)
-        T = np.zeros(m, dtype=int)
-        bus_dict = self.get_bus_index_dict()
-        for i, elm in enumerate(devices):
-            F[i] = bus_dict[elm.bus_from]
-            T[i] = bus_dict[elm.bus_to]
-        return F, T
+        return self.get_branch_number_FT(add_vsc=True, add_hvdc=False, add_switch=False)
 
     def delete_groupings_with_object(self, obj: BRANCH_TYPES, delete_groups: bool = True):
         """
@@ -4698,21 +4793,6 @@ class Assets:
             F[i] = bus_dict[elm.bus_from]
             T[i] = bus_dict[elm.bus_to]
         return F, T
-
-    def get_all_branches_iter(self) -> Generator[BRANCH_TYPES, None, None]:
-        """
-        Iterator through all branches, including HVDC and switches
-        :return: BRANCH_TYPES
-        """
-        for lst in self.get_branch_lists_wo_hvdc():
-            for elm in lst:
-                yield elm
-
-        for elm in self.hvdc_lines:
-            yield elm
-
-        for elm in self.switch_devices:
-            yield elm
 
     # ------------------------------------------------------------------------------------------------------------------
     # Injections

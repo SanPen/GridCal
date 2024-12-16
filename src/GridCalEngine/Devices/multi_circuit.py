@@ -508,12 +508,7 @@ class MultiCircuit(Assets):
                       cn_to=line.cn_to,
                       name='VSC',
                       active=line.active,
-                      rate=line.rate,
-                      r=line.R,
-                      x=line.X,
-                      Beq=line.B,
-                      tap_module=1.0,
-                      )
+                      rate=line.rate)
 
         vsc.active_prof = line.active_prof
         vsc.rate_prof = line.rate_prof

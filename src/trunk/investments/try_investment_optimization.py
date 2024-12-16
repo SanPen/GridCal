@@ -12,7 +12,7 @@ import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import trunk.investments.InvestmentsEvaluation as invsim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
 from GridCalEngine.enumerations import ResultTypes
 
@@ -119,7 +119,7 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
         # do something
         res = multi_island_pf_nc(nc=nc, options=pf_options)
         total_losses = np.sum(res.losses.real)
-        overload_score = res.get_overload_score(branch_prices=nc.branch_data.overload_cost)
+        overload_score = res.get_overload_score(branch_prices=nc.passive_branch_data.overload_cost)
         voltage_score = res.get_undervoltage_overvoltage_score(undervoltage_prices=nc.bus_data.undervoltage_cost,
                                                                overvoltage_prices=nc.bus_data.overvoltage_cost,
                                                                vmin=nc.bus_data.Vmin,

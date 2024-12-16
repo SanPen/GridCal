@@ -200,11 +200,11 @@ class Generator(GeneratorParent):
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 
         self.register(key='Pf', units='', tpe=float,
-                      definition='Power factor (cos(fi)). This is used for non-controlled generators.',
+                      definition='Power factor (cos(phi)). This is used for non-controlled generators.',
                       profile_name='Pf_prof')
         self.register(key='Vset', units='p.u.', tpe=float,
                       definition='Set voltage. This is used for controlled generators.', profile_name='Vset_prof')
-        self.register(key='Snom', units='MVA', tpe=float, definition='Nomnial power.')
+        self.register(key='Snom', units='MVA', tpe=float, definition='Nominal power.')
         self.register(key='Qmin', units='MVAr', tpe=float, definition='Minimum reactive power.')
         self.register(key='Qmax', units='MVAr', tpe=float, definition='Maximum reactive power.')
         self.register(key='use_reactive_power_curve', units='', tpe=bool,

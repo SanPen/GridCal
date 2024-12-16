@@ -50,7 +50,7 @@ def test_numerical_cicuit_branch_contingencies():
 
         cnt = main_circuit.contingencies
         nc.set_con_or_ra_status(event_list=cnt)
-        cnt_branch = np.where(nc.branch_data.active == 0)[0]  # deactivated branches
+        cnt_branch = np.where(nc.passive_branch_data.active == 0)[0]  # deactivated branches
 
         assert len(cnt_branch) == len(cnt)
 
@@ -104,8 +104,8 @@ def test_bus_indexing_remap():
     for island in islands:
 
         # old way of finding the F and T arrays of an island
-        F = get_bus_indices(island.branch_data.C_branch_bus_f.tocsc())
-        T = get_bus_indices(island.branch_data.C_branch_bus_t.tocsc())
+        F = get_bus_indices(island.passive_branch_data.C_branch_bus_f.tocsc())
+        T = get_bus_indices(island.passive_branch_data.C_branch_bus_t.tocsc())
 
-        assert np.allclose(F, island.branch_data.F)
-        assert np.allclose(T, island.branch_data.T)
+        assert np.allclose(F, island.passive_branch_data.F)
+        assert np.allclose(T, island.passive_branch_data.T)

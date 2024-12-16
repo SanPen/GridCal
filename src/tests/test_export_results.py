@@ -41,4 +41,4 @@ def test_export_results():
     opf_ts_driver.run()
 
     gce.export_drivers(drivers_list=[pf_driver, opf_ts_driver],
-                       file_name="IEEE39_1W_results.zip")
+                       file_name=os.path.join("output", "IEEE39_1W_results.zip"))

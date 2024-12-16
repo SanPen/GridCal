@@ -7,7 +7,7 @@ import numpy as np
 from typing import Tuple, Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.basic_structures import Vec, IntVec,Logger
 
 
@@ -60,12 +60,12 @@ class ReliabilityIterable:
 
         # compute the transition probabilities
         if forced_mttf is None:
-            lbda = 1.0 / nc.branch_data.mttf
+            lbda = 1.0 / nc.passive_branch_data.mttf
         else:
             lbda = 1.0 / np.full(nc.nbr, forced_mttf)
 
         if forced_mttr is None:
-            mu = 1.0 / nc.branch_data.mttr
+            mu = 1.0 / nc.passive_branch_data.mttr
         else:
             mu = 1.0 / np.full(nc.nbr, forced_mttr)
 
@@ -88,7 +88,7 @@ class ReliabilityIterable:
         br_active = (p > self.p_dwn).astype(int)
 
         # apply the transitioning states
-        nc.branch_data.active = br_active
+        nc.passive_branch_data.active = br_active
 
         pf_res = multi_island_pf_nc(nc=nc, options=self.pf_options)
 

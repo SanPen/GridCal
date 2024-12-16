@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
-from typing import Union, List
+from typing import List
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, CscMat, ConvergenceReport
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, ConvergenceReport
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
@@ -22,42 +22,86 @@ class NumericPowerFlowResults:
 
     def __init__(self,
                  V: CxVec,
-                 converged: bool,
-                 norm_f: float,
                  Scalc: CxVec,
-                 m: Union[Vec, None] = None,
-                 tau: Union[Vec, None] = None,
-                 Beq: Union[Vec, None] = None,
-                 Ybus: Union[CscMat, None] = None,
-                 Yf: Union[CscMat, None] = None,
-                 Yt: Union[CscMat, None] = None,
-                 iterations=0,
-                 elapsed=0.0):
+                 m: Vec,
+                 tau: Vec,
+                 Sf: CxVec,
+                 St: CxVec,
+                 If: CxVec,
+                 It: CxVec,
+                 loading: CxVec,
+                 losses: CxVec,
+                 Pf_vsc: Vec,
+                 St_vsc: CxVec,
+                 If_vsc: Vec,
+                 It_vsc: CxVec,
+                 losses_vsc: Vec,
+                 loading_vsc: Vec,
+                 Sf_hvdc: CxVec,
+                 St_hvdc: CxVec,
+                 losses_hvdc: CxVec,
+                 loading_hvdc: Vec,
+                 norm_f: float,
+                 converged: bool,
+                 iterations: int,
+                 elapsed: float):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
-        :param converged: converged?
-        :param norm_f: error
         :param Scalc: Calculated power vector
         :param m: Tap modules vector for all the Branches
         :param tau: Tap angles vector for all the Branches
-        :param Beq: Equivalent susceptance vector for all the Branches
-        :param Ybus: Admittance matrix
-        :param Yf: Admittance matrix of the "from" buses
-        :param Yt: Admittance matrix of the "to" buses
+        :param Sf: Power flom vector for all the Branches
+        :param St: Power to vector for all the Branches
+        :param If: Current flom vector for all the Branches
+        :param It: Current to vector for all the Branches
+        :param loading: Loading vector for all the Branches
+        :param losses: Losses vector for all the Branches
+        :param Pf_vsc:
+        :param St_vsc:
+        :param If_vsc:
+        :param It_vsc:
+        :param losses_vsc:
+        :param Sf_hvdc:
+        :param St_hvdc:
+        :param losses_hvdc:
+        :param norm_f: error
+        :param converged: converged?
         :param iterations: number of iterations
         :param elapsed: time elapsed
         """
         self.V = V
-        self.converged = converged
-        self.norm_f = norm_f
         self.Scalc = Scalc
+
+        # regular branches
+        self.Sf = Sf
+        self.St = St
+        self.If = If
+        self.It = It
+        self.loading = loading
+        self.losses = losses
+
+        # controllable branches
         self.tap_module = m
         self.tap_angle = tau
-        self.Beq = Beq
-        self.Ybus = Ybus
-        self.Yf = Yf
-        self.Yt = Yt
+
+        # VSC
+        self.Pf_vsc = Pf_vsc
+        self.St_vsc = St_vsc
+        self.If_vsc = If_vsc
+        self.It_vsc = It_vsc
+        self.losses_vsc = losses_vsc
+        self.loading_vsc = loading_vsc
+
+        # Hvdc
+        self.Sf_hvdc = Sf_hvdc
+        self.St_hvdc = St_hvdc
+        self.losses_hvdc = losses_hvdc
+        self.loading_hvdc = loading_hvdc
+
+        # convergence metrics
+        self.converged = converged
+        self.norm_f = norm_f
         self.iterations = iterations
         self.elapsed = elapsed
         self.method = None
@@ -70,12 +114,14 @@ class PowerFlowResults(ResultsTemplate):
             n: int,
             m: int,
             n_hvdc: int,
+            n_vsc: int,
             n_gen: int,
             n_batt: int,
             n_sh: int,
             bus_names: np.ndarray,
             branch_names: np.ndarray,
             hvdc_names: np.ndarray,
+            vsc_names: np.ndarray,
             gen_names: np.ndarray,
             batt_names: np.ndarray,
             sh_names: np.ndarray,
@@ -117,7 +163,6 @@ class PowerFlowResults(ResultsTemplate):
 
                     ResultTypes.BranchTapModule,
                     ResultTypes.BranchTapAngle,
-                    ResultTypes.BranchBeq,
 
                     ResultTypes.BranchLoading,
                     ResultTypes.BranchActiveLosses,
@@ -127,11 +172,16 @@ class PowerFlowResults(ResultsTemplate):
                     ResultTypes.BranchAngles
                 ],
                 ResultTypes.HvdcResults: [
-                    ResultTypes.HvdcLosses,
                     ResultTypes.HvdcPowerFrom,
-                    ResultTypes.HvdcPowerTo
+                    ResultTypes.HvdcPowerTo,
+                    ResultTypes.HvdcLosses,
                 ],
 
+                ResultTypes.VscResults: [
+                    ResultTypes.VscPowerFrom,
+                    ResultTypes.VscPowerTo,
+                    ResultTypes.VscLosses,
+                ],
                 ResultTypes.GeneratorResults: [
                     ResultTypes.GeneratorReactivePower,
                 ],
@@ -163,18 +213,11 @@ class PowerFlowResults(ResultsTemplate):
         self.bus_names: StrVec = bus_names
         self.branch_names: StrVec = branch_names
         self.hvdc_names: StrVec = hvdc_names
+        self.vsc_names: StrVec = vsc_names
         self.gen_names = gen_names
         self.batt_names = batt_names
         self.sh_names = sh_names
         self.bus_types: IntVec = bus_types
-
-        # vars for the inter-area computation
-        # self.F: IntVec = None
-        # self.T: IntVec = None
-        # self.hvdc_F: IntVec = None
-        # self.hvdc_T: IntVec = None
-        # self.bus_area_indices: IntVec = None
-        # self.area_names: StrVec = area_names
 
         self.Sbus: CxVec = np.zeros(n, dtype=complex)
         self.voltage: CxVec = np.zeros(n, dtype=complex)
@@ -186,16 +229,23 @@ class PowerFlowResults(ResultsTemplate):
 
         self.tap_module: Vec = np.zeros(m, dtype=float)
         self.tap_angle: Vec = np.zeros(m, dtype=float)
-        self.Beq: Vec = np.zeros(m, dtype=float)
 
         self.Vbranch: CxVec = np.zeros(m, dtype=complex)
         self.loading: CxVec = np.zeros(m, dtype=complex)
         self.losses: CxVec = np.zeros(m, dtype=complex)
 
-        self.hvdc_losses: Vec = np.zeros(n_hvdc)
-        self.hvdc_Pf: Vec = np.zeros(n_hvdc)
-        self.hvdc_Pt: Vec = np.zeros(n_hvdc)
-        self.hvdc_loading: Vec = np.zeros(n_hvdc)
+        self.losses_hvdc: Vec = np.zeros(n_hvdc)
+        self.Pf_hvdc: Vec = np.zeros(n_hvdc)
+        self.Pt_hvdc: Vec = np.zeros(n_hvdc)
+        self.loading_hvdc: Vec = np.zeros(n_hvdc)
+
+        # VSC
+        self.Pf_vsc = np.zeros(n_vsc, dtype=float)
+        self.St_vsc = np.zeros(n_vsc, dtype=complex)
+        self.If_vsc = np.zeros(n_vsc, dtype=float)
+        self.It_vsc = np.zeros(n_vsc, dtype=complex)
+        self.losses_vsc = np.zeros(n_vsc, dtype=float)
+        self.loading_vsc = np.zeros(n_vsc, dtype=float)
 
         self.gen_q: Vec = np.zeros(n_gen)
         self.battery_q: Vec = np.zeros(n_batt)
@@ -230,15 +280,21 @@ class PowerFlowResults(ResultsTemplate):
         self.register(name='It', tpe=CxVec)
         self.register(name='tap_module', tpe=Vec)
         self.register(name='tap_angle', tpe=Vec)
-        self.register(name='Beq', tpe=Vec)
         self.register(name='Vbranch', tpe=CxVec)
         self.register(name='loading', tpe=CxVec)
         self.register(name='losses', tpe=CxVec)
 
-        self.register(name='hvdc_losses', tpe=Vec)
-        self.register(name='hvdc_Pf', tpe=Vec)
-        self.register(name='hvdc_Pt', tpe=Vec)
-        self.register(name='hvdc_loading', tpe=Vec)
+        self.register(name='losses_hvdc', tpe=Vec)
+        self.register(name='Pf_hvdc', tpe=Vec)
+        self.register(name='Pt_hvdc', tpe=Vec)
+        self.register(name='loading_hvdc', tpe=Vec)
+
+        self.register(name='losses_vsc', tpe=Vec)
+        self.register(name='Pf_vsc', tpe=Vec)
+        self.register(name='St_vsc', tpe=CxVec)
+        self.register(name='If_vsc', tpe=Vec)
+        self.register(name='It_vsc', tpe=CxVec)
+        self.register(name='loading_vsc', tpe=Vec)
 
         self.register(name='gen_q', tpe=Vec)
         self.register(name='battery_q', tpe=Vec)
@@ -300,38 +356,49 @@ class PowerFlowResults(ResultsTemplate):
         return val
 
     def apply_from_island(self,
-                          results: "PowerFlowResults",
+                          results: NumericPowerFlowResults,
                           b_idx: np.ndarray,
-                          br_idx: np.ndarray):
+                          br_idx: np.ndarray,
+                          hvdc_idx: np.ndarray,
+                          vsc_idx: np.ndarray) -> None:
         """
         Apply results from another island circuit to the circuit results represented
         here.
-
-        Arguments:
-
-            **results**: PowerFlowResults
-
-            **b_idx**: bus original indices
-
-            **elm_idx**: branch original indices
+        :param results: NumericPowerFlowResults from an island circuit
+        :param b_idx: bus original indices
+        :param br_idx: branch original indices
+        :param hvdc_idx: hvdc original indices
+        :param vsc_idx: vsc original indices
+        :return: None
         """
-        self.Sbus[b_idx] = results.Sbus
-        self.voltage[b_idx] = results.voltage
+        self.voltage[b_idx] = results.V
+        self.Sbus[b_idx] = results.Scalc
+
+        self.tap_module[br_idx] = results.tap_module
+        self.tap_angle[br_idx] = results.tap_angle
 
         self.Sf[br_idx] = results.Sf
         self.St[br_idx] = results.St
         self.If[br_idx] = results.If
         self.It[br_idx] = results.It
 
-        self.tap_module[br_idx] = results.tap_module
-        self.tap_angle[br_idx] = results.tap_angle
-        self.Beq[br_idx] = results.Beq
-
-        self.Vbranch[br_idx] = results.Vbranch
+        # self.Vbranch[br_idx] = results.Vbranch
         self.loading[br_idx] = results.loading
         self.losses[br_idx] = results.losses
 
-        self.convergence_reports += results.convergence_reports
+        # Hvdc
+        self.Pf_hvdc[hvdc_idx] = results.Sf_hvdc.real
+        self.Pt_hvdc[hvdc_idx] = results.St_hvdc.real
+        self.losses_hvdc[hvdc_idx] = results.losses_hvdc.real
+        self.loading_hvdc[hvdc_idx] = results.loading_hvdc.real
+
+        # VSC
+        self.Pf_vsc[vsc_idx] = results.Pf_vsc
+        self.St_vsc[vsc_idx] = results.St_vsc
+        self.If_vsc[vsc_idx] = results.If_vsc
+        self.It_vsc[vsc_idx] = results.It_vsc
+        self.losses_vsc[vsc_idx] = results.losses_vsc
+        self.loading_vsc[vsc_idx] = results.loading_vsc
 
     def get_report_dataframe(self, island_idx=0):
         """
@@ -402,7 +469,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=np.abs(self.voltage),
                                 index=self.bus_names,
                                 idx_device_type=DeviceType.BusDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u.)',
@@ -413,7 +480,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=np.angle(self.voltage, deg=True),
                                 index=self.bus_names,
                                 idx_device_type=DeviceType.BusDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(deg)',
@@ -438,7 +505,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=data,
                                 index=self.bus_names,
                                 idx_device_type=DeviceType.BusDevice,
-                                columns=['Voltage module', 'Voltage angle (deg)'],
+                                columns=np.array(['Voltage module', 'Voltage angle (deg)']),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u., deg)',
@@ -449,7 +516,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.Sbus.real,
                                 index=self.bus_names,
                                 idx_device_type=DeviceType.BusDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -460,7 +527,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.Sbus.imag,
                                 index=self.bus_names,
                                 idx_device_type=DeviceType.BusDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MVAr)',
@@ -471,7 +538,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.Sf.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -482,7 +549,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.Sf.imag,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MVAr)',
@@ -493,7 +560,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.St.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -504,7 +571,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.St.imag,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MVAr)',
@@ -515,7 +582,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.If.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u.)',
@@ -526,7 +593,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.If.imag,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u.)',
@@ -537,7 +604,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.It.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u.)',
@@ -548,7 +615,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.It.imag,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u.)',
@@ -559,7 +626,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=np.abs(self.loading) * 100,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(%)',
@@ -570,7 +637,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.losses.real,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -581,7 +648,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.losses.imag,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MVAr)',
@@ -592,7 +659,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=np.abs(self.losses.real) / np.abs(self.Sf.real + 1e-20) * 100.0,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(%)',
@@ -603,7 +670,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=np.abs(self.Vbranch),
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u.)',
@@ -614,7 +681,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=np.angle(self.Vbranch, deg=True),
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(deg)',
@@ -625,7 +692,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.tap_module,
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(p.u.)',
@@ -636,29 +703,18 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=np.rad2deg(self.tap_angle),
                                 index=self.branch_names,
                                 idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(deg)',
                                 units='(deg)')
 
-        elif result_type == ResultTypes.BranchBeq:
-
-            return ResultsTable(data=self.Beq,
-                                index=self.branch_names,
-                                idx_device_type=DeviceType.BranchDevice,
-                                columns=[result_type.value],
-                                cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
-                                ylabel='(p.u.)',
-                                units='(p.u.)')
-
         elif result_type == ResultTypes.HvdcLosses:
 
-            return ResultsTable(data=self.hvdc_losses,
+            return ResultsTable(data=self.losses_hvdc,
                                 index=self.hvdc_names,
                                 idx_device_type=DeviceType.HVDCLineDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -666,10 +722,10 @@ class PowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.HvdcPowerFrom:
 
-            return ResultsTable(data=self.hvdc_Pf,
+            return ResultsTable(data=self.Pf_hvdc,
                                 index=self.hvdc_names,
                                 idx_device_type=DeviceType.HVDCLineDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -677,10 +733,43 @@ class PowerFlowResults(ResultsTemplate):
 
         elif result_type == ResultTypes.HvdcPowerTo:
 
-            return ResultsTable(data=self.hvdc_Pt,
+            return ResultsTable(data=self.Pt_hvdc,
                                 index=self.hvdc_names,
                                 idx_device_type=DeviceType.HVDCLineDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.VscLosses:
+
+            return ResultsTable(data=self.losses_vsc,
+                                index=self.vsc_names,
+                                idx_device_type=DeviceType.VscDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.VscPowerFrom:
+
+            return ResultsTable(data=self.Pf_vsc,
+                                index=self.vsc_names,
+                                idx_device_type=DeviceType.VscDevice,
+                                columns=np.array([result_type.value]),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        elif result_type == ResultTypes.VscPowerTo:
+
+            return ResultsTable(data=self.St_vsc.real,
+                                index=self.vsc_names,
+                                idx_device_type=DeviceType.VscDevice,
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -695,13 +784,13 @@ class PowerFlowResults(ResultsTemplate):
                                              Sf=self.Sf,
                                              hvdc_F=self.hvdc_F,
                                              hvdc_T=self.hvdc_T,
-                                             hvdc_Pf=self.hvdc_Pf,
+                                             hvdc_Pf=self.Pf_hvdc,
                                              bus_area_indices=self.bus_area_indices).real
 
             return ResultsTable(data=data,
-                                index=index,
+                                index=np.array(index),
                                 idx_device_type=DeviceType.AreaDevice,
-                                columns=columns,
+                                columns=np.array(columns),
                                 cols_device_type=DeviceType.AreaDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -712,19 +801,19 @@ class PowerFlowResults(ResultsTemplate):
             columns = ['->' + a for a in self.area_names]
             Pf = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices, self.F,
                                                  self.T)
-            Pf += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
+            Pf += self.get_hvdc_values_per_area(np.abs(self.Pf_hvdc), self.area_names, self.bus_area_indices,
                                                 self.hvdc_F, self.hvdc_T)
             Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
                                                  self.F, self.T)
-            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+            Pl += self.get_hvdc_values_per_area(np.abs(self.losses_hvdc), self.area_names, self.bus_area_indices,
                                                 self.hvdc_F, self.hvdc_T)
 
             data = Pl / (Pf + 1e-20) * 100.0
 
             return ResultsTable(data=data,
-                                index=index,
+                                index=np.array(index),
                                 idx_device_type=DeviceType.AreaDevice,
-                                columns=columns,
+                                columns=np.array(columns),
                                 cols_device_type=DeviceType.AreaDevice,
                                 title=result_type.value,
                                 ylabel='(%)',
@@ -737,7 +826,7 @@ class PowerFlowResults(ResultsTemplate):
             Gf = self.get_bus_values_per_area(gen_bus, self.area_names, self.bus_area_indices)
             Pl = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
                                                  self.F, self.T)
-            Pl += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+            Pl += self.get_hvdc_values_per_area(np.abs(self.losses_hvdc), self.area_names, self.bus_area_indices,
                                                 self.hvdc_F, self.hvdc_T)
 
             data = np.zeros(len(self.area_names))
@@ -745,9 +834,9 @@ class PowerFlowResults(ResultsTemplate):
                 data[i] = Pl[i, i] / (Gf[i] + 1e-20) * 100.0
 
             return ResultsTable(data=data,
-                                index=index,
+                                index=np.array(index),
                                 idx_device_type=DeviceType.AreaDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(%)',
@@ -758,13 +847,13 @@ class PowerFlowResults(ResultsTemplate):
             columns = ['->' + a for a in self.area_names]
             data = self.get_branch_values_per_area(np.abs(self.losses.real), self.area_names, self.bus_area_indices,
                                                    self.F, self.T)
-            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_losses), self.area_names, self.bus_area_indices,
+            data += self.get_hvdc_values_per_area(np.abs(self.losses_hvdc), self.area_names, self.bus_area_indices,
                                                   self.hvdc_F, self.hvdc_T)
 
             return ResultsTable(data=data,
-                                index=index,
+                                index=np.array(index),
                                 idx_device_type=DeviceType.AreaDevice,
-                                columns=columns,
+                                columns=np.array(columns),
                                 cols_device_type=DeviceType.AreaDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -775,13 +864,13 @@ class PowerFlowResults(ResultsTemplate):
             columns = ['->' + a for a in self.area_names]
             data = self.get_branch_values_per_area(np.abs(self.Sf.real), self.area_names, self.bus_area_indices,
                                                    self.F, self.T)
-            data += self.get_hvdc_values_per_area(np.abs(self.hvdc_Pf), self.area_names, self.bus_area_indices,
+            data += self.get_hvdc_values_per_area(np.abs(self.Pf_hvdc), self.area_names, self.bus_area_indices,
                                                   self.hvdc_F, self.hvdc_T)
 
             return ResultsTable(data=data,
-                                index=index,
+                                index=np.array(index),
                                 idx_device_type=DeviceType.AreaDevice,
-                                columns=columns,
+                                columns=np.array(columns),
                                 cols_device_type=DeviceType.AreaDevice,
                                 title=result_type.value,
                                 ylabel='(MW)',
@@ -792,7 +881,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.gen_q,
                                 index=self.gen_names,
                                 idx_device_type=DeviceType.GeneratorDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MVAr)',
@@ -803,7 +892,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.battery_q,
                                 index=self.batt_names,
                                 idx_device_type=DeviceType.BatteryDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MVAr)',
@@ -814,7 +903,7 @@ class PowerFlowResults(ResultsTemplate):
             return ResultsTable(data=self.shunt_q,
                                 index=self.sh_names,
                                 idx_device_type=DeviceType.ShuntLikeDevice,
-                                columns=[result_type.value],
+                                columns=np.array([result_type.value]),
                                 cols_device_type=DeviceType.NoDevice,
                                 title=result_type.value,
                                 ylabel='(MVAr)',

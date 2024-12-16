@@ -440,7 +440,7 @@ def process_grid_topology_at(grid: MultiCircuit,
     # ------------------------------------------------------------------------------------------------------------------
 
     # find out the relevant connectivity nodes and buses from the branches
-    for k, br in enumerate(grid.get_all_branches_iter()):
+    for k, br in enumerate(grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True)):
         i = process_info.add_bus_or_cn(cn=br.cn_from, bus=br.bus_from, logger=logger, main_dev_name=br.name)
         j = process_info.add_bus_or_cn(cn=br.cn_to, bus=br.bus_to, logger=logger, main_dev_name=br.name)
         process_info.register_branch_indices(k=k, f=i, t=j)
@@ -466,7 +466,7 @@ def process_grid_topology_at(grid: MultiCircuit,
 
         # if no branches to reduce are provided, mark the switches for reduction
 
-        for k, elm in enumerate(grid.get_all_branches_iter()):
+        for k, elm in enumerate(grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True)):
 
             if elm.device_type == DeviceType.SwitchDevice:
                 br_active[k] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
@@ -484,7 +484,9 @@ def process_grid_topology_at(grid: MultiCircuit,
 
         # if there were branches to reduce provided, mark them for reduction
 
-        br_idx_dict = {elm: k for k, elm in enumerate(grid.get_all_branches_iter())}
+        br_idx_dict = {elm: k for k, elm in enumerate(grid.get_branches_iter(add_vsc=True,
+                                                                             add_hvdc=True,
+                                                                             add_switch=True))}
         for elm in branches_to_reduce:
             k = br_idx_dict[elm]
             br_active[k] = 0
@@ -504,7 +506,7 @@ def process_grid_topology_at(grid: MultiCircuit,
 
     if debug >= 2:
         candidate_names = process_info.get_candidate_names()
-        br_names = [br.name for br in grid.get_all_branches_iter()]
+        br_names = [br.name for br in grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True)]
         C = Cf + Ct
         df = pd.DataFrame(data=C.toarray(), columns=candidate_names, index=br_names)
         print(df.replace(to_replace=0.0, value="-"))
@@ -513,7 +515,6 @@ def process_grid_topology_at(grid: MultiCircuit,
 
         df = pd.DataFrame(data=A.toarray(), columns=candidate_names, index=candidate_names)
         print(df.replace(to_replace=0.0, value="-"))
-        print()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Perform the topology search, this will find candidate buses that reduce to be the same bus
@@ -542,7 +543,7 @@ def process_grid_topology_at(grid: MultiCircuit,
                 logger.add_info("Bus added to grid", device=bus_device.name)
 
     # map the buses to the branches from their connectivity nodes
-    for i, elm in enumerate(grid.get_all_branches_iter()):
+    for i, elm in enumerate(grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True)):
         if elm.cn_from is not None:
             elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
         else:

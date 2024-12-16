@@ -25,7 +25,7 @@ SQRT3 = np.sqrt(3.0)
 """
 NOTE: This device is legacy and unsupported
       It only exists because older GridCal versions used it
-      Now when this devices is used it is immediatelly converted 
+      Now when this devices is used it is immediately converted 
       to either a line or transformer
 """
 

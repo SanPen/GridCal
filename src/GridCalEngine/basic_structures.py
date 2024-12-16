@@ -37,16 +37,15 @@ class CDF:
     Inverse Cumulative density function of a given array of data
     """
 
-    def __init__(self, data: Vec):
+    def __init__(self, data: Vec | pd.Series):
         """
         Constructor
-        @param data: Array (list or numpy array)
+        @param data: Array (DataFrame or numpy array)
         """
         # Create the CDF of the data
         # sort the data:
-        if type(data) is pd.DataFrame:
+        if isinstance(data, pd.Series):
             self.arr = np.sort(np.ndarray.flatten(data.values))
-
         else:
             self.arr = np.sort(data, axis=0)
 
@@ -333,7 +332,7 @@ class Logger:
         """
         self.entries.append(LogEntry(txt))
 
-    def has_logs(self):
+    def has_logs(self) -> bool:
         """
         Are there any logs?
         :return: True / False
@@ -538,7 +537,7 @@ class Logger:
             print(title)
         print(self.to_df())
 
-    def __str__(self):
+    def __str__(self) -> str:
 
         val = ''
         for e in self.entries:
@@ -633,7 +632,7 @@ class ConvergenceReport:
         self.elapsed_ = list()
         self.iterations_ = list()
 
-    def add(self, method, converged, error, elapsed, iterations):
+    def add(self, method, converged: bool, error: float, elapsed: float, iterations: int):
         """
 
         :param method:
@@ -820,7 +819,7 @@ class CompressedJsonStruct:
         :return:
         """
         nf = len(self.__fields)
-        self.__data = [[None] * nf for i in range(n)]
+        self.__data = [[None] * nf for _ in range(n)]
 
     def set_at(self, i, col_name, val):
         """

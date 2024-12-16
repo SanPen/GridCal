@@ -31,7 +31,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
@@ -64,6 +64,7 @@ class SimulationsMain(TimeEventsMain):
         self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
         self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
         self.solvers_dict[SolverType.DC.value] = SolverType.DC
+        # self.solvers_dict[SolverType.GENERALISED.value] = SolverType.GENERALISED
 
         self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
         self.ui.solver_comboBox.setCurrentIndex(0)
@@ -1343,7 +1344,7 @@ class SimulationsMain(TimeEventsMain):
                     _, pf_results = self.session.power_flow
                     if pf_results is not None:
                         Pf = pf_results.Sf.real
-                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        Pf_hvdc = pf_results.Pf_hvdc.real
                         use_provided_flows = True
                     else:
                         warning_msg('There were no power flow values available. Linear flows will be used.')

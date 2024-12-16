@@ -2,16 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
 from scipy.sparse import csc_matrix, diags, csr_matrix
-from GridCalEngine.basic_structures import IntVec, Vec, Logger
-from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.basic_structures import IntVec, Vec
 
 
 @nb.njit(cache=True)
@@ -285,8 +283,21 @@ class ConnectivityMatrices:
         return self.Ct_
 
     @property
-    def A(self) -> sp.csc_matrix:
-        return (self.Cf_ - self.Ct_).tocsc()
+    def C(self) -> sp.csc_matrix:
+        """
+        Adjacency matrix
+        :return:
+        """
+        return (self.Cf_ + self.Ct_).tocsc()
+
+    def get_Adjacency(self, bus_active: IntVec) -> csc_matrix:
+        """
+
+        :param bus_active:
+        :return:
+        """
+        c = self.C
+        return (diags(bus_active) * (c.T @ c)).tocsc()
 
 
 def compute_connectivity(branch_active: IntVec,
@@ -306,12 +317,15 @@ def compute_connectivity(branch_active: IntVec,
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
 
 
-def compute_connectivity_with_hvdc(branch_active: IntVec,
-                                   Cf_: csc_matrix,
-                                   Ct_: csc_matrix,
-                                   hvdc_active: Union[None, IntVec] = None,
-                                   Cf_hvdc: Union[None, csc_matrix] = None,
-                                   Ct_hvdc: Union[None, csc_matrix] = None) -> ConnectivityMatrices:
+def compute_connectivity_flexible(branch_active: IntVec | None = None,
+                                  Cf_: csc_matrix | None = None,
+                                  Ct_: csc_matrix | None = None,
+                                  hvdc_active: IntVec | None = None,
+                                  Cf_hvdc: csc_matrix | None = None,
+                                  Ct_hvdc: csc_matrix | None = None,
+                                  vsc_active: IntVec | None = None,
+                                  Cf_vsc: csc_matrix | None = None,
+                                  Ct_vsc: csc_matrix | None = None) -> ConnectivityMatrices:
     """
     Compute the from and to connectivity matrices applying the branch states
     :param branch_active: array of branch states
@@ -320,43 +334,42 @@ def compute_connectivity_with_hvdc(branch_active: IntVec,
     :param hvdc_active: array of hvdc states
     :param Cf_hvdc: Connectivity hvdc-bus "from"
     :param Ct_hvdc: Connectivity hvdc-bus "to"
+    :param vsc_active: array of hvdc states
+    :param Cf_vsc: Connectivity hvdc-bus "from"
+    :param Ct_vsc: Connectivity hvdc-bus "to"
     :return: Final Ct and Cf in CSC format
     """
-    br_states_diag = sp.diags(branch_active)
-    hvdc_states_diag = sp.diags(hvdc_active)
-    Cf = sp.vstack([br_states_diag * Cf_, hvdc_states_diag * Cf_hvdc])
-    Ct = sp.vstack([br_states_diag * Ct_, hvdc_states_diag * Ct_hvdc])
 
-    return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
+    cf_stack = list()
+    ct_stack = list()
 
+    if branch_active is not None:
+        if len(branch_active):
+            br_states_diag = sp.diags(branch_active)
+            cf_stack.append(br_states_diag * Cf_)
+            ct_stack.append(br_states_diag * Ct_)
 
+    if hvdc_active is not None:
+        if len(hvdc_active):
+            hvdc_states_diag = sp.diags(hvdc_active)
+            cf_stack.append(hvdc_states_diag * Cf_hvdc)
+            ct_stack.append(hvdc_states_diag * Ct_hvdc)
 
+    if vsc_active is not None:
+        if len(vsc_active):
+            vsc_states_diag = sp.diags(vsc_active)
+            cf_stack.append(vsc_states_diag * Cf_vsc)
+            ct_stack.append(vsc_states_diag * Ct_vsc)
 
+    if len(cf_stack) == 0:
+        raise ValueError("No set was provided to compute the connectivity :(")
 
-def compute_connectivity_acdc_isolated(branch_active: IntVec,
-                                       Cf_: csc_matrix,
-                                       Ct_: csc_matrix,
-                                       vsc_active: Union[None, IntVec] = None,
-                                       Cf_vsc: Union[None, csc_matrix] = None,
-                                       Ct_vsc: Union[None, csc_matrix] = None,
-                                       vsc_branch_idx: Union[None, IntVec] = None) -> ConnectivityMatrices:
-    """
-    Remove the VSC branches from the connectivity matrices by setting rows indexed by vsc_branch_idx to zero.
-    """
+    elif len(cf_stack) == 1:
+        Cf = cf_stack[0]
+        Ct = ct_stack[0]
 
-    # Convert matrices to LIL format for efficient row manipulation
-    Cf = Cf_.tolil()
-    Ct = Ct_.tolil()
+    else:
+        Cf = sp.vstack(cf_stack)
+        Ct = sp.vstack(ct_stack)
 
-    # Set rows corresponding to VSC branches to zero
-    for idx in vsc_branch_idx:
-        Cf[idx, :] = 0
-        Ct[idx, :] = 0
-
-    # print("(topology.py) Modified Cf:")
-    # print(Cf)
-    # print("(topology.py) Modified Ct:")
-    # print(Ct)
-
-    # Convert back to CSC format for efficient matrix operations
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())

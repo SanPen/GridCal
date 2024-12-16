@@ -7,7 +7,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE, bentayga_linear_matrices
@@ -61,7 +61,7 @@ class LinearAnalysisDriver(DriverTemplate):
         self.report_progress(0)
 
         bus_names = self.grid.get_bus_names()
-        br_names = self.grid.get_branches_wo_hvdc_names()
+        br_names = self.grid.get_branch_names_wo_hvdc()
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
             self.results = LinearAnalysisResults(
