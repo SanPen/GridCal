@@ -50,7 +50,7 @@ following video might be of assistance: [Setup tutorial (video)](https://youtu.b
 
 ### Package installation
 
-We recommend to install the latest version of [Python](www.python.org) and then,
+We recommend to install the latest version of [Python](https://www.python.org) and then,
 install GridCal with the following terminal command:
 
 ```
