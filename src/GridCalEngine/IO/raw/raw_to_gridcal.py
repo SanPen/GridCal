@@ -28,6 +28,7 @@ from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 def get_gridcal_bus(psse_bus: RawBus,
                     area_dict: Dict[int, dev.Area],
                     zone_dict: Dict[int, dev.Zone],
+                    boundary_link_dict: Dict[str, str],
                     logger: Logger) -> Tuple[dev.Bus, Union[dev.Shunt, None]]:
     """
 
@@ -103,6 +104,11 @@ def get_gridcal_bus(psse_bus: RawBus,
     bus.name = bus.name.replace("'", "").strip()
 
     bus.code = str(psse_bus.I)
+
+    # Check the boundary link dict
+    for psseID, cgmesID in boundary_link_dict:
+        if psseID == bus.code:
+            bus.idtag = cgmesID
 
     if bus.name == '':
         bus.name = 'Bus ' + str(psse_bus.I)
@@ -863,6 +869,25 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
 
     area_dict = {val.I: elm for val, elm in zip(psse_circuit.areas, circuit.areas)}
     zones_dict = {val.I: elm for val, elm in zip(psse_circuit.zones, circuit.zones)}
+    boundary_link_dict = {
+        "12999": "1218cd10c6584e4391aa6c283e235cc4",
+        "14999": "89b0212789824c02a086071106d18502",
+        "15996": "35fdca83227c41dcadc65449794c5591",
+        "15997": "3d4aaa4675ff4aebbc14e4a228f3366b",
+        "12998": "390e15c213e241adb0a83c4cde13854d",
+        "11999": "d4affe50316740bdbbf4ae9c7cbf3cfd",
+        "15999": "94a095be70bf4b1fb614e843ab84bc02",
+        "23999": "8b4b10fd9b4b408ab5f435e77d8f3055",
+        "22997": "f9c9668f2b5e419e88200a5485a6617f",
+        "13998": "2554fb38e4724e5bad0032ac77299ff4",
+        "15998": "42b92c37cfca4daaaa969344e6427883",
+        "22998": "16cb25d8392141f695fc90d437c9c431",
+        "22996": "eed7e70469ae4d32b4adb268b39eea45",
+        "11998": "b111d1c0e35740a0875578f3bc033f87",
+        "22993": "c3160bdc5e7b4bafb9384e210035f9e9",
+        "13995": "699fb5b4-9d5a-465b-9799-899357b7fd9c",
+        "13996": "2b741de9-0d63-4dae-95a2-df2d433a895e"
+    }
 
     # scan for missing zones or areas (yes, PSSe is so crappy that can reference areas that do not exist)
     missing_areas = False
@@ -883,6 +908,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         bus, bus_shunt = get_gridcal_bus(psse_bus=psse_bus,
                                          area_dict=area_dict,
                                          zone_dict=zones_dict,
+                                         boundary_link_dict=boundary_link_dict,
                                          logger=logger)
 
         # bus.ensure_area_objects(circuit)
