@@ -438,6 +438,12 @@ class IoMain(ConfigurationMain):
             info = get_plugin_info(fname)
 
             if info is not None:
+
+                if not info.is_compatible():
+                    error_msg(f"{info.name} {info.version} requires GridCal {info.gridcal_version}",
+                              "Plugin install")
+                    return
+
                 found = False
                 for key, plugin in self.plugins_info.plugins.items():
                     if plugin.name == info.name:

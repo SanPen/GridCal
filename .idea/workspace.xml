@@ -30,9 +30,11 @@
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.2.11">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/plugins.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/plugins.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalServer/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalServer/__version__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +75,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="better_topology_processing" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -148,8 +150,7 @@
     &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
     &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
     &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GridCalMain.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.acdc_generalized_1.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.acdc_generalized_1.executor&quot;: &quot;Run&quot;,
     &quot;Python.adm_primites_test.executor&quot;: &quot;Run&quot;,
     &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
     &quot;Python.matpower_chart.executor&quot;: &quot;Run&quot;,
@@ -162,7 +163,6 @@
     &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/matpower_benchmark&quot;,
@@ -171,7 +171,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
     &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -679,8 +679,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.upload_to_pypi" />
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.matpower_grids" />
         <item itemvalue="Python.matpower_chart" />
       </list>
@@ -689,8 +689,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
-        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.23726.102" />
+        <option value="bundled-python-sdk-5e1850174b45-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.23726.102" />
       </set>
     </attachedChunks>
   </component>
@@ -1401,11 +1401,7 @@
       <workItem from="1731949043813" duration="13648000" />
       <workItem from="1732026607414" duration="5092000" />
       <workItem from="1732049590425" duration="2739000" />
-      <workItem from="1734081975990" duration="12748000" />
-      <workItem from="1734171039703" duration="2469000" />
-      <workItem from="1734195450043" duration="3082000" />
-      <workItem from="1734333822008" duration="3584000" />
-      <workItem from="1734343220362" duration="5771000" />
+      <workItem from="1734421257767" duration="1155000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1750,7 +1746,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="587" />
+    <option name="localTasksCounter" value="571" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1783,7 +1779,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="better_topology_processing" />
+                        <option value="320_generalized_acdc_pf" />
                       </list>
                     </value>
                   </entry>
@@ -1796,6 +1792,19 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="Extended IEEE14 test models from Miguel" />
+    <MESSAGE value="ConnectivityNode are added to TR3w init" />
+    <MESSAGE value="comparing array properties (len)" />
+    <MESSAGE value="fixing and cleaning some TODOS" />
+    <MESSAGE value="function part for getting simpl hvdc from CGMES" />
+    <MESSAGE value="simpl hvdc from CGMES" />
+    <MESSAGE value="rename cgmes property py and import DCLine as BranchGroup" />
+    <MESSAGE value="working on HVDC export to CGMES" />
+    <MESSAGE value="new py file for creating cgmes instances" />
+    <MESSAGE value="Added opf options initialization from 204&#10;Improved Vmin and Vmax analysis" />
+    <MESSAGE value="Added new control Q limits option just for the ACOPF" />
+    <MESSAGE value="Minor updates" />
+    <MESSAGE value="Worked a bit more on the generalized PF indexing" />
     <MESSAGE value="Minor refactorings" />
     <MESSAGE value="Worked on the new definition of VSC and the compilation" />
     <MESSAGE value="Fixed some bugs" />
@@ -1808,20 +1817,7 @@
     <MESSAGE value="Fixed critical bug with facilities camouflaging as areas" />
     <MESSAGE value="moved the power flow formulations into a package" />
     <MESSAGE value="Improved README.md" />
-    <MESSAGE value="5.2.6" />
-    <MESSAGE value="added CDF expectation" />
-    <MESSAGE value="Started reworking the generalized formulation v2 (WIP)" />
-    <MESSAGE value="Improved acdc indexing at pf_generalized_formulation2.py" />
-    <MESSAGE value="Improved pf_generalized_formulation2.py" />
-    <MESSAGE value="fixed bugs" />
-    <MESSAGE value="Added computing error" />
-    <MESSAGE value="Modifications to make GridCal allow external windows in plugins" />
-    <MESSAGE value="5.2.9" />
-    <MESSAGE value="Plugin windows showing 5.2.10" />
-    <MESSAGE value="Implemented early topology processing baked into the numerical circuit" />
-    <MESSAGE value="Added plugin installation on drag&amp;drop" />
-    <MESSAGE value="5.2.11" />
-    <option name="LAST_COMMIT_MESSAGE" value="5.2.11" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved README.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2256,7 +2252,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py</url>
-          <line>492</line>
+          <line>498</line>
           <option name="timeStamp" value="1916" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2286,17 +2282,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py</url>
-          <line>482</line>
+          <line>488</line>
           <option name="timeStamp" value="2073" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py</url>
-          <line>501</line>
+          <line>507</line>
           <option name="timeStamp" value="2076" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py</url>
-          <line>496</line>
+          <line>502</line>
           <option name="timeStamp" value="2077" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
