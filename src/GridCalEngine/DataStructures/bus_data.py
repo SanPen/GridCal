@@ -153,17 +153,23 @@ class BusData:
                 self.is_p_controlled[idx] = True
                 self.is_q_controlled[idx] = False
                 self.is_vm_controlled[idx] = False
-                self.is_va_controlled[idx] = False
+                self.is_va_controlled[idx] = True
             else:
                 self.is_p_controlled[idx] = True
                 self.is_q_controlled[idx] = True
                 self.is_vm_controlled[idx] = False
                 self.is_va_controlled[idx] = False
         elif val == BusMode.PV_tpe:
-            self.is_p_controlled[idx] = True
-            self.is_q_controlled[idx] = False
-            self.is_vm_controlled[idx] = True
-            self.is_va_controlled[idx] = False
+            if is_dc:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = True
+            else:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = False
 
         elif val == BusMode.Slack_tpe:
             if is_dc:
@@ -181,17 +187,23 @@ class BusData:
                 self.is_p_controlled[idx] = True
                 self.is_q_controlled[idx] = False
                 self.is_vm_controlled[idx] = True
-                self.is_va_controlled[idx] = False
+                self.is_va_controlled[idx] = True
             else:
                 self.is_p_controlled[idx] = True
                 self.is_q_controlled[idx] = True
                 self.is_vm_controlled[idx] = True
                 self.is_va_controlled[idx] = False
         elif val == BusMode.P_tpe:
-            self.is_p_controlled[idx] = True
-            self.is_q_controlled[idx] = False
-            self.is_vm_controlled[idx] = False
-            self.is_va_controlled[idx] = False
+            if is_dc:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = False
+                self.is_va_controlled[idx] = True
+            else:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = False
+                self.is_va_controlled[idx] = False
 
         else:
             raise ValueError("Unexpected bus mode")

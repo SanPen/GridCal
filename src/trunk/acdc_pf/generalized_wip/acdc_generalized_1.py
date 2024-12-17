@@ -12,9 +12,8 @@ faulthandler.enable()  # start @ the beginning
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_raiyan.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_raiyan_signs.gridcal")
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_josep.gridcal")
-# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6.gridcal") #this one works with symbolic
-fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids",
-                     "fubm_caseHVDC_vt_wTrafo.gridcal")  # this one works with symbolic
+fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6.gridcal") #this one works with symbolic
+# fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_wTrafo.gridcal")  # this one works with symbolic
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6_diffcontrols.gridcal") #this one works with symbolic
 # fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_case_57_14_2MTDC_ctrls_raiyan.gridcal") #does not work, even with with autodiff
 
@@ -47,6 +46,8 @@ problem = PfGeneralizedFormulation(V0=island.Vbus,
                                    nc=island,
                                    options=options,
                                    logger=logger)
+
+print()
 
 solution = newton_raphson_fx(problem=problem,
                              tol=options.tolerance,
