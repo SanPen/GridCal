@@ -232,10 +232,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.m = np.zeros(len(self.u_cbr_m))
         self.tau = np.zeros(len(self.u_cbr_tau))
 
-        # seth the VSC setpoints
-        self.Pf_vsc[self.k_vsc_pf] = self.vsc_pf_set
-        self.Pt_vsc[self.k_vsc_pt] = self.vsc_pt_set
-        self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set
+        # set the VSC setpoints
+        self.Pf_vsc[self.k_vsc_pf] = self.vsc_pf_set / self.nc.Sbase
+        self.Pt_vsc[self.k_vsc_pt] = self.vsc_pt_set / self.nc.Sbase
+        self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
 
         # Controllable branches ----------------------------------------------------------------------------------------
         ys = 1.0 / (nc.passive_branch_data.R[self.cbr]
@@ -1506,7 +1506,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # copy the sliceable vectors
         Vm = self.Vm.copy()
         Va = self.Va.copy()
-        V = polar_to_rect(Vm, Va)
         Pf_vsc = self.Pf_vsc.copy()
         Pt_vsc = self.Pt_vsc.copy()
         Qt_vsc = self.Qt_vsc.copy()
@@ -1527,6 +1526,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Passive branches ---------------------------------------------------------------------------------------------
 
         # remember that Ybus here is computed with the fixed taps
+        V = polar_to_rect(Vm, Va)
         Scalc_passive = V * np.conj(self.Ybus @ V)
 
         # Controllable branches ----------------------------------------------------------------------------------------
@@ -1546,7 +1546,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2 = self.nc.active_branch_data.tap_module.copy()
         m2[self.u_cbr_m] = m
         tau2 = self.nc.active_branch_data.tap_angle.copy()
-        tau2[self.u_cbr_m] = tau
+        tau2[self.u_cbr_tau] = tau
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,
@@ -1636,7 +1636,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         _f = np.r_[
             Scalc[self.i_k_p].real,
-            Scalc[self.i_k_q].real,
+            Scalc[self.i_k_q].imag,
             loss_vsc,
             loss_hvdc,
             inj_hvdc,
@@ -1645,6 +1645,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qf_cbr,
             Qt_cbr
         ]
+
+        print()
 
         return _f
 
