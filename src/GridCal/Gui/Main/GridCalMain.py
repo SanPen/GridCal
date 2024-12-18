@@ -148,7 +148,7 @@ def runGridCal() -> None:
     h_ = 780
     window_.resize(int(1.7 * h_), h_)  # almost the golden ratio :)
     window_.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
