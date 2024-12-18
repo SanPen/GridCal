@@ -2139,7 +2139,7 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 bus = cn_look_up.get_busbar_bus(bb_id=cgmes_elm.uuid)
 
                 if bus and cn:
-                    cn.default_bus = bus
+                    cn.bus = bus
 
                 gcdev_elm = gcdev.BusBar(
                     name=cgmes_elm.name,

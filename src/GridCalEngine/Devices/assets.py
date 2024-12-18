@@ -1238,10 +1238,17 @@ class Assets:
                     else:
                         inj_list[i].bus = None
 
-        # remove associations in bus_bars
+        # remove associations in connectivity nodes
+        deleted_cn = set()
         for cn in self._connectivity_nodes:
-            if cn.default_bus == obj:
-                cn.default_bus = None  # remove the association
+            if cn.bus == obj:
+                deleted_cn.add(cn)
+                self.delete_connectivity_node(cn) # remove the association
+
+        # remove associations in bus_bars
+        for bb in self.bus_bars:
+            if bb.cn in deleted_cn:
+                self.delete_bus_bar(bb)
 
         # remove the bus itself
         try:
@@ -1301,6 +1308,10 @@ class Assets:
             obj = dev.ConnectivityNode(name=f"CN{len(self._connectivity_nodes)}")
 
         self._connectivity_nodes.append(obj)
+
+        # TODO: Figure out how to deal with this check efficiently
+        if obj.bus not in self._buses:
+            self.add_bus(obj=obj.bus)
 
         return obj
 

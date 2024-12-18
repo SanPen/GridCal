@@ -845,22 +845,16 @@ def fill_parent_branch(i: int,
                        elm: BRANCH_TYPES,
                        data: PassiveBranchData,
                        bus_dict: Dict[Bus, int],
-                       apply_temperature: bool,
-                       branch_tolerance_mode: BranchImpedanceMode,
                        t_idx: int = -1,
-                       time_series: bool = False,
-                       is_dc_branch: bool = False, ):
+                       time_series: bool = False,):
     """
 
     :param i:
     :param elm:
     :param data:
     :param bus_dict:
-    :param apply_temperature:
-    :param branch_tolerance_mode:
     :param t_idx:
     :param time_series:
-    :param is_dc_branch:
     :return:
     """
     data.names[i] = elm.name
@@ -894,28 +888,6 @@ def fill_parent_branch(i: int,
 
     data.branch_idx[i] = i  # Correct?
 
-    if apply_temperature:
-        data.R[i] = elm.R_corrected
-    else:
-        data.R[i] = elm.R
-
-    if branch_tolerance_mode == BranchImpedanceMode.Lower:
-        data.R[i] *= (1 - elm.tolerance / 100.0)
-    elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-        data.R[i] *= (1 + elm.tolerance / 100.0)
-
-    if not is_dc_branch:
-        data.X[i] = elm.X
-        data.B[i] = elm.B
-
-        data.R0[i] = elm.R0
-        data.X0[i] = elm.X0
-        data.B0[i] = elm.B0
-
-        data.R2[i] = elm.R2
-        data.X2[i] = elm.X2
-        data.B2[i] = elm.B2
-
     data.contingency_enabled[i] = int(elm.contingency_enabled)
     data.monitor_loading[i] = int(elm.monitor_loading)
 
@@ -931,8 +903,6 @@ def fill_controllable_branch(
         ctrl_data: ActiveBranchData,
         bus_data: BusData,
         bus_dict: Dict[Bus, int],
-        apply_temperature: bool,
-        branch_tolerance_mode: BranchImpedanceMode,
         t_idx: int,
         time_series: bool,
         opf_results: VALID_OPF_RESULTS | None,
@@ -941,7 +911,6 @@ def fill_controllable_branch(
         Sbase: float,
         control_taps_modules: bool,
         control_taps_phase: bool,
-        control_remote_voltage: bool,
         logger: Logger):
     """
 
@@ -969,11 +938,8 @@ def fill_controllable_branch(
                        elm=elm,
                        data=data,
                        bus_dict=bus_dict,
-                       apply_temperature=apply_temperature,
-                       branch_tolerance_mode=branch_tolerance_mode,
                        t_idx=t_idx,
-                       time_series=time_series,
-                       is_dc_branch=False)
+                       time_series=time_series)
 
     if time_series:
 
@@ -1111,11 +1077,26 @@ def get_branch_data(
                            elm=elm,
                            data=data,
                            bus_dict=bus_dict,
-                           apply_temperature=apply_temperature,
-                           branch_tolerance_mode=branch_tolerance_mode,
                            t_idx=t_idx,
-                           time_series=time_series,
-                           is_dc_branch=False)
+                           time_series=time_series)
+
+        data.R[i] = elm.R_corrected if apply_temperature else elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            data.R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            data.R[i] *= (1 + elm.tolerance / 100.0)
+
+        data.X[i] = elm.X
+        data.B[i] = elm.B
+
+        data.R0[i] = elm.R0
+        data.X0[i] = elm.X0
+        data.B0[i] = elm.B0
+
+        data.R2[i] = elm.R2
+        data.X2[i] = elm.X2
+        data.B2[i] = elm.B2
 
         # store for later
         branch_dict[elm] = ii
@@ -1129,11 +1110,15 @@ def get_branch_data(
                            elm=elm,
                            data=data,
                            bus_dict=bus_dict,
-                           apply_temperature=apply_temperature,
-                           branch_tolerance_mode=branch_tolerance_mode,
                            t_idx=t_idx,
-                           time_series=time_series,
-                           is_dc_branch=True)
+                           time_series=time_series)
+
+        data.R[i] = elm.R_corrected if apply_temperature else elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            data.R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            data.R[i] *= (1 + elm.tolerance / 100.0)
 
         # store for later
         branch_dict[elm] = ii
@@ -1148,8 +1133,6 @@ def get_branch_data(
                                  ctrl_data=ctrl_data,
                                  bus_data=bus_data,
                                  bus_dict=bus_dict,
-                                 apply_temperature=apply_temperature,
-                                 branch_tolerance_mode=branch_tolerance_mode,
                                  t_idx=t_idx,
                                  time_series=time_series,
                                  opf_results=opf_results,
@@ -1158,8 +1141,28 @@ def get_branch_data(
                                  Sbase=circuit.Sbase,
                                  control_taps_modules=control_taps_modules,
                                  control_taps_phase=control_taps_phase,
-                                 control_remote_voltage=control_remote_voltage,
                                  logger=logger)
+
+        data.R[i] = elm.R_corrected if apply_temperature else elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            data.R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            data.R[i] *= (1 + elm.tolerance / 100.0)
+
+        data.X[i] = elm.X
+        data.G[i] = elm.G
+        data.B[i] = elm.B
+
+        data.R0[i] = elm.R0
+        data.X0[i] = elm.X0
+        data.G0[i] = elm.G0
+        data.B0[i] = elm.B0
+
+        data.R2[i] = elm.R2
+        data.X2[i] = elm.X2
+        data.G2[i] = elm.G2
+        data.B2[i] = elm.B2
 
         data.conn[ii] = elm.conn
         data.m_taps[ii] = elm.tap_changer.tap_modules_array
@@ -1181,8 +1184,6 @@ def get_branch_data(
                                      ctrl_data=ctrl_data,
                                      bus_data=bus_data,
                                      bus_dict=bus_dict,
-                                     apply_temperature=apply_temperature,
-                                     branch_tolerance_mode=branch_tolerance_mode,
                                      t_idx=t_idx,
                                      time_series=time_series,
                                      opf_results=opf_results,
@@ -1191,8 +1192,28 @@ def get_branch_data(
                                      Sbase=circuit.Sbase,
                                      control_taps_modules=control_taps_modules,
                                      control_taps_phase=control_taps_phase,
-                                     control_remote_voltage=control_remote_voltage,
                                      logger=logger)
+
+            data.R[i] = elm.R_corrected if apply_temperature else elm.R
+
+            if branch_tolerance_mode == BranchImpedanceMode.Lower:
+                data.R[i] *= (1 - elm.tolerance / 100.0)
+            elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+                data.R[i] *= (1 + elm.tolerance / 100.0)
+
+            data.X[i] = elm.X
+            data.G[i] = elm.G
+            data.B[i] = elm.B
+
+            data.R0[i] = elm.R0
+            data.X0[i] = elm.X0
+            data.G0[i] = elm.G0
+            data.B0[i] = elm.B0
+
+            data.R2[i] = elm.R2
+            data.X2[i] = elm.X2
+            data.G2[i] = elm.G2
+            data.B2[i] = elm.B2
 
             data.conn[ii] = elm.conn
             data.m_taps[ii] = elm.tap_changer.tap_modules_array
@@ -1215,8 +1236,6 @@ def get_branch_data(
                                  ctrl_data=ctrl_data,
                                  bus_data=bus_data,
                                  bus_dict=bus_dict,
-                                 apply_temperature=apply_temperature,
-                                 branch_tolerance_mode=branch_tolerance_mode,
                                  t_idx=t_idx,
                                  time_series=time_series,
                                  opf_results=opf_results,
@@ -1225,8 +1244,24 @@ def get_branch_data(
                                  Sbase=circuit.Sbase,
                                  control_taps_modules=control_taps_modules,
                                  control_taps_phase=control_taps_phase,
-                                 control_remote_voltage=control_remote_voltage,
                                  logger=logger)
+        ysh1 = elm.get_ysh1()
+        data.R[i] = elm.R
+        data.X[i] = elm.X
+        data.G[i] = ysh1.real
+        data.B[i] = ysh1.imag
+
+        ysh0 = elm.get_ysh0()
+        data.R0[i] = elm.R0
+        data.X0[i] = elm.X0
+        data.G0[i] = ysh0.real
+        data.B0[i] = ysh0.imag
+
+        ysh2 = elm.get_ysh2()
+        data.R2[i] = elm.R2
+        data.X2[i] = elm.X2
+        data.G2[i] = ysh2.real
+        data.B2[i] = ysh2.imag
 
         # store for later
         branch_dict[elm] = ii
@@ -1240,31 +1275,43 @@ def get_branch_data(
                            elm=elm,
                            data=data,
                            bus_dict=bus_dict,
-                           apply_temperature=apply_temperature,
-                           branch_tolerance_mode=branch_tolerance_mode,
                            t_idx=t_idx,
-                           time_series=time_series,
-                           is_dc_branch=False)
+                           time_series=time_series)
+
+        data.R[i] = elm.R_corrected if apply_temperature else elm.R
+
+        if branch_tolerance_mode == BranchImpedanceMode.Lower:
+            data.R[i] *= (1 - elm.tolerance / 100.0)
+        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+            data.R[i] *= (1 + elm.tolerance / 100.0)
+
+        data.X[i] = elm.X
+
+        data.R0[i] = elm.R0
+        data.X0[i] = elm.X0
+
+        data.R2[i] = elm.R2
+        data.X2[i] = elm.X2
 
         # store for later
         branch_dict[elm] = ii
 
         ii += 1
 
-    # Series reactance
+    # Switches
     for i, elm in enumerate(circuit.switch_devices):
         # generic stuff
         fill_parent_branch(i=ii,
                            elm=elm,
                            data=data,
                            bus_dict=bus_dict,
-                           apply_temperature=apply_temperature,
-                           branch_tolerance_mode=branch_tolerance_mode,
                            t_idx=t_idx,
-                           time_series=time_series,
-                           is_dc_branch=False)
+                           time_series=time_series)
 
         data.reducible[ii] = True
+
+        data.R[i] = elm.R
+        data.X[i] = elm.X
 
         # store for later
         branch_dict[elm] = ii
@@ -1433,15 +1480,21 @@ def get_vsc_data(
             data.control2[ii] = elm.control2_prof[t_idx]
             data.control1_val[ii] = elm.control1_val_prof[t_idx]
             data.control2_val[ii] = elm.control2_val_prof[t_idx]
-            set_control_dev(k=ii, f=f, t=t, control=data.control1[ii], control_dev=elm.control1_dev_prof[t_idx],
-                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx,
+            set_control_dev(k=ii, f=f, t=t,
+                            control=data.control1[ii],
+                            control_dev=elm.control1_dev_prof[t_idx],
+                            control_val=data.control1_val[ii],
+                            control_bus_idx=data.control1_bus_idx,
                             control_branch_idx=data.control1_branch_idx,
                             bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess, logger=logger)
-            set_control_dev(k=ii, f=f, t=t, control=data.control2[ii], control_dev=elm.control2_dev_prof[t_idx],
+            set_control_dev(k=ii, f=f, t=t,
+                            control=data.control2[ii],
+                            control_dev=elm.control2_dev_prof[t_idx],
                             control_val=data.control2_val[ii],
-                            control_bus_idx=data.control2_bus_idx, control_branch_idx=data.control2_branch_idx,
+                            control_bus_idx=data.control2_bus_idx,
+                            control_branch_idx=data.control2_branch_idx,
                             bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess, logger=logger)

@@ -302,6 +302,10 @@ def test_topology_4_nodes_A():
     SW1 must be in a self-loop where both buses are B0
     SW2 must be connected between B2 and the bus to of L2
     """
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_topology()
+
+
 
     assert l1.bus_from == b0 and l1.bus_to == b2
     assert l2.bus_from == b0 and l2.bus_to not in [b0, b1, b2]

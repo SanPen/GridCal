@@ -102,18 +102,20 @@ class Transformer3W(PhysicalDevice):
         if bus0 is None:
             self.bus0 = Bus(name=name + '_bus', Vnom=1.0, xpos=x, ypos=y, is_internal=True)
         else:
-            bus0.is_internal = True
+            bus0.internal = True
             bus0.Vnom = 1.0
             self.bus0 = bus0
 
         if cn0 is None:
-            self.cn0 = ConnectivityNode(name=name + '_cn', Vnom=1.0, internal=True)
+            self.cn0 = ConnectivityNode(name=name + '_cn',
+                                        Vnom=1.0,
+                                        internal=True,
+                                        default_bus=self.bus0)
         else:
             cn0.is_internal = True
             cn0.Vnom = 1.0
             self.cn0 = cn0
-
-        self.cn0.default_bus = self.bus0
+            self.cn0.bus = self.bus0
 
         self._bus1 = bus1
         self._bus2 = bus2

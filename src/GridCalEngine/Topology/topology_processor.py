@@ -69,98 +69,6 @@ class TopologyProcessorInfo:
         :param logger:
         :return: f, t, ok
         """
-        # if elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is not None:
-        #     # All properties are not None
-        #     f = grid.get_candidate_pos_from_cn(elm.cn_from)
-        #     t = grid.get_candidate_pos_from_cn(elm.cn_to)
-        #
-        # elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is None:
-        #     # bus_to is None
-        #     f = grid.get_candidate_pos_from_cn(elm.cn_from)
-        #     t = grid.get_candidate_pos_from_cn(elm.cn_to)
-        #
-        # elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is not None:
-        #     # bus_from is None
-        #     f = grid.get_candidate_pos_from_cn(elm.cn_from)
-        #     t = grid.get_candidate_pos_from_cn(elm.cn_to)
-        #
-        # elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is None:
-        #     # bus_from and bus_to are None
-        #     f = grid.get_candidate_pos_from_cn(elm.cn_from)
-        #     t = grid.get_candidate_pos_from_cn(elm.cn_to)
-        #
-        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is not None:
-        #     # cn_to is None
-        #     f = grid.get_candidate_pos_from_cn(elm.cn_from)
-        #     t = grid.get_candidate_pos_from_bus(elm.bus_to)
-        #
-        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is None:
-        #     # cn_to and bus_to are None
-        #     # raise ValueError("No to connection provided!")
-        #     logger.add_error(msg="No to connection provided!", device=elm.name)
-        #     return -1, -1, False
-        #
-        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is not None:
-        #     # cn_to and bus_from are None
-        #     f = grid.get_candidate_pos_from_cn(elm.cn_from)
-        #     t = grid.get_candidate_pos_from_bus(elm.bus_to)
-        #
-        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is None:
-        #     # cn_to, bus_from, and bus_to are None
-        #     # raise ValueError("No to connection provided!")
-        #     logger.add_error(msg="No to connection provided!", device=elm.name)
-        #     return -1, -1, False
-        #
-        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is not None:
-        #     # cn_from is None
-        #     f = grid.get_candidate_pos_from_bus(elm.bus_from)
-        #     t = grid.get_candidate_pos_from_cn(elm.cn_to)
-        #
-        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is None:
-        #     # cn_from and bus_to are None
-        #     f = grid.get_candidate_pos_from_bus(elm.bus_from)
-        #     t = grid.get_candidate_pos_from_cn(elm.cn_to)
-        #
-        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is not None:
-        #     # cn_from and bus_from are None
-        #     # raise ValueError("No from connection provided!")
-        #     logger.add_error(msg="No to connection provided!", device=elm.name)
-        #     return -1, -1, False
-        #
-        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is None:
-        #     # cn_from, bus_from, and bus_to are None
-        #     # raise ValueError("No from connection provided!")
-        #     logger.add_error(msg="No to connection provided!", device=elm.name)
-        #     return -1, -1, False
-        #
-        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is not None:
-        #     # cn_from and cn_to are None
-        #     f = grid.get_candidate_pos_from_bus(elm.bus_from)
-        #     t = grid.get_candidate_pos_from_bus(elm.bus_to)
-        #
-        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is None:
-        #     # cn_from, cn_to, and bus_to are None
-        #     # raise ValueError("No to connection provided!")
-        #     logger.add_error(msg="No to connection provided!", device=elm.name)
-        #     return -1, -1, False
-        #
-        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is not None:
-        #     # cn_from, cn_to, and bus_from are None
-        #     # raise ValueError("No from connection provided!")
-        #     logger.add_error(msg="No to connection provided!", device=elm.name)
-        #     return -1, -1, False
-        #
-        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is None:
-        #     # All properties are None
-        #     # raise ValueError("isolated branch!")
-        #     logger.add_error(msg="Isolated branch!", device=elm.name)
-        #     return -1, -1, False
-        #
-        # else:
-        #     # All properties are None
-        #     # raise ValueError("isolated branch!")
-        #     logger.add_error(msg="Isolated branch!", device=elm.name)
-        #     return -1, -1, False
 
         fr_obj, to_obj, ok = elm.get_from_and_to_objects(logger=logger)
 
@@ -226,7 +134,7 @@ class TopologyProcessorInfo:
         :param cn:
         :return:
         """
-        if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
+        if cn.bus is None:  # connectivity nodes can be linked to a previously existing Bus
 
             # try to search if this CN has already been assigned a Bus
             candidate_bus = self._cn_to_candidate.get(cn, None)
@@ -250,7 +158,7 @@ class TopologyProcessorInfo:
             self._add_new_candidate(candidate_bus)
         else:
             # pick the default candidate
-            candidate_bus = cn.default_bus
+            candidate_bus = cn.bus
             # candidate_bus.code = cn.code  # for soft checking
 
             # register
@@ -276,19 +184,19 @@ class TopologyProcessorInfo:
         if cn is not None:
 
             if bus is not None:
-                if cn.default_bus is None:
+                if cn.bus is None:
                     # there is a hidden association, so we use it
                     # cn.default_bus = bus
                     idx = self._add_candidate(bus)
                     self._cn_to_candidate[cn] = bus
                     logger.add_info(msg=f"Associated bus to cn because there wasn't any association",
                                     device=cn.name, value=bus.name)
-                elif bus != cn.default_bus:
+                elif bus != cn.bus:
                     # ignore the existing cn->bus association, and use the provided bus since it is "more correct"
                     idx = self._add_candidate(bus)
                     self._cn_to_candidate[cn] = bus
                     logger.add_info(msg=f"Wrong CN association",
-                                    device=cn.name, value=cn.default_bus.name, expected_value=bus.name)
+                                    device=cn.name, value=cn.bus.name, expected_value=bus.name)
                 else:
                     # the cn.default bus == bus, so we're good
                     idx = self._add_candidate(bus)
@@ -542,24 +450,24 @@ def process_grid_topology_at(grid: MultiCircuit,
             if logger:
                 logger.add_info("Bus added to grid", device=bus_device.name)
 
-    # map the buses to the branches from their connectivity nodes
-    for i, elm in enumerate(grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True)):
-        if elm.cn_from is not None:
-            elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
-        else:
-            elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus_from))
-
-        if elm.cn_to is not None:
-            elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
-        else:
-            elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus_to))
-
-    for dev_lst in grid.get_injection_devices_lists():
-        for elm in dev_lst:
-            if elm.cn is not None:
-                elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
-            else:
-                elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus))
+    # # map the buses to the branches from their connectivity nodes
+    # for i, elm in enumerate(grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True)):
+    #     if elm.cn_from is not None:
+    #         elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
+    #     else:
+    #         elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus_from))
+    #
+    #     if elm.cn_to is not None:
+    #         elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
+    #     else:
+    #         elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus_to))
+    #
+    # for dev_lst in grid.get_injection_devices_lists():
+    #     for elm in dev_lst:
+    #         if elm.cn is not None:
+    #             elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
+    #         else:
+    #             elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.bus))
 
     # return the TopologyProcessorInfo
     return process_info

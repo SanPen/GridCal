@@ -2160,8 +2160,7 @@ class SchematicWidget(BaseDiagramWidget):
         :return: OPTIONAL_PORT, OPTIONAL_PORT
         """
 
-        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(t_idx=None,
-                                                                 logger=logger,
+        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(logger=logger,
                                                                  prefer_node_breaker=prefer_node_breaker)
 
         # Bus provided, search its graphics
@@ -2196,8 +2195,7 @@ class SchematicWidget(BaseDiagramWidget):
         :return: OPTIONAL_PORT, OPTIONAL_PORT
         """
 
-        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(t_idx=None,
-                                                                 logger=logger,
+        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(logger=logger,
                                                                  prefer_node_breaker=prefer_node_breaker)
 
         # Bus provided, search its graphics
@@ -2846,7 +2844,7 @@ class SchematicWidget(BaseDiagramWidget):
 
             if isinstance(elm, Bus):
 
-                if not elm.is_internal:  # 3w transformer buses are not represented
+                if not elm.internal:  # 3w transformer buses are not represented
                     if injections_by_bus is None:
                         injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
 
@@ -2969,7 +2967,7 @@ class SchematicWidget(BaseDiagramWidget):
         nn = len(buses)
         for i, bus in enumerate(buses):
 
-            if not bus.is_internal:  # 3w transformer buses are not represented
+            if not bus.internal:  # 3w transformer buses are not represented
 
                 if prog_func is not None:
                     prog_func((i + 1) / nn * 100.0)
@@ -4429,7 +4427,7 @@ def generate_schematic_diagram(buses: List[Bus],
         if prog_func is not None:
             prog_func((i + 1) / nn * 100.0)
 
-        if not bus.is_internal:  # 3w transformer buses are not represented
+        if not bus.internal:  # 3w transformer buses are not represented
 
             # correct possible nonsense
             if np.isnan(bus.y):

@@ -271,7 +271,7 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                                     logger=logger)
 
         else:
-            if not bus.is_internal:
+            if not bus.internal:
 
                 tn = find_object_by_uuid(
                     cgmes_model=cgmes_model,

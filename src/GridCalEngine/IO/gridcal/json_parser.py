@@ -1415,7 +1415,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                         'name_code': elm.code,
                         'active': elm.active,
                         'is_slack': bool(elm.is_slack),
-                        'is_internal': bool(elm.is_internal),
+                        'is_internal': bool(elm.internal),
                         'is_dc': bool(elm.is_dc),
                         'vnom': elm.Vnom,
                         'vmin': elm.Vmin,
@@ -1445,7 +1445,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                       'name': elm.name,
                                       'name_code': elm.code,
                                       'dc': elm.dc,
-                                      'default_bus': get_obj_ref(elm.default_bus)} for elm in
+                                      'default_bus': get_obj_ref(elm.bus)} for elm in
                                      circuit.get_connectivity_nodes()]
 
     # bus bars

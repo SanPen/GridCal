@@ -21,15 +21,38 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 class Line(BranchParent):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None, name='Line', idtag=None, code='',
-                 r=1e-20, x=0.00001, b=1e-20, rate=1.0, active=True, tolerance=0.0, cost=100.0,
-                 mttf=0.0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 length=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=None, contingency_factor=1.0, protection_rating_factor: float = 1.4,
-                 contingency_enabled=True, monitor_loading=True,
-                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+    def __init__(self,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
+                 cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None,
+                 name='Line',
+                 idtag=None,
+                 code='',
+                 r=1e-20, x=0.00001, b=1e-20,
+                 rate=1.0,
+                 active=True,
+                 tolerance=0.0,
+                 cost=100.0,
+                 mttf=0.0,
+                 mttr=0,
+                 r_fault=0.0,
+                 x_fault=0.0,
+                 fault_pos=0.5,
+                 length=1.0,
+                 temp_base=20,
+                 temp_oper=20,
+                 alpha=0.00330,
+                 template=None,
+                 contingency_factor=1.0,
+                 protection_rating_factor: float = 1.4,
+                 contingency_enabled=True,
+                 monitor_loading=True,
+                 r0=1e-20, x0=1e-20, b0=1e-20,
+                 r2=1e-20, x2=1e-20, b2=1e-20,
+                 capex=0,
+                 opex=0,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line
         :param bus_from: "From" :ref:`bus<Bus>` object
