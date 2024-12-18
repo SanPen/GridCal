@@ -106,9 +106,10 @@ def get_gridcal_bus(psse_bus: RawBus,
     bus.code = str(psse_bus.I)
 
     # Check the boundary link dict
-    for psseID, cgmesID in boundary_link_dict:
+    for psseID, cgmesID in boundary_link_dict.items():
         if psseID == bus.code:
             bus.idtag = cgmesID
+            break
 
     if bus.name == '':
         bus.name = 'Bus ' + str(psse_bus.I)
