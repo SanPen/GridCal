@@ -446,6 +446,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.Pf
             elm.tap_changer.tc_type = TapChangerTypes.Symmetrical
+            elm.tap_changer.recalc()
 
         elif psse_elm.COD1 in [4, -4]:    # for control of a dc line quantity
                                     # (valid only for two-windingtransformers)
