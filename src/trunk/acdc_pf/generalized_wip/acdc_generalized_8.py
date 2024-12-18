@@ -118,7 +118,7 @@ def run_qt_control_with_ltc() -> None:
     for control_taps_modules in [True, False]:
         for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
             options = PowerFlowOptions(solver_type,
-                                       verbose=0,
+                                       verbose=2,
                                        control_q=False,
                                        retry_with_other_methods=False,
                                        control_taps_modules=control_taps_modules)

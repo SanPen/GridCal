@@ -80,7 +80,10 @@ def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
 
     Vf = V[F[k]]
     Vt = V[T[k]]
-    Sf_cbr = (np.power(Vf, 2.0) * np.conj(yff) + Vf * Vt * np.conj(yft))
+
+    # Sf_cbr = (np.power(Vf, 2.0) * np.conj(yff) + Vf * Vt * np.conj(yft))
+    If_cbr = Vf * yff + Vt * yft
+    Sf_cbr = Vf * np.conj(If_cbr)
 
     return Sf_cbr
 
@@ -112,7 +115,10 @@ def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
     Vf = V[F[k]]
     Vt = V[T[k]]
 
-    St_cbr = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
+    It_cbr = Vt * ytt + Vf * ytf
+    St_cbr = Vt * np.conj(It_cbr)
+
+    # St_cbr = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
 
     return St_cbr
 
@@ -1822,6 +1828,66 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         It = Vt * ytt + Vf * ytf  # TODO: review if this is correct
         Sf = Vf * np.conj(If)
         St = Vt * np.conj(It)
+
+        # Sf_compare2 = Vf * np.conj(Vf * yff + Vt * yft)
+        # St_compare2 = Vt * np.conj(Vt * ytt + Vf * ytf)
+        #
+        # Sf = (np.power(Vf, 2.0) * np.conj(yff) + Vf * Vt * np.conj(yft))
+        # St = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
+        # If = np.conj(Sf / Vf)
+        # It = np.conj(St / Vt)
+
+        Pf_cbr = calcSf(k=self.k_cbr_pf,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Pt_cbr = calcSt(k=self.k_cbr_pt,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Qf_cbr = calcSf(k=self.k_cbr_qf,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+
+        Qt_cbr = calcSt(k=self.k_cbr_qt,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
         # Branch losses in MVA
         losses = (Sf + St) * self.nc.Sbase
