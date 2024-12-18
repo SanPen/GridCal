@@ -1629,13 +1629,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
 
-        loss_hvdc = self.nc.hvdc_data.r * np.power(Pf_hvdc / Vmf_hvdc, 2.0)  # TODO: check compatible units!
+        Ploss_hvdc = self.nc.hvdc_data.r * np.power(Pf_hvdc / Vmf_hvdc, 2.0)  # TODO: check compatible units!
+        loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
 
-        inj_hvdc = self.nc.hvdc_data.Pset
+        Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
         if len(self.hvdc_droop_idx):
             Vaf_hvdc = Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
             Vat_hvdc = Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
-            inj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
+            Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
+        inj_hvdc = Pf_hvdc - Pinj_hvdc
 
         Sf_hvdc = Pf_hvdc + 1j * Qf_hvdc
         St_hvdc = Pt_hvdc + 1j * Qt_hvdc
