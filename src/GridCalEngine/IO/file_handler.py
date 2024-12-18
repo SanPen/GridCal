@@ -127,7 +127,7 @@ class FileOpenOptions:
     def __init__(self,
                  cgmes_map_areas_like_raw: bool = False,
                  try_to_map_dc_to_hvdc_line: bool = True,
-                 crash_on_errors: bool = False,):
+                 crash_on_errors: bool = False, ):
         """
 
         :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
@@ -594,8 +594,14 @@ class FileSave:
         model_version = "001"
         scenario_time = "2024-01-01T19:30:00Z"
         if filename_in_parts.__len__() == 5:
-            dt = datetime.strptime(filename_in_parts[0], "%Y%m%dT%H%MZ")
-            scenario_time = dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+            try:
+                dt = datetime.strptime(filename_in_parts[0], "%Y%m%dT%H%MZ")
+                scenario_time = dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+            except ValueError:
+                logger.add_error(msg="Invalid datetime format in the filename!",
+                                 value=filename_in_parts[0],
+                                 comment="Scenario time set to default value."
+                                 )
             model_version = filename_in_parts[4]
         cgmes_circuit = create_cgmes_headers(cgmes_model=cgmes_circuit,
                                              mas_names=self.circuit.get_modelling_authority_names().astype(str),
