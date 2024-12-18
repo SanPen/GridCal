@@ -1370,7 +1370,7 @@ def set_control_dev(k: int,
 
         else:
             # control_branch_idx[k] = len(branch_dict) + k  # TODO: why?
-            control_branch_idx[k] = -1
+            control_branch_idx[k] = k
 
 
 def get_vsc_data(

@@ -80,7 +80,10 @@ def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
 
     Vf = V[F[k]]
     Vt = V[T[k]]
-    Sf_cbr = (np.power(Vf, 2.0) * np.conj(yff) + Vf * Vt * np.conj(yft))
+
+    # Sf_cbr = (np.power(Vf, 2.0) * np.conj(yff) + Vf * Vt * np.conj(yft))
+    If_cbr = Vf * yff + Vt * yft
+    Sf_cbr = Vf * np.conj(If_cbr)
 
     return Sf_cbr
 
@@ -112,7 +115,10 @@ def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
     Vf = V[F[k]]
     Vt = V[T[k]]
 
-    St_cbr = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
+    It_cbr = Vt * ytt + Vf * ytf
+    St_cbr = Vt * np.conj(It_cbr)
+
+    # St_cbr = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
 
     return St_cbr
 
@@ -184,10 +190,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
         self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
         self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
-        self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
-        self.i_u_va = np.where(self.is_va_controlled == 0)[0]
-        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
-        self.i_k_q = np.where(self.is_q_controlled == 1)[0]
 
         # Controllable Branch Indices
         self.u_cbr_m = np.zeros(0, dtype=int)
@@ -202,6 +204,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cbr_qf_set = np.zeros(0, dtype=float)
         self.cbr_qt_set = np.zeros(0, dtype=float)
         self._analyze_branch_controls()
+        self.cbr = np.union1d(self.u_cbr_m, self.u_cbr_tau)
 
         # VSC Indices
         self.u_vsc_pf = np.zeros(0, dtype=int)
@@ -219,6 +222,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.hvdc_droop_idx = np.zeros(0, dtype=int)
         self._analyze_hvdc_controls()
 
+        # Bus indices
+        self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
+        self.i_u_va = np.where(self.is_va_controlled == 0)[0]
+        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
+        self.i_k_q = np.where(self.is_q_controlled == 1)[0]
+
         # Unknowns -----------------------------------------------------------------------------------------------------
         # self._Vm = np.zeros(nc.bus_data.nbus)
         # self._Va = np.zeros(nc.bus_data.nbus)
@@ -229,13 +238,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qf_hvdc = np.zeros(nc.hvdc_data.nelm)
         self.Pt_hvdc = np.zeros(nc.hvdc_data.nelm)
         self.Qt_hvdc = np.zeros(nc.hvdc_data.nelm)
-        self.m = np.zeros(len(self.u_cbr_m))
+        self.m = np.ones(len(self.u_cbr_m))
         self.tau = np.zeros(len(self.u_cbr_tau))
 
-        # seth the VSC setpoints
-        self.Pf_vsc[self.k_vsc_pf] = self.vsc_pf_set
-        self.Pt_vsc[self.k_vsc_pt] = self.vsc_pt_set
-        self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set
+        # set the VSC setpoints
+        self.Pf_vsc[self.k_vsc_pf] = self.vsc_pf_set / self.nc.Sbase
+        self.Pt_vsc[self.k_vsc_pt] = self.vsc_pt_set / self.nc.Sbase
+        self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
 
         # Controllable branches ----------------------------------------------------------------------------------------
         ys = 1.0 / (nc.passive_branch_data.R[self.cbr]
@@ -249,6 +258,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.ytt_cbr = (ys + bc2) / (vtap_t * vtap_t)
         self.F_cbr = self.nc.passive_branch_data.F[self.cbr]
         self.T_cbr = self.nc.passive_branch_data.T[self.cbr]
+
+        print()
 
         self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.C_branch_bus_f,
                              Ct=self.nc.passive_branch_data.C_branch_bus_t,
@@ -290,7 +301,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             if ctrl_m == TapModuleControl.Vm:
 
                 # Every bus controlled by m has to become a PQV bus
-                bus_idx = self.tap_controlled_buses[k]
+                bus_idx = self.nc.active_branch_data.tap_controlled_buses[k]
                 # self.is_p_controlled[bus_idx] = True
                 # self.is_q_controlled[bus_idx] = True
                 self.is_vm_controlled[bus_idx] = True
@@ -1506,7 +1517,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # copy the sliceable vectors
         Vm = self.Vm.copy()
         Va = self.Va.copy()
-        V = polar_to_rect(Vm, Va)
         Pf_vsc = self.Pf_vsc.copy()
         Pt_vsc = self.Pt_vsc.copy()
         Qt_vsc = self.Qt_vsc.copy()
@@ -1527,26 +1537,29 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Passive branches ---------------------------------------------------------------------------------------------
 
         # remember that Ybus here is computed with the fixed taps
+        V = polar_to_rect(Vm, Va)
         Scalc_passive = V * np.conj(self.Ybus @ V)
 
         # Controllable branches ----------------------------------------------------------------------------------------
+        # Power at the controlled branches
+        m2 = self.nc.active_branch_data.tap_module.copy()
+        m2[self.u_cbr_m] = m
+        tau2 = self.nc.active_branch_data.tap_angle.copy()
+        tau2[self.u_cbr_tau] = tau
 
-        yff = (self.yff_cbr * (m * m) / (m * m))
-        yft = self.yft_cbr * (m * np.exp(-1.0j * tau)) / (m * np.exp(-1.0j * tau))
-        ytf = self.ytf_cbr * (m * np.exp(1.0j * tau)) / (m * np.exp(1.0j * tau))
+        yff = (self.yff_cbr / (m2[self.cbr] * m2[self.cbr]))
+        yft = self.yft_cbr / (m2[self.cbr] * np.exp(-1.0j * tau2[self.cbr]))
+        ytf = self.ytf_cbr / (m2[self.cbr] * np.exp(1.0j * tau2[self.cbr]))
         ytt = self.ytt_cbr
         Vf_cbr = V[self.F_cbr]
         Vt_cbr = V[self.T_cbr]
         Sf_cbr = (np.power(Vf_cbr, 2.0) * np.conj(yff) + Vf_cbr * Vt_cbr * np.conj(yft))
         St_cbr = (np.power(Vt_cbr, 2.0) * np.conj(ytt) + Vt_cbr * Vf_cbr * np.conj(ytf))
-        Scalc_cbr = (Sf_cbr @ self.nc.passive_branch_data.C_branch_bus_f[self.F_cbr, :]
-                     + St_cbr @ self.nc.passive_branch_data.C_branch_bus_t[self.T_cbr, :])
+        Scalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        Scalc_cbr[self.F_cbr] += Sf_cbr
+        Scalc_cbr[self.T_cbr] += St_cbr
 
-        # Power at the controlled branches
-        m2 = self.nc.active_branch_data.tap_module.copy()
-        m2[self.u_cbr_m] = m
-        tau2 = self.nc.active_branch_data.tap_angle.copy()
-        tau2[self.u_cbr_m] = tau
+
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,
@@ -1636,15 +1649,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         _f = np.r_[
             Scalc[self.i_k_p].real,
-            Scalc[self.i_k_q].real,
+            Scalc[self.i_k_q].imag,
             loss_vsc,
             loss_hvdc,
             inj_hvdc,
-            Pf_cbr,
-            Pt_cbr,
-            Qf_cbr,
-            Qt_cbr
+            self.cbr_pf_set - Pf_cbr,
+            self.cbr_pt_set - Pt_cbr,
+            self.cbr_qf_set - Qf_cbr,
+            self.cbr_qt_set - Qt_cbr
         ]
+
+        print()
 
         return _f
 
@@ -1793,7 +1808,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m = self.nc.active_branch_data.tap_module.copy()
         m[self.u_cbr_m] = self.m
         tau = self.nc.active_branch_data.tap_angle.copy()
-        tau[self.u_cbr_m] = self.tau
+        tau[self.u_cbr_tau] = self.tau
 
         R = self.nc.passive_branch_data.R
         X = self.nc.passive_branch_data.X
@@ -1813,6 +1828,58 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         It = Vt * ytt + Vf * ytf  # TODO: review if this is correct
         Sf = Vf * np.conj(If)
         St = Vt * np.conj(It)
+
+        Pf_cbr = calcSf(k=self.k_cbr_pf,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Pt_cbr = calcSt(k=self.k_cbr_pt,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Qf_cbr = calcSf(k=self.k_cbr_qf,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+
+        Qt_cbr = calcSt(k=self.k_cbr_qt,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m,
+                        tau=tau,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
         # Branch losses in MVA
         losses = (Sf + St) * self.nc.Sbase
