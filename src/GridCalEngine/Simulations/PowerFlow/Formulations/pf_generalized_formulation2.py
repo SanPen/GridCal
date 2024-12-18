@@ -1829,14 +1829,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Sf = Vf * np.conj(If)
         St = Vt * np.conj(It)
 
-        # Sf_compare2 = Vf * np.conj(Vf * yff + Vt * yft)
-        # St_compare2 = Vt * np.conj(Vt * ytt + Vf * ytf)
-        #
-        # Sf = (np.power(Vf, 2.0) * np.conj(yff) + Vf * Vt * np.conj(yft))
-        # St = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
-        # If = np.conj(Sf / Vf)
-        # It = np.conj(St / Vt)
-
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,

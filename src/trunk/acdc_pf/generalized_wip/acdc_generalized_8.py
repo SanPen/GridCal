@@ -199,10 +199,53 @@ def run_power_flow_control_with_pst_pt() -> None:
             else:
                 assert not ok
 
+def run_power_flow_12bus_acdc() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', 'AC-DC with all and DCload.gridcal')
 
+    grid = gce.open_file(fname)
+
+    expected_v = np.array(
+        [1. + 0.j,
+         0.99992855 - 0.01195389j,
+         0.98147048 - 0.02808957j,
+         0.99960499 - 0.02810458j,
+         0.9970312 + 0.j,
+         0.99212134 + 0.j,
+         1. + 0.j,
+         0.99677598 + 0.j,
+         0.99172174 - 0.02331925j,
+         0.99262885 - 0.02434865j,
+         1. + 0.j,
+         0.99972904 - 0.0232776j,
+         0.99751785 - 0.01550583j,
+         0.99999118 - 0.00419999j,
+         0.99938143 - 0.03516744j,
+         0.99965346 - 0.02632404j,
+         0.99799193 + 0.j]
+    )
+
+    # ------------------------------------------------------------------------------------------------------------------
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+
+        options = PowerFlowOptions(solver_type=solver_type,
+                                   verbose=2,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_phase=True,
+                                   max_iter=80)
+
+        results = gce.power_flow(grid, options)
+
+        assert np.allclose(expected_v, results.voltage, atol=1e-6)
+
+        assert results.converged
 
 # run_voltage_control_with_ltc() # passes
-run_qf_control_with_ltc()  # fails:             results.Sf[7].imag 10.03461107847338    grid.transformers2w[0].Qset 10.0
-# run_qt_control_with_ltc()   # fails:                results.St[7].imag 10.134990502497686      grid.transformers2w[0].Qset 10.0
-# run_power_flow_control_with_pst_pf() #fails:         results.Sf[7].real -19.770663505442016       grid.transformers2w[0].Pset 40.0
-# run_power_flow_control_with_pst_pt() # fails:        results.St[7].real 19.770663505442016    grid.transformers2w[0].Pset 40.0
+# run_qf_control_with_ltc()  # passes
+# run_qt_control_with_ltc()   # passes
+# run_power_flow_control_with_pst_pf() # passes
+# run_power_flow_control_with_pst_pt() # passes
+run_power_flow_12bus_acdc()
