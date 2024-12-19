@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl
+from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl, ConverterControlType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 import GridCalEngine.IO.matpower.matpower_branch_definitions as matpower_branches
@@ -372,6 +372,7 @@ def parse_branches_data(circuit: MultiCircuit,
             else:
                 tap_module_control_mode = TapModuleControl.fixed
 
+
             if matpower_converter_mode > 0:  # it is a converter
 
                 """
@@ -382,7 +383,7 @@ def parse_branches_data(circuit: MultiCircuit,
                 Type III are the droop controlled ones, there may be one
                 
                 Control Mode    Constraint1     Constraint2     VSC type
-                1               tau             vac -> Vt       I
+                1               Pf              vdc -> Vf       I
                 2               Pf              Qac -> Qt       I   
                 3               Pf              vac -> Vt       I
                 
@@ -393,6 +394,38 @@ def parse_branches_data(circuit: MultiCircuit,
                 7               vdc droop       vac -> Vt       III
                 
                 """
+                control1 = None
+                control2 = None
+                control1val = 0.0
+                control2val = 0.0
+
+                # tau based controls
+                if Pfset != 0.0:
+                    control1 = ConverterControlType.Pdc
+                    control1val = Pfset
+                elif Ptset != 0.0:
+                    control1 = ConverterControlType.Pac
+                    control1val = Ptset
+                else:
+                    control1 = ConverterControlType.Pdc
+                    control1val = 0.0
+
+                # m based controls
+                if Qtset != 0.0:
+                    control2 = ConverterControlType.Qac
+                    control2val = Qtset
+                elif Qfset != 0.0:
+                    control2 = ConverterControlType.Qac
+                    control2val = 0.0
+                elif Vt_set != 0.0:
+                    control2 = ConverterControlType.Vm_ac
+                    control2val = Vt_set
+                elif Vf_set != 0.0:
+                    control2 = ConverterControlType.Vm_dc
+                    control2val = Vf_set
+                else:
+                    control2 = ConverterControlType.Qac
+                    control2val = 0.0
 
                 # set the from bus as a DC bus
                 # this is by design of the matpower FUBM model,

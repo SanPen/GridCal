@@ -39,7 +39,8 @@ class PfBasicFormulation(PfFormulationTemplate):
 
         self.nc = nc
         self.adm: AdmittanceMatrices = nc.get_admittance_matrices()
-
+        if options.verbose > 1:
+            print(f"Ybus: \n {self.adm.Ybus.toarray()}")
         self.S0: CxVec = S0
         self.I0: CxVec = I0
         self.Y0: CxVec = Y0

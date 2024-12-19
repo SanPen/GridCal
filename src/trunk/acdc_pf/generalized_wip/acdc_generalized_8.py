@@ -238,6 +238,9 @@ def run_power_flow_12bus_acdc() -> None:
                                    max_iter=80)
 
         results = gce.power_flow(grid, options)
+        print("results converged?", results.converged)
+        print("results.iterations", results.iterations)
+        print("results.voltage", results.get_bus_df())
 
         assert np.allclose(expected_v, results.voltage, atol=1e-6)
 
