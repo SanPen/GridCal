@@ -1586,6 +1586,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             cgmes_model=cgmes_model,
             gc_vsc=None,
             p_set=hvdc_line.Pset,
+            v_set=hvdc_line.Vset_f,
             logger=logger
         )
         dc_tp_1 = create_cgmes_dc_tp_node(
@@ -1621,6 +1622,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             cgmes_model=cgmes_model,
             gc_vsc=None,
             p_set=-hvdc_line.Pset,
+            v_set=hvdc_line.Vset_t,
             logger=logger
         )
         dc_tp_2 = create_cgmes_dc_tp_node(
