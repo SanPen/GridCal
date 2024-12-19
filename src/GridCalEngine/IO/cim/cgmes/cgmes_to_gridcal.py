@@ -1650,6 +1650,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                     # SET tap_module and tap_phase from its own TapChanger object
                     gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
                     gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                    print()
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
                 winding_id = tap_changer.TransformerEnd.uuid

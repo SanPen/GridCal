@@ -442,6 +442,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
 
             elm.tap_module_control_mode = TapModuleControl.Vm
             elm.tap_phase_control_mode = TapPhaseControl.fixed
+            elm.regulation_bus = psse_bus_dict[psse_elm.CONT1]
 
         elif psse_elm.COD1 in [2, -2]:    # for reactive power flow control
 
@@ -453,7 +454,21 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.Pf
             elm.tap_changer.tc_type = TapChangerTypes.Symmetrical
+            elm.tap_changer.total_positions = psse_elm.NTP1
+            elm.tap_changer.neutral_position = int((psse_elm.NTP1 + 1) / 2)
+            elm.tap_changer.normal_position = int((psse_elm.NTP1 + 1) / 2)
+            import math
+            alpha_per_2 = math.radians(psse_elm.RMA1)
+            number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
+            elm.tap_changer.dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
+
+            elm.tap_changer.dV = 0.058288457
+            elm.tap_changer.tap_position = 18
+
             elm.tap_changer.recalc()
+            elm.tap_phase = elm.tap_changer.get_tap_phase()
+
+            print()
 
         elif psse_elm.COD1 in [4, -4]:    # for control of a dc line quantity
                                     # (valid only for two-windingtransformers)
@@ -466,6 +481,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
             elm.tap_changer.tc_type = TapChangerTypes.Asymmetrical
+            elm.tap_changer.asymmetry_angle = psse_elm.CNXA1
 
             elm.tap_changer.recalc()
 

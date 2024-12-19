@@ -159,14 +159,17 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE 14 bus'  # PASSEED
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'IEEE 30 bus'  #
+    # test_grid_name = 'IEEE 30 bus'  # tap_module num error
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    test_grid_name = 'DACF_20240404_00_IGM'
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+
+    # test_grid_name = 'DACF_20240404_00_IGM'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
 
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
