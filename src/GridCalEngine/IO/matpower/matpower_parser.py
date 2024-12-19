@@ -407,7 +407,7 @@ def parse_branches_data(circuit: MultiCircuit,
                     control1 = ConverterControlType.Pac
                     control1val = Ptset
                 else:
-                    control1 = ConverterControlType.Pdc
+                    control1 = ConverterControlType.Qac
                     control1val = 0.0
 
                 # m based controls
@@ -483,7 +483,11 @@ def parse_branches_data(circuit: MultiCircuit,
                                  alpha1=table[i, matpower_branches.ALPHA1],
                                  alpha2=table[i, matpower_branches.ALPHA2],
                                  alpha3=table[i, matpower_branches.ALPHA3],
-                                 monitor_loading=monitor_loading)
+                                 monitor_loading=monitor_loading,
+                                 control1=control1,
+                                 control2=control2,
+                                    control1_val=control1val,
+                                    control2_val=control2val)
 
                 branch.regulation_bus = control_bus
 
