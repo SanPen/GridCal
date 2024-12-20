@@ -7,13 +7,15 @@ from typing import Tuple, List, Callable, Union
 import numpy as np
 import pandas as pd
 import scipy as sp
+from numba import njit
 from scipy.sparse import diags
 from scipy.sparse import lil_matrix
+from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -23,9 +25,187 @@ from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, BusMo
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
 
+# @njit()
+def adv_jacobian(nbus: int,
+                 nbr: int,
+                 F: IntVec,
+                 T: IntVec,
+                 R: Vec,
+                 X: Vec,
+                 G: Vec,
+                 B: Vec,
+                 k: Vec,
+                 Ys: CxVec,
+                 tap_angles: Vec,
+                 tap_modules: Vec,
+                 vtap_f: Vec,
+                 vtap_t: Vec,
+                 Bc: Vec,
+                 V: CxVec,
+                 Vm: Vec,
+                 adm,
+
+
+                 # Controllable Branch Indices
+                 u_cbr_m: IntVec,
+                 u_cbr_tau: IntVec,
+                 cbr: IntVec,
+                 k_cbr_pf: IntVec,
+                 k_cbr_pt: IntVec,
+                 k_cbr_qf: IntVec,
+                 k_cbr_qt: IntVec,
+                 cbr_pf_set: Vec,
+                 cbr_pt_set: Vec,
+                 cbr_qf_set: Vec,
+                 cbr_qt_set: Vec,
+
+                 # VSC Indices
+                 u_vsc_pf: IntVec,
+                 u_vsc_pt: IntVec,
+                 u_vsc_qt: IntVec,
+                 k_vsc_pf: IntVec,
+                 k_vsc_pt: IntVec,
+                 k_vsc_qt: IntVec,
+                 vsc_pf_set: Vec,
+                 vsc_pt_set: Vec,
+                 vsc_qt_set: Vec,
+
+                 # HVDC Indices
+                 hvdc_droop_idx: IntVec,
+
+                 # Bus Indices
+                 i_u_vm: IntVec,
+                 i_u_va: IntVec,
+                 i_k_p: IntVec,
+                 i_k_q: IntVec,
+
+                 # Unknowns
+                 Pf_vsc: Vec,
+                 Pt_vsc: Vec,
+                 Qt_vsc: Vec,
+                 Pf_hvdc: Vec,
+                 Qf_hvdc: Vec,
+                 Pt_hvdc: Vec,
+                 Qt_hvdc: Vec,
+
+                 # Admittances and Connections
+                 yff_cbr: CxVec,
+                 yft_cbr: CxVec,
+                 ytf_cbr: CxVec,
+                 ytt_cbr: CxVec,
+                 F_cbr: IntVec,
+                 T_cbr: IntVec,
+                 Ybus: CSC) -> CSC:
+    """
+    Compute the advanced jacobian
+    :param nbus:
+    :param nbr:
+    :param F:
+    :param T:
+    :param kconv:
+    :param complex_tap:
+    :param tap_modules:
+    :param Bc:
+    :param V:
+    :param Vm:
+
+    :param u_cbr_m:
+    :param u_cbr_tau:
+    :param cbr:
+    :param k_cbr_pf:
+    :param k_cbr_pt:
+    :param k_cbr_qf:
+    :param k_cbr_qt:
+    :param cbr_pf_set:
+    :param cbr_pt_set:
+    :param cbr_qf_set:
+    :param cbr_qt_set:
+
+    :param u_vsc_pf:
+    :param u_vsc_pt:
+    :param u_vsc_qt:
+    :param k_vsc_pf:
+    :param k_vsc_pt:
+    :param k_vsc_qt:
+    :param vsc_pf_set:
+    :param vsc_pt_set:
+    :param vsc_qt_set:
+
+    :param hvdc_droop_idx:
+
+    :param i_u_vm:
+    :param i_u_va:
+    :param i_k_p:
+    :param i_k_q:
+
+    :param Pf_vsc:
+    :param Pt_vsc:
+    :param Qt_vsc:
+    :param Pf_hvdc:
+    :param Qf_hvdc:
+    :param Pt_hvdc:
+    :param Qt_hvdc:
+
+    :param yff_cbr:
+    :param yft_cbr:
+    :param ytf_cbr:
+    :param ytt_cbr:
+    :param F_cbr:
+    :param T_cbr:
+    :param Ybus:
+    :return:
+    """
+    tap = polar_to_rect(tap_modules, tap_angles)
+
+    # bus-bus derivatives (always needed)
+    dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Yx=Ybus.data, Yp=Ybus.indptr, Yi=Ybus.indices, V=V, Vm=Vm)
+    dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus.indices, Ybus.indptr, dS_dVm_x)
+    dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus.indices, Ybus.indptr, dS_dVa_x)
+
+    dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
+    dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
+    dPf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, adm.yff, adm.yft, V, F, T).real
+    dQf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_qf, i_u_va, adm.yff, adm.yft, V, F, T).imag
+    dPt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, adm.ytf, V, F, T).real
+    dQt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_qt, i_u_va, adm.ytf, V, F, T).imag
+
+    dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
+    dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
+    dPf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_pf, i_u_vm, adm.yff, adm.yft, V, F, T).real
+    dQf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_qf, i_u_vm, adm.yff, adm.yft, V, F, T).imag
+    dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, adm.ytt, adm.ytf, V, F, T).real
+    dQt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, adm.ytt, adm.ytf, V, F, T).imag
+
+    dP_dm__ = deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).imag
+    dPf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).imag
+    dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).real
+    dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).imag
+
+    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, k, tap, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, k, tap, V).imag
+    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, k, tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, k, tap, V).imag
+    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, k, tap, V).real
+    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, k, tap, V).imag
+
+    # compose the Jacobian
+    J = csc_stack_2d_ff(mats=
+                        [dP_dVm__, dP_dVa__, dP_dm__, dP_dtau__,
+                         dQ_dVm__, dQ_dVa__, dQ_dm__, dQ_dtau__,
+                         dPf_dVm_, dPf_dVa_, dPf_dm_, dPf_dtau_,
+                         dQf_dVm_, dQf_dVa_, dQf_dm_, dQf_dtau_,
+                         dPt_dVm_, dPt_dVa_, dPt_dm_, dPt_dtau_,
+                         dQt_dVm_, dQt_dVa_, dQt_dm_, dQt_dtau_],
+                        n_rows=6, n_cols=4)
+
+
+    return J
+
 
 def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
-             R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
+             R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec) -> CSC:
     """
     Compute passive Ybus
     :param Cf:
@@ -52,7 +232,7 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     Yt = diags(ytf) * Cf + diags(ytt) * Ct
     Ybus = Cf.T * Yf + Ct.T * Yt + diags(Yshunt_bus)
 
-    return Ybus
+    return Ybus.tocsc()
 
 
 def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
@@ -274,9 +454,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              tau=self.nc.active_branch_data.tap_angle,
                              vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                              vtap_t=self.nc.passive_branch_data.virtual_tap_t)
-        print("self.Ybus")
-        print(self.Ybus.toarray())
-
+        print("Ybus\n",self.Ybus.toarray())
     def _analyze_branch_controls(self) -> None:
         """
         Analyze the control branches and compute the indices
@@ -2185,10 +2363,106 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                        x=self.var2x(),
                                        h=1e-6)
 
+            tap_modules = expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0)
+            tap_angles = expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0)
+            tap = polar_to_rect(tap_modules, tap_angles)
+
+            adm = compute_admittances(
+                R=self.nc.passive_branch_data.R,
+                X=self.nc.passive_branch_data.X,
+                G=self.nc.passive_branch_data.G,
+                B=self.nc.passive_branch_data.B,
+                k=self.nc.passive_branch_data.k,
+                tap_module=tap_modules,
+                vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+                tap_angle=tap_angles,
+                Cf=self.nc.Cf,
+                Ct=self.nc.Ct,
+                Yshunt_bus=self.nc.Yshunt_from_devices,
+                conn=self.nc.passive_branch_data.conn,
+                seq=1,
+                add_windings_phase=False
+            )
+
+            J_sym = adv_jacobian(nbus=self.nc.nbus,
+                             nbr=self.nc.nbr,
+                             F=self.nc.F,
+                             T=self.nc.T,
+                             R=self.nc.passive_branch_data.R,
+                             X=self.nc.passive_branch_data.X,
+                             G=self.nc.passive_branch_data.G,
+                             B=self.nc.passive_branch_data.B,
+                             k=self.nc.passive_branch_data.k,
+                             Ys=self.nc.passive_branch_data.get_series_admittance(),
+                             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+                             tap_angles=tap_angles,
+                             tap_modules=tap_modules,
+                             Bc=self.nc.passive_branch_data.B,
+                             V=self.V,
+                             Vm=self.Vm,
+                             adm=adm,
+
+                             # Controllable Branch Indices
+                             u_cbr_m=self.u_cbr_m,
+                             u_cbr_tau=self.u_cbr_tau,
+                             cbr=self.cbr,
+                             k_cbr_pf=self.k_cbr_pf,
+                             k_cbr_pt=self.k_cbr_pt,
+                             k_cbr_qf=self.k_cbr_qf,
+                             k_cbr_qt=self.k_cbr_qt,
+                             cbr_pf_set=self.cbr_pf_set,
+                             cbr_pt_set=self.cbr_pt_set,
+                             cbr_qf_set=self.cbr_qf_set,
+                             cbr_qt_set=self.cbr_qt_set,
+
+                             # VSC Indices
+                             u_vsc_pf=self.u_vsc_pf,
+                             u_vsc_pt=self.u_vsc_pt,
+                             u_vsc_qt=self.u_vsc_qt,
+                             k_vsc_pf=self.k_vsc_pf,
+                             k_vsc_pt=self.k_vsc_pt,
+                             k_vsc_qt=self.k_vsc_qt,
+                             vsc_pf_set=self.vsc_pf_set,
+                             vsc_pt_set=self.vsc_pt_set,
+                             vsc_qt_set=self.vsc_qt_set,
+
+                             # HVDC Indices
+                             hvdc_droop_idx=self.hvdc_droop_idx,
+
+                             # Bus Indices
+                             i_u_vm=self.i_u_vm,
+                             i_u_va=self.i_u_va,
+                             i_k_p=self.i_k_p,
+                             i_k_q=self.i_k_q,
+
+                             # Unknowns
+                             Pf_vsc=self.Pf_vsc,
+                             Pt_vsc=self.Pt_vsc,
+                             Qt_vsc=self.Qt_vsc,
+                             Pf_hvdc=self.Pf_hvdc,
+                             Qf_hvdc=self.Qf_hvdc,
+                             Pt_hvdc=self.Pt_hvdc,
+                             Qt_hvdc=self.Qt_hvdc,
+
+                             # Admittances and Connections
+                             yff_cbr=self.yff_cbr,
+                             yft_cbr=self.yft_cbr,
+                             ytf_cbr=self.ytf_cbr,
+                             ytt_cbr=self.ytt_cbr,
+                             F_cbr=self.F_cbr,
+                             T_cbr=self.T_cbr,
+                             Ybus=self.Ybus)
+
             if self.options.verbose > 1:
                 print("(pf_generalized_formulation.py) J: ")
-                print(J)
+                print(J.toarray())
                 print("J shape: ", J.shape)
+
+                print("(pf_generalized_formulation.py) J_sym: ")
+                print(J_sym.toarray())
+                print("J_sym shape: ", J_sym.shape)
 
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)
