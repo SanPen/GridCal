@@ -127,7 +127,7 @@ class FileOpenOptions:
     def __init__(self,
                  cgmes_map_areas_like_raw: bool = False,
                  try_to_map_dc_to_hvdc_line: bool = True,
-                 crash_on_errors: bool = False, ):
+                 crash_on_errors: bool = True, ):
         """
 
         :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
