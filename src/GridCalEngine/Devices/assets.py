@@ -586,12 +586,9 @@ class Assets:
         :param obj: Line instance
         :param logger: Logger to record events
         """
-        if obj.should_this_be_a_transformer():
+        if obj.should_this_be_a_transformer(branch_connection_voltage_tolerance=0.1, logger=logger):
             tr = obj.get_equivalent_transformer()
             self.add_transformer2w(tr)
-            # print('Converted {} ({}) to a transformer'.format(obj.name, obj.idtag))
-            logger.add_warning("Converted line to transformer due to excessive nominal voltage difference",
-                               device=obj.idtag)
         else:
             if self.time_profile is not None:
                 obj.ensure_profiles_exist(self.time_profile)

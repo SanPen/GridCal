@@ -1092,8 +1092,8 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                 elif gc_prop.tpe == SubObjectType.TapChanger:
 
                                     # get the line locations object and fill it with the json data
-                                    locations_obj: dev.TapChanger = elm.get_snapshot_value(prop=gc_prop)
-                                    locations_obj.parse(property_value)
+                                    tc_obj: dev.TapChanger = elm.get_snapshot_value(prop=gc_prop)
+                                    tc_obj.parse(property_value, logger=logger)
 
                                 elif gc_prop.tpe == SubObjectType.Array:
 

@@ -35,13 +35,13 @@ class RawGneDevice(RawObject):
 
             pass
         else:
-            logger.add_warning('Areas not defined for version', str(version))
+            logger.add_warning('GNE not defined for version', str(version))
 
     def get_raw_line(self, version):
 
         if version >= 29:
             return self.format_raw_line([])
         else:
-            raise Exception('Areas not defined for version', str(version))
+            raise Exception('GNE not defined for version', str(version))
 
 

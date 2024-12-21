@@ -346,7 +346,7 @@ class RawVscDCLine(RawObject):
 
         var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
 
-        if 34 <= version >= 35:
+        if 34 <= version <= 35:
             '''
             NAME, MDC, RDC, O1, F1, ... O4, F4
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT

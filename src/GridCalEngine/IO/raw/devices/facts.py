@@ -190,7 +190,7 @@ class RawFACTS(RawObject):
         :param logger:
         """
 
-        if 34 <= version >= 35:
+        if 34 <= version <= 35:
             '''
             'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
             RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
@@ -220,7 +220,7 @@ class RawFACTS(RawObject):
              self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX, self.RMPCT, self.OWNER,
              self.SET1, self.SET2, self.VSREF, self.REMOT, self.MNAME) = data[0]
         else:
-            logger.add_warning('Version not implemented for DC Lines', str(version))
+            logger.add_warning('Version not implemented for FACTS', str(version))
 
     def get_raw_line(self, version):
 
@@ -256,7 +256,7 @@ class RawFACTS(RawObject):
                                          self.RMPCT, self.OWNER, self.SET1, self.SET2, self.VSREF, self.REMOT,
                                          self.MNAME])
         else:
-            raise Exception('Version not implemented for DC Lines ' + str(version))
+            raise Exception('Version not implemented for FACTS ' + str(version))
 
     def get_id(self):
         """
