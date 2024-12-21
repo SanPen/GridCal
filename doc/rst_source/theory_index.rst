@@ -33,6 +33,7 @@ The following subsections include theory about the power flow algorithms support
     theory/power_flow/post_power_flow
     theory/power_flow/continuation_power_flow
     theory/power_flow/distributed_slack
+    theory/power_flow/generalized_power_flow
 
 
 Optimal power flow

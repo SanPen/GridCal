@@ -26,7 +26,7 @@ def grid_parameters(nc:gce.NumericalCircuit):
     #Line connections in FROM topology
     LINES = []
     for l in range(L):
-        LINES.append((nc.branch_data.F, nc.branch_data.T))
+        LINES.append((nc.passive_branch_data.F, nc.passive_branch_data.T))
 
     #If nothing is specified, power limits are set to 0, voltages are ser to 1 (nominal) and maximum power allowed
     # through a line is set to infinite.

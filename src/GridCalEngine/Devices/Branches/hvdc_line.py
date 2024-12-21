@@ -263,14 +263,11 @@ class HvdcLine(BranchParent):
         self.register(key='angle_droop', units='MW/deg', tpe=float, definition='Power/angle rate control',
                       profile_name='angle_droop_prof')
 
-        # self.register(key='n_lines', units='', tpe=int,
-        #               definition='Number of parallel lines between the converter stations. '
-        #                          'The rating will be equally divided')
-
         self.register(key='Vset_f', units='p.u.', tpe=float, definition='Set voltage at the from side',
                       profile_name='Vset_f_prof')
         self.register(key='Vset_t', units='p.u.', tpe=float, definition='Set voltage at the to side',
                       profile_name='Vset_t_prof')
+
         self.register(key='min_firing_angle_f', units='rad', tpe=float,
                       definition='minimum firing angle at the "from" side.')
         self.register(key='max_firing_angle_f', units='rad', tpe=float,

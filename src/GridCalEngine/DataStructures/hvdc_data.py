@@ -33,6 +33,8 @@ class HvdcData:
         self.F: IntVec = np.zeros(nelm, dtype=int)
         self.T: IntVec = np.zeros(nelm, dtype=int)
 
+        self.hvdc_idx: IntVec = np.zeros(nelm, dtype=int)
+
         self.rate: Vec = np.zeros(nelm, dtype=float)
         self.contingency_rate: Vec = np.zeros(nelm, dtype=float)
         self.protection_rates: Vec = np.zeros(nelm, dtype=float)
@@ -82,6 +84,9 @@ class HvdcData:
         data = HvdcData(nelm=len(elm_idx),
                         nbus=len(bus_idx))
 
+        if data.nelm == 0:
+            return data
+
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]
 
@@ -119,10 +124,12 @@ class HvdcData:
         # first slice, then remap
         data.F = self.F[elm_idx]
         data.T = self.T[elm_idx]
+        data.hvdc_idx = self.hvdc_idx[elm_idx]  # Need to remap it?
         bus_map = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
             data.F[k] = bus_map[data.F[k]]
             data.T[k] = bus_map[data.T[k]]
+            data.hvdc_idx[k] = k  # Correct?
 
         return data
 
@@ -156,6 +163,8 @@ class HvdcData:
 
         data.Vnf = self.Vnf.copy()
         data.Vnt = self.Vnt.copy()
+
+        data.hvdc_idx = self.hvdc_idx.copy()
 
         data.angle_droop = self.angle_droop.copy()
         data.control_mode = self.control_mode.copy()
@@ -193,7 +202,9 @@ class HvdcData:
         :return: list of HVDC lines indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx, active=self.active)
+            return tp.get_elements_of_the_island(C_element_bus=self.C_hvdc_bus_f + self.C_hvdc_bus_t,
+                                                 island=bus_idx,
+                                                 active=self.active)
         else:
             return np.zeros(0, dtype=int)
 

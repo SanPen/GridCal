@@ -403,10 +403,25 @@ class BranchParent(PhysicalDevice):
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
-        Always unit virtual taps (unless proven otherwise)
-        :return: tap_f, tap_t
+        Get the branch virtual taps
+
+        The virtual taps generate when a line nominal voltage ate the two connection buses differ
+
+        Returns:
+            **tap_f** (float, 1.0): Virtual tap at the *from* side
+            **tap_t** (float, 1.0): Virtual tap at the *to* side
         """
-        return 1.0, 1.0
+        # resolve how the transformer is actually connected and set the virtual taps
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+
+        if bus_f_v == bus_t_v:
+            return 1.0, 1.0
+        else:
+            if bus_f_v > 0.0 and bus_t_v > 0.0:
+                return 1.0, bus_f_v / bus_t_v
+            else:
+                return 1.0, 1.0
 
     def get_coordinates(self):
         """

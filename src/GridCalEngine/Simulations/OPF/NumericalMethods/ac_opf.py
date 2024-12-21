@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
@@ -622,7 +622,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     pq = np.flatnonzero(Vm_max != Vm_min)
 
     # Check the active elements and their operational limits.
-    br_mon_idx = nc.branch_data.get_monitor_enabled_indices()
+    br_mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
     gen_disp_idx = np.r_[
         nc.generator_data.get_dispatchable_active_indices(), np.array([*range(ngen, ngen + nsh)], dtype=int)]
     ind_gens = np.arange(len(Pg_max))
@@ -636,8 +636,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     k_m = nc.k_m
     k_tau = nc.k_tau
     k_mtau = nc.k_mtau
-    R = nc.branch_data.R
-    X = nc.branch_data.X
+    R = nc.passive_branch_data.R
+    X = nc.passive_branch_data.X
 
     c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)]
     c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)]
@@ -648,13 +648,16 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     c2n = nc.generator_data.cost_2[gen_nondisp_idx]
 
     # Transformer operational limits
-    tapm_max = nc.branch_data.tap_module_max[k_m]
-    tapm_min = nc.branch_data.tap_module_min[k_m]
-    tapt_max = nc.branch_data.tap_angle_max[k_tau]
-    tapt_min = nc.branch_data.tap_angle_min[k_tau]
-    alltapm = nc.branch_data.tap_module  # We grab all tapm even when uncontrolled since the indexing is needed
+    tapm_max = nc.active_branch_data.tap_module_max[k_m]
+    tapm_min = nc.active_branch_data.tap_module_min[k_m]
+    tapt_max = nc.active_branch_data.tap_angle_max[k_tau]
+    tapt_min = nc.active_branch_data.tap_angle_min[k_tau]
+
+    # We grab all tapm even when uncontrolled since the indexing is needed
+    alltapm = nc.active_branch_data.tap_module
     # if the tapt of the same trafo is variable.
-    alltapt = nc.branch_data.tap_angle  # We grab all tapt even when uncontrolled since the indexing is needed if
+    # We grab all tapt even when uncontrolled since the indexing is needed if
+    alltapt = nc.active_branch_data.tap_angle
     # the tapm of the same trafo is variable.
 
     # Sizing of the problem
@@ -682,7 +685,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
+        c_s = np.power(nc.passive_branch_data.overload_cost[br_mon_idx] + 0.1,
                        1.0)  # Cost squared since the slack is also squared
         c_v = nc.bus_data.cost_v[pq] + 0.1
         sl_sf0 = np.ones(n_br_mon)
@@ -732,8 +735,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         q0gen = np.r_[allQgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
-        tapm0 = nc.branch_data.tap_module[k_m]
-        tapt0 = nc.branch_data.tap_angle[k_tau]
+        tapm0 = nc.active_branch_data.tap_module[k_m]
+        tapt0 = nc.active_branch_data.tap_angle[k_tau]
         Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
     else:
@@ -743,8 +746,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                        nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
-        tapm0 = nc.branch_data.tap_module[k_m]
-        tapt0 = nc.branch_data.tap_angle[k_tau]
+        tapm0 = nc.active_branch_data.tap_module[k_m]
+        tapt0 = nc.active_branch_data.tap_angle[k_tau]
         Pf0_hvdc = np.zeros(n_disp_hvdc)
 
     # compose the initial values
@@ -885,7 +888,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                          't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
                                          't_mult', 't_steps', 't_cond', 't_iter'])
 
-        print()
         print("Bus:\n", df_bus)
         print("V-Trafos:\n", df_trafo_m)
         print("Tau-Trafos:\n", df_trafo_tau)
@@ -1108,8 +1110,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
-                      br_idx=island.branch_data.original_idx,
-                      il_idx=island.branch_data.get_monitor_enabled_indices(),
+                      br_idx=island.passive_branch_data.original_idx,
+                      il_idx=island.passive_branch_data.get_monitor_enabled_indices(),
                       gen_idx=island.generator_data.original_idx,
                       hvdc_idx=island.hvdc_data.original_idx,
                       ncap_idx=capacity_nodes_idx_org,

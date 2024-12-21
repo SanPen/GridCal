@@ -270,6 +270,9 @@ def build_wheel(pkg_name: str,
     :return:
     """
 
+    if not os.path.exists(folder_to_save):
+        os.makedirs(folder_to_save)
+
     pkg_name2 = pkg_name + '-' + version
     filename = pkg_name2 + '-py3-none-any.whl'
     dist_info_path = pkg_name2 + '.dist-info'

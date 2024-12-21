@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 import numpy as np
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
@@ -63,7 +63,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     # get contingency groups dictionary
     cg_dict = grid.get_contingency_group_dict()
     calc_branches = grid.get_branches_wo_hvdc()
-    mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
+    mon_idx = numerical_circuit.passive_branch_data.get_monitor_enabled_indices()
 
     # run 0
     pf_res_0 = multi_island_pf_nc(nc=numerical_circuit,
@@ -127,7 +127,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                contingency_idx=ic,
                                contingency_group=contingency_group,
                                using_srap=options.use_srap,
-                               srap_ratings=numerical_circuit.branch_data.protection_rates,
+                               srap_ratings=numerical_circuit.passive_branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
                                srap_deadband=options.srap_deadband,
                                contingency_deadband=options.contingency_deadband,

@@ -7,16 +7,19 @@ from __future__ import annotations
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-from typing import List, Tuple
-
+from typing import List, Tuple, TYPE_CHECKING
+from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus, TapModuleControl, TapPhaseControl
-from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
+from GridCalEngine.enumerations import BuildStatus, ConverterControlType
+from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.types import BRANCH_TYPES
 
-class VSC(ControllableBranchParent):
+
+class VSC(BranchParent):
 
     def __init__(self,
                  bus_from: Bus | None = None,
@@ -27,18 +30,6 @@ class VSC(ControllableBranchParent):
                  idtag: str | None = None,
                  code='',
                  active=True,
-                 r=0.0001,
-                 x=0.05,
-                 tap_module=1.0,
-                 tap_module_max=1.1,
-                 tap_module_min=0.8,
-                 tap_phase=0.1,
-                 tap_phase_max=6.28,
-                 tap_phase_min=-6.28,
-                 Beq=0.001,
-                 Beq_min=-0.1,
-                 Beq_max=0.1,
-                 G0sw=1e-5,
                  rate=1e-9,
                  kdp=-0.05,
                  k=1.0,
@@ -47,42 +38,30 @@ class VSC(ControllableBranchParent):
                  alpha3=0.2,
                  mttf=0.0,
                  mttr=0.0,
-                 tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
-                 tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
-                 vset: float = 1.0,
-                 Pset: float = 0.0,
-                 Qset: float = 0.0,
                  cost=100,
                  contingency_factor=1.0,
                  protection_rating_factor: float = 1.4,
                  contingency_enabled=True,
                  monitor_loading=True,
-                 r0=0.0001,
-                 x0=0.05,
-                 r2=0.0001,
-                 x2=0.05,
-                 capex=0,
-                 opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 capex=0.0,
+                 opex=0.0,
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 control1: ConverterControlType = ConverterControlType.Vm_dc,
+                 control2: ConverterControlType = ConverterControlType.Pac,
+                 control1_val: float = 1.0,
+                 control2_val: float = 0.0,
+                 control1_dev: Bus | BRANCH_TYPES | None = None,
+                 control2_dev: Bus | BRANCH_TYPES | None = None):
         """
         Voltage source converter (VSC)
         :param bus_from:
         :param bus_to:
+        :param cn_from:
+        :param cn_to:
         :param name:
         :param idtag:
         :param code:
         :param active:
-        :param r:
-        :param x:
-        :param tap_module:
-        :param tap_module_max:
-        :param tap_module_min:
-        :param tap_phase:
-        :param tap_phase_max:
-        :param tap_phase_min:
-        :param Beq:
-        :param Beq_min:
-        :param Beq_max:
-        :param G0sw:
         :param rate:
         :param kdp:
         :param k:
@@ -93,69 +72,37 @@ class VSC(ControllableBranchParent):
         :param mttr:
         :param cost:
         :param contingency_factor:
+        :param protection_rating_factor:
         :param contingency_enabled:
         :param monitor_loading:
-        :param r0:
-        :param x0:
-        :param r2:
-        :param x2:
         :param capex:
         :param opex:
         :param build_status:
+        :param control1:
+        :param control2:
         """
 
-        ControllableBranchParent.__init__(self,
-                                          name=name,
-                                          idtag=idtag,
-                                          code=code,
-                                          bus_from=bus_from,
-                                          bus_to=bus_to,
-                                          cn_from=cn_from,
-                                          cn_to=cn_to,
-                                          active=active,
-                                          rate=rate,
-                                          r=r,
-                                          x=x,
-                                          g=0.0,
-                                          b=0.0,
-                                          tap_module=tap_module,
-                                          tap_module_max=tap_module_max,
-                                          tap_module_min=tap_module_min,
-                                          tap_phase=tap_phase,
-                                          tap_phase_max=tap_phase_max,
-                                          tap_phase_min=tap_phase_min,
-                                          tolerance=0.0,
-                                          Cost=cost,
-                                          mttf=mttf,
-                                          mttr=mttr,
-                                          vset=vset,
-                                          Pset=Pset,
-                                          Qset=Qset,
-                                          regulation_branch=None,
-                                          regulation_bus=None,
-                                          regulation_cn=None,
-                                          temp_base=20.0,
-                                          temp_oper=20.0,
-                                          alpha=0.00330,
-                                          # control_mode=control_mode,
-                                          tap_module_control_mode=tap_module_control_mode,
-                                          tap_phase_control_mode=tap_phase_control_mode,
-                                          contingency_factor=contingency_factor,
-                                          protection_rating_factor=protection_rating_factor,
-                                          contingency_enabled=contingency_enabled,
-                                          monitor_loading=monitor_loading,
-                                          r0=r0,
-                                          x0=x0,
-                                          g0=0.0,
-                                          b0=0.0,
-                                          r2=r2,
-                                          x2=x2,
-                                          g2=0.0,
-                                          b2=0.0,
-                                          capex=capex,
-                                          opex=opex,
-                                          build_status=build_status,
-                                          device_type=DeviceType.VscDevice)
+        BranchParent.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_from,
+                              bus_to=bus_to,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
+                              active=active,
+                              rate=rate,
+                              Cost=cost,
+                              mttf=mttf,
+                              mttr=mttr,
+                              contingency_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              capex=capex,
+                              opex=opex,
+                              build_status=build_status,
+                              device_type=DeviceType.VscDevice)
 
         # the VSC must only connect from an DC to a AC bus
         # this connectivity sense is done to keep track with the articles that set it
@@ -179,28 +126,28 @@ class VSC(ControllableBranchParent):
             self.bus_from = None
             self.bus_to = None
 
-        self.G0sw = float(G0sw)
-        self.Beq = float(Beq)
-        self.tap_module = float(tap_module)
-        self.tap_module_max = float(tap_module_max)
-        self.tap_module_min = float(tap_module_min)
-
-        self.k = float(k)
-        self.tap_phase = float(tap_phase)
-        self.tap_phase_max = float(tap_phase_max)
-        self.tap_phase_min = float(tap_phase_min)
-        self.Beq_min = float(Beq_min)
-        self.Beq_max = float(Beq_max)
-
         self.kdp = float(kdp)
         self.alpha1 = float(alpha1)
         self.alpha2 = float(alpha2)
         self.alpha3 = float(alpha3)
 
-        self.register(key='G0sw', units='p.u.', tpe=float, definition='Inverter losses.')
-        self.register(key='Beq', units='p.u.', tpe=float, definition='Total shunt susceptance.')
-        self.register(key='Beq_max', units='p.u.', tpe=float, definition='Max total shunt susceptance.')
-        self.register(key='Beq_min', units='p.u.', tpe=float, definition='Min total shunt susceptance.')
+        self._control1: ConverterControlType = control1
+        self._control1_prof: Profile = Profile(default_value=control1, data_type=ConverterControlType)
+
+        self._control2: ConverterControlType = control2
+        self._control2_prof: Profile = Profile(default_value=control2, data_type=ConverterControlType)
+
+        self._control1_dev: Bus | BRANCH_TYPES | None = control1_dev
+        self._control1_dev_prof: Profile = Profile(default_value=control1_dev, data_type=DeviceType.BusOrBranch)
+
+        self._control2_dev: Bus | BRANCH_TYPES | None = control2_dev
+        self._control2_dev_prof: Profile = Profile(default_value=control2_dev, data_type=DeviceType.BusOrBranch)
+
+        self._control1_val = float(control1_val)
+        self._control1_val_prof: Profile = Profile(default_value=self._control1_val, data_type=float)
+
+        self._control2_val = float(control2_val)
+        self._control2_val_prof: Profile = Profile(default_value=self._control2_val, data_type=float)
 
         self.register(key='alpha1', units='', tpe=float,
                       definition='Losses constant parameter (IEC 62751-2 loss Correction).')
@@ -209,20 +156,218 @@ class VSC(ControllableBranchParent):
         self.register(key='alpha3', units='', tpe=float,
                       definition='Losses quadratic parameter (IEC 62751-2 loss Correction).')
 
-        self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
-
         self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
 
-    def change_base(self, Sbase_old: float, Sbase_new: float):
+        self.register(key='control1', units='', tpe=ConverterControlType, profile_name="control1_prof",
+                      definition='Control mode 1.')
+
+        self.register(key='control2', units='', tpe=ConverterControlType, profile_name="control2_prof",
+                      definition='Control mode 2.')
+
+        self.register(key='control1_val', units='', tpe=float, profile_name="control1_val_prof",
+                      definition='Control value 1.'
+                                 'p.u. for voltage\n'
+                                 'rad for angles\n'
+                                 'MW for P\n'
+                                 'MVAr for Q')
+        self.register(key='control2_val', units='', tpe=float, profile_name="control2_val_prof",
+                      definition='Control value 2.'
+                                 'p.u. for voltage\n'
+                                 'rad for angles\n'
+                                 'MW for P\n'
+                                 'MVAr for Q')
+
+        self.register(key='control1_dev', units="", tpe=DeviceType.BusOrBranch, profile_name="control1_dev_prof",
+                      definition='Controlled device, None to aply to this converter', editable=False)
+
+        self.register(key='control2_dev', units="", tpe=DeviceType.BusOrBranch, profile_name="control2_dev_prof",
+                      definition='Controlled device, None to aply to this converter', editable=False)
+
+    @property
+    def control1(self):
         """
-        Change the inpedance base
-        :param Sbase_old: old base (MVA)
-        :param Sbase_new: new base (MVA)
+
+        :return:
         """
-        super().change_base(Sbase_old, Sbase_new)
-        b = Sbase_new / Sbase_old
-        self.G0sw *= b
-        self.Beq *= b
+        return self._control1
+
+    @control1.setter
+    def control1(self, value: ConverterControlType):
+        if value != self.control2:
+            self._control1 = value
+
+            # Revert the control in range
+            if (value in (ConverterControlType.Vm_dc, ConverterControlType.Vm_ac) and
+                    not (0.9 < self.control1_val <= 1.1)):
+                self.control1_val = 1.0
+
+    @property
+    def control1_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._control1_prof
+
+    @control1_prof.setter
+    def control1_prof(self, val: Profile | np.ndarray):
+        if isinstance(val, Profile):
+            self._control1_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control1_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+
+    @property
+    def control2(self):
+        """
+
+        :return:
+        """
+        return self._control2
+
+    @control2.setter
+    def control2(self, value: ConverterControlType):
+        if value != self.control1:
+            self._control2 = value
+
+            # Revert the control in range
+            if (value in (ConverterControlType.Vm_dc, ConverterControlType.Vm_ac) and
+                    not (0.9 < self.control2_val <= 1.1)):
+                self.control2_val = 1.0
+
+    @property
+    def control2_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._control2_prof
+
+    @control2_prof.setter
+    def control2_prof(self, val: Profile | np.ndarray):
+        if isinstance(val, Profile):
+            self._control2_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control2_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+
+    @property
+    def control1_val(self):
+        """
+
+        :return:
+        """
+        return self._control1_val
+
+    @control1_val.setter
+    def control1_val(self, value: float):
+        self._control1_val = value
+
+    @property
+    def control1_val_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._control1_val_prof
+
+    @control1_val_prof.setter
+    def control1_val_prof(self, val: Profile | np.ndarray):
+        if isinstance(val, Profile):
+            self._control1_val_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control1_val_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+
+    @property
+    def control2_val(self):
+        """
+
+        :return:
+        """
+        return self._control2_val
+
+    @control2_val.setter
+    def control2_val(self, value: float):
+        self._control2_val = value
+
+    @property
+    def control2_val_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._control2_val_prof
+
+    @control2_val_prof.setter
+    def control2_val_prof(self, val: Profile | np.ndarray):
+        if isinstance(val, Profile):
+            self._control2_val_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control2_val_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+
+    @property
+    def control1_dev(self):
+        """
+
+        :return:
+        """
+        return self._control1_dev
+
+    @control1_dev.setter
+    def control1_dev(self, value: Bus | BranchParent | None = None):
+        self._control1_dev = value
+
+    @property
+    def control1_dev_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._control1_dev_prof
+
+    @control1_dev_prof.setter
+    def control1_dev_prof(self, val: Profile | np.ndarray):
+        if isinstance(val, Profile):
+            self._control1_dev_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control1_dev_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
+
+    @property
+    def control2_dev(self):
+        """
+
+        :return:
+        """
+        return self._control2_dev
+
+    @control2_dev.setter
+    def control2_dev(self, value: Bus | BranchParent | None = None):
+        self._control2_dev = value
+
+    @property
+    def control2_dev_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._control2_dev_prof
+
+    @control2_dev_prof.setter
+    def control2_dev_prof(self, val: Profile | np.ndarray):
+        if isinstance(val, Profile):
+            self._control2_dev_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control2_dev_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a pofile')
 
     def get_coordinates(self) -> List[Tuple[float, float]]:
         """
@@ -289,5 +434,3 @@ class VSC(ControllableBranchParent):
 
         if show_fig:
             plt.show()
-
-

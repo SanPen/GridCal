@@ -43,11 +43,11 @@ class GridCalEnv(gym.Env):
         nc = compile_numerical_circuit_at(self.grid, t_idx=None)
 
         # initialize the last status
-        self.last_status = nc.branch_data.active.copy()
+        self.last_status = nc.passive_branch_data.active.copy()
 
         # compute the transition probabilities
-        lbda = 1.0 / nc.branch_data.mttf if forced_mttf is None else 1.0 / np.full(nc.nbr, forced_mttf)
-        mu = 1.0 / nc.branch_data.mttr if forced_mttr is None else 1.0 / np.full(nc.nbr, forced_mttr)
+        lbda = 1.0 / nc.passive_branch_data.mttf if forced_mttf is None else 1.0 / np.full(nc.nbr, forced_mttf)
+        mu = 1.0 / nc.passive_branch_data.mttr if forced_mttr is None else 1.0 / np.full(nc.nbr, forced_mttr)
         self.p_up, self.p_dwn = get_transition_probabilities(lbda=lbda, mu=mu)
 
         # Define action and observation space
@@ -93,13 +93,13 @@ class GridCalEnv(gym.Env):
         nc = compile_numerical_circuit_at(self.grid, t_idx=self.t_idx)
 
         # regardless of the profile branch status, set the status of the simulation
-        nc.branch_data.active = self.last_status
+        nc.passive_branch_data.active = self.last_status
 
         # Apply action - switch branches on/off based on action
         # Note: This is a simplified representation. The actual implementation
         # would depend on how the grid responds to these actions
         for i, branch_status in enumerate(action):
-            nc.branch_data.active[i] = int(branch_status)
+            nc.passive_branch_data.active[i] = int(branch_status)
 
         # Simulate one step in the environment
         # This would involve running a power flow simulation for the current grid state
@@ -110,7 +110,7 @@ class GridCalEnv(gym.Env):
         br_active = (p > self.p_dwn).astype(int)
 
         # apply the transitioning states
-        nc.branch_data.active = br_active
+        nc.passive_branch_data.active = br_active
         self.last_status = br_active
 
         # determine the next state
@@ -163,7 +163,7 @@ class GridCalEnv(gym.Env):
         nc = compile_numerical_circuit_at(self.grid, t_idx=None)
 
         # initialize the last status
-        self.last_status = nc.branch_data.active.copy()
+        self.last_status = nc.passive_branch_data.active.copy()
 
         # Simulate one step in the environment
         # This would involve running a power flow simulation for the current grid state
@@ -216,7 +216,7 @@ class GridCalEnv(gym.Env):
         vm = np.abs(pf_results.voltage)
         over_idx = np.where(vm > nc.bus_data.Vmax)[0]
         under_idx = np.where(vm < nc.bus_data.Vmin)[0]
-        overload_idx = np.where(np.abs(pf_results.loading.real) > nc.branch_data.contingency_rates)
+        overload_idx = np.where(np.abs(pf_results.loading.real) > nc.passive_branch_data.contingency_rates)
 
         # if there is any voltage under or over the voltage limits or any critical overload, stop
         return len(under_idx) > 0 or len(over_idx) > 0 or len(overload_idx) > 0

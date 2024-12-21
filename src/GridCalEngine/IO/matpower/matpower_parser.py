@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl
+from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl, ConverterControlType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 import GridCalEngine.IO.matpower.matpower_branch_definitions as matpower_branches
@@ -372,6 +372,7 @@ def parse_branches_data(circuit: MultiCircuit,
             else:
                 tap_module_control_mode = TapModuleControl.fixed
 
+
             if matpower_converter_mode > 0:  # it is a converter
 
                 """
@@ -382,7 +383,7 @@ def parse_branches_data(circuit: MultiCircuit,
                 Type III are the droop controlled ones, there may be one
                 
                 Control Mode    Constraint1     Constraint2     VSC type
-                1               tau             vac -> Vt       I
+                1               Pf              vdc -> Vf       I
                 2               Pf              Qac -> Qt       I   
                 3               Pf              vac -> Vt       I
                 
@@ -393,6 +394,38 @@ def parse_branches_data(circuit: MultiCircuit,
                 7               vdc droop       vac -> Vt       III
                 
                 """
+                control1 = None
+                control2 = None
+                control1val = 0.0
+                control2val = 0.0
+
+                # tau based controls
+                if Pfset != 0.0:
+                    control1 = ConverterControlType.Pdc
+                    control1val = Pfset
+                elif Ptset != 0.0:
+                    control1 = ConverterControlType.Pac
+                    control1val = Ptset
+                else:
+                    control1 = ConverterControlType.Qac
+                    control1val = 0.0
+
+                # m based controls
+                if Qtset != 0.0:
+                    control2 = ConverterControlType.Qac
+                    control2val = Qtset
+                elif Qfset != 0.0:
+                    control2 = ConverterControlType.Qac
+                    control2val = 0.0
+                elif Vt_set != 0.0:
+                    control2 = ConverterControlType.Vm_ac
+                    control2val = Vt_set
+                elif Vf_set != 0.0:
+                    control2 = ConverterControlType.Vm_dc
+                    control2val = Vf_set
+                else:
+                    control2 = ConverterControlType.Qac
+                    control2val = 0.0
 
                 # set the from bus as a DC bus
                 # this is by design of the matpower FUBM model,
@@ -421,35 +454,40 @@ def parse_branches_data(circuit: MultiCircuit,
                 else:
                     monitor_loading = True
 
+                # TODO: Figure this one out
                 branch = dev.VSC(bus_from=bus_f,
                                  bus_to=bus_t,
                                  code="{0}_{1}_1".format(f_idx, t_idx),
                                  name='VSC' + str(len(circuit.vsc_devices) + 1),
                                  active=bool(table[i, matpower_branches.BR_STATUS]),
-                                 r=table[i, matpower_branches.BR_R],
-                                 x=table[i, matpower_branches.BR_X],
-                                 tap_module=m,
-                                 tap_module_max=table[i, matpower_branches.MA_MAX],
-                                 tap_module_min=table[i, matpower_branches.MA_MIN],
-                                 tap_phase=tap_phase,
-                                 tap_phase_max=np.deg2rad(table[i, matpower_branches.SH_MAX]),
-                                 tap_phase_min=np.deg2rad(table[i, matpower_branches.SH_MIN]),
-                                 G0sw=table[i, matpower_branches.GSW],
-                                 Beq=table[i, matpower_branches.BEQ],
-                                 Beq_max=table[i, matpower_branches.BEQ_MAX],
-                                 Beq_min=table[i, matpower_branches.BEQ_MIN],
+                                 # r=table[i, matpower_branches.BR_R],
+                                 # x=table[i, matpower_branches.BR_X],
+                                 # tap_module=m,
+                                 # tap_module_max=table[i, matpower_branches.MA_MAX],
+                                 # tap_module_min=table[i, matpower_branches.MA_MIN],
+                                 # tap_phase=tap_phase,
+                                 # tap_phase_max=np.deg2rad(table[i, matpower_branches.SH_MAX]),
+                                 # tap_phase_min=np.deg2rad(table[i, matpower_branches.SH_MIN]),
+                                 # G0sw=table[i, matpower_branches.GSW],
+                                 # Beq=table[i, matpower_branches.BEQ],
+                                 # Beq_max=table[i, matpower_branches.BEQ_MAX],
+                                 # Beq_min=table[i, matpower_branches.BEQ_MIN],
                                  rate=rate,
                                  kdp=table[i, matpower_branches.KDP],
                                  k=table[i, matpower_branches.K2],
-                                 tap_phase_control_mode=tap_phase_control_mode,
-                                 tap_module_control_mode=tap_module_control_mode,
-                                 Pset=Pset,
-                                 Qset=Qset,
-                                 vset=v_set,
+                                 # tap_phase_control_mode=tap_phase_control_mode,
+                                 # tap_module_control_mode=tap_module_control_mode,
+                                 # Pset=Pset,
+                                 # Qset=Qset,
+                                 # vset=v_set,
                                  alpha1=table[i, matpower_branches.ALPHA1],
                                  alpha2=table[i, matpower_branches.ALPHA2],
                                  alpha3=table[i, matpower_branches.ALPHA3],
-                                 monitor_loading=monitor_loading)
+                                 monitor_loading=monitor_loading,
+                                 control1=control1,
+                                 control2=control2,
+                                    control1_val=control1val,
+                                    control2_val=control2val)
 
                 branch.regulation_bus = control_bus
 

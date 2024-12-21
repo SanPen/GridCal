@@ -24,7 +24,7 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Utils.NumericalMethods.numerical_stability import (sparse_instability_svd_test,
                                                                       sparse_instability_lu_test)
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 
 
 class GridErrorLog:

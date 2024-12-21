@@ -10,17 +10,21 @@ import numpy as np
 
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
+
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 
 
-def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.csc_matrix,
+def dcpf(nc: NumericalCircuit,
+         Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.csc_matrix,
          S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec, tau: Vec,
          vd: IntVec, no_slack: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
     Solves a linear-DC power flow.
+    :param nc: NumericalCircuit instance
     :param Ybus: Normal circuit admittance matrix
     :param Bpqpv: Susceptance matrix reduced
     :param Bref: Susceptane matrix sliced for the slack node
@@ -80,14 +84,47 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
     end = time.time()
     elapsed = end - start
 
-    # return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, None, None, None, 1, elapsed)
-    return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
-                                   Ybus=None, Yf=None, Yt=None,
-                                   iterations=1, elapsed=elapsed)
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = cf.power_flow_post_process_linear(
+        Sbus=Scalc,
+        V=V,
+        X=nc.passive_branch_data.X,
+        tap_module=nc.active_branch_data.tap_module,
+        tap_angle=nc.active_branch_data.tap_angle,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase
+    )
+
+    return NumericPowerFlowResults(V=V,
+                                   Scalc=Scalc,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Sf,
+                                   St=St,
+                                   If=If,
+                                   It=It,
+                                   loading=loading,
+                                   losses=losses,
+                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   norm_f=norm_f,
+                                   converged=True,
+                                   iterations=1,
+                                   elapsed=elapsed)
 
 
-def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
+def lacpf(nc: NumericalCircuit,
+          Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+          Ys: CxVec, S0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec, vd: IntVec) -> NumericPowerFlowResults:
     """
     Linearized AC Load Flow
 
@@ -95,13 +132,16 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
 
     Linearized AC Load Flow Applied to Analysis in Electric Power Systems
         by: P. Rossoni, W. M da Rosa and E. A. Belati
+    :param nc: NumericalCircuit instance
     :param Ybus: Admittance matrix
+    :param Yf: Admittance from matrix
+    :param Yt: Admittance to matrix
     :param Ys: Admittance matrix of the series elements
     :param S0: Power Injections vector of all the nodes
-    :param I0: Current Injections vector of all the nodes
     :param V0: Set voltages of all the nodes (used for the slack and PV nodes)
     :param pq: list of indices of the pq nodes
     :param pv: list of indices of the pv nodes
+    :param vd: Array with the indices of the slack buses
     :return: NumericPowerFlowResults
     """
 
@@ -132,7 +172,7 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
         # solve the linear system
         try:
             x = linear_solver(Asys, rhs)
-        except Exception as e:
+        except RuntimeError as e:
             V = V0
             # Calculate the error and check the convergence
             Scalc = cf.compute_power(Ybus, V)
@@ -142,12 +182,31 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
             # check for convergence
             end = time.time()
             elapsed = end - start
-            # return NumericPowerFlowResults(V, False, norm_f, Scalc,
-            #                                None, None, None, None, None, None, 1, elapsed)
-            return NumericPowerFlowResults(V=V, converged=False, norm_f=norm_f,
-                                           Scalc=Scalc, m=None, tau=None, Beq=None,
-                                           Ybus=None, Yf=None, Yt=None,
-                                           iterations=1, elapsed=elapsed)
+
+            return NumericPowerFlowResults(V=V,
+                                           Scalc=Scalc,
+                                           m=np.ones(nc.nbr, dtype=float),
+                                           tau=np.zeros(nc.nbr, dtype=float),
+                                           Sf=np.zeros(nc.nbr, dtype=complex),
+                                           St=np.zeros(nc.nbr, dtype=complex),
+                                           If=np.zeros(nc.nbr, dtype=complex),
+                                           It=np.zeros(nc.nbr, dtype=complex),
+                                           loading=np.zeros(nc.nbr, dtype=complex),
+                                           losses=np.zeros(nc.nbr, dtype=complex),
+                                           Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           norm_f=norm_f,
+                                           converged=False,
+                                           iterations=1,
+                                           elapsed=elapsed)
 
         # compose the results vector
         V = V0.copy()
@@ -158,8 +217,8 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
         V[pv] = cf.polar_to_rect(vm_pv, va_pv)
 
         # set the PQ voltages
-        va_pq = x[npv:npv+npq]
-        vm_pq = np.ones(npq) - x[npv+npq::]
+        va_pq = x[npv:npv + npq]
+        vm_pq = np.ones(npq) - x[npv + npq::]
         V[pq] = cf.polar_to_rect(vm_pq, va_pq)
 
         # Calculate the error and check the convergence
@@ -174,10 +233,42 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
     end = time.time()
     elapsed = end - start
 
-    # return NumericPowerFlowResults(V, True, norm_f, Scalc,
-    #                                None, None, None, None, None, None, 1, elapsed)
-    return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
-                                   Ybus=None, Yf=None, Yt=None,
-                                   iterations=1, elapsed=elapsed)
+    # Compute the Branches power and the slack buses power
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = cf.power_flow_post_process_nonlinear(
+        Sbus=Scalc,
+        V=V,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        pv=pv,
+        vd=vd,
+        Ybus=Ybus,
+        Yf=Yf,
+        Yt=Yt,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase
+    )
 
+    return NumericPowerFlowResults(V=V,
+                                   Scalc=Scalc,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Sf,
+                                   St=St,
+                                   If=If,
+                                   It=It,
+                                   loading=loading,
+                                   losses=losses,
+                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   norm_f=norm_f,
+                                   converged=True,
+                                   iterations=1,
+                                   elapsed=elapsed)
