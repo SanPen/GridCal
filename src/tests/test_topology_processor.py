@@ -10,7 +10,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.api import power_flow
 
 
-def createExampleGridDiagram1() -> MultiCircuit:
+def create_example_grid_diagram1() -> MultiCircuit:
     """
     This function creates a Multicircuit example from SE Diagram 1 in documentation to test topology processor
     """
@@ -197,7 +197,7 @@ def test_topology_reduction():
     """
     This function tests topology reduction for Node/Breaker model networks
     """
-    for grid_ in [createExampleGridTest2(), createExampleGridTest1(), createExampleGridDiagram1()]:
+    for grid_ in [createExampleGridTest2(), createExampleGridTest1(), create_example_grid_diagram1()]:
 
         grid_.process_topology_at(t_idx=None)
 
@@ -266,6 +266,33 @@ def test_topology_NL_microgrid() -> None:
     logger.print()
 
     print()
+
+
+def test_cn_makes_a_bus():
+    """
+    Checks if by crating a CN, we also create a bus
+    :return:
+    """
+    grid = MultiCircuit()
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0"))
+
+    assert grid.get_bus_number() == 1
+
+
+def test_cn_makes_a_bus2():
+    """
+    Checks if by crating a CN, with a pre-existing bus, we don't create a new bus
+    :return:
+    """
+    grid = MultiCircuit()
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
+
+    assert grid.get_bus_number() == 1
+
+
+def test_busbar_makes_a_bus():
+    pass
 
 
 def test_topology_4_nodes_A():
