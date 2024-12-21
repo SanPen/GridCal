@@ -1821,7 +1821,6 @@ class NumericalCircuit:
         C = lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
         n_red = 0
         for k in range(self.passive_branch_data.nelm):
-
             if self.passive_branch_data.reducible[k] and self.passive_branch_data.active[k]:
                 f = self.passive_branch_data.F[k]
                 t = self.passive_branch_data.T[k]
@@ -1838,7 +1837,7 @@ class NumericalCircuit:
             islands = find_islands(adj=A, active=self.bus_data.active)
 
             # compose the bus mapping array where each entry point to the final island bus
-            bus_map_arr = self.bus_data.original_idx.copy()
+            bus_map_arr = np.arange(self.bus_data.nbus, dtype=int)
 
             for island in islands:
                 if len(island):
@@ -1864,7 +1863,8 @@ class NumericalCircuit:
 
         return n_red
 
-    def get_island(self, bus_idx: IntVec,
+    def get_island(self,
+                   bus_idx: IntVec,
                    consider_hvdc_as_island_links: bool = False,
                    consider_vsc_as_island_links: bool = True,
                    logger: Logger | None = None) -> "NumericalCircuit":
@@ -1874,7 +1874,7 @@ class NumericalCircuit:
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
         :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :param logger: Logger
-        :return: SnapshotData
+        :return: NumericalCircuit
         """
         if logger is None:
             logger = Logger()
@@ -1883,7 +1883,7 @@ class NumericalCircuit:
         n_red = self.process_topology()
 
         # if the island is the same as the original bus indices, no slicing is needed
-        if len(bus_idx) == len(self.bus_data.original_idx) and n_red == 0:
+        if len(bus_idx) == self.bus_data.nbus and n_red == 0:
             if np.all(bus_idx == self.bus_data.original_idx):
                 return self
 

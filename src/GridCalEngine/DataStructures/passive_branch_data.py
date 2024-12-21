@@ -145,7 +145,7 @@ class PassiveBranchData(BranchParentData):
         """
         return 1.0 / (self.R + 1.0j * self.X + 1e-20)
 
-    def get_island(self, bus_idx: Vec) -> IntVec:
+    def get_island(self, bus_idx: IntVec) -> IntVec:
         """
         Get the array of branch indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices

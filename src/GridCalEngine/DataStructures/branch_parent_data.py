@@ -164,7 +164,7 @@ class BranchParentData:
 
         return data
 
-    def get_island(self, bus_idx: Vec) -> IntVec:
+    def get_island(self, bus_idx: IntVec) -> IntVec:
         """
         Get the array of branch indices that belong to the islands given by the bus indices
         :param bus_idx: array of bus indices
@@ -244,10 +244,9 @@ class BranchParentData:
         self.C_branch_bus_f = lil_matrix((self.nelm, self.nbus), dtype=int)
         self.C_branch_bus_t = lil_matrix((self.nelm, self.nbus), dtype=int)
         for k in range(self.nelm):
-            f = self.F[k]
-            t = self.T[k]
-            new_f = bus_map_arr[f]
-            new_t = bus_map_arr[t]
+            new_f = bus_map_arr[self.F[k]]
+            new_t = bus_map_arr[self.T[k]]
+
             self.F[k] = new_f
             self.T[k] = new_t
 
