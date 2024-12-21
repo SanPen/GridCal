@@ -155,6 +155,65 @@ def set_bus_control_voltage_vsc(i: int,
                              expected_value=bus_data.Vbus[i])
 
 
+def set_bus_control_voltage_hvdc(i: int,
+                                j: int,
+                                remote_control: bool,
+                                bus_name: str,
+                                bus_voltage_used: BoolVec,
+                                bus_data: BusData,
+                                candidate_Vm: float,
+                                use_stored_guess: bool,
+                                logger: Logger) -> None:
+    """
+    Set the bus control voltage
+    :param i: Bus index
+    :param j: Remote Bus index
+    :param remote_control: Using remote control?
+    :param bus_name: Bus name
+    :param bus_voltage_used: Array of flags indicating if a bus voltage has been modified before
+    :param bus_data: BusData
+    :param candidate_Vm: Voltage set point that you want to set
+    :param use_stored_guess: Use the stored seed values?
+    :param logger: Logger
+    """
+    if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
+        if remote_control and j > -1 and j != i:
+            # remove voltage control
+            # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
+            # bus_data.set_busmode(j, BusMode.PQV_tpe)
+            bus_data.is_p_controlled[j] = True
+            bus_data.is_q_controlled[j] = True
+            bus_data.is_vm_controlled[j] = True
+
+            # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
+            # bus_data.set_busmode(i, BusMode.P_tpe)
+            bus_data.is_p_controlled[i] = True
+        else:
+            # local voltage control
+            # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
+            # bus_data.set_busmode(i, BusMode.PV_tpe)
+            bus_data.is_p_controlled[i] = True
+            bus_data.is_vm_controlled[i] = True
+
+    if not use_stored_guess:
+        if not bus_voltage_used[i]:
+            if remote_control and j > -1 and j != i:
+                # initialize the remote bus voltage to the control value
+                bus_data.Vbus[j] = complex(candidate_Vm, 0)
+                bus_voltage_used[j] = True
+            else:
+                # initialize the local bus voltage to the control value
+                bus_data.Vbus[i] = complex(candidate_Vm, 0)
+                bus_voltage_used[i] = True
+
+        elif candidate_Vm != bus_data.Vbus[i]:
+            logger.add_error(msg='Different control voltage set points',
+                             device=bus_name,
+                             value=candidate_Vm,
+                             expected_value=bus_data.Vbus[i])
+
+
+
 def get_bus_data(bus_data: BusData,
                  circuit: MultiCircuit,
                  areas_dict: Dict[Area, int],
@@ -1597,7 +1656,7 @@ def get_hvdc_data(data: HvdcData,
 
             # hack the bus types to believe they are PV
             if elm.active_prof[t_idx]:
-                set_bus_control_voltage(i=f,
+                set_bus_control_voltage_hvdc(i=f,
                                         j=-1,
                                         remote_control=False,
                                         bus_name=elm.bus_from.name,
@@ -1607,7 +1666,7 @@ def get_hvdc_data(data: HvdcData,
                                         use_stored_guess=use_stored_guess,
                                         logger=logger)
 
-                set_bus_control_voltage(i=t,
+                set_bus_control_voltage_hvdc(i=t,
                                         j=-1,
                                         remote_control=False,
                                         bus_name=elm.bus_to.name,
@@ -1638,7 +1697,7 @@ def get_hvdc_data(data: HvdcData,
 
             # hack the bus types to believe they are PV
             if elm.active:
-                set_bus_control_voltage(i=f,
+                set_bus_control_voltage_hvdc(i=f,
                                         j=-1,
                                         remote_control=False,
                                         bus_name=elm.bus_from.name,
@@ -1648,7 +1707,7 @@ def get_hvdc_data(data: HvdcData,
                                         use_stored_guess=use_stored_guess,
                                         logger=logger)
 
-                set_bus_control_voltage(i=t,
+                set_bus_control_voltage_hvdc(i=t,
                                         j=-1,
                                         remote_control=False,
                                         bus_name=elm.bus_to.name,

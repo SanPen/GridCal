@@ -238,14 +238,47 @@ def run_power_flow_12bus_acdc() -> None:
                                    max_iter=80)
 
         results = gce.power_flow(grid, options)
+        print("results converged?", results.converged)
+        print("results.iterations", results.iterations)
+        print("results.voltage", results.get_bus_df())
 
         assert np.allclose(expected_v, results.voltage, atol=1e-6)
 
         assert results.converged
 
-# run_voltage_control_with_ltc() # passes
+def run_fubm() -> None:
+    """
+
+    :return:
+    """
+    fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', 'fubm_caseHVDC_vt.m')
+    grid = gce.open_file(fname)
+
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        opt = gce.PowerFlowOptions(solver_type=solver_type,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=True,
+                                   control_taps_phase=True,
+                                   control_remote_voltage=True,
+                                   verbose=2)
+        driver = gce.PowerFlowDriver(grid=grid, options=opt)
+        driver.run()
+        results = gce.power_flow(grid, opt)
+        print("results converged?", results.converged)
+        print("results.iterations", results.iterations)
+        print("results.voltage", results.get_bus_df())
+        vm = np.abs(results.voltage)
+        expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
+        ok = np.allclose(vm, expected_vm, rtol=1e-4)
+        assert ok
+
+
+
+run_voltage_control_with_ltc() # passes
 # run_qf_control_with_ltc()  # passes
 # run_qt_control_with_ltc()   # passes
 # run_power_flow_control_with_pst_pf() # passes
 # run_power_flow_control_with_pst_pt() # passes
-run_power_flow_12bus_acdc()
+# run_power_flow_12bus_acdc()
+# run_fubm()

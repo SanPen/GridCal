@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 import pandas as pd
 from GridCalEngine.basic_structures import Vec, CxVec
@@ -167,6 +167,59 @@ class PfFormulationTemplate:
         dx, ok = self.solve_step_from_f(self._f)
 
         return dx, ok
+
+    def get_x_names(self) -> List[str]:
+        """
+        Names matching x
+        :return:
+        """
+        cols = [f'x {i}' for i in self.var2x()]
+
+        return cols
+
+    def get_fx_names(self) -> List[str]:
+        """
+        Names matching fx
+        :return:
+        """
+
+        rows = [f'f {i}' for i in self.f]
+
+        return rows
+
+    def get_jacobian_df(self, J = None, autodiff=False) -> pd.DataFrame:
+        """
+        Get the Jacobian DataFrame
+        :return: DataFrame
+        """
+        if J is None:
+            J = self.Jacobian()
+        return pd.DataFrame(
+            data=J.toarray(),
+            columns=self.get_x_names(),
+            index=self.get_fx_names(),
+        )
+
+    def get_f_df(self, f=None) -> pd.DataFrame:
+        """
+        Get the f(x) DataFrame
+        """
+        return pd.DataFrame(
+            data=self._f if f is None else f,
+            columns=["f(x)"],
+            index=self.get_fx_names()
+        )
+
+    def get_x_df(self, x=None) -> pd.DataFrame:
+        """
+        Get the x DataFrame
+        """
+        return pd.DataFrame(
+            data=self.var2x() if x is None else x,
+            columns=["x"],
+            index=self.get_x_names()
+        )
+
 
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """

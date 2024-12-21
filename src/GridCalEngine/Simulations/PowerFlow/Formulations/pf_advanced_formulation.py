@@ -865,12 +865,13 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         return rows
 
-    def get_jacobian_df(self, autodiff=True) -> pd.DataFrame:
+    def get_jacobian_df(self, J = None, autodiff=True) -> pd.DataFrame:
         """
         Get the Jacobian DataFrame
         :return: DataFrame
         """
-        J = self.Jacobian(autodiff=autodiff)
+        if J is None:
+            J = self.Jacobian(autodiff=autodiff)
         return pd.DataFrame(
             data=J.toarray(),
             columns=self.get_x_names(),
