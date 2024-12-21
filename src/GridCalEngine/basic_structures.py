@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 from typing import List, Any, Dict, Union, Tuple
 import pandas as pd
@@ -135,7 +136,7 @@ class CDF:
         else:
             return np.interp(prob, self.prob, self.arr)
 
-    def expectation(self) -> float:
+    def expectation(self) -> float | complex:
         """
         Returns the CDF expected value (AKA the mean)
         :return: expectation

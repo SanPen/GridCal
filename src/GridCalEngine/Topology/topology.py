@@ -69,7 +69,7 @@ def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active
                     start = indptr[v]
                     end = indptr[v + 1]
                     for i in range(start, end):
-                        k: int = int(indices[i])  # get the row index in the CSC scheme
+                        k = indices[i]  # get the row index in the CSC scheme
                         if not visited[k] and active[k]:
                             stack.append(k)
             # ------------------------------------------------------------------------------------------------------

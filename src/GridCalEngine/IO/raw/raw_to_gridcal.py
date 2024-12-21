@@ -138,10 +138,7 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
                    code=name,
                    active=bool(psse_load.STATUS),
                    P=p, Q=q, Ir=ir, Ii=ii, G=g, B=b)
-    if psse_load.SCALE == 1.0:
-        elm.scalable = True
-    else:
-        elm.scalable = False
+    elm.scalable = psse_load.SCALE == 1.0
 
     return elm
 
@@ -204,7 +201,7 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
 
     elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
-                                # B=b_init,   # TODO Binit
+                                B=b_init,
                                 vset=vset,
                                 code=busnum_id,
                                 is_nonlinear=True)
@@ -350,7 +347,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1) \
                 if (psse_elm.NTP1 - 1) > 0 else 0.01
             distance_from_low = tap_module - psse_elm.VMI1
-            tc_step = distance_from_low / tc_dV  if tc_dV != 0 else 0.5
+            tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
         elif psse_elm.VMA2 != 0:
             tc_total_positions = psse_elm.NTP2
             tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
@@ -426,29 +423,29 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         # we need to discount that PSSe includes the virtual tap inside the normal tap
         elm.tap_module = tap_module / mf * mt
 
-        if psse_elm.COD1 == 0:      # for fixed tap and fixed phase shift
+        if psse_elm.COD1 == 0:  # for fixed tap and fixed phase shift
 
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 in [1, -1]:    # for voltage control
+        elif psse_elm.COD1 in [1, -1]:  # for voltage control
 
             elm.tap_module_control_mode = TapModuleControl.Vm
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 in [2, -2]:    # for reactive power flow control
+        elif psse_elm.COD1 in [2, -2]:  # for reactive power flow control
 
             elm.tap_module_control_mode = TapModuleControl.Qf
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 in [3, -3]:    # for active power flow control
+        elif psse_elm.COD1 in [3, -3]:  # for active power flow control
 
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.Pf
             elm.tap_changer.tc_type = TapChangerTypes.Symmetrical
 
-        elif psse_elm.COD1 in [4, -4]:    # for control of a dc line quantity
-                                    # (valid only for two-windingtransformers)
+        elif psse_elm.COD1 in [4, -4]:  # for control of a dc line quantity
+            # (valid only for two-windingtransformers)
 
             logger.add_error(msg="Not implemented transformer control. (COD1)",
                              value=psse_elm.COD1)
