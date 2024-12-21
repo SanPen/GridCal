@@ -156,14 +156,14 @@ def set_bus_control_voltage_vsc(i: int,
 
 
 def set_bus_control_voltage_hvdc(i: int,
-                                j: int,
-                                remote_control: bool,
-                                bus_name: str,
-                                bus_voltage_used: BoolVec,
-                                bus_data: BusData,
-                                candidate_Vm: float,
-                                use_stored_guess: bool,
-                                logger: Logger) -> None:
+                                 j: int,
+                                 remote_control: bool,
+                                 bus_name: str,
+                                 bus_voltage_used: BoolVec,
+                                 bus_data: BusData,
+                                 candidate_Vm: float,
+                                 use_stored_guess: bool,
+                                 logger: Logger) -> None:
     """
     Set the bus control voltage
     :param i: Bus index
@@ -213,7 +213,6 @@ def set_bus_control_voltage_hvdc(i: int,
                              expected_value=bus_data.Vbus[i])
 
 
-
 def get_bus_data(bus_data: BusData,
                  circuit: MultiCircuit,
                  areas_dict: Dict[Area, int],
@@ -236,6 +235,7 @@ def get_bus_data(bus_data: BusData,
     for i, bus in enumerate(circuit.buses):
 
         # bus parameters
+        bus_data.original_idx[i] = i
         bus_data.names[i] = bus.name
         bus_data.idtag[i] = bus.idtag
         bus_data.Vmin[i] = bus.Vmin
@@ -905,7 +905,7 @@ def fill_parent_branch(i: int,
                        data: PassiveBranchData,
                        bus_dict: Dict[Bus, int],
                        t_idx: int = -1,
-                       time_series: bool = False,):
+                       time_series: bool = False, ):
     """
 
     :param i:
@@ -1657,24 +1657,24 @@ def get_hvdc_data(data: HvdcData,
             # hack the bus types to believe they are PV
             if elm.active_prof[t_idx]:
                 set_bus_control_voltage_hvdc(i=f,
-                                        j=-1,
-                                        remote_control=False,
-                                        bus_name=elm.bus_from.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset_f_prof[t_idx],
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                                             j=-1,
+                                             remote_control=False,
+                                             bus_name=elm.bus_from.name,
+                                             bus_data=bus_data,
+                                             bus_voltage_used=bus_voltage_used,
+                                             candidate_Vm=elm.Vset_f_prof[t_idx],
+                                             use_stored_guess=use_stored_guess,
+                                             logger=logger)
 
                 set_bus_control_voltage_hvdc(i=t,
-                                        j=-1,
-                                        remote_control=False,
-                                        bus_name=elm.bus_to.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset_t_prof[t_idx],
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                                             j=-1,
+                                             remote_control=False,
+                                             bus_name=elm.bus_to.name,
+                                             bus_data=bus_data,
+                                             bus_voltage_used=bus_voltage_used,
+                                             candidate_Vm=elm.Vset_t_prof[t_idx],
+                                             use_stored_guess=use_stored_guess,
+                                             logger=logger)
 
         else:
             data.active[i] = elm.active
@@ -1698,24 +1698,24 @@ def get_hvdc_data(data: HvdcData,
             # hack the bus types to believe they are PV
             if elm.active:
                 set_bus_control_voltage_hvdc(i=f,
-                                        j=-1,
-                                        remote_control=False,
-                                        bus_name=elm.bus_from.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset_f,
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                                             j=-1,
+                                             remote_control=False,
+                                             bus_name=elm.bus_from.name,
+                                             bus_data=bus_data,
+                                             bus_voltage_used=bus_voltage_used,
+                                             candidate_Vm=elm.Vset_f,
+                                             use_stored_guess=use_stored_guess,
+                                             logger=logger)
 
                 set_bus_control_voltage_hvdc(i=t,
-                                        j=-1,
-                                        remote_control=False,
-                                        bus_name=elm.bus_to.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset_t,
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                                             j=-1,
+                                             remote_control=False,
+                                             bus_name=elm.bus_to.name,
+                                             bus_data=bus_data,
+                                             bus_voltage_used=bus_voltage_used,
+                                             candidate_Vm=elm.Vset_t,
+                                             use_stored_guess=use_stored_guess,
+                                             logger=logger)
 
         data.Vnf[i] = elm.bus_from.Vnom
         data.Vnt[i] = elm.bus_to.Vnom

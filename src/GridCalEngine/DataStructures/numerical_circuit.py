@@ -1813,9 +1813,10 @@ class NumericalCircuit:
 
         return df
 
-    def process_topology(self):
+    def process_topology(self) -> int:
         """
         Process the topology (i.e. reduce branches like the switches) in-place
+        :return: Number of reduced branches
         """
         C = lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
         n_red = 0
@@ -1824,8 +1825,8 @@ class NumericalCircuit:
             if self.passive_branch_data.reducible[k] and self.passive_branch_data.active[k]:
                 f = self.passive_branch_data.F[k]
                 t = self.passive_branch_data.T[k]
-                C[f, k] = 1
-                C[t, k] = 1
+                C[k, f] = 1
+                C[k, t] = 1
                 n_red += 1
 
         if n_red > 0:

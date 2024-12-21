@@ -20,18 +20,21 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
 
 
-def set_bus(elm_bus, elm_cn, bus: Bus, cn: ConnectivityNode) -> None:
+def set_bus(bus: Bus, cn: ConnectivityNode) -> Tuple[Bus | None, ConnectivityNode | None]:
+    """
 
+    :param bus:
+    :param cn:
+    :return:
+    """
     if bus is None:
         if cn is None:
-            elm_bus = None
-            elm_cn = None
+            return None, None
         else:
-            elm_bus = cn.bus
-            elm_cn = cn
+            return cn.bus, cn
     else:
-        elm_bus = bus
-        elm_cn = cn
+        return bus, cn
+
 
 class BranchParent(PhysicalDevice):
     """
@@ -90,13 +93,8 @@ class BranchParent(PhysicalDevice):
                                 device_type=device_type)
 
         # connectivity
-        self.bus_from = bus_from
-        self.cn_from = cn_from
-        set_bus(self.bus_from, self.cn_from, bus_from, cn_from)
-
-        self.bus_to = bus_to
-        self.cn_to = cn_to
-        set_bus(self.bus_to, self.cn_to, bus_to, cn_to)
+        self._bus_from, self._cn_from = set_bus(bus_from, cn_from)
+        self._bus_to, self._cn_to = set_bus(bus_to, cn_to)
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
@@ -176,6 +174,84 @@ class BranchParent(PhysicalDevice):
         self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
         self.register('group', units="", tpe=DeviceType.BranchGroupDevice,
                       definition="Group where this branch belongs")
+
+    @property
+    def bus_from(self) -> Bus:
+        """
+        Bus
+        :return: Bus
+        """
+        return self._bus_from
+
+    @bus_from.setter
+    def bus_from(self, val: Bus):
+        if val is None:
+            self._bus_from = val
+        else:
+            if isinstance(val, Bus):
+                self._bus_from = val
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a _bus_from')
+
+    @property
+    def bus_to(self) -> Bus:
+        """
+        Bus
+        :return: Bus
+        """
+        return self._bus_to
+
+    @bus_to.setter
+    def bus_to(self, val: Bus):
+        if val is None:
+            self._bus_to = val
+        else:
+            if isinstance(val, Bus):
+                self._bus_to = val
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a _bus_to')
+
+    @property
+    def cn_from(self) -> ConnectivityNode:
+        """
+        Bus
+        :return: Bus
+        """
+        return self._cn_from
+
+    @cn_from.setter
+    def cn_from(self, val: ConnectivityNode):
+        if val is None:
+            self._cn_from = val
+        else:
+            if isinstance(val, ConnectivityNode):
+                self._cn_from = val
+
+                if self.bus_from is None:
+                    self.bus_from = self._cn_from.bus
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
+
+    @property
+    def cn_to(self) -> ConnectivityNode:
+        """
+        Bus
+        :return: Bus
+        """
+        return self._cn_to
+
+    @cn_to.setter
+    def cn_to(self, val: ConnectivityNode):
+        if val is None:
+            self._cn_to = val
+        else:
+            if isinstance(val, ConnectivityNode):
+                self._cn_to = val
+
+                if self.bus_to is None:
+                    self.bus_to = self._cn_to.bus
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node to')
 
     @property
     def active_prof(self) -> Profile:
@@ -466,7 +542,6 @@ class BranchParent(PhysicalDevice):
                                 prefer_node_breaker: bool = True) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
         """
         Get the from and to connection objects of the branch
-        :param t_idx: Time index (optional)
         :param logger: Logger object
         :param prefer_node_breaker: If true the connectivity nodes are examined first,
                                     otherwise the buses are returned right away

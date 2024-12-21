@@ -2148,7 +2148,7 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                     voltage_level=vl,
                     cn=cn  # we make it explicitly None because this will be correted afterwards
                 )
-                gcdev_model.add_bus_bar(gcdev_elm, add_cn=cn is None)
+                gcdev_model.add_bus_bar(gcdev_elm)
 
             else:
                 logger.add_error(msg='Not exactly one terminal',

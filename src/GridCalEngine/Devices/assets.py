@@ -13,7 +13,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Devices.Parents.editable_device import GCPROP_TYPES
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, ListSet
 from GridCalEngine.data_logger import DataLogger
 
 
@@ -67,10 +67,10 @@ class Assets:
         self._series_reactances: List[dev.SeriesReactance] = list()
 
         # Should accept buses
-        self._buses: List[dev.Bus] = list()
+        self._buses: List[dev.Bus] = ListSet()
 
         # array of connectivity nodes
-        self._connectivity_nodes: List[dev.ConnectivityNode] = list()
+        self._connectivity_nodes: List[dev.ConnectivityNode] = ListSet()
 
         # array of busbars
         self._bus_bars: List[dev.BusBar] = list()
@@ -1309,8 +1309,8 @@ class Assets:
 
         self._connectivity_nodes.append(obj)
 
-        # TODO: Figure out how to deal with this check efficiently
-        if obj.bus not in self._buses:
+        # add the internal bus
+        if obj.bus not in self._buses:  # using a ListSet for fast query time
             self.add_bus(obj=obj.bus)
 
         return obj
@@ -1357,11 +1357,10 @@ class Assets:
         """
         return len(self._bus_bars)
 
-    def add_bus_bar(self, obj: dev.BusBar, add_cn: bool = True):
+    def add_bus_bar(self, obj: dev.BusBar):
         """
         Add Substation
         :param obj: BusBar object
-        :param add_cn: Add the internal CN of the BusBar?
         """
         if obj is None:
             obj = dev.BusBar(name=f"BB{len(self._bus_bars)}")
@@ -1369,7 +1368,7 @@ class Assets:
         self._bus_bars.append(obj)
 
         # add the internal connectivity node
-        if add_cn:
+        if obj.cn not in self._connectivity_nodes:  # using a ListSet for fast query time
             self.add_connectivity_node(obj.cn)
 
         return obj
@@ -5310,7 +5309,7 @@ class Assets:
             self._branch_groups = devices
 
         elif device_type == DeviceType.BusDevice:
-            self._buses = devices
+            self._buses = ListSet(devices)
 
         elif device_type == DeviceType.OverheadLineTypeDevice:
             self._overhead_line_types = devices
@@ -5340,7 +5339,7 @@ class Assets:
             self._voltage_levels = devices
 
         elif device_type == DeviceType.ConnectivityNodeDevice:
-            self._connectivity_nodes = devices
+            self._connectivity_nodes = ListSet(devices)
 
         elif device_type == DeviceType.BusBarDevice:
             self._bus_bars = devices
