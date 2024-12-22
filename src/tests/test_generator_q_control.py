@@ -54,8 +54,9 @@ def test_q_control_false():
         nc = compile_numerical_circuit_at(main_circuit)
 
         Q = power_flow.results.Sbus.imag
-        Qmin = nc.Qmin_bus * nc.Sbase
-        Qmax = nc.Qmax_bus * nc.Sbase
+        Qmin_bus, Qmax_bus = nc.get_reactive_power_limits()
+        Qmin = Qmin_bus * nc.Sbase
+        Qmax = Qmax_bus * nc.Sbase
         l_ok = Qmin <= Q
         r_ok = Q <= Qmax
         ok = l_ok.all() and r_ok.all()

@@ -1654,6 +1654,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
             logger=logger
         )
 
+        indices = nc.get_simulation_indices()
+
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
             mip_vars.bus_vars.theta[local_t_idx, k] = lp_model.add_var(
@@ -1683,7 +1685,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
             ramp_constraints=ramp_constraints,
             skip_generation_limits=skip_generation_limits,
             all_generators_fixed=all_generators_fixed,
-            vd=nc.vd,
+            vd=indices.vd,
             nodal_capacity_active=active_nodal_capacity
         )
 
@@ -1756,10 +1758,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
             )
 
             # formulate nodes ------------------------------------------------------------------------------------------
+            adml = nc.get_linear_admittance_matrices(indices=indices)
             add_linear_node_balance(
                 t_idx=local_t_idx,
-                Bbus=nc.Bbus,
-                vd=nc.vd,
+                Bbus=adml.Bbus,
+                vd=indices.vd,
                 bus_data=nc.bus_data,
                 generator_data=nc.generator_data,
                 battery_data=nc.battery_data,

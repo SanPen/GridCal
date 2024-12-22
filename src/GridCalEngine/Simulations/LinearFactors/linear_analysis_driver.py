@@ -102,8 +102,8 @@ class LinearAnalysisDriver(DriverTemplate):
 
             analysis.run()
             self.logger += analysis.logger
-            self.results.bus_names = analysis.numerical_circuit.bus_names
-            self.results.branch_names = analysis.numerical_circuit.branch_names
+            self.results.bus_names = analysis.numerical_circuit.bus_data.names
+            self.results.branch_names = analysis.numerical_circuit.passive_branch_data.names
             self.results.bus_types = analysis.numerical_circuit.bus_data.bus_types
             self.results.PTDF = analysis.PTDF
             self.results.LODF = analysis.LODF
@@ -112,14 +112,13 @@ class LinearAnalysisDriver(DriverTemplate):
             bus_dict = self.grid.get_bus_index_dict()
             nbus = len(self.grid.buses)
 
-            # TODO: Use the function from HvdcData instead of the one from MultiCircuit
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
                                                                                                 theta=np.zeros(nbus))
-
-            Pbus_pu = analysis.numerical_circuit.Sbus.real + Shvdc
+            Sbus = nc.get_injections()
+            Pbus_pu = Sbus.real + Shvdc
             self.results.Sbus = Pbus_pu * nc.Sbase
             self.results.Sf = analysis.get_flows(Pbus_pu) * nc.Sbase
-            self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
+            self.results.loading = self.results.Sf / (analysis.numerical_circuit.passive_branch_data.rates + 1e-20)
 
         elif self.engine == EngineType.Bentayga:
 

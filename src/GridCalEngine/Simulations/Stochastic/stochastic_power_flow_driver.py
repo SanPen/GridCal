@@ -104,38 +104,38 @@ class StochasticPowerFlowDriver(DriverTemplate):
         self.report_text('Running Monte Carlo Sampling...')
 
         # compile the multi-circuit, we'll hack it later
-        numerical_circuit = compile_numerical_circuit_at(circuit=self.grid,
+        nc = compile_numerical_circuit_at(circuit=self.grid,
                                                          t_idx=None,
                                                          apply_temperature=False,
                                                          branch_tolerance_mode=BranchImpedanceMode.Specified,
                                                          opf_results=self.opf_time_series_results,
                                                          logger=self.logger)
 
-        mc_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
-                                                m=numerical_circuit.nbr,
+        mc_results = StochasticPowerFlowResults(n=nc.nbus,
+                                                m=nc.nbr,
                                                 p=self.max_sampling_points,
-                                                bus_names=numerical_circuit.bus_names,
-                                                branch_names=numerical_circuit.branch_names,
-                                                bus_types=numerical_circuit.bus_types)
+                                                bus_names=nc.bus_data.names,
+                                                branch_names=nc.passive_branch_data.names,
+                                                bus_types=nc.bus_data.bus_types)
 
-        avg_res = PowerFlowResults(n=numerical_circuit.nbus,
-                                   m=numerical_circuit.nbr,
-                                   n_hvdc=numerical_circuit.nhvdc,
-                                   n_vsc=numerical_circuit.nvsc,
-                                   n_gen=numerical_circuit.ngen,
-                                   n_batt=numerical_circuit.nbatt,
-                                   n_sh=numerical_circuit.nshunt,
-                                   bus_names=numerical_circuit.bus_names,
-                                   branch_names=numerical_circuit.branch_names,
-                                   hvdc_names=numerical_circuit.hvdc_names,
-                                   vsc_names=numerical_circuit.vsc_data.names,
-                                   gen_names=numerical_circuit.generator_names,
-                                   batt_names=numerical_circuit.battery_names,
-                                   sh_names=numerical_circuit.shunt_names,
-                                   bus_types=numerical_circuit.bus_types)
+        avg_res = PowerFlowResults(n=nc.nbus,
+                                   m=nc.nbr,
+                                   n_hvdc=nc.nhvdc,
+                                   n_vsc=nc.nvsc,
+                                   n_gen=nc.ngen,
+                                   n_batt=nc.nbatt,
+                                   n_sh=nc.nshunt,
+                                   bus_names=nc.bus_data.names,
+                                   branch_names=nc.passive_branch_data.names,
+                                   hvdc_names=nc.hvdc_data.names,
+                                   vsc_names=nc.vsc_data.names,
+                                   gen_names=nc.generator_data.names,
+                                   batt_names=nc.battery_data.names,
+                                   sh_names=nc.shunt_data.names,
+                                   bus_types=nc.bus_data.bus_types)
 
         variance_sum = 0.0
-        v_sum = np.zeros(numerical_circuit.nbus, dtype=complex)
+        v_sum = np.zeros(nc.nbus, dtype=complex)
 
         # build inputs
         monte_carlo_input = StochasticPowerFlowInput(self.grid)
@@ -147,7 +147,7 @@ class StochasticPowerFlowDriver(DriverTemplate):
         for i in range(self.max_sampling_points):
 
             # Run the set monte carlo point at 't'
-            res = multi_island_pf_nc(nc=numerical_circuit,
+            res = multi_island_pf_nc(nc=nc,
                                      options=self.options,
                                      Sbus_input=S_combinations[i, :])
 

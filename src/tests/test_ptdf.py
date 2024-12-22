@@ -99,7 +99,7 @@ def test_ptdf_ieee14_definition():
         nc = gce.compile_numerical_circuit_at(main_circuit, t_idx=None)
         options = gce.PowerFlowOptions(solver_type=gce.SolverType.DC)
         base_res = multi_island_pf_nc(nc=nc, options=options)
-        S = nc.Sbus.copy()
+        S = nc.get_injections()
         ptdf = np.zeros((nc.nbr, nc.nbus))
 
         for i in range(nc.nbus):
@@ -653,7 +653,7 @@ def test_compensated_ptdf():
 
         # TODO: Magia que no sé porqué funciona (Santiago)
         ok = np.allclose(cnt.compensated_ptdf_factors.todense(),
-                         linear_analysis_raw.results.PTDF[:, nc.T[cnt.branch_indices]],
+                         linear_analysis_raw.results.PTDF[:, nc.passive_branch_data.T[cnt.branch_indices]],
                          atol=1e-3)
         assert ok
 

@@ -49,7 +49,7 @@ class PfBasicFormulation(PfFormulationTemplate):
         self.Qmax = Qmax
 
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(
-            Pbus=self.nc.Sbus.real,
+            Pbus=S0.real,
             types=self.nc.bus_data.bus_types
         )
 

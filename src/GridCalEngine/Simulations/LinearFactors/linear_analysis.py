@@ -133,13 +133,13 @@ def make_acptdf(Ybus: sp.csc_matrix,
 
 def make_ptdf(Bpqpv: sp.csc_matrix,
               Bf: sp.csc_matrix,
-              pqpv: IntVec,
+              no_slack: IntVec,
               distribute_slack: bool = True) -> Mat:
     """
     Build the PTDF matrix
     :param Bpqpv: DC-linear susceptance matrix already sliced
     :param Bf: Bus-branch "from" susceptance matrix
-    :param pqpv: array of sorted pq and pv node indices
+    :param no_slack: array of sorted pq and pv node indices
     :param distribute_slack: distribute the slack?
     :return: PTDF matrix. It is a full matrix of dimensions Branches x buses
     """
@@ -147,8 +147,8 @@ def make_ptdf(Bpqpv: sp.csc_matrix,
     n = Bf.shape[1]
     nb = n
     nbi = n
-    noref = pqpv  # np.arange(1, nb)
-    noslack = pqpv
+    noref = no_slack  # np.arange(1, nb)
+    noslack = no_slack
 
     if distribute_slack:
         dP = np.ones((n, n)) * (-1 / (n - 1))
@@ -648,18 +648,25 @@ class LinearAnalysis:
         if len(islands) > 0:
             for n_island, island in enumerate(islands):
 
+                indices = island.get_simulation_indices()
+
                 # no slacks will make it impossible to compute the PTDF analytically
-                if len(island.vd) == 1:
-                    if len(island.pqpv) > 0:
-                        # island.Btau
+                if len(indices.vd) == 1:
+                    if len(indices.no_slack) > 0:
+
+                        adml = island.get_linear_admittance_matrices(indices=indices)
+
+                        Bpqpv = adml.get_Bred(pqpv=indices.no_slack)
+
                         # compute the PTDF of the island
-                        ptdf_island = make_ptdf(Bpqpv=island.Bpqpv,
-                                                Bf=island.Bf,
-                                                pqpv=island.pqpv,
+                        ptdf_island = make_ptdf(Bpqpv=Bpqpv,
+                                                Bf=adml.Bf,
+                                                no_slack=indices.no_slack,
                                                 distribute_slack=self.distributed_slack)
 
                         # assign the PTDF to the main PTDF matrix
-                        self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
+                        self.PTDF[np.ix_(island.passive_branch_data.original_idx,
+                                         island.bus_data.original_idx)] = ptdf_island
 
                         # compute the island LODF
                         lodf_island = make_lodf(Cf=island.passive_branch_data.C_branch_bus_f.tocsc(),
@@ -668,7 +675,8 @@ class LinearAnalysis:
                                                 correct_values=self.correct_values)
 
                         # assign the LODF to the main LODF matrix
-                        self.LODF[np.ix_(island.original_branch_idx, island.original_branch_idx)] = lodf_island
+                        self.LODF[np.ix_(island.passive_branch_data.original_idx,
+                                         island.passive_branch_data.original_idx)] = lodf_island
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
 
@@ -680,12 +688,13 @@ class LinearAnalysis:
         else:
 
             idx = islands[0].get_simulation_indices()
-            adml = islands[0].get_linear_admittance_matrices()
+            adml = islands[0].get_linear_admittance_matrices(indices=idx)
+            Bpqpv = adml.get_Bred(pqpv=idx.no_slack)
 
             # there is only 1 island, compute the PTDF
-            self.PTDF = make_ptdf(Bpqpv=adml.Bpqpv,
+            self.PTDF = make_ptdf(Bpqpv=Bpqpv,
                                   Bf=adml.Bf,
-                                  pqpv=idx.pqpv,
+                                  no_slack=idx.no_slack,
                                   distribute_slack=self.distributed_slack)
 
             # compute the LODF upon the PTDF

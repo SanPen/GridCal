@@ -11,6 +11,7 @@ from typing import List, Tuple, Dict, Union
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Devices import RemedialAction
+from GridCalEngine.Topology.simulation_indices import SimulationIndices
 from GridCalEngine.Topology.topology import find_islands
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
@@ -302,6 +303,14 @@ class NumericalCircuit:
             Sbus /= self.Sbase
 
         return Sbus
+
+    def get_current_injections(self) -> CxVec:
+
+        return self.load_data.get_current_injections_per_bus() / self.Sbase
+
+    def get_admittance_injections(self) -> CxVec:
+
+        return self.load_data.get_admittance_injections_per_bus() / self.Sbase
 
     def consolidate_information(self) -> None:
         """
@@ -894,7 +903,7 @@ class NumericalCircuit:
             Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
         )
 
-    def get_linear_admittance_matrices(self) -> ycalc.LinearAdmittanceMatrices:
+    def get_linear_admittance_matrices(self, indices: SimulationIndices) -> ycalc.LinearAdmittanceMatrices:
         """
 
         :return:
@@ -907,8 +916,8 @@ class NumericalCircuit:
             active=self.passive_branch_data.active,
             Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
             Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
-            ac=self.ac_indices,
-            dc=self.dc_indices
+            ac=indices.ac,
+            dc=indices.dc
         )
 
     #

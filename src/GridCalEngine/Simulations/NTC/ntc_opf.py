@@ -1113,11 +1113,13 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             )
 
         # formulate injections -------------------------------------------------------------------------------------
+        indices = nc.get_simulation_indices()
 
         # magic scaling: the demand must be exactly (to the solver tolerance) the same as the demand
-        Pbus = nc.Pbus.copy()
+        Pbus = nc.get_current_injections().real
+        Pbus = Pbus.copy()
         Ptotal = np.sum(Pbus)
-        Pbus[nc.vd] -= Ptotal / len(nc.vd)
+        Pbus[indices.vd] -= Ptotal / len(indices.vd)
 
         f_obj += add_linear_injections_formulation(
             t=t_idx,
@@ -1158,8 +1160,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             # compute the sensitivity to the exchange
             alpha = compute_alpha(ptdf=ls.PTDF,
                                   lodf=ls.LODF,
-                                  P0=nc.Sbus.real,
-                                  Pinstalled=nc.bus_installed_power,
+                                  P0=Pbus.real,
+                                  Pinstalled=nc.bus_data.installed_power,
                                   Pgen=nc.generator_data.get_injections_per_bus().real,
                                   Pload=nc.load_data.get_injections_per_bus().real,
                                   bus_a1_idx=bus_a1_idx,
@@ -1192,9 +1194,11 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             )
 
             # formulate nodes ---------------------------------------------------------------------------------------
+            adml = nc.get_linear_admittance_matrices(indices=indices)
+
             add_linear_node_balance(t_idx=t_idx,
-                                    Bbus=nc.Bbus,
-                                    vd=nc.vd,
+                                    Bbus=adml.Bbus,
+                                    vd=indices.vd,
                                     bus_data=nc.bus_data,
                                     bus_vars=mip_vars.bus_vars,
                                     prob=lp_model)
@@ -1375,6 +1379,8 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
 
     Pbus_prof = grid.get_Sbus_prof().real
 
+    indices = nc.get_simulation_indices()
+
     # declare the linear analysis
     ls = LinearAnalysis(numerical_circuit=nc,
                         distributed_slack=False,
@@ -1383,11 +1389,13 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
     # compute the PTDF and LODF
     ls.run()
 
+    Pbus = nc.get_injections().real
+
     # compute the sensitivity to the exchange
     alpha = compute_alpha(ptdf=ls.PTDF,
                           lodf=ls.LODF,
-                          P0=nc.Sbus.real,
-                          Pinstalled=nc.bus_installed_power,
+                          P0=Pbus.real,
+                          Pinstalled=nc.bus_data.installed_power,
                           Pgen=nc.generator_data.get_injections_per_bus().real,
                           Pload=nc.load_data.get_injections_per_bus().real,
                           bus_a1_idx=bus_a1_idx,
@@ -1418,7 +1426,7 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
         # magic scaling: the demand must be exactly (to the solver tolerance) the same as the demand
         # TODO: Replace by old more detailed scaling function
         Ptotal = np.sum(Pbus)
-        Pbus[nc.vd] -= Ptotal / len(nc.vd)
+        Pbus[indices.vd] -= Ptotal / len(indices.vd)
 
         if t_idx == 0:
             # branch index, branch object, flow sense w.r.t the area exchange
@@ -1481,6 +1489,7 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
                 t_idx=t_idx,
                 Sbase=nc.Sbase,
                 branch_data_t=nc.passive_branch_data,
+                ctrl_branch_data_t=nc.active_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
@@ -1496,9 +1505,10 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
 
             # formulate nodes ---------------------------------------------------------------------------------------
             # TODO: review that the samples NumericalCircuit is ok to use here
+            adml = nc.get_linear_admittance_matrices(indices=indices)
             add_linear_node_balance(t_idx=t_idx,
-                                    Bbus=nc.Bbus,
-                                    vd=nc.vd,
+                                    Bbus=adml.Bbus,
+                                    vd=indices.vd,
                                     bus_data=nc.bus_data,
                                     bus_vars=mip_vars.bus_vars,
                                     prob=lp_model)

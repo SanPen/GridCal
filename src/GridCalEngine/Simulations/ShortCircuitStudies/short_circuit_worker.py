@@ -56,46 +56,46 @@ def short_circuit_post_process(
     return Sfb, Stb, If, It, Vbranch, loading, losses
 
 
-def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: int):
+def short_circuit_ph3(nc: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: int):
     """
     Run a 3-phase short circuit simulation for a single island
-    :param calculation_inputs: NumericalCircuit
+    :param nc: NumericalCircuit
     :param Vpf: Power flow voltage vector applicable to the island
     :param Zf: Short circuit impedance vector applicable to the island
     :param bus_index: Bus index
     :return: short circuit results
     """
-
-    Y_gen = calculation_inputs.generator_data.get_Yshunt(seq=1)
-    Y_batt = calculation_inputs.battery_data.get_Yshunt(seq=1)
-    Ybus_gen_batt = calculation_inputs.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
+    adm = nc.get_admittance_matrices()
+    Y_gen = nc.generator_data.get_Yshunt(seq=1)
+    Y_batt = nc.battery_data.get_Yshunt(seq=1)
+    Ybus_gen_batt = adm.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
 
     # Compute the short circuit
     V, SCpower = short_circuit_3p(bus_idx=bus_index,
                                   Ybus=Ybus_gen_batt,
                                   Vbus=Vpf,
                                   Zf=Zf,
-                                  baseMVA=calculation_inputs.Sbase)
+                                  baseMVA=nc.Sbase)
 
     (Sfb, Stb, If, It, Vbranch,
-     loading, losses) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+     loading, losses) = short_circuit_post_process(calculation_inputs=nc,
                                                    V=V,
-                                                   branch_rates=calculation_inputs.rates,
-                                                   Yf=calculation_inputs.Yf,
-                                                   Yt=calculation_inputs.Yt)
+                                                   branch_rates=nc.passive_branch_data.rates,
+                                                   Yf=adm.Yf,
+                                                   Yt=adm.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
-    results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                  m=calculation_inputs.nbr,
-                                  n_hvdc=calculation_inputs.nhvdc,
-                                  bus_names=calculation_inputs.bus_data.names,
-                                  branch_names=calculation_inputs.passive_branch_data.names,
-                                  hvdc_names=calculation_inputs.hvdc_data.names,
-                                  bus_types=calculation_inputs.bus_types,
+    results = ShortCircuitResults(n=nc.nbus,
+                                  m=nc.nbr,
+                                  n_hvdc=nc.nhvdc,
+                                  bus_names=nc.bus_data.names,
+                                  branch_names=nc.passive_branch_data.names,
+                                  hvdc_names=nc.hvdc_data.names,
+                                  bus_types=nc.bus_data.bus_types,
                                   area_names=None)
 
     results.SCpower = SCpower
-    results.Sbus1 = calculation_inputs.Sbus * calculation_inputs.Sbase  # MVA
+    results.Sbus1 = nc.get_injections() * nc.Sbase  # MVA
     results.voltage1 = V
     results.Sf1 = Sfb  # in MVA already
     results.St1 = Stb  # in MVA already
@@ -108,14 +108,14 @@ def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf: CxVec, Zf: CxVe
     return results
 
 
-def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
+def short_circuit_unbalanced(nc: NumericalCircuit,
                              Vpf: CxVec,
                              Zf: complex,
                              bus_index: int,
                              fault_type: FaultType):
     """
     Run an unbalanced short circuit simulation for a single island
-    :param calculation_inputs:
+    :param nc:
     :param Vpf: Power flow voltage vector applicable to the island
     :param Zf: Short circuit impedance vector applicable to the island
     :param bus_index: Index of the failed bus
@@ -124,66 +124,66 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
     """
 
     # build Y0, Y1, Y2
-    nbr = calculation_inputs.nbr
-    nbus = calculation_inputs.nbus
+    nbr = nc.nbr
+    nbus = nc.nbus
 
-    Y_gen0 = calculation_inputs.generator_data.get_Yshunt(seq=0)
-    Y_batt0 = calculation_inputs.battery_data.get_Yshunt(seq=0)
+    Y_gen0 = nc.generator_data.get_Yshunt(seq=0)
+    Y_batt0 = nc.battery_data.get_Yshunt(seq=0)
     Yshunt_bus0 = Y_gen0 + Y_batt0
 
-    adm0 = compute_admittances(R=calculation_inputs.passive_branch_data.R0,
-                               X=calculation_inputs.passive_branch_data.X0,
-                               G=calculation_inputs.passive_branch_data.G0,  # renamed, it was overwritten
-                               B=calculation_inputs.passive_branch_data.B0,
-                               k=calculation_inputs.passive_branch_data.k,
-                               tap_module=calculation_inputs.active_branch_data.tap_module,
-                               vtap_f=calculation_inputs.passive_branch_data.virtual_tap_f,
-                               vtap_t=calculation_inputs.passive_branch_data.virtual_tap_t,
-                               tap_angle=calculation_inputs.active_branch_data.tap_angle,
-                               Cf=calculation_inputs.passive_branch_data.C_branch_bus_f.tocsc(),
-                               Ct=calculation_inputs.passive_branch_data.C_branch_bus_t.tocsc(),
+    adm0 = compute_admittances(R=nc.passive_branch_data.R0,
+                               X=nc.passive_branch_data.X0,
+                               G=nc.passive_branch_data.G0,  # renamed, it was overwritten
+                               B=nc.passive_branch_data.B0,
+                               k=nc.passive_branch_data.k,
+                               tap_module=nc.active_branch_data.tap_module,
+                               vtap_f=nc.passive_branch_data.virtual_tap_f,
+                               vtap_t=nc.passive_branch_data.virtual_tap_t,
+                               tap_angle=nc.active_branch_data.tap_angle,
+                               Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
+                               Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
                                Yshunt_bus=Yshunt_bus0,
-                               conn=calculation_inputs.passive_branch_data.conn,
+                               conn=nc.passive_branch_data.conn,
                                seq=0,
                                add_windings_phase=True)
 
-    Y_gen1 = calculation_inputs.generator_data.get_Yshunt(seq=1)
-    Y_batt1 = calculation_inputs.battery_data.get_Yshunt(seq=1)
-    Yshunt_bus1 = calculation_inputs.get_Yshunt_bus() + Y_gen1 + Y_batt1
+    Y_gen1 = nc.generator_data.get_Yshunt(seq=1)
+    Y_batt1 = nc.battery_data.get_Yshunt(seq=1)
+    Yshunt_bus1 = nc.get_Yshunt_bus() + Y_gen1 + Y_batt1
 
-    adm1 = compute_admittances(R=calculation_inputs.passive_branch_data.R,
-                               X=calculation_inputs.passive_branch_data.X,
-                               G=calculation_inputs.passive_branch_data.G,
-                               B=calculation_inputs.passive_branch_data.B,
-                               k=calculation_inputs.passive_branch_data.k,
-                               tap_module=calculation_inputs.active_branch_data.tap_module,
-                               vtap_f=calculation_inputs.passive_branch_data.virtual_tap_f,
-                               vtap_t=calculation_inputs.passive_branch_data.virtual_tap_t,
-                               tap_angle=calculation_inputs.active_branch_data.tap_angle,
-                               Cf=calculation_inputs.passive_branch_data.C_branch_bus_f.tocsc(),
-                               Ct=calculation_inputs.passive_branch_data.C_branch_bus_t.tocsc(),
+    adm1 = compute_admittances(R=nc.passive_branch_data.R,
+                               X=nc.passive_branch_data.X,
+                               G=nc.passive_branch_data.G,
+                               B=nc.passive_branch_data.B,
+                               k=nc.passive_branch_data.k,
+                               tap_module=nc.active_branch_data.tap_module,
+                               vtap_f=nc.passive_branch_data.virtual_tap_f,
+                               vtap_t=nc.passive_branch_data.virtual_tap_t,
+                               tap_angle=nc.active_branch_data.tap_angle,
+                               Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
+                               Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
                                Yshunt_bus=Yshunt_bus1,
-                               conn=calculation_inputs.passive_branch_data.conn,
+                               conn=nc.passive_branch_data.conn,
                                seq=1,
                                add_windings_phase=True)
 
-    Y_gen2 = calculation_inputs.generator_data.get_Yshunt(seq=2)
-    Y_batt2 = calculation_inputs.battery_data.get_Yshunt(seq=2)
+    Y_gen2 = nc.generator_data.get_Yshunt(seq=2)
+    Y_batt2 = nc.battery_data.get_Yshunt(seq=2)
     Yshunt_bus2 = Y_gen2 + Y_batt2
 
-    adm2 = compute_admittances(R=calculation_inputs.passive_branch_data.R2,
-                               X=calculation_inputs.passive_branch_data.X2,
-                               G=calculation_inputs.passive_branch_data.G2,
-                               B=calculation_inputs.passive_branch_data.B2,
-                               k=calculation_inputs.passive_branch_data.k,
-                               tap_module=calculation_inputs.active_branch_data.tap_module,
-                               vtap_f=calculation_inputs.passive_branch_data.virtual_tap_f,
-                               vtap_t=calculation_inputs.passive_branch_data.virtual_tap_t,
-                               tap_angle=calculation_inputs.active_branch_data.tap_angle,
-                               Cf=calculation_inputs.passive_branch_data.C_branch_bus_f.tocsc(),
-                               Ct=calculation_inputs.passive_branch_data.C_branch_bus_t.tocsc(),
+    adm2 = compute_admittances(R=nc.passive_branch_data.R2,
+                               X=nc.passive_branch_data.X2,
+                               G=nc.passive_branch_data.G2,
+                               B=nc.passive_branch_data.B2,
+                               k=nc.passive_branch_data.k,
+                               tap_module=nc.active_branch_data.tap_module,
+                               vtap_f=nc.passive_branch_data.virtual_tap_f,
+                               vtap_t=nc.passive_branch_data.virtual_tap_t,
+                               tap_angle=nc.active_branch_data.tap_angle,
+                               Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
+                               Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
                                Yshunt_bus=Yshunt_bus2,
-                               conn=calculation_inputs.passive_branch_data.conn,
+                               conn=nc.passive_branch_data.conn,
                                seq=2,
                                add_windings_phase=True)
 
@@ -209,24 +209,26 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
     Vpf[pqpv] *= np.exp(1j * ph_add)
     """
 
-    adm_series = compute_admittances(R=calculation_inputs.passive_branch_data.R,
-                                     X=calculation_inputs.passive_branch_data.X,
+    adm_series = compute_admittances(R=nc.passive_branch_data.R,
+                                     X=nc.passive_branch_data.X,
                                      G=np.zeros(nbr),
                                      B=np.zeros(nbr),
-                                     k=calculation_inputs.passive_branch_data.k,
-                                     tap_module=calculation_inputs.active_branch_data.tap_module,
-                                     vtap_f=calculation_inputs.passive_branch_data.virtual_tap_f,
-                                     vtap_t=calculation_inputs.passive_branch_data.virtual_tap_t,
-                                     tap_angle=calculation_inputs.active_branch_data.tap_angle,
-                                     Cf=calculation_inputs.passive_branch_data.C_branch_bus_f.tocsc(),
-                                     Ct=calculation_inputs.passive_branch_data.C_branch_bus_t.tocsc(),
+                                     k=nc.passive_branch_data.k,
+                                     tap_module=nc.active_branch_data.tap_module,
+                                     vtap_f=nc.passive_branch_data.virtual_tap_f,
+                                     vtap_t=nc.passive_branch_data.virtual_tap_t,
+                                     tap_angle=nc.active_branch_data.tap_angle,
+                                     Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
+                                     Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
                                      Yshunt_bus=np.zeros(nbus, dtype=complex),
-                                     conn=calculation_inputs.passive_branch_data.conn,
+                                     conn=nc.passive_branch_data.conn,
                                      seq=1,
                                      add_windings_phase=True)
 
-    vd = calculation_inputs.vd
-    pqpv = calculation_inputs.pqpv
+    indices = nc.get_simulation_indices()
+
+    vd = indices.vd
+    pqpv = indices.no_slack
 
     # Y1_arr = np.array(adm_series.Ybus.todense())
     # Yu = Y1_arr[np.ix_(pqpv, vd)]
@@ -249,38 +251,38 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
                                               Vbus=Vpf,
                                               Zf=Zf,
                                               fault_type=fault_type,
-                                              baseMVA=calculation_inputs.Sbase)
+                                              baseMVA=nc.Sbase)
 
     # process results in the sequences
     (Sfb0, Stb0, If0, It0, Vbranch0,
-     loading0, losses0) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+     loading0, losses0) = short_circuit_post_process(calculation_inputs=nc,
                                                      V=V0,
-                                                     branch_rates=calculation_inputs.branch_rates,
+                                                     branch_rates=nc.passive_branch_data.rates,
                                                      Yf=adm0.Yf,
                                                      Yt=adm0.Yt)
 
     (Sfb1, Stb1, If1, It1, Vbranch1,
-     loading1, losses1) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+     loading1, losses1) = short_circuit_post_process(calculation_inputs=nc,
                                                      V=V1,
-                                                     branch_rates=calculation_inputs.branch_rates,
+                                                     branch_rates=nc.passive_branch_data.rates,
                                                      Yf=adm1.Yf,
                                                      Yt=adm1.Yt)
 
     (Sfb2, Stb2, If2, It2, Vbranch2,
-     loading2, losses2) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+     loading2, losses2) = short_circuit_post_process(calculation_inputs=nc,
                                                      V=V2,
-                                                     branch_rates=calculation_inputs.branch_rates,
+                                                     branch_rates=nc.passive_branch_data.rates,
                                                      Yf=adm2.Yf,
                                                      Yt=adm2.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
-    results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                  m=calculation_inputs.nbr,
-                                  n_hvdc=calculation_inputs.nhvdc,
-                                  bus_names=calculation_inputs.bus_names,
-                                  branch_names=calculation_inputs.branch_names,
-                                  hvdc_names=calculation_inputs.hvdc_names,
-                                  bus_types=calculation_inputs.bus_types,
+    results = ShortCircuitResults(n=nc.nbus,
+                                  m=nc.nbr,
+                                  n_hvdc=nc.nhvdc,
+                                  bus_names=nc.bus_data.names,
+                                  branch_names=nc.passive_branch_data.names,
+                                  hvdc_names=nc.hvdc_data.names,
+                                  bus_types=nc.bus_data.bus_types,
                                   area_names=None)
 
     results.SCpower = SCC

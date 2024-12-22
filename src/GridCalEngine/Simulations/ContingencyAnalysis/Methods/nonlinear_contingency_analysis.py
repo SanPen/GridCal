@@ -40,7 +40,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         logger = Logger()
 
     # set the numerical circuit
-    numerical_circuit = compile_numerical_circuit_at(grid, t_idx=t)
+    nc = compile_numerical_circuit_at(grid, t_idx=t)
 
     if options.pf_options is None:
         pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
@@ -53,26 +53,26 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
 
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(linear_multiple_contingencies.contingency_groups_used),
-                                         nbr=numerical_circuit.nbr,
-                                         nbus=numerical_circuit.nbus,
-                                         branch_names=numerical_circuit.branch_names,
-                                         bus_names=numerical_circuit.bus_names,
-                                         bus_types=numerical_circuit.bus_types,
+                                         nbr=nc.nbr,
+                                         nbus=nc.nbus,
+                                         branch_names=nc.passive_branch_data.names,
+                                         bus_names=nc.bus_data.names,
+                                         bus_types=nc.bus_data.bus_types,
                                          con_names=linear_multiple_contingencies.get_contingency_group_names())
 
     # get contingency groups dictionary
     cg_dict = grid.get_contingency_group_dict()
     calc_branches = grid.get_branches_wo_hvdc()
-    mon_idx = numerical_circuit.passive_branch_data.get_monitor_enabled_indices()
+    mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
 
     # run 0
-    pf_res_0 = multi_island_pf_nc(nc=numerical_circuit,
+    pf_res_0 = multi_island_pf_nc(nc=nc,
                                   options=pf_opts)
 
     if options.use_srap:
 
         # we need the PTDF for this
-        linear_analysis = LinearAnalysis(numerical_circuit=numerical_circuit,
+        linear_analysis = LinearAnalysis(numerical_circuit=nc,
                                          distributed_slack=options.lin_options.distribute_slack,
                                          correct_values=options.lin_options.correct_values)
         linear_analysis.run()
@@ -88,7 +88,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     else:
         PTDF = None
 
-    available_power = numerical_circuit.generator_data.get_injections_per_bus().real
+    available_power = nc.generator_data.get_injections_per_bus().real
 
     # for each contingency group
     for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
@@ -97,7 +97,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         contingencies = cg_dict[contingency_group.idtag]
 
         # set the status
-        numerical_circuit.set_con_or_ra_status(contingencies)
+        nc.set_con_or_ra_status(contingencies)
 
         # report progress
         if t is None and calling_class is not None:
@@ -105,7 +105,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
             calling_class.report_progress2(ic, len(linear_multiple_contingencies.contingency_groups_used) * 100)
 
         # run
-        pf_res = multi_island_pf_nc(nc=numerical_circuit,
+        pf_res = multi_island_pf_nc(nc=nc,
                                     options=pf_opts,
                                     V_guess=pf_res_0.voltage,
                                     logger=logger)
@@ -119,7 +119,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         results.report.analyze(t=t,
                                t_prob=t_prob,
                                mon_idx=mon_idx,
-                               numerical_circuit=numerical_circuit,
+                               nc=nc,
                                base_flow=np.abs(pf_res_0.Sf),
                                base_loading=np.abs(pf_res_0.loading),
                                contingency_flows=np.abs(pf_res.Sf),
@@ -127,7 +127,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                contingency_idx=ic,
                                contingency_group=contingency_group,
                                using_srap=options.use_srap,
-                               srap_ratings=numerical_circuit.passive_branch_data.protection_rates,
+                               srap_ratings=nc.passive_branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
                                srap_deadband=options.srap_deadband,
                                contingency_deadband=options.contingency_deadband,
@@ -142,7 +142,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                top_n=options.srap_top_n)
 
         # set the status
-        numerical_circuit.set_con_or_ra_status(contingencies, revert=True)
+        nc.set_con_or_ra_status(contingencies, revert=True)
 
         if calling_class is not None:
             if calling_class.is_cancel():

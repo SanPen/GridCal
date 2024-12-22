@@ -17,7 +17,7 @@ from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
-from GridCalEngine.Topology.simulation_indices import compile_types
+from GridCalEngine.Topology.simulation_indices import compile_types, SimulationIndices
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -77,6 +77,7 @@ def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: 
 
 
 def solve(nc: NumericalCircuit,
+          indices: SimulationIndices,
           options: PowerFlowOptions,
           V0: CxVec,
           S0: CxVec,
@@ -84,6 +85,7 @@ def solve(nc: NumericalCircuit,
     """
     Run a power flow simulation using the selected method (no outer loop controls).
     :param nc: SnapshotData circuit, this ensures on-demand admittances computation
+    :param indices: SimulationIndices
     :param options: PowerFlow options
     :param V0: Array of initial voltages
     :param S0: Array of power Injections
@@ -92,7 +94,7 @@ def solve(nc: NumericalCircuit,
     """
     report = ConvergenceReport()
     if options.retry_with_other_methods:
-        if nc.any_control:
+        if nc.active_branch_data.any_pf_control:
             solver_list = [SolverType.NR,
                            SolverType.PowellDogLeg,
                            SolverType.LM]
@@ -116,17 +118,11 @@ def solve(nc: NumericalCircuit,
     solver_idx = 0
 
     # set the initial value
-    Qmin = nc.Qmin_bus
-    Qmax = nc.Qmax_bus
-    I0 = nc.Ibus
-    Y0 = nc.YLoadBus
+    Qmin, Qmax = nc.get_reactive_power_limits()
+    I0 = nc.get_current_injections()
+    Y0 = nc.get_admittance_injections()
 
-    vd, pq, pv, pqv, p, no_slack = compile_types(
-        Pbus=nc.Sbus.real,
-        types=nc.bus_data.bus_types
-    )
-
-    if len(vd) == 0:
+    if len(indices.vd) == 0:
         solution = NumericPowerFlowResults(V=np.zeros(len(S0), dtype=complex),
                                            Scalc=S0,
                                            m=nc.active_branch_data.tap_module,
@@ -202,10 +198,10 @@ def solve(nc: NumericalCircuit,
                                            V0=V0,  # take V0 instead of V
                                            S0=S0,
                                            Ysh0=adms.Yshunt,
-                                           pq=pq,
-                                           pv=pv,
-                                           vd=vd,
-                                           no_slack=no_slack,
+                                           pq=indices.pq,
+                                           pv=indices.pv,
+                                           vd=indices.vd,
+                                           no_slack=indices.no_slack,
                                            tolerance=options.tolerance,
                                            max_coefficients=options.max_iter,
                                            use_pade=False,
@@ -214,7 +210,7 @@ def solve(nc: NumericalCircuit,
 
                 if options.distributed_slack:
                     ok, delta = compute_slack_distribution(Scalc=solution.Scalc,
-                                                           vd=vd,
+                                                           vd=indices.vd,
                                                            bus_installed_power=nc.bus_data.installed_power)
                     if ok:
                         solution = pflw.helm_josep(nc=nc,
@@ -225,10 +221,10 @@ def solve(nc: NumericalCircuit,
                                                    V0=V0,  # take V0 instead of V
                                                    S0=S0 + delta,
                                                    Ysh0=adms.Yshunt,
-                                                   pq=pq,
-                                                   pv=pv,
-                                                   vd=vd,
-                                                   no_slack=no_slack,
+                                                   pq=indices.pq,
+                                                   pv=indices.pv,
+                                                   vd=indices.vd,
+                                                   no_slack=indices.no_slack,
                                                    tolerance=options.tolerance,
                                                    max_coefficients=options.max_iter,
                                                    use_pade=False,
@@ -238,42 +234,44 @@ def solve(nc: NumericalCircuit,
             # type DC
             elif solver_type == SolverType.DC:
 
-                lin_adm = nc.get_linear_admittance_matrices()
+                lin_adm = nc.get_linear_admittance_matrices(indices=indices)
+                Bpqpv = lin_adm.get_Bred(pqpv=indices.no_slack)
+                Bref = lin_adm.get_Bslack(pqpv=indices.no_slack, vd=indices.vd)
 
                 solution = pflw.dcpf(nc=nc,
                                      Ybus=adm.Ybus,
-                                     Bpqpv=lin_adm.Bpqpv,
-                                     Bref=lin_adm.Bref,
+                                     Bpqpv=Bpqpv,
+                                     Bref=Bref,
                                      Bf=lin_adm.Bf,
                                      S0=S0,
                                      I0=I0,
                                      Y0=Y0,
                                      V0=V0,
                                      tau=nc.active_branch_data.tap_angle,
-                                     vd=vd,
-                                     no_slack=no_slack,
-                                     pq=pq,
-                                     pv=pv)
+                                     vd=indices.vd,
+                                     no_slack=indices.no_slack,
+                                     pq=indices.pq,
+                                     pv=indices.pv)
 
                 if options.distributed_slack:
                     ok, delta = compute_slack_distribution(Scalc=solution.Scalc,
-                                                           vd=vd,
+                                                           vd=indices.vd,
                                                            bus_installed_power=nc.bus_data.installed_power)
                     if ok:
                         solution = pflw.dcpf(nc=nc,
                                              Ybus=adm.Ybus,
-                                             Bpqpv=lin_adm.Bpqpv,
-                                             Bref=lin_adm.Bref,
+                                             Bpqpv=Bpqpv,
+                                             Bref=Bref,
                                              Bf=lin_adm.Bf,
                                              S0=S0,
                                              I0=I0,
                                              Y0=Y0,
                                              V0=V0,
                                              tau=nc.active_branch_data.tap_angle,
-                                             vd=vd,
-                                             no_slack=no_slack,
-                                             pq=pq,
-                                             pv=pv)
+                                             vd=indices.vd,
+                                             no_slack=indices.no_slack,
+                                             pq=indices.pq,
+                                             pv=indices.pv)
 
             # LAC PF
             elif solver_type == SolverType.LACPF:
@@ -285,12 +283,12 @@ def solve(nc: NumericalCircuit,
                                       Ys=adms.Yseries,
                                       S0=S0,
                                       V0=V0,
-                                      pq=pq,
-                                      pv=pv,
-                                      vd=vd)
+                                      pq=indices.pq,
+                                      pv=indices.pv,
+                                      vd=indices.vd)
                 if options.distributed_slack:
                     ok, delta = compute_slack_distribution(Scalc=solution.Scalc,
-                                                           vd=vd,
+                                                           vd=indices.vd,
                                                            bus_installed_power=nc.bus_data.installed_power)
                     if ok:
                         solution = pflw.lacpf(nc=nc,
@@ -300,9 +298,9 @@ def solve(nc: NumericalCircuit,
                                               Ys=adms.Yseries,
                                               S0=S0,
                                               V0=V0,
-                                              pq=pq,
-                                              pv=pv,
-                                              vd=vd)
+                                              pq=indices.pq,
+                                              pv=indices.pv,
+                                              vd=indices.vd)
 
             # Gauss-Seidel
             elif solver_type == SolverType.GAUSS:
@@ -314,11 +312,11 @@ def solve(nc: NumericalCircuit,
                                         I0=I0,
                                         Y0=Y0,
                                         V0=V0,
-                                        pv=pv,
-                                        pq=pq,
-                                        p=p,
-                                        pqv=pqv,
-                                        vd=vd,
+                                        pv=indices.pv,
+                                        pq=indices.pq,
+                                        p=indices.p,
+                                        pqv=indices.pqv,
+                                        vd=indices.vd,
                                         bus_installed_power=nc.bus_data.installed_power,
                                         Qmin=Qmin,
                                         Qmax=Qmax,
@@ -374,11 +372,11 @@ def solve(nc: NumericalCircuit,
                                      Yt=adm.Yt,
                                      B1=fd_adm.B1,
                                      B2=fd_adm.B2,
-                                     pv_=pv,
-                                     pq_=pq,
-                                     pqv_=pqv,
-                                     p_=p,
-                                     vd_=vd,
+                                     pv_=indices.pv,
+                                     pq_=indices.pq,
+                                     pqv_=indices.pqv,
+                                     p_=indices.p,
+                                     vd_=indices.vd,
                                      Qmin=Qmin,
                                      Qmax=Qmax,
                                      bus_installed_power=nc.bus_data.installed_power,
@@ -459,11 +457,11 @@ def solve(nc: NumericalCircuit,
                                           V0=final_solution.V,
                                           I0=I0,
                                           Y0=Y0,
-                                          pv_=pv,
-                                          pq_=pq,
-                                          pqv_=pqv,
-                                          p_=p,
-                                          vd_=vd,
+                                          pv_=indices.pv,
+                                          pq_=indices.pq,
+                                          pqv_=indices.pqv,
+                                          p_=indices.p,
+                                          vd_=indices.vd,
                                           Qmin=Qmin,
                                           Qmax=Qmax,
                                           tol=options.tolerance,
@@ -572,18 +570,22 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
     for i, island in enumerate(islands):
 
-        if len(island.vd) > 0:
+        indices = island.get_simulation_indices()
+        Sbus_base = island.get_injections()
+
+        if len(indices.vd) > 0:
 
             if Sbus_input is None:
-                Sbus = island.Sbus + Shvdc[island.original_bus_idx]
+                Sbus = Sbus_base + Shvdc[island.bus_data.original_idx]
             else:
-                Sbus = (Sbus_input + Shvdc)[island.original_bus_idx]
+                Sbus = (Sbus_input + Shvdc)[island.bus_data.original_idx]
 
             # call the numerical methods
             solution, report = solve(
                 nc=island,
+                indices=indices,
                 options=options,
-                V0=island.Vbus if V_guess is None else V_guess[island.original_bus_idx],
+                V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],
                 S0=Sbus,
                 logger=logger
             )

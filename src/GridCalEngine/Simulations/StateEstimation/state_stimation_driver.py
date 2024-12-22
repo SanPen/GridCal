@@ -106,37 +106,38 @@ class StateEstimation(DriverTemplate):
         n = len(self.grid.buses)
         m = self.grid.get_branch_number()
 
-        numerical_circuit = compile_numerical_circuit_at(self.grid, logger=self.logger)
+        nc = compile_numerical_circuit_at(self.grid, logger=self.logger)
         self.results = StateEstimationResults(n=n,
                                               m=m,
-                                              bus_names=numerical_circuit.bus_names,
-                                              branch_names=numerical_circuit.branch_names,
-                                              hvdc_names=numerical_circuit.hvdc_names,
-                                              bus_types=numerical_circuit.bus_types)
+                                              bus_names=nc.bus_data.names,
+                                              branch_names=nc.passive_branch_data.names,
+                                              hvdc_names=nc.hvdc_data.names,
+                                              bus_types=nc.bus_data.bus_types)
         # self.se_results.initialize(n, m)
 
-        islands = numerical_circuit.split_into_islands()
-
-        self.results.bus_types = numerical_circuit.bus_types
+        islands = nc.split_into_islands()
 
         for island in islands:
+            idx = island.get_simulation_indices()
+            adm = island.get_admittance_matrices()
+
             # collect inputs of the island
             se_input = self.collect_measurements(circuit=self.grid,
-                                                 bus_idx=island.original_bus_idx,
-                                                 branch_idx=island.original_branch_idx)
+                                                 bus_idx=island.bus_data.original_idx,
+                                                 branch_idx=island.passive_branch_data.original_idx)
 
             # run solver
             report = ConvergenceReport()
             solution = solve_se_lm(nc=island,
-                                   Ybus=island.Ybus,
-                                   Yf=island.Yf,
-                                   Yt=island.Yt,
-                                   F=island.F,
-                                   T=island.T,
+                                   Ybus=adm.Ybus,
+                                   Yf=adm.Yf,
+                                   Yt=adm.Yt,
+                                   F=island.passive_branch_data.F,
+                                   T=island.passive_branch_data.T,
                                    se_input=se_input,
-                                   vd=island.vd,
-                                   pq=island.pq,
-                                   pv=island.pv)
+                                   vd=idx.vd,
+                                   pq=idx.pq,
+                                   pv=idx.pv)
 
             report.add(method=SolverType.LM,
                        converged=solution.converged,

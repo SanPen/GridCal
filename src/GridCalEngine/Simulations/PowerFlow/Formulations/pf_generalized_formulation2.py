@@ -2387,8 +2387,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             J_sym = adv_jacobian(nbus=self.nc.nbus,
                              nbr=self.nc.nbr,
-                             F=self.nc.F,
-                             T=self.nc.T,
+                             F=self.nc.passive_branch_data.F,
+                             T=self.nc.passive_branch_data.T,
                              R=self.nc.passive_branch_data.R,
                              X=self.nc.passive_branch_data.X,
                              G=self.nc.passive_branch_data.G,

@@ -93,7 +93,10 @@ class ContinuationPowerFlowDriver(DriverTemplate):
             adm = island.get_admittance_matrices()
             idx = nc.get_simulation_indices()
 
-            if len(island.vd) > 0 and len(island.pqpv) > 0:
+            if len(idx.vd) > 0 and len(idx.no_slack) > 0:
+
+                Qmax_bus, Qmin_bus = island.get_reactive_power_limits()
+
                 results = continuation_nr(Ybus=adm.Ybus,
                                           Cf=island.passive_branch_data.C_branch_bus_f,
                                           Ct=island.passive_branch_data.C_branch_bus_t,
@@ -101,8 +104,8 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           Yt=adm.Yt,
                                           branch_rates=island.passive_branch_data.rates,
                                           Sbase=island.Sbase,
-                                          Sbus_base=self.inputs.Sbase[island.original_bus_idx],
-                                          Sbus_target=self.inputs.Starget[island.original_bus_idx],
+                                          Sbus_base=self.inputs.Sbase[island.bus_data.original_idx],
+                                          Sbus_target=self.inputs.Starget[island.bus_data.original_idx],
                                           V=self.inputs.Vbase[island.bus_data.original_idx],
                                           distributed_slack=self.pf_options.distributed_slack,
                                           bus_installed_power=island.bus_data.installed_power,
@@ -122,9 +125,9 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           stop_at=self.options.stop_at,
                                           control_q=self.pf_options.control_Q,
                                           control_remote_voltage=self.pf_options.control_remote_voltage,
-                                          qmax_bus=island.Qmax_bus,
-                                          qmin_bus=island.Qmin_bus,
-                                          original_bus_types=island.bus_types,
+                                          qmax_bus=Qmax_bus,
+                                          qmin_bus=Qmin_bus,
+                                          original_bus_types=island.bus_data.bus_types,
                                           base_overload_number=self.inputs.base_overload_number,
                                           verbose=False,
                                           call_back_fx=self.progress_callback)
@@ -142,9 +145,9 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         self.results = ContinuationPowerFlowResults(nval=max_len,
                                                     nbus=nc.nbus,
                                                     nbr=nc.nbr,
-                                                    bus_names=nc.bus_names,
-                                                    branch_names=nc.branch_names,
-                                                    bus_types=nc.bus_types)
+                                                    bus_names=nc.bus_data.names,
+                                                    branch_names=nc.passive_branch_data.names,
+                                                    bus_types=nc.bus_data.bus_types)
 
         # fill extra info for area manipulation
         self.results.fill_circuit_info(grid=self.grid)
@@ -152,8 +155,8 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         for i in range(len(result_series)):
             if len(result_series[i]) > 0:
                 self.results.apply_from_island(result_series[i],
-                                               islands[i].original_bus_idx,
-                                               islands[i].original_branch_idx)
+                                               islands[i].bus_data.original_idx,
+                                               islands[i].passive_branch_data.original_idx)
 
         self.toc()
         return self.results

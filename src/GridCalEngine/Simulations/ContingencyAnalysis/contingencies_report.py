@@ -486,7 +486,7 @@ class ContingencyResultsReport:
                 t: Union[None, int],
                 t_prob: float,
                 mon_idx: IntVec,
-                numerical_circuit: NumericalCircuit,
+                nc: NumericalCircuit,
                 base_flow: Vec,
                 base_loading: Vec,
                 contingency_flows: Vec,
@@ -514,7 +514,7 @@ class ContingencyResultsReport:
         :param t: time index
         :param t_prob: probability of te time
         :param mon_idx: array of monitored branch indices
-        :param numerical_circuit: NumericalCircuit
+        :param nc: NumericalCircuit
         :param base_flow: base flows array
         :param base_loading: base loading array
         :param contingency_flows: flows array after the contingency
@@ -550,21 +550,21 @@ class ContingencyResultsReport:
                     area_from = ""
                     area_to = ""
 
-                if abs(base_flow[m]) > numerical_circuit.rates[m]:  # only add if overloaded
+                if abs(base_flow[m]) > nc.passive_branch_data.rates[m]:  # only add if overloaded
 
                     self.add(time_index=t if t is not None else 0,
                              t_prob=t_prob,
                              area_from=area_from,
                              area_to=area_to,
-                             base_name=numerical_circuit.passive_branch_data.names[m],
+                             base_name=nc.passive_branch_data.names[m],
                              contingency_name='Base',
-                             base_rating=numerical_circuit.passive_branch_data.rates[m],
-                             contingency_rating=numerical_circuit.passive_branch_data.contingency_rates[m],
+                             base_rating=nc.passive_branch_data.rates[m],
+                             contingency_rating=nc.passive_branch_data.contingency_rates[m],
                              srap_rating=srap_ratings[m],
                              base_flow=abs(base_flow[m]),
                              post_contingency_flow=0.0,
                              post_srap_flow=0.0,
-                             base_loading=abs(base_flow[m]) / (numerical_circuit.rates[m] + 1e-9),
+                             base_loading=abs(base_flow[m]) / (nc.passive_branch_data.rates[m] + 1e-9),
                              post_contingency_loading=0.0,
                              post_srap_loading=0.0,
                              msg_ov='Overload not acceptable',
@@ -587,8 +587,8 @@ class ContingencyResultsReport:
 
             c_load = abs(contingency_loadings[m])
 
-            rate_nx_pu = numerical_circuit.contingency_rates[m] / (numerical_circuit.rates[m] + 1e-9)
-            rate_srap_pu = srap_ratings[m] / (numerical_circuit.rates[m] + 1e-9)
+            rate_nx_pu = nc.passive_branch_data.contingency_rates[m] / (nc.passive_branch_data.rates[m] + 1e-9)
+            rate_srap_pu = srap_ratings[m] / (nc.passive_branch_data.rates[m] + 1e-9)
 
             # Affected by contingency?
             affected_by_cont1 = contingency_flows[m] != base_flow[m]
@@ -660,10 +660,10 @@ class ContingencyResultsReport:
                                                   sensitivities=sensitivities)
 
                     if srap_rever_to_nominal_rating:
-                        rate_goal = numerical_circuit.rates[m]
+                        rate_goal = nc.passive_branch_data.rates[m]
 
                     else:
-                        rate_goal = numerical_circuit.contingency_rates[m]
+                        rate_goal = nc.passive_branch_data.contingency_rates[m]
 
                     solved_by_srap, max_srap_power = buses_for_srap.is_solvable(
                         c_flow=contingency_flows[m].real,  # the real part because it must have the sign
@@ -689,17 +689,17 @@ class ContingencyResultsReport:
                              t_prob=t_prob,
                              area_from=area_from,
                              area_to=area_to,
-                             base_name=numerical_circuit.passive_branch_data.names[m],
+                             base_name=nc.passive_branch_data.names[m],
                              contingency_name=contingency_group.name,
-                             base_rating=numerical_circuit.passive_branch_data.rates[m],
-                             contingency_rating=numerical_circuit.passive_branch_data.contingency_rates[m],
+                             base_rating=nc.passive_branch_data.rates[m],
+                             contingency_rating=nc.passive_branch_data.contingency_rates[m],
                              srap_rating=srap_ratings[m],
                              base_flow=abs(b_flow),
                              post_contingency_flow=abs(c_flow),
                              post_srap_flow=post_srap_flow,
                              base_loading=abs(base_loading[m]),
                              post_contingency_loading=abs(contingency_loadings[m]),
-                             post_srap_loading=post_srap_flow / (numerical_circuit.rates[m] + 1e-9),
+                             post_srap_loading=post_srap_flow / (nc.passive_branch_data.rates[m] + 1e-9),
                              msg_ov=msg_ov,
                              msg_srap=msg_srap,
                              srap_power=abs(max_srap_power),
