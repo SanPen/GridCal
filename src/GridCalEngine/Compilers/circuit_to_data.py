@@ -945,7 +945,7 @@ def fill_parent_branch(i: int,
     data.F[i] = f
     data.T[i] = t
 
-    data.branch_idx[i] = i  # Correct?
+    data.original_idx[i] = i
 
     data.contingency_enabled[i] = int(elm.contingency_enabled)
     data.monitor_loading[i] = int(elm.monitor_loading)

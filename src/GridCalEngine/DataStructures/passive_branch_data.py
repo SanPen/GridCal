@@ -27,8 +27,6 @@ class PassiveBranchData(BranchParentData):
         """
         BranchParentData.__init__(self, nelm=nelm, nbus=nbus)
 
-        self.branch_idx: IntVec = np.zeros(nelm, dtype=int)
-
         self.R: Vec = np.zeros(self.nelm, dtype=float)
         self.X: Vec = np.zeros(self.nelm, dtype=float)
         self.G: Vec = np.zeros(self.nelm, dtype=float)
@@ -74,8 +72,6 @@ class PassiveBranchData(BranchParentData):
         data.__class__ = PassiveBranchData
         data: PassiveBranchData = data
 
-        data.branch_idx = self.branch_idx[elm_idx]
-
         data.R = self.R[elm_idx]
         data.X = self.X[elm_idx]
         data.G = self.G[elm_idx]
@@ -110,8 +106,6 @@ class PassiveBranchData(BranchParentData):
         """
         data: PassiveBranchData = super().copy()
         data.__class__ = PassiveBranchData
-
-        data.branch_idx = self.branch_idx.copy()
 
         data.R = self.R.copy()
         data.X = self.X.copy()

@@ -7,3 +7,4 @@ grid = open_file(fname)
 res = power_flow(grid)
 
 print(res.get_bus_df())
+print(res.get_branch_df())
