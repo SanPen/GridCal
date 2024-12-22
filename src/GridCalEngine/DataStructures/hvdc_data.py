@@ -283,7 +283,7 @@ class HvdcData(BranchParentData):
                     Pt[i] = 0
 
                 # compute loading
-                loading[i] = Pf[i] / (self.rate[i] + 1e-20)
+                loading[i] = Pf[i] / (self.rates[i] + 1e-20)
 
                 # Pbus
                 Pbus[self.F[i]] += Pf[i] / Sbase

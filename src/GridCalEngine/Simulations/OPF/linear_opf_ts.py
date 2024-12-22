@@ -1239,12 +1239,13 @@ def add_linear_hvdc_formulation(t: int,
 
         fr = hvdc_data_t.F[m]
         to = hvdc_data_t.T[m]
-        hvdc_vars.rates[t, m] = hvdc_data_t.rate[m]
+        hvdc_vars.rates[t, m] = hvdc_data_t.rates[m]
 
         if hvdc_data_t.active[m]:
 
             # declare the flow var
-            hvdc_vars.flows[t, m] = prob.add_var(-hvdc_data_t.rate[m] / Sbase, hvdc_data_t.rate[m] / Sbase,
+            hvdc_vars.flows[t, m] = prob.add_var(-hvdc_data_t.rates[m] / Sbase,
+                                                 hvdc_data_t.rates[m] / Sbase,
                                                  name=join("hvdc_flow_", [t, m], "_"))
 
             if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:
@@ -1269,10 +1270,10 @@ def add_linear_hvdc_formulation(t: int,
 
                 else:
 
-                    if hvdc_data_t.Pset[m] > hvdc_data_t.rate[m]:
-                        P0 = hvdc_data_t.rate[m] / Sbase
-                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rate[m]:
-                        P0 = -hvdc_data_t.rate[m] / Sbase
+                    if hvdc_data_t.Pset[m] > hvdc_data_t.rates[m]:
+                        P0 = hvdc_data_t.rates[m] / Sbase
+                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rates[m]:
+                        P0 = -hvdc_data_t.rates[m] / Sbase
                     else:
                         P0 = hvdc_data_t.Pset[m] / Sbase
 
