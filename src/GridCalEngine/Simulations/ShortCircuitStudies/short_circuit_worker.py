@@ -31,8 +31,8 @@ def short_circuit_post_process(
     :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
     """
 
-    Vf = calculation_inputs.Cf * V
-    Vt = calculation_inputs.Ct * V
+    Vf = calculation_inputs.passive_branch_data.C_branch_bus_f * V
+    Vt = calculation_inputs.passive_branch_data.C_branch_bus_t * V
 
     # Branches current, loading, etc
     If = Yf * V
@@ -149,7 +149,7 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
 
     Y_gen1 = calculation_inputs.generator_data.get_Yshunt(seq=1)
     Y_batt1 = calculation_inputs.battery_data.get_Yshunt(seq=1)
-    Yshunt_bus1 = calculation_inputs.Yshunt_from_devices + Y_gen1 + Y_batt1
+    Yshunt_bus1 = calculation_inputs.get_Yshunt_bus() + Y_gen1 + Y_batt1
 
     adm1 = compute_admittances(R=calculation_inputs.passive_branch_data.R,
                                X=calculation_inputs.passive_branch_data.X,

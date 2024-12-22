@@ -78,15 +78,17 @@ def compute_analytic_admittances(nc: NumericalCircuit):
     :param nc:
     :return:
     """
-    k_m = nc.k_m
-    k_tau = nc.k_tau
-    k_mtau = nc.k_mtau
+    indices = nc.get_simulation_indices()
+
+    k_m = indices.k_m
+    k_tau = indices.k_tau
+    k_mtau = indices.k_mtau
 
     tapm = nc.active_branch_data.tap_module
     tapt = nc.active_branch_data.tap_angle
 
-    Cf = nc.Cf
-    Ct = nc.Ct
+    Cf = nc.passive_branch_data.C_branch_bus_f
+    Ct = nc.passive_branch_data.C_branch_bus_t
     ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)
 
     # First partial derivative with respect to tap module
@@ -178,8 +180,8 @@ def compute_analytic_admittances_2dev(nc: NumericalCircuit):
     tapm = nc.active_branch_data.tap_module
     tapt = nc.active_branch_data.tap_angle
 
-    Cf = nc.Cf
-    Ct = nc.Ct
+    Cf = nc.passive_branch_data.C_branch_bus_f
+    Ct = nc.passive_branch_data.C_branch_bus_t
     ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)
 
     # Second partial derivative with respect to tap module

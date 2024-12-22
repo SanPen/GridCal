@@ -253,23 +253,23 @@ class PetersenCoilModeKind(Enum):
 
 
 class OperationalLimitDirectionKind(Enum):
-    '''
+    """
     High means that a monitored value above the limit value is a
     violation. If applied to a terminal flow, the positive direction is into the
     terminal.
-    '''
+    """
     high = 'high'
 
-    '''
+    """
     Low means a monitored value below the limit is a violation. If applied
     to a terminal flow, the positive direction is into the terminal.
-    '''
+    """
     low = 'low'
 
-    '''
+    """
     An absoluteValue limit means that a monitored absolute value above
     the limit value is a violation.
-    '''
+    """
     absoluteValue = 'absoluteValue'
 
     def __str__(self):
@@ -291,26 +291,26 @@ class OperationalLimitDirectionKind(Enum):
 
 
 class LimitTypeKind(Enum):
-    '''
+    """
     The Permanent Admissible Transmission Loading (PATL) is the
     loading in Amps, MVA or MW that can be accepted by a network
     branch for an unlimited duration without any risk for the material.
     The duration attribute is not used and shall be excluded for the PATL
     limit type. Hence, only one limit value exists for the PATL type.
-    '''
+    """
     patl = 'patl'
 
-    '''
+    """
     Permanent Admissible Transmission Loading Threshold (PATLT) is a
     value in engineering units defined for PATL and calculated using
     percentage less than 100 of the PATL type intended to alert
     operators of an arising condition. The percentage should be given in
     the name of the OperationalLimitSet. The aceptableDuration is
     another way to express the severity of the limit.
-    '''
+    """
     patlt = 'patlt'
 
-    '''
+    """
     Temporarily Admissible Transmission Loading (TATL) which is the
     loading in Amps, MVA or MW that can be accepted by a branch for a
     certain limited duration.
@@ -325,10 +325,10 @@ class LimitTypeKind(Enum):
     conditions of the network element (sag situation of a line). The
     duration attribute can be used define several TATL limit types. Hence
     multiple TATL limit values may exist having different durations.
-    '''
+    """
     tatl = 'tatl'
 
-    '''
+    """
     Tripping Current (TC) is the ultimate intensity without any delay. It is
     defined as the threshold the line will trip without any possible
     remedial actions.
@@ -338,24 +338,24 @@ class LimitTypeKind(Enum):
     reaction delay of an operator (less than one minute).
     The duration is always zero and the duration attribute may be left out.
     Hence only one limit value exists for the TC type.
-    '''
+    """
     tc = 'tc'
 
-    '''
+    """
     Tripping Current Threshold (TCT) is a value in engineering units
     defined for TC and calculated using percentage less than 100 of the
     TC type intended to alert operators of an arising condition. The
     percentage should be given in the name of the OperationalLimitSet.
     The aceptableDuration is another way to express the severity of the
     limit.
-    '''
+    """
     tct = 'tct'
 
-    '''
+    """
     Referring to the rating of the equipments, a voltage too high can lead
     to accelerated ageing or the destruction of the equipment.
     This limit type may or may not have duration.
-    '''
+    """
     highVoltage = 'highVoltage'
 
     '''

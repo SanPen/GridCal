@@ -669,7 +669,7 @@ def helm_coefficients_dY(dY, sys_mat_factorization, Uini, Xini,
 
 def helm_josep(nc: NumericalCircuit,
                Ybus: CscMat, Yf: CscMat, Yt: CscMat,
-               Yseries: CxVec, V0: CxVec, S0: CxVec, Ysh0: CxVec,
+               Yseries: CscMat, V0: CxVec, S0: CxVec, Ysh0: CxVec,
                pq: IntVec, pv: IntVec, vd: IntVec, no_slack: IntVec,
                tolerance: float = 1e-6, max_coefficients: int = 30, use_pade: bool = True,
                verbose: int = 0, logger: Logger = None) -> NumericPowerFlowResults:
@@ -781,7 +781,7 @@ def helm_josep(nc: NumericalCircuit,
         Sbase=nc.Sbase)
 
     return NumericPowerFlowResults(V=V,
-                                   Scalc=Scalc,
+                                   Scalc=Scalc * nc.Sbase,
                                    m=np.ones(nc.nbr, dtype=float),
                                    tau=np.zeros(nc.nbr, dtype=float),
                                    Sf=Sf,

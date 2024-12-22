@@ -104,10 +104,10 @@ def calc_V_outage(nc: NumericalCircuit,
                                            max_coeff=10)
 
     # compute flows
-    Sf = (nc.Cf * V) * np.conj(nc.Yf * V) * nc.Sbase
+    Sf = (nc.passive_branch_data.C_branch_bus_f * V) * np.conj(adm.Yf * V) * nc.Sbase
 
     # compute contingency loading
-    loading = Sf / (nc.contingency_rates + 1e-9)
+    loading = Sf / (nc.passive_branch_data.rates + 1e-9)
 
     return V, Sf, loading, norm_f
 

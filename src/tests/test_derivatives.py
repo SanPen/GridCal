@@ -61,13 +61,15 @@ def check_dSf_dVm(dSf_dVm1, br_idx, bus_idx, nc: NumericalCircuit):
     :param nc:
     :return:
     """
+    adm = nc.get_admittance_matrices()
     dSf_dVm2 = cscdiff.dSf_dVm_csc(nbus=nc.nbus,
                                    br_indices=br_idx,
                                    bus_indices=bus_idx,
-                                   yff=nc.admittances_.yff,
-                                   yft=nc.admittances_.yft,
-                                   V=nc.Vbus,
-                                   F=nc.F, T=nc.T)
+                                   yff=adm.yff,
+                                   yft=adm.yft,
+                                   V=nc.bus_data.Vbus,
+                                   F=nc.passive_branch_data.F,
+                                   T=nc.passive_branch_data.T)
 
     dSf_dVm3 = dSf_dVm1[np.ix_(br_idx, bus_idx)]
 
@@ -87,13 +89,15 @@ def check_dSf_dVa(dSf_dVa1, br_idx, bus_idx, nc: NumericalCircuit):
     :param nc:
     :return:
     """
+    adm = nc.get_admittance_matrices()
     dSf_dVa2 = cscdiff.dSf_dVa_csc(nbus=nc.nbus,
                                    br_indices=br_idx,
                                    bus_indices=bus_idx,
-                                   yff=nc.admittances_.yff,
-                                   yft=nc.admittances_.yft,
-                                   V=nc.Vbus,
-                                   F=nc.F, T=nc.T)
+                                   yff=adm.yff,
+                                   yft=adm.yft,
+                                   V=nc.bus_data.Vbus,
+                                   F=nc.passive_branch_data.F,
+                                   T=nc.passive_branch_data.T)
 
     dSf_dVa3 = dSf_dVa1[np.ix_(br_idx, bus_idx)]
 
@@ -113,13 +117,15 @@ def check_dSt_dVm(dSt_dVm1, br_idx, bus_idx, nc: NumericalCircuit):
     :param nc:
     :return:
     """
+    adm = nc.get_admittance_matrices()
     dSt_dVm2 = cscdiff.dSt_dVm_csc(nbus=nc.nbus,
                                    br_indices=br_idx,
                                    bus_indices=bus_idx,
-                                   ytt=nc.admittances_.ytt,
-                                   ytf=nc.admittances_.ytf,
-                                   V=nc.Vbus,
-                                   F=nc.F, T=nc.T)
+                                   ytt=adm.ytt,
+                                   ytf=adm.ytf,
+                                   V=nc.bus_data.Vbus,
+                                   F=nc.passive_branch_data.F,
+                                   T=nc.passive_branch_data.T)
 
     dSt_dVm3 = dSt_dVm1[np.ix_(br_idx, bus_idx)]
 
@@ -139,12 +145,14 @@ def check_dSt_dVa(dSt_dVa1, br_idx, bus_idx, nc: NumericalCircuit):
     :param nc:
     :return:
     """
+    adm = nc.get_admittance_matrices()
     dSt_dVa2 = cscdiff.dSt_dVa_csc(nbus=nc.nbus,
                                    br_indices=br_idx,
                                    bus_indices=bus_idx,
-                                   ytf=nc.admittances_.ytf,
-                                   V=nc.Vbus,
-                                   F=nc.F, T=nc.T)
+                                   ytf=adm.ytf,
+                                   V=nc.bus_data.Vbus,
+                                   F=nc.passive_branch_data.F,
+                                   T=nc.passive_branch_data.T)
 
     dSt_dVa3 = dSt_dVa1[np.ix_(br_idx, bus_idx)]
 
@@ -163,14 +171,15 @@ def test_branch_derivatives() -> None:
     fname = os.path.join("data", "grids", "RAW", "IEEE 14 bus.raw")
     grid = gce.open_file(filename=fname)
     nc = gce.compile_numerical_circuit_at(grid)
+    adm = nc.get_admittance_matrices()
 
-    dSf_dVa1, dSf_dVm1, dSt_dVa1, dSt_dVm1 = mdiff.dSbr_dV_matpower(Yf=nc.Yf,
-                                                                    Yt=nc.Yt,
-                                                                    V=nc.Vbus,
-                                                                    F=nc.F,
-                                                                    T=nc.T,
-                                                                    Cf=nc.Cf,
-                                                                    Ct=nc.Ct)
+    dSf_dVa1, dSf_dVm1, dSt_dVa1, dSt_dVm1 = mdiff.dSbr_dV_matpower(Yf=adm.Yf,
+                                                                    Yt=adm.Yt,
+                                                                    V=nc.bus_data.Vbus,
+                                                                    F=nc.passive_branch_data.F,
+                                                                    T=nc.passive_branch_data.T,
+                                                                    Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
+                                                                    Ct=nc.passive_branch_data.C_branch_bus_t.tocsc())
 
     test_data = [
         {
@@ -205,6 +214,7 @@ def test_tau_derivatives() -> None:
     fname = os.path.join("data", "grids", "RAW", "IEEE 14 bus.raw")
     grid = gce.open_file(filename=fname)
     nc = gce.compile_numerical_circuit_at(grid)
+    adm = nc.get_admittance_matrices()
 
     Ys = 1.0 / (nc.passive_branch_data.R + 1j * nc.passive_branch_data.X)
 
@@ -235,13 +245,13 @@ def test_tau_derivatives() -> None:
          dSbus_dtau1, dSf_dtau1, dSt_dtau1) = compute_branch_power_derivatives(
             all_tap_m=nc.active_branch_data.tap_module,
             all_tap_tau=nc.active_branch_data.tap_angle,
-            V=nc.Vbus,
+            V=nc.bus_data.Vbus,
             k_m=np.empty(0, dtype=int),
             k_tau=tau_idx,
-            Cf=nc.Cf,
-            Ct=nc.Ct,
-            F=nc.F,
-            T=nc.T,
+            Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
+            Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
+            F=nc.passive_branch_data.F,
+            T=nc.passive_branch_data.T,
             R=nc.passive_branch_data.R,
             X=nc.passive_branch_data.X
         )
@@ -271,12 +281,12 @@ def test_tau_derivatives() -> None:
             nbus=nc.nbus,
             bus_indices=bus_idx,
             tau_indices=tau_idx,
-            F=nc.F,
-            T=nc.T,
+            F=nc.passive_branch_data.F,
+            T=nc.passive_branch_data.T,
             Ys=Ys,
             kconv=nc.passive_branch_data.k,
             tap=nc.active_branch_data.tap,
-            V=nc.Vbus
+            V=nc.bus_data.Vbus
         )
 
         dSbus_dtau3 = dSbus_dtau1[bus_idx, :]
@@ -292,12 +302,12 @@ def test_tau_derivatives() -> None:
         dSf_dtau2 = cscdiff.dSf_dtau_csc(nbr=nc.nbr,
                                          sf_indices=sf_idx,
                                          tau_indices=tau_idx,
-                                         F=nc.F,
-                                         T=nc.T,
+                                         F=nc.passive_branch_data.F,
+                                         T=nc.passive_branch_data.T,
                                          Ys=Ys,
                                          kconv=nc.passive_branch_data.k,
                                          tap=nc.active_branch_data.tap,
-                                         V=nc.Vbus)
+                                         V=nc.bus_data.Vbus)
 
         dSf_dtau3 = dSf_dtau1[sf_idx, :]
 
@@ -312,12 +322,12 @@ def test_tau_derivatives() -> None:
         dSt_dtau2 = cscdiff.dSt_dtau_csc(nbr=nc.nbr,
                                          st_indices=sf_idx,
                                          tau_indices=tau_idx,
-                                         F=nc.F,
-                                         T=nc.T,
+                                         F=nc.passive_branch_data.F,
+                                         T=nc.passive_branch_data.T,
                                          Ys=Ys,
                                          kconv=nc.passive_branch_data.k,
                                          tap=nc.active_branch_data.tap,
-                                         V=nc.Vbus)
+                                         V=nc.bus_data.Vbus)
 
         dSt_dtau3 = dSt_dtau1[sf_idx, :]
 
@@ -367,15 +377,15 @@ def test_m_derivatives() -> None:
             nbus=nc.nbus,
             nbr=nc.nbr,
             iXxma=m_idx,
-            F=nc.F,
-            T=nc.T,
+            F=nc.passive_branch_data.F,
+            T=nc.passive_branch_data.T,
             Ys=Ys,
             kconv=nc.passive_branch_data.k,
             tap=nc.active_branch_data.tap,
             tap_module=nc.active_branch_data.tap_module,
             Bc=nc.passive_branch_data.B,
             Beq=np.zeros(nc.nbr),
-            V=nc.Vbus
+            V=nc.bus_data.Vbus
         )
         dSbus_dm1, dSf_dm1, dSt_dm1 = mat_to_scipy(dSbus_dm1), mat_to_scipy(dSf_dm1), mat_to_scipy(dSt_dm1)
 
@@ -407,14 +417,14 @@ def test_m_derivatives() -> None:
             nbus=nc.nbus,
             bus_indices=bus_idx,
             m_indices=m_idx,
-            F=nc.F,
-            T=nc.T,
+            F=nc.passive_branch_data.F,
+            T=nc.passive_branch_data.T,
             Ys=Ys,
             Bc=nc.passive_branch_data.B,
             kconv=nc.passive_branch_data.k,
             tap=nc.active_branch_data.tap,
             tap_module=nc.active_branch_data.tap_module,
-            V=nc.Vbus
+            V=nc.bus_data.Vbus
         )
         dSbus_dm3 = dSbus_dm1[bus_idx, :]
         assert np.allclose(dSbus_dm3.toarray(), dSbus_dm2.toarray())
@@ -423,14 +433,14 @@ def test_m_derivatives() -> None:
             nbr=nc.nbr,
             sf_indices=sf_idx,
             m_indices=m_idx,
-            F=nc.F,
-            T=nc.T,
+            F=nc.passive_branch_data.F,
+            T=nc.passive_branch_data.T,
             Ys=Ys,
             Bc=nc.passive_branch_data.B,
             kconv=nc.passive_branch_data.k,
             tap=nc.active_branch_data.tap,
             tap_module=nc.active_branch_data.tap_module,
-            V=nc.Vbus
+            V=nc.bus_data.Vbus
         )
         dSf_dm3 = dSf_dm1[sf_idx, :]
         assert np.allclose(dSf_dm3.toarray(), dSf_dm2.toarray())
@@ -439,13 +449,13 @@ def test_m_derivatives() -> None:
             nbr=nc.nbr,
             st_indices=sf_idx,
             m_indices=m_idx,
-            F=nc.F,
-            T=nc.T,
+            F=nc.passive_branch_data.F,
+            T=nc.passive_branch_data.T,
             Ys=Ys,
             kconv=nc.passive_branch_data.k,
             tap=nc.active_branch_data.tap,
             tap_module=nc.active_branch_data.tap_module,
-            V=nc.Vbus
+            V=nc.bus_data.Vbus
         )
         dSt_dm3 = dSt_dm1[sf_idx, :]
 
@@ -491,10 +501,10 @@ def test_beq_derivatives() -> None:
             nbus=nc.nbus,
             nbr=nc.nbr,
             iBeqx=m_idx,
-            F=nc.F,
+            F=nc.passive_branch_data.F,
             kconv=nc.passive_branch_data.k,
             tap_module=nc.active_branch_data.tap_module,
-            V=nc.Vbus
+            V=nc.bus_data.Vbus
         )
         dSbus_dbeq1, dSf_dbeq1, dSt_dbeq1 = mat_to_scipy(dSbus_dbeq1), mat_to_scipy(dSf_dbeq1), mat_to_scipy(dSt_dbeq1)
 
@@ -507,20 +517,20 @@ def test_beq_derivatives() -> None:
         dSbus_dbeq2 = cscdiff.dSbus_dbeq_csc(nbus=nc.nbus,
                                              bus_indices=bus_idx,
                                              beq_indices=m_idx,
-                                             F=nc.F,
+                                             F=nc.passive_branch_data.F,
                                              kconv=nc.passive_branch_data.k,
                                              tap_module=nc.active_branch_data.tap_module,
-                                             V=nc.Vbus)
+                                             V=nc.bus_data.Vbus)
         dSbus_dbeq3 = dSbus_dbeq1[bus_idx, :]
         assert np.allclose(dSbus_dbeq3.toarray(), dSbus_dbeq2.toarray())
 
         dSf_dbeq2 = cscdiff.dSf_dbeq_csc(nbr=nc.nbr,
                                          sf_indices=sf_idx,
                                          beq_indices=m_idx,
-                                         F=nc.F,
+                                         F=nc.passive_branch_data.F,
                                          kconv=nc.passive_branch_data.k,
                                          tap_module=nc.active_branch_data.tap_module,
-                                         V=nc.Vbus)
+                                         V=nc.bus_data.Vbus)
         dSf_dbeq3 = dSf_dbeq1[sf_idx, :]
         assert np.allclose(dSf_dbeq3.toarray(), dSf_dbeq2.toarray())
 
@@ -532,16 +542,19 @@ def test_jacobian():
     grid = gce.open_file(filename=fname)
     nc = gce.compile_numerical_circuit_at(grid)
 
-    idx_dtheta = np.r_[nc.pv, nc.pq, nc.pqv, nc.p]
-    idx_dVm = np.r_[nc.pq, nc.p]
+    adm = nc.get_admittance_matrices()
+    idx = nc.get_simulation_indices()
+
+    idx_dtheta = np.r_[idx.pv, idx.pq, idx.pqv, idx.p]
+    idx_dVm = np.r_[idx.pq, idx.p]
     idx_dP = idx_dtheta
-    idx_dQ = np.r_[nc.pq, nc.pqv]
+    idx_dQ = np.r_[idx.pq, idx.pqv]
 
-    J1 = mdiff.Jacobian(nc.Ybus, nc.Vbus, idx_dP, idx_dQ, idx_dtheta, idx_dVm)
+    J1 = mdiff.Jacobian(adm.Ybus, nc.bus_data.Vbus, idx_dP, idx_dQ, idx_dtheta, idx_dVm)
 
-    J3 = cscjac.AC_jacobian(nc.Ybus, nc.Vbus, idx_dtheta, idx_dVm)
+    J3 = cscjac.AC_jacobian(adm.Ybus, nc.bus_data.Vbus, idx_dtheta, idx_dVm)
 
-    J2 = cscjac.AC_jacobianVc(nc.Ybus, nc.Vbus, idx_dtheta, idx_dVm, idx_dQ)
+    J2 = cscjac.AC_jacobianVc(adm.Ybus, nc.bus_data.Vbus, idx_dtheta, idx_dVm, idx_dQ)
 
     ok1 = np.allclose(J1.toarray(), J2.toarray())
     ok2 = np.allclose(J1.toarray(), J3.toarray())

@@ -275,11 +275,11 @@ class Assets:
 
         self.device_associations: Dict[str, List[str]] = dict()
 
-        '''
+        """
         self.type_name = 'Shunt'
 
         self.properties_with_profile = ['Y']
-        '''
+        """
         for key, elm_list in self.template_objects_dict.items():
             for elm in elm_list:
                 if elm.properties_with_profile is not None:

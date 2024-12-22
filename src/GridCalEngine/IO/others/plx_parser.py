@@ -490,20 +490,20 @@ class PlxModel:
         category = pd.DataFrame(xmldict['t_category'])
         collections = pd.DataFrame(xmldict['t_collection'])
 
-        '''
+        """
         objects 
         class	GUID	name	category
-        '''
+        """
         objects = pd.DataFrame(xmldict['t_object'])
         objects2 = objects.copy()
         objects2['class_id'] = objects2['class_id'].map(classes.set_index('class_id')['name'])
         objects2['category_id'] = objects2['category_id'].map(category.set_index('category_id')['name'])
         objects2.rename(columns={'class_id': 'class', 'category_id': 'category'}, inplace=True)
 
-        '''
+        """
         Membership
         parent_class	child_class	   collection	parent_object	child_object
-        '''
+        """
         memberships = pd.DataFrame(xmldict['t_membership'])
 
         memberships2 = memberships.copy()
@@ -519,11 +519,11 @@ class PlxModel:
                                      'child_object_id': 'child_object',
                                      'collection_id': 'collection'}, inplace=True)
 
-        '''
+        """
         Properties
         parent_class	child_class	collection	parent_object	child_object	property	band_id	value	units	
         date_from	date_to	pattern	action	expression	filename	scenario	memo	period_type_id
-        '''
+        """
         attribute = pd.DataFrame(xmldict['t_attribute'])
         attribute_data = pd.DataFrame(xmldict['t_attribute_data'])
         # attributes = pd.merge(attribute, attribute_data, on='attribute_id')

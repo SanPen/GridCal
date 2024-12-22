@@ -1633,10 +1633,10 @@ class SimulationsMain(TimeEventsMain):
                                                                   verbose=0)
 
                     if use_alpha:
-                        '''
+                        """
                         use the current power situation as start
                         and a linear combination of the current situation as target
-                        '''
+                        """
                         # lock the UI
                         self.LOCK()
 
@@ -1666,9 +1666,9 @@ class SimulationsMain(TimeEventsMain):
                                          text_func=self.ui.progress_label.setText)
 
                     elif use_profiles:
-                        '''
+                        """
                         Here the start and finish power states are taken from the profiles
-                        '''
+                        """
                         if start_idx > -1 and end_idx > -1:
 
                             # lock the UI

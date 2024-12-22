@@ -302,7 +302,7 @@ def get_load_data(data: LoadData,
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
         data.bus_idx[ii] = i
-
+        data.original_idx[ii] = ii
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
 
@@ -344,6 +344,7 @@ def get_load_data(data: LoadData,
         data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
+        data.original_idx[ii] = ii
 
         if time_series:
             data.S[ii] -= complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
@@ -370,6 +371,7 @@ def get_load_data(data: LoadData,
         data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
+        data.original_idx[ii] = ii
 
         # change stuff depending on the modes
         if elm.mode == ExternalGridMode.VD:
@@ -411,7 +413,7 @@ def get_load_data(data: LoadData,
         data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
-
+        data.original_idx[ii] = ii
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
 
@@ -471,7 +473,7 @@ def get_shunt_data(
         data.bus_idx[k] = i
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
-
+        data.original_idx[ii] = ii
         data.mttf[k] = elm.mttf
         data.mttr[k] = elm.mttr
 
@@ -495,7 +497,7 @@ def get_shunt_data(
         data.bus_idx[ii] = i
         data.names[ii] = elm.name
         data.idtag[ii] = elm.idtag
-
+        data.original_idx[ii] = ii
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
 
@@ -605,7 +607,7 @@ def get_generator_data(
         data.bus_idx[k] = i
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
-
+        data.original_idx[k] = k
         data.mttf[k] = elm.mttf
         data.mttr[k] = elm.mttr
 
@@ -767,7 +769,7 @@ def get_battery_data(
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
-
+        data.original_idx[k] = k
         data.mttf[k] = elm.mttf
         data.mttr[k] = elm.mttr
 

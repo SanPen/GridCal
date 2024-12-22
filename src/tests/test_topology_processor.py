@@ -8,6 +8,7 @@ from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.api import power_flow
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
 def test_cn_makes_a_bus() -> None:
@@ -692,3 +693,22 @@ def test_topology_3_nodes_A2() -> None:
     res = power_flow(grid)
 
     assert res.voltage[2] == 0
+
+
+def test_nc_active_works() -> None:
+
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    main_circuit = FileOpen(fname).open()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+    options = PowerFlowOptions(solver_type=SolverType.DC)
+    # base_res = multi_island_pf_nc(nc=nc, options=options)
+
+    for k in range(nc.passive_branch_data.nelm):
+        nc.passive_branch_data.active[k] = 0
+
+        res = multi_island_pf_nc(nc=nc, options=options)
+
+        assert res.Sf[k].real == 0.0
+        assert res.Sf[k].imag == 0.0
+
+        nc.passive_branch_data.active[k] = 1

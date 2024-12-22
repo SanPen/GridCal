@@ -34,7 +34,7 @@ except ImportError:
     pgm = None
     PGM_AVAILABLE = False
 
-'''
+"""
 hierarchy
 
 base ──┬─────────────────────────────────────────────── node
@@ -58,7 +58,7 @@ base ──┬──────────────────────
                        └── generic_power_sensor ────┬── sym_power_sensor
                                                     └── asym_power_sensor
 
-'''
+"""
 
 
 def get_pgm_buses(circuit: MultiCircuit, idx0):

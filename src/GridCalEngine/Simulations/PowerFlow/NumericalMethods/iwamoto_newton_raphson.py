@@ -273,7 +273,7 @@ def IwamotoNR(nc: NumericalCircuit,
         Sbase=nc.Sbase)
 
     return NumericPowerFlowResults(V=V,
-                                   Scalc=Scalc,
+                                   Scalc=Scalc * nc.Sbase,
                                    m=np.ones(nc.nbr, dtype=float),
                                    tau=np.zeros(nc.nbr, dtype=float),
                                    Sf=Sf,

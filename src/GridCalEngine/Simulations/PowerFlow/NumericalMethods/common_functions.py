@@ -489,13 +489,14 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
 
 
 def power_flow_post_process_linear(Sbus: CxVec, V: CxVec,
-                                   X: Vec, tap_module: Vec, tap_angle: Vec,
+                                   active: IntVec, X: Vec, tap_module: Vec, tap_angle: Vec,
                                    F: IntVec, T: IntVec,
                                    branch_rates: Vec, Sbase: float):
     """
 
     :param Sbus:
     :param V:
+    :param active:
     :param X:
     :param tap_module:
     :param tap_angle:
@@ -511,7 +512,7 @@ def power_flow_post_process_linear(Sbus: CxVec, V: CxVec,
     theta_f = theta[F]
     theta_t = theta[T]
 
-    b = 1.0 / (X * tap_module)
+    b = active.astype(float) / (X * tap_module)
     # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
 
     Pf = b * (theta_f - theta_t - tap_angle)

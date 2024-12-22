@@ -2377,9 +2377,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                 vtap_t=self.nc.passive_branch_data.virtual_tap_t,
                 tap_angle=tap_angles,
-                Cf=self.nc.Cf,
-                Ct=self.nc.Ct,
-                Yshunt_bus=self.nc.Yshunt_from_devices,
+                Cf=self.nc.passive_branch_data.C_branch_bus_f.tocsc(),
+                Ct=self.nc.passive_branch_data.C_branch_bus_t.tocsc(),
+                Yshunt_bus=self.nc.get_Yshunt_bus(),
                 conn=self.nc.passive_branch_data.conn,
                 seq=1,
                 add_windings_phase=False

@@ -3375,7 +3375,7 @@ class SchematicWidget(BaseDiagramWidget):
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
 
-        '''
+        """
         class BusMode(Enum):
         PQ = 1,
         PV = 2,
@@ -3383,7 +3383,7 @@ class SchematicWidget(BaseDiagramWidget):
         NONE = 4,
         STO_DISPATCH = 5
         PVB = 6
-        '''
+        """
 
         bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
         max_flow = 1

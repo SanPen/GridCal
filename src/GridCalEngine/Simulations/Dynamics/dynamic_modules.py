@@ -1203,7 +1203,7 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
     max_iter = 20
 
     # compose dynamic controllers
-    '''
+    """
     class DynamicModels(Enum):
     NoModel = 0,
     SM4 = 1,
@@ -1212,7 +1212,7 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
     EG = 4,
     SAM = 5,
     DAM = 6  
-    '''
+    """
     sm4_idx = list()
     sm6b_idx = list()
     vsc_idx = list()

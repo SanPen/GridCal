@@ -113,7 +113,7 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
 
     if compute_jac:
         fx = ad.calc_autodiff_jacobian_f_obj(func=eval_f, x=x, arg=(Cg, k_m, k_tau, nll, c0, c1, c2,
-                                                                    c_s, c_v, ig, npq, ndc, Sbase), h=h).tocsc()
+                                                                    c_s, c_v, ig, npq, ndc, Sbase), h=h)
         Gx = ad.calc_autodiff_jacobian(func=eval_g, x=x, arg=(Ybus, Yf, Cg, Sd, ig, nig, nll, npq, pv, fdc,
                                                               tdc, k_m, k_tau, V_U, Sg_undis, slack)).T.tocsc()
         Hx = ad.calc_autodiff_jacobian(func=eval_h, x=x, arg=(Yf, Yt, from_idx, to_idx, pq, k_m, k_tau, V_U,
@@ -206,7 +206,6 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param nig: Number of dispatchable generators
     :param Sg_undis: undispatchable complex power
     :param ctQ: Boolean that indicates if the Reactive control applies
-    :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
     :return: Object with all the model equations and derivatives stored
     """
 
@@ -467,7 +466,6 @@ class NonlinearOPFResults:
         :param gen_idx:
         :param hvdc_idx:
         :param ncap_idx:
-        :param ngen:
         :param acopf_mode:
         :return:
         """
@@ -545,12 +543,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Sbase = nc.Sbase
 
     Cgen = nc.generator_data.C_bus_elm
-    from_idx = nc.F
-    to_idx = nc.T
+    from_idx = nc.passive_branch_data.F
+    to_idx = nc.passive_branch_data.T
+
+    indices = nc.get_simulation_indices(Sbus=Sbus_pf)
 
     # PV buses are identified by those who have the same upper and lower limits for the voltage. Slack obtained from nc
 
-    slack = nc.vd
+    slack = indices.vd
     slackgens = np.where(Cgen[slack, :].toarray() == 1)[1]
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
@@ -628,14 +628,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     ind_gens = np.arange(len(Pg_max))
     gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[gen_nondisp_idx]
-    rates = nc.rates / Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
+    rates = nc.passive_branch_data.rates / Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
     Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
     Va_min = nc.bus_data.angle_min
 
     # Transformer control modes and line parameters to calculate the associated derivatives w.r.t the tap variables.
-    k_m = nc.k_m
-    k_tau = nc.k_tau
-    k_mtau = nc.k_mtau
+    k_m = indices.k_m
+    k_tau = indices.k_tau
+    k_mtau = indices.k_mtau
     R = nc.passive_branch_data.R
     X = nc.passive_branch_data.X
 
@@ -725,8 +725,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     if pf_init:
         gen_in_bus = np.zeros(nbus)
-        for bus in range(nc.generator_data.C_bus_elm.shape[0]):
-            gen_in_bus[bus] = np.sum(nc.generator_data.C_bus_elm[bus])
+        for i in range(nc.generator_data.C_bus_elm.shape[0]):
+            gen_in_bus[i] = np.sum(nc.generator_data.C_bus_elm[i])
         ngenforgen = nc.generator_data.C_bus_elm.T @ gen_in_bus
         allPgen = nc.generator_data.C_bus_elm.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
         allQgen = nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
@@ -921,19 +921,19 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     if not result.converged or result.converged:
 
-        for bus in range(nbus):
-            if abs(result.dlam[bus]) >= 1e-3:
+        for i in range(nbus):
+            if abs(result.dlam[i]) >= 1e-3:
                 logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
                                    device_property="dlam",
-                                   device=str(bus),
-                                   value=str(result.dlam[bus]),
+                                   device=str(i),
+                                   value=str(result.dlam[i]),
                                    expected_value='< 1e-3')
 
-            if abs(result.dlam[nbus + bus]) >= 1e-3:  # TODO: What is the difference with the previous?
+            if abs(result.dlam[nbus + i]) >= 1e-3:  # TODO: What is the difference with the previous?
                 logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
                                    device_property="dlam",
-                                   device=str(bus),
-                                   value=str(result.dlam[bus + nbus]),
+                                   device=str(i),
+                                   value=str(result.dlam[i + nbus]),
                                    expected_value='< 1e-3')
 
         for pvbus in range(npv):

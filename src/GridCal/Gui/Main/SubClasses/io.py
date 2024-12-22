@@ -439,15 +439,20 @@ class IoMain(ConfigurationMain):
 
             if info is not None:
                 found = False
+                found_name = ""
+                found_version = ""
                 for key, plugin in self.plugins_info.plugins.items():
                     if plugin.name == info.name:
                         found = True
+                        found_name = plugin.name
+                        found_version = plugin.version
+                        break
 
                 if found:
-                    ok = yes_no_question( f"There is a plugin already: "
-                                    f"{plugin.name} {plugin.version} "
-                                    f"The new plugin is {info.version}. "
-                                    f"Install?", "Plugin install")
+                    ok = yes_no_question(f"There is a plugin already: "
+                                         f"{found_name} {found_version} "
+                                         f"The new plugin is {info.version}. "
+                                         f"Install?", "Plugin install")
                     if not ok:
                         return
 
@@ -1121,4 +1126,3 @@ class IoMain(ConfigurationMain):
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
         self.change_theme_mode()
-

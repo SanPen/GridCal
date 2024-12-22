@@ -90,25 +90,27 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         for is_idx, island in enumerate(islands):
 
             self.report_text(f'Running voltage collapse at circuit island {is_idx + 1}...')
+            adm = island.get_admittance_matrices()
+            idx = nc.get_simulation_indices()
 
             if len(island.vd) > 0 and len(island.pqpv) > 0:
-                results = continuation_nr(Ybus=island.Ybus,
-                                          Cf=island.Cf,
-                                          Ct=island.Ct,
-                                          Yf=island.Yf,
-                                          Yt=island.Yt,
-                                          branch_rates=island.branch_rates,
+                results = continuation_nr(Ybus=adm.Ybus,
+                                          Cf=island.passive_branch_data.C_branch_bus_f,
+                                          Ct=island.passive_branch_data.C_branch_bus_t,
+                                          Yf=adm.Yf,
+                                          Yt=adm.Yt,
+                                          branch_rates=island.passive_branch_data.rates,
                                           Sbase=island.Sbase,
                                           Sbus_base=self.inputs.Sbase[island.original_bus_idx],
                                           Sbus_target=self.inputs.Starget[island.original_bus_idx],
-                                          V=self.inputs.Vbase[island.original_bus_idx],
+                                          V=self.inputs.Vbase[island.bus_data.original_idx],
                                           distributed_slack=self.pf_options.distributed_slack,
-                                          bus_installed_power=island.bus_installed_power,
-                                          vd=island.vd,
-                                          pv=island.pv,
-                                          pq=island.pq,
-                                          pqv=island.pqv,
-                                          p=island.p,
+                                          bus_installed_power=island.bus_data.installed_power,
+                                          vd=idx.vd,
+                                          pv=idx.pv,
+                                          pq=idx.pq,
+                                          pqv=idx.pqv,
+                                          p=idx.p,
                                           step=self.options.step,
                                           approximation_order=self.options.approximation_order,
                                           adapt_step=self.options.adapt_step,

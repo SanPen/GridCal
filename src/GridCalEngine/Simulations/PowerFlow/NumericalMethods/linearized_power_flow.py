@@ -87,6 +87,7 @@ def dcpf(nc: NumericalCircuit,
     Sf, St, If, It, Vbranch, loading, losses, Sbus = cf.power_flow_post_process_linear(
         Sbus=Scalc,
         V=V,
+        active=nc.passive_branch_data.active,
         X=nc.passive_branch_data.X,
         tap_module=nc.active_branch_data.tap_module,
         tap_angle=nc.active_branch_data.tap_angle,
@@ -97,7 +98,7 @@ def dcpf(nc: NumericalCircuit,
     )
 
     return NumericPowerFlowResults(V=V,
-                                   Scalc=Scalc,
+                                   Scalc=Scalc * nc.Sbase,
                                    m=np.ones(nc.nbr, dtype=float),
                                    tau=np.zeros(nc.nbr, dtype=float),
                                    Sf=Sf,
@@ -123,8 +124,8 @@ def dcpf(nc: NumericalCircuit,
 
 
 def lacpf(nc: NumericalCircuit,
-          Ybus: CscMat, Yf: CscMat, Yt: CscMat,
-          Ys: CxVec, S0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec, vd: IntVec) -> NumericPowerFlowResults:
+          Ybus: CscMat, Yf: CscMat, Yt: CscMat, Ys: CscMat,
+          S0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec, vd: IntVec) -> NumericPowerFlowResults:
     """
     Linearized AC Load Flow
 
@@ -184,7 +185,7 @@ def lacpf(nc: NumericalCircuit,
             elapsed = end - start
 
             return NumericPowerFlowResults(V=V,
-                                           Scalc=Scalc,
+                                           Scalc=Scalc * nc.Sbase,
                                            m=np.ones(nc.nbr, dtype=float),
                                            tau=np.zeros(nc.nbr, dtype=float),
                                            Sf=np.zeros(nc.nbr, dtype=complex),
@@ -249,7 +250,7 @@ def lacpf(nc: NumericalCircuit,
     )
 
     return NumericPowerFlowResults(V=V,
-                                   Scalc=Scalc,
+                                   Scalc=Scalc * nc.Sbase,
                                    m=np.ones(nc.nbr, dtype=float),
                                    tau=np.zeros(nc.nbr, dtype=float),
                                    Sf=Sf,

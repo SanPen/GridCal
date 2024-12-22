@@ -145,7 +145,7 @@ def test_get_voltage_ac_line_segment_basevoltage_exists_returns_nominal_voltage(
 
 def test_get_voltage_ac_line_segment_basevoltage_None_Terminal_None_returns_None():
     acl = ACLineSegment()
-    assert get_voltage_ac_line_segment(acl, None) == None
+    assert get_voltage_ac_line_segment(acl, None) is None
 
 
 def test_get_voltage_ac_line_segment_basevoltage_None_Terminal_not_None_returns_first_elements_voltage():
@@ -165,7 +165,7 @@ def test_get_voltage_ac_line_segment_basevoltage_None_Terminal_length_0_returns_
     t.TopologicalNode.BaseVoltage = BaseVoltage()
     t.TopologicalNode.BaseVoltage.nominalVoltage = 220
     acl.references_to_me["Terminal"] = []
-    assert get_voltage_ac_line_segment(acl, None) == None
+    assert get_voltage_ac_line_segment(acl, None) is None
 
 
 def test_get_pu_values_ac_line_segment_BaseVoltage_is_None_returns_zero():

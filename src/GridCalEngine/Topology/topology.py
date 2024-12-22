@@ -296,8 +296,7 @@ class ConnectivityMatrices:
         :param bus_active:
         :return:
         """
-        c = self.C
-        return (diags(bus_active) * (c.T @ c)).tocsc()
+        return (diags(bus_active) * (self.C.T @ self.C)).tocsc()
 
 
 def compute_connectivity(branch_active: IntVec,
@@ -346,20 +345,20 @@ def compute_connectivity_flexible(branch_active: IntVec | None = None,
     if branch_active is not None:
         if len(branch_active):
             br_states_diag = sp.diags(branch_active)
-            cf_stack.append(br_states_diag * Cf_)
-            ct_stack.append(br_states_diag * Ct_)
+            cf_stack.append(br_states_diag @ Cf_)
+            ct_stack.append(br_states_diag @ Ct_)
 
     if hvdc_active is not None:
         if len(hvdc_active):
             hvdc_states_diag = sp.diags(hvdc_active)
-            cf_stack.append(hvdc_states_diag * Cf_hvdc)
-            ct_stack.append(hvdc_states_diag * Ct_hvdc)
+            cf_stack.append(hvdc_states_diag @ Cf_hvdc)
+            ct_stack.append(hvdc_states_diag @ Ct_hvdc)
 
     if vsc_active is not None:
         if len(vsc_active):
             vsc_states_diag = sp.diags(vsc_active)
-            cf_stack.append(vsc_states_diag * Cf_vsc)
-            ct_stack.append(vsc_states_diag * Ct_vsc)
+            cf_stack.append(vsc_states_diag @ Cf_vsc)
+            ct_stack.append(vsc_states_diag @ Ct_vsc)
 
     if len(cf_stack) == 0:
         raise ValueError("No set was provided to compute the connectivity :(")

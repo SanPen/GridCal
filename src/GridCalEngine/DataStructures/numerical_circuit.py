@@ -11,7 +11,7 @@ from typing import List, Tuple, Dict, Union
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Devices import RemedialAction
-from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
+from GridCalEngine.Topology.topology import find_islands
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
 from GridCalEngine.enumerations import BusMode, ContingencyOperationTypes
@@ -281,78 +281,6 @@ class NumericalCircuit:
         self.fluid_p2x_data: FluidP2XData = FluidP2XData(nelm=nfluidp2x)
         self.fluid_path_data: FluidPathData = FluidPathData(nelm=nfluidpath)
 
-        # --------------------------------------------------------------------------------------------------------------
-        # Internal variables filled on demand, to be ready to consume once computed
-        # --------------------------------------------------------------------------------------------------------------
-
-        self.Vbus_: Union[None, CxVec] = None
-        self.Sbus_: Union[None, CxVec] = None
-        self.Ibus_: Union[None, CxVec] = None
-        self.YloadBus_: Union[None, CxVec] = None
-        self.Yshunt_from_devices_: Union[None, CxVec] = None
-        self.Bmax_bus_: Union[None, Vec] = None
-        self.Bmin_bus_: Union[None, Vec] = None
-        self.Qmax_bus_: Union[None, Vec] = None
-        self.Qmin_bus_: Union[None, Vec] = None
-
-        # class that holds all the simulation indices
-        self.simulation_indices_: Union[None, si.SimulationIndices] = None
-
-        # Connectivity matrices
-        self.conn_matrices_: Union[tp.ConnectivityMatrices, None] = None
-
-        # general admittances
-        self.admittances_: Union[ycalc.AdmittanceMatrices, None] = None
-
-        # Admittance for HELM / AC linear
-        self.series_admittances_: Union[ycalc.SeriesAdmittanceMatrices, None] = None
-
-        # Admittances for Fast-Decoupled
-        self.fast_decoupled_admittances_: Union[ycalc.FastDecoupledAdmittanceMatrices, None] = None
-
-        # Admittances for Linear
-        self.linear_admittances_: Union[ycalc.LinearAdmittanceMatrices, None] = None
-
-        # dictionary relating idtags to structures and indices
-        # Dict[idtag] -> (structure, index)
-        self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
-
-    def reset_calculations(self) -> None:
-        """
-        This resets the lazy evaluation of the calculations like Ybus, Sbus, etc...
-        If you want to use the NumericalCircuit as structure to modify stuff,
-        this should be called after all modifications prior to the usage in any
-        calculation
-        """
-        self.Vbus_: Union[None, CxVec] = None
-        self.Sbus_: Union[None, CxVec] = None
-        self.Ibus_: Union[None, CxVec] = None
-        self.YloadBus_: Union[None, CxVec] = None
-        self.Yshunt_from_devices_: Union[None, CxVec] = None
-        self.Qmax_bus_: Union[None, Vec] = None
-        self.Qmin_bus_: Union[None, Vec] = None
-        self.Bmax_bus_: Union[None, Vec] = None
-        self.Bmin_bus_: Union[None, Vec] = None
-
-        # Connectivity matrices
-        self.conn_matrices_: Union[tp.ConnectivityMatrices, None] = None
-
-        # general admittances
-        self.admittances_: Union[ycalc.AdmittanceMatrices, None] = None
-
-        # Admittance for HELM / AC linear
-        self.series_admittances_: Union[ycalc.SeriesAdmittanceMatrices, None] = None
-
-        # Admittances for Fast-Decoupled
-        self.fast_decoupled_admittances_: Union[ycalc.FastDecoupledAdmittanceMatrices, None] = None
-
-        # Admittances for Linear
-        self.linear_admittances_: Union[ycalc.LinearAdmittanceMatrices, None] = None
-
-        # dictionary relating idtags to structures and indices
-        # Dict[idtag] -> (structure, index)
-        self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
-
     def get_injections(self, normalize=True) -> CxVec:
         """
         Compute the power
@@ -481,31 +409,36 @@ class NumericalCircuit:
         :param investments_list: list of investments
         :param status: status to set in the internal structures
         """
+        structs_dict = self.get_structs_idtag_dict()
 
         for inv in investments_list:
 
             # search the investment device
-            structure, idx = self.structs_dict.get(inv.device_idtag, (None, 0))
+            structure, idx = structs_dict.get(inv.device_idtag, (None, 0))
 
             if structure is not None:
                 structure.active[idx] = status
             else:
                 raise Exception('Could not find the idtag, is this a programming bug?')
 
-    def set_con_or_ra_status(self, event_list: List[Contingency | RemedialAction],
+    def set_con_or_ra_status(self,
+                             event_list: List[Contingency | RemedialAction],
                              revert: bool = False):
         """
-        Set the status of a list of contingencies
+        Set the status of a list of contingencies or remedial actions
         :param event_list: list of contingencies and or remedial actions
         :param revert: if false, the contingencies are applied, else they are reversed
         """
+
+        structs_dict = self.get_structs_idtag_dict()
+
         # apply the contingencies
         for cnt in event_list:
 
             if isinstance(cnt, (Contingency, RemedialAction)):
 
                 # search the investment device
-                structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+                structure, idx = structs_dict.get(cnt.device_idtag, (None, 0))
 
                 if structure is not None:
                     if cnt.prop == ContingencyOperationTypes.Active:
@@ -525,13 +458,16 @@ class NumericalCircuit:
             else:
                 raise Exception(f"The object {cnt} is not a Contingency or a remedial action")
 
-    def set_linear_con_or_ra_status(self, event_list: List[Contingency | RemedialAction],
+    def set_linear_con_or_ra_status(self,
+                                    event_list: List[Contingency | RemedialAction],
                                     revert: bool = False):
         """
-        Set the status of a list of contingencies
+        Set the status of a list of contingencies or remedial actions
         :param event_list: list of contingencies and or remedial actions
         :param revert: if false, the contingencies are applied, else they are reversed
         """
+        structs_dict = self.get_structs_idtag_dict()
+
         injections = np.zeros(self.nbus)
         # apply the contingencies
         for cnt in event_list:
@@ -539,7 +475,7 @@ class NumericalCircuit:
             if isinstance(cnt, (Contingency, RemedialAction)):
 
                 # search the investment device
-                structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+                structure, idx = structs_dict.get(cnt.device_idtag, (None, 0))
 
                 if structure is not None:
                     if cnt.prop == ContingencyOperationTypes.Active:
@@ -567,322 +503,319 @@ class NumericalCircuit:
 
         return injections
 
-    @property
-    def original_bus_idx(self):
+    # @property
+    # def original_bus_idx(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.bus_data.original_idx
+    #
+    # @property
+    # def original_branch_idx(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.original_idx
+    #
+    # @property
+    # def original_load_idx(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.load_data.original_idx
+    #
+    # @property
+    # def original_generator_idx(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.generator_data.original_idx
+    #
+    # @property
+    # def original_battery_idx(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.battery_data.original_idx
+    #
+    # @property
+    # def original_shunt_idx(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.shunt_data.original_idx
+    #
+    # @property
+    # def Vbus(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.Vbus_ is None:
+    #         self.Vbus_ = self.bus_data.Vbus
+    #
+    #     return self.Vbus_
+    #
+    # @property
+    # def Sbus(self) -> CxVec:
+    #     """
+    #     Returns the power Injections in per-unit
+    #     :return: array of power Injections (p.u.)
+    #     """
+    #
+    #     if self.Sbus_ is None:
+    #         self.Sbus_ = self.get_injections(normalize=True)
+    #
+    #     return self.Sbus_
+    #
+    # @property
+    # def Pbus(self) -> Vec:
+    #     """
+    #     Return real power injections in per-unit
+    #     :return: array of real power (p.u.)
+    #     """
+    #     return self.Sbus.real
+    #
+    # @property
+    # def Ibus(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.Ibus_ is None:
+    #         self.Ibus_ = self.load_data.get_current_injections_per_bus() / self.Sbase
+    #
+    #     return self.Ibus_
+    #
+    # @property
+    # def YLoadBus(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.YloadBus_ is None:
+    #         self.YloadBus_ = self.load_data.get_admittance_injections_per_bus() / self.Sbase
+    #
+    #     return self.YloadBus_
+    #
+    # @property
+    # def Rates(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.rates
+    #
+    # @property
+    # def ContingencyRates(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.contingency_rates
+
+    # @property
+    # def Qmax_bus(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.Qmax_bus_ is None:
+    #         self.Qmax_bus_, self.Qmin_bus_ = self.get_reactive_power_limits()
+    #
+    #     return self.Qmax_bus_
+    #
+    # @property
+    # def Qmin_bus(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.Qmin_bus_ is None:
+    #         self.Qmax_bus_, self.Qmin_bus_ = self.get_reactive_power_limits()
+    #
+    #     return self.Qmin_bus_
+
+    def get_Yshunt_bus(self):
         """
 
         :return:
         """
-        return self.bus_data.original_idx
-
-    @property
-    def original_branch_idx(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.original_idx
-
-    @property
-    def original_load_idx(self):
-        """
-
-        :return:
-        """
-        return self.load_data.original_idx
-
-    @property
-    def original_generator_idx(self):
-        """
-
-        :return:
-        """
-        return self.generator_data.original_idx
-
-    @property
-    def original_battery_idx(self):
-        """
-
-        :return:
-        """
-        return self.battery_data.original_idx
-
-    @property
-    def original_shunt_idx(self):
-        """
-
-        :return:
-        """
-        return self.shunt_data.original_idx
-
-    @property
-    def Vbus(self):
-        """
-
-        :return:
-        """
-        if self.Vbus_ is None:
-            self.Vbus_ = self.bus_data.Vbus
-
-        return self.Vbus_
-
-    @property
-    def Sbus(self) -> CxVec:
-        """
-        Returns the power Injections in per-unit
-        :return: array of power Injections (p.u.)
-        """
-
-        if self.Sbus_ is None:
-            self.Sbus_ = self.get_injections(normalize=True)
-
-        return self.Sbus_
-
-    @property
-    def Pbus(self) -> Vec:
-        """
-        Return real power injections in per-unit
-        :return: array of real power (p.u.)
-        """
-        return self.Sbus.real
-
-    @property
-    def Ibus(self):
-        """
-
-        :return:
-        """
-        if self.Ibus_ is None:
-            self.Ibus_ = self.load_data.get_current_injections_per_bus() / self.Sbase
-
-        return self.Ibus_
-
-    @property
-    def YLoadBus(self):
-        """
-
-        :return:
-        """
-        if self.YloadBus_ is None:
-            self.YloadBus_ = self.load_data.get_admittance_injections_per_bus() / self.Sbase
-
-        return self.YloadBus_
-
-    @property
-    def Rates(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.rates
-
-    @property
-    def ContingencyRates(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.contingency_rates
-
-    @property
-    def Qmax_bus(self):
-        """
-
-        :return:
-        """
-        if self.Qmax_bus_ is None:
-            self.Qmax_bus_, self.Qmin_bus_ = self.compute_reactive_power_limits()
-
-        return self.Qmax_bus_
-
-    @property
-    def Qmin_bus(self):
-        """
-
-        :return:
-        """
-        if self.Qmin_bus_ is None:
-            self.Qmax_bus_, self.Qmin_bus_ = self.compute_reactive_power_limits()
-
-        return self.Qmin_bus_
-
-    @property
-    def Yshunt_from_devices(self):
-        """
-
-        :return:
-        """
-        # compute on demand and store
-        if self.Yshunt_from_devices_ is None:
-            self.Yshunt_from_devices_ = self.shunt_data.get_injections_per_bus() / self.Sbase
-
-        return self.Yshunt_from_devices_
-
-    @property
-    def bus_types(self):
-        """
-
-        :return:
-        """
-        return self.bus_data.bus_types
-
-    @property
-    def bus_installed_power(self):
-        """
-
-        :return:
-        """
-        return self.bus_data.installed_power
-
-    @property
-    def bus_names(self):
-        """
-
-        :return:
-        """
-        return self.bus_data.names
-
-    @property
-    def branch_names(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.names
-
-    @property
-    def rates(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.rates
-
-    @property
-    def contingency_rates(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.contingency_rates
-
-    @property
-    def load_names(self):
-        """
-
-        :return:
-        """
-        return self.load_data.names
-
-    @property
-    def generator_names(self):
-        """
-
-        :return:
-        """
-        return self.generator_data.names
-
-    @property
-    def battery_names(self):
-        """
-
-        :return:
-        """
-        return self.battery_data.names
-
-    @property
-    def shunt_names(self):
-        """
-
-        :return:
-        """
-        return self.shunt_data.names
-
-    @property
-    def hvdc_names(self):
-        """
-
-        :return:
-        """
-        return self.hvdc_data.names
-
-    @property
-    def F(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.F
-
-    @property
-    def T(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.T
-
-    @property
-    def branch_rates(self):
-        """
-
-        :return:
-        """
-        return self.passive_branch_data.rates
-
-    @property
-    def ac_indices(self):
-        """
-        Array of indices of the AC buses
-        :return: array of indices
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.ac
-
-    @property
-    def dc_indices(self):
-        """
-        Array of indices of the DC buses
-        :return: array of indices
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.dc
-
-    @property
-    def Cf(self):
-        """
-        Connectivity matrix of the "from" nodes
-        :return: CSC matrix
-        """
-        # compute on demand and store
-        if self.conn_matrices_ is None:
-            self.conn_matrices_ = self.get_connectivity_matrices()
-
-        return self.conn_matrices_.Cf
-
-    @property
-    def Ct(self):
-        """
-        Connectivity matrix of the "to" nodes
-        :return: CSC matrix
-        """
-        # compute on demand and store
-        if self.conn_matrices_ is None:
-            self.conn_matrices_ = self.get_connectivity_matrices()
-
-        return self.conn_matrices_.Ct
-
-    def get_simulation_indices(self) -> si.SimulationIndices:
+        return self.shunt_data.get_injections_per_bus() / self.Sbase
+    #
+    # @property
+    # def bus_types(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.bus_data.bus_types
+    #
+    # @property
+    # def bus_installed_power(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.bus_data.installed_power
+    #
+    # @property
+    # def bus_names(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.bus_data.names
+    #
+    # @property
+    # def branch_names(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.names
+    #
+    # @property
+    # def rates(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.rates
+    #
+    # @property
+    # def contingency_rates(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.contingency_rates
+    #
+    # @property
+    # def load_names(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.load_data.names
+    #
+    # @property
+    # def generator_names(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.generator_data.names
+    #
+    # @property
+    # def battery_names(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.battery_data.names
+    #
+    # @property
+    # def shunt_names(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.shunt_data.names
+    #
+    # @property
+    # def hvdc_names(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.hvdc_data.names
+
+    # @property
+    # def F(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.F
+    #
+    # @property
+    # def T(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.T
+    #
+    # @property
+    # def branch_rates(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.passive_branch_data.rates
+    #
+    # @property
+    # def ac_indices(self):
+    #     """
+    #     Array of indices of the AC buses
+    #     :return: array of indices
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.ac
+    #
+    # @property
+    # def dc_indices(self):
+    #     """
+    #     Array of indices of the DC buses
+    #     :return: array of indices
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.dc
+
+    # @property
+    # def Cf(self):
+    #     """
+    #     Connectivity matrix of the "from" nodes
+    #     :return: CSC matrix
+    #     """
+    #     # compute on demand and store
+    #     if self.conn_matrices_ is None:
+    #         self.conn_matrices_ = self.get_connectivity_matrices()
+    #
+    #     return self.conn_matrices_.Cf
+    #
+    # @property
+    # def Ct(self):
+    #     """
+    #     Connectivity matrix of the "to" nodes
+    #     :return: CSC matrix
+    #     """
+    #     # compute on demand and store
+    #     if self.conn_matrices_ is None:
+    #         self.conn_matrices_ = self.get_connectivity_matrices()
+    #
+    #     return self.conn_matrices_.Ct
+
+    def get_simulation_indices(self, Sbus: CxVec | None = None) -> si.SimulationIndices:
         """
         Get the simulation indices
         :return: SimulationIndices
         """
+        if Sbus is None:
+            Sbus = self.get_injections()
         return si.SimulationIndices(bus_types=self.bus_data.bus_types,
-                                    Pbus=self.Sbus.real,
+                                    Pbus=Sbus.real,
                                     tap_module_control_mode=self.active_branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.active_branch_data.tap_phase_control_mode,
                                     tap_controlled_buses=self.active_branch_data.tap_controlled_buses,
@@ -909,23 +842,16 @@ class NumericalCircuit:
         """
 
         # compute admittances on demand
-        return ycalc.compute_admittances(
-            R=self.passive_branch_data.R,
-            X=self.passive_branch_data.X,
-            G=self.passive_branch_data.G,
-            B=self.passive_branch_data.B,
-            k=self.passive_branch_data.k,
-            tap_module=self.active_branch_data.tap_module,
-            vtap_f=self.passive_branch_data.virtual_tap_f,
-            vtap_t=self.passive_branch_data.virtual_tap_t,
-            tap_angle=self.active_branch_data.tap_angle,
-            Cf=self.Cf,
-            Ct=self.Ct,
-            Yshunt_bus=self.Yshunt_from_devices,
-            conn=self.passive_branch_data.conn,
-            seq=1,
-            add_windings_phase=False
-        )
+        return ycalc.compute_admittances(R=self.passive_branch_data.R, X=self.passive_branch_data.X,
+                                         G=self.passive_branch_data.G, B=self.passive_branch_data.B,
+                                         k=self.passive_branch_data.k, tap_module=self.active_branch_data.tap_module,
+                                         vtap_f=self.passive_branch_data.virtual_tap_f,
+                                         vtap_t=self.passive_branch_data.virtual_tap_t,
+                                         tap_angle=self.active_branch_data.tap_angle,
+                                         Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
+                                         Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
+                                         Yshunt_bus=self.get_Yshunt_bus(),
+                                         conn=self.passive_branch_data.conn, seq=1)
 
     def get_series_admittance_matrices(self) -> ycalc.SeriesAdmittanceMatrices:
         """
@@ -943,14 +869,14 @@ class NumericalCircuit:
             vtap_t=self.passive_branch_data.virtual_tap_t,
             tap_angle=self.active_branch_data.tap_angle,
             Beq=np.zeros(self.nbr, dtype=float),
-            Cf=self.Cf,
-            Ct=self.Ct,
+            Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
+            Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
             G0sw=np.zeros(self.nbr, dtype=float),
             If=np.zeros(len(self.passive_branch_data)),
             a=np.zeros(self.nbr, dtype=float),
             b=np.zeros(self.nbr, dtype=float),
             c=np.zeros(self.nbr, dtype=float),
-            Yshunt_bus=self.Yshunt_from_devices,
+            Yshunt_bus=self.get_Yshunt_bus(),
         )
 
     def get_fast_decoupled_amittances(self) -> ycalc.FastDecoupledAdmittanceMatrices:
@@ -964,8 +890,8 @@ class NumericalCircuit:
             tap_module=self.active_branch_data.tap_module,
             vtap_f=self.passive_branch_data.virtual_tap_f,
             vtap_t=self.passive_branch_data.virtual_tap_t,
-            Cf=self.Cf,
-            Ct=self.Ct,
+            Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
+            Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
         )
 
     def get_linear_admittance_matrices(self) -> ycalc.LinearAdmittanceMatrices:
@@ -979,289 +905,290 @@ class NumericalCircuit:
             R=self.passive_branch_data.R,
             m=self.active_branch_data.tap_module,
             active=self.passive_branch_data.active,
-            Cf=self.Cf,
-            Ct=self.Ct,
+            Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
+            Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
             ac=self.ac_indices,
             dc=self.dc_indices
         )
 
-    @property
-    def Ybus(self):
-        """
-        Admittance matrix
-        :return: CSC matrix
-        """
+    #
+    # @property
+    # def Ybus(self):
+    #     """
+    #     Admittance matrix
+    #     :return: CSC matrix
+    #     """
+    #
+    #     # compute admittances on demand
+    #     if self.admittances_ is None:
+    #         self.admittances_ = self.get_admittance_matrices()
+    #
+    #     return self.admittances_.Ybus.tocsc()
+    #
+    # @property
+    # def Yf(self):
+    #     """
+    #     Admittance matrix of the "from" nodes with the Branches
+    #     :return: CSC matrix
+    #     """
+    #     if self.admittances_ is None:
+    #         self.admittances_ = self.get_admittance_matrices()
+    #
+    #     return self.admittances_.Yf
+    #
+    # @property
+    # def Yt(self):
+    #     """
+    #     Admittance matrix of the "to" nodes with the Branches
+    #     :return: CSC matrix
+    #     """
+    #     if self.admittances_ is None:
+    #         self.admittances_ = self.get_admittance_matrices()
+    #
+    #     return self.admittances_.Yt
+    #
+    # @property
+    # def Yseries(self):
+    #     """
+    #     Admittance matrix of the series elements of the pi model of the Branches
+    #     :return: CSC matrix
+    #     """
+    #     # compute admittances on demand
+    #     if self.series_admittances_ is None:
+    #         self.series_admittances_ = self.get_series_admittance_matrices()
+    #
+    #     return self.series_admittances_.Yseries
+    #
+    # @property
+    # def Yshunt(self):
+    #     """
+    #     Array of shunt admittances of the pi model of the Branches (used in HELM mostly)
+    #     :return: Array of complex values
+    #     """
+    #     if self.series_admittances_ is None:
+    #         self.series_admittances_ = self.get_series_admittance_matrices()
+    #
+    #     return self.series_admittances_.Yshunt
+    #
+    # @property
+    # def B1(self):
+    #     """
+    #     B' matrix of the fast decoupled method
+    #     :return:
+    #     """
+    #     if self.fast_decoupled_admittances_ is None:
+    #         self.fast_decoupled_admittances_ = self.get_fast_decoupled_amittances()
+    #
+    #     return self.fast_decoupled_admittances_.B1
+    #
+    # @property
+    # def B2(self):
+    #     """
+    #     B'' matrix of the fast decoupled method
+    #     :return:
+    #     """
+    #     if self.fast_decoupled_admittances_ is None:
+    #         self.fast_decoupled_admittances_ = self.get_fast_decoupled_amittances()
+    #
+    #     return self.fast_decoupled_admittances_.B2
+    #
+    # @property
+    # def Bbus(self):
+    #     """
+    #     Susceptance matrix for the linear methods
+    #     :return:
+    #     """
+    #     if self.linear_admittances_ is None:
+    #         self.linear_admittances_ = self.get_linear_admittance_matrices()
+    #
+    #     return self.linear_admittances_.Bbus
+    #
+    # @property
+    # def Bf(self):
+    #     """
+    #     Susceptance matrix of the "from" nodes to the Branches
+    #     :return:
+    #     """
+    #     if self.linear_admittances_ is None:
+    #         self.linear_admittances_ = self.get_linear_admittance_matrices()
+    #
+    #     return self.linear_admittances_.Bf
+    #
+    # @property
+    # def Bpqpv(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.linear_admittances_ is None:
+    #         self.linear_admittances_ = self.get_linear_admittance_matrices()
+    #
+    #     return self.linear_admittances_.get_Bred(pqpv=self.pqpv)
+    #
+    # @property
+    # def Bref(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.linear_admittances_ is None:
+    #         self.linear_admittances_ = self.get_linear_admittance_matrices()
+    #
+    #     return self.linear_admittances_.get_Bslack(pqpv=self.pqpv, vd=self.vd)
+    #
+    # @property
+    # def vd(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.vd
+    #
+    # @property
+    # def pq(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.pq
+    #
+    # @property
+    # def pv(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.pv
+    #
+    # @property
+    # def pqv(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.pqv
+    #
+    # @property
+    # def p(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.p
+    #
+    # @property
+    # def pqpv(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     # TODO: rename to "no_slack"
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.no_slack
+    #
+    # @property
+    # def any_control(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     return self.active_branch_data.any_pf_control or self.nvsc > 0
+    #
+    # @property
+    # def k_pf_tau(self):
+    #     """
+    #     Get k_pf_tau
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.k_pf_tau
+    #
+    # @property
+    # def k_qf_beq(self):
+    #     """
+    #     Get k_qf_beq
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.k_qf_beq
+    #
+    # @property
+    # def k_v_m(self):
+    #     """
+    #     Get k_v_m
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.k_v_m
+    #
+    # @property
+    # def k_m(self):
+    #     """
+    #     Get k_m
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.k_m
+    #
+    # @property
+    # def k_tau(self):
+    #     """
+    #     Get k_tau
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.k_tau
+    #
+    # @property
+    # def k_mtau(self):
+    #     """
+    #     Get k_mtau
+    #     :return:
+    #     """
+    #     if self.simulation_indices_ is None:
+    #         self.simulation_indices_ = self.get_simulation_indices()
+    #
+    #     return self.simulation_indices_.k_mtau
 
-        # compute admittances on demand
-        if self.admittances_ is None:
-            self.admittances_ = self.get_admittance_matrices()
+    # @property
+    # def structs_dict(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if self.structs_dict_ is None:
+    #         self.structs_dict_ = self.get_structs_idtag_dict()
+    #
+    #     return self.get_structs_idtag_dict()
 
-        return self.admittances_.Ybus.tocsc()
-
-    @property
-    def Yf(self):
-        """
-        Admittance matrix of the "from" nodes with the Branches
-        :return: CSC matrix
-        """
-        if self.admittances_ is None:
-            self.admittances_ = self.get_admittance_matrices()
-
-        return self.admittances_.Yf
-
-    @property
-    def Yt(self):
-        """
-        Admittance matrix of the "to" nodes with the Branches
-        :return: CSC matrix
-        """
-        if self.admittances_ is None:
-            self.admittances_ = self.get_admittance_matrices()
-
-        return self.admittances_.Yt
-
-    @property
-    def Yseries(self):
-        """
-        Admittance matrix of the series elements of the pi model of the Branches
-        :return: CSC matrix
-        """
-        # compute admittances on demand
-        if self.series_admittances_ is None:
-            self.series_admittances_ = self.get_series_admittance_matrices()
-
-        return self.series_admittances_.Yseries
-
-    @property
-    def Yshunt(self):
-        """
-        Array of shunt admittances of the pi model of the Branches (used in HELM mostly)
-        :return: Array of complex values
-        """
-        if self.series_admittances_ is None:
-            self.series_admittances_ = self.get_series_admittance_matrices()
-
-        return self.series_admittances_.Yshunt
-
-    @property
-    def B1(self):
-        """
-        B' matrix of the fast decoupled method
-        :return:
-        """
-        if self.fast_decoupled_admittances_ is None:
-            self.fast_decoupled_admittances_ = self.get_fast_decoupled_amittances()
-
-        return self.fast_decoupled_admittances_.B1
-
-    @property
-    def B2(self):
-        """
-        B'' matrix of the fast decoupled method
-        :return:
-        """
-        if self.fast_decoupled_admittances_ is None:
-            self.fast_decoupled_admittances_ = self.get_fast_decoupled_amittances()
-
-        return self.fast_decoupled_admittances_.B2
-
-    @property
-    def Bbus(self):
-        """
-        Susceptance matrix for the linear methods
-        :return:
-        """
-        if self.linear_admittances_ is None:
-            self.linear_admittances_ = self.get_linear_admittance_matrices()
-
-        return self.linear_admittances_.Bbus
-
-    @property
-    def Bf(self):
-        """
-        Susceptance matrix of the "from" nodes to the Branches
-        :return:
-        """
-        if self.linear_admittances_ is None:
-            self.linear_admittances_ = self.get_linear_admittance_matrices()
-
-        return self.linear_admittances_.Bf
-
-    @property
-    def Bpqpv(self):
-        """
-
-        :return:
-        """
-        if self.linear_admittances_ is None:
-            self.linear_admittances_ = self.get_linear_admittance_matrices()
-
-        return self.linear_admittances_.get_Bred(pqpv=self.pqpv)
-
-    @property
-    def Bref(self):
-        """
-
-        :return:
-        """
-        if self.linear_admittances_ is None:
-            self.linear_admittances_ = self.get_linear_admittance_matrices()
-
-        return self.linear_admittances_.get_Bslack(pqpv=self.pqpv, vd=self.vd)
-
-    @property
-    def vd(self):
-        """
-
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.vd
-
-    @property
-    def pq(self):
-        """
-
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.pq
-
-    @property
-    def pv(self):
-        """
-
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.pv
-
-    @property
-    def pqv(self):
-        """
-
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.pqv
-
-    @property
-    def p(self):
-        """
-
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.p
-
-    @property
-    def pqpv(self):
-        """
-
-        :return:
-        """
-        # TODO: rename to "no_slack"
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.no_slack
-
-    @property
-    def any_control(self):
-        """
-
-        :return:
-        """
-        return self.active_branch_data.any_pf_control or self.nvsc > 0
-
-    @property
-    def k_pf_tau(self):
-        """
-        Get k_pf_tau
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_pf_tau
-
-    @property
-    def k_qf_beq(self):
-        """
-        Get k_qf_beq
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_qf_beq
-
-    @property
-    def k_v_m(self):
-        """
-        Get k_v_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_v_m
-
-    @property
-    def k_m(self):
-        """
-        Get k_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_m
-
-    @property
-    def k_tau(self):
-        """
-        Get k_tau
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_tau
-
-    @property
-    def k_mtau(self):
-        """
-        Get k_mtau
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_mtau
-
-    @property
-    def structs_dict(self):
-        """
-
-        :return:
-        """
-        if self.structs_dict_ is None:
-            self.structs_dict_ = self.get_structs_idtag_dict()
-
-        return self.structs_dict_
-
-    def compute_reactive_power_limits(self) -> Tuple[Vec, Vec]:
+    def get_reactive_power_limits(self) -> Tuple[Vec, Vec]:
         """
         compute the reactive power limits in place
         :return: Qmax_bus, Qmin_bus in per unit
@@ -1301,7 +1228,8 @@ class NumericalCircuit:
         :param buses_areas_2: Area to
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
-        return get_inter_areas_branch(self.passive_branch_data.F, self.passive_branch_data.T, buses_areas_1, buses_areas_2)
+        return get_inter_areas_branch(self.passive_branch_data.F, self.passive_branch_data.T, buses_areas_1,
+                                      buses_areas_2)
 
     def get_inter_areas_hvdc(self, buses_areas_1, buses_areas_2):
         """
@@ -1494,14 +1422,14 @@ class NumericalCircuit:
 
         elif structure_type == 'Cf':
             df = pd.DataFrame(
-                data=self.Cf.toarray(),
+                data=self.passive_branch_data.C_branch_bus_f.toarray(),
                 columns=self.bus_data.names,
                 index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Ct':
             df = pd.DataFrame(
-                data=self.Ct.toarray(),
+                data=self.passive_branch_data.C_branch_bus_t.toarray(),
                 columns=self.bus_data.names,
                 index=self.passive_branch_data.names,
             )
@@ -2006,26 +1934,18 @@ class NumericalCircuit:
                  tol, 'BranchData', 'vtap_t', logger)
 
         # bus data
-        CheckArr(self.bus_data.active, nc_2.bus_data.active, tol, 'BusData',
-                 'active', logger)
-        CheckArr(self.bus_data.Vbus.real, nc_2.bus_data.Vbus.real, tol, 'BusData',
-                 'V0', logger)
-        CheckArr(self.bus_data.installed_power, nc_2.bus_data.installed_power, tol,
-                 'BusData', 'installed power', logger)
-        CheckArr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData',
-                 'types', logger)
+        CheckArr(self.bus_data.active, nc_2.bus_data.active, tol, 'BusData', 'active', logger)
+        CheckArr(self.bus_data.Vbus.real, nc_2.bus_data.Vbus.real, tol, 'BusData', 'V0', logger)
+        CheckArr(self.bus_data.installed_power, nc_2.bus_data.installed_power, tol, 'BusData', 'installed power',
+                 logger)
+        CheckArr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData', 'types', logger)
 
         # generator data
-        CheckArr(self.generator_data.active, nc_2.generator_data.active, tol,
-                 'GenData', 'active', logger)
+        CheckArr(self.generator_data.active, nc_2.generator_data.active, tol, 'GenData', 'active', logger)
         CheckArr(self.generator_data.p, nc_2.generator_data.p, tol, 'GenData', 'P', logger)
-        # CheckArr(nc_newton.generator_data.generator_pf, nc_gc.generator_data.generator_pf, tol, 'GenData', 'Pf')
-        CheckArr(self.generator_data.v, nc_2.generator_data.v, tol, 'GenData',
-                 'Vset', logger)
-        CheckArr(self.generator_data.qmin, nc_2.generator_data.qmin, tol,
-                 'GenData', 'Qmin', logger)
-        CheckArr(self.generator_data.qmax, nc_2.generator_data.qmax, tol,
-                 'GenData', 'Qmax', logger)
+        CheckArr(self.generator_data.v, nc_2.generator_data.v, tol, 'GenData', 'Vset', logger)
+        CheckArr(self.generator_data.qmin, nc_2.generator_data.qmin, tol, 'GenData', 'Qmin', logger)
+        CheckArr(self.generator_data.qmax, nc_2.generator_data.qmax, tol, 'GenData', 'Qmax', logger)
 
         # load data
         CheckArr(self.load_data.active, nc_2.load_data.active, tol, 'LoadData',
@@ -2035,50 +1955,45 @@ class NumericalCircuit:
         CheckArr(self.load_data.Y, nc_2.load_data.Y, tol, 'LoadData', 'Y', logger)
 
         # shunt
-        CheckArr(self.shunt_data.active, nc_2.shunt_data.active, tol, 'ShuntData',
-                 'active', logger)
-        CheckArr(self.shunt_data.Y, nc_2.shunt_data.Y, tol,
-                 'ShuntData', 'S', logger)
+        CheckArr(self.shunt_data.active, nc_2.shunt_data.active, tol, 'ShuntData', 'active', logger)
+        CheckArr(self.shunt_data.Y, nc_2.shunt_data.Y, tol, 'ShuntData', 'S', logger)
         CheckArr(self.shunt_data.get_injections_per_bus(),
-                 nc_2.shunt_data.get_injections_per_bus(), tol, 'ShuntData',
-                 'Injections per bus', logger)
+                 nc_2.shunt_data.get_injections_per_bus(), tol, 'ShuntData', 'Injections per bus', logger)
 
         # --------------------------------------------------------------------------------------------------------------
         #  Compare arrays and data
         # --------------------------------------------------------------------------------------------------------------
+        sim_idx = self.get_simulation_indices()
+        sim_idx2 = nc_2.get_simulation_indices()
 
-        CheckArr(self.Sbus.real, nc_2.Sbus.real, tol, 'Pbus', 'P', logger)
-        CheckArr(self.Sbus.imag, nc_2.Sbus.imag, tol, 'Qbus', 'Q', logger)
+        Sbus = self.get_injections()
+        Sbus2 = nc_2.get_injections()
 
-        CheckArr(self.pq, nc_2.pq, tol, 'Types', 'pq', logger)
-        CheckArr(self.pv, nc_2.pv, tol, 'Types', 'pv', logger)
-        CheckArr(self.vd, nc_2.vd, tol, 'Types', 'vd', logger)
+        CheckArr(Sbus.real, Sbus2.real, tol, 'Pbus', 'P', logger)
+        CheckArr(Sbus.imag, Sbus2.imag, tol, 'Qbus', 'Q', logger)
 
-        CheckArr(self.Cf.toarray(), nc_2.Cf.toarray(), tol, 'Connectivity',
-                 'Cf (dense)', logger)
-        CheckArr(self.Ct.toarray(), nc_2.Ct.toarray(), tol, 'Connectivity',
-                 'Ct (dense)', logger)
-        CheckArr(self.Cf.tocsc().data, nc_2.Cf.tocsc().data, tol, 'Connectivity',
-                 'Cf', logger)
-        CheckArr(self.Ct.tocsc().data, nc_2.Ct.tocsc().data, tol, 'Connectivity',
-                 'Ct', logger)
+        CheckArr(sim_idx.pq, sim_idx2.pq, tol, 'Types', 'pq', logger)
+        CheckArr(sim_idx.pv, sim_idx2.pv, tol, 'Types', 'pv', logger)
+        CheckArr(sim_idx.vd, sim_idx2.vd, tol, 'Types', 'vd', logger)
 
-        CheckArr(self.Ybus.toarray(), nc_2.Ybus.toarray(), tol, 'Admittances',
-                 'Ybus (dense)', logger)
-        CheckArr(self.Ybus.tocsc().data.real, nc_2.Ybus.tocsc().data.real, tol,
-                 'Admittances', 'Ybus (real)', logger)
-        CheckArr(self.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
-                 'Admittances', 'Ybus (imag)', logger)
-        CheckArr(self.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.real,
-                 tol, 'Admittances', 'Yf (real)', logger)
-        CheckArr(self.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
-                 'Admittances', 'Yf (imag)', logger)
-        CheckArr(self.Yt.tocsc().data.real, nc_2.Yt.tocsc().data.real, tol,
-                 'Admittances', 'Yt (real)', logger)
-        CheckArr(self.Yt.tocsc().data.imag, nc_2.Yt.tocsc().data.imag, tol,
-                 'Admittances', 'Yt (imag)', logger)
+        conn = self.get_connectivity_matrices()
+        conn2 = nc_2.get_connectivity_matrices()
 
-        CheckArr(self.Vbus, nc_2.Vbus, tol, 'NumericCircuit', 'V0', logger)
+        CheckArr(conn.Cf.toarray(), conn2.Cf.toarray(), tol, 'Connectivity', 'Cf (dense)', logger)
+        CheckArr(conn.Ct.toarray(), conn2.Ct.toarray(), tol, 'Connectivity', 'Ct (dense)', logger)
+        CheckArr(conn.Cf.tocsc().data, conn2.Cf.tocsc().data, tol, 'Connectivity', 'Cf', logger)
+        CheckArr(conn.Ct.tocsc().data, conn2.Ct.tocsc().data, tol, 'Connectivity', 'Ct', logger)
+
+        adm = self.get_admittance_matrices()
+        adm2 = nc_2.get_admittance_matrices()
+
+        CheckArr(adm.Ybus.toarray(), adm2.Ybus.toarray(), tol, 'Adm.', 'Ybus (dense)', logger)
+        CheckArr(adm.Ybus.tocsc().data.real, adm2.Ybus.tocsc().data.real, tol, 'Adm.', 'Ybus (real)', logger)
+        CheckArr(adm.Ybus.tocsc().data.imag, adm2.Ybus.tocsc().data.imag, tol, 'Adm.', 'Ybus (imag)', logger)
+        CheckArr(adm.Yf.tocsc().data.real, adm2.Yf.tocsc().data.real, tol, 'Adm.', 'Yf (real)', logger)
+        CheckArr(adm.Yf.tocsc().data.imag, adm2.Yf.tocsc().data.imag, tol, 'Adm.', 'Yf (imag)', logger)
+        CheckArr(adm.Yt.tocsc().data.real, adm2.Yt.tocsc().data.real, tol, 'Adm.', 'Yt (real)', logger)
+        CheckArr(adm.Yt.tocsc().data.imag, adm2.Yt.tocsc().data.imag, tol, 'Adm.', 'Yt (imag)', logger)
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger

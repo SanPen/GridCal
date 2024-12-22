@@ -468,7 +468,7 @@ class SeriesAdmittanceMatrices:
     Admittance matrices for HELM and the AC linear methods
     """
 
-    def __init__(self, Yseries: sp.csc_matrix, Yshunt: sp.csc_matrix):
+    def __init__(self, Yseries: sp.csc_matrix, Yshunt: CxVec):
         self.Yseries = Yseries
         self.Yshunt = Yshunt
 

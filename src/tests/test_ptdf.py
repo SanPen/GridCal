@@ -375,13 +375,14 @@ def test_lodf_psse() -> None:
                     branchpsse = -branchpsse
                 else:
                     print('La línea {} no se ha calculado por PSSe'.format(i))
+                    branchpsse = None
 
-                if not np.allclose(branchgridcal, branchpsse, atol=1e-3):
-                    print('------------ XXXX LODFs not equal XXXX ------------ ')
-                    print('------------------Difference: {}'.format(np.sum(branchgridcal - branchpsse)))
-                    counter += 1
-                # else:
-                #    print('------------LODFs CHECKED')
+                if branchpsse is not None:
+                    if not np.allclose(branchgridcal, branchpsse, atol=1e-3):
+                        print('------------ XXXX LODFs not equal XXXX ------------ ')
+                        print('------------------Difference: {}'.format(np.sum(branchgridcal - branchpsse)))
+                        counter += 1
+
             print('-- TOTAL FAILURES: {}'.format(counter))
         else:
             print(fname, "does not exists...")

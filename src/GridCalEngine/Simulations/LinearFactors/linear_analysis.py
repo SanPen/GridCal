@@ -662,8 +662,8 @@ class LinearAnalysis:
                         self.PTDF[np.ix_(island.original_branch_idx, island.original_bus_idx)] = ptdf_island
 
                         # compute the island LODF
-                        lodf_island = make_lodf(Cf=island.Cf,
-                                                Ct=island.Ct,
+                        lodf_island = make_lodf(Cf=island.passive_branch_data.C_branch_bus_f.tocsc(),
+                                                Ct=island.passive_branch_data.C_branch_bus_t.tocsc(),
                                                 PTDF=ptdf_island,
                                                 correct_values=self.correct_values)
 
@@ -679,15 +679,18 @@ class LinearAnalysis:
                     self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
 
+            idx = islands[0].get_simulation_indices()
+            adml = islands[0].get_linear_admittance_matrices()
+
             # there is only 1 island, compute the PTDF
-            self.PTDF = make_ptdf(Bpqpv=islands[0].Bpqpv,
-                                  Bf=islands[0].Bf,
-                                  pqpv=islands[0].pqpv,
+            self.PTDF = make_ptdf(Bpqpv=adml.Bpqpv,
+                                  Bf=adml.Bf,
+                                  pqpv=idx.pqpv,
                                   distribute_slack=self.distributed_slack)
 
             # compute the LODF upon the PTDF
-            self.LODF = make_lodf(Cf=islands[0].Cf,
-                                  Ct=islands[0].Ct,
+            self.LODF = make_lodf(Cf=islands[0].passive_branch_data.C_branch_bus_f.tocsc(),
+                                  Ct=islands[0].passive_branch_data.C_branch_bus_t.tocsc(),
                                   PTDF=self.PTDF,
                                   correct_values=self.correct_values)
 
@@ -700,7 +703,7 @@ class LinearAnalysis:
         return make_transfer_limits(
             ptdf=self.PTDF,
             flows=flows,
-            rates=self.numerical_circuit.Rates
+            rates=self.numerical_circuit.passive_branch_data.rates
         )
 
     def get_flows(self, Sbus: Union[CxVec, CxMat]) -> Union[CxVec, CxMat]:
