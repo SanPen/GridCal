@@ -2552,8 +2552,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         ytf = -ys / (m * np.exp(1.0j * tau) * vtap_t * vtap_f)
         ytt = (ys + bc2) / (vtap_t * vtap_t)
 
-        If = Vf * yff + Vt * yft  # TODO: review if this is correct
-        It = Vt * ytt + Vf * ytf  # TODO: review if this is correct
+        If = Vf * yff + Vt * yft
+        It = Vt * ytt + Vf * ytf
         Sf = Vf * np.conj(If)
         St = Vt * np.conj(It)
 
@@ -2632,7 +2632,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return NumericPowerFlowResults(
             V=self.V,
-            Scalc=self.Scalc,
+            Scalc=self.Scalc * self.nc.Sbase,
             m=expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0),
             tau=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
             Sf=Sf * self.nc.Sbase,

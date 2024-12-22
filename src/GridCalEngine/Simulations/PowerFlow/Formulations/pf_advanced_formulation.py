@@ -901,7 +901,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         )
 
         return NumericPowerFlowResults(V=self.V,
-                                       Scalc=self.Scalc,
+                                       Scalc=self.Scalc * self.nc.Sbase,
                                        m=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
                                        tau=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
                                        Sf=Sf,

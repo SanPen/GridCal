@@ -263,7 +263,7 @@ class PfBasicFormulation(PfFormulationTemplate):
             Sbase=self.nc.Sbase)
 
         return NumericPowerFlowResults(V=self.V,
-                                       Scalc=self.Scalc,
+                                       Scalc=self.Scalc * self.nc.Sbase,
                                        m=np.ones(self.nc.nbr, dtype=float),
                                        tau=np.zeros(self.nc.nbr, dtype=float),
                                        Sf=Sf,
