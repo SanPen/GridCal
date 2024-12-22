@@ -702,9 +702,17 @@ def test_nc_active_works() -> None:
     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
     options = PowerFlowOptions(solver_type=SolverType.DC)
     # base_res = multi_island_pf_nc(nc=nc, options=options)
+    adm_base = nc.get_admittance_matrices()
 
     for k in range(nc.passive_branch_data.nelm):
         nc.passive_branch_data.active[k] = 0
+
+        adm_k = nc.get_admittance_matrices()
+
+        assert not np.allclose(adm_base.yff, adm_k.yff, atol=1e-6)
+        assert not np.allclose(adm_base.yft, adm_k.yft, atol=1e-6)
+        assert not np.allclose(adm_base.ytf, adm_k.ytf, atol=1e-6)
+        assert not np.allclose(adm_base.ytt, adm_k.ytt, atol=1e-6)
 
         res = multi_island_pf_nc(nc=nc, options=options)
 

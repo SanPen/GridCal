@@ -31,8 +31,8 @@ def short_circuit_post_process(
     :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
     """
 
-    Vf = calculation_inputs.passive_branch_data.C_branch_bus_f * V
-    Vt = calculation_inputs.passive_branch_data.C_branch_bus_t * V
+    Vf = calculation_inputs.passive_branch_data.Cf * V
+    Vt = calculation_inputs.passive_branch_data.Ct * V
 
     # Branches current, loading, etc
     If = Yf * V
@@ -140,8 +140,8 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                vtap_f=nc.passive_branch_data.virtual_tap_f,
                                vtap_t=nc.passive_branch_data.virtual_tap_t,
                                tap_angle=nc.active_branch_data.tap_angle,
-                               Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
-                               Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
+                               Cf=nc.passive_branch_data.Cf.tocsc(),
+                               Ct=nc.passive_branch_data.Ct.tocsc(),
                                Yshunt_bus=Yshunt_bus0,
                                conn=nc.passive_branch_data.conn,
                                seq=0,
@@ -160,8 +160,8 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                vtap_f=nc.passive_branch_data.virtual_tap_f,
                                vtap_t=nc.passive_branch_data.virtual_tap_t,
                                tap_angle=nc.active_branch_data.tap_angle,
-                               Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
-                               Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
+                               Cf=nc.passive_branch_data.Cf.tocsc(),
+                               Ct=nc.passive_branch_data.Ct.tocsc(),
                                Yshunt_bus=Yshunt_bus1,
                                conn=nc.passive_branch_data.conn,
                                seq=1,
@@ -180,8 +180,8 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                vtap_f=nc.passive_branch_data.virtual_tap_f,
                                vtap_t=nc.passive_branch_data.virtual_tap_t,
                                tap_angle=nc.active_branch_data.tap_angle,
-                               Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
-                               Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
+                               Cf=nc.passive_branch_data.Cf.tocsc(),
+                               Ct=nc.passive_branch_data.Ct.tocsc(),
                                Yshunt_bus=Yshunt_bus2,
                                conn=nc.passive_branch_data.conn,
                                seq=2,
@@ -218,8 +218,8 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                      vtap_f=nc.passive_branch_data.virtual_tap_f,
                                      vtap_t=nc.passive_branch_data.virtual_tap_t,
                                      tap_angle=nc.active_branch_data.tap_angle,
-                                     Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
-                                     Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
+                                     Cf=nc.passive_branch_data.Cf.tocsc(),
+                                     Ct=nc.passive_branch_data.Ct.tocsc(),
                                      Yshunt_bus=np.zeros(nbus, dtype=complex),
                                      conn=nc.passive_branch_data.conn,
                                      seq=1,

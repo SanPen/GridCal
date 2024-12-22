@@ -669,8 +669,8 @@ class LinearAnalysis:
                                          island.bus_data.original_idx)] = ptdf_island
 
                         # compute the island LODF
-                        lodf_island = make_lodf(Cf=island.passive_branch_data.C_branch_bus_f.tocsc(),
-                                                Ct=island.passive_branch_data.C_branch_bus_t.tocsc(),
+                        lodf_island = make_lodf(Cf=island.passive_branch_data.Cf.tocsc(),
+                                                Ct=island.passive_branch_data.Ct.tocsc(),
                                                 PTDF=ptdf_island,
                                                 correct_values=self.correct_values)
 
@@ -698,8 +698,8 @@ class LinearAnalysis:
                                   distribute_slack=self.distributed_slack)
 
             # compute the LODF upon the PTDF
-            self.LODF = make_lodf(Cf=islands[0].passive_branch_data.C_branch_bus_f.tocsc(),
-                                  Ct=islands[0].passive_branch_data.C_branch_bus_t.tocsc(),
+            self.LODF = make_lodf(Cf=islands[0].passive_branch_data.Cf.tocsc(),
+                                  Ct=islands[0].passive_branch_data.Ct.tocsc(),
                                   PTDF=self.PTDF,
                                   correct_values=self.correct_values)
 

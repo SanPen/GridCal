@@ -146,7 +146,7 @@ class PassiveBranchData(BranchParentData):
         :return: array of island branch indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(C_element_bus=self.C_branch_bus_f + self.C_branch_bus_t,
+            return tp.get_elements_of_the_island(C_element_bus=self.Cf + self.Ct,
                                                  island=bus_idx,
                                                  active=self.active)
         else:

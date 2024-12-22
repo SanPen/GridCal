@@ -73,8 +73,8 @@ def calc_V_outage(nc: NumericalCircuit,
                               vtap_f=nc.passive_branch_data.virtual_tap_f[contingency_br_indices],
                               vtap_t=nc.passive_branch_data.virtual_tap_t[contingency_br_indices],
                               tap_angle=nc.active_branch_data.tap_angle[contingency_br_indices],
-                              Cf=nc.passive_branch_data.C_branch_bus_f[contingency_br_indices, :],
-                              Ct=nc.passive_branch_data.C_branch_bus_t[contingency_br_indices, :],
+                              Cf=nc.passive_branch_data.Cf[contingency_br_indices, :],
+                              Ct=nc.passive_branch_data.Ct[contingency_br_indices, :],
                               Yshunt_bus=np.zeros(nc.nbus),
                               conn=nc.passive_branch_data.conn[contingency_br_indices],
                               seq=1,
@@ -104,7 +104,7 @@ def calc_V_outage(nc: NumericalCircuit,
                                            max_coeff=10)
 
     # compute flows
-    Sf = (nc.passive_branch_data.C_branch_bus_f * V) * np.conj(adm.Yf * V) * nc.Sbase
+    Sf = (nc.passive_branch_data.Cf * V) * np.conj(adm.Yf * V) * nc.Sbase
 
     # compute contingency loading
     loading = Sf / (nc.passive_branch_data.rates + 1e-9)

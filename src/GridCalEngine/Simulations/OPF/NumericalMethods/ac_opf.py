@@ -680,7 +680,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     n_disp_hvdc = len(hvdc_disp_idx)
     f_disp_hvdc = nc.hvdc_data.F[hvdc_disp_idx]
     t_disp_hvdc = nc.hvdc_data.T[hvdc_disp_idx]
-    P_hvdc_max = nc.hvdc_data.rate[hvdc_disp_idx]
+    P_hvdc_max = nc.hvdc_data.rates[hvdc_disp_idx]
 
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
@@ -861,7 +861,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     hvdc_power = nc.hvdc_data.Pset.copy()
     hvdc_power[hvdc_disp_idx] = Pfdc
-    hvdc_loading = hvdc_power / (nc.hvdc_data.rate + 1e-9)
+    hvdc_loading = hvdc_power / (nc.hvdc_data.rates + 1e-9)
     tap_module = np.zeros(nc.nbr)
     tap_phase = np.zeros(nc.nbr)
     tap_module[k_m] = tapm

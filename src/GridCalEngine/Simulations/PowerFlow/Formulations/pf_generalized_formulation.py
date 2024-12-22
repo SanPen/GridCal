@@ -1207,8 +1207,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=tap_angle,
-            Cf=self.nc.passive_branch_data.C_branch_bus_f.tocsc(),
-            Ct=self.nc.passive_branch_data.C_branch_bus_t.tocsc(),
+            Cf=self.nc.passive_branch_data.Cf.tocsc(),
+            Ct=self.nc.passive_branch_data.Ct.tocsc(),
             Yshunt_bus=self.nc.get_Yshunt_bus(),
             conn=self.nc.passive_branch_data.conn,
             seq=1,
@@ -1368,16 +1368,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                + ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
-                   + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+                + ((Pf + 1j * Qf)[self.cg_acdc] @ self.nc.vsc_data.Cf
+                   + (Pt + 1j * Qt)[self.cg_acdc] @ self.nc.vsc_data.Ct)
 
                 # add contribution of HVDC link
-                + ((Pf + 1j * Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
-                   + (Pt + 1j * Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
+                + ((Pf + 1j * Qf)[self.cg_hvdc] @ self.nc.hvdc_data.Cf
+                   + (Pt + 1j * Qt)[self.cg_hvdc] @ self.nc.hvdc_data.Ct)
 
                 # add contribution of transformer
-                + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
-                   + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr, :])
+                + ((Pf + 1j * Qf)[self.cg_pttr] @ self.nc.passive_branch_data.Cf[self.cg_pttr, :]
+                   + (Pt + 1j * Qt)[self.cg_pttr] @ self.nc.passive_branch_data.Ct[self.cg_pttr, :])
 
         )
 
@@ -1489,16 +1489,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Scalc - Sbus
 
                 # add contribution of acdc link
-                + ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_f
-                   + (self.Pt + 1j * self.Qt)[self.cg_acdc] @ self.nc.vsc_data.C_branch_bus_t)
+                + ((self.Pf + 1j * self.Qf)[self.cg_acdc] @ self.nc.vsc_data.Cf
+                   + (self.Pt + 1j * self.Qt)[self.cg_acdc] @ self.nc.vsc_data.Ct)
 
                 # add contribution of HVDC link
-                + ((self.Pf + 1j * self.Qf)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_f
-                   + (self.Pt + 1j * self.Qt)[self.cg_hvdc] @ self.nc.hvdc_data.C_hvdc_bus_t)
+                + ((self.Pf + 1j * self.Qf)[self.cg_hvdc] @ self.nc.hvdc_data.Cf
+                   + (self.Pt + 1j * self.Qt)[self.cg_hvdc] @ self.nc.hvdc_data.Ct)
 
                 # add contribution of transformer
-                + ((self.Pf + 1j * self.Qf)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_f[self.cg_pttr, :]
-                   + (self.Pt + 1j * self.Qt)[self.cg_pttr] @ self.nc.passive_branch_data.C_branch_bus_t[self.cg_pttr,
+                + ((self.Pf + 1j * self.Qf)[self.cg_pttr] @ self.nc.passive_branch_data.Cf[self.cg_pttr, :]
+                   + (self.Pt + 1j * self.Qt)[self.cg_pttr] @ self.nc.passive_branch_data.Ct[self.cg_pttr,
                                                               :])
         )
 
@@ -1776,14 +1776,14 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 ig_pttr=self.indices.cg_pttr,
                 ig_qttr=self.indices.cg_qttr,
                 ig_contrbr=self.indices.cg_qttr,
-                Cf_acdc=self.nc.vsc_data.C_branch_bus_f,
-                Ct_acdc=self.nc.vsc_data.C_branch_bus_t,
-                Cf_hvdc=self.nc.hvdc_data.C_hvdc_bus_f,
-                Ct_hvdc=self.nc.hvdc_data.C_hvdc_bus_t,
-                Cf_contbr=self.nc.passive_branch_data.C_branch_bus_f,
-                Ct_contbr=self.nc.passive_branch_data.C_branch_bus_t,
-                Cf_branch=self.nc.passive_branch_data.C_branch_bus_f,
-                Ct_branch=self.nc.passive_branch_data.C_branch_bus_t,
+                Cf_acdc=self.nc.vsc_data.Cf,
+                Ct_acdc=self.nc.vsc_data.Ct,
+                Cf_hvdc=self.nc.hvdc_data.Cf,
+                Ct_hvdc=self.nc.hvdc_data.Ct,
+                Cf_contbr=self.nc.passive_branch_data.Cf,
+                Ct_contbr=self.nc.passive_branch_data.Ct,
+                Cf_branch=self.nc.passive_branch_data.Cf,
+                Ct_branch=self.nc.passive_branch_data.Ct,
                 alpha1=self.nc.vsc_data.alpha1,
                 alpha2=self.nc.vsc_data.alpha2,
                 alpha3=self.nc.vsc_data.alpha3,
@@ -1937,7 +1937,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # HVDC
         Sf_hvdc = (self.Pf + 1j * self.Qf)[self.cg_hvdc] * self.nc.Sbase
         St_hvdc = (self.Pt + 1j * self.Qt)[self.cg_hvdc] * self.nc.Sbase
-        loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rate + 1e-20)
+        loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rates + 1e-20)
 
         return NumericPowerFlowResults(
             V=self.V,

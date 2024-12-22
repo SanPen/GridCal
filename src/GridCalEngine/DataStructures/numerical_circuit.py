@@ -206,7 +206,6 @@ class NumericalCircuit:
             'idx_dVm',
             'idx_dm',
             'idx_dtau',
-            'idx_dbeq',
             'x',
             'f(x)',
             'Jacobian',
@@ -326,14 +325,6 @@ class NumericalCircuit:
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
 
-        self.passive_branch_data.C_branch_bus_f = self.passive_branch_data.C_branch_bus_f.tocsc()
-        self.passive_branch_data.C_branch_bus_t = self.passive_branch_data.C_branch_bus_t.tocsc()
-
-        self.hvdc_data.C_hvdc_bus_f = self.hvdc_data.C_hvdc_bus_f.tocsc()
-        self.hvdc_data.C_hvdc_bus_t = self.hvdc_data.C_hvdc_bus_t.tocsc()
-
-        self.vsc_data.C_branch_bus_f = self.vsc_data.C_branch_bus_f.tocsc()
-        self.vsc_data.C_branch_bus_t = self.vsc_data.C_branch_bus_t.tocsc()
 
         self.load_data.C_bus_elm = self.load_data.C_bus_elm.tocsr()
         self.battery_data.C_bus_elm = self.battery_data.C_bus_elm.tocsr()
@@ -657,6 +648,7 @@ class NumericalCircuit:
         :return:
         """
         return self.shunt_data.get_injections_per_bus() / self.Sbase
+
     #
     # @property
     # def bus_types(self):
@@ -840,8 +832,8 @@ class NumericalCircuit:
         """
         return tp.compute_connectivity(
             branch_active=self.passive_branch_data.active,
-            Cf_=self.passive_branch_data.C_branch_bus_f.tocsc(),
-            Ct_=self.passive_branch_data.C_branch_bus_t.tocsc()
+            Cf_=self.passive_branch_data.Cf.tocsc(),
+            Ct_=self.passive_branch_data.Ct.tocsc()
         )
 
     def get_admittance_matrices(self) -> ycalc.AdmittanceMatrices:
@@ -851,16 +843,23 @@ class NumericalCircuit:
         """
 
         # compute admittances on demand
-        return ycalc.compute_admittances(R=self.passive_branch_data.R, X=self.passive_branch_data.X,
-                                         G=self.passive_branch_data.G, B=self.passive_branch_data.B,
-                                         k=self.passive_branch_data.k, tap_module=self.active_branch_data.tap_module,
-                                         vtap_f=self.passive_branch_data.virtual_tap_f,
-                                         vtap_t=self.passive_branch_data.virtual_tap_t,
-                                         tap_angle=self.active_branch_data.tap_angle,
-                                         Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
-                                         Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
-                                         Yshunt_bus=self.get_Yshunt_bus(),
-                                         conn=self.passive_branch_data.conn, seq=1)
+        return ycalc.compute_admittances(
+            R=self.passive_branch_data.R,
+            X=self.passive_branch_data.X,
+            G=self.passive_branch_data.G,
+            B=self.passive_branch_data.B,
+            k=self.passive_branch_data.k,
+            active=self.passive_branch_data.active,
+            tap_module=self.active_branch_data.tap_module,
+            vtap_f=self.passive_branch_data.virtual_tap_f,
+            vtap_t=self.passive_branch_data.virtual_tap_t,
+            tap_angle=self.active_branch_data.tap_angle,
+            Cf=self.passive_branch_data.Cf.tocsc(),
+            Ct=self.passive_branch_data.Ct.tocsc(),
+            Yshunt_bus=self.get_Yshunt_bus(),
+            conn=self.passive_branch_data.conn,
+            seq=1
+        )
 
     def get_series_admittance_matrices(self) -> ycalc.SeriesAdmittanceMatrices:
         """
@@ -873,13 +872,14 @@ class NumericalCircuit:
             G=self.passive_branch_data.G,
             B=self.passive_branch_data.B,
             k=self.passive_branch_data.k,
+            active=self.passive_branch_data.active,
             tap_module=self.active_branch_data.tap_module,
             vtap_f=self.passive_branch_data.virtual_tap_f,
             vtap_t=self.passive_branch_data.virtual_tap_t,
             tap_angle=self.active_branch_data.tap_angle,
             Beq=np.zeros(self.nbr, dtype=float),
-            Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
-            Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
+            Cf=self.passive_branch_data.Cf.tocsc(),
+            Ct=self.passive_branch_data.Ct.tocsc(),
             G0sw=np.zeros(self.nbr, dtype=float),
             If=np.zeros(len(self.passive_branch_data)),
             a=np.zeros(self.nbr, dtype=float),
@@ -897,10 +897,11 @@ class NumericalCircuit:
             X=self.passive_branch_data.X,
             B=self.passive_branch_data.B,
             tap_module=self.active_branch_data.tap_module,
+            active=self.passive_branch_data.active,
             vtap_f=self.passive_branch_data.virtual_tap_f,
             vtap_t=self.passive_branch_data.virtual_tap_t,
-            Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
-            Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
+            Cf=self.passive_branch_data.Cf.tocsc(),
+            Ct=self.passive_branch_data.Ct.tocsc(),
         )
 
     def get_linear_admittance_matrices(self, indices: SimulationIndices) -> ycalc.LinearAdmittanceMatrices:
@@ -914,8 +915,8 @@ class NumericalCircuit:
             R=self.passive_branch_data.R,
             m=self.active_branch_data.tap_module,
             active=self.passive_branch_data.active,
-            Cf=self.passive_branch_data.C_branch_bus_f.tocsc(),
-            Ct=self.passive_branch_data.C_branch_bus_t.tocsc(),
+            Cf=self.passive_branch_data.Cf.tocsc(),
+            Ct=self.passive_branch_data.Ct.tocsc(),
             ac=indices.ac,
             dc=indices.dc
         )
@@ -1290,14 +1291,14 @@ class NumericalCircuit:
 
         conn_matrices = tp.compute_connectivity_flexible(
             branch_active=self.passive_branch_data.active,
-            Cf_=self.passive_branch_data.C_branch_bus_f.tocsc(),
-            Ct_=self.passive_branch_data.C_branch_bus_t.tocsc(),
+            Cf_=self.passive_branch_data.Cf.tocsc(),
+            Ct_=self.passive_branch_data.Ct.tocsc(),
             hvdc_active=self.hvdc_data.active if consider_hvdc_as_island_links else None,
-            Cf_hvdc=self.hvdc_data.C_hvdc_bus_f.tocsc() if consider_hvdc_as_island_links else None,
-            Ct_hvdc=self.hvdc_data.C_hvdc_bus_t.tocsc() if consider_hvdc_as_island_links else None,
+            Cf_hvdc=self.hvdc_data.Cf.tocsc() if consider_hvdc_as_island_links else None,
+            Ct_hvdc=self.hvdc_data.Ct.tocsc() if consider_hvdc_as_island_links else None,
             vsc_active=self.vsc_data.active,
-            Cf_vsc=self.vsc_data.C_branch_bus_f.tocsc(),
-            Ct_vsc=self.vsc_data.C_branch_bus_t.tocsc()
+            Cf_vsc=self.vsc_data.Cf.tocsc(),
+            Ct_vsc=self.vsc_data.Ct.tocsc()
         )
 
         return conn_matrices.get_Adjacency(self.bus_data.active)
@@ -1308,163 +1309,172 @@ class NumericalCircuit:
         :param: structure_type: String representing structure type
         :return: pandas DataFrame
         """
+        Sbus = self.get_injections()
+        idx = self.get_simulation_indices(Sbus=Sbus)
 
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
+        Qmax_bus, Qmin_bus = self.get_reactive_power_limits()
 
         from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import (
             PfAdvancedFormulation)
         from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
-        formulation = PfAdvancedFormulation(V0=self.Vbus,
-                                            S0=self.Sbus,
-                                            I0=self.Ibus,
-                                            Y0=self.YLoadBus,
-                                            Qmin=self.Qmin_bus,
-                                            Qmax=self.Qmax_bus,
+        formulation = PfAdvancedFormulation(V0=self.bus_data.Vbus,
+                                            S0=Sbus,
+                                            I0=self.get_current_injections(),
+                                            Y0=self.get_admittance_injections(),
+                                            Qmin=Qmin_bus,
+                                            Qmax=Qmax_bus,
                                             nc=self,
                                             options=PowerFlowOptions(),
                                             logger=Logger())
 
         if structure_type == 'V':
             df = pd.DataFrame(
-                data=self.Vbus,
+                data=self.bus_data.Vbus,
                 columns=['Voltage (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Va':
             df = pd.DataFrame(
-                data=np.angle(self.Vbus),
+                data=np.angle(self.bus_data.Vbus),
                 columns=['Voltage angles (rad)'],
                 index=self.bus_data.names,
             )
         elif structure_type == 'Vm':
             df = pd.DataFrame(
-                data=np.abs(self.Vbus),
+                data=np.abs(self.bus_data.Vbus),
                 columns=['Voltage modules (p.u.)'],
                 index=self.bus_data.names,
             )
         elif structure_type == 'S':
             df = pd.DataFrame(
-                data=self.Sbus,
+                data=Sbus,
                 columns=['Power (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'P':
             df = pd.DataFrame(
-                data=self.Sbus.real,
+                data=Sbus.real,
                 columns=['Power (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Q':
             df = pd.DataFrame(
-                data=self.Sbus.imag,
+                data=Sbus.imag,
                 columns=['Power (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'I':
             df = pd.DataFrame(
-                data=self.Ibus,
+                data=self.get_current_injections(),
                 columns=['Current (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Y':
             df = pd.DataFrame(
-                data=self.YLoadBus,
+                data=self.get_admittance_injections(),
                 columns=['Admittance (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Ybus':
+            adm = self.get_admittance_injections()
             df = pd.DataFrame(
-                data=self.Ybus.toarray(),
+                data=adm.Ybus.toarray(),
                 columns=self.bus_data.names,
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'G':
+            adm = self.get_admittance_injections()
             df = pd.DataFrame(
-                data=self.Ybus.real.toarray(),
+                data=adm.Ybus.real.toarray(),
                 columns=self.bus_data.names,
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'B':
+            adm = self.get_admittance_injections()
             df = pd.DataFrame(
-                data=self.Ybus.imag.toarray(),
+                data=adm.Ybus.imag.toarray(),
                 columns=self.bus_data.names,
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Yf':
+            adm = self.get_admittance_injections()
             df = pd.DataFrame(
-                data=self.Yf.toarray(),
+                data=adm.Yf.toarray(),
                 columns=self.bus_data.names,
                 index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Yt':
+            adm = self.get_admittance_injections()
             df = pd.DataFrame(
-                data=self.Yt.toarray(),
+                data=adm.Yt.toarray(),
                 columns=self.bus_data.names,
                 index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Bbus':
+            adm = self.get_linear_admittance_matrices(idx)
             df = pd.DataFrame(
-                data=self.Bbus.toarray(),
+                data=adm.Bbus.toarray(),
                 columns=self.bus_data.names,
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Bf':
+            adm = self.get_linear_admittance_matrices(idx)
             df = pd.DataFrame(
-                data=self.Bf.toarray(),
+                data=adm.Bf.toarray(),
                 columns=self.bus_data.names,
                 index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Cf':
             df = pd.DataFrame(
-                data=self.passive_branch_data.C_branch_bus_f.toarray(),
+                data=self.passive_branch_data.Cf.toarray(),
                 columns=self.bus_data.names,
                 index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Ct':
             df = pd.DataFrame(
-                data=self.passive_branch_data.C_branch_bus_t.toarray(),
+                data=self.passive_branch_data.Ct.toarray(),
                 columns=self.bus_data.names,
                 index=self.passive_branch_data.names,
             )
 
         elif structure_type == 'Yshunt':
             df = pd.DataFrame(
-                data=self.Yshunt,
+                data=self.get_Yshunt_bus(),
                 columns=['Shunt admittance (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Yseries':
+            adm = self.get_admittance_injections()
             df = pd.DataFrame(
-                data=self.Yseries.toarray(),
+                data=adm.Yseries.toarray(),
                 columns=self.bus_data.names,
                 index=self.bus_data.names,
             )
 
         elif structure_type == "B'":
-
-            if self.B1.shape[0] == len(self.pqpv):
-                data = self.B1.toarray()
-                names = self.bus_names[self.pqpv]
+            adm = self.get_fast_decoupled_amittances()
+            if adm.B1.shape[0] == len(idx.pqpv):
+                data = adm.B1.toarray()
+                names = self.bus_data.names[idx.pqpv]
             else:
-                data = self.B1[np.ix_(self.pqpv, self.pqpv)].toarray()
-                names = self.bus_names[self.pqpv]
+                data = adm.B1[np.ix_(idx.pqpv, idx.pqpv)].toarray()
+                names = self.bus_data.names[idx.pqpv]
 
             df = pd.DataFrame(
                 data=data,
@@ -1473,12 +1483,13 @@ class NumericalCircuit:
             )
 
         elif structure_type == "B''":
-            if self.B2.shape[0] == len(self.pq):
-                data = self.B2.toarray()
-                names = self.bus_names[self.pq]
+            adm = self.get_fast_decoupled_amittances()
+            if adm.B2.shape[0] == len(idx.pq):
+                data = adm.B2.toarray()
+                names = self.bus_data.names[idx.pq]
             else:
-                data = self.B2[np.ix_(self.pq, self.pq)].toarray()
-                names = self.bus_names[self.pq]
+                data = adm.B2[np.ix_(idx.pq, idx.pq)].toarray()
+                names = self.bus_data.names[idx.pq]
 
             df = pd.DataFrame(
                 data=data,
@@ -1487,7 +1498,7 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Types':
-            data = self.bus_types
+            data = self.bus_data.bus_types
             df = pd.DataFrame(
                 data=data,
                 columns=['Bus types'],
@@ -1513,14 +1524,14 @@ class NumericalCircuit:
 
         elif structure_type == 'Qmin':
             df = pd.DataFrame(
-                data=self.Qmin_bus,
+                data=Qmin_bus,
                 columns=['Qmin'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Qmax':
             df = pd.DataFrame(
-                data=self.Qmax_bus,
+                data=Qmax_bus,
                 columns=['Qmax'],
                 index=self.bus_data.names,
             )
@@ -1553,44 +1564,44 @@ class NumericalCircuit:
 
         elif structure_type == 'pq':
             df = pd.DataFrame(
-                data=self.pq.astype(int).astype(str),
+                data=idx.pq.astype(int).astype(str),
                 columns=['pq'],
-                index=self.bus_data.names[self.pq],
+                index=self.bus_data.names[idx.pq],
             )
 
         elif structure_type == 'pv':
             df = pd.DataFrame(
-                data=self.pv.astype(int).astype(str),
+                data=idx.pv.astype(int).astype(str),
                 columns=['pv'],
-                index=self.bus_data.names[self.pv],
+                index=self.bus_data.names[idx.pv],
             )
 
         elif structure_type == 'pqv':
             df = pd.DataFrame(
-                data=self.pqv.astype(int).astype(str),
+                data=idx.pqv.astype(int).astype(str),
                 columns=['pqv'],
-                index=self.bus_data.names[self.pqv],
+                index=self.bus_data.names[idx.pqv],
             )
 
         elif structure_type == 'p':
             df = pd.DataFrame(
-                data=self.p.astype(int).astype(str),
+                data=idx.p.astype(int).astype(str),
                 columns=['p'],
-                index=self.bus_data.names[self.p],
+                index=self.bus_data.names[idx.p],
             )
 
         elif structure_type == 'vd':
             df = pd.DataFrame(
-                data=self.vd.astype(int).astype(str),
+                data=idx.vd.astype(int).astype(str),
                 columns=['vd'],
-                index=self.bus_data.names[self.vd],
+                index=self.bus_data.names[idx.vd],
             )
 
         elif structure_type == 'pqpv':
             df = pd.DataFrame(
-                data=self.pqpv.astype(int).astype(str),
+                data=idx.pqpv.astype(int).astype(str),
                 columns=['pqpv'],
-                index=self.bus_data.names[self.pqpv],
+                index=self.bus_data.names[idx.pqpv],
             )
 
         elif structure_type == 'tap_f':
@@ -1609,50 +1620,50 @@ class NumericalCircuit:
 
         elif structure_type == 'k_pf_tau':
             df = pd.DataFrame(
-                data=self.simulation_indices_.k_pf_tau.astype(int).astype(str),
+                data=idx.k_pf_tau.astype(int).astype(str),
                 columns=['k_pf_tau'],
-                index=self.passive_branch_data.names[self.simulation_indices_.k_pf_tau],
+                index=self.passive_branch_data.names[idx.k_pf_tau],
             )
 
         elif structure_type == 'k_pt_tau':
             df = pd.DataFrame(
-                data=self.simulation_indices_.k_pt_tau.astype(int).astype(str),
+                data=idx.k_pt_tau.astype(int).astype(str),
                 columns=['k_pt_tau'],
-                index=self.passive_branch_data.names[self.simulation_indices_.k_pt_tau],
+                index=self.passive_branch_data.names[idx.k_pt_tau],
             )
 
         elif structure_type == 'k_qf_m':
             df = pd.DataFrame(
-                data=self.simulation_indices_.k_qf_m.astype(int).astype(str),
+                data=idx.k_qf_m.astype(int).astype(str),
                 columns=['k_qf_m'],
-                index=self.passive_branch_data.names[self.simulation_indices_.k_qf_m],
+                index=self.passive_branch_data.names[idx.k_qf_m],
             )
 
         elif structure_type == 'k_qt_m':
             df = pd.DataFrame(
-                data=self.simulation_indices_.k_qt_m.astype(int).astype(str),
+                data=idx.k_qt_m.astype(int).astype(str),
                 columns=['k_qt_m'],
-                index=self.passive_branch_data.names[self.simulation_indices_.k_qt_m],
+                index=self.passive_branch_data.names[idx.k_qt_m],
             )
 
         elif structure_type == 'k_qf_beq':
             df = pd.DataFrame(
-                data=self.simulation_indices_.k_qf_beq.astype(int).astype(str),
+                data=idx.k_qf_beq.astype(int).astype(str),
                 columns=['k_qf_beq'],
-                index=self.passive_branch_data.names[self.simulation_indices_.k_qf_beq],
+                index=self.passive_branch_data.names[idx.k_qf_beq],
             )
 
         elif structure_type == 'k_v_m':
             df = pd.DataFrame(
-                data=self.simulation_indices_.k_v_m.astype(int).astype(str),
+                data=idx.k_v_m.astype(int).astype(str),
                 columns=['k_v_m'],
-                index=self.passive_branch_data.names[self.simulation_indices_.k_v_m],
+                index=self.passive_branch_data.names[idx.k_v_m],
             )
         elif structure_type == 'k_v_beq':
             df = pd.DataFrame(
-                data=self.simulation_indices_.k_v_beq.astype(int).astype(str),
+                data=idx.k_v_beq.astype(int).astype(str),
                 columns=['k_v_beq'],
-                index=self.passive_branch_data.names[self.simulation_indices_.k_v_beq],
+                index=self.passive_branch_data.names[idx.k_v_beq],
             )
         elif structure_type == 'idx_dPf':
             df = pd.DataFrame(
@@ -1708,13 +1719,6 @@ class NumericalCircuit:
                 data=formulation.idx_dtau.astype(int).astype(str),
                 columns=['idx_dtau'],
                 index=self.passive_branch_data.names[formulation.idx_dtau],
-            )
-
-        elif structure_type == 'idx_dbeq':
-            df = pd.DataFrame(
-                data=formulation.idx_dbeq.astype(int).astype(str),
-                columns=['idx_dbeq'],
-                index=self.passive_branch_data.names[formulation.idx_dbeq],
             )
 
         elif structure_type == 'Pf_set':
@@ -1816,11 +1820,8 @@ class NumericalCircuit:
         if logger is None:
             logger = Logger()
 
-        # detect the topology reductions
-        n_red = self.process_topology()
-
         # if the island is the same as the original bus indices, no slicing is needed
-        if len(bus_idx) == self.bus_data.nbus and n_red == 0:
+        if len(bus_idx) == self.bus_data.nbus:
             if np.all(bus_idx == self.bus_data.original_idx):
                 return self
 
@@ -1863,7 +1864,7 @@ class NumericalCircuit:
         nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx)
 
         if consider_hvdc_as_island_links:
-            nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx)
+            nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx, logger=logger)
 
         if consider_vsc_as_island_links:
             nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, logger=logger)
@@ -1883,6 +1884,9 @@ class NumericalCircuit:
         """
         if logger is None:
             logger = Logger()
+
+        # detect the topology reductions
+        n_red = self.process_topology()
 
         # find the matching islands
         adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
@@ -2022,7 +2026,7 @@ class NumericalCircuit:
 
         inter_area_hvdcs = self.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx, bus_idx_to=bus_a2_idx)
         for k, sense in inter_area_hvdcs:
-            sum_ratings += self.hvdc_data.rate[k]
+            sum_ratings += self.hvdc_data.rates[k]
 
         return sum_ratings
 

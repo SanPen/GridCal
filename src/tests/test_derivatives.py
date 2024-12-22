@@ -178,8 +178,8 @@ def test_branch_derivatives() -> None:
                                                                     V=nc.bus_data.Vbus,
                                                                     F=nc.passive_branch_data.F,
                                                                     T=nc.passive_branch_data.T,
-                                                                    Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
-                                                                    Ct=nc.passive_branch_data.C_branch_bus_t.tocsc())
+                                                                    Cf=nc.passive_branch_data.Cf.tocsc(),
+                                                                    Ct=nc.passive_branch_data.Ct.tocsc())
 
     test_data = [
         {
@@ -248,8 +248,8 @@ def test_tau_derivatives() -> None:
             V=nc.bus_data.Vbus,
             k_m=np.empty(0, dtype=int),
             k_tau=tau_idx,
-            Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
-            Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
+            Cf=nc.passive_branch_data.Cf.tocsc(),
+            Ct=nc.passive_branch_data.Ct.tocsc(),
             F=nc.passive_branch_data.F,
             T=nc.passive_branch_data.T,
             R=nc.passive_branch_data.R,

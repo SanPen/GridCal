@@ -268,8 +268,8 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
                                       B=nc.passive_branch_data.B,
                                       vtap_f=nc.passive_branch_data.virtual_tap_f,
                                       vtap_t=nc.passive_branch_data.virtual_tap_t,
-                                      Cf=nc.passive_branch_data.C_branch_bus_f.tocsc(),
-                                      Ct=nc.passive_branch_data.C_branch_bus_t.tocsc(),
+                                      Cf=nc.passive_branch_data.Cf.tocsc(),
+                                      Ct=nc.passive_branch_data.Ct.tocsc(),
                                       Yshunt_bus=nc.Yshunt_from_devices,
                                       conn=nc.passive_branch_data.conn,
                                       seq=1,
@@ -283,8 +283,8 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     Y0 = nc.YLoadBus
     m = nc.passive_branch_data.tap_module
     tau = nc.passive_branch_data.tap_angle
-    Cf = nc.passive_branch_data.C_branch_bus_f
-    Ct = nc.passive_branch_data.C_branch_bus_t
+    Cf = nc.passive_branch_data.Cf
+    Ct = nc.passive_branch_data.Ct
     F = nc.F
     T = nc.T
     Vm0 = np.abs(nc.Vbus)

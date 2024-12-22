@@ -98,8 +98,8 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                 Qmax_bus, Qmin_bus = island.get_reactive_power_limits()
 
                 results = continuation_nr(Ybus=adm.Ybus,
-                                          Cf=island.passive_branch_data.C_branch_bus_f,
-                                          Ct=island.passive_branch_data.C_branch_bus_t,
+                                          Cf=island.passive_branch_data.Cf,
+                                          Ct=island.passive_branch_data.Ct,
                                           Yf=adm.Yf,
                                           Yt=adm.Yt,
                                           branch_rates=island.passive_branch_data.rates,

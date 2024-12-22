@@ -443,8 +443,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.F_cbr = self.nc.passive_branch_data.F[self.cbr]
         self.T_cbr = self.nc.passive_branch_data.T[self.cbr]
 
-        self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.C_branch_bus_f,
-                             Ct=self.nc.passive_branch_data.C_branch_bus_t,
+        self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.Cf,
+                             Ct=self.nc.passive_branch_data.Ct,
                              Yshunt_bus=self.nc.shunt_data.get_injections_per_bus() / self.nc.Sbase,
                              R=self.nc.passive_branch_data.R,
                              X=self.nc.passive_branch_data.X,
@@ -2268,7 +2268,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
         St_vsc = Pt_vsc + 1j * Qt_vsc
 
-        Scalc_vsc = Pf_vsc @ self.nc.vsc_data.C_branch_bus_f + St_vsc @ self.nc.vsc_data.C_branch_bus_t
+        Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
@@ -2285,7 +2285,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = Pf_hvdc + 1j * Qf_hvdc
         St_hvdc = Pt_hvdc + 1j * Qt_hvdc
-        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.C_hvdc_bus_f + St_hvdc @ self.nc.hvdc_data.C_hvdc_bus_t
+        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
 
@@ -2373,12 +2373,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 G=self.nc.passive_branch_data.G,
                 B=self.nc.passive_branch_data.B,
                 k=self.nc.passive_branch_data.k,
+                active=self.nc.passive_branch_data.active,
                 tap_module=tap_modules,
                 vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                 vtap_t=self.nc.passive_branch_data.virtual_tap_t,
                 tap_angle=tap_angles,
-                Cf=self.nc.passive_branch_data.C_branch_bus_f.tocsc(),
-                Ct=self.nc.passive_branch_data.C_branch_bus_t.tocsc(),
+                Cf=self.nc.passive_branch_data.Cf.tocsc(),
+                Ct=self.nc.passive_branch_data.Ct.tocsc(),
                 Yshunt_bus=self.nc.get_Yshunt_bus(),
                 conn=self.nc.passive_branch_data.conn,
                 seq=1,
@@ -2628,7 +2629,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # HVDC ---------------------------------------------------------------------------------------------------------
         Sf_hvdc = (self.Pf_hvdc + 1j * self.Qf_hvdc) * self.nc.Sbase
         St_hvdc = (self.Pt_hvdc + 1j * self.Qt_hvdc) * self.nc.Sbase
-        loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rate + 1e-20)
+        loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rates + 1e-20)
 
         return NumericPowerFlowResults(
             V=self.V,

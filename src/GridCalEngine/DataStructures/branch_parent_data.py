@@ -8,8 +8,6 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from scipy.sparse import lil_matrix
-
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, Logger
 from typing import List, Tuple, Dict, Set
@@ -49,16 +47,34 @@ class BranchParentData:
         self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
         self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
 
-        # connectivity branch with their "from" bus
-        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
-
-        # connectivity branch with their "to" bus
-        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
-
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
         self.reducible: IntVec = np.zeros(nelm, dtype=bool)
+
+    @property
+    def Cf(self) -> sp.csc_matrix:
+        """
+        Bras-bus from connectivity
+        :return:
+        """
+        Cf = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        for k in range(self.nelm):
+            if self.active[k]:
+                Cf[k, self.F[k]] = 1
+        return Cf.tocsc()
+
+    @property
+    def Ct(self) -> sp.csc_matrix:
+        """
+        Bras-bus to connectivity
+        :return:
+        """
+        Ct = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        for k in range(self.nelm):
+            if self.active[k]:
+                Ct[k, self.T[k]] = 1
+        return Ct.tocsc()
 
     def size(self) -> int:
         """
@@ -97,9 +113,6 @@ class BranchParentData:
         data.rates = self.rates[elm_idx]
         data.contingency_rates = self.contingency_rates[elm_idx]
         data.protection_rates = self.protection_rates[elm_idx]
-
-        data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
-        data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
 
         # first slice, then remap
         data.F = self.F[elm_idx]
@@ -151,9 +164,6 @@ class BranchParentData:
         data.contingency_rates = self.contingency_rates.copy()
         data.protection_rates = self.protection_rates.copy()
 
-        data.C_branch_bus_f = self.C_branch_bus_f.copy()
-        data.C_branch_bus_t = self.C_branch_bus_t.copy()
-
         data.F = self.F.copy()
         data.T = self.T.copy()
 
@@ -171,7 +181,7 @@ class BranchParentData:
         :return: array of island branch indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(C_element_bus=self.C_branch_bus_f + self.C_branch_bus_t,
+            return tp.get_elements_of_the_island(C_element_bus=self.Cf + self.Ct,
                                                  island=bus_idx,
                                                  active=self.active)
         else:
@@ -241,17 +251,13 @@ class BranchParentData:
         Remapping of the branch buses
         :param bus_map_arr: array of old-to-new buses
         """
-        self.C_branch_bus_f = lil_matrix((self.nelm, self.nbus), dtype=int)
-        self.C_branch_bus_t = lil_matrix((self.nelm, self.nbus), dtype=int)
+
         for k in range(self.nelm):
             new_f = bus_map_arr[self.F[k]]
             new_t = bus_map_arr[self.T[k]]
 
             self.F[k] = new_f
             self.T[k] = new_t
-
-            self.C_branch_bus_f[k, new_f] = 1
-            self.C_branch_bus_t[k, new_t] = 1
 
     def __len__(self) -> int:
         return self.nelm

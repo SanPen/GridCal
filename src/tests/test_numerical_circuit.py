@@ -104,8 +104,8 @@ def test_bus_indexing_remap():
     for island in islands:
 
         # old way of finding the F and T arrays of an island
-        F = get_bus_indices(island.passive_branch_data.C_branch_bus_f.tocsc())
-        T = get_bus_indices(island.passive_branch_data.C_branch_bus_t.tocsc())
+        F = get_bus_indices(island.passive_branch_data.Cf.tocsc())
+        T = get_bus_indices(island.passive_branch_data.Ct.tocsc())
 
         assert np.allclose(F, island.passive_branch_data.F)
         assert np.allclose(T, island.passive_branch_data.T)

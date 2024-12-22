@@ -942,8 +942,6 @@ def fill_parent_branch(i: int,
 
     f = bus_dict[elm.bus_from]
     t = bus_dict[elm.bus_to]
-    data.C_branch_bus_f[i, f] = 1
-    data.C_branch_bus_t[i, t] = 1
     data.F[i] = f
     data.T[i] = t
 
@@ -1521,8 +1519,6 @@ def get_vsc_data(
         data.mttr[i] = elm.mttr
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
-        data.C_branch_bus_f[i, f] = 1
-        data.C_branch_bus_t[i, t] = 1
         data.F[i] = f
         data.T[i] = t
 
@@ -1637,8 +1633,8 @@ def get_hvdc_data(data: HvdcData,
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
-            data.rate[i] = elm.rate_prof[t_idx]
-            data.contingency_rate[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.rates[i] = elm.rate_prof[t_idx]
+            data.contingency_rates[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
             data.protection_rates[i] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
             data.angle_droop[i] = elm.angle_droop_prof[t_idx]
 
@@ -1677,8 +1673,8 @@ def get_hvdc_data(data: HvdcData,
 
         else:
             data.active[i] = elm.active
-            data.rate[i] = elm.rate
-            data.contingency_rate[i] = elm.rate * elm.contingency_factor
+            data.rates[i] = elm.rate
+            data.contingency_rates[i] = elm.rate * elm.contingency_factor
             data.protection_rates[i] = elm.rate * elm.protection_rating_factor
             data.angle_droop[i] = elm.angle_droop
             data.r[i] = elm.r
@@ -1723,10 +1719,6 @@ def get_hvdc_data(data: HvdcData,
         data.Qmax_f[i] = elm.Qmax_f
         data.Qmin_t[i] = elm.Qmin_t
         data.Qmax_t[i] = elm.Qmax_t
-
-        # the bus-hvdc line connectivity
-        data.C_hvdc_bus_f[i, f] = 1
-        data.C_hvdc_bus_t[i, t] = 1
 
 
 def get_fluid_node_data(data: FluidNodeData,
