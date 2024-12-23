@@ -3351,12 +3351,12 @@ class Assets:
         for con in to_del:
             self.delete_contingency(con)
 
-    def get_contingency_group_names(self) -> List[str]:
+    def get_contingency_group_names(self) -> StrVec:
         """
         Get list of contingency group names
         :return:
         """
-        return [e.name for e in self._contingency_groups]
+        return np.array([e.name for e in self._contingency_groups])
 
     def get_contingency_group_dict(self) -> Dict[str, List[dev.Contingency]]:
         """

@@ -902,14 +902,14 @@ def add_linear_hvdc_formulation(t_idx: int,
 
         fr = hvdc_data_t.F[m]
         to = hvdc_data_t.T[m]
-        hvdc_vars.rates[t_idx, m] = hvdc_data_t.rate[m]
+        hvdc_vars.rates[t_idx, m] = hvdc_data_t.rates[m]
 
         if hvdc_data_t.active[m]:
 
             # declare the flow var
             hvdc_vars.flows[t_idx, m] = prob.add_var(
-                lb=-hvdc_data_t.rate[m] / Sbase,
-                ub=hvdc_data_t.rate[m] / Sbase,
+                lb=-hvdc_data_t.rates[m] / Sbase,
+                ub=hvdc_data_t.rates[m] / Sbase,
                 name=join("hvdc_flow_", [t_idx, m], "_")
             )
 
@@ -940,11 +940,11 @@ def add_linear_hvdc_formulation(t_idx: int,
 
                 else:
 
-                    if hvdc_data_t.Pset[m] > hvdc_data_t.rate[m]:
-                        P0 = hvdc_data_t.rate[m] / Sbase
+                    if hvdc_data_t.Pset[m] > hvdc_data_t.rates[m]:
+                        P0 = hvdc_data_t.rates[m] / Sbase
 
-                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rate[m]:
-                        P0 = -hvdc_data_t.rate[m] / Sbase
+                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rates[m]:
+                        P0 = -hvdc_data_t.rates[m] / Sbase
 
                     else:
                         P0 = hvdc_data_t.Pset[m] / Sbase
@@ -1116,7 +1116,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         indices = nc.get_simulation_indices()
 
         # magic scaling: the demand must be exactly (to the solver tolerance) the same as the demand
-        Pbus = nc.get_current_injections_pu().real
+        Pbus = nc.get_power_injections_pu().real
         Pbus = Pbus.copy()
         Ptotal = np.sum(Pbus)
         Pbus[indices.vd] -= Ptotal / len(indices.vd)
