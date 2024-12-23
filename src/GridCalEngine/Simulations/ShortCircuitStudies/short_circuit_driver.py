@@ -184,7 +184,7 @@ class ShortCircuitDriver(DriverTemplate):
                                       bus_types=nc.bus_data.bus_types,
                                       area_names=None)
 
-        results.Sbus = nc.get_injections()
+        results.Sbus = nc.get_power_injections_pu()
         results.voltage = np.zeros(nbus, dtype=complex)
         results.Sf = np.zeros(nbr, dtype=complex)
         results.If = np.zeros(nbr, dtype=complex)

@@ -1116,7 +1116,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         indices = nc.get_simulation_indices()
 
         # magic scaling: the demand must be exactly (to the solver tolerance) the same as the demand
-        Pbus = nc.get_current_injections().real
+        Pbus = nc.get_current_injections_pu().real
         Pbus = Pbus.copy()
         Ptotal = np.sum(Pbus)
         Pbus[indices.vd] -= Ptotal / len(indices.vd)
@@ -1389,7 +1389,7 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
     # compute the PTDF and LODF
     ls.run()
 
-    Pbus = nc.get_injections().real
+    Pbus = nc.get_power_injections_pu().real
 
     # compute the sensitivity to the exchange
     alpha = compute_alpha(ptdf=ls.PTDF,

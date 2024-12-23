@@ -119,8 +119,8 @@ def solve(nc: NumericalCircuit,
 
     # set the initial value
     Qmin, Qmax = nc.get_reactive_power_limits()
-    I0 = nc.get_current_injections()
-    Y0 = nc.get_admittance_injections()
+    I0 = nc.get_current_injections_pu()
+    Y0 = nc.get_admittance_injections_pu()
 
     if len(indices.vd) == 0:
         solution = NumericPowerFlowResults(V=np.zeros(len(S0), dtype=complex),
@@ -571,7 +571,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     for i, island in enumerate(islands):
 
         indices = island.get_simulation_indices()
-        Sbus_base = island.get_injections()
+        Sbus_base = island.get_power_injections_pu()
 
         if len(indices.vd) > 0:
 

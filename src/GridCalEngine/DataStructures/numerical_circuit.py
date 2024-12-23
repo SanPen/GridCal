@@ -281,7 +281,7 @@ class NumericalCircuit:
         self.fluid_p2x_data: FluidP2XData = FluidP2XData(nelm=nfluidp2x)
         self.fluid_path_data: FluidPathData = FluidPathData(nelm=nfluidpath)
 
-    def get_injections(self, normalize=True) -> CxVec:
+    def get_power_injections(self) -> CxVec:
         """
         Compute the power
         :return: return the array of power Injections in MW if normalized is false, in p.u. otherwise
@@ -296,19 +296,27 @@ class NumericalCircuit:
         # battery
         Sbus += self.battery_data.get_injections_per_bus()
 
-        # HVDC forced power is not handled here because of the possible islands
-
-        if normalize:
-            Sbus /= self.Sbase
-
         return Sbus
 
-    def get_current_injections(self) -> CxVec:
+    def get_power_injections_pu(self) -> CxVec:
+        """
+        Compute the power
+        :return: return the array of power Injections in MW if normalized is false, in p.u. otherwise
+        """
+        return self.get_power_injections() / self.Sbase
 
+    def get_current_injections_pu(self) -> CxVec:
+        """
+
+        :return:
+        """
         return self.load_data.get_current_injections_per_bus() / self.Sbase
 
-    def get_admittance_injections(self) -> CxVec:
+    def get_admittance_injections_pu(self) -> CxVec:
+        """
 
+        :return:
+        """
         return self.load_data.get_admittance_injections_per_bus() / self.Sbase
 
     def consolidate_information(self) -> None:
@@ -324,7 +332,6 @@ class NumericalCircuit:
         self.ngen = len(self.generator_data)
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
-
 
         self.load_data.C_bus_elm = self.load_data.C_bus_elm.tocsr()
         self.battery_data.C_bus_elm = self.battery_data.C_bus_elm.tocsr()
@@ -570,7 +577,7 @@ class NumericalCircuit:
     #     """
     #
     #     if self.Sbus_ is None:
-    #         self.Sbus_ = self.get_injections(normalize=True)
+    #         self.Sbus_ = self.get_power_injections_pu(normalize=True)
     #
     #     return self.Sbus_
     #
@@ -814,7 +821,7 @@ class NumericalCircuit:
         :return: SimulationIndices
         """
         if Sbus is None:
-            Sbus = self.get_injections()
+            Sbus = self.get_power_injections_pu()
         return si.SimulationIndices(bus_types=self.bus_data.bus_types,
                                     Pbus=Sbus.real,
                                     tap_module_control_mode=self.active_branch_data.tap_module_control_mode,
@@ -881,7 +888,7 @@ class NumericalCircuit:
             Cf=self.passive_branch_data.Cf.tocsc(),
             Ct=self.passive_branch_data.Ct.tocsc(),
             G0sw=np.zeros(self.nbr, dtype=float),
-            If=np.zeros(len(self.passive_branch_data)),
+            If=np.zeros(len(self.passive_branch_data), dtype=complex),
             a=np.zeros(self.nbr, dtype=float),
             b=np.zeros(self.nbr, dtype=float),
             c=np.zeros(self.nbr, dtype=float),
@@ -1309,7 +1316,7 @@ class NumericalCircuit:
         :param: structure_type: String representing structure type
         :return: pandas DataFrame
         """
-        Sbus = self.get_injections()
+        Sbus = self.get_power_injections_pu()
         idx = self.get_simulation_indices(Sbus=Sbus)
 
         Qmax_bus, Qmin_bus = self.get_reactive_power_limits()
@@ -1320,8 +1327,8 @@ class NumericalCircuit:
 
         formulation = PfAdvancedFormulation(V0=self.bus_data.Vbus,
                                             S0=Sbus,
-                                            I0=self.get_current_injections(),
-                                            Y0=self.get_admittance_injections(),
+                                            I0=self.get_current_injections_pu(),
+                                            Y0=self.get_admittance_injections_pu(),
                                             Qmin=Qmin_bus,
                                             Qmax=Qmax_bus,
                                             nc=self,
@@ -1370,20 +1377,20 @@ class NumericalCircuit:
 
         elif structure_type == 'I':
             df = pd.DataFrame(
-                data=self.get_current_injections(),
+                data=self.get_current_injections_pu(),
                 columns=['Current (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Y':
             df = pd.DataFrame(
-                data=self.get_admittance_injections(),
+                data=self.get_admittance_injections_pu(),
                 columns=['Admittance (p.u.)'],
                 index=self.bus_data.names,
             )
 
         elif structure_type == 'Ybus':
-            adm = self.get_admittance_injections()
+            adm = self.get_admittance_matrices()
             df = pd.DataFrame(
                 data=adm.Ybus.toarray(),
                 columns=self.bus_data.names,
@@ -1391,7 +1398,7 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'G':
-            adm = self.get_admittance_injections()
+            adm = self.get_admittance_matrices()
             df = pd.DataFrame(
                 data=adm.Ybus.real.toarray(),
                 columns=self.bus_data.names,
@@ -1399,7 +1406,7 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'B':
-            adm = self.get_admittance_injections()
+            adm = self.get_admittance_matrices()
             df = pd.DataFrame(
                 data=adm.Ybus.imag.toarray(),
                 columns=self.bus_data.names,
@@ -1407,7 +1414,7 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Yf':
-            adm = self.get_admittance_injections()
+            adm = self.get_admittance_matrices()
             df = pd.DataFrame(
                 data=adm.Yf.toarray(),
                 columns=self.bus_data.names,
@@ -1415,7 +1422,7 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Yt':
-            adm = self.get_admittance_injections()
+            adm = self.get_admittance_matrices()
             df = pd.DataFrame(
                 data=adm.Yt.toarray(),
                 columns=self.bus_data.names,
@@ -1460,7 +1467,7 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Yseries':
-            adm = self.get_admittance_injections()
+            adm = self.get_admittance_matrices()
             df = pd.DataFrame(
                 data=adm.Yseries.toarray(),
                 columns=self.bus_data.names,
@@ -1979,8 +1986,8 @@ class NumericalCircuit:
         sim_idx = self.get_simulation_indices()
         sim_idx2 = nc_2.get_simulation_indices()
 
-        Sbus = self.get_injections()
-        Sbus2 = nc_2.get_injections()
+        Sbus = self.get_power_injections_pu()
+        Sbus2 = nc_2.get_power_injections_pu()
 
         CheckArr(Sbus.real, Sbus2.real, tol, 'Pbus', 'P', logger)
         CheckArr(Sbus.imag, Sbus2.imag, tol, 'Qbus', 'Q', logger)

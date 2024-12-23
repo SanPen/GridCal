@@ -95,7 +95,7 @@ def short_circuit_ph3(nc: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: in
                                   area_names=None)
 
     results.SCpower = SCpower
-    results.Sbus1 = nc.get_injections() * nc.Sbase  # MVA
+    results.Sbus1 = nc.get_power_injections_pu() * nc.Sbase  # MVA
     results.voltage1 = V
     results.Sf1 = Sfb  # in MVA already
     results.St1 = Stb  # in MVA already

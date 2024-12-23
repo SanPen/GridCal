@@ -99,7 +99,7 @@ def test_ptdf_ieee14_definition():
         nc = gce.compile_numerical_circuit_at(main_circuit, t_idx=None)
         options = gce.PowerFlowOptions(solver_type=gce.SolverType.DC)
         base_res = multi_island_pf_nc(nc=nc, options=options)
-        S = nc.get_injections()
+        S = nc.get_power_injections_pu()
         ptdf = np.zeros((nc.nbr, nc.nbus))
 
         for i in range(nc.nbus):

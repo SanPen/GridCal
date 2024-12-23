@@ -66,7 +66,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
     # get the contingency branch indices
     mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
-    Pbus = nc.get_injections(normalize=False).real
+    Pbus = nc.get_power_injections().real
 
     # compute the branch Sf in "n"
     if options.use_provided_flows:
@@ -77,8 +77,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
             calling_class.logger.add_error(msg)
             raise Exception(msg)
     else:
-        Sbus = nc.get_injections(normalize=False)
-        flows_n = linear_analysis.get_flows(Sbus) * nc.Sbase
+        Sbus = nc.get_power_injections()  # MW
+        flows_n = linear_analysis.get_flows(Sbus)
 
     loadings_n = flows_n / (nc.passive_branch_data.rates + 1e-9)
 
