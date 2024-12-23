@@ -60,7 +60,7 @@ class ShuntData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int]) -> "ShuntData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec) -> "ShuntData":
         """
         Slice shunt data by given indices
         :param elm_idx: array of branch indices
@@ -97,8 +97,13 @@ class ShuntData:
 
         # Remapping of the buses
         for k in range(data.nelm):
-            data.bus_idx[k] = bus_map.get(data.bus_idx[k], -1)
-            data.controllable_bus_idx[k] = bus_map.get(data.controllable_bus_idx[k], -1)
+            data.bus_idx[k] = bus_map[data.bus_idx[k]]
+
+            if data.bus_idx[k] == -1:
+                data.active[k] = 0
+
+            if data.controllable_bus_idx[k] > -1:
+                data.controllable_bus_idx[k] = bus_map[data.controllable_bus_idx[k]]
 
         data.original_idx = elm_idx
         data.vset = self.vset[elm_idx]

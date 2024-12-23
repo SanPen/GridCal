@@ -374,3 +374,5 @@ def compute_connectivity_flexible(branch_active: IntVec | None = None,
         Ct = sp.vstack(ct_stack)
 
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
+
+

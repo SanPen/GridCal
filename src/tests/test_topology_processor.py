@@ -4,10 +4,13 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 
+import numpy as np
+from scipy.sparse import lil_matrix, csc_matrix
 from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.api import power_flow
+from GridCalEngine.Topology.topology import compute_connectivity_flexible
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
@@ -719,3 +722,85 @@ def test_nc_active_works() -> None:
             assert res.Sf[k].imag == 0.0
 
             nc.passive_branch_data.active[k] = 1
+
+
+def test_adjacency_calc():
+    """
+    Compute the adjacency matrix
+    :return: csc_matrix
+    """
+
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    main_circuit = FileOpen(fname).open()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+    consider_hvdc_as_island_links = True
+
+    for b_idx in range(nc.bus_data.nbus):
+
+        # set us state
+        nc.bus_data.active[b_idx] = 0
+
+        for br_idx in range(nc.passive_branch_data.nelm):
+
+            # fail branch
+            nc.passive_branch_data.active[br_idx] = 0
+
+            # ----------------------------------------------------------------------------------------------------------
+            conn_matrices = compute_connectivity_flexible(
+                branch_active=nc.passive_branch_data.active,
+                Cf_=nc.passive_branch_data.Cf.tocsc(),
+                Ct_=nc.passive_branch_data.Ct.tocsc(),
+                hvdc_active=nc.hvdc_data.active if consider_hvdc_as_island_links else None,
+                Cf_hvdc=nc.hvdc_data.Cf.tocsc() if consider_hvdc_as_island_links else None,
+                Ct_hvdc=nc.hvdc_data.Ct.tocsc() if consider_hvdc_as_island_links else None,
+                vsc_active=nc.vsc_data.active,
+                Cf_vsc=nc.vsc_data.Cf.tocsc(),
+                Ct_vsc=nc.vsc_data.Ct.tocsc()
+            )
+
+            A1 = conn_matrices.get_Adjacency(nc.bus_data.active)
+
+            if consider_hvdc_as_island_links:
+                structs = [nc.passive_branch_data, nc.vsc_data, nc.hvdc_data]
+            else:
+                structs = [nc.passive_branch_data, nc.vsc_data]
+
+            # count the number of elements
+            n_elm = sum([st.nelm for st in structs])
+
+            mat2 = lil_matrix((nc.bus_data.nbus, nc.bus_data.nbus), dtype=int)
+            for struct in structs:
+                for k in range(struct.nelm):
+                    f = struct.F[k]
+                    t = struct.T[k]
+                    if struct.active[k] and nc.bus_data.active[f] and nc.bus_data.active[t]:
+                        mat2[f, f] += 1
+                        mat2[f, t] += 1
+                        mat2[t, f] += 1
+                        mat2[t, t] += 1
+
+            A2 = mat2.tocsc()
+
+            mat3 = lil_matrix((n_elm, nc.bus_data.nbus), dtype=int)
+            ii = 0
+            for struct in structs:
+                for k in range(struct.nelm):
+                    f = struct.F[k]
+                    t = struct.T[k]
+                    if struct.active[k] and nc.bus_data.active[f] and nc.bus_data.active[t]:
+                        mat3[ii, f] += 1
+                        mat3[ii, t] += 1
+                    ii += 1
+
+            A3 = (mat3.T @ mat3).tocsc()
+
+            assert np.allclose(A2.toarray(), A3.toarray())
+            # assert np.allclose(A1.toarray(), A2.toarray())
+
+            # ----------------------------------------------------------------------------------------------------------
+
+            # revert state
+            nc.passive_branch_data.active[br_idx] = 1
+
+        # revert state
+        nc.bus_data.active[b_idx] = 1

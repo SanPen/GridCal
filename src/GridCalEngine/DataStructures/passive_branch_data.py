@@ -61,7 +61,7 @@ class PassiveBranchData(BranchParentData):
         return self.nelm
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec,
-              bus_map: Dict[int, int], logger: Logger | None) -> "PassiveBranchData":
+              bus_map: IntVec, logger: Logger | None) -> "PassiveBranchData":
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices

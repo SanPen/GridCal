@@ -50,7 +50,7 @@ class LoadData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int]) -> "LoadData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec) -> "LoadData":
         """
         Slice load data by given indices
         :param elm_idx: array of branch indices
@@ -77,7 +77,10 @@ class LoadData:
 
         # Remapping of the buses
         for k in range(data.nelm):
-            data.bus_idx[k] = bus_map.get(data.bus_idx[k], -1)
+            data.bus_idx[k] = bus_map[data.bus_idx[k]]
+
+            if data.bus_idx[k] == -1:
+                data.active[k] = 0
 
         data.cost = self.cost[elm_idx]
 

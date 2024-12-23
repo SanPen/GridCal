@@ -79,7 +79,7 @@ class BranchParentData:
     @property
     def C(self) -> sp.csc_matrix:
         """
-        Bras-bus to connectivity
+        Branch-bus connectivity matrix
         :return:
         """
         mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
@@ -97,7 +97,7 @@ class BranchParentData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int],
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec,
               logger: Logger | None) -> Tuple["BranchParentData", Dict[int, int]]:
         """
         Slice branch data by given indices
@@ -133,14 +133,14 @@ class BranchParentData:
         data.T = self.T[elm_idx]
 
         for k in range(data.nelm):
-            data.F[k] = bus_map.get(int(data.F[k]), -1)
+            data.F[k] = bus_map[data.F[k]]
             if data.F[k] == -1:
                 if logger is not None:
                     logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
                                      value=data.F[k])
                 data.active[k] = 0
 
-            data.T[k] = bus_map.get(int(data.T[k]), -1)
+            data.T[k] = bus_map[data.T[k]]
             if data.T[k] == -1:
                 if logger is not None:
                     logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",

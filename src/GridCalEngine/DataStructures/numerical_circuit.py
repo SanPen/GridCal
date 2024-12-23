@@ -1290,27 +1290,6 @@ class NumericalCircuit:
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
-    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False) -> sp.csc_matrix:
-        """
-        Compute the adjacency matrix
-        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
-        :return: csc_matrix
-        """
-
-        conn_matrices = tp.compute_connectivity_flexible(
-            branch_active=self.passive_branch_data.active,
-            Cf_=self.passive_branch_data.Cf.tocsc(),
-            Ct_=self.passive_branch_data.Ct.tocsc(),
-            hvdc_active=self.hvdc_data.active if consider_hvdc_as_island_links else None,
-            Cf_hvdc=self.hvdc_data.Cf.tocsc() if consider_hvdc_as_island_links else None,
-            Ct_hvdc=self.hvdc_data.Ct.tocsc() if consider_hvdc_as_island_links else None,
-            vsc_active=self.vsc_data.active,
-            Cf_vsc=self.vsc_data.Cf.tocsc(),
-            Ct_vsc=self.vsc_data.Ct.tocsc()
-        )
-
-        return conn_matrices.get_Adjacency(self.bus_data.active)
-
     def get_structure(self, structure_type: str) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
@@ -1858,7 +1837,13 @@ class NumericalCircuit:
 
         # this is a dictionary to map the old indices to the new indices
         # it is used by the structures to re-map the bus indices
-        bus_map: Dict[int, int] = {original_i: new_i for new_i, original_i in enumerate(bus_idx)}
+        # bus_map: Dict[int, int] = {original_i: new_i for new_i, original_i in enumerate(bus_idx)}
+        bus_map = np.full(self.bus_data.nbus, -1, dtype=int)
+        bus_map[bus_idx] = np.arange(len(bus_idx))
+
+        # this is the same
+        # for new_i, original_i in enumerate(bus_idx):
+        #     bus_map[original_i] = original_i
 
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
@@ -1880,6 +1865,50 @@ class NumericalCircuit:
             nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
 
         return nc
+
+    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False) -> sp.csc_matrix:
+        """
+        Compute the adjacency matrix
+        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :return: csc_matrix
+        """
+
+        # conn_matrices = tp.compute_connectivity_flexible(
+        #     branch_active=self.passive_branch_data.active,
+        #     Cf_=self.passive_branch_data.Cf.tocsc(),
+        #     Ct_=self.passive_branch_data.Ct.tocsc(),
+        #     hvdc_active=self.hvdc_data.active if consider_hvdc_as_island_links else None,
+        #     Cf_hvdc=self.hvdc_data.Cf.tocsc() if consider_hvdc_as_island_links else None,
+        #     Ct_hvdc=self.hvdc_data.Ct.tocsc() if consider_hvdc_as_island_links else None,
+        #     vsc_active=self.vsc_data.active,
+        #     Cf_vsc=self.vsc_data.Cf.tocsc(),
+        #     Ct_vsc=self.vsc_data.Ct.tocsc()
+        # )
+
+        # return conn_matrices.get_Adjacency(self.bus_data.active)
+
+        if consider_hvdc_as_island_links:
+            structs = [self.passive_branch_data, self.vsc_data, self.hvdc_data]
+        else:
+            structs = [self.passive_branch_data, self.vsc_data]
+
+        """
+        Note: this works because the three structures inherit 
+        the basic connectivity from the same parent structure
+        """
+
+        mat = sp.lil_matrix((self.bus_data.nbus, self.bus_data.nbus), dtype=int)
+        for struct in structs:
+            for k in range(struct.nelm):
+                f = struct.F[k]
+                t = struct.T[k]
+                if struct.active[k] and self.bus_data.active[f] and self.bus_data.active[t]:
+                    mat[f, f] += 1
+                    mat[f, t] += 1
+                    mat[t, f] += 1
+                    mat[t, t] += 1
+
+        return mat.tocsc()
 
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,

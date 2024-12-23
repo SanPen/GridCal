@@ -40,7 +40,7 @@ class VscData(BranchParentData):
         self.control1_branch_idx: IntVec = np.full(nelm, -1, dtype=int)
         self.control2_branch_idx: IntVec = np.full(nelm, -1, dtype=int)
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int], logger: Logger | None) -> "VscData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec, logger: Logger | None) -> "VscData":
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -73,19 +73,21 @@ class VscData(BranchParentData):
         data.control2_branch_idx = self.control2_branch_idx[elm_idx]
 
         for k in range(data.nelm):
-            data.control1_bus_idx[k] = bus_map.get(data.control1_bus_idx[k], -1)
+            if data.control1_bus_idx[k] > -1:
+                data.control1_bus_idx[k] = bus_map[data.control1_bus_idx[k]]
 
-            if data.control1_bus_idx[k] == -1:
-                if logger is not None:
-                    logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
-                                     value=data.control1_bus_idx[k])
+                if data.control1_bus_idx[k] == -1:
+                    if logger is not None:
+                        logger.add_error(f"Branch {k}, {self.names[k]} control1 bus is unreachable",
+                                         value=data.control1_bus_idx[k])
 
-            data.control1_bus_idx[k] = bus_map.get(data.control1_bus_idx[k], -1)
+            if data.control2_bus_idx[k] > -1:
+                data.control2_bus_idx[k] = bus_map[data.control2_bus_idx[k]]
 
-            if data.control1_bus_idx[k] == -1:
-                if logger is not None:
-                    logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
-                                     value=data.control1_bus_idx[k])
+                if data.control2_bus_idx[k] == -1:
+                    if logger is not None:
+                        logger.add_error(f"Branch {k}, {self.names[k]} control2 bus is unreachable",
+                                         value=data.control2_bus_idx[k])
 
         return data
 

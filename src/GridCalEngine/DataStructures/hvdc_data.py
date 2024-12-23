@@ -56,7 +56,7 @@ class HvdcData(BranchParentData):
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int], logger: Logger | None) -> "HvdcData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec, logger: Logger | None) -> "HvdcData":
         """
         Make a deep copy of this structure
         :return: new HvdcData instance
