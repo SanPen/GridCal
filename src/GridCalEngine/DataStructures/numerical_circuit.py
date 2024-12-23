@@ -319,6 +319,13 @@ class NumericalCircuit:
         """
         return self.load_data.get_admittance_injections_per_bus() / self.Sbase
 
+    def get_Yshunt_bus(self) -> CxVec:
+        """
+
+        :return:
+        """
+        return self.shunt_data.get_injections_per_bus() / self.Sbase
+
     def consolidate_information(self) -> None:
         """
         Consolidates the information of this object
@@ -490,6 +497,7 @@ class NumericalCircuit:
                             structure.active[idx] = int(not bool(cnt.value))
                         else:
                             structure.active[idx] = int(cnt.value)
+
                     elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                         # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
                         assert not isinstance(structure, HvdcData)  # TODO Arreglar esto
@@ -501,6 +509,7 @@ class NumericalCircuit:
                             structure.p[idx] *= float(cnt.value / 100.0)
                         dev_injections[idx] += structure.p[idx]
                         injections += structure.get_array_per_bus(dev_injections)
+
                     else:
                         print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
                 else:
@@ -648,14 +657,6 @@ class NumericalCircuit:
     #         self.Qmax_bus_, self.Qmin_bus_ = self.get_reactive_power_limits()
     #
     #     return self.Qmin_bus_
-
-    def get_Yshunt_bus(self):
-        """
-
-        :return:
-        """
-        return self.shunt_data.get_injections_per_bus() / self.Sbase
-
     #
     # @property
     # def bus_types(self):
@@ -1827,11 +1828,6 @@ class NumericalCircuit:
         if logger is None:
             logger = Logger()
 
-        # if the island is the same as the original bus indices, no slicing is needed
-        if len(bus_idx) == self.bus_data.nbus:
-            if np.all(bus_idx == self.bus_data.original_idx):
-                return self
-
         # find the indices of the devices of the island
         br_idx = self.passive_branch_data.get_island(bus_idx)
         hvdc_idx = self.hvdc_data.get_island(bus_idx)
@@ -1860,21 +1856,28 @@ class NumericalCircuit:
             t_idx=self.t_idx,
         )
 
+        # this is a dictionary to map the old indices to the new indices
+        # it is used by the structures to re-map the bus indices
+        bus_map: Dict[int, int] = {original_i: new_i for new_i, original_i in enumerate(bus_idx)}
+
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
-        nc.passive_branch_data = self.passive_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx, logger=logger)
+
+        nc.passive_branch_data = self.passive_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx,
+                                                                bus_map=bus_map, logger=logger)
+
         nc.active_branch_data = self.active_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
 
-        nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx)
-        nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
-        nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx)
-        nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx)
+        nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx, bus_map=bus_map)
+        nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx, bus_map=bus_map)
+        nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx, bus_map=bus_map)
+        nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx, bus_map=bus_map)
 
         if consider_hvdc_as_island_links:
-            nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx, logger=logger)
+            nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
 
         if consider_vsc_as_island_links:
-            nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, logger=logger)
+            nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
 
         return nc
 

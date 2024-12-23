@@ -696,27 +696,26 @@ def test_topology_3_nodes_A2() -> None:
 
 
 def test_nc_active_works() -> None:
-
+    """
+    This test checks that the failed branch by setting
+    the numerical circuit active status
+    has zero flow, for many power flow algorithms
+    """
     fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
     main_circuit = FileOpen(fname).open()
     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
-    options = PowerFlowOptions(solver_type=SolverType.DC)
-    # base_res = multi_island_pf_nc(nc=nc, options=options)
-    adm_base = nc.get_admittance_matrices()
 
-    for k in range(nc.passive_branch_data.nelm):
-        nc.passive_branch_data.active[k] = 0
+    for slv in [SolverType.DC, SolverType.LACPF,
+                SolverType.NR, SolverType.LM, SolverType.PowellDogLeg, SolverType.IWAMOTO, SolverType.HELM,
+                SolverType.FASTDECOUPLED, SolverType.GAUSS]:
+        options = PowerFlowOptions(solver_type=slv)
 
-        adm_k = nc.get_admittance_matrices()
+        for k in range(nc.passive_branch_data.nelm):
+            nc.passive_branch_data.active[k] = 0
 
-        assert not np.allclose(adm_base.yff, adm_k.yff, atol=1e-6)
-        assert not np.allclose(adm_base.yft, adm_k.yft, atol=1e-6)
-        assert not np.allclose(adm_base.ytf, adm_k.ytf, atol=1e-6)
-        assert not np.allclose(adm_base.ytt, adm_k.ytt, atol=1e-6)
+            res = multi_island_pf_nc(nc=nc, options=options)
 
-        res = multi_island_pf_nc(nc=nc, options=options)
+            assert res.Sf[k].real == 0.0
+            assert res.Sf[k].imag == 0.0
 
-        assert res.Sf[k].real == 0.0
-        assert res.Sf[k].imag == 0.0
-
-        nc.passive_branch_data.active[k] = 1
+            nc.passive_branch_data.active[k] = 1

@@ -2,9 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 import numpy as np
-from typing import List, Tuple, Set
+from typing import List, Tuple, Set, Dict
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import HvdcControlType
@@ -55,17 +56,14 @@ class HvdcData(BranchParentData):
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "HvdcData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int], logger: Logger | None) -> "HvdcData":
         """
         Make a deep copy of this structure
         :return: new HvdcData instance
         """
-        data, bus_map = super().slice(elm_idx, bus_idx, logger)
+        data, bus_map = super().slice(elm_idx, bus_idx, bus_map, logger)
         data: HvdcData = data
         data.__class__ = HvdcData
-
-        if data.nelm == 0:
-            return data
 
         data.dispatchable = self.dispatchable[elm_idx]
 

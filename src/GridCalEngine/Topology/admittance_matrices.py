@@ -232,10 +232,10 @@ def compute_admittances(R: Vec,
             print('ytf:', ytf)
             print('ytt:', ytt)
 
-    yff *= active
-    yft *= active
-    ytf *= active
-    ytt *= active
+    # yff *= active
+    # yft *= active
+    # ytf *= active
+    # ytt *= active
 
     # compose the matrices
     Yf = sp.diags(yff) * Cf + sp.diags(yft) * Ct

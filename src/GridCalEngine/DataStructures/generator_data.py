@@ -76,11 +76,12 @@ class GeneratorData:
         self.name_to_idx: dict = dict()
         self.is_at_dc_bus: BoolVec = np.zeros(nelm, dtype=bool)  # purpose? why not for VSC?
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int]):
         """
         Slice generator data by given indices
         :param elm_idx: array of element indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus index to element index
         :return: new GeneratorData instance
         """
 
@@ -111,7 +112,6 @@ class GeneratorData:
         data.controllable_bus_idx = self.controllable_bus_idx[elm_idx]
 
         # Remapping of the buses
-        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
             data.bus_idx[k] = bus_map.get(data.bus_idx[k], -1)
             data.controllable_bus_idx[k] = bus_map.get(data.controllable_bus_idx[k], -1)

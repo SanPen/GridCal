@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+from typing import Dict
 import numpy as np
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import ConverterControlType
@@ -39,16 +40,17 @@ class VscData(BranchParentData):
         self.control1_branch_idx: IntVec = np.full(nelm, -1, dtype=int)
         self.control2_branch_idx: IntVec = np.full(nelm, -1, dtype=int)
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "VscData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int], logger: Logger | None) -> "VscData":
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus index to branch index
         :param logger: Logger
         :return: new BranchData instance
         """
 
-        data, bus_map = super().slice(elm_idx, bus_idx, logger)
+        data, bus_map = super().slice(elm_idx, bus_idx, bus_map, logger)
         data: VscData = data
         data.__class__ = VscData
 
@@ -70,7 +72,6 @@ class VscData(BranchParentData):
         data.control1_branch_idx = self.control1_branch_idx[elm_idx]
         data.control2_branch_idx = self.control2_branch_idx[elm_idx]
 
-        # br_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
             data.control1_bus_idx[k] = bus_map.get(data.control1_bus_idx[k], -1)
 

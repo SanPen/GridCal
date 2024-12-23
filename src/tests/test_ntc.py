@@ -21,7 +21,7 @@ def test_ntc_ultra_simple() -> None:
                                            objects_to=[grid.areas[1]])
 
     opf_options = gce.OptimalPowerFlowOptions(
-        export_model_fname="test_ntc_ultra_simple.lp"
+        # export_model_fname="test_ntc_ultra_simple.lp"
     )
     lin_options = gce.LinearAnalysisOptions()
 

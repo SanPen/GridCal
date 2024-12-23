@@ -60,11 +60,12 @@ class ShuntData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "ShuntData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int]) -> "ShuntData":
         """
         Slice shunt data by given indices
         :param elm_idx: array of branch indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus index to branch index
         :return: new ShuntData instance
         """
 
@@ -95,7 +96,6 @@ class ShuntData:
         data.controllable_bus_idx = self.controllable_bus_idx[elm_idx]
 
         # Remapping of the buses
-        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
             data.bus_idx[k] = bus_map.get(data.bus_idx[k], -1)
             data.controllable_bus_idx[k] = bus_map.get(data.controllable_bus_idx[k], -1)

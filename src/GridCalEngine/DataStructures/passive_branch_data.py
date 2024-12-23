@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from __future__ import annotations
-
+from typing import Dict
 import numpy as np
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
@@ -60,15 +60,17 @@ class PassiveBranchData(BranchParentData):
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "PassiveBranchData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec,
+              bus_map: Dict[int, int], logger: Logger | None) -> "PassiveBranchData":
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus index to island bus index {int(o): i for i, o in enumerate(bus_idx)}
         :param logger: Logger
         :return: new BranchData instance
         """
-        data, bus_map = super().slice(elm_idx, bus_idx, logger)
+        data, bus_map = super().slice(elm_idx, bus_idx, bus_map, logger)
         data.__class__ = PassiveBranchData
         data: PassiveBranchData = data
 
@@ -146,7 +148,7 @@ class PassiveBranchData(BranchParentData):
         :return: array of island branch indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(C_element_bus=self.Cf + self.Ct,
+            return tp.get_elements_of_the_island(C_element_bus=self.C,
                                                  island=bus_idx,
                                                  active=self.active)
         else:

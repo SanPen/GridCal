@@ -60,6 +60,32 @@ def gausspf(nc: NumericalCircuit,
     npv = len(pv)
     pvpq = np.r_[pv, pq]
 
+    if len(pvpq) == 0:
+        return NumericPowerFlowResults(V=V,
+                                       Scalc=S0 * nc.Sbase,
+                                       m=np.ones(nc.nbr, dtype=float),
+                                       tau=np.zeros(nc.nbr, dtype=float),
+                                       Sf=np.zeros(nc.nbr, dtype=float),
+                                       St=np.zeros(nc.nbr, dtype=float),
+                                       If=np.zeros(nc.nbr, dtype=float),
+                                       It=np.zeros(nc.nbr, dtype=float),
+                                       loading=np.zeros(nc.nbr, dtype=float),
+                                       losses=np.zeros(nc.nbr, dtype=float),
+                                       Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                       If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                       losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       norm_f=0.0,
+                                       converged=True,
+                                       iterations=0,
+                                       elapsed=0.0)
+
     # evaluate F(x0)
     Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
     Scalc = cf.compute_power(Ybus, V)

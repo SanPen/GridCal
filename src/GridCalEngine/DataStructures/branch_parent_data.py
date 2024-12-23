@@ -58,11 +58,11 @@ class BranchParentData:
         Bras-bus from connectivity
         :return:
         """
-        Cf = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
         for k in range(self.nelm):
-            if self.active[k]:
-                Cf[k, self.F[k]] = 1
-        return Cf.tocsc()
+            # if self.active[k]:
+            mat[k, self.F[k]] = 1
+        return mat.tocsc()
 
     @property
     def Ct(self) -> sp.csc_matrix:
@@ -70,11 +70,24 @@ class BranchParentData:
         Bras-bus to connectivity
         :return:
         """
-        Ct = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
         for k in range(self.nelm):
-            if self.active[k]:
-                Ct[k, self.T[k]] = 1
-        return Ct.tocsc()
+            # if self.active[k]:
+            mat[k, self.T[k]] = 1
+        return mat.tocsc()
+
+    @property
+    def C(self) -> sp.csc_matrix:
+        """
+        Bras-bus to connectivity
+        :return:
+        """
+        mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        for k in range(self.nelm):
+            # if self.active[k]:
+            mat[k, self.F[k]] = 1
+            mat[k, self.T[k]] = 1
+        return mat.tocsc()
 
     def size(self) -> int:
         """
@@ -84,12 +97,13 @@ class BranchParentData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec,
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int],
               logger: Logger | None) -> Tuple["BranchParentData", Dict[int, int]]:
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus index to island bus index {int(o): i for i, o in enumerate(bus_idx)}
         :param logger: Logger
         :return: new BranchData instance
         """
@@ -117,18 +131,16 @@ class BranchParentData:
         # first slice, then remap
         data.F = self.F[elm_idx]
         data.T = self.T[elm_idx]
-        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
-        for k in range(data.nelm):
-            data.F[k] = bus_map.get(data.F[k], -1)
 
+        for k in range(data.nelm):
+            data.F[k] = bus_map.get(int(data.F[k]), -1)
             if data.F[k] == -1:
                 if logger is not None:
                     logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
                                      value=data.F[k])
                 data.active[k] = 0
 
-            data.T[k] = bus_map.get(data.T[k], -1)
-
+            data.T[k] = bus_map.get(int(data.T[k]), -1)
             if data.T[k] == -1:
                 if logger is not None:
                     logger.add_error(f"Branch {k}, {self.names[k]} is connected to a disconnected node",
@@ -181,7 +193,7 @@ class BranchParentData:
         :return: array of island branch indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(C_element_bus=self.Cf + self.Ct,
+            return tp.get_elements_of_the_island(C_element_bus=self.C,
                                                  island=bus_idx,
                                                  active=self.active)
         else:

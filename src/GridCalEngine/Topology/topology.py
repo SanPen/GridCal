@@ -158,6 +158,8 @@ def get_elements_of_the_island(C_element_bus: csc_matrix, island: IntVec, active
     if not isinstance(C_element_bus, csc_matrix):
         C_element_bus = C_element_bus.tocsc()
 
+    assert C_element_bus.shape[0] == len(active), "You should probably traspose the matrix :/"
+
     # faster method
     indices = get_elements_of_the_island_numba(n_rows=C_element_bus.shape[0],
                                                indptr=C_element_bus.indptr,

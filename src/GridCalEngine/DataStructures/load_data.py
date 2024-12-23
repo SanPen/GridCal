@@ -50,11 +50,12 @@ class LoadData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "LoadData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: Dict[int, int]) -> "LoadData":
         """
         Slice load data by given indices
         :param elm_idx: array of branch indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus index to island bus index {int(o): i for i, o in enumerate(bus_idx)}
         :return: new LoadData instance
         """
 
@@ -75,7 +76,6 @@ class LoadData:
         data.bus_idx = self.bus_idx[elm_idx]
 
         # Remapping of the buses
-        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
             data.bus_idx[k] = bus_map.get(data.bus_idx[k], -1)
 
