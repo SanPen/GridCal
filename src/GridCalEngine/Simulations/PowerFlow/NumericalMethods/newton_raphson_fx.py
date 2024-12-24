@@ -60,6 +60,9 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
     else:
 
+        if verbose > 1:
+            print("x0:\n", problem.get_x_df(x))
+
         while not converged and iteration < max_iter:
 
             # update iteration counter
@@ -81,7 +84,7 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 if verbose > 1:
                     print("J:\n", problem.get_jacobian_df(J))
                     print("F:\n", problem.get_f_df(f))
-                    print("dx:\n", problem.get_x_df(x))
+                    print("dx:\n", problem.get_x_df(dx))
 
                 if not ok:
                     logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
@@ -102,14 +105,17 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
             error, converged, x, f = problem.update(x=x_sol, update_controls=update_controls)
 
+            if verbose > 1:
+                print("x:\n", problem.get_x_df(x))
+
             # save the error evolution
             error0 = error
             error_evolution[iteration] = error
 
             if verbose > 0:
                 if verbose == 1:
-                    print(f'It {iteration}, error {error}, converged {converged}, x {x}, dx {dx}')
+                    print(f'It {iteration}, error {error}, converged {converged}')
                 else:
-                    print(f'error {error}, \n converged {converged}, \n x {x}, \n dx {dx}')
+                    print(f'error {error}, \n converged {converged}')
 
     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)

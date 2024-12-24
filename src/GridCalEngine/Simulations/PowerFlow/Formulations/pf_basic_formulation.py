@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices
@@ -240,6 +240,26 @@ class PfBasicFormulation(PfFormulationTemplate):
                             self.V, self.idx_dVa, self.idx_dVm, self.idx_dP, self.idx_dQ)
 
         return J
+
+    def get_x_names(self) -> List[str]:
+        """
+        Names matching x
+        :return:
+        """
+        cols = [f'dVa {i}' for i in self.idx_dVa]
+        cols += [f'dVm {i}' for i in self.idx_dVm]
+
+        return cols
+
+    def get_fx_names(self) -> List[str]:
+        """
+        Names matching fx
+        :return:
+        """
+        rows = [f'dP {i}' for i in self.idx_dP]
+        rows += [f'dQ {i}' for i in self.idx_dQ]
+
+        return rows
 
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """

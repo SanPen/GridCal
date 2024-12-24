@@ -804,3 +804,244 @@ def test_adjacency_calc():
 
         # revert state
         nc.bus_data.active[b_idx] = 1
+
+
+def get_lynn_5_bus() -> MultiCircuit:
+    grid = MultiCircuit(name='lynn 5 bus')
+
+    a1 = Area('Area1')
+    z1 = Zone('Zone1')
+    s1 = Substation('S1')
+
+    grid.add_area(a1)
+    grid.add_zone(z1)
+    grid.add_substation(s1)
+
+    ####################################################################################################################
+    # Define the buses
+    ####################################################################################################################
+    # I will define this bus with all the properties so you see
+    bus1 = Bus(name='Bus1',
+               Vnom=10,  # Nominal voltage in kV
+               vmin=0.9,  # Bus minimum voltage in per unit
+               vmax=1.1,  # Bus maximum voltage in per unit
+               xpos=0,  # Bus x position in pixels
+               ypos=0,  # Bus y position in pixels
+               height=0,  # Bus height in pixels
+               width=0,  # Bus width in pixels
+               active=True,  # Is the bus active?
+               is_slack=False,  # Is this bus a slack bus?
+               area=a1,  # Area (for grouping purposes only)
+               zone=z1,  # Zone (for grouping purposes only)
+               substation=s1  # Substation (for grouping purposes only)
+               )
+
+    # the rest of the buses are defined with the default parameters
+    bus2 = Bus(name='Bus2')
+    bus3 = Bus(name='Bus3')
+    bus4 = Bus(name='Bus4')
+    bus5 = Bus(name='Bus5')
+
+    # add the bus objects to the circuit
+    grid.add_bus(bus1)
+    grid.add_bus(bus2)
+    grid.add_bus(bus3)
+    grid.add_bus(bus4)
+    grid.add_bus(bus5)
+
+    ####################################################################################################################
+    # Add the loads
+    ####################################################################################################################
+    # In GridCal, the loads, generators ect are stored within each bus object:
+
+    # we'll define the first load completely
+    l2 = Load(name='Load',
+              G=0,  # Impedance of the ZIP model in MVA at the nominal voltage
+              B=0,
+              Ir=0,
+              Ii=0,  # Current of the ZIP model in MVA at the nominal voltage
+              P=40,
+              Q=20,  # Power of the ZIP model in MVA
+              active=True,  # Is active?
+              mttf=0.0,  # Mean time to failure
+              mttr=0.0  # Mean time to recovery
+              )
+    grid.add_load(bus2, l2)
+
+    # Define the others with the default parameters
+    grid.add_load(bus3, Load(P=25, Q=15))
+    grid.add_load(bus4, Load(P=40, Q=20))
+    grid.add_load(bus5, Load(P=50, Q=20))
+
+    ####################################################################################################################
+    # Add the generators
+    ####################################################################################################################
+
+    g1 = Generator(name='gen',
+                   P=0.0,  # Active power in MW, since this generator is used to set the slack , is 0
+                   vset=1.0,  # Voltage set point to control
+                   Qmin=-9999,  # minimum reactive power in MVAr
+                   Qmax=9999,  # Maximum reactive power in MVAr
+                   Snom=9999,  # Nominal power in MVA
+                   active=True  # Is active?
+                   )
+    grid.add_generator(bus1, g1)
+
+    ####################################################################################################################
+    # Add the lines
+    ####################################################################################################################
+
+    br1 = Line(bus_from=bus1,
+               bus_to=bus2,
+               name='Line 1-2',
+               r=0.05,  # resistance of the pi model in per unit
+               x=0.11,  # reactance of the pi model in per unit
+               b=0.02,  # susceptance of the pi model in per unit
+               rate=50,  # Rate in MVA
+               active=True,  # is the branch active?
+               mttf=0,  # Mean time to failure
+               mttr=0,  # Mean time to recovery
+               length=1,  # Length in km (to be used with templates)
+               )
+    grid.add_line(br1)
+
+    grid.add_line(Line(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
+    grid.add_line(Line(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
+    grid.add_line(Line(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
+    grid.add_line(Line(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
+    grid.add_line(Line(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
+    grid.add_line(Line(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
+
+    return grid
+
+
+def test_lynn_Ybus():
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'lynn5node.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    adm = nc.get_admittance_matrices()
+
+    Y = np.zeros((5, 5), dtype=complex)
+    Y[0, 0] = 10.958904 - 25.997397j
+    Y[0, 1] = -3.424658 + 7.534247j
+    Y[0, 2] = -3.424658 + 7.534247j
+    Y[0, 4] = -4.109589 + 10.958904j
+
+    Y[1, 0] = -3.424658 + 7.534247j
+    Y[1, 1] = 11.672080 - 26.060948j
+    Y[1, 2] = -4.123711 + 9.278351j
+    Y[1, 4] = -4.123711 + 9.278351j
+
+    Y[2, 0] = -3.424658 + 7.534247j
+    Y[2, 1] = -4.123711 + 9.278351j
+    Y[2, 2] = 10.475198 - 23.119061j
+    Y[2, 3] = -2.926829 + 6.341463j
+
+    Y[3, 2] = -2.926829 + 6.341463j
+    Y[3, 3] = 7.05041 - 15.594814j
+    Y[3, 4] = -4.123711 + 9.278351j
+
+    Y[4, 0] = -4.109589 + 10.958904j
+    Y[4, 1] = -4.123711 + 9.278351j
+    Y[4, 3] = -4.123711 + 9.278351j
+    Y[4, 4] = 12.357012 - 29.485605j
+
+    # print("\n\nY expected:\n", Y)
+    # print("\n\n", adm.Ybus.toarray())
+
+    assert np.allclose(adm.Ybus.toarray(), Y)
+
+
+def test_lynn_Ybus2():
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'lynn5node.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    adm = nc.get_admittance_matrices()
+
+    Y = np.zeros((5, 5), dtype=complex)
+    # make by hand the matrices
+
+    for k in range(nc.passive_branch_data.nelm):
+        f = nc.passive_branch_data.F[k]
+        t = nc.passive_branch_data.T[k]
+
+        if nc.passive_branch_data.active[k]:
+            ys = 1.0 / complex(nc.passive_branch_data.R[k], nc.passive_branch_data.X[k])
+            bc2 = complex(nc.passive_branch_data.G[k], nc.passive_branch_data.B[k]) / 2.0
+
+            Y[f, f] += ys + bc2
+            Y[f, t] += - ys
+            Y[t, f] += - ys
+            Y[t, t] += ys + bc2
+
+    print("\n\nY expected:\n", Y)
+    print("\n\n", adm.Ybus.toarray())
+
+    assert np.allclose(adm.Ybus.toarray(), Y)
+
+
+def test_lynn_Ybus3():
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'lynn5node.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    m = nc.passive_branch_data.nelm
+    for _ in range(m):
+        print("-" * 200)
+        cidx = np.unique(np.random.random_integers(0, m-1, np.random.random_integers(1, m-1, 1)))
+
+        nc.passive_branch_data.active[cidx] = 0
+
+        print("c_idx: ", cidx)
+
+        # make by hand the matrices
+        Y = np.zeros((5, 5), dtype=complex)
+        for k in range(nc.passive_branch_data.nelm):
+            f = nc.passive_branch_data.F[k]
+            t = nc.passive_branch_data.T[k]
+
+            if nc.passive_branch_data.active[k]:
+                ys = 1.0 / complex(nc.passive_branch_data.R[k], nc.passive_branch_data.X[k])
+                bc2 = complex(nc.passive_branch_data.G[k], nc.passive_branch_data.B[k]) / 2.0
+
+                Y[f, f] += ys + bc2
+                Y[f, t] += - ys
+                Y[t, f] += - ys
+                Y[t, t] += ys + bc2
+
+        # Compose the matrix
+        Y2 = np.zeros((5, 5), dtype=complex)
+        islands = nc.split_into_islands()
+        print("islands:", len(islands))
+        for isl in islands:
+            bus_idx = isl.bus_data.original_idx
+            adm_i = isl.get_admittance_matrices()
+            Y2[np.ix_(bus_idx, bus_idx)] = adm_i.Ybus.toarray()
+
+        print("\n\nY expected:\n", Y)
+        print("\n\n", Y2)
+
+        assert np.allclose(Y2, Y)
+
+        # revert the state
+        nc.passive_branch_data.active[cidx] = 1

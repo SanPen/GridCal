@@ -173,7 +173,7 @@ class PfFormulationTemplate:
         Names matching x
         :return:
         """
-        cols = [f'x {i}' for i in self.var2x()]
+        cols = [f'x {i}' for i, x in enumerate(self.var2x())]
 
         return cols
 
@@ -183,11 +183,11 @@ class PfFormulationTemplate:
         :return:
         """
 
-        rows = [f'f {i}' for i in self.f]
+        rows = [f'f {i}' for i, val in enumerate(self.f)]
 
         return rows
 
-    def get_jacobian_df(self, J = None, autodiff=False) -> pd.DataFrame:
+    def get_jacobian_df(self, J=None, autodiff=False) -> pd.DataFrame:
         """
         Get the Jacobian DataFrame
         :return: DataFrame
@@ -219,7 +219,6 @@ class PfFormulationTemplate:
             columns=["x"],
             index=self.get_x_names()
         )
-
 
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """
