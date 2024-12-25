@@ -4674,9 +4674,9 @@ class Assets:
                                                                           add_hvdc=add_hvdc,
                                                                           add_switch=add_switch))}
 
-    def get_branch_number_FT(self, add_vsc: bool = True,
-                             add_hvdc: bool = True,
-                             add_switch: bool = False) -> Tuple[IntVec, IntVec]:
+    def get_branch_FT(self, add_vsc: bool = True,
+                      add_hvdc: bool = True,
+                      add_switch: bool = False) -> Tuple[IntVec, IntVec]:
         """
         get the from and to arrays of indices
         :param add_vsc: Include the list of VSC?
@@ -4769,7 +4769,7 @@ class Assets:
         get the from and to arrays of indices
         :return: IntVec, IntVec
         """
-        return self.get_branch_number_FT(add_vsc=True, add_hvdc=False, add_switch=False)
+        return self.get_branch_FT(add_vsc=True, add_hvdc=False, add_switch=False)
 
     def delete_groupings_with_object(self, obj: BRANCH_TYPES, delete_groups: bool = True):
         """

@@ -3454,8 +3454,10 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     Sfnorm = Sfabs
 
-                if self.circuit.get_branch_number_wo_vsc_hvdc() == len(Sf):
-                    for i, branch in enumerate(self.circuit.get_branches_wo_vsc_hvdc_iter()):
+                if self.circuit.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True) == len(Sf):
+                    for i, branch in enumerate(self.circuit.get_branches_iter(add_vsc=False,
+                                                                              add_hvdc=False,
+                                                                              add_switch=True)):
 
                         # try to find the diagram object of the DB object
                         graphic_object = self.graphics_manager.query(branch)

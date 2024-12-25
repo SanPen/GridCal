@@ -462,7 +462,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_vsc_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
         vsc_devs = self.circuit.vsc_devices
 
@@ -522,7 +522,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active_prof[t_idx] for bus in buses]
@@ -570,7 +570,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
@@ -617,7 +617,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         # hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
@@ -664,7 +664,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
@@ -711,7 +711,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
@@ -767,7 +767,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active_prof[t_idx] for bus in buses]
@@ -820,7 +820,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
@@ -869,7 +869,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active_prof[t_idx] for bus in buses]
@@ -919,11 +919,11 @@ class DiagramsMain(CompiledArraysMain):
         """
         t_idx2 = 0 if t_idx is None else t_idx
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active_prof[t_idx2] for bus in self.circuit.buses]
-        br_active = [br.active_prof[t_idx2] for br in self.circuit.get_branches_wo_hvdc()]
+        br_active = [br.active_prof[t_idx2] for br in branches]
         hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.hvdc_lines]
 
         return diagram_widget.colour_results(voltages=results.voltage[t_idx2, :],
@@ -965,7 +965,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
@@ -1014,7 +1014,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active_prof[t_idx] for bus in buses]
@@ -1057,7 +1057,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
@@ -1103,7 +1103,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active_prof[t_idx] for bus in buses]
@@ -1147,7 +1147,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
+        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
         hvdc_lines = self.circuit.hvdc_lines
 
         nbus = self.circuit.get_bus_number()
