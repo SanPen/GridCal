@@ -74,7 +74,12 @@ def test_ieee14_contingencies():
     res_file = os.path.join('data', 'results', 'IEEE14_con_results_matpower.xlsx')
     main_circuit = FileOpen(fname).open()
     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
-    pf_options = PowerFlowOptions(SolverType.NR, retry_with_other_methods=False)
+    pf_options = PowerFlowOptions(SolverType.NR,
+                                  retry_with_other_methods=False,
+                                  control_q=False,
+                                  control_taps_phase=False,
+                                  control_taps_modules=False,
+                                  control_remote_voltage=False,)
 
     vm_df = pd.read_excel(res_file, sheet_name='Vm', index_col=0)
     va_df = pd.read_excel(res_file, sheet_name='Va', index_col=0)
@@ -92,6 +97,7 @@ def test_ieee14_contingencies():
             vm = np.abs(res.voltage)
             va = np.angle(res.voltage, deg=True)
 
+            # TODO: Comparing with PSSe, it is the same value...do the PSSe comaprison instead
             assert np.allclose(vm, vm_expected, atol=1e-3)
             assert np.allclose(va, va_expected, atol=1e-3)
         except AttributeError:

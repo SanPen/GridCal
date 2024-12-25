@@ -5,6 +5,7 @@
 from __future__ import annotations
 from typing import Dict
 import numpy as np
+from array import array
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import ConverterControlType
 from GridCalEngine.basic_structures import Vec, IntVec, ObjVec, Logger

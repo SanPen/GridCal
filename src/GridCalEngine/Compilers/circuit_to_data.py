@@ -1060,9 +1060,18 @@ def fill_controllable_branch(
     ctrl_data.tap_angle_min[ii] = elm.tap_phase_min
     ctrl_data.tap_angle_max[ii] = elm.tap_phase_max
 
-    if (ctrl_data.tap_module_control_mode[ii] not in (TapModuleControl.fixed, 0)
-            or ctrl_data.tap_phase_control_mode[ii] not in (TapPhaseControl.fixed, 0)):
-        ctrl_data.any_pf_control = True
+    # if (ctrl_data.tap_module_control_mode[ii] not in (TapModuleControl.fixed, 0)
+    #         or ctrl_data.tap_phase_control_mode[ii] not in (TapPhaseControl.fixed, 0)):
+    #     ctrl_data.any_pf_control = True
+
+    if ctrl_data.tap_module_control_mode[ii] != 0:
+        if ctrl_data.tap_module_control_mode[ii] != TapModuleControl.fixed:
+            ctrl_data.any_pf_control = True
+
+    if not ctrl_data.any_pf_control:  # if true, we can skip this step
+        if ctrl_data.tap_phase_control_mode[ii] != 0:
+            if ctrl_data.tap_phase_control_mode[ii] != TapPhaseControl.fixed:
+                ctrl_data.any_pf_control = True
 
     if not use_stored_guess:
         if ctrl_data.tap_module_control_mode[ii] == TapModuleControl.Vm:
