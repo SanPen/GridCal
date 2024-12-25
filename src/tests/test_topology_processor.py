@@ -994,9 +994,10 @@ def test_lynn_Ybus2():
     assert np.allclose(adm.Ybus.toarray(), Y)
 
 
-def test_lynn_Ybus3():
+def test_lynn_Ybus3() -> None:
     """
-
+    This test randomly deactivates a number of branches and calculates Ybus
+    manually and then the assembles Ybus from the possible islands local Ybuses and compares both
     :return:
     """
     fname = os.path.join('data', 'grids', 'lynn5node.gridcal')

@@ -2373,7 +2373,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 G=self.nc.passive_branch_data.G,
                 B=self.nc.passive_branch_data.B,
                 k=self.nc.passive_branch_data.k,
-                active=self.nc.passive_branch_data.active,
                 tap_module=tap_modules,
                 vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                 vtap_t=self.nc.passive_branch_data.virtual_tap_t,

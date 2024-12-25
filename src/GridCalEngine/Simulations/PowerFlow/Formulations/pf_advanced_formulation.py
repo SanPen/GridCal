@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple, List, Callable
 import numpy as np
-import pandas as pd
 from numba import njit
 from scipy.sparse import lil_matrix, csc_matrix
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
@@ -221,7 +220,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         k_v_m = self.analyze_branch_controls()  # this fills the indices above
         self.vd, pq, pv, pqv, p, self.no_slack = compile_types(
-            Pbus=self.nc.Sbus.real,
+            Pbus=self.S0.real,
             types=self.bus_types
         )
         self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
@@ -452,14 +451,14 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         V = polar_to_rect(Vm, Va)
 
         # Update converter losses
-        # It = get_It(k=self.idx_conv, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T)
+        # It = get_It(k=self.idx_conv, V=V, ytf=adm.ytf, ytt=adm.ytt, F=F, T=T)
         # Itm = np.abs(It)
         # Itm2 = Itm * Itm
         # PLoss_IEC = (self.nc.passive_branch_data.alpha3[self.idx_conv] * Itm2
         #              + self.nc.passive_branch_data.alpha2[self.idx_conv] * Itm2
         #              + self.nc.passive_branch_data.alpha1[self.idx_conv])
         #
-        # self.Gsw = PLoss_IEC / np.power(Vm[self.nc.F[self.idx_conv]], 2.0)
+        # self.Gsw = PLoss_IEC / np.power(Vm[F[self.idx_conv]], 2.0)
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
@@ -467,17 +466,20 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         dS = Scalc - Sbus  # compute the mismatch
 
+        F = self.nc.passive_branch_data.F
+        T = self.nc.passive_branch_data.T
+        
         Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V,
-                    yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
+                    yff=adm.yff, yft=adm.yft, F=F, T=T).real
 
         Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V,
-                    yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).imag
+                    yff=adm.yff, yft=adm.yft, F=F, T=T).imag
 
         Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V,
-                    ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
+                    ytf=adm.ytf, ytt=adm.ytt, F=F, T=T).real
 
         Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V,
-                    ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).imag
+                    ytf=adm.ytf, ytt=adm.ytt, F=F, T=T).imag
 
         _f = np.r_[
             dS[self.idx_dP].real,
@@ -525,14 +527,14 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.V = polar_to_rect(self.Vm, self.Va)
 
         # Update converter losses
-        # It = get_It(k=self.idx_conv, V=self.V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
+        # It = get_It(k=self.idx_conv, V=self.V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=F, T=T)
         # Itm = np.abs(It)
         # Itm2 = Itm * Itm
         # PLoss_IEC = (self.nc.passive_branch_data.alpha3[self.idx_conv] * Itm2
         #              + self.nc.passive_branch_data.alpha2[self.idx_conv] * Itm2
         #              + self.nc.passive_branch_data.alpha1[self.idx_conv])
         #
-        # self.Gsw = PLoss_IEC / np.power(self.Vm[self.nc.F[self.idx_conv]], 2.0)
+        # self.Gsw = PLoss_IEC / np.power(self.Vm[F[self.idx_conv]], 2.0)
 
         # compute the function residual
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
@@ -540,17 +542,20 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         dS = self.Scalc - Sbus  # compute the mismatch
 
+        F = self.nc.passive_branch_data.F
+        T = self.nc.passive_branch_data.T
+
         Pf = get_Sf(k=self.idx_dPf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
+                    yff=self.adm.yff, yft=self.adm.yft, F=F, T=T).real
 
         Qf = get_Sf(k=self.idx_dQf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).imag
+                    yff=self.adm.yff, yft=self.adm.yft, F=F, T=T).imag
 
         Pt = get_St(k=self.idx_dPt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).real
+                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=F, T=T).real
 
         Qt = get_St(k=self.idx_dQt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).imag
+                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=F, T=T).imag
 
         self._f = np.r_[
             dS[self.idx_dP].real,
@@ -604,7 +609,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             if self.options.distributed_slack:
                 ok, delta = compute_slack_distribution(Scalc=self.Scalc,
                                                        vd=self.vd,
-                                                       bus_installed_power=self.nc.bus_installed_power)
+                                                       bus_installed_power=self.nc.bus_data.installed_power)
                 if ok:
                     any_change = True
                     # Update the objective power to reflect the slack distribution
@@ -663,7 +668,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
             if branch_ctrl_change:
                 # k_v_m = self.analyze_branch_controls()
-                vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.nc.Sbus.real, types=self.bus_types)
+                vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.S0.real, types=self.bus_types)
                 self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
             if any_change or branch_ctrl_change:
@@ -689,18 +694,21 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.Scalc = compute_power(self.adm.Ybus, self.V)
 
         dS = self.Scalc - Sbus  # compute the mismatch
-
+        
+        F = self.nc.passive_branch_data.F
+        T = self.nc.passive_branch_data.T
+        
         Pf = get_Sf(k=self.idx_dPf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
+                    yff=self.adm.yff, yft=self.adm.yft, F=F, T=T).real
 
         Qf = get_Sf(k=self.idx_dQf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).imag
+                    yff=self.adm.yff, yft=self.adm.yft, F=F, T=T).imag
 
         Pt = get_St(k=self.idx_dPt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).real
+                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=F, T=T).real
 
         Qt = get_St(k=self.idx_dQt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).imag
+                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=F, T=T).imag
 
         self._f = np.r_[
             dS[self.idx_dP].real,
@@ -763,10 +771,13 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         dS = Scalc - Sbus  # compute the mismatch
 
-        Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
-        Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
-        Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
-        Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
+        F = self.nc.passive_branch_data.F
+        T = self.nc.passive_branch_data.T
+
+        Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=F, T=T).real
+        Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=F, T=T).real
+        Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=F, T=T).real
+        Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=F, T=T).real
 
         f = np.r_[
             dS[self.idx_dP].real,
@@ -806,7 +817,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             tap_modules = expand(self.nc.nbr, self.m, self.idx_dm, 1.0)
             tap_angles = expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0)
             tap = polar_to_rect(tap_modules, tap_angles)
-
+            F = self.nc.passive_branch_data.F
+            T = self.nc.passive_branch_data.T
             J = adv_jacobian(nbus=self.nc.nbus,
                              nbr=self.nc.nbr,
                              idx_dva=self.idx_dVa,
@@ -819,8 +831,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                              idx_dQf=self.idx_dQf,
                              idx_dPt=self.idx_dPt,
                              idx_dQt=self.idx_dQt,
-                             F=self.nc.F,
-                             T=self.nc.T,
+                             F=F,
+                             T=T,
                              Ys=self.Ys,
                              kconv=self.nc.passive_branch_data.k,
                              complex_tap=tap,
@@ -864,19 +876,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         rows += [f'dQt {i}' for i in self.idx_dQt]
 
         return rows
-
-    def get_jacobian_df(self, J = None, autodiff=True) -> pd.DataFrame:
-        """
-        Get the Jacobian DataFrame
-        :return: DataFrame
-        """
-        if J is None:
-            J = self.Jacobian(autodiff=autodiff)
-        return pd.DataFrame(
-            data=J.toarray(),
-            columns=self.get_x_names(),
-            index=self.get_fx_names(),
-        )
 
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """

@@ -195,7 +195,7 @@ class PfBasicFormulation(PfFormulationTemplate):
             if self.options.distributed_slack:
                 ok, delta = compute_slack_distribution(Scalc=self.Scalc,
                                                        vd=self.vd,
-                                                       bus_installed_power=self.nc.bus_installed_power)
+                                                       bus_installed_power=self.nc.bus_data.installed_power)
                 if ok:
                     any_change = True
                     # Update the objective power to reflect the slack distribution

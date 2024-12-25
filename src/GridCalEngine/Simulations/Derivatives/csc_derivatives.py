@@ -13,7 +13,7 @@ from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, make_lookup
 
 
 @njit(cache=True)
-def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, Vm: CxVec) -> Tuple[CxVec, CxVec]:
+def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, Vm: Vec) -> Tuple[CxVec, CxVec]:
     """
     Compute the power injection derivatives w.r.t the voltage module and angle
     :param Yx: data of Ybus in CSC format
@@ -921,7 +921,7 @@ def derivatives_ma_csc_numba(nbus, nbr, iXxma, F, T, Ys, kconv, tap, tap_module,
 
 
 @njit()
-def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec,
+def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: Vec,
                  kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
@@ -981,7 +981,7 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
 
 @njit()
-def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec,
+def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: Vec,
                kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)

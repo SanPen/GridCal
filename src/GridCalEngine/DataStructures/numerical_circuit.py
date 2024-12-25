@@ -857,7 +857,6 @@ class NumericalCircuit:
             G=self.passive_branch_data.G,
             B=self.passive_branch_data.B,
             k=self.passive_branch_data.k,
-            active=self.passive_branch_data.active,
             tap_module=self.active_branch_data.tap_module,
             vtap_f=self.passive_branch_data.virtual_tap_f,
             vtap_t=self.passive_branch_data.virtual_tap_t,

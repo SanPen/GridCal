@@ -120,7 +120,6 @@ def compute_admittances(R: Vec,
                         G: Vec,
                         B: Vec,
                         k: Vec,
-                        active: IntVec,
                         tap_module: Vec,
                         vtap_f: Vec,
                         vtap_t: Vec,
@@ -140,7 +139,6 @@ def compute_admittances(R: Vec,
     :param G: array of branch conductance (p.u.)
     :param B: array of branch susceptance (p.u.)
     :param k: array of converter values: 1 for regular Branches, sqrt(3) / 2 for VSC
-    :param active: array of active branches (bool)
     :param tap_module: array of tap modules (for all Branches, regardless of their type)
     :param vtap_f: array of virtual taps at the "from" side
     :param vtap_t: array of virtual taps at the "to" side

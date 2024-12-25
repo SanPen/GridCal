@@ -13,11 +13,11 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResu
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation import PfBasicFormulation
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation2 import PfGeneralizedFormulation
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import PfAdvancedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
-from GridCalEngine.Topology.simulation_indices import compile_types, SimulationIndices
+from GridCalEngine.Topology.simulation_indices import SimulationIndices
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -118,7 +118,7 @@ def solve(nc: NumericalCircuit,
     solver_idx = 0
 
     # set the initial value
-    Qmin, Qmax = nc.get_reactive_power_limits()
+    Qmax, Qmin = nc.get_reactive_power_limits()
     I0 = nc.get_current_injections_pu()
     Y0 = nc.get_admittance_injections_pu()
 
@@ -331,15 +331,15 @@ def solve(nc: NumericalCircuit,
             elif solver_type == SolverType.LM:
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S0,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       nc=nc,
-                                                       options=options,
-                                                       logger=logger)
+                    problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                    S0=S0,
+                                                    I0=I0,
+                                                    Y0=Y0,
+                                                    Qmin=Qmin,
+                                                    Qmax=Qmax,
+                                                    nc=nc,
+                                                    options=options,
+                                                    logger=logger)
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,
@@ -389,15 +389,15 @@ def solve(nc: NumericalCircuit,
             elif solver_type == SolverType.NR:
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S0,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       nc=nc,
-                                                       options=options,
-                                                       logger=logger)
+                    problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                    S0=S0,
+                                                    I0=I0,
+                                                    Y0=Y0,
+                                                    Qmin=Qmin,
+                                                    Qmax=Qmax,
+                                                    nc=nc,
+                                                    options=options,
+                                                    logger=logger)
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,
@@ -420,15 +420,15 @@ def solve(nc: NumericalCircuit,
             elif solver_type == SolverType.PowellDogLeg:
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S0,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       nc=nc,
-                                                       options=options,
-                                                       logger=logger)
+                    problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                    S0=S0,
+                                                    I0=I0,
+                                                    Y0=Y0,
+                                                    Qmin=Qmin,
+                                                    Qmax=Qmax,
+                                                    nc=nc,
+                                                    options=options,
+                                                    logger=logger)
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,

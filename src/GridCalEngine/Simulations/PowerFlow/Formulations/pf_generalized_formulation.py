@@ -1880,19 +1880,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return rows
 
-    def get_jacobian_df(self, J = None, autodiff=False) -> pd.DataFrame:
-        """
-        Get the Jacobian DataFrame
-        :return: DataFrame
-        """
-        if J is None:
-            J = self.Jacobian(autodiff=autodiff)
-        return pd.DataFrame(
-            data=J.toarray(),
-            columns=self.get_x_names(),
-            index=self.get_fx_names(),
-        )
-
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """
         Get the problem solution

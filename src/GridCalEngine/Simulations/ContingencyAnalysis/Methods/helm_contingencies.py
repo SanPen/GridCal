@@ -9,8 +9,9 @@ from typing import List
 from GridCalEngine.basic_structures import IntVec, CxVec
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_dY, \
-    helm_preparation_dY, HelmPreparation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import (helm_coefficients_dY,
+                                                                                  helm_preparation_dY,
+                                                                                  HelmPreparation)
 
 
 def calc_V_outage(nc: NumericalCircuit,
@@ -75,7 +76,7 @@ def calc_V_outage(nc: NumericalCircuit,
                               tap_angle=nc.active_branch_data.tap_angle[contingency_br_indices],
                               Cf=nc.passive_branch_data.Cf[contingency_br_indices, :],
                               Ct=nc.passive_branch_data.Ct[contingency_br_indices, :],
-                              Yshunt_bus=np.zeros(nc.nbus),
+                              Yshunt_bus=np.zeros(nc.nbus, dtype=complex),
                               conn=nc.passive_branch_data.conn[contingency_br_indices],
                               seq=1,
                               add_windings_phase=False)
@@ -116,6 +117,7 @@ class HelmVariations:
     """
     Class to quickly evaluate topological variations based on HELM coefficients
     """
+
     def __init__(self, numerical_circuit: NumericalCircuit):
         """
         Constructor
