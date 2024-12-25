@@ -15,7 +15,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff, scipy_to_cxmat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -24,6 +24,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, BusMode, HvdcControlType,
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
+from GridCalEngine.Simulations.Derivatives.matpower_derivatives import dSbus_dV_matpower
 
 # @njit()
 def adv_jacobian(nbus: int,
@@ -162,6 +163,12 @@ def adv_jacobian(nbus: int,
     dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus.indices, Ybus.indptr, dS_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus.indices, Ybus.indptr, dS_dVa_x)
 
+    #matpower derivatives
+    mp_dS_dVa, mp_dS_dVm = dSbus_dV_matpower(Ybus, V)
+    dS_dVm = scipy_to_cxmat(mp_dS_dVm)
+    dS_dVa = scipy_to_cxmat(mp_dS_dVa)
+    print()
+
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
     dPf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, adm.yff, adm.yft, V, F, T).real
@@ -190,16 +197,35 @@ def adv_jacobian(nbus: int,
     dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, k, tap, V).real
     dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, k, tap, V).imag
 
+
+
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
-                        [dP_dVm__, dP_dVa__, dP_dm__, dP_dtau__,
-                         dQ_dVm__, dQ_dVa__, dQ_dm__, dQ_dtau__,
-                         dPf_dVm_, dPf_dVa_, dPf_dm_, dPf_dtau_,
-                         dQf_dVm_, dQf_dVa_, dQf_dm_, dQf_dtau_,
-                         dPt_dVm_, dPt_dVa_, dPt_dm_, dPt_dtau_,
-                         dQt_dVm_, dQt_dVa_, dQt_dm_, dQt_dtau_],
+                        [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__,
+                         dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__,
+                         dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_,
+                         dPt_dVa_, dPt_dVm_, dPt_dm_, dPt_dtau_,
+                         dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_,
+                         dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_],
                         n_rows=6, n_cols=4)
 
+
+
+    # J = csc_stack_2d_ff(
+    #     mats=[
+    #         dP_dVm__, dP_dVa__, dP_dPfvsc__, dP_dPtvsc__, dP_dQtvsc__, dP_dPfhvdc__, dP_dPthvdc__, dP_dQfhvdc__, dP_dQthvdc__, dP_dm__, dP_dtau__,
+    #         dQ_dVm__, dQ_dVa__, dQ_dPfvsc__, dQ_dPtvsc__, dQ_dQtvsc__, dQ_dPfhvdc__, dQ_dPthvdc__, dQ_dQfhvdc__, dQ_dQthvdc__, dQ_dm__, dQ_dtau__,
+    #         dLossvsc_dVm_, dLossvsc_dVa_, dLossvsc_dPfvsc_, dLossvsc_dPtvsc_, dLossvsc_dQtvsc_, dLossvsc_dPfhvdc_, dLossvsc_dPthvdc_, dLossvsc_dQfhvdc_, dLossvsc_dQthvdc_, dLossvsc_dm_, dLossvsc_dtau_,
+    #         dLossHVDC_dVm_, dLossHVDC_dVa_, dLossHVDC_dPfvsc_, dLossHVDC_dPtvsc_, dLossHVDC_dQtvsc_, dLossHVDC_dPfhvdc_, dLossHVDC_dPthvdc_, dLossHVDC_dQfhvdc_, dLossHVDC_dQthvdc_, dLossHVDC_dm_, dLossHVDC_dtau_,
+    #         dInj_dVm_, dInj_dVa_, dInj_dPfvsc_, dInj_dPtvsc_, dInj_dQtvsc_, dInj_dPfhvdc_, dInj_dPthvdc_, dInj_dQfhvdc_, dInj_dQthvdc_, dInj_dm_, dInj_dtau_,
+    #         dPf_dVm_, dPf_dVa_, dPf_dPfvsc_, dPf_dPtvsc_, dPf_dQtvsc_, dPf_dPfhvdc_, dPf_dPthvdc_, dPf_dQfhvdc_, dPf_dQthvdc_, dPf_dm_, dPf_dtau_,
+    #         dQf_dVm_, dQf_dVa_, dQf_dPfvsc_, dQf_dPtvsc_, dQf_dQtvsc_, dQf_dPfhvdc_, dQf_dPthvdc_, dQf_dQfhvdc_, dQf_dQthvdc_, dQf_dm_, dQf_dtau_,
+    #         dPt_dVm_, dPt_dVa_, dPt_dPfvsc_, dPt_dPtvsc_, dPt_dQtvsc_, dPt_dPfhvdc_, dPt_dPthvdc_, dPt_dQfhvdc_, dPt_dQthvdc_, dPt_dm_, dPt_dtau_,
+    #         dQt_dVm_, dQt_dVa_, dQt_dPfvsc_, dQt_dPtvsc_, dQt_dQtvsc_, dQt_dPfhvdc_, dQt_dPthvdc_, dQt_dQfhvdc_, dQt_dQthvdc_, dQt_dm_, dQt_dtau_
+    #     ],
+    #     n_rows=9,
+    #     n_cols=11
+    # )
 
     return J
 
@@ -2077,8 +2103,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Convert X to decission variables
         :param x: solution vector
         """
-        a = len(self.i_u_vm)
-        b = a + len(self.i_u_va)
+        a = len(self.i_u_va)
+        b = a + len(self.i_u_vm)
         c = b + len(self.u_vsc_pf)
         d = c + len(self.u_vsc_pt)
         e = d + len(self.u_vsc_qt)
@@ -2090,8 +2116,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         k = j + len(self.u_cbr_tau)
 
         # update the vectors
-        self.Vm[self.i_u_vm] = x[0:a]
-        self.Va[self.i_u_va] = x[a:b]
+        self.Va[self.i_u_va] = x[0:a]
+        self.Vm[self.i_u_vm] = x[a:b]
         self.Pf_vsc[self.u_vsc_pf] = x[b:c]
         self.Pt_vsc[self.u_vsc_pt] = x[c:d]
         self.Qt_vsc[self.u_vsc_qt] = x[d:e]
@@ -2108,8 +2134,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: Vector
         """
         return np.r_[
-            self.Vm[self.i_u_vm],
             self.Va[self.i_u_va],
+            self.Vm[self.i_u_vm],
             self.Pf_vsc[self.u_vsc_pf],
             self.Pt_vsc[self.u_vsc_pt],
             self.Qt_vsc[self.u_vsc_qt],
@@ -2145,8 +2171,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: Residual vector
         """
 
-        a = len(self.i_u_vm)
-        b = a + len(self.i_u_va)
+        a = len(self.i_u_va)
+        b = a + len(self.i_u_vm)
         c = b + len(self.u_vsc_pf)
         d = c + len(self.u_vsc_pt)
         e = d + len(self.u_vsc_qt)
@@ -2165,8 +2191,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Qt_vsc = self.Qt_vsc.copy()
 
         # update the vectors
-        Vm[self.i_u_vm] = x[0:a]
-        Va[self.i_u_va] = x[a:b]
+        Va[self.i_u_va] = x[0:a]
+        Vm[self.i_u_vm] = x[a:b]
         Pf_vsc[self.u_vsc_pf] = x[b:c]
         Pt_vsc[self.u_vsc_pt] = x[c:d]
         Qt_vsc[self.u_vsc_qt] = x[d:e]
@@ -2467,7 +2493,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)
             # dff.to_excel("Jacobian_autodiff.xlsx")
-            return J
+            return J_sym
         else:
             J = None
 
@@ -2481,8 +2507,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Names matching x
         :return:
         """
-        cols = [f'dVm {i}' for i in self.i_u_vm]
-        cols += [f'dVa {i}' for i in self.i_u_va]
+        cols = [f'dVa {i}' for i in self.i_u_va]
+        cols += [f'dVm {i}' for i in self.i_u_vm]
 
         cols += [f'dPf_var_vsc {i}' for i in self.u_vsc_pf]
         cols += [f'dPt_var_vsc {i}' for i in self.u_vsc_pt]
