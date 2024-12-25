@@ -921,7 +921,7 @@ def derivatives_ma_csc_numba(nbus, nbr, iXxma, F, T, Ys, kconv, tap, tap_module,
 
 
 @njit()
-def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec, Beq: Vec,
+def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: Vec, Beq: Vec,
                  kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
@@ -982,7 +982,7 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
 
 @njit()
-def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec, Beq: Vec,
+def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: Vec, Beq: Vec,
                kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)

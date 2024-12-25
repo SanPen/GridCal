@@ -945,13 +945,17 @@ def fill_controllable_branch(
     data.tap_angle_min[ii] = elm.tap_phase_min
     data.tap_angle_max[ii] = elm.tap_phase_max
 
-    if (data.tap_module_control_mode[ii] != TapModuleControl.fixed
-            or data.tap_phase_control_mode[ii] != TapPhaseControl.fixed):
-        data._any_pf_control = True
+    if data.tap_module_control_mode[ii] != 0:
+        if data.tap_module_control_mode[ii] != TapModuleControl.fixed:
+            data.any_pf_control = True
+
+    if data.tap_phase_control_mode[ii] != 0:
+        if data.tap_phase_control_mode[ii] != TapPhaseControl.fixed:
+            data.any_pf_control = True
 
     if not use_stored_guess:
         if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
-            data._any_pf_control = True
+            data.any_pf_control = True
             bus_idx = data.tap_controlled_buses[ii]
             if not bus_voltage_used[bus_idx]:
                 if elm.vset > 0.0:
@@ -1121,7 +1125,7 @@ def get_branch_data(
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
-        data._any_pf_control = True
+        data.any_pf_control = True
         ii += 1
 
     # UPFC
