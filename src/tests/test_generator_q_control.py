@@ -23,13 +23,14 @@ def test_q_control_true() -> None:
         power_flow.run()
 
         nc = compile_numerical_circuit_at(main_circuit)
-
+        indices = nc.get_simulation_indices()
+        Qmax_bus, Qmin_bus = nc.get_reactive_power_limits()
         assert power_flow.results.converged
 
-        for i in nc.pv:
+        for i in indices.pv:
             Q = power_flow.results.Sbus.imag[i]
-            Qmin = nc.Qmin_bus[i] * nc.Sbase
-            Qmax = nc.Qmax_bus[i] * nc.Sbase
+            Qmin = Qmin_bus[i] * nc.Sbase
+            Qmax = Qmax_bus[i] * nc.Sbase
             ok = Qmin <= Q <= Qmax
 
             assert ok
