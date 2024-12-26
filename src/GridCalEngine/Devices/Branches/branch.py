@@ -62,13 +62,28 @@ class BranchType(Enum):
 
 class Branch(BranchParent):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='Branch', idtag=None,
+    def __init__(self,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
+                 name='Branch',
+                 idtag=None,
                  r=1e-20, x=1e-20, g=1e-20, b=1e-20,
-                 rate=1.0, tap=1.0, shift_angle=0, active=True, tolerance=0, cost=0.0,
-                 mttf=0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 branch_type: BranchType = BranchType.Line, length=1, vset=1.0,
-                 temp_base=20, temp_oper=20, alpha=0.00330,
-                 bus_to_regulated=False, template=None, ):
+                 rate=1.0,
+                 tap=1.0,
+                 shift_angle=0,
+                 active=True,
+                 tolerance=0.0,
+                 cost=0.0,
+                 mttf=0, mttr=0,
+                 r_fault=0.0, x_fault=0.0, fault_pos=0.5,
+                 branch_type: BranchType = BranchType.Line,
+                 length=1.0,
+                 vset=1.0,
+                 temp_base=20,
+                 temp_oper=20,
+                 alpha=0.00330,
+                 bus_to_regulated=False,
+                 template=None,):
         """
         This class exists for legacy reasons, use the Line or Transformer2w classes instead! *
         The **Branch** class represents the connections between nodes (i.e.
@@ -98,7 +113,7 @@ class Branch(BranchParent):
         :param fault_pos: Mid-line fault position in per unit (0.0 = `bus_from`, 0.5 = middle, 1.0 = `bus_to`)
         :param branch_type: Device type enumeration (ex.: :class:`GridCalEngine.Devices.transformer.TransformerType`)
         :param length: Length of the branch in km
-        :param vset: Voltage set-point of the voltage controlled bus in per unit
+        :param vset: Voltage set-point of the voltage controlled bus in per-unit
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
@@ -114,6 +129,7 @@ class Branch(BranchParent):
                               cn_from=None,
                               cn_to=None,
                               active=active,
+                              reducible=False,
                               rate=rate,
                               contingency_factor=1.0,
                               protection_rating_factor=1.4,
@@ -124,7 +140,7 @@ class Branch(BranchParent):
                               build_status=BuildStatus.Commissioned,
                               capex=0.0,
                               opex=0.0,
-                              Cost=cost,
+                              cost=cost,
                               device_type=DeviceType.BranchDevice)
 
         # List of measurements

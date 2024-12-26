@@ -3,8 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-
-
 import pandas as pd
 import numpy as np
 from typing import Tuple, Union
@@ -129,10 +127,19 @@ class HvdcLine(BranchParent):
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
                  cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None,
-                 name='HVDC Line', idtag=None, active=True, code='',
-                 rate=1.0, Pset=0.0,
-                 r=1e-20, loss_factor=0.0,
-                 Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
+                 name='HVDC Line',
+                 idtag=None,
+                 active=True,
+                 code='',
+                 rate=1.0,
+                 Pset=0.0,
+                 r=1e-20,
+                 loss_factor=0.0,
+                 Vset_f=1.0,
+                 Vset_t=1.0,
+                 length=1.0,
+                 mttf=0.0,
+                 mttr=0.0,
                  overload_cost=1000.0,
                  min_firing_angle_f=-1.0, max_firing_angle_f=1.0,
                  min_firing_angle_t=-1.0, max_firing_angle_t=1.0,
@@ -186,6 +193,7 @@ class HvdcLine(BranchParent):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
+                              reducible=False,
                               rate=rate,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
@@ -196,7 +204,7 @@ class HvdcLine(BranchParent):
                               build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              Cost=overload_cost,
+                              cost=overload_cost,
                               device_type=DeviceType.HVDCLineDevice)
 
         # line length in km

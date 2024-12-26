@@ -101,6 +101,7 @@ class Line(BranchParent):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
+                              reducible=False,
                               rate=rate,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
@@ -111,7 +112,7 @@ class Line(BranchParent):
                               build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              Cost=cost,
+                              cost=cost,
                               device_type=DeviceType.LineDevice)
 
         # line length in km

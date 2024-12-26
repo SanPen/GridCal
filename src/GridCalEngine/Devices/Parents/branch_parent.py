@@ -51,6 +51,7 @@ class BranchParent(PhysicalDevice):
                  cn_from: Union[ConnectivityNode, None],
                  cn_to: Union[ConnectivityNode, None],
                  active: bool,
+                 reducible: bool,
                  rate: float,
                  contingency_factor: float,
                  protection_rating_factor: float,
@@ -61,7 +62,7 @@ class BranchParent(PhysicalDevice):
                  build_status: BuildStatus,
                  capex: float,
                  opex: float,
-                 Cost: float,
+                 cost: float,
                  device_type: DeviceType):
         """
 
@@ -82,7 +83,7 @@ class BranchParent(PhysicalDevice):
         :param build_status: Branch build status. Used in expansion planning.
         :param capex: Cost of investment. (e/MW)
         :param opex: Cost of operation. (e/MWh)
-        :param Cost: Cost of overloads. Used in OPF (e/MWh)
+        :param cost: Cost of overloads. Used in OPF (e/MWh)
         :param device_type: device_type (passed on)
         """
 
@@ -99,6 +100,8 @@ class BranchParent(PhysicalDevice):
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
 
+        self.reducible = bool(reducible)
+
         self.contingency_enabled: bool = contingency_enabled
 
         self.monitor_loading: bool = monitor_loading
@@ -107,9 +110,9 @@ class BranchParent(PhysicalDevice):
 
         self.mttr = mttr
 
-        self.Cost = Cost
+        self.Cost = cost
 
-        self._Cost_prof = Profile(default_value=Cost, data_type=float)
+        self._Cost_prof = Profile(default_value=cost, data_type=float)
 
         self.capex = capex
 
@@ -151,6 +154,9 @@ class BranchParent(PhysicalDevice):
                       definition='Name of the connectivity node at the "to" side', editable=False)
 
         self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
+
+        self.register('reducible', units="", tpe=bool,
+                      definition='Is the branch to be reduced by the topology preprocessor?')
 
         self.register('rate', units="MVA", tpe=float, definition='Thermal rating power', profile_name="rate_prof")
         self.register('contingency_factor', units="p.u.", tpe=float,

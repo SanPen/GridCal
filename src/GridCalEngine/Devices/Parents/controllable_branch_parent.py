@@ -26,6 +26,7 @@ class ControllableBranchParent(BranchParent):
                  cn_from: ConnectivityNode | None,
                  cn_to: ConnectivityNode | None,
                  active: bool,
+                 reducible: bool,
                  rate: float,
                  r: float,
                  x: float,
@@ -61,7 +62,7 @@ class ControllableBranchParent(BranchParent):
                  x2: float,
                  g2: float,
                  b2: float,
-                 Cost: float,
+                 cost: float,
                  mttf: float,
                  mttr: float,
                  capex: float,
@@ -94,7 +95,7 @@ class ControllableBranchParent(BranchParent):
         :param tap_phase_min:
         :param active: Is the branch active?
         :param tolerance: Tolerance specified for the branch impedance in %
-        :param Cost: Cost of overload (e/MW)
+        :param cost: Cost of overload (e/MW)
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
         :param vset: Voltage set-point of the voltage controlled bus in per unit
@@ -132,6 +133,7 @@ class ControllableBranchParent(BranchParent):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
+                              reducible=reducible,
                               rate=rate,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
@@ -142,7 +144,7 @@ class ControllableBranchParent(BranchParent):
                               build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              Cost=Cost,
+                              cost=cost,
                               device_type=device_type)
 
         # branch impedance tolerance

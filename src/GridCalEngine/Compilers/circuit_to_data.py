@@ -946,7 +946,7 @@ def fill_parent_branch(i: int,
     data.T[i] = t
 
     data.original_idx[i] = i
-
+    data.reducible[i] = int(elm.reducible)
     data.contingency_enabled[i] = int(elm.contingency_enabled)
     data.monitor_loading[i] = int(elm.monitor_loading)
 
@@ -1372,8 +1372,6 @@ def get_branch_data(
                            bus_dict=bus_dict,
                            t_idx=t_idx,
                            time_series=time_series)
-
-        data.reducible[ii] = True
 
         data.R[ii] = elm.R
         data.X[ii] = elm.X
