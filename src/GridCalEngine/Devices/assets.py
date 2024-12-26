@@ -751,6 +751,16 @@ class Assets:
         """
         return np.array([elm.name for elm in self._hvdc_lines])
 
+    def get_hvdc_actives(self, t_idx: int | None = None) -> IntVec:
+        """
+        get a vector of actives
+        :return: Array of bus active
+        """
+        data = np.zeros(len(self._hvdc_lines), dtype=int)
+        for i, b in enumerate(self._hvdc_lines):
+            data[i] = b.active if t_idx is None else b.active_prof[t_idx]
+        return data
+
     def add_hvdc(self, obj: dev.HvdcLine):
         """
         Add a hvdc line object
@@ -802,11 +812,21 @@ class Assets:
         """
         return len(self._vsc_devices)
 
-    def get_vsc_names(self)-> StrVec:
+    def get_vsc_names(self) -> StrVec:
         """
         Get Vsc names
         """
         return np.array([e.name for e in self.vsc_devices])
+
+    def get_vsc_actives(self, t_idx: int | None = None) -> IntVec:
+        """
+        get a vector of actives
+        :return: Array of bus active
+        """
+        data = np.zeros(len(self._vsc_devices), dtype=int)
+        for i, b in enumerate(self._vsc_devices):
+            data[i] = b.active if t_idx is None else b.active_prof[t_idx]
+        return data
 
     def add_vsc(self, obj: dev.VSC):
         """
@@ -1190,6 +1210,16 @@ class Assets:
         """
         return {b: i for i, b in enumerate(self._buses)}
 
+    def get_bus_actives(self, t_idx: int | None = None) -> IntVec:
+        """
+        get a vector of actives
+        :return: Array of bus active
+        """
+        data = np.zeros(len(self._buses), dtype=int)
+        for i, b in enumerate(self._buses):
+            data[i] = b.active if t_idx is None else b.active_prof[t_idx]
+        return data
+
     def add_bus(self, obj: Union[None, dev.Bus] = None) -> dev.Bus:
         """
         Add a :ref:`Bus<bus>` object to the grid.
@@ -1243,7 +1273,7 @@ class Assets:
         for cn in self._connectivity_nodes:
             if cn.bus == obj:
                 deleted_cn.add(cn)
-                self.delete_connectivity_node(cn) # remove the association
+                self.delete_connectivity_node(cn)  # remove the association
 
         # remove associations in bus_bars
         for bb in self.bus_bars:
@@ -4644,6 +4674,27 @@ class Assets:
             for elm in lst:
                 names.append(elm.name)
         return np.array(names)
+
+    def get_branch_actives(self,
+                           t_idx: int | None,
+                           add_vsc: bool = True,
+                           add_hvdc: bool = True,
+                           add_switch: bool = False) -> IntVec:
+        """
+        Get array of all branch active states
+        :param t_idx: Index of time step
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: StrVec
+        """
+        n = self.get_branch_number(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch)
+        data = np.zeros(n, dtype=int)
+        i = 0
+        for elm in self.get_branches_iter(add_vsc=add_vsc, add_hvdc=add_hvdc, add_switch=add_switch):
+            data[i] = elm.active_prof[t_idx] if t_idx is not None else elm.active
+            i += 1
+        return data
 
     def get_branches_index_dict(self, add_vsc: bool = True,
                                 add_hvdc: bool = True,

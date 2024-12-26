@@ -461,15 +461,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-        vsc_devs = self.circuit.vsc_devices
-
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        hvdc_active = [hvdc.active for hvdc in hvdc_lines]
-        vsc_active = [vsc.active for vsc in vsc_devs]
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
         return diagram_widget.colour_results(Sbus=results.Sbus,
                                              bus_active=bus_active,
@@ -521,13 +516,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active_prof[t_idx] for bus in buses]
-        br_active = [br.active_prof[t_idx] for br in branches]
-        hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
+        br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=t_idx)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=t_idx)
 
         return diagram_widget.colour_results(Sbus=results.S[t_idx, :],
                                              bus_active=bus_active,
@@ -569,13 +561,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        hvdc_active = [hvdc.active for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
         return diagram_widget.colour_results(Sbus=results.Sbus[-1, :],
                                              bus_active=bus_active,
@@ -616,13 +605,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        # hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        # hvdc_active = [hvdc.active for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
         return diagram_widget.colour_results(Sbus=results.S_points.mean(axis=0),
                                              types=results.bus_types,
@@ -663,13 +649,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        hvdc_active = [hvdc.active for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
         return diagram_widget.colour_results(Sbus=results.Sbus1,
                                              bus_active=bus_active,
@@ -710,13 +693,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        hvdc_active = [hvdc.active for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
         return diagram_widget.colour_results(Sbus=results.Sbus,
                                              voltages=results.voltage,
@@ -766,13 +746,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active_prof[t_idx] for bus in buses]
-        br_active = [br.active_prof[t_idx] for br in branches]
-        hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
+        br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=t_idx)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=t_idx)
 
         return diagram_widget.colour_results(voltages=results.voltage[t_idx, :],
                                              Sbus=results.Sbus[t_idx, :],
@@ -819,13 +796,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        hvdc_active = [hvdc.active for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
         return diagram_widget.colour_results(Sbus=results.Sbus,
                                              voltages=results.voltage,
@@ -868,17 +842,14 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active_prof[t_idx] for bus in buses]
-        br_active = [br.active_prof[t_idx] for br in branches]
-        hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
+        br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=t_idx)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=t_idx)
 
         return diagram_widget.colour_results(voltages=results.voltage[t_idx, :],
                                              Sbus=results.Sbus[t_idx, :],
-                                             types=np.ones(len(buses), dtype=int),
+                                             types=np.ones(self.circuit.get_bus_number(), dtype=int),
                                              bus_active=bus_active,
                                              Sf=results.Sf[t_idx, :],
                                              St=results.St[t_idx, :],
@@ -918,13 +889,10 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         t_idx2 = 0 if t_idx is None else t_idx
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active_prof[t_idx2] for bus in self.circuit.buses]
-        br_active = [br.active_prof[t_idx2] for br in branches]
-        hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
+        br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=t_idx)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=t_idx)
 
         return diagram_widget.colour_results(voltages=results.voltage[t_idx2, :],
                                              Sbus=results.Sbus[t_idx2, :],
@@ -964,23 +932,20 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
 
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        hvdc_active = [hvdc.active for hvdc in hvdc_lines]
-
-        voltage = np.ones(self.circuit.get_bus_number())
+        voltage = np.ones(self.circuit.get_bus_number(), dtype=complex)
 
         return diagram_widget.colour_results(voltages=voltage,
-                                             Sbus=results.Sbus,
-                                             types=results.bus_types,
+                                             Sbus=results.Sbus.astype(complex),
+                                             types=results.bus_types.astype(int),
                                              bus_active=bus_active,
-                                             Sf=results.Sf,
-                                             St=-results.Sf,
-                                             loadings=results.loading,
+                                             Sf=results.Sf.astype(complex),
+                                             St=-results.Sf.astype(complex),
+                                             loadings=results.loading.astype(complex),
                                              br_active=br_active,
                                              hvdc_active=hvdc_active,
                                              loading_label='Loading',
@@ -1013,13 +978,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active_prof[t_idx] for bus in buses]
-        br_active = [br.active_prof[t_idx] for br in branches]
-        hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
+        br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=t_idx)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=t_idx)
 
         return diagram_widget.colour_results(Sbus=results.S[t_idx],
                                              voltages=results.voltage[t_idx],
@@ -1056,13 +1018,10 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active for bus in buses]
-        br_active = [br.active for br in branches]
-        hvdc_active = [hvdc.active for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=None)
+        br_active = self.circuit.get_branch_actives(t_idx=None, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=None)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=None)
         con_idx = 0
         return diagram_widget.colour_results(Sbus=results.Sbus[con_idx, :],
                                              voltages=results.voltage[con_idx, :],
@@ -1102,21 +1061,18 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
-        bus_active = [bus.active_prof[t_idx] for bus in buses]
-        br_active = [br.active_prof[t_idx] for br in branches]
-        hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
+        br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=t_idx)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=t_idx)
 
         return diagram_widget.colour_results(voltages=np.ones(results.nbus, dtype=complex),
-                                             Sbus=results.S[t_idx, :],
+                                             Sbus=results.S[t_idx, :].astype(complex),
                                              types=results.bus_types,
                                              bus_active=bus_active,
-                                             Sf=results.max_flows[t_idx, :],
-                                             St=-results.max_flows[t_idx, :],
-                                             loadings=np.abs(results.max_loading[t_idx]),
+                                             Sf=results.max_flows[t_idx, :].astype(complex),
+                                             St=-results.max_flows[t_idx, :].astype(complex),
+                                             loadings=results.max_loading[t_idx].astype(complex),
                                              br_active=br_active,
                                              hvdc_active=hvdc_active,
                                              use_flow_based_width=use_flow_based_width,
@@ -1146,16 +1102,13 @@ class DiagramsMain(CompiledArraysMain):
         :param max_bus_width:
         :return:
         """
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)
-        hvdc_lines = self.circuit.hvdc_lines
-
         nbus = self.circuit.get_bus_number()
         nbr = self.circuit.get_branch_number()
 
-        bus_active = [elm.active_prof[t_idx] if t_idx is not None else elm.active for elm in buses]
-        br_active = [elm.active_prof[t_idx] if t_idx is not None else elm.active for elm in branches]
-        hvdc_active = [elm.active_prof[t_idx] if t_idx is not None else elm.active for elm in hvdc_lines]
+        bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
+        br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)
+        hvdc_active = self.circuit.get_hvdc_actives(t_idx=t_idx)
+        vsc_active = self.circuit.get_vsc_actives(t_idx=t_idx)
 
         return diagram_widget.colour_results(Sbus=np.zeros(nbus, dtype=complex),
                                              voltages=np.ones(nbus, dtype=complex),

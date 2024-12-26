@@ -28,9 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed bugs">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the dimensional compatibility adding switches to the GUI plotting">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" afterDir="false" />
     </list>
@@ -130,122 +129,122 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
-    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
-    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
-    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
-    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
-    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
-    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
-    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
-    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
-    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.pytest for src.tests.test_cgmes_ieeee.executor": "Run",
-    "Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor": "Debug",
-    "Python tests.pytest for src.tests.test_cgmes_to_gridcal_ac_transformers.test_ac_transformers3w.executor": "Debug",
-    "Python tests.pytest for src.tests.test_load_all_grids.test_all_grids.executor": "Run",
-    "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load.executor": "Run",
-    "Python tests.pytest for src.tests.test_power_flow.executor": "Run",
-    "Python tests.pytest for src.tests.test_power_flow.test_controllable_shunt.executor": "Run",
-    "Python tests.pytest for src.tests.test_power_flow.test_voltage_control_with_ltc.executor": "Debug",
-    "Python tests.pytest for src.tests.test_ptdf.test_lodf_ieee14_definition.executor": "Debug",
-    "Python tests.pytest for src.tests.test_topology_processor.test_adjacency_calc.executor": "Run",
-    "Python tests.pytest for src.tests.test_tutorials.test_define_grid_from_scratch_with_profiles.executor": "Debug",
-    "Python tests.pytest for test_cgmes_ieeee.test_iee14_cgmes.executor": "Debug",
-    "Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor": "Run",
-    "Python tests.pytest for test_contingency.test_contingency.executor": "Run",
-    "Python tests.pytest for test_contingency.test_ieee14_contingencies.executor": "Debug",
-    "Python tests.pytest for test_contingency.test_ieee14_contingencies_psse.executor": "Debug",
-    "Python tests.pytest for test_contingency.test_linear_contingency.executor": "Run",
-    "Python tests.pytest for test_contongencies_filters.test_contingency_filtes.executor": "Run",
-    "Python tests.pytest for test_demo_5_node.test_demo_5_node.executor": "Run",
-    "Python tests.pytest for test_derivatives.test_bus_derivatives.executor": "Run",
-    "Python tests.pytest for test_nodal_capacity.test_linear_vs_nonlinear_ncap.executor": "Run",
-    "Python tests.pytest for test_ntc.test_ntc_ultra_simple.executor": "Debug",
-    "Python tests.pytest for test_power_flow.test_fubm.executor": "Debug",
-    "Python tests.pytest for test_power_flow.test_power_flow_12bus_acdc.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_power_flow_control_with_pst.executor": "Debug",
-    "Python tests.pytest for test_power_flow.test_power_flow_control_with_pst_pt.executor": "Debug",
-    "Python tests.pytest for test_power_flow.test_qf_control_with_ltc.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_qt_control_with_ltc.executor": "Debug",
-    "Python tests.pytest for test_power_flow.test_voltage_control_with_ltc.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_voltage_local_control_with_generation.executor": "Debug",
-    "Python tests.pytest for test_power_flow.test_voltage_remote_control_with_generation.executor": "Debug",
-    "Python tests.pytest for test_ptdf.test_mlodf.executor": "Debug",
-    "Python tests.pytest for test_set_snapshot.test_set_snapshot.executor": "Run",
-    "Python tests.pytest for test_sparse2.test_mat_mat_mult.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_adjacency_calc.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_lynn_Ybus.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_lynn_Ybus2.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_lynn_Ybus3.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_lynn_topology.executor": "Debug",
-    "Python tests.pytest for test_topology_processor.test_nc_active_works.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_nc_active_works2.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_topology_2_nodes_A1.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_topology_2_nodes_A2.executor": "Run",
-    "Python tests.pytest for test_topology_processor.test_topology_3_nodes_A1.executor": "Debug",
-    "Python tests.pytest for test_topology_processor.test_topology_3_nodes_A2.executor": "Debug",
-    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor": "Debug",
-    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor": "Debug",
-    "Python tests.pytest for test_transformer_controls.test_v_control_true.executor": "Debug",
-    "Python tests.pytest in test_cgmes_ieeee.py.executor": "Run",
-    "Python tests.pytest in test_deep_copy.py.executor": "Run",
-    "Python tests.pytest in test_generator_q_control.py.executor": "Run",
-    "Python tests.pytest in test_load_save_load.py.executor": "Debug",
-    "Python tests.pytest in test_nonlinear_contingency.py.executor": "Debug",
-    "Python tests.pytest in test_ntc.py.executor": "Run",
-    "Python tests.pytest in test_power_flow.py.executor": "Run",
-    "Python tests.pytest in test_profiles.py.executor": "Run",
-    "Python tests.pytest in test_ptdf.py.executor": "Run",
-    "Python tests.pytest in test_topology_processor.py.executor": "Debug",
-    "Python tests.pytest in test_transformer_controls.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
-    "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
-    "Python.GridCalMain.executor": "Run",
-    "Python.acdc_generalized_5.executor": "Run",
-    "Python.acdc_generalized_6.executor": "Run",
-    "Python.block_editor.executor": "Run",
-    "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.download_stats.executor": "Run",
-    "Python.fubm_example.executor": "Run",
-    "Python.generate_ssl_key.executor": "Run",
-    "Python.make.executor": "Run",
-    "Python.make_wheels.executor": "Run",
-    "Python.new_circuit_objects.executor": "Run",
-    "Python.ortools_crash_investigation.executor": "Run",
-    "Python.pymoo_example.executor": "Debug",
-    "Python.raw_imp_exp_test.executor": "Run",
-    "Python.run.executor": "Run",
-    "Python.update_gui_file.executor": "Run",
-    "Python.upload_to_pypi.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "320__generalized__acdc__pf",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/results",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_cgmes_ieeee.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_cgmes_to_gridcal_ac_transformers.test_ac_transformers3w.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_load_all_grids.test_all_grids.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_load_save_load.test_load_save_load.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_power_flow.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_power_flow.test_controllable_shunt.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_power_flow.test_voltage_control_with_ltc.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_ptdf.test_lodf_ieee14_definition.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_topology_processor.test_adjacency_calc.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_tutorials.test_define_grid_from_scratch_with_profiles.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_cgmes_ieeee.test_iee14_cgmes.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_contingency.test_contingency.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_contingency.test_ieee14_contingencies.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_contingency.test_ieee14_contingencies_psse.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_contingency.test_linear_contingency.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_contongencies_filters.test_contingency_filtes.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_demo_5_node.test_demo_5_node.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_derivatives.test_bus_derivatives.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_nodal_capacity.test_linear_vs_nonlinear_ncap.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_ntc.test_ntc_ultra_simple.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_fubm.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_power_flow_12bus_acdc.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_power_flow_control_with_pst.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_power_flow_control_with_pst_pt.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_qf_control_with_ltc.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_qt_control_with_ltc.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_voltage_control_with_ltc.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_voltage_local_control_with_generation.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_voltage_remote_control_with_generation.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_ptdf.test_mlodf.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_set_snapshot.test_set_snapshot.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_sparse2.test_mat_mat_mult.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_adjacency_calc.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_lynn_Ybus.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_lynn_Ybus2.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_lynn_Ybus3.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_lynn_topology.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_nc_active_works.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_nc_active_works2.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_2_nodes_A1.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_2_nodes_A2.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_3_nodes_A1.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_3_nodes_A2.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_transformer_controls.test_v_control_true.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest in test_cgmes_ieeee.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_deep_copy.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_generator_q_control.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_load_save_load.py.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest in test_nonlinear_contingency.py.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest in test_ntc.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_power_flow.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_profiles.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_ptdf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_topology_processor.py.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest in test_transformer_controls.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.acdc_generalized_5.executor&quot;: &quot;Run&quot;,
+    &quot;Python.acdc_generalized_6.executor&quot;: &quot;Run&quot;,
+    &quot;Python.block_editor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.download_stats.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fubm_example.executor&quot;: &quot;Run&quot;,
+    &quot;Python.generate_ssl_key.executor&quot;: &quot;Run&quot;,
+    &quot;Python.make.executor&quot;: &quot;Run&quot;,
+    &quot;Python.make_wheels.executor&quot;: &quot;Run&quot;,
+    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ortools_crash_investigation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;320__generalized__acdc__pf&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/results&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "stardust.markdown.MarkdownSplitEditorSuppressor:keyList": []
+  &quot;keyToStringList&quot;: {
+    &quot;stardust.markdown.MarkdownSplitEditorSuppressor:keyList&quot;: []
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -1516,7 +1515,8 @@
       <workItem from="1735127057890" duration="4281000" />
       <workItem from="1735134753861" duration="7929000" />
       <workItem from="1735161041402" duration="3133000" />
-      <workItem from="1735165803737" duration="529000" />
+      <workItem from="1735165803737" duration="944000" />
+      <workItem from="1735204623840" duration="1521000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1861,7 +1861,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="593" />
+    <option name="localTasksCounter" value="594" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1908,7 +1908,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.1.22" />
     <MESSAGE value="Removed extra prints" />
     <MESSAGE value="Added set snapshot test" />
     <MESSAGE value="Fixed naming issues" />
@@ -1933,7 +1932,8 @@
     <MESSAGE value="Added more topology tests" />
     <MESSAGE value="Fixed Qmin, Qmax order bug&#10;Moved the updates control condition in NRfx&#10;removed active from compute_admittances&#10;Overall format and type refactoring" />
     <MESSAGE value="minor contingency test adjustments" />
-    <option name="LAST_COMMIT_MESSAGE" value="minor contingency test adjustments" />
+    <MESSAGE value="Improved the dimensional compatibility adding switches to the GUI plotting" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the dimensional compatibility adding switches to the GUI plotting" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
