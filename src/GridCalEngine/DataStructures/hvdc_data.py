@@ -147,18 +147,18 @@ class HvdcData(BranchParentData):
         """
         return self.T
 
-    def get_island(self, bus_idx: IntVec):
-        """
-        Get HVDC indices of the island given by the bus indices
-        :param bus_idx: list of bus indices
-        :return: list of HVDC lines indices
-        """
-        if self.nelm:
-            return tp.get_elements_of_the_island(C_element_bus=self.Cf + self.Ct,
-                                                 island=bus_idx,
-                                                 active=self.active)
-        else:
-            return np.zeros(0, dtype=int)
+    # def get_island(self, bus_idx: IntVec):
+    #     """
+    #     Get HVDC indices of the island given by the bus indices
+    #     :param bus_idx: list of bus indices
+    #     :return: list of HVDC lines indices
+    #     """
+    #     if self.nelm:
+    #         return tp.get_elements_of_the_island(C_element_bus=self.Cf + self.Ct,
+    #                                              island=bus_idx,
+    #                                              active=self.active)
+    #     else:
+    #         return np.zeros(0, dtype=int)
 
     def get_qmax_from_per_bus(self) -> Vec:
         """

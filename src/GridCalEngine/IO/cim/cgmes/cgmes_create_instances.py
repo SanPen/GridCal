@@ -546,6 +546,7 @@ def create_cgmes_dc_node(cn_name: str,
 def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
                                gc_vsc: Union[gcdev.VSC, None],
                                p_set: float,
+                               v_set: float,
                                logger: DataLogger) -> (Base, Base):
     """
     Creates a new Voltage-source converter
@@ -554,6 +555,7 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
     :param cgmes_model: CgmesCircuit
     :param gc_vsc: optional input: VSC from GridCal
     :param p_set: power set point
+    :param v_set: voltage set point, only used if gc_vsc is None, otherwise the setpoint is from gc_vsc.vset
     :param logger: DataLogger
     :return: VsConverter and DCConverterUnit objects
     """
@@ -567,10 +569,12 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
     if gc_vsc is not None:
         vs_converter.name = gc_vsc.name
         vs_converter.description = gc_vsc.code
+        targetUpcc = gc_vsc.vset
     else:
         i = len(cgmes_model.cgmes_assets.VsConverter_list)
         vs_converter.name = f'VSC_{i + 1}'
         vs_converter.description = f'VSC_{i + 1}'
+        targetUpcc = v_set
 
     # EQ
     vs_converter.baseS = 9999
@@ -598,7 +602,7 @@ def create_cgmes_vsc_converter(cgmes_model: CgmesCircuit,
     vs_converter.qPccControl = VsQpccControlKind.voltagePcc
     vs_converter.qShare = 100  # Reactive power-sharing factor among parallel converters on Uac control.
     vs_converter.targetQpcc = 0
-    vs_converter.targetUpcc = 0.97
+    vs_converter.targetUpcc = targetUpcc
 
     # SV
     #     <cim:VsConverter.delta>0</cim:VsConverter.delta>

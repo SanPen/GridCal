@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec, Logger
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, BoolVec, Logger
 from typing import List, Tuple, Dict, Set
 
 
@@ -32,7 +32,7 @@ class BranchParentData:
 
         self.dc: IntVec = np.zeros(self.nelm, dtype=int)
 
-        self.active: IntVec = np.zeros(nelm, dtype=int)
+        self.active: BoolVec = np.zeros(nelm, dtype=bool)
         self.rates: Vec = np.zeros(nelm, dtype=float)
         self.contingency_rates: Vec = np.zeros(nelm, dtype=float)
         self.protection_rates: Vec = np.zeros(nelm, dtype=float)
@@ -186,18 +186,18 @@ class BranchParentData:
 
         return data
 
-    def get_island(self, bus_idx: IntVec) -> IntVec:
-        """
-        Get the array of branch indices that belong to the islands given by the bus indices
-        :param bus_idx: array of bus indices
-        :return: array of island branch indices
-        """
-        if self.nelm:
-            return tp.get_elements_of_the_island(C_element_bus=self.C,
-                                                 island=bus_idx,
-                                                 active=self.active)
-        else:
-            return np.zeros(0, dtype=int)
+    # def get_island(self, bus_idx: IntVec) -> IntVec:
+    #     """
+    #     Get the array of branch indices that belong to the islands given by the bus indices
+    #     :param bus_idx: array of bus indices
+    #     :return: array of island branch indices
+    #     """
+    #     if self.nelm:
+    #         return tp.get_elements_of_the_island(C_element_bus=self.C,
+    #                                              island=bus_idx,
+    #                                              active=self.active)
+    #     else:
+    #         return np.zeros(0, dtype=int)
 
     def get_ac_indices(self) -> IntVec:
         """

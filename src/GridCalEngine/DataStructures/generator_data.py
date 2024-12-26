@@ -224,16 +224,16 @@ class GeneratorData:
 
         return data
 
-    def get_island(self, bus_idx: IntVec) -> IntVec:
-        """
-        Get the array of generator indices that belong to the islands given by the bus indices
-        :param bus_idx: array of bus indices
-        :return: array of generator indices of the island given by bus_idx
-        """
-        if self.nelm:
-            return tp.get_elements_of_the_island(self.C_bus_elm.T, bus_idx, active=self.active)
-        else:
-            return np.zeros(0, dtype=int)
+    # def get_island(self, bus_idx: IntVec) -> IntVec:
+    #     """
+    #     Get the array of generator indices that belong to the islands given by the bus indices
+    #     :param bus_idx: array of bus indices
+    #     :return: array of generator indices of the island given by bus_idx
+    #     """
+    #     if self.nelm:
+    #         return tp.get_elements_of_the_island(self.C_bus_elm.T, bus_idx, active=self.active)
+    #     else:
+    #         return np.zeros(0, dtype=int)
 
     def get_injections(self) -> CxVec:
         """

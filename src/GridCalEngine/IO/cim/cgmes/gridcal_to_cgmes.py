@@ -836,6 +836,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         elif isinstance(tap_changer, cgmes_model.get_class_type("PhaseTapChangerNonLinear")):
             # PhaseTapChangerSymmetrical or PhaseTapChangerAsymmetrical
             tap_changer.voltageStepIncrement = voltageIncr
+            tap_changer.xMin = mc_elm.X
+            # TODO tap_changer.xMax =
         else:
             logger.add_error(
                 msg='stepVoltageIncrement cannot be filled for TapChanger',
@@ -1586,6 +1588,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             cgmes_model=cgmes_model,
             gc_vsc=None,
             p_set=hvdc_line.Pset,
+            v_set=hvdc_line.Vset_f,
             logger=logger
         )
         dc_tp_1 = create_cgmes_dc_tp_node(
@@ -1621,6 +1624,7 @@ def convert_hvdc_line_to_cgmes(multicircuit_model: MultiCircuit,
             cgmes_model=cgmes_model,
             gc_vsc=None,
             p_set=-hvdc_line.Pset,
+            v_set=hvdc_line.Vset_t,
             logger=logger
         )
         dc_tp_2 = create_cgmes_dc_tp_node(

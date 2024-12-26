@@ -6,7 +6,7 @@ from typing import Tuple, Dict
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec, BoolVec
 
 
 class LoadData:
@@ -26,7 +26,7 @@ class LoadData:
         self.names: StrVec = np.empty(nelm, dtype=object)
         self.idtag: StrVec = np.empty(nelm, dtype=object)
 
-        self.active: IntVec = np.zeros(nelm, dtype=bool)
+        self.active: BoolVec = np.zeros(nelm, dtype=bool)
         self.S: Vec = np.zeros(nelm, dtype=complex)
         self.I: Vec = np.zeros(nelm, dtype=complex)
         self.Y: Vec = np.zeros(nelm, dtype=complex)
@@ -128,20 +128,20 @@ class LoadData:
 
         return data
 
-    def get_island(self, bus_idx: IntVec):
-        """
-        Get the array of load indices that belong to the islands given by the bus indices
-        :param bus_idx: array of bus indices
-        :return: array of island load indices
-        """
-        if self.nelm:
-            return tp.get_elements_of_the_island(
-                C_element_bus=self.C_bus_elm.T,
-                island=bus_idx,
-                active=self.active
-            )
-        else:
-            return np.zeros(0, dtype=int)
+    # def get_island(self, bus_idx: IntVec):
+    #     """
+    #     Get the array of load indices that belong to the islands given by the bus indices
+    #     :param bus_idx: array of bus indices
+    #     :return: array of island load indices
+    #     """
+    #     if self.nelm:
+    #         return tp.get_elements_of_the_island(
+    #             C_element_bus=self.C_bus_elm.T,
+    #             island=bus_idx,
+    #             active=self.active
+    #         )
+    #     else:
+    #         return np.zeros(0, dtype=int)
 
     def get_effective_load(self) -> CxVec:
         """

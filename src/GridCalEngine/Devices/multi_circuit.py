@@ -785,7 +785,7 @@ class MultiCircuit(Assets):
         :return: Adjacent matrix
         """
         Cf, Ct, C = self.get_bus_branch_connectivity_matrix()
-        A = C.T * C
+        A = C.T @ C
         return A.tocsc()
 
     @staticmethod

@@ -27,7 +27,7 @@ class ShuntData:
         self.names: StrVec = np.empty(nelm, dtype=object)
         self.idtag: StrVec = np.empty(nelm, dtype=object)
 
-        self.active: IntVec = np.zeros(nelm, dtype=bool)
+        self.active: BoolVec = np.zeros(nelm, dtype=bool)
 
         self.controllable: BoolVec = np.zeros(nelm, dtype=bool)
 
@@ -157,18 +157,18 @@ class ShuntData:
 
         return data
 
-    def get_island(self, bus_idx: IntVec):
-        """
-        Get the array of shunt indices that belong to the islands given by the bus indices
-        :param bus_idx: array of bus indices
-        :return: array of island branch indices
-        """
-        if self.nelm:
-            return tp.get_elements_of_the_island(C_element_bus=self.C_bus_elm.T,
-                                                 island=bus_idx,
-                                                 active=self.active)
-        else:
-            return np.zeros(0, dtype=int)
+    # def get_island(self, bus_idx: IntVec):
+    #     """
+    #     Get the array of shunt indices that belong to the islands given by the bus indices
+    #     :param bus_idx: array of bus indices
+    #     :return: array of island branch indices
+    #     """
+    #     if self.nelm:
+    #         return tp.get_elements_of_the_island(C_element_bus=self.C_bus_elm.T,
+    #                                              island=bus_idx,
+    #                                              active=self.active)
+    #     else:
+    #         return np.zeros(0, dtype=int)
 
     def get_array_per_bus(self, arr: Vec) -> Vec:
         """

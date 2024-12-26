@@ -9,7 +9,7 @@ import numpy as np
 import numba as nb
 import scipy.sparse as sp
 from scipy.sparse import csc_matrix, diags, csr_matrix
-from GridCalEngine.basic_structures import IntVec, Vec
+from GridCalEngine.basic_structures import IntVec, Vec, BoolVec
 
 
 @nb.njit(cache=True)
@@ -140,6 +140,9 @@ def find_islands(adj: csc_matrix, active: IntVec) -> List[IntVec]:
     :param active: active state of the nodes
     :return: list of islands, where each element is a list of the node indices of the island
     """
+    if adj.format != "csc":
+        adj = adj.tocsc()
+
     return find_islands_numba(node_number=adj.shape[0],
                               indptr=adj.indptr,
                               indices=adj.indices,
@@ -158,7 +161,7 @@ def get_elements_of_the_island(C_element_bus: csc_matrix, island: IntVec, active
     if not isinstance(C_element_bus, csc_matrix):
         C_element_bus = C_element_bus.tocsc()
 
-    assert C_element_bus.shape[0] == len(active), "You should probably traspose the matrix :/"
+    assert C_element_bus.shape[0] == len(active), "You should probably transpose the matrix :/"
 
     # faster method
     indices = get_elements_of_the_island_numba(n_rows=C_element_bus.shape[0],
@@ -169,6 +172,48 @@ def get_elements_of_the_island(C_element_bus: csc_matrix, island: IntVec, active
 
     return indices
 
+
+@nb.njit(cache=True)
+def get_island_monopole_indices(bus_map: IntVec, elm_active: BoolVec, elm_bus: IntVec) -> IntVec:
+    """
+
+    :param bus_map:
+    :param elm_active:
+    :param elm_bus:
+    :return:
+    """
+    n_elm = len(elm_active)
+    indices = np.zeros(n_elm, dtype=np.int64)
+
+    ii = 0
+    for k in range(n_elm):
+        if elm_active[k] and bus_map[elm_bus[k]] > -1:
+            indices[ii] = k
+            ii += 1
+
+    return indices[:ii]
+
+
+@nb.njit(cache=True)
+def get_island_branch_indices(bus_map: IntVec, elm_active: BoolVec, F: IntVec, T: IntVec) -> IntVec:
+    """
+
+    :param bus_map:
+    :param elm_active:
+    :param F:
+    :param T:
+    :return:
+    """
+    n_elm = len(elm_active)
+    indices = np.zeros(n_elm, dtype=np.int64)
+
+    ii = 0
+    for k in range(n_elm):
+        if elm_active[k] and bus_map[F[k]] > -1 and bus_map[T[k]] > -1:
+            indices[ii] = k
+            ii += 1
+
+    return indices[:ii]
 
 def get_adjacency_matrix(C_branch_bus_f: csc_matrix, C_branch_bus_t: csc_matrix,
                          branch_active: IntVec, bus_active: IntVec) -> csc_matrix:
@@ -346,19 +391,19 @@ def compute_connectivity_flexible(branch_active: IntVec | None = None,
 
     if branch_active is not None:
         if len(branch_active):
-            br_states_diag = sp.diags(branch_active)
+            br_states_diag = sp.diags(branch_active.astype(int))
             cf_stack.append(br_states_diag @ Cf_)
             ct_stack.append(br_states_diag @ Ct_)
 
     if hvdc_active is not None:
         if len(hvdc_active):
-            hvdc_states_diag = sp.diags(hvdc_active)
+            hvdc_states_diag = sp.diags(hvdc_active.astype(int))
             cf_stack.append(hvdc_states_diag @ Cf_hvdc)
             ct_stack.append(hvdc_states_diag @ Ct_hvdc)
 
     if vsc_active is not None:
         if len(vsc_active):
-            vsc_states_diag = sp.diags(vsc_active)
+            vsc_states_diag = sp.diags(vsc_active.astype(int))
             cf_stack.append(vsc_states_diag @ Cf_vsc)
             ct_stack.append(vsc_states_diag @ Ct_vsc)
 

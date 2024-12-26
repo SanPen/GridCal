@@ -12,6 +12,7 @@ General
     theory/from_objects_to_matrices
     theory/branch_model
     theory/xfo_sc
+    theory/topology_processing
 
 Power Flow
 ------------------

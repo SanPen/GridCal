@@ -1046,3 +1046,8 @@ def test_lynn_Ybus3() -> None:
 
         # revert the state
         nc.passive_branch_data.active[cidx] = 1
+
+
+def test_island_slicing():
+
+    pass

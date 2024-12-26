@@ -756,8 +756,8 @@ def get_gcdev_hvdc_from_dcline_and_vscs(
                 # rate=rate,
                 # rate of DCLine? or ratedP of Converter?
                 # no Limit for DC terminal in XML
-                Vset_f=1.0,  # if not found, 1.0 p.u.
-                Vset_t=1.0,
+                Vset_f=vsc_list[0].targetUpcc,  # if not found, 1.0 p.u.
+                Vset_t=vsc_list[1].targetUpcc,
                 r=dc_line_sgm.resistance,
                 dc_link_voltage=rated_udc,
             )

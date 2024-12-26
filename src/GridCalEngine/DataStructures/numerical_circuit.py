@@ -1761,7 +1761,7 @@ class NumericalCircuit:
             A = C.T @ C
 
             # get the islands formed by the reducible branches
-            islands = find_islands(adj=A, active=self.bus_data.active)
+            islands = find_islands(adj=A.tocsc(), active=self.bus_data.active)
 
             # compose the bus mapping array where each entry point to the final island bus
             bus_map_arr = np.arange(self.bus_data.nbus, dtype=int)
@@ -1807,14 +1807,49 @@ class NumericalCircuit:
             logger = Logger()
 
         # find the indices of the devices of the island
-        br_idx = self.passive_branch_data.get_island(bus_idx)
-        hvdc_idx = self.hvdc_data.get_island(bus_idx)
-        vsc_idx = self.vsc_data.get_island(bus_idx)
+        # br_idx = self.passive_branch_data.get_island(bus_idx)
+        # hvdc_idx = self.hvdc_data.get_island(bus_idx)
+        # vsc_idx = self.vsc_data.get_island(bus_idx)
+        #
+        # load_idx = self.load_data.get_island(bus_idx)
+        # gen_idx = self.generator_data.get_island(bus_idx)
+        # batt_idx = self.battery_data.get_island(bus_idx)
+        # shunt_idx = self.shunt_data.get_island(bus_idx)
 
-        load_idx = self.load_data.get_island(bus_idx)
-        gen_idx = self.generator_data.get_island(bus_idx)
-        batt_idx = self.battery_data.get_island(bus_idx)
-        shunt_idx = self.shunt_data.get_island(bus_idx)
+        # this is a dictionary to map the old indices to the new indices
+        # it is used by the structures to re-map the bus indices
+        # bus_map: Dict[int, int] = {original_i: new_i for new_i, original_i in enumerate(bus_idx)}
+        # this is the same
+        # for new_i, original_i in enumerate(bus_idx):
+        #     bus_map[original_i] = original_i
+        bus_map = np.full(self.bus_data.nbus, -1, dtype=int)
+        bus_map[bus_idx] = np.arange(len(bus_idx))
+
+        br_idx = tp.get_island_branch_indices(bus_map=bus_map,
+                                              elm_active=self.passive_branch_data.active,
+                                              F=self.passive_branch_data.F,
+                                              T=self.passive_branch_data.T)
+        hvdc_idx = tp.get_island_branch_indices(bus_map=bus_map,
+                                              elm_active=self.hvdc_data.active,
+                                              F=self.hvdc_data.F,
+                                              T=self.hvdc_data.T)
+        vsc_idx = tp.get_island_branch_indices(bus_map=bus_map,
+                                              elm_active=self.vsc_data.active,
+                                              F=self.vsc_data.F,
+                                              T=self.vsc_data.T)
+
+        load_idx = tp.get_island_monopole_indices(bus_map=bus_map,
+                                                  elm_active=self.load_data.active,
+                                                  elm_bus=self.load_data.bus_idx)
+        gen_idx = tp.get_island_monopole_indices(bus_map=bus_map,
+                                                 elm_active=self.generator_data.active,
+                                                 elm_bus=self.generator_data.bus_idx)
+        batt_idx = tp.get_island_monopole_indices(bus_map=bus_map,
+                                                 elm_active=self.battery_data.active,
+                                                 elm_bus=self.battery_data.bus_idx)
+        shunt_idx = tp.get_island_monopole_indices(bus_map=bus_map,
+                                                 elm_active=self.shunt_data.active,
+                                                 elm_bus=self.shunt_data.bus_idx)
 
         nc = NumericalCircuit(
             nbus=len(bus_idx),
@@ -1834,15 +1869,9 @@ class NumericalCircuit:
             t_idx=self.t_idx,
         )
 
-        # this is a dictionary to map the old indices to the new indices
-        # it is used by the structures to re-map the bus indices
-        # bus_map: Dict[int, int] = {original_i: new_i for new_i, original_i in enumerate(bus_idx)}
-        bus_map = np.full(self.bus_data.nbus, -1, dtype=int)
-        bus_map[bus_idx] = np.arange(len(bus_idx))
 
-        # this is the same
-        # for new_i, original_i in enumerate(bus_idx):
-        #     bus_map[original_i] = original_i
+
+
 
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
@@ -2081,3 +2110,4 @@ class NumericalCircuit:
             return 0, "AC"
         else:
             return 2, "AC/DC"
+
