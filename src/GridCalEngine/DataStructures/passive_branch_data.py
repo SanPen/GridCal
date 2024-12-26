@@ -198,3 +198,12 @@ class PassiveBranchData(BranchParentData):
                 lst.append((k, -1.0))
         return lst
 
+    def detect_superconductor_at(self, k) -> None:
+        """
+        There is a beyond terrible practice of setting branches with R=0 and X=0 as "superconductor"....
+        Those must be reduced of course
+        :param k: index
+        """
+        # handle """superconductor branches"""
+        if self.R[k] == 0.0 and self.X[k] == 0.0:
+            self.reducible[k] = 1

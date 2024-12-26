@@ -1166,6 +1166,9 @@ def get_branch_data(
         # store for later
         branch_dict[elm] = ii
 
+        # handle """superconductor branches"""
+        data.detect_superconductor_at(ii)
+
         ii += 1
 
     # DC-lines
@@ -1187,6 +1190,11 @@ def get_branch_data(
 
         # store for later
         branch_dict[elm] = ii
+
+        data.dc[ii] = 1
+
+        # handle """superconductor branches"""
+        data.detect_superconductor_at(ii)
 
         ii += 1
 
@@ -1235,6 +1243,9 @@ def get_branch_data(
 
         # store for later
         branch_dict[elm] = ii
+
+        # handle """superconductor branches"""
+        data.detect_superconductor_at(ii)
 
         ii += 1
 
@@ -1287,6 +1298,9 @@ def get_branch_data(
             # store for later
             branch_dict[elm] = ii
 
+            # handle """superconductor branches"""
+            data.detect_superconductor_at(ii)
+
             ii += 1
 
         else:
@@ -1331,6 +1345,9 @@ def get_branch_data(
         # store for later
         branch_dict[elm] = ii
 
+        # handle """superconductor branches"""
+        data.detect_superconductor_at(ii)
+
         ii += 1
 
     # Series reactance
@@ -1361,6 +1378,9 @@ def get_branch_data(
         # store for later
         branch_dict[elm] = ii
 
+        # handle """superconductor branches"""
+        data.detect_superconductor_at(ii)
+
         ii += 1
 
     # Switches
@@ -1378,6 +1398,9 @@ def get_branch_data(
 
         # store for later
         branch_dict[elm] = ii
+
+        # handle """superconductor branches"""
+        data.detect_superconductor_at(ii)
 
         ii += 1
 
@@ -1547,18 +1570,24 @@ def get_vsc_data(
                             control_val=data.control1_val[ii],
                             control_bus_idx=data.control1_bus_idx,
                             control_branch_idx=data.control1_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_dict=bus_dict,
+                            branch_dict=branch_dict,
+                            bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
-                            use_stored_guess=use_stored_guess, logger=logger)
+                            use_stored_guess=use_stored_guess,
+                            logger=logger)
             set_control_dev(k=ii, f=f, t=t,
                             control=data.control2[ii],
                             control_dev=elm.control2_dev_prof[t_idx],
                             control_val=data.control2_val[ii],
                             control_bus_idx=data.control2_bus_idx,
                             control_branch_idx=data.control2_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_dict=bus_dict,
+                            branch_dict=branch_dict,
+                            bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
-                            use_stored_guess=use_stored_guess, logger=logger)
+                            use_stored_guess=use_stored_guess,
+                            logger=logger)
 
         else:
             data.active[i] = elm.active
@@ -1572,18 +1601,31 @@ def get_vsc_data(
             data.control2[ii] = elm.control2
             data.control1_val[ii] = elm.control1_val
             data.control2_val[ii] = elm.control2_val
-            set_control_dev(k=ii, f=f, t=t, control=data.control1[ii], control_dev=elm.control1_dev,
-                            control_val=data.control1_val[ii], control_bus_idx=data.control1_bus_idx,
+            set_control_dev(k=ii, f=f, t=t,
+                            control=data.control1[ii],
+                            control_dev=elm.control1_dev,
+                            control_val=data.control1_val[ii],
+                            control_bus_idx=data.control1_bus_idx,
                             control_branch_idx=data.control1_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_dict=bus_dict,
+                            branch_dict=branch_dict,
+                            bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
-                            use_stored_guess=use_stored_guess, logger=logger)
-            set_control_dev(k=ii, f=f, t=t, control=data.control2[ii], control_dev=elm.control2_dev,
-                            control_val=data.control2_val[ii], control_bus_idx=data.control2_bus_idx,
+                            use_stored_guess=use_stored_guess,
+                            logger=logger)
+
+            set_control_dev(k=ii, f=f, t=t,
+                            control=data.control2[ii],
+                            control_dev=elm.control2_dev,
+                            control_val=data.control2_val[ii],
+                            control_bus_idx=data.control2_bus_idx,
                             control_branch_idx=data.control2_branch_idx,
-                            bus_dict=bus_dict, branch_dict=branch_dict, bus_data=bus_data,
+                            bus_dict=bus_dict,
+                            branch_dict=branch_dict,
+                            bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
-                            use_stored_guess=use_stored_guess, logger=logger)
+                            use_stored_guess=use_stored_guess,
+                            logger=logger)
 
         data.contingency_enabled[i] = int(elm.contingency_enabled)
         data.monitor_loading[i] = int(elm.monitor_loading)
