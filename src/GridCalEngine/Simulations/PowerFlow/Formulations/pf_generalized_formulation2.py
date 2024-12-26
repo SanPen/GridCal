@@ -2403,6 +2403,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                        x=self.var2x(),
                                        h=1e-6)
 
+            if self.options.verbose > 1:
+                print("(pf_generalized_formulation.py) J: ")
+                print(J.toarray())
+                print("J shape: ", J.shape)
+
+            # Jdense = np.array(J.todense())
+            # dff = pd.DataFrame(Jdense)
+            # dff.to_excel("Jacobian_autodiff.xlsx")
+            return J
+
+        else:
+            # build the symbolic Jacobian
             tap_modules = expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0)
             tap_angles = expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0)
             tap = polar_to_rect(tap_modules, tap_angles)
@@ -2495,26 +2507,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              T_cbr=self.T_cbr,
                              Ybus=self.Ybus)
 
-            if self.options.verbose > 1:
-                print("(pf_generalized_formulation.py) J: ")
-                print(J.toarray())
-                print("J shape: ", J.shape)
-
-                print("(pf_generalized_formulation.py) J_sym: ")
-                print(J_sym.toarray())
-                print("J_sym shape: ", J_sym.shape)
-
-            # Jdense = np.array(J.todense())
-            # dff = pd.DataFrame(Jdense)
-            # dff.to_excel("Jacobian_autodiff.xlsx")
-            return J_sym
-        else:
-            J = None
-
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)
             # dff.to_excel("Jacobian_symbolic.xlsx")
-            return J
+
+            if self.options.verbose > 1:
+                print("(pf_generalized_formulation.py) J: ")
+                print(J_sym.toarray())
+                print("J shape: ", J_sym.shape)
+
+            return J_sym
 
     def get_x_names(self) -> List[str]:
         """
