@@ -2220,11 +2220,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         tau2 = self.nc.active_branch_data.tap_angle.copy()
         tau2[self.u_cbr_tau] = tau
 
-        # Yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-        # Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        # Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-        # Ytt = (ys + bc2) / (vtap_t * vtap_t)
-
         yff0 = self.yff_cbr / (m0[self.cbr] * m0[self.cbr])
         yft0 = self.yft_cbr / (m0[self.cbr] * np.exp(-1.0j * tau0[self.cbr]))
         ytf0 = self.ytf_cbr / (m0[self.cbr] * np.exp(1.0j * tau0[self.cbr]))
@@ -2246,7 +2241,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         AScalc_cbr[self.T_cbr] += St_cbr
 
 
-        Pf_cbr = calcSf(k=self.k_cbr_pf,
+        Sf_cbr_calc = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
@@ -2257,9 +2252,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         m=m2,
                         tau=tau2,
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t)
 
-        Pt_cbr = calcSt(k=self.k_cbr_pt,
+        St_cbr_calc = calcSt(k=self.k_cbr_pt,
                         V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
@@ -2270,33 +2265,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         m=m2,
                         tau=tau2,
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t)
 
-        Qf_cbr = calcSf(k=self.k_cbr_qf,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m2,
-                        tau=tau2,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+        Pf_cbr = Sf_cbr_calc.real
+        Qf_cbr = Sf_cbr_calc.imag
 
-        Qt_cbr = calcSt(k=self.k_cbr_qt,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m2,
-                        tau=tau2,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+        Pt_cbr = St_cbr_calc.real
+        Qt_cbr = St_cbr_calc.imag
 
         # VSC ----------------------------------------------------------------------------------------------------------
         T_vsc = self.nc.vsc_data.T
@@ -2313,8 +2288,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
-
-        Ploss_hvdc = self.nc.hvdc_data.r * np.power(Pf_hvdc / Vmf_hvdc, 2.0)  # TODO: check compatible units!
+        zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
+        Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc / Vmf_hvdc, 2.0)
         loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
 
         Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase

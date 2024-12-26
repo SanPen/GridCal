@@ -18,7 +18,8 @@ Check that a transformer can regulate the voltage at a bus
 """
 
 # fname = os.path.join("tests", 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7.gridcal')
-fname = os.path.join("/Users/josep/Desktop/gridcal/src/tests/data/grids/5Bus_LTC_FACTS_Fig4.7.gridcal")
+# fname = os.path.join("/Users/josep/Desktop/gridcal/src/tests/data/grids/5Bus_LTC_FACTS_Fig4.7.gridcal")
+fname = os.path.join("/Users/josep/Desktop/gridcal/Grids_and_profiles/grids/17bus_w_issues.gridcal")
 grid = gce.open_file(fname)
 
 # run power flow
