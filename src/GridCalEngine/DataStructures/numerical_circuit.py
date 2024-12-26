@@ -281,6 +281,28 @@ class NumericalCircuit:
         self.fluid_p2x_data: FluidP2XData = FluidP2XData(nelm=nfluidp2x)
         self.fluid_path_data: FluidPathData = FluidPathData(nelm=nfluidpath)
 
+        # this array is used to keep track of the bus topological reduction
+        self.__bus_map_arr = np.arange(self.bus_data.nbus, dtype=int)
+
+        self.__topology_performed = False
+
+    @property
+    def bus_map_array(self) -> IntVec:
+        """
+        Bus map array
+        it stores which buses are the same to which other buses
+        :return: vector of integers
+        """
+        return self.__bus_map_arr
+
+    @property
+    def topology_performed(self) -> bool:
+        """
+        Flag indicating if topology processing happened here
+        :return:
+        """
+        return self.__topology_performed
+
     def get_power_injections(self) -> CxVec:
         """
         Compute the power
@@ -1764,27 +1786,27 @@ class NumericalCircuit:
             islands = find_islands(adj=A.tocsc(), active=self.bus_data.active)
 
             # compose the bus mapping array where each entry point to the final island bus
-            bus_map_arr = np.arange(self.bus_data.nbus, dtype=int)
+            self.__bus_map_arr = np.arange(self.bus_data.nbus, dtype=int)
 
             for island in islands:
                 if len(island):
                     i0 = island[0]
                     for ii in range(1, len(island)):
                         i = island[ii]
-                        bus_map_arr[i] = i0
+                        self.__bus_map_arr[i] = i0
 
                         # deactivate the reduced buses
                         self.bus_data.active[i] = False
 
             # remap
-            self.passive_branch_data.remap(bus_map_arr)
-            self.vsc_data.remap(bus_map_arr)
-            self.hvdc_data.remap(bus_map_arr)
-            self.load_data.remap(bus_map_arr)
-            self.generator_data.remap(bus_map_arr)
-            self.battery_data.remap(bus_map_arr)
-            self.shunt_data.remap(bus_map_arr)
-
+            self.passive_branch_data.remap(self.__bus_map_arr)
+            self.vsc_data.remap(self.__bus_map_arr)
+            self.hvdc_data.remap(self.__bus_map_arr)
+            self.load_data.remap(self.__bus_map_arr)
+            self.generator_data.remap(self.__bus_map_arr)
+            self.battery_data.remap(self.__bus_map_arr)
+            self.shunt_data.remap(self.__bus_map_arr)
+            self.__topology_performed = True
         else:
             pass
 

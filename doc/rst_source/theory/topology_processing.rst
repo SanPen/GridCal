@@ -1,6 +1,6 @@
 
 Topology processing
-======================
+########################
 
 In this section we are going to explain how to do topology processing properly for once and for all.
 This is a topic of capital importance in power systems that is rarely dealt with.
@@ -17,14 +17,14 @@ From circuit theory we get that:
 
 .. math::
 
-    Y \times V = I
+    Y \times V = I^*
 
 Where Y is the nodal admittance matrix, V is the bus voltages vector and I is the current injections
 vector at the buses. To solve for V we need to invert Y:
 
 .. math::
 
-    V = Y^{-1} \times I
+    V = Y^{-1} \times I^*
 
 The issue here is that Y may not be invertible for any general collection of equipment, hence we need to find the
 sub-circuits. Also there may be branches in the circuit with zero-impedance which would make Y singular. We need
@@ -39,7 +39,8 @@ In broad terms the topology process is to:
 5. Reassemble the results to match the circuit
 
 Steps 2 ~ 5 are only necessary for those simulations that rely on equality constraints such as the power flow.
-Simulations dealing with overdetermined systems like the optimization ones, do not need to handle islands separately.
+Simulations that create overdetermined linear systems like the optimization ones,
+do not need to handle islands separately.
 
 In performing the topology processing steps, we only need one special function: the islands search.
 
@@ -148,6 +149,8 @@ branches. This is, the simulatable islands.
 The islands variable is a list of vectors, each of which contains the indices of the buses of an island.
 Now, for every island we need to slice the data, so let's proceed to step 3.
 
+Ofcourse, each island must have a voltage source (i.e. a slack node)
+otherwise there is no way the island is powered and it will be in blackout.
 
 3 Segment the circuit into islands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -317,45 +320,62 @@ The particular version of the DFS algorithm presented here avoids recursivity in
 The spirit of CIM
 ^^^^^^^^^^^^^^^^^^
 
-If you have read anything about CIM or CGMES, or you have been in the guild discussions,
-you most definitely have heard about node-breaker and bus-branch modelling styles as two different things.
-Throughout the years the introductory training course of CGMEs given by ENTSO-e teaches that you can either model
-with connectivity nodes or with buses. This has been taught to hundreds of engineers used to model with
-buses, lines, etc. that suddenly experience a vast complexity increase.
-However, this complexity is unjustified since the node-breaker / bus-branch philosophies are the same.
-We have inadvertently seen so in this section. Allow me to elaborate;
+If you've encountered CIM or CGMES, or participated in guild discussions, you've likely heard about **node-breaker**
+and **bus-branch** modeling styles as distinct approaches. ENTSO-e's introductory CGMES training has historically
+taught that you can model using either **connectivity nodes** or **buses**. This guidance has been shared with
+hundreds of engineers accustomed to simpler models of buses, lines, etc. only to face a what seems to be
+gratuitous complexity.
 
-The bus-branch modelling: This is a style of modelling where you model using TopologicalNodes.
-The node-breaker modelling: This is a style of modelling where you model using ConnectivityNodes.
+After deep examination one finds that this complexity is indeed unjustified.
+The **node-breaker** and **bus-branch** philosophies are fundamentally
+the same, as we have experimented in the described processes.
+The modelling approaches are often thought of as:
 
-There is the common assumption that the bus-branch models do not have
-switches, while the node-breaker modes do have them. In practice both are possible, but allow me to go even further;
-A ConnectivityNode can have a 1:1 association with a TopologyNode, meaning that any ConnectivityNOde is in the end
-a TopologyNode. So, where is the difference? There is no difference. Both styles are the same.
+- **Bus-branch modeling**: This style involves using **TopologicalNodes** and no switches.
+- **Node-breaker modeling**: This style involves using **ConnectivityNodes** and switches.
 
-The original spirit of CIM is to model the grid using ConnectivityNodes and the TopologyNodes arise as a side effect
-after performing the topological reduction (reducing the problematic branches). Is the TopologicalNode strictly needed?
-Absolutely not. The practice has derived in exchanging both sets; the after-processing data as node-breaker and the
-post-processed data as bus-branch. However this is just an artificial complication.
-This has proven to be extremely problematic in practice.
+A common misconception is that bus-branch models lack switches, whereas node-breaker models include them. In
+practice, both approaches can incorporate switches. That fact is often discoursed at the official CGMES trainings.
+But, if a **ConnectivityNode** can have a 1:1 association with a **TopologicalNode**,
+this involves that any ConnectivityNode ultimately represents a TopologicalNode.
+So, what’s the difference? **There is no difference. Both styles are fundamentally the same.**
 
-So, in the spirit of CIM, the ConnectivityNodes are indeed the old fashioned Buses.
+CIM’s design philosophy is to model grids using **ConnectivityNodes**, with **TopologicalNodes** emerging
+naturally through topological reductions (e.g., simplifying branches). The need for TopologicalNodes is purely
+situational and not fundamental. Over time, the practice of treating detailed models as node-breaker models
+and processed less detailed models as bus-branch has created an artificial divide that has proven
+impractical and needlessly complicated. One can understand that the lack of a properly clear topology processing
+has probably sparked this complexity as some sort of middle ground that ends up being the worst of both  approaches.
+
+If we examine the original spirit of CIM: **ConnectivityNodes are no different from traditional Buses.**
+The distinction is a myth that adds unnecessary complexity to modeling workflows.
+
 
 How is it done in GridCal?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In GridCal we have the MultiCircuit as the grid in-memory database. No topological processing should ever be done
-over the database since there is a risk of changing the elements topology with respect to the previous definition. i.e
-I might have a generator connected to Bus1, but after topology processing is connected to Bus2.
-How can I recover that originally it was connected to Bus1? I cannot. So, where do we perform the topology processing?
+In GridCal, the **MultiCircuit** serves as the grid's in-memory database. It is crucial that no topological processing
+is ever performed directly on the MultiCircuit. Doing so risks altering the topology of elements, potentially breaking
+the consistency of the original configuration.
 
-Luckily, we have the NumericalCircuit. This is a snapshot of the MultiCircuit at some time index.
-This snapshot is fungible, meaning that any changes to it will not affect the MultiCircuit and
-will disappear after calculation. So, we perform the topology processing steps at the NumericalCircuit as
-explained at the beginning of this section.
+For example, imagine a generator initially connected to **Bus 1**. After performing topological processing, it might
+end up connected to **Bus 2**. How could we recover the original connection to **Bus 1**? Simply put, we cannot.
 
-With regards to CIM compatibility, we have made only one change: All ConnectivityNodes must create a bus
-or have an existing bus associated. Likewise, all BusBars must create connectivity node or have one associated.
-This ensures, that whatever object you use for modelling, in the end you end up using a bus, ensuring consistency
-in all calculation processes.
+If topology processing should not occur over the database, then where should it be done?
+
+Fortunately, GridCal provides the **NumericalCircuit**, a snapshot of the MultiCircuit at a specific state. This
+snapshot is **fungible**, meaning any modifications made to it will not impact the original MultiCircuit and will
+vanish after the calculation. As such, all topology processing steps are performed on the **NumericalCircuit**, as
+described earlier in this section.
+
+**CIM Compatibility Adjustments**
+
+To ensure compatibility with CIM standards, we have introduced a single adjustment:
+
+- Every **ConnectivityNode** must either create a bus or be associated with an existing bus.
+- Similarly, every **BusBar** must either create a connectivity node or be associated with one.
+
+This guarantees that no matter which object you use for modeling, the system will ultimately rely on buses,
+maintaining consistency across all calculation processes.
+
 

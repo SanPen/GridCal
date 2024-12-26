@@ -1048,6 +1048,45 @@ def test_lynn_Ybus3() -> None:
         nc.passive_branch_data.active[cidx] = 1
 
 
-def test_island_slicing():
+def lst_ok(lst1, lst2):
+    """
+    Check that list 1 and 2 are equal, although ot checking the order
+    :param lst1:
+    :param lst2:
+    :return:
+    """
+    if len(lst1) != len(lst2):
+        return False
+    else:
+        for a in lst1:
+            if a not in lst2:
+                return False
 
-    pass
+        return True
+
+def test_island_slicing():
+    """
+    This tests checks that things are properly sliced
+    """
+    fname = os.path.join('data', 'grids', '8_nodes_2_islands.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    islands = nc.split_into_islands()
+
+    assert len(islands) == 2
+
+    assert lst_ok(islands[0].bus_data.names, ['Bus 1', 'Bus 2', 'Bus 3', 'Bus 4'])
+    assert lst_ok(islands[0].passive_branch_data.names, ['L1', 'L2', 'L3', 'L4'])
+    assert lst_ok(islands[0].load_data.names, ['LD1', 'LD2', 'LD3'])
+    assert lst_ok(islands[0].generator_data.names, ['G1', 'G2'])
+
+    assert lst_ok(islands[1].bus_data.names, ['Bus 11', 'Bus 22', 'Bus 33', 'Bus 44'])
+    assert lst_ok(islands[1].passive_branch_data.names, ['L5', 'L6', 'L7', 'L8'])
+    assert lst_ok(islands[1].load_data.names, ['LD4', 'LD5', 'LD6', 'LD7'])
+    assert lst_ok(islands[1].generator_data.names, ['G3', 'G4'])
+
+
+
