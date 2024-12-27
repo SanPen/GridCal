@@ -102,16 +102,29 @@ class RawSystemSwitchingDevice(RawObject):
         :param version:
         :param logger:
         """
+        if version == 34:
+            if len(data[0]) == 11:
+                (self.I, self.J, self.CKT, self.NAME, self.STYPE, self.STATUS, self.NSTATUS,
+                 self.X, self.RATE1, self.RATE2, self.RATE3,) = data[0]
+            elif len(data[0]) == 21:
+                (self.I, self.J, self.CKT, self.X, self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5,
+                 self.RATE6, self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,
+                 self.STATUS, self.NSTATUS, self.METERED, self.STYPE, self.NAME) = data[0]
+            else:
+                logger.add_warning('Switch line length could not be identified :/', value=",".join(data[0]))
 
-        if version >= 35:
-            # I, ISW, PDES, PTOL, 'ARNAME'
-            self.I, self.J, self.CKT, self.X, self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, \
-                self.RATE6, self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12, \
-                self.STAT, self.NSTAT, self.MET, self.STYPE, self.NAME = data[0]
+            self.NAME = self.NAME.replace("'", "").strip()
+        elif version == 35:
+            if len(data[0]) == 21:
+                (self.I, self.J, self.CKT, self.X, self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5,
+                 self.RATE6, self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,
+                 self.STATUS, self.NSTATUS, self.METERED, self.STYPE, self.NAME) = data[0]
+            else:
+                logger.add_warning('Switch line length could not be identified :/', value=",".join(data[0]))
 
             self.NAME = self.NAME.replace("'", "").strip()
         else:
-            logger.add_warning('Areas not defined for version', str(version))
+            logger.add_warning('System switching not defined for version', str(version))
 
     def get_raw_line(self, version):
 
@@ -121,11 +134,11 @@ class RawSystemSwitchingDevice(RawObject):
                                          self.RATE10, self.RATE11, self.RATE12, self.STAT, self.NSTAT, self.MET,
                                          self.STYPE, self.NAME])
         else:
-            raise Exception('Areas not defined for version', str(version))
+            raise Exception('System switching not defined for version', str(version))
 
-    def get_id(self):
+    def get_id(self) -> str:
         """
         Get the element PSSE ID
         :return: 
-        """        
+        """
         return "{0}_{1}_{2}".format(self.I, self.J, self.CKT)

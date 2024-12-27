@@ -447,18 +447,28 @@ class BranchParent(PhysicalDevice):
         """
         return self.bus_to.Vnom
 
-    def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
+    def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1,
+                                     logger: Logger | None = None) -> bool:
         """
-
+        Check if this line should be a transformer
         :param branch_connection_voltage_tolerance:
-        :return:
+        :param logger: Logger
+        :return: should this be a transformer?
         """
         if self.bus_to is not None and self.bus_from is not None:
             V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
             V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
             if V2 > 0:
                 per = V1 / V2
-                return per < (1.0 - branch_connection_voltage_tolerance)
+
+                if per < (1.0 - branch_connection_voltage_tolerance):
+                    if logger is not None:
+                        logger.add_warning(msg="Converted line to transformer due to excessive nominal voltage difference",
+                                           device=self.idtag,
+                                           value=per)
+                    return True
+                else:
+                    return False
             else:
                 return V1 != V2
         else:

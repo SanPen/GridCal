@@ -62,7 +62,16 @@ class RawSubstation(RawObject):
         :param logger:
         """
 
-        if version >= 35:
+        if version == 34:
+
+            if len(data[0]) == 5:
+                self.IS, self.NAME, self.LATI, self.LONG, self.SGR = data[0]
+            elif len(data[0]) == 4:
+                self.IS, self.NAME, self.LATI, self.LONG = data[0]
+            else:
+                logger.add_warning('Substation line length could not be identified :/', value=",".join(data[0]))
+
+        elif version == 35:
 
             if len(data[0]) == 5:
                 self.IS, self.NAME, self.LATI, self.LONG, self.SGR = data[0]
@@ -72,14 +81,14 @@ class RawSubstation(RawObject):
                 logger.add_warning('Substation line length could not be identified :/', value=",".join(data[0]))
 
         else:
-            logger.add_warning('Areas not defined for version', str(version))
+            logger.add_warning('Substation not defined for version', str(version))
 
     def get_raw_line(self, version):
 
         if version >= 35:
             return self.format_raw_line([self.IS, self.NAME, self.LATI, self.LONG, self.SGR])
         else:
-            raise Exception('Areas not defined for version', str(version))
+            raise Exception('Substation not defined for version', str(version))
 
     def get_id(self) -> str:
         return str(self.IS)

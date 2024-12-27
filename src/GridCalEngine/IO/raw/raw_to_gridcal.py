@@ -3,9 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
+import math
 from typing import Dict, List, Tuple, Union
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
+from GridCalEngine.Topology import detect_substations
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices.branch import RawBranch
 from GridCalEngine.IO.raw.devices.bus import RawBus
@@ -185,15 +187,14 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
     :param logger:
     :return:
     """
-    name = str(psse_elm.I).replace("'", "")
-    name = name.strip()
+    busnum_id = psse_elm.get_id()
 
     # GL and BL come in MW and MVAr
     # They must be in siemens
     vv = bus.Vnom ** 2.0
 
     if vv == 0:
-        logger.add_error('Voltage equal to zero in shunt conversion', name)
+        logger.add_error('Voltage equal to zero in shunt conversion', busnum_id)
 
     if psse_elm.MODSW in [1, 2]:
         b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
@@ -202,11 +203,11 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
 
     vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
 
-    elm = dev.ControllableShunt(name='Switched shunt ' + name,
+    elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
                                 # B=b_init,   # TODO Binit
                                 vset=vset,
-                                code=name,
+                                code=busnum_id,
                                 is_nonlinear=True)
 
     if psse_elm.SWREG > 0:
@@ -327,9 +328,13 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         else:
             V2 = psse_elm.NOMV2
 
-        contingency_factor = psse_elm.RATE1_2 / psse_elm.RATE1_1 if psse_elm.RATE1_2 > 0.0 else 1.0
+        contingency_factor = (psse_elm.RATE1_2 / psse_elm.RATE1_1
+                              if psse_elm.RATE1_1 > 0.0 and psse_elm.RATE1_2 > 0.0
+                              else 1.0)
 
-        protection_factor = psse_elm.RATE1_3 / psse_elm.RATE1_1 if psse_elm.RATE1_3 > 0.0 else 1.4
+        protection_factor = (psse_elm.RATE1_3 / psse_elm.RATE1_1
+                             if psse_elm.RATE1_1 > 0.0 and psse_elm.RATE1_3 > 0.0
+                             else 1.4)
 
         r, x, g, b, tap_module, tap_angle = psse_elm.get_2w_pu_impedances(Sbase=Sbase,
                                                                           v_bus_i=bus_from.Vnom,
@@ -343,30 +348,41 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             LV = V1
 
         # could be nicer..
+        tc_total_positions: int = 1
+        tc_neutral_position: int = 0
+        tc_normal_position: int = 0
+        tc_dV: float = 0.01
+        tc_asymmetry_angle = 90
+        tc_type: TapChangerTypes = TapChangerTypes.NoRegulation
+        tc_step = 0
+
         if psse_elm.VMA1 != 0:
-            tc_total_positions = psse_elm.NTP1
-            tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
-            tc_normal_position = np.floor(psse_elm.NTP1 / 2)
-            tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1) \
-                if (psse_elm.NTP1 - 1) > 0 else 0.01
-            distance_from_low = tap_module - psse_elm.VMI1
-            tc_step = distance_from_low / tc_dV  if tc_dV != 0 else 0.5
+            if psse_elm.NTP1 > 0:
+                tc_total_positions = psse_elm.NTP1
+                tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
+                tc_normal_position = np.floor(psse_elm.NTP1 / 2)
+                tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1) \
+                    if (psse_elm.NTP1 - 1) > 0 else 0.01
+                distance_from_low = tap_module - psse_elm.VMI1
+                tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
         elif psse_elm.VMA2 != 0:
-            tc_total_positions = psse_elm.NTP2
-            tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
-            tc_normal_position = np.floor(psse_elm.NTP2 / 2)
-            tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (psse_elm.NTP2 - 1) \
-                if (psse_elm.NTP2 - 1) > 0 else 0.01
-            distance_from_low = tap_module - psse_elm.VMI2
-            tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+            if psse_elm.NTP2 > 0:
+                tc_total_positions = psse_elm.NTP2
+                tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
+                tc_normal_position = np.floor(psse_elm.NTP2 / 2)
+                tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (psse_elm.NTP2 - 1) \
+                    if (psse_elm.NTP2 - 1) > 0 else 0.01
+                distance_from_low = tap_module - psse_elm.VMI2
+                tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
         else:
-            tc_total_positions = psse_elm.NTP3
-            tc_neutral_position = np.floor(psse_elm.NTP3 / 2)
-            tc_normal_position = np.floor(psse_elm.NTP3 / 2)
-            tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (psse_elm.NTP3 - 1) \
-                if (psse_elm.NTP3 - 1) > 0 else 0.01
-            distance_from_low = tap_module - psse_elm.VMI3
-            tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+            if psse_elm.NTP3 > 0:
+                tc_total_positions = psse_elm.NTP3
+                tc_neutral_position = np.floor(psse_elm.NTP3 / 2)
+                tc_normal_position = np.floor(psse_elm.NTP3 / 2)
+                tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (psse_elm.NTP3 - 1) \
+                    if (psse_elm.NTP3 - 1) > 0 else 0.01
+                distance_from_low = tap_module - psse_elm.VMI3
+                tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
 
         if round(tc_step, 2) != int(tc_step):
             # the calculated step is not an integer
@@ -406,6 +422,8 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             active=bool(psse_elm.STAT),
             mttf=0,
             mttr=0,
+            tap_phase_control_mode=TapPhaseControl.fixed,
+            tap_module_control_mode=TapModuleControl.fixed,
             tc_total_positions=tc_total_positions,
             tc_neutral_position=tc_neutral_position,
             tc_normal_position=tc_normal_position,
@@ -426,38 +444,57 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         # we need to discount that PSSe includes the virtual tap inside the normal tap
         elm.tap_module = tap_module / mf * mt
 
-        if psse_elm.COD1 == 0:      # for fixed tap and fixed phase shift
+        if psse_elm.COD1 == 0:  # for fixed tap and fixed phase shift
 
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 == 1:    # for voltage control
+        elif psse_elm.COD1 in [1, -1]:  # for voltage control
 
-            elm.tap_module_control_mode = TapModuleControl.Vm
+            elm.tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
+            elm.tap_phase_control_mode = TapPhaseControl.fixed
+            reg_bus_id = abs(psse_elm.CONT1)
+            if reg_bus_id > 0:
+                elm.regulation_bus = psse_bus_dict.get(reg_bus_id, None)
+
+        elif psse_elm.COD1 in [2, -2]:  # for reactive power flow control
+
+            elm.tap_module_control_mode = TapModuleControl.Qf if psse_elm.COD1 > 0 else TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
 
-        elif psse_elm.COD1 == 2:    # for reactive power flow control
-
-            elm.tap_module_control_mode = TapModuleControl.Qf
-            elm.tap_phase_control_mode = TapPhaseControl.fixed
-
-        elif psse_elm.COD1 == 3:    # for active power flow control
+        elif psse_elm.COD1 in [3, -3]:  # for active power flow control
 
             elm.tap_module_control_mode = TapModuleControl.fixed
-            elm.tap_phase_control_mode = TapPhaseControl.Pf
+            elm.tap_phase_control_mode = TapPhaseControl.Pf if psse_elm.COD1 > 0 else TapPhaseControl.fixed
             elm.tap_changer.tc_type = TapChangerTypes.Symmetrical
 
-        elif psse_elm.COD1 == 4:    # for control of a dc line quantity
-                                    # (valid only for two-windingtransformers)
+            if psse_elm.NTP1 > 1:
+                elm.tap_changer.total_positions = psse_elm.NTP1
+                elm.tap_changer.neutral_position = int((psse_elm.NTP1 + 1) / 2)
+                elm.tap_changer.normal_position = int((psse_elm.NTP1 + 1) / 2)
+                alpha_per_2 = math.radians(psse_elm.RMA1)
+                number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
+                elm.tap_changer.dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
+            else:
+                elm.tap_changer.total_positions = 1
+                elm.tap_changer.neutral_position = 0
+                elm.tap_changer.normal_position = 0
+                alpha_per_2 = math.radians(psse_elm.RMA1)
+                elm.tap_changer.dV = 0.0
+                logger.add_warning(msg='Number of tap positions == 1', value=1)
+
+        elif psse_elm.COD1 in [4, -4]:  # for control of a dc line quantity
+            # (valid only for two-windingtransformers)
 
             logger.add_error(msg="Not implemented transformer control. (COD1)",
                              value=psse_elm.COD1)
 
-        elif psse_elm.COD1 == 5:  # for asymmetric active power flow control
+        elif psse_elm.COD1 in [5, -5]:  # for asymmetric active power flow control
 
-            elm.tap_module_control_mode = TapModuleControl.fixed
-            elm.tap_phase_control_mode = TapPhaseControl.fixed
+            elm.tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
+            elm.tap_phase_control_mode = TapPhaseControl.Pf if psse_elm.COD1 > 0 else TapPhaseControl.fixed
             elm.tap_changer.tc_type = TapChangerTypes.Asymmetrical
+            elm.tap_changer.asymmetry_angle = psse_elm.CNXA1
 
             elm.tap_changer.recalc()
 
@@ -971,10 +1008,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         branch = get_gridcal_line(psse_branch, psse_bus_dict, psse_circuit.SBASE, logger)
 
         # detect if this branch is actually a transformer
-        if branch.should_this_be_a_transformer(branch_connection_voltage_tolerance):
-
-            logger.add_error(msg="Converted line to transformer due to excessive voltage difference",
-                             device=str(branch.idtag))
+        if branch.should_this_be_a_transformer(branch_connection_voltage_tolerance, logger=logger):
 
             transformer = branch.get_equivalent_transformer()
 
@@ -1030,5 +1064,8 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         # since these may be shunt or series or both, pass the circuit so that the correct device is added
         if psse_elm.is_connected():
             get_upfc_from_facts(psse_elm, psse_bus_dict, psse_circuit.SBASE, logger, circuit=circuit)
+
+    # detect substation from the raw file
+    detect_substations(grid=circuit)
 
     return circuit

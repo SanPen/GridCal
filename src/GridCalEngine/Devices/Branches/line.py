@@ -438,23 +438,6 @@ class Line(BranchParent):
 
         return errors
 
-    def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
-        """
-        Check if ths should be a transformer
-        :param branch_connection_voltage_tolerance:
-        :return: should it be a transformer?
-        """
-        if self.bus_to is not None and self.bus_from is not None:
-            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-            if V2 > 0:
-                per = V1 / V2
-                return per < (1.0 - branch_connection_voltage_tolerance)
-            else:
-                return V1 != V2
-        else:
-            return False
-
     def get_equivalent_transformer(self) -> Transformer2W:
         """
         Convert this line into a transformer

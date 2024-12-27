@@ -27,7 +27,9 @@ from GridCalEngine.IO.raw.devices.zone import RawZone
 from GridCalEngine.IO.raw.devices.owner import RawOwner
 from GridCalEngine.IO.raw.devices.substation import RawSubstation
 from GridCalEngine.IO.raw.devices.gne_device import RawGneDevice
+from GridCalEngine.IO.raw.devices.impedance_correction_table import RawImpedanceCorrectionTable
 from GridCalEngine.IO.raw.devices.system_switching_device import RawSystemSwitchingDevice
+from GridCalEngine.IO.raw.devices.multi_section_line import RawMultiLineSection
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 
 
@@ -139,7 +141,7 @@ def read_and_split(file_name: str, text_func=None, progress_func=None) -> (List[
 
             if line_[0] != '@':
                 # remove garbage
-                lne = str(line_).strip()
+                lne: str = str(line_).strip()
 
                 if lne.startswith("program"):
                     # common header
@@ -170,7 +172,9 @@ def read_and_split(file_name: str, text_func=None, progress_func=None) -> (List[
                         pass
                     else:
                         if lne.strip() != '':
-                            sections_dict[block_category].append(interpret_line(raw_line=lne, splitter=sep))  # TODO: Fix the typing
+                            sections_dict[block_category].append(
+                                interpret_line(raw_line=lne, splitter=sep)
+                            )
 
                 i += 1
             else:
@@ -198,6 +202,22 @@ def is_one_line_for_induction_machine(row):
     :return:
     """
     return len(row) != 12
+
+
+def check_end_of_impedance_table(row: List[int | float | str]) -> bool:
+    """
+    Check the insane impedance line termination criteria
+    :param row:
+    :return:
+    """
+    n = len(row)
+    if n < 3:
+        return False
+
+    if row[n - 1] == 0 and row[n - 2] == 0 and row[n - 3] == 0:
+        return True
+    else:
+        return False
 
 
 def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> PsseCircuit:
@@ -292,7 +312,8 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
     meta_data['zone'] = [grid.zones, RawZone, 1]
     meta_data['owner'] = [grid.owners, RawOwner, 1]
     meta_data['gne'] = [grid.gne, RawGneDevice, 5]
-
+    meta_data['impedance correction'] = [grid.indiction_tables, RawImpedanceCorrectionTable, 2]
+    meta_data['multi-section line'] = [grid.multi_line_sections, RawMultiLineSection, 1]
     bus_set = {lne[0] for lne in sections_dict["bus"]}
 
     for key, lines in sections_dict.items():
@@ -312,27 +333,49 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
                 l_count = 0
                 while l_count < len(lines):
 
-                    lines_per_object2 = lines_per_object
-
-                    if version in versions:
-                        if key == 'transformer':
-                            # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
-                            # the transformers may have 4 or 5 lines to define them
-                            # so, to be able to know, we look at the line "l" and check if the first arguments
-                            # are 2 or 3 buses
-                            if is_3w(lines[l_count], bus_set):
-                                # 3 - windings
-                                lines_per_object2 = 5
-                            else:
-                                # 2-windings
-                                lines_per_object2 = 4
-                        elif key == 'induction machine':
-                            if is_one_line_for_induction_machine(lines[l_count]):
-                                lines_per_object2 = 1
-
+                    # lines_per_object2 = lines_per_object
                     data = list()
-                    for k in range(lines_per_object2):
-                        data.append(lines[l_count + k])
+                    if key == 'transformer':
+                        # as you know the PSS/e raw format is nuts, that is why for v29 (onwards probably)
+                        # the transformers may have 4 or 5 lines to define them
+                        # so, to be able to know, we look at the line "l" and check if the first arguments
+                        # are 2 or 3 buses
+                        if is_3w(lines[l_count], bus_set):
+                            # 3 - windings (5 lines)
+                            for k in range(5):
+                                data.append(lines[l_count])
+                                l_count += 1
+                        else:
+                            # 2-windings (4 lines)
+                            for k in range(4):
+                                data.append(lines[l_count])
+                                l_count += 1
+
+                    elif key == 'induction machine':
+                        if is_one_line_for_induction_machine(lines[l_count]):
+                            # only one line
+                            data.append(lines[l_count])
+                            l_count += 1
+                        else:
+                            for k in range(lines_per_object):
+                                data.append(lines[l_count])
+                                l_count += 1
+
+                    elif key == 'impedance correction':
+                        # since PSSe is nothing but a very questionable set of legacy sofwtare,
+                        # when we're dealing with impedance tables, the number of lines is unkown
+                        # and determined by the termination criteria 0.0, 0.0, 0.0
+                        done = False
+                        while not done:
+                            data.append(lines[l_count])
+                            done = check_end_of_impedance_table(lines[l_count])
+                            l_count += 1
+
+                    else:
+
+                        for k in range(lines_per_object):
+                            data.append(lines[l_count])
+                            l_count += 1
 
                     # pick the line that matches the object and split it by line returns \n
                     # object_lines = line.split('\n')
@@ -347,9 +390,6 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
                     obj = ObjectT()
                     obj.parse(data, version, logger)
                     objects_list.append(obj)
-
-                    # add lines
-                    l_count += lines_per_object2
 
                     if progress_func is not None:
                         progress_func((l_count / len(lines)) * 100)

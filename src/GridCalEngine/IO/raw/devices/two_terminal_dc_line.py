@@ -362,7 +362,7 @@ class RawTwoTerminalDCLine(RawObject):
         :param logger:
         """
 
-        if 34 <= version >= 35:
+        if 34 <= version <= 35:
             '''
             'NAME',MDC,RDC,SETVL,VSCHD,VCMOD,RCOMP,DELTI,METER,DCVMIN,CCCITMX,CCCACC
             IPR,NBR,ANMXR,ANMNR,RCR,XCR,EBASR,TRR,TAPR,TMXR,TMNR,STPR,ICR,IFR,ITR,IDR,XCAPR
@@ -412,7 +412,7 @@ class RawTwoTerminalDCLine(RawObject):
 
             self.NAME = str(self.I)
         else:
-            logger.add_warning('Version not implemented for DC Lines', str(version))
+            logger.add_warning('Version not implemented for Two-terminal DC lines', str(version))
 
     def get_raw_line(self, version):
 
@@ -477,9 +477,9 @@ class RawTwoTerminalDCLine(RawObject):
 
             return l0 + '\n' + l1 + '\n' + l2
         else:
-            raise Exception('Version not implemented for DC Lines ' + str(version))
+            raise Exception('Version not implemented for Two-terminal DC Lines ' + str(version))
 
-    def get_id(self):
+    def get_id(self) -> str:
         """
         Get the element PSSE ID
         :return:

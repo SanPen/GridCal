@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ConsoleLog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -28,7 +28,7 @@ class Ui_mainWindow(object):
         mainWindow.resize(516, 327)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
-        icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
         mainWindow.setWindowIcon(icon)
         mainWindow.setIconSize(QSize(24, 24))
         mainWindow.setDocumentMode(False)
@@ -37,7 +37,7 @@ class Ui_mainWindow(object):
         self.actionSave = QAction(mainWindow)
         self.actionSave.setObjectName(u"actionSave")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/savec.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon1.addFile(u":/Icons/icons/savec.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionSave.setIcon(icon1)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")

@@ -78,10 +78,9 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 dx, ok = spsolve_csc(J, -f)
 
                 if verbose > 1:
-                    import pandas as pd
-                    print("J:\n", pd.DataFrame(J.toarray()).to_string(index=False))
-                    print("F:\n", f)
-                    print("dx:\n", dx)
+                    print("J:\n", problem.get_jacobian_df(J))
+                    print("F:\n", problem.get_f_df(f))
+                    print("dx:\n", problem.get_x_df(dx))
 
                 if not ok:
                     logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
@@ -94,13 +93,16 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
             # line search
             mu = trust0
-            update_controls = error < (tol * 100)
             x_sol = x
             while not converged and mu > tol and error >= error0:
                 error, x_sol = problem.check_error(x + dx * mu)
                 mu *= 0.25
 
+            update_controls = error < (tol * 100)
             error, converged, x, f = problem.update(x=x_sol, update_controls=update_controls)
+
+            if verbose > 1:
+                print("x:\n", problem.get_x_df(x))
 
             # save the error evolution
             error0 = error

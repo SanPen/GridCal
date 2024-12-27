@@ -7,6 +7,7 @@ import os
 import json
 
 from collections.abc import Callable
+from datetime import datetime
 from typing import Union, List, Any, Dict, TYPE_CHECKING
 
 from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
@@ -126,7 +127,7 @@ class FileOpenOptions:
     def __init__(self,
                  cgmes_map_areas_like_raw: bool = False,
                  try_to_map_dc_to_hvdc_line: bool = True,
-                 crash_on_errors: bool = False,):
+                 crash_on_errors: bool = True,):
         """
 
         :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
@@ -586,12 +587,28 @@ class FileSave:
                                          cgmes_model=cgmes_circuit,
                                          pf_results=pf_results,
                                          logger=logger)
+
+        fn, _ = os.path.splitext(os.path.basename(self.file_name))
+        filename_in_parts = fn.split('_')
+
+        model_version = "001"
+        scenario_time = "2024-01-01T19:30:00Z"
+        if filename_in_parts.__len__() == 5:
+            try:
+                dt = datetime.strptime(filename_in_parts[0], "%Y%m%dT%H%MZ")
+                scenario_time = dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+            except ValueError:
+                logger.add_error(msg="Invalid datetime format in the filename!",
+                                 value=filename_in_parts[0],
+                                 comment="Scenario time set to default value."
+                                 )
+            model_version = filename_in_parts[4]
         cgmes_circuit = create_cgmes_headers(cgmes_model=cgmes_circuit,
                                              mas_names=self.circuit.get_modelling_authority_names().astype(str),
                                              profiles_to_export=profiles_to_export,
-                                             version="1",
+                                             version=model_version,
                                              desc="Test description.",
-                                             scenariotime="2021-02-09T19:30:00Z",
+                                             scenariotime=scenario_time,
                                              logger=logger)
 
         cim_exporter = CimExporter(cgmes_circuit=cgmes_circuit,

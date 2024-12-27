@@ -5,14 +5,18 @@
 from __future__ import annotations
 
 import os
+import sys
 import importlib
 import importlib.util
 import hashlib
 from typing import List, Dict, TYPE_CHECKING, Callable
 import json
+import zipfile
+import shutil
 from PySide6.QtGui import QPixmap
 
 from GridCalEngine.IO.file_system import plugins_path
+from GridCal.__version__ import __GridCal_VERSION__
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
@@ -20,13 +24,14 @@ if TYPE_CHECKING:
 
 class PluginFunction:
     """
-    Class to handle external funtion pointers
+    Class to handle external function pointers
     """
 
     def __init__(self) -> None:
 
         self.name = ""
         self.alias = ""
+        self.call_gui = False
         self.function_ptr = None
 
     def get_pointer_lambda(self, gui_instance: ConfigurationMain) -> Callable:
@@ -42,7 +47,7 @@ class PluginFunction:
             during the iteration and not after the loop since lambdas in a loop are lazy evaluated
         - func(self) is then what I wanted to lambda in the first place
         """
-        return lambda e=True, func=self.function_ptr: func(gui_instance)  # This is not an error, it is correct
+        return lambda e=True, func=self.function_ptr: func(gui_instance)
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -52,6 +57,7 @@ class PluginFunction:
         return {
             "name": self.name,
             "alias": self.alias,
+            "call_gui": self.call_gui,
         }
 
     def parse(self, data: Dict[str, str]) -> None:
@@ -61,6 +67,7 @@ class PluginFunction:
         """
         self.name = data.get('name', '').strip()
         self.alias = data.get('alias', '').strip()
+        self.call_gui = data.get('call_gui', False)
 
     def read_plugin(self, plugin_path: str) -> None:
         """
@@ -103,6 +110,8 @@ class PluginInfo:
         self.name = ""
         self.code_file_path = ""
         self.icon_path = ""
+        self.version = "0.0.0"
+        self.gridcal_version = "5.2.0"
 
         self.main_fcn: PluginFunction = PluginFunction()
 
@@ -110,10 +119,11 @@ class PluginInfo:
 
         self.icon: QPixmap | None = None
 
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-            self.parse(data)
-            self.read_plugin()
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+                self.parse(data)
+                self.read_plugin()
 
     def __repr__(self) -> str:
         return self.name
@@ -128,6 +138,8 @@ class PluginInfo:
         """
         return {
             "name": self.name,
+            "version": self.version,
+            "gridcal_version": self.gridcal_version,
             "path": self.code_file_path,
             "icon_path": self.icon_path,
             "main_fcn": self.main_fcn.to_dict(),
@@ -140,6 +152,8 @@ class PluginInfo:
         :param data: Data like the one saved
         """
         self.name = data.get('name', '')
+        self.version = data.get('version', '0.0.0')
+        self.gridcal_version = data.get('gridcal_version', '5.2.0')
         self.code_file_path = data.get('path', '')
         self.icon_path = data.get('icon_path', '')
 
@@ -175,6 +189,33 @@ class PluginInfo:
         else:
             print(f"Plugin {self.name}: Path {icon_path} not found :/")
 
+    def is_greater(self, other: "PluginInfo") -> int:
+
+        v1_tuple = tuple(map(int, self.version.split(".")))
+        v2_tuple = tuple(map(int, other.version.split(".")))
+
+        # Compare the tuples
+        if v1_tuple < v2_tuple:
+            return 1
+        elif v1_tuple > v2_tuple:
+            return -1
+        else:
+            return 0
+
+    def is_compatible(self) -> int:
+        """
+        Check if the plugin is compatible
+        :return:
+        """
+        v1_tuple = tuple(map(int, __GridCal_VERSION__.split(".")))
+        v2_tuple = tuple(map(int, self.gridcal_version.split(".")))
+
+        # Compare the tuples
+        if v1_tuple < v2_tuple:
+            return False
+        else:
+            return True
+
 
 class PluginsInfo:
     """
@@ -185,6 +226,9 @@ class PluginsInfo:
         """
 
         """
+        # add the plugins directory to the pythonpath
+        sys.path.insert(0, plugins_path())
+
         self.plugins: Dict[str, PluginInfo] = dict()
         self.read()
 
@@ -263,3 +307,108 @@ def load_function_from_file_path(file_path: str, function_name: str):
         raise TypeError(f"'{function_name}' in '{file_path}' is not callable")
 
     return func
+
+
+def pack_plugin(name: str,
+                pkg_folder: str,
+                python_file: str,
+                main_name: str,
+                icon_file: str,
+                version: str,
+                call_gui: bool,
+                gridcal_version: str = "5.2.10"):
+    """
+    Create plugin package
+    :param name: Name of the plugin
+    :param pkg_folder: Source folder of the plugin
+    :param python_file: main python file for the plugin (relative to pkg_folder)
+    :param main_name: name of the main function within the python_file
+    :param icon_file: icon file (relative to pkg_folder)
+    :param version: Version of the plugin
+    :param call_gui: does the main function
+    :param gridcal_version: gridcal version of the plugin
+    :return: final name of the plugin
+    """
+    plugin_data = {
+        "plugins_tech_version": "1.0.0",
+        "name": name,
+        "path": python_file,
+        "icon_path": icon_file,
+        "version": version,
+        "gridcal_version": gridcal_version,
+        "main_fcn": {
+                        "name": main_name,
+                        "alias": name,
+                        "call_gui": call_gui
+                    }
+    }
+
+    v2 = version.replace(".", "_")
+    filename_zip = f'{name}_{v2}.gcplugin'
+    with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+
+        folder_name = os.path.basename(pkg_folder)
+
+        config_file = os.path.join(folder_name, "config.plugin.json")
+
+        f_zip_ptr.writestr("manifest.json", json.dumps({
+            "name": name,
+            "folder": folder_name,
+            "version": version,
+            "config_file": config_file
+        }))
+
+        # save the config files
+        f_zip_ptr.writestr(config_file, json.dumps(plugin_data))
+
+        # Get the parent directory of the folder
+        parent_folder = os.path.dirname(pkg_folder)
+
+        for root, dirs, files in os.walk(pkg_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Add file to the zip archive, preserving folder structure
+                f_zip_ptr.write(file_path, os.path.relpath(file_path, parent_folder))
+
+    return filename_zip
+
+def get_plugin_info(plugin_file: str) -> PluginInfo | None:
+
+    with zipfile.ZipFile(plugin_file, 'r') as zipf:
+
+        if "manifest.json" in zipf.namelist():
+            # read the manifest
+            with zipf.open("manifest.json") as json_file:
+                data = json.load(json_file)
+                info = PluginInfo("", "")
+                info.parse(data)
+                return info
+        else:
+            return None
+
+def install_plugin(plugin_file: str):
+    """
+
+    :param plugin_file:
+    :return:
+    """
+
+    plugins_pth = plugins_path()
+
+    with zipfile.ZipFile(plugin_file, 'r') as zipf:
+
+        # read the manifest
+        with zipf.open("manifest.json") as json_file:
+            data = json.load(json_file)
+
+            folder_name = data.get("folder", None)
+
+            dst_folder = os.path.join(plugins_pth, folder_name)
+            if os.path.exists(dst_folder):
+                shutil.rmtree(dst_folder)
+
+        if folder_name is not None:
+            for member in zipf.namelist():
+                if member.startswith(f"{folder_name}/"):  # Replace with the folder you want to extract
+                    zipf.extract(member, plugins_pth)
+

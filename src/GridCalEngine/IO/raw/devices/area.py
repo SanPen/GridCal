@@ -78,5 +78,5 @@ class RawArea(RawObject):
     def get_id(self) -> str:
         return str(self.I)
 
-    def get_seed(self):
+    def get_seed(self) -> str:
         return "_CA_{}".format(self.I)
