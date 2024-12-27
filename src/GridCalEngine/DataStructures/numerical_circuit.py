@@ -101,7 +101,9 @@ def build_reducible_branches_C_coo(F: IntVec, T: IntVec, reducible: IntVec, acti
 
 
 @nb.njit(cache=True)
-def build_branches_C_coo_2(bus_active, F1, T1, active1, F2, T2, active2):
+def build_branches_C_coo_2(bus_active: IntVec,
+                           F1: IntVec, T1: IntVec, active1: IntVec,
+                           F2: IntVec, T2: IntVec, active2: IntVec):
     """
     Build the COO coordinates of the C matrix
     :param bus_active: array of bus active values
@@ -112,13 +114,6 @@ def build_branches_C_coo_2(bus_active, F1, T1, active1, F2, T2, active2):
     :param T2: VSC to buses indices array
     :param active2: VSC active array
     :return:
-    """
-    """
-    Build the COO coordinates of the C matrix
-    :param F1: branches From indices 
-    :param T1: branches To indices
-    :param active1: branches active array
-    :return: i, j, data, n_red
     """
 
     """
@@ -140,42 +135,47 @@ def build_branches_C_coo_2(bus_active, F1, T1, active1, F2, T2, active2):
     ii = 0
 
     for k in range(len(F1)):
-        f = F1[k]
-        t = T1[k]
-        if bus_active[f] and bus_active[t] and active1[k]:
-            # C[k, f] = 1
-            i[ii] = k
-            j[ii] = f
-            data[ii] = 1
-            ii += 1
+        if active1[k]:
+            f = F1[k]
+            t = T1[k]
+            if bus_active[f] and bus_active[t]:
+                # C[k, f] = 1
+                i[ii] = k
+                j[ii] = f
+                data[ii] = 1
+                ii += 1
 
-            # C[k, t] = 1
-            i[ii] = k
-            j[ii] = t
-            data[ii] = 1
-            ii += 1
+                # C[k, t] = 1
+                i[ii] = k
+                j[ii] = t
+                data[ii] = 1
+                ii += 1
 
     for k in range(len(F2)):
-        f = F2[k]
-        t = T2[k]
-        if bus_active[f] and bus_active[t] and active2[k]:
-            # C[k, f] = 1
-            i[ii] = k
-            j[ii] = f
-            data[ii] = 1
-            ii += 1
+        if active2[k]:
+            f = F2[k]
+            t = T2[k]
+            if bus_active[f] and bus_active[t]:
+                # C[k, f] = 1
+                i[ii] = k
+                j[ii] = f
+                data[ii] = 1
+                ii += 1
 
-            # C[k, t] = 1
-            i[ii] = k
-            j[ii] = t
-            data[ii] = 1
-            ii += 1
+                # C[k, t] = 1
+                i[ii] = k
+                j[ii] = t
+                data[ii] = 1
+                ii += 1
 
     return i[:ii], j[:ii], data[:ii], nelm
 
 
 @nb.njit(cache=True)
-def build_branches_C_coo_3(bus_active, F1, T1, active1, F2, T2, active2, F3, T3, active3):
+def build_branches_C_coo_3(bus_active: IntVec,
+                           F1: IntVec, T1: IntVec, active1: IntVec,
+                           F2: IntVec, T2: IntVec, active2: IntVec,
+                           F3: IntVec, T3: IntVec, active3: IntVec):
     """
     Build the COO coordinates of the C matrix
     :param bus_active: array of bus active values
@@ -185,17 +185,10 @@ def build_branches_C_coo_3(bus_active, F1, T1, active1, F2, T2, active2, F3, T3,
     :param F2: VSC from buses indices array
     :param T2: VSC to buses indices array
     :param active2: VSC active array
-    :param F3:
-    :param T3:
-    :param active3:
-    :return:
-    """
-    """
-    Build the COO coordinates of the C matrix
-    :param F1: branches From indices 
-    :param T1: branches To indices
-    :param active1: branches active array
-    :return: i, j, data, n_red
+    :param F3: HVDC from bus indices array
+    :param T3: HVDC to bus indices array
+    :param active3: HVDC active array
+    :return: i, j, data, nelm to build C(nelm, nbus)
     """
 
     """
@@ -217,52 +210,55 @@ def build_branches_C_coo_3(bus_active, F1, T1, active1, F2, T2, active2, F3, T3,
     ii = 0
 
     for k in range(len(F1)):
-        f = F1[k]
-        t = T1[k]
-        if bus_active[f] and bus_active[t] and active1[k]:
-            # C[k, f] = 1
-            i[ii] = k
-            j[ii] = f
-            data[ii] = 1
-            ii += 1
+        if active1[k]:
+            f = F1[k]
+            t = T1[k]
+            if bus_active[f] and bus_active[t]:
+                # C[k, f] = 1
+                i[ii] = k
+                j[ii] = f
+                data[ii] = 1
+                ii += 1
 
-            # C[k, t] = 1
-            i[ii] = k
-            j[ii] = t
-            data[ii] = 1
-            ii += 1
+                # C[k, t] = 1
+                i[ii] = k
+                j[ii] = t
+                data[ii] = 1
+                ii += 1
 
     for k in range(len(F2)):
-        f = F2[k]
-        t = T2[k]
-        if bus_active[f] and bus_active[t] and active2[k]:
-            # C[k, f] = 1
-            i[ii] = k
-            j[ii] = f
-            data[ii] = 1
-            ii += 1
+        if active2[k]:
+            f = F2[k]
+            t = T2[k]
+            if bus_active[f] and bus_active[t]:
+                # C[k, f] = 1
+                i[ii] = k
+                j[ii] = f
+                data[ii] = 1
+                ii += 1
 
-            # C[k, t] = 1
-            i[ii] = k
-            j[ii] = t
-            data[ii] = 1
-            ii += 1
+                # C[k, t] = 1
+                i[ii] = k
+                j[ii] = t
+                data[ii] = 1
+                ii += 1
 
     for k in range(len(F3)):
-        f = F3[k]
-        t = T3[k]
-        if bus_active[f] and bus_active[t] and active3[k]:
-            # C[k, f] = 1
-            i[ii] = k
-            j[ii] = f
-            data[ii] = 1
-            ii += 1
+        if active3[k]:
+            f = F3[k]
+            t = T3[k]
+            if bus_active[f] and bus_active[t]:
+                # C[k, f] = 1
+                i[ii] = k
+                j[ii] = f
+                data[ii] = 1
+                ii += 1
 
-            # C[k, t] = 1
-            i[ii] = k
-            j[ii] = t
-            data[ii] = 1
-            ii += 1
+                # C[k, t] = 1
+                i[ii] = k
+                j[ii] = t
+                data[ii] = 1
+                ii += 1
 
     return i[:ii], j[:ii], data[:ii], nelm
 
@@ -1358,16 +1354,6 @@ class NumericalCircuit:
         Process the reducible branches (i.e. reduce branches like the switches) in-place
         :return: Number of reduced branches
         """
-        # C = sp.lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
-        # n_red = 0
-        # for k in range(self.passive_branch_data.nelm):
-        #     if self.passive_branch_data.reducible[k] and self.passive_branch_data.active[k]:
-        #         f = self.passive_branch_data.F[k]
-        #         t = self.passive_branch_data.T[k]
-        #         C[k, f] = 1
-        #         C[k, t] = 1
-        #         n_red += 1
-
         i, j, data, n_red = build_reducible_branches_C_coo(
             F=self.passive_branch_data.F,
             T=self.passive_branch_data.T,
