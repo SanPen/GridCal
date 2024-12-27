@@ -462,7 +462,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         bc2 = (nc.passive_branch_data.G[self.cbr] + 1j * nc.passive_branch_data.B[self.cbr]) / 2.0  # shunt admittance
         vtap_f = nc.passive_branch_data.virtual_tap_f[self.cbr]
         vtap_t = nc.passive_branch_data.virtual_tap_t[self.cbr]
-        self.yff_cbr = ys / (vtap_f * vtap_f)
+        self.yff_cbr = (ys + bc2) / (vtap_f * vtap_f)
         self.yft_cbr = -ys / (vtap_f * vtap_t)
         self.ytf_cbr = -ys / (vtap_t * vtap_f)
         self.ytt_cbr = (ys + bc2) / (vtap_t * vtap_t)
@@ -2212,25 +2212,36 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Controllable branches ----------------------------------------------------------------------------------------
         # Power at the controlled branches
+        m0 = self.nc.active_branch_data.tap_module.copy()
+        tau0 = self.nc.active_branch_data.tap_angle.copy()
+
         m2 = self.nc.active_branch_data.tap_module.copy()
         m2[self.u_cbr_m] = m
         tau2 = self.nc.active_branch_data.tap_angle.copy()
         tau2[self.u_cbr_tau] = tau
 
+        yff0 = self.yff_cbr / (m0[self.cbr] * m0[self.cbr])
+        yft0 = self.yft_cbr / (m0[self.cbr] * np.exp(-1.0j * tau0[self.cbr]))
+        ytf0 = self.ytf_cbr / (m0[self.cbr] * np.exp(1.0j * tau0[self.cbr]))
+        ytt0 = self.ytt_cbr
+
         yff = (self.yff_cbr / (m2[self.cbr] * m2[self.cbr]))
         yft = self.yft_cbr / (m2[self.cbr] * np.exp(-1.0j * tau2[self.cbr]))
         ytf = self.ytf_cbr / (m2[self.cbr] * np.exp(1.0j * tau2[self.cbr]))
         ytt = self.ytt_cbr
+
         Vf_cbr = V[self.F_cbr]
         Vt_cbr = V[self.T_cbr]
-        Sf_cbr = (np.power(Vf_cbr, 2.0) * np.conj(yff) + Vf_cbr * Vt_cbr * np.conj(yft))
-        St_cbr = (np.power(Vt_cbr, 2.0) * np.conj(ytt) + Vt_cbr * Vf_cbr * np.conj(ytf))
-        Scalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        Scalc_cbr[self.F_cbr] += Sf_cbr
-        Scalc_cbr[self.T_cbr] += St_cbr
+        Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff - yff0) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft - yft0))
+        St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt - ytt0) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf - ytf0))
+        
+        # difference between the actual power and the power calculated with the passive term (initial admittance)
+        AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        AScalc_cbr[self.F_cbr] += Sf_cbr
+        AScalc_cbr[self.T_cbr] += St_cbr
 
 
-        Pf_cbr = calcSf(k=self.k_cbr_pf,
+        Sf_cbr_calc = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
@@ -2241,9 +2252,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         m=m2,
                         tau=tau2,
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t)
 
-        Pt_cbr = calcSt(k=self.k_cbr_pt,
+        St_cbr_calc = calcSt(k=self.k_cbr_pt,
                         V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
@@ -2254,36 +2265,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         m=m2,
                         tau=tau2,
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t)
 
-        Qf_cbr = calcSf(k=self.k_cbr_qf,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m2,
-                        tau=tau2,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+        Pf_cbr = Sf_cbr_calc.real
+        Qf_cbr = Sf_cbr_calc.imag
 
-        Qt_cbr = calcSt(k=self.k_cbr_qt,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m2,
-                        tau=tau2,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+        Pt_cbr = St_cbr_calc.real
+        Qt_cbr = St_cbr_calc.imag
 
-        # vsc ----------------------------------------------------------------------------------------------------------
-
+        # VSC ----------------------------------------------------------------------------------------------------------
         T_vsc = self.nc.vsc_data.T
         It = np.sqrt(Pt_vsc * Pt_vsc + Qt_vsc * Qt_vsc) / Vm[T_vsc]
         It2 = It * It
@@ -2298,8 +2288,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
-
-        Ploss_hvdc = self.nc.hvdc_data.r * np.power(Pf_hvdc / Vmf_hvdc, 2.0)  # TODO: check compatible units!
+        zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
+        Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc / Vmf_hvdc, 2.0)
         loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
 
         Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
@@ -2314,11 +2304,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-
-        Scalc = Scalc_passive + Scalc_cbr + Scalc_vsc + Scalc_hvdc
+        Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
         dS = Scalc - Sbus
-        # compose the residuals vector ---------------------------------------------------------------------------------
 
+        # compose the residuals vector ---------------------------------------------------------------------------------
         _f = np.r_[
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
@@ -2389,6 +2378,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                        x=self.var2x(),
                                        h=1e-6)
 
+            if self.options.verbose > 1:
+                print("(pf_generalized_formulation.py) J: ")
+                print(J.toarray())
+                print("J shape: ", J.shape)
+
+            # Jdense = np.array(J.todense())
+            # dff = pd.DataFrame(Jdense)
+            # dff.to_excel("Jacobian_autodiff.xlsx")
+            return J
+
+        else:
+            # build the symbolic Jacobian
             tap_modules = expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0)
             tap_angles = expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0)
             tap = polar_to_rect(tap_modules, tap_angles)
@@ -2481,26 +2482,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              T_cbr=self.T_cbr,
                              Ybus=self.Ybus)
 
-            if self.options.verbose > 1:
-                print("(pf_generalized_formulation.py) J: ")
-                print(J.toarray())
-                print("J shape: ", J.shape)
-
-                print("(pf_generalized_formulation.py) J_sym: ")
-                print(J_sym.toarray())
-                print("J_sym shape: ", J_sym.shape)
-
-            # Jdense = np.array(J.todense())
-            # dff = pd.DataFrame(Jdense)
-            # dff.to_excel("Jacobian_autodiff.xlsx")
-            return J_sym
-        else:
-            J = None
-
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)
             # dff.to_excel("Jacobian_symbolic.xlsx")
-            return J
+
+            if self.options.verbose > 1:
+                print("(pf_generalized_formulation.py) J: ")
+                print(J_sym.toarray())
+                print("J shape: ", J_sym.shape)
+
+            return J_sym
 
     def get_x_names(self) -> List[str]:
         """
