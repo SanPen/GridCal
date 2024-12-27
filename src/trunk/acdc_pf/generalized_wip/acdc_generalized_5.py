@@ -130,9 +130,7 @@ def run_cases():
 
 def check_timing():
     import time
-    import timeit
-    from GridCalEngine.Topology.generalized_simulation_indices import GeneralizedSimulationIndices
-    from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
+    from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation2 import PfGeneralizedFormulation
     from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
     from GridCalEngine.basic_structures import Logger
 

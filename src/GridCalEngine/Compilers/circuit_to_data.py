@@ -71,13 +71,13 @@ def set_bus_control_voltage(i: int,
         if remote_control and j > -1 and j != i:
             # remove voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
-            bus_data.set_busmode(j, BusMode.PQV_tpe)
+            bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
-            bus_data.set_busmode(i, BusMode.P_tpe)
+            bus_data.set_bus_mode(i, BusMode.P_tpe)
         else:
             # local voltage control
             # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
-            bus_data.set_busmode(i, BusMode.PV_tpe)
+            bus_data.set_bus_mode(i, BusMode.PV_tpe)
 
     if not use_stored_guess:
         if not bus_voltage_used[i]:
@@ -122,18 +122,18 @@ def set_bus_control_voltage_vsc(i: int,
         if remote_control and j > -1 and j != i:
             # remove voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
-            # bus_data.set_busmode(j, BusMode.PQV_tpe)
+            # bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             bus_data.is_p_controlled[j] = True
             bus_data.is_q_controlled[j] = True
             bus_data.is_vm_controlled[j] = True
 
             # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
-            # bus_data.set_busmode(i, BusMode.P_tpe)
+            # bus_data.set_bus_mode(i, BusMode.P_tpe)
             bus_data.is_p_controlled[i] = True
         else:
             # local voltage control
             # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
-            # bus_data.set_busmode(i, BusMode.PV_tpe)
+            # bus_data.set_bus_mode(i, BusMode.PV_tpe)
             bus_data.is_p_controlled[i] = True
             bus_data.is_vm_controlled[i] = True
 
@@ -180,18 +180,18 @@ def set_bus_control_voltage_hvdc(i: int,
         if remote_control and j > -1 and j != i:
             # remove voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
-            # bus_data.set_busmode(j, BusMode.PQV_tpe)
+            # bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             bus_data.is_p_controlled[j] = True
             bus_data.is_q_controlled[j] = True
             bus_data.is_vm_controlled[j] = True
 
             # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
-            # bus_data.set_busmode(i, BusMode.P_tpe)
+            # bus_data.set_bus_mode(i, BusMode.P_tpe)
             bus_data.is_p_controlled[i] = True
         else:
             # local voltage control
             # bus_data.bus_types[i] = BusMode.PV_tpe.value  # set as PV
-            # bus_data.set_busmode(i, BusMode.PV_tpe)
+            # bus_data.set_bus_mode(i, BusMode.PV_tpe)
             bus_data.is_p_controlled[i] = True
             bus_data.is_vm_controlled[i] = True
 
@@ -250,12 +250,12 @@ def get_bus_data(bus_data: BusData,
 
         if bus.is_slack:
             # bus_data.bus_types[i] = BusMode.Slack_tpe.value  # VD
-            bus_data.set_busmode(i, BusMode.Slack_tpe)
+            bus_data.set_bus_mode(i, BusMode.Slack_tpe)
 
         else:
             # PQ by default, later it is modified by generators and batteries
             # bus_data.bus_types[i] = BusMode.PQ_tpe.value
-            bus_data.set_busmode(i, BusMode.PQ_tpe)
+            bus_data.set_bus_mode(i, BusMode.PQ_tpe)
 
         bus_data.substations[i] = substation_dict.get(bus.substation, 0)
 
@@ -376,7 +376,7 @@ def get_load_data(data: LoadData,
         # change stuff depending on the modes
         if elm.mode == ExternalGridMode.VD:
             # bus_data.bus_types[i] = BusMode.Slack_tpe.value  # set as Slack
-            bus_data.set_busmode(i, BusMode.Slack_tpe)
+            bus_data.set_bus_mode(i, BusMode.Slack_tpe)
 
         elif elm.mode == ExternalGridMode.PV:
 

@@ -227,9 +227,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.m: Vec = self.nc.active_branch_data.tap_module[self.idx_dm]
         self.tau: Vec = self.nc.active_branch_data.tap_angle[self.idx_dtau]
-        # self.beq: Vec = self.nc.passive_branch_data.Beq[self.idx_dbeq]
-
-        # self.Gsw = self.nc.passive_branch_data.G0sw[self.idx_conv]
 
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
 

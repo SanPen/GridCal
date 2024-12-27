@@ -15,7 +15,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff, scipy_to_cxmat
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff, \
+    scipy_to_cxmat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -25,6 +26,7 @@ from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, BusMo
                                         ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
 from GridCalEngine.Simulations.Derivatives.matpower_derivatives import dSbus_dV_matpower
+
 
 # @njit()
 def adv_jacobian(nbus: int,
@@ -45,7 +47,6 @@ def adv_jacobian(nbus: int,
                  V: CxVec,
                  Vm: Vec,
                  adm,
-
 
                  # Controllable Branch Indices
                  u_cbr_m: IntVec,
@@ -163,7 +164,7 @@ def adv_jacobian(nbus: int,
     dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus.indices, Ybus.indptr, dS_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus.indices, Ybus.indptr, dS_dVa_x)
 
-    #matpower derivatives
+    # matpower derivatives
     mp_dS_dVa, mp_dS_dVm = dSbus_dV_matpower(Ybus, V)
     dS_dVm = scipy_to_cxmat(mp_dS_dVm)
     dS_dVa = scipy_to_cxmat(mp_dS_dVa)
@@ -197,8 +198,6 @@ def adv_jacobian(nbus: int,
     dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, k, tap, V).real
     dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, k, tap, V).imag
 
-
-
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
                         [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__,
@@ -208,8 +207,6 @@ def adv_jacobian(nbus: int,
                          dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_,
                          dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_],
                         n_rows=6, n_cols=4)
-
-
 
     # J = csc_stack_2d_ff(
     #     mats=[
@@ -451,7 +448,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.m = np.ones(len(self.u_cbr_m))
         self.tau = np.zeros(len(self.u_cbr_tau))
 
-        # set the VSC setpoints
+        # set the VSC set-points
         self.Pf_vsc[self.k_vsc_pf] = self.vsc_pf_set / self.nc.Sbase
         self.Pt_vsc[self.k_vsc_pt] = self.vsc_pt_set / self.nc.Sbase
         self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
@@ -480,7 +477,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              tau=self.nc.active_branch_data.tap_angle,
                              vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                              vtap_t=self.nc.passive_branch_data.virtual_tap_t)
-        print("Ybus\n",self.Ybus.toarray())
+
+        if self.options.verbose > 1:
+            print("Ybus\n", self.Ybus.toarray())
+
     def _analyze_branch_controls(self) -> None:
         """
         Analyze the control branches and compute the indices
@@ -1013,8 +1013,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 self.logger.add_error(
                     f"VSC control1 and control2 are the same for VSC indexed at {k},"
                     f" control1: {control1}, control2: {control2}")
-
-
 
         # self.vsc = np.array(vsc, dtype=int)
         self.u_vsc_pf = np.array(u_vsc_pf, dtype=int)
@@ -2234,14 +2232,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Vt_cbr = V[self.T_cbr]
         Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff - yff0) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft - yft0))
         St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt - ytt0) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf - ytf0))
-        
+
         # difference between the actual power and the power calculated with the passive term (initial admittance)
         AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
         AScalc_cbr[self.F_cbr] += Sf_cbr
         AScalc_cbr[self.T_cbr] += St_cbr
 
-
-        Sf_cbr_calc = calcSf(k=self.k_cbr_pf,
+        Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
@@ -2252,9 +2249,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         m=m2,
                         tau=tau2,
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t)
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
 
-        St_cbr_calc = calcSt(k=self.k_cbr_pt,
+        Pt_cbr = calcSt(k=self.k_cbr_pt,
                         V=V,
                         F=self.nc.passive_branch_data.F,
                         T=self.nc.passive_branch_data.T,
@@ -2265,13 +2262,34 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         m=m2,
                         tau=tau2,
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t)
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
 
-        Pf_cbr = Sf_cbr_calc.real
-        Qf_cbr = Sf_cbr_calc.imag
+        Qf_cbr = calcSf(k=self.k_cbr_qf,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
-        Pt_cbr = St_cbr_calc.real
-        Qt_cbr = St_cbr_calc.imag
+        Qt_cbr = calcSt(k=self.k_cbr_qt,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+
 
         # VSC ----------------------------------------------------------------------------------------------------------
         T_vsc = self.nc.vsc_data.T
@@ -2431,56 +2449,56 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              Vm=self.Vm,
                              adm=adm,
 
-                             # Controllable Branch Indices
-                             u_cbr_m=self.u_cbr_m,
-                             u_cbr_tau=self.u_cbr_tau,
-                             cbr=self.cbr,
-                             k_cbr_pf=self.k_cbr_pf,
-                             k_cbr_pt=self.k_cbr_pt,
-                             k_cbr_qf=self.k_cbr_qf,
-                             k_cbr_qt=self.k_cbr_qt,
-                             cbr_pf_set=self.cbr_pf_set,
-                             cbr_pt_set=self.cbr_pt_set,
-                             cbr_qf_set=self.cbr_qf_set,
-                             cbr_qt_set=self.cbr_qt_set,
+                                 # Controllable Branch Indices
+                                 u_cbr_m=self.u_cbr_m,
+                                 u_cbr_tau=self.u_cbr_tau,
+                                 cbr=self.cbr,
+                                 k_cbr_pf=self.k_cbr_pf,
+                                 k_cbr_pt=self.k_cbr_pt,
+                                 k_cbr_qf=self.k_cbr_qf,
+                                 k_cbr_qt=self.k_cbr_qt,
+                                 cbr_pf_set=self.cbr_pf_set,
+                                 cbr_pt_set=self.cbr_pt_set,
+                                 cbr_qf_set=self.cbr_qf_set,
+                                 cbr_qt_set=self.cbr_qt_set,
 
-                             # VSC Indices
-                             u_vsc_pf=self.u_vsc_pf,
-                             u_vsc_pt=self.u_vsc_pt,
-                             u_vsc_qt=self.u_vsc_qt,
-                             k_vsc_pf=self.k_vsc_pf,
-                             k_vsc_pt=self.k_vsc_pt,
-                             k_vsc_qt=self.k_vsc_qt,
-                             vsc_pf_set=self.vsc_pf_set,
-                             vsc_pt_set=self.vsc_pt_set,
-                             vsc_qt_set=self.vsc_qt_set,
+                                 # VSC Indices
+                                 u_vsc_pf=self.u_vsc_pf,
+                                 u_vsc_pt=self.u_vsc_pt,
+                                 u_vsc_qt=self.u_vsc_qt,
+                                 k_vsc_pf=self.k_vsc_pf,
+                                 k_vsc_pt=self.k_vsc_pt,
+                                 k_vsc_qt=self.k_vsc_qt,
+                                 vsc_pf_set=self.vsc_pf_set,
+                                 vsc_pt_set=self.vsc_pt_set,
+                                 vsc_qt_set=self.vsc_qt_set,
 
-                             # HVDC Indices
-                             hvdc_droop_idx=self.hvdc_droop_idx,
+                                 # HVDC Indices
+                                 hvdc_droop_idx=self.hvdc_droop_idx,
 
-                             # Bus Indices
-                             i_u_vm=self.i_u_vm,
-                             i_u_va=self.i_u_va,
-                             i_k_p=self.i_k_p,
-                             i_k_q=self.i_k_q,
+                                 # Bus Indices
+                                 i_u_vm=self.i_u_vm,
+                                 i_u_va=self.i_u_va,
+                                 i_k_p=self.i_k_p,
+                                 i_k_q=self.i_k_q,
 
-                             # Unknowns
-                             Pf_vsc=self.Pf_vsc,
-                             Pt_vsc=self.Pt_vsc,
-                             Qt_vsc=self.Qt_vsc,
-                             Pf_hvdc=self.Pf_hvdc,
-                             Qf_hvdc=self.Qf_hvdc,
-                             Pt_hvdc=self.Pt_hvdc,
-                             Qt_hvdc=self.Qt_hvdc,
+                                 # Unknowns
+                                 Pf_vsc=self.Pf_vsc,
+                                 Pt_vsc=self.Pt_vsc,
+                                 Qt_vsc=self.Qt_vsc,
+                                 Pf_hvdc=self.Pf_hvdc,
+                                 Qf_hvdc=self.Qf_hvdc,
+                                 Pt_hvdc=self.Pt_hvdc,
+                                 Qt_hvdc=self.Qt_hvdc,
 
-                             # Admittances and Connections
-                             yff_cbr=self.yff_cbr,
-                             yft_cbr=self.yft_cbr,
-                             ytf_cbr=self.ytf_cbr,
-                             ytt_cbr=self.ytt_cbr,
-                             F_cbr=self.F_cbr,
-                             T_cbr=self.T_cbr,
-                             Ybus=self.Ybus)
+                                 # Admittances and Connections
+                                 yff_cbr=self.yff_cbr,
+                                 yft_cbr=self.yft_cbr,
+                                 ytf_cbr=self.ytf_cbr,
+                                 ytt_cbr=self.ytt_cbr,
+                                 F_cbr=self.F_cbr,
+                                 T_cbr=self.T_cbr,
+                                 Ybus=self.Ybus)
 
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)
