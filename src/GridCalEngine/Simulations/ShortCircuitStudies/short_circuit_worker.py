@@ -110,7 +110,7 @@ def short_circuit_ph3(nc: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: in
 
 def short_circuit_unbalanced(nc: NumericalCircuit,
                              Vpf: CxVec,
-                             Zf: complex,
+                             Zf: CxVec,
                              bus_index: int,
                              fault_type: FaultType):
     """

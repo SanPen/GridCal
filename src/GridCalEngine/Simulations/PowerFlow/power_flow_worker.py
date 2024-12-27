@@ -614,7 +614,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
     # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
-        results.voltage = results.voltage[nc.bus_map_array]
+        results.voltage = nc.propagate_bus_result(results.voltage)
 
     # do the reactive power partition and store the values
     split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)

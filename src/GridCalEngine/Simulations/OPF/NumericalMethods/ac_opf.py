@@ -1126,4 +1126,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
             results.iterations = island_res.iterations
             results.converged = island_res.converged
 
+    # expand voltages if there was a bus topology reduction
+    if nc.topology_performed:
+        results.voltage = nc.propagate_bus_result(results.voltage)
+
     return results

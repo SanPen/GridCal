@@ -66,7 +66,7 @@ class ShortCircuitDriver(DriverTemplate):
 
         self.__cancel__ = False
 
-        self._is_running = False
+
 
     def get_steps(self):
         """
@@ -282,10 +282,16 @@ class ShortCircuitDriver(DriverTemplate):
         results.sc_type = self.options.fault_type
         results.sc_bus_index = self.options.bus_index
 
+        # expand voltages if there was a bus topology reduction
+        if nc.topology_performed:
+            results.voltage = nc.propagate_bus_result(results.voltage)
+            results.voltage1 = nc.propagate_bus_result(results.voltage1)
+            results.voltage0 = nc.propagate_bus_result(results.voltage0)
+            results.voltage2 = nc.propagate_bus_result(results.voltage2)
+
         self.results = results
         self.grid.short_circuit_results = results
         self._is_running = False
         self.toc()
 
-    def isRunning(self):
-        return self._is_running
+

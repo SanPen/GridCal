@@ -323,6 +323,11 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
         else:
             logger.add_info('No slack nodes in the island', str(i))
 
+    # expand voltages if there was a bus topology reduction
+    if nc.topology_performed:
+        results.sigma_re = nc.propagate_bus_result(results.sigma_re)
+        results.sigma_im = nc.propagate_bus_result(results.sigma_im)
+
     return results
 
 

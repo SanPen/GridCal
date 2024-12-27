@@ -3,18 +3,16 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+from typing import List, Tuple, Dict, Union
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from typing import List, Tuple, Dict, Union
-
-from scipy.sparse import lil_matrix
-
 from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.Topology.simulation_indices import SimulationIndices
 from GridCalEngine.Topology.topology import find_islands
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Mat, CxMat
 from GridCalEngine.enumerations import BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
@@ -286,14 +284,23 @@ class NumericalCircuit:
 
         self.__topology_performed = False
 
-    @property
-    def bus_map_array(self) -> IntVec:
+    def propagate_bus_result(self, bus_magnitude: Vec | CxVec):
         """
-        Bus map array
-        it stores which buses are the same to which other buses
-        :return: vector of integers
+        This function applies the __bus_map_arr to a calculated magnitude to
+        propagate the calculated nodal result
+        :param bus_magnitude: some array of the size of buses (all)
+        :return: propagated results
         """
-        return self.__bus_map_arr
+        return bus_magnitude[self.__bus_map_arr]
+
+    def propagate_bus_result_mat(self, bus_magnitude: Mat | CxMat):
+        """
+        This function applies the __bus_map_arr to a calculated magnitude to
+        propagate the calculated nodal result
+        :param bus_magnitude: some array of the size of buses (all)
+        :return: propagated results
+        """
+        return bus_magnitude[:, self.__bus_map_arr]
 
     @property
     def topology_performed(self) -> bool:
@@ -1732,7 +1739,7 @@ class NumericalCircuit:
         Process the topology (i.e. reduce branches like the switches) in-place
         :return: Number of reduced branches
         """
-        C = lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
+        C = sp.lil_matrix((self.passive_branch_data.nelm, self.bus_data.nbus))
         n_red = 0
         for k in range(self.passive_branch_data.nelm):
             if self.passive_branch_data.reducible[k] and self.passive_branch_data.active[k]:

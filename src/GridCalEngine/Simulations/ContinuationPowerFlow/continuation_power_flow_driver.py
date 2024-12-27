@@ -73,7 +73,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
     def run_at(self, t_idx: Union[int, None] = None) -> ContinuationPowerFlowResults:
         """
         run the voltage collapse simulation
-        @return:
+        @return: ContinuationPowerFlowResults
         """
         self.tic()
         nc = compile_numerical_circuit_at(circuit=self.grid,
@@ -157,6 +157,9 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                 self.results.apply_from_island(result_series[i],
                                                islands[i].bus_data.original_idx,
                                                islands[i].passive_branch_data.original_idx)
+
+        if nc.topology_performed:
+            self.results.voltage = nc.propagate_bus_result_mat(self.results.voltage)
 
         self.toc()
         return self.results
