@@ -15,7 +15,8 @@ import GridCalEngine.api as gce
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation2 import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
-TEST_FOLDER = os.path.join("..", "..", "..", "tests")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+TEST_FOLDER = os.path.join(SCRIPT_DIR, "..", "..", "..", "tests")
 
 
 def solve_generalized(grid: gce.MultiCircuit, options: PowerFlowOptions) -> NumericPowerFlowResults:
@@ -420,25 +421,23 @@ def test_power_flow_12bus_acdc() -> None:
 
     grid = gce.open_file(fname)
 
-    expected_v = np.array(
-        [1. + 0.j,
-         0.99992855 - 0.01195389j,
-         0.98147048 - 0.02808957j,
-         0.99960499 - 0.02810458j,
-         0.9970312 + 0.j,
-         0.99212134 + 0.j,
-         1. + 0.j,
-         0.99677598 + 0.j,
-         0.99172174 - 0.02331925j,
-         0.99262885 - 0.02434865j,
-         1. + 0.j,
-         0.99972904 - 0.0232776j,
-         0.99751785 - 0.01550583j,
-         0.99999118 - 0.00419999j,
-         0.99938143 - 0.03516744j,
-         0.99965346 - 0.02632404j,
-         0.99799193 + 0.j]
-    )
+    expected_v = np.array([1.+0.j,
+                           0.99993477-0.01142182j,
+                           0.981475 -0.02798462j,
+                           0.99961098-0.02789078j,
+                           0.9970314 +0.j, 
+                           0.9921219 +0.j, 
+                           1.+0.j,
+                           0.9967762 +0.j,
+                           0.99174229-0.02349737j,
+                           0.99263056-0.02449658j,
+                           1.+0.j,
+                           0.99972273-0.0235469j,
+                           0.99752297-0.01554718j,
+                           0.99999114-0.00421027j,
+                           0.99937536-0.03533967j,
+                           0.99964957-0.02647153j,
+                           0.99799207+0.j])
 
     # ------------------------------------------------------------------------------------------------------------------
     # for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
@@ -453,12 +452,23 @@ def test_power_flow_12bus_acdc() -> None:
 
     problem, solution = solve_generalized(grid=grid, options=options)
 
-    # TODO: find out
-    # assert np.allclose(expected_v, solution.V, atol=1e-6)
+
+    assert np.allclose(expected_v, solution.V, atol=1e-6)
 
     assert grid.vsc_devices[0].control1_val == solution.Pf_vsc[0]
     assert grid.vsc_devices[0].control2_val == solution.St_vsc[0].imag
 
+    assert grid.vsc_devices[1].control1_val == abs(solution.V[3])
+    assert grid.vsc_devices[1].control2_val == solution.St_vsc[1].real
 
+    assert grid.vsc_devices[2].control1_val == abs(solution.V[6])
+    assert grid.vsc_devices[2].control2_val == solution.St_vsc[2].imag
+
+    assert grid.vsc_devices[3].control1_val == solution.Pf_vsc[3] 
+    assert grid.vsc_devices[3].control2_val == solution.St_vsc[3].imag
+
+    assert grid.transformers2w[2].vset == abs(solution.V[13])
+
+    assert grid.hvdc_lines[0].Pset == solution.Sf_hvdc[0].real
 
     assert solution.converged
