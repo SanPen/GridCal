@@ -52,8 +52,6 @@ problem = PfGeneralizedFormulation(V0=island.Vbus,
                                    options=options,
                                    logger=logger)
 
-print()
-
 solution = newton_raphson_fx(problem=problem,
                              tol=options.tolerance,
                              max_iter=options.max_iter,
