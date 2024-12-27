@@ -43,12 +43,18 @@ def solve_generalized(grid: gce.MultiCircuit, options: PowerFlowOptions) -> Nume
     logger = Logger()
 
     island = islands[0]
-    problem = PfGeneralizedFormulation(V0=island.Vbus,
-                                       S0=island.Sbus,
-                                       I0=island.Ibus,
-                                       Y0=island.YLoadBus,
-                                       Qmin=island.Qmin_bus,
-                                       Qmax=island.Qmax_bus,
+
+    Vbus = island.bus_data.Vbus
+    S0 = island.get_power_injections_pu()
+    I0 = island.get_current_injections_pu()
+    Y0 = island.get_admittance_injections_pu()
+    Qmax_bus, Qmin_bus = island.get_reactive_power_limits()
+    problem = PfGeneralizedFormulation(V0=Vbus,
+                                       S0=S0,
+                                       I0=I0,
+                                       Y0=Y0,
+                                       Qmin=Qmin_bus,
+                                       Qmax=Qmax_bus,
                                        nc=island,
                                        options=options,
                                        logger=logger)
