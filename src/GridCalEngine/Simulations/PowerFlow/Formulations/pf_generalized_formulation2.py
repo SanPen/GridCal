@@ -258,6 +258,7 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     return Ybus.tocsc()
 
 
+@njit(cache=True)
 def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """
@@ -291,6 +292,7 @@ def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
     return Sf_cbr
 
 
+@njit(cache=True)
 def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """
@@ -2290,7 +2292,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
-
         # VSC ----------------------------------------------------------------------------------------------------------
         T_vsc = self.nc.vsc_data.T
         It = np.sqrt(Pt_vsc * Pt_vsc + Qt_vsc * Qt_vsc) / Vm[T_vsc]
@@ -2431,23 +2432,23 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             )
 
             J_sym = adv_jacobian(nbus=self.nc.nbus,
-                             nbr=self.nc.nbr,
-                             F=self.nc.passive_branch_data.F,
-                             T=self.nc.passive_branch_data.T,
-                             R=self.nc.passive_branch_data.R,
-                             X=self.nc.passive_branch_data.X,
-                             G=self.nc.passive_branch_data.G,
-                             B=self.nc.passive_branch_data.B,
-                             k=self.nc.passive_branch_data.k,
-                             Ys=self.nc.passive_branch_data.get_series_admittance(),
-                             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
-                             tap_angles=tap_angles,
-                             tap_modules=tap_modules,
-                             Bc=self.nc.passive_branch_data.B,
-                             V=self.V,
-                             Vm=self.Vm,
-                             adm=adm,
+                                 nbr=self.nc.nbr,
+                                 F=self.nc.passive_branch_data.F,
+                                 T=self.nc.passive_branch_data.T,
+                                 R=self.nc.passive_branch_data.R,
+                                 X=self.nc.passive_branch_data.X,
+                                 G=self.nc.passive_branch_data.G,
+                                 B=self.nc.passive_branch_data.B,
+                                 k=self.nc.passive_branch_data.k,
+                                 Ys=self.nc.passive_branch_data.get_series_admittance(),
+                                 vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                                 vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+                                 tap_angles=tap_angles,
+                                 tap_modules=tap_modules,
+                                 Bc=self.nc.passive_branch_data.B,
+                                 V=self.V,
+                                 Vm=self.Vm,
+                                 adm=adm,
 
                                  # Controllable Branch Indices
                                  u_cbr_m=self.u_cbr_m,
