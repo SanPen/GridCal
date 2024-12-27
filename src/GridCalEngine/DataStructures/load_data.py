@@ -31,11 +31,10 @@ class LoadData:
         self.I: Vec = np.zeros(nelm, dtype=complex)
         self.Y: Vec = np.zeros(nelm, dtype=complex)
 
-        # reliabilty
+        # reliability
         self.mttf: Vec = np.zeros(nelm, dtype=float)
         self.mttr: Vec = np.zeros(nelm, dtype=float)
 
-        self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
         self.bus_idx = np.zeros(nelm, dtype=int)
 
         self.cost: Vec = np.zeros(nelm, dtype=float)  # load shedding cost
@@ -72,7 +71,6 @@ class LoadData:
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
 
-        data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
         data.bus_idx = self.bus_idx[elm_idx]
 
         # Remapping of the buses
@@ -93,12 +91,10 @@ class LoadData:
         Remapping of the elm buses
         :param bus_map_arr: array of old-to-new buses
         """
-        self.C_bus_elm = sp.lil_matrix((self.nbus, self.nelm), dtype=int)
         for k in range(self.nelm):
             i = self.bus_idx[k]
             new_i = bus_map_arr[i]
             self.bus_idx[k] = new_i
-            self.C_bus_elm[new_i, k] = 1
 
     def copy(self) -> "LoadData":
         """
@@ -119,7 +115,6 @@ class LoadData:
         data.mttf = self.mttf.copy()
         data.mttr = self.mttr.copy()
 
-        data.C_bus_elm = self.C_bus_elm.copy()
         data.bus_idx = self.bus_idx.copy()
 
         data.cost = self.cost.copy()
@@ -128,27 +123,12 @@ class LoadData:
 
         return data
 
-    # def get_island(self, bus_idx: IntVec):
-    #     """
-    #     Get the array of load indices that belong to the islands given by the bus indices
-    #     :param bus_idx: array of bus indices
-    #     :return: array of island load indices
-    #     """
-    #     if self.nelm:
-    #         return tp.get_elements_of_the_island(
-    #             C_element_bus=self.C_bus_elm.T,
-    #             island=bus_idx,
-    #             active=self.active
-    #         )
-    #     else:
-    #         return np.zeros(0, dtype=int)
-
     def get_effective_load(self) -> CxVec:
         """
         Get effective load
         :return:
         """
-        return self.S * self.active
+        return self.S * self.active.astype(int)
 
     def get_linear_effective_load(self) -> Vec:
         """
@@ -162,14 +142,14 @@ class LoadData:
         Get Injections per bus with sign
         :return:
         """
-        return - self.C_bus_elm * self.get_effective_load()
+        return -tp.sum_per_bus_cx(self.nbus, self.bus_idx, self.get_effective_load())
 
     def get_linear_injections_per_bus(self) -> Vec:
         """
         Get Injections per bus with sign
         :return:
         """
-        return - self.C_bus_elm * self.get_linear_effective_load()
+        return -tp.sum_per_bus(self.nbus, self.bus_idx, self.get_linear_effective_load())
 
     def get_array_per_bus(self, arr: Vec) -> Vec:
         """
@@ -178,21 +158,33 @@ class LoadData:
         :return:
         """
         assert len(arr) == self.nelm
-        return self.C_bus_elm @ arr
+        return tp.sum_per_bus(self.nbus, self.bus_idx, arr)
+
+    def get_array_per_bus_obj(self, arr: Vec) -> Vec:
+        """
+        Sum per bus in python mode (it can add objects)
+        :param arr: any array of size nelm
+        :return: array of size nbus
+        """
+        assert len(arr) == self.nelm
+        res = np.zeros(self.nbus, dtype=arr.dtype)
+        for i in range(self.nelm):
+            res[self.bus_idx[i]] += arr[i]
+        return res
 
     def get_current_injections_per_bus(self) -> CxVec:
         """
         Get current Injections per bus with sign
         :return:
         """
-        return - self.C_bus_elm * (self.I * self.active)
+        return -tp.sum_per_bus_cx(self.nbus, self.bus_idx, self.I * self.active.astype(int))
 
     def get_admittance_injections_per_bus(self) -> CxVec:
         """
         Get admittance Injections per bus with sign
         :return:
         """
-        return - self.C_bus_elm * (self.Y * self.active)
+        return -tp.sum_per_bus_cx(self.nbus, self.bus_idx, self.Y * self.active.astype(int))
 
     def __len__(self) -> int:
         return self.nelm
@@ -202,4 +194,5 @@ class LoadData:
         Get the bus indices
         :return: array with the bus indices
         """
-        return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+        # return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+        return self.bus_idx

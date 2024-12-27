@@ -211,7 +211,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
     Ybus = adm.Ybus
     Yf = adm.Yf
     Yt = adm.Yt
-    Cg = nc.generator_data.C_bus_elm
+    Cg = nc.generator_data.get_C_bus_elm()
 
     # Bus identification lists
     slack = idx.vd
@@ -252,8 +252,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
 
     # ignore power from Z and I of the load
     s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
-    p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-    q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+    p0gen = Cg.T @ np.real(s0gen)
+    q0gen = Cg.T @ np.imag(s0gen)
 
     # compose the initial values
     x0 = var2x(vm=np.abs(pf_results.voltage),

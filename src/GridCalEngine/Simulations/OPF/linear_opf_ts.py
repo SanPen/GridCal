@@ -685,7 +685,9 @@ def add_linear_generation_formulation(t: Union[int, None],
     f_obj = 0.0
 
     if nodal_capacity_active:
-        id_gen_nonvd = [i for i in range(gen_data_t.C_bus_elm.shape[1]) if i not in vd]
+        # TODO: This looks like a bug
+        # id_gen_nonvd = [i for i in range(gen_data_t.C_bus_elm.shape[1]) if i not in vd]
+        id_gen_nonvd = [i for i in range(gen_data_t.nelm) if i not in vd]
     else:
         id_gen_nonvd = []
 
@@ -1328,9 +1330,12 @@ def add_linear_node_balance(t_idx: int,
     B = Bbus.tocsc()
 
     P_esp = bus_vars.branch_injections[t_idx, :]
-    P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
-    P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
-    P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+    # P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
+    # P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
+    # P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+    P_esp += generator_data.get_array_per_bus_obj(gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
+    P_esp += battery_data.get_array_per_bus_obj(batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
+    P_esp += load_data.get_array_per_bus_obj(load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
 
     if len(capacity_nodes_idx) > 0:
         P_esp[capacity_nodes_idx] += nodal_capacity_vars.P[t_idx, :]

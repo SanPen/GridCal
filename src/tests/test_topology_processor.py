@@ -758,7 +758,7 @@ def test_adjacency_calc():
                 Ct_vsc=nc.vsc_data.Ct.tocsc()
             )
 
-            A1 = conn_matrices.get_Adjacency(nc.bus_data.active)
+            A1 = conn_matrices.get_adjacency(nc.bus_data.active)
 
             if consider_hvdc_as_island_links:
                 structs = [nc.passive_branch_data, nc.vsc_data, nc.hvdc_data]

@@ -542,7 +542,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Grab the base power and the costs associated to generation
     Sbase = nc.Sbase
 
-    Cgen = nc.generator_data.C_bus_elm
+    Cgen = nc.generator_data.get_C_bus_elm()  # TODO: eliminate the use of Cgen
     from_idx = nc.passive_branch_data.F
     to_idx = nc.passive_branch_data.T
 
@@ -583,7 +583,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # print(admittances.Ybus)
 
-    Csh = nc.shunt_data.C_bus_elm[:, id_sh]
+    Csh = nc.shunt_data.get_C_bus_elm()[:, id_sh]
     Cg = sp.hstack([Cgen, Csh])
 
     Qsh_max = nc.shunt_data.qmax[id_sh] / Sbase
@@ -725,11 +725,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     if pf_init:
         gen_in_bus = np.zeros(nbus)
-        for i in range(nc.generator_data.C_bus_elm.shape[0]):
-            gen_in_bus[i] = np.sum(nc.generator_data.C_bus_elm[i])
-        ngenforgen = nc.generator_data.C_bus_elm.T @ gen_in_bus
-        allPgen = nc.generator_data.C_bus_elm.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
-        allQgen = nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
+        for i in range(Cgen.shape[0]):
+            gen_in_bus[i] = np.sum(Cgen[i])
+        ngenforgen = Cgen.T @ gen_in_bus
+        allPgen = Cgen.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
+        allQgen = Cgen.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
         Sg_undis = allPgen[gen_nondisp_idx] + 1j * allQgen[gen_nondisp_idx]
         p0gen = np.r_[allPgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
         q0gen = np.r_[allQgen[gen_disp_idx[:ngen]], np.zeros(nsh)]

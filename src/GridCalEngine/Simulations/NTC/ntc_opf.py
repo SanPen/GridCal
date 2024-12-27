@@ -153,10 +153,11 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_max = np.full(bus_data_t.nbus, inf_value)
 
         else:
-            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
-            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+            p_min = gen_data_t.get_pmin_per_bus() / Sbase
+            p_max = gen_data_t.get_pmax_per_bus() / Sbase
 
-        dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        # dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        dispatchable_bus = gen_data_t.get_dispatchable_per_bus().astype(float)
 
     elif transfer_method == AvailableTransferMode.Generation:
         p_ref = gen_per_bus
@@ -166,10 +167,11 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_max = np.full(bus_data_t.nbus, inf_value)
 
         else:
-            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
-            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+            p_min = gen_data_t.get_pmin_per_bus() / Sbase
+            p_max = gen_data_t.get_pmax_per_bus() / Sbase
 
-        dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        # dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        dispatchable_bus = gen_data_t.get_dispatchable_per_bus().astype(float)
 
     elif transfer_method == AvailableTransferMode.Load:
         p_ref = load_per_bus
@@ -177,7 +179,8 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
         p_max = inf_value
 
         # todo check
-        dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        # dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        dispatchable_bus = load_data_t.get_array_per_bus(load_data_t.S.real).astype(bool).astype(float)
 
     elif transfer_method == AvailableTransferMode.GenerationAndLoad:
         p_ref = gen_per_bus - load_per_bus
@@ -185,11 +188,12 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_min = np.full(bus_data_t.nbus, -inf_value)
             p_max = np.full(bus_data_t.nbus, inf_value)
         else:
-            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
-            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+            p_min = gen_data_t.get_pmin_per_bus() / Sbase
+            p_max = gen_data_t.get_pmax_per_bus() / Sbase
 
         # todo check
-        dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        # dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        dispatchable_bus = load_data_t.get_array_per_bus(load_data_t.S.real).astype(bool).astype(float)
 
     else:
         raise Exception('Undefined available transfer mode')

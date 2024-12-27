@@ -9,7 +9,7 @@ import numpy as np
 import numba as nb
 import scipy.sparse as sp
 from scipy.sparse import csc_matrix, diags, csr_matrix
-from GridCalEngine.basic_structures import IntVec, Vec, BoolVec
+from GridCalEngine.basic_structures import IntVec, Vec, BoolVec, CxVec
 
 
 @nb.njit(cache=True)
@@ -215,6 +215,7 @@ def get_island_branch_indices(bus_map: IntVec, elm_active: BoolVec, F: IntVec, T
 
     return indices[:ii]
 
+
 def get_adjacency_matrix(C_branch_bus_f: csc_matrix, C_branch_bus_t: csc_matrix,
                          branch_active: IntVec, bus_active: IntVec) -> csc_matrix:
     """
@@ -337,7 +338,7 @@ class ConnectivityMatrices:
         """
         return (self.Cf_ + self.Ct_).tocsc()
 
-    def get_Adjacency(self, bus_active: IntVec) -> csc_matrix:
+    def get_adjacency(self, bus_active: IntVec) -> csc_matrix:
         """
 
         :param bus_active:
@@ -421,3 +422,61 @@ def compute_connectivity_flexible(branch_active: IntVec | None = None,
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
 
 
+@nb.njit(cache=True)
+def sum_per_bus(nbus: int, bus_indices: IntVec, magnitude: Vec) -> Vec:
+    """
+    Summation of magnitudes per bus (real)
+    :param nbus: number of buses
+    :param bus_indices: elements' bus indices
+    :param magnitude: elements' magnitude to add per bus
+    :return: array of size nbus
+    """
+    assert len(bus_indices) == len(magnitude)
+    res = np.zeros(nbus, dtype=np.float64)
+    for i in range(len(bus_indices)):
+        res[bus_indices[i]] += magnitude[i]
+    return res
+
+@nb.njit(cache=True)
+def sum_per_bus_cx(nbus: int, bus_indices: IntVec, magnitude: CxVec) -> CxVec:
+    """
+    Summation of magnitudes per bus (complex)
+    :param nbus: number of buses
+    :param bus_indices: elements' bus indices
+    :param magnitude: elements' magnitude to add per bus
+    :return: array of size nbus
+    """
+    assert len(bus_indices) == len(magnitude)
+    res = np.zeros(nbus, dtype=np.complex128)
+    for i in range(len(bus_indices)):
+        res[bus_indices[i]] += magnitude[i]
+    return res
+
+@nb.njit(cache=True)
+def sum_per_bus_bool(nbus: int, bus_indices: IntVec, magnitude: BoolVec) -> BoolVec:
+    """
+    Summation of magnitudes per bus (bool)
+    :param nbus: number of buses
+    :param bus_indices: elements' bus indices
+    :param magnitude: elements' magnitude to add per bus
+    :return: array of size nbus
+    """
+    assert len(bus_indices) == len(magnitude)
+    res = np.zeros(nbus, dtype=np.bool_)
+    for i in range(len(bus_indices)):
+        res[bus_indices[i]] += magnitude[i]
+    return res
+
+@nb.njit(cache=True)
+def dev_per_bus(nbus: int, bus_indices: IntVec) -> IntVec:
+    """
+    Summation of magnitudes per bus (bool)
+    :param nbus: number of buses
+    :param bus_indices: elements' bus indices
+    :param magnitude: elements' magnitude to add per bus
+    :return: array of size nbus
+    """
+    res = np.zeros(nbus, dtype=np.int64)
+    for i in range(len(bus_indices)):
+        res[bus_indices[i]] += 1
+    return res

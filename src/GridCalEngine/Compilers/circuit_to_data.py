@@ -335,7 +335,7 @@ def get_load_data(data: LoadData,
             bus_data.ii_fixed[i] -= data.I[ii].imag
             bus_data.b_fixed[i] -= data.Y[ii].imag
 
-        data.C_bus_elm[i, ii] = 1
+        # data.C_bus_elm[i, ii] = 1
         ii += 1
 
     for elm in circuit.get_static_generators():
@@ -362,7 +362,7 @@ def get_load_data(data: LoadData,
             # bus_data.ii_fixed[i] += data.I[ii].imag
             # bus_data.b_fixed[i] += data.Y[ii].imag
 
-        data.C_bus_elm[i, ii] = 1
+        # data.C_bus_elm[i, ii] = 1
         ii += 1
 
     for elm in circuit.get_external_grids():
@@ -404,7 +404,7 @@ def get_load_data(data: LoadData,
             bus_data.ii_fixed[i] += data.I[ii].imag
             bus_data.b_fixed[i] += data.Y[ii].imag
 
-        data.C_bus_elm[i, ii] = 1
+        # data.C_bus_elm[i, ii] = 1
         ii += 1
 
     for elm in circuit.get_current_injections():
@@ -433,7 +433,7 @@ def get_load_data(data: LoadData,
             bus_data.ii_fixed[i] += data.I[ii].imag
             bus_data.b_fixed[i] += data.Y[ii].imag
 
-        data.C_bus_elm[i, ii] = 1
+        # data.C_bus_elm[i, ii] = 1
         ii += 1
 
     return data
@@ -488,7 +488,7 @@ def get_shunt_data(
         if data.active[ii]:
             bus_data.b_fixed[i] += data.Y[ii].imag
 
-        data.C_bus_elm[i, k] = 1
+        # data.C_bus_elm[i, k] = 1
         ii += 1
 
     for elm in circuit.get_controllable_shunts():
@@ -565,7 +565,7 @@ def get_shunt_data(
             else:
                 bus_data.b_fixed[i] += data.Y[ii].imag
 
-        data.C_bus_elm[i, ii] = 1
+        # data.C_bus_elm[i, ii] = 1
         ii += 1
 
 
@@ -728,7 +728,7 @@ def get_generator_data(
             else:
                 bus_data.q_fixed[i] += data.get_q_at(k)
 
-        data.C_bus_elm[i, k] = 1
+        # data.C_bus_elm[i, k] = 1
 
     return gen_index_dict
 
@@ -899,7 +899,7 @@ def get_battery_data(
             else:
                 bus_data.q_fixed[i] += data.get_q_at(k)
 
-        data.C_bus_elm[i, k] = 1
+        # data.C_bus_elm[i, k] = 1
 
 
 def fill_parent_branch(i: int,

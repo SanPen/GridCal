@@ -362,11 +362,6 @@ class NumericalCircuit:
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
 
-        self.load_data.C_bus_elm = self.load_data.C_bus_elm.tocsr()
-        self.battery_data.C_bus_elm = self.battery_data.C_bus_elm.tocsr()
-        self.generator_data.C_bus_elm = self.generator_data.C_bus_elm.tocsr()
-        self.shunt_data.C_bus_elm = self.shunt_data.C_bus_elm.tocsr()
-
         self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
 
@@ -1281,36 +1276,6 @@ class NumericalCircuit:
         T = self.hvdc_data.get_bus_indices_t()
         return get_inter_areas_branch(F, T, buses_areas_1, buses_areas_2)
 
-    def get_generators_per_areas(self, buses_in_a1, buses_in_a2):
-        """
-        Get the generators that belong to the Area 1, Area 2 and the rest of areas
-        :param buses_in_a1: List of bus indices of the area 1
-        :param buses_in_a2: List of bus indices of the area 2
-        :return: Tree lists: (gens_in_a1, gens_in_a2, gens_out)
-                 each of the lists contains (bus index, generator index) tuples
-        """
-        if isinstance(self.generator_data.C_bus_elm, sp.csc_matrix):
-            Cgen = self.generator_data.C_bus_elm
-        else:
-            Cgen = self.generator_data.C_bus_elm.tocsc()
-
-        return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
-
-    def get_batteries_per_areas(self, buses_in_a1, buses_in_a2):
-        """
-        Get the batteries that belong to the Area 1, Area 2 and the rest of areas
-        :param buses_in_a1: List of bus indices of the area 1
-        :param buses_in_a2: List of bus indices of the area 2
-        :return: Tree lists: (batteries_in_a1, batteries_in_a2, batteries_out)
-                 each of the lists contains (bus index, generator index) tuples
-        """
-        if isinstance(self.battery_data.C_bus_elm, sp.csc_matrix):
-            Cgen = self.battery_data.C_bus_elm
-        else:
-            Cgen = self.battery_data.C_bus_elm.tocsc()
-
-        return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
-
     def get_structure(self, structure_type: str) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
@@ -1828,22 +1793,8 @@ class NumericalCircuit:
         if logger is None:
             logger = Logger()
 
-        # find the indices of the devices of the island
-        # br_idx = self.passive_branch_data.get_island(bus_idx)
-        # hvdc_idx = self.hvdc_data.get_island(bus_idx)
-        # vsc_idx = self.vsc_data.get_island(bus_idx)
-        #
-        # load_idx = self.load_data.get_island(bus_idx)
-        # gen_idx = self.generator_data.get_island(bus_idx)
-        # batt_idx = self.battery_data.get_island(bus_idx)
-        # shunt_idx = self.shunt_data.get_island(bus_idx)
-
-        # this is a dictionary to map the old indices to the new indices
+        # this is an array to map the old indices to the new indices
         # it is used by the structures to re-map the bus indices
-        # bus_map: Dict[int, int] = {original_i: new_i for new_i, original_i in enumerate(bus_idx)}
-        # this is the same
-        # for new_i, original_i in enumerate(bus_idx):
-        #     bus_map[original_i] = original_i
         bus_map = np.full(self.bus_data.nbus, -1, dtype=int)
         bus_map[bus_idx] = np.arange(len(bus_idx))
 
@@ -1935,7 +1886,7 @@ class NumericalCircuit:
         #     Ct_vsc=self.vsc_data.Ct.tocsc()
         # )
 
-        # return conn_matrices.get_Adjacency(self.bus_data.active)
+        # return conn_matrices.get_adjacency(self.bus_data.active)
 
         if consider_hvdc_as_island_links:
             structs = [self.passive_branch_data, self.vsc_data, self.hvdc_data]
