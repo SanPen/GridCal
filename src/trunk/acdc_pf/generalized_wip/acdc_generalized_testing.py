@@ -46,6 +46,8 @@ def solve_generalized(grid: gce.MultiCircuit, options: PowerFlowOptions) -> Nume
                                  verbose=options.verbose,
                                  logger=logger)
 
+    logger.print("Logger")
+
     return solution
 
 
