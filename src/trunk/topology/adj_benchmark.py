@@ -1,13 +1,20 @@
 import datetime
 import numpy as np
-from scipy.sparse import csc_matrix, lil_matrix
+from scipy.sparse import csc_matrix, lil_matrix, coo_matrix
 
 
-def method_A(F, T, n, m):
-    C = lil_matrix((m, n))
-    for k in range(m):
-        C[k, F[k]] = 1
-        C[k, T[k]] = 1
+def method_A(F, T, n, m, lil=True):
+
+    if lil:
+        C = lil_matrix((m, n))
+        for k in range(m):
+            C[k, F[k]] = 1
+            C[k, T[k]] = 1
+    else:
+        i = np.r_[np.arange(m, dtype=int), np.arange(m, dtype=int)]
+        j = np.r_[F, T]
+        data = np.ones(m* 2, dtype=int)
+        C = coo_matrix((data, (i, j)), shape=(m, n), dtype=int)
 
     # compute the adjacency matrix
     A = C.T @ C
@@ -36,7 +43,7 @@ T_ = np.random.randint(0, n_ - 1, m_)
 
 t0 = datetime.datetime.now()
 for i in range(100):
-    method_A(F_, T_, n_, m_)
+    method_A(F_, T_, n_, m_, lil=False)
 
 t1 = datetime.datetime.now()
 

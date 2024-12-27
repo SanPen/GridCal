@@ -111,7 +111,7 @@ def test_topology_4_nodes_A():
     SW2 must be connected between B2 and the bus to of L2
     """
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 3, 0, 3]).all()
@@ -151,7 +151,7 @@ def test_topology_4_nodes_B():
     SW2 must be in a self-loop where both buses are B2
     """
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 2, 0, 2]).all()
@@ -192,7 +192,7 @@ def test_topology_4_nodes_C():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 2, 1, 2]).all()
@@ -233,7 +233,7 @@ def test_topology_4_nodes_D():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 3, 1, 3]).all()
@@ -276,7 +276,7 @@ def test_topology_4_nodes_E():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [3, 3, 3, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 2, 3, 2]).all()
@@ -319,7 +319,7 @@ def test_topology_4_nodes_F():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [3, 4, 3, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 2, 4, 2]).all()
@@ -362,7 +362,7 @@ def test_topology_4_nodes_G():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [3, 4, 3, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 5, 4, 5]).all()
@@ -405,7 +405,7 @@ def test_topology_4_nodes_H():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [3, 3, 3, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 5, 3, 5]).all()
@@ -451,7 +451,7 @@ def test_topology_4_nodes_A2():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 3, 0, 3]).all()
@@ -497,7 +497,7 @@ def test_topology_4_nodes_B2():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 2, 0, 2]).all()
@@ -543,7 +543,7 @@ def test_topology_4_nodes_C2():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 2, 1, 2]).all()
@@ -589,7 +589,7 @@ def test_topology_4_nodes_D2():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
     assert np.equal(nc.passive_branch_data.T, [2, 3, 1, 3]).all()
@@ -617,7 +617,7 @@ def test_topology_2_nodes_A1():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.generator_data.bus_idx, [0]).all()
     assert np.equal(nc.load_data.bus_idx, [0]).all()
@@ -646,7 +646,7 @@ def test_topology_2_nodes_A2():
     """
 
     nc = compile_numerical_circuit_at(grid)
-    nc.process_topology()
+    nc.process_reducible_branches()
 
     assert np.equal(nc.generator_data.bus_idx, [0]).all()
     assert np.equal(nc.load_data.bus_idx, [1]).all()

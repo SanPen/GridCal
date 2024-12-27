@@ -57,11 +57,13 @@ class BranchParentData:
         Bras-bus from connectivity
         :return:
         """
-        mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
-        for k in range(self.nelm):
-            # if self.active[k]:
-            mat[k, self.F[k]] = 1
-        return mat.tocsc()
+        # mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        # for k in range(self.nelm):
+        #     mat[k, self.F[k]] = 1
+        # return mat.tocsc()
+        i = np.arange(self.nelm, dtype=int)
+        data = np.ones(self.nelm, dtype=int)
+        return sp.coo_matrix((data, (i, self.F)), shape=(self.nelm, self.nbus), dtype=int).tocsc()
 
     @property
     def Ct(self) -> sp.csc_matrix:
@@ -69,11 +71,13 @@ class BranchParentData:
         Bras-bus to connectivity
         :return:
         """
-        mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
-        for k in range(self.nelm):
-            # if self.active[k]:
-            mat[k, self.T[k]] = 1
-        return mat.tocsc()
+        # mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        # for k in range(self.nelm):
+        #     mat[k, self.T[k]] = 1
+        # return mat.tocsc()
+        i = np.arange(self.nelm, dtype=int)
+        data = np.ones(self.nelm, dtype=int)
+        return sp.coo_matrix((data, (i, self.T)), shape=(self.nelm, self.nbus), dtype=int).tocsc()
 
     @property
     def C(self) -> sp.csc_matrix:
@@ -81,12 +85,17 @@ class BranchParentData:
         Branch-bus connectivity matrix
         :return:
         """
-        mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
-        for k in range(self.nelm):
-            # if self.active[k]:
-            mat[k, self.F[k]] = 1
-            mat[k, self.T[k]] = 1
-        return mat.tocsc()
+        # mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        # for k in range(self.nelm):
+        #     # if self.active[k]:
+        #     mat[k, self.F[k]] = 1
+        #     mat[k, self.T[k]] = 1
+        # return mat.tocsc()
+
+        i = np.r_[np.arange(self.nelm, dtype=int), np.arange(self.nelm, dtype=int)]
+        j = np.r_[self.F, self.T]
+        data = np.ones(self.nelm * 2, dtype=int)
+        return sp.coo_matrix((data, (i, j)), shape=(self.nelm, self.nbus), dtype=int).tocsc()
 
     def size(self) -> int:
         """

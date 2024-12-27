@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple
 import numpy as np
-from scipy.sparse import csc_matrix, lil_matrix
+from scipy.sparse import csc_matrix, coo_matrix
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec, BoolVec
@@ -211,7 +211,11 @@ class ShuntData:
         Get the connectivity matrix
         :return: CSC matrix
         """
-        C_bus_elm = lil_matrix((self.nbus, self.nelm), dtype=int)
-        for k, i in enumerate(self.bus_idx):
-            C_bus_elm[i, k] = 1
-        return C_bus_elm.tocsc()
+        # C_bus_elm = lil_matrix((self.nbus, self.nelm), dtype=int)
+        # for k, i in enumerate(self.bus_idx):
+        #     C_bus_elm[i, k] = 1
+        # return C_bus_elm.tocsc()
+
+        j = np.arange(self.nelm, dtype=int)
+        data = np.ones(self.nelm, dtype=int)
+        return coo_matrix((data, (self.bus_idx, j)), shape=(self.nbus, self.nelm), dtype=int).tocsc()
