@@ -8,9 +8,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-import GridCalEngine.Topology.topology as tp
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, BoolVec, Logger
-from typing import List, Tuple, Dict, Set
+from typing import List, Tuple, Set
 
 
 class BranchParentData:
@@ -98,7 +97,7 @@ class BranchParentData:
         return self.nelm
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec,
-              logger: Logger | None) -> Tuple["BranchParentData", Dict[int, int]]:
+              logger: Logger | None) -> Tuple["BranchParentData", IntVec]:
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -111,7 +110,7 @@ class BranchParentData:
         data = BranchParentData(nelm=len(elm_idx), nbus=len(bus_idx))
 
         if data.nelm == 0:
-            return data, dict()
+            return data, np.zeros(0, dtype=int)
 
         data.names = self.names[elm_idx]
         data.idtag = self.idtag[elm_idx]

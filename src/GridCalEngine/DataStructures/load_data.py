@@ -2,9 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple, Dict
+
 import numpy as np
-import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec, BoolVec
 
@@ -194,5 +193,4 @@ class LoadData:
         Get the bus indices
         :return: array with the bus indices
         """
-        # return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
         return self.bus_idx

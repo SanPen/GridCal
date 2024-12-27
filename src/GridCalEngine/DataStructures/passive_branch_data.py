@@ -4,9 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from __future__ import annotations
-from typing import Dict
 import numpy as np
-import GridCalEngine.Topology.topology as tp
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray

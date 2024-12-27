@@ -3,13 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Tuple, List, Dict
-
+from typing import Tuple
 import numpy as np
 from scipy.sparse import csc_matrix, lil_matrix
-
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec, ObjVec
+from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 
 
 class GeneratorData:

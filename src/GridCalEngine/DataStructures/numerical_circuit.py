@@ -856,7 +856,7 @@ class NumericalCircuit:
         :return:
         """
         return tp.compute_connectivity(
-            branch_active=self.passive_branch_data.active,
+            branch_active=self.passive_branch_data.active.astype(int),
             Cf_=self.passive_branch_data.Cf.tocsc(),
             Ct_=self.passive_branch_data.Ct.tocsc()
         )
@@ -896,7 +896,7 @@ class NumericalCircuit:
             G=self.passive_branch_data.G,
             B=self.passive_branch_data.B,
             k=self.passive_branch_data.k,
-            active=self.passive_branch_data.active,
+            active=self.passive_branch_data.active.astype(int),
             tap_module=self.active_branch_data.tap_module,
             vtap_f=self.passive_branch_data.virtual_tap_f,
             vtap_t=self.passive_branch_data.virtual_tap_t,
@@ -921,7 +921,7 @@ class NumericalCircuit:
             X=self.passive_branch_data.X,
             B=self.passive_branch_data.B,
             tap_module=self.active_branch_data.tap_module,
-            active=self.passive_branch_data.active,
+            active=self.passive_branch_data.active.astype(int),
             vtap_f=self.passive_branch_data.virtual_tap_f,
             vtap_t=self.passive_branch_data.virtual_tap_t,
             Cf=self.passive_branch_data.Cf.tocsc(),
@@ -938,7 +938,7 @@ class NumericalCircuit:
             X=self.passive_branch_data.X,
             R=self.passive_branch_data.R,
             m=self.active_branch_data.tap_module,
-            active=self.passive_branch_data.active,
+            active=self.passive_branch_data.active.astype(int),
             Cf=self.passive_branch_data.Cf.tocsc(),
             Ct=self.passive_branch_data.Ct.tocsc(),
             ac=indices.ac,

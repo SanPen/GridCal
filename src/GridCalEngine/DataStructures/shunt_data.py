@@ -2,9 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple, Dict
+from typing import Tuple
 import numpy as np
-import scipy.sparse as sp
 from scipy.sparse import csc_matrix, lil_matrix
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray

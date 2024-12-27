@@ -5,11 +5,10 @@
 from __future__ import annotations
 
 import numpy as np
-from typing import List, Tuple, Set, Dict
-import GridCalEngine.Topology.topology as tp
+from typing import List, Tuple, Set
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import HvdcControlType
-from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec, Logger
+from GridCalEngine.basic_structures import Vec, IntVec, Logger
 
 
 class HvdcData(BranchParentData):
