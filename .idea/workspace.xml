@@ -28,7 +28,19 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="adjusted acdc_generalized_testing.py" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="adjusted acdc_generalized_testing.py">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/bus_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/bus_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_advanced_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_advanced_formulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/generalized_simulation_indices_new.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_5.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_5.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -136,11 +148,15 @@
     "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
     "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.pytest for acdc_generalized_testing.test_qf_control_with_ltc.executor": "Debug",
+    "Python tests.pytest for acdc_generalized_testing.test_voltage_local_control_with_generation.executor": "Run",
+    "Python tests.pytest for acdc_generalized_testing.test_voltage_remote_control_with_generation.executor": "Debug",
     "Python tests.pytest for src.tests.test_admittance_matrix.test1.executor": "Run",
     "Python tests.pytest for src.tests.test_contingency.test_contingency.executor": "Run",
     "Python tests.pytest for src.tests.test_derivatives.test_m_derivatives.executor": "Run",
     "Python tests.pytest for test_power_flow.test_voltage_control_with_ltc.executor": "Run",
     "Python tests.pytest in acdc_generalized_testing.py.executor": "Run",
+    "Python tests.pytest in test_power_flow.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
@@ -192,7 +208,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in acdc_generalized_testing.py">
+  <component name="RunManager" selected="Python tests.pytest for acdc_generalized_testing.test_qf_control_with_ltc">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -554,13 +570,13 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_power_flow.test_fubm" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for acdc_generalized_testing.test_qf_control_with_ltc" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -568,17 +584,17 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow.test_fubm&quot;" />
+      <option name="_new_target" value="&quot;acdc_generalized_testing.test_qf_control_with_ltc&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_power_flow.test_power_flow_12bus_acdc" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for acdc_generalized_testing.test_voltage_local_control_with_generation" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -586,17 +602,17 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow.test_power_flow_12bus_acdc&quot;" />
+      <option name="_new_target" value="&quot;acdc_generalized_testing.test_voltage_local_control_with_generation&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_power_flow.test_power_flow_control_with_pst_pt" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for acdc_generalized_testing.test_voltage_remote_control_with_generation" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -604,7 +620,7 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow.test_power_flow_control_with_pst_pt&quot;" />
+      <option name="_new_target" value="&quot;acdc_generalized_testing.test_voltage_remote_control_with_generation&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -645,19 +661,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python tests.pytest for test_power_flow.test_fubm" />
-      <item itemvalue="Python tests.pytest for test_power_flow.test_power_flow_12bus_acdc" />
-      <item itemvalue="Python tests.pytest for test_power_flow.test_power_flow_control_with_pst_pt" />
+      <item itemvalue="Python tests.pytest for acdc_generalized_testing.test_qf_control_with_ltc" />
+      <item itemvalue="Python tests.pytest for acdc_generalized_testing.test_voltage_local_control_with_generation" />
+      <item itemvalue="Python tests.pytest for acdc_generalized_testing.test_voltage_remote_control_with_generation" />
       <item itemvalue="Python tests.pytest in acdc_generalized_testing.py" />
       <item itemvalue="Python tests.pytest in test_power_flow.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest for acdc_generalized_testing.test_qf_control_with_ltc" />
         <item itemvalue="Python tests.pytest in acdc_generalized_testing.py" />
+        <item itemvalue="Python tests.pytest for acdc_generalized_testing.test_voltage_remote_control_with_generation" />
+        <item itemvalue="Python tests.pytest for acdc_generalized_testing.test_voltage_local_control_with_generation" />
         <item itemvalue="Python tests.pytest in test_power_flow.py" />
-        <item itemvalue="Python tests.pytest for test_power_flow.test_power_flow_control_with_pst_pt" />
-        <item itemvalue="Python tests.pytest for test_power_flow.test_power_flow_12bus_acdc" />
-        <item itemvalue="Python tests.pytest for test_power_flow.test_fubm" />
       </list>
     </recent_temporary>
   </component>
@@ -1797,6 +1813,58 @@
     <MESSAGE value="adjusted acdc_generalized_testing.py" />
     <option name="LAST_COMMIT_MESSAGE" value="adjusted acdc_generalized_testing.py" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py</url>
+          <line>232</line>
+          <option name="timeStamp" value="2340" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py</url>
+          <line>230</line>
+          <option name="timeStamp" value="2342" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py</url>
+          <line>224</line>
+          <option name="timeStamp" value="2343" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py</url>
+          <line>662</line>
+          <option name="timeStamp" value="2345" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="remote_control" language="Python" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py</url>
+          <line>701</line>
+          <option name="timeStamp" value="2346" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py</url>
+          <line>220</line>
+          <option name="timeStamp" value="2347" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py</url>
+          <line>294</line>
+          <option name="timeStamp" value="2348" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py</url>
+          <line>296</line>
+          <option name="timeStamp" value="2349" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip/acdc_generalized_testing.py</url>
+          <line>288</line>
+          <option name="timeStamp" value="2350" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/GridCal$update_gui_common.coverage" NAME="update_gui_common Coverage Results" MODIFIED="1662040207238" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
     <SUITE FILE_PATH="coverage/GridCal$load_designer_ui.coverage" NAME="load_designer_ui Coverage Results" MODIFIED="1710496736230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/LoadDesigner" />
@@ -1970,7 +2038,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_admittance_matrix_test.coverage" NAME="Nosetests for tests.admittance_matrix_test Coverage Results" MODIFIED="1602926351044" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_acopf_function_evaluation_py.coverage" NAME="Nosetests in acopf_function_evaluation.py Coverage Results" MODIFIED="1704358701624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/acopf" />
     <SUITE FILE_PATH="coverage/GridCal$raw_imp_exp_test.coverage" NAME="raw_imp_exp_test Coverage Results" MODIFIED="1719226221068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests/raw_import_check" />
-    <SUITE FILE_PATH="coverage/GridCal$pytest_in_test_power_flow_py.coverage" NAME="pytest in test_power_flow.py Coverage Results" MODIFIED="1732820141666" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_in_test_power_flow_py.coverage" NAME="pytest in test_power_flow.py Coverage Results" MODIFIED="1735299609848" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ptdf_test_compensated_ptdf.coverage" NAME="Nosetests for test_ptdf.test_compensated_ptdf Coverage Results" MODIFIED="1710433602844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$contingency_analysis_ts.coverage" NAME="contingency_analysis_ts Coverage Results" MODIFIED="1688049468429" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$contingency_analysis_run.coverage" NAME="contingency_analysis_run Coverage Results" MODIFIED="1696340732191" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
@@ -2086,6 +2154,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_power_flow_test_zip.coverage" NAME="Nosetests for test_power_flow.test_zip Coverage Results" MODIFIED="1709110212295" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$adj_benchmark.coverage" NAME="adj_benchmark Coverage Results" MODIFIED="1735225344267" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/topology" />
     <SUITE FILE_PATH="coverage/GridCal$AnalysisDialogue.coverage" NAME="AnalysisDialogue Coverage Results" MODIFIED="1689665194982" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Analysis" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_for_acdc_generalized_testing_test_voltage_remote_control_with_generation.coverage" NAME="pytest for acdc_generalized_testing.test_voltage_remote_control_with_generation Coverage Results" MODIFIED="1735302260614" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_nonlinear_contingency_py.coverage" NAME="Nosetests in test_nonlinear_contingency.py Coverage Results" MODIFIED="1696002399880" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_cgmes_ieeee_test_iee14_cgmes.coverage" NAME="pytest for test_cgmes_ieeee.test_iee14_cgmes Coverage Results" MODIFIED="1732708775691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1732717977941" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
@@ -2111,6 +2180,7 @@
     <SUITE FILE_PATH="coverage/GridCal$RosetaExplorer.coverage" NAME="RosetaExplorer Coverage Results" MODIFIED="1692881955157" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer" />
     <SUITE FILE_PATH="coverage/GridCal$ACPTDF_research3.coverage" NAME="ACPTDF_research3 Coverage Results" MODIFIED="1649436788157" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ac_opf_test_ieee14.coverage" NAME="Nosetests for test_ac_opf.test_ieee14 Coverage Results" MODIFIED="1708448982773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_for_acdc_generalized_testing_test_voltage_local_control_with_generation.coverage" NAME="pytest for acdc_generalized_testing.test_voltage_local_control_with_generation Coverage Results" MODIFIED="1735300280796" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
     <SUITE FILE_PATH="coverage/GridCal$5_node.coverage" NAME="5_node Coverage Results" MODIFIED="1694035681161" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Tutorials" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_hydro.coverage" NAME="Nosetests for tests.test_hydro Coverage Results" MODIFIED="1708969356444" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_in_mips_py.coverage" NAME="pytest in mips.py Coverage Results" MODIFIED="1703183174922" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalEngine/Utils/MIPS" />
@@ -2187,7 +2257,7 @@
     <SUITE FILE_PATH="coverage/GridCal$failure.coverage" NAME="failure Coverage Results" MODIFIED="1695138991178" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/venv.3.11/lib/python3.11/site-packages/nose" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_continuation_power_flow_py.coverage" NAME="Nosetests in test_continuation_power_flow.py Coverage Results" MODIFIED="1648733904426" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_gomez_exposito.coverage" NAME="jacobian_gomez_exposito Coverage Results" MODIFIED="1655634316914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/jacobian_and_derivatives" />
-    <SUITE FILE_PATH="coverage/GridCal$pytest_in_acdc_generalized_testing_py.coverage" NAME="pytest in acdc_generalized_testing.py Coverage Results" MODIFIED="1735297724066" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_in_acdc_generalized_testing_py.coverage" NAME="pytest in acdc_generalized_testing.py Coverage Results" MODIFIED="1735302615033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_topology_processor_test_topology_rts.coverage" NAME="Nosetests for test_topology_processor.test_topology_rts Coverage Results" MODIFIED="1715970604046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_ntc_test_ntc_ultra_simple.coverage" NAME="pytest for test_ntc.test_ntc_ultra_simple Coverage Results" MODIFIED="1734946826372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$refferences_example.coverage" NAME="refferences_example Coverage Results" MODIFIED="1716305725168" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/misc" />
@@ -2274,6 +2344,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_simple_mip_test_lp_simple4.coverage" NAME="Nosetests for test_simple_mip.test_lp_simple4 Coverage Results" MODIFIED="1704807541299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$example1.coverage" NAME="example1 Coverage Results" MODIFIED="1634669660909" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/or_tools" />
     <SUITE FILE_PATH="coverage/GridCal$matpower_chart.coverage" NAME="matpower_chart Coverage Results" MODIFIED="1732051935034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/checks_pf" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_for_acdc_generalized_testing_test_qf_control_with_ltc.coverage" NAME="pytest for acdc_generalized_testing.test_qf_control_with_ltc Coverage Results" MODIFIED="1735302695397" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acdc_pf/generalized_wip" />
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf.coverage" NAME="ntc_opf Coverage Results" MODIFIED="1630509729235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_in_test_ntc_py.coverage" NAME="pytest in test_ntc.py Coverage Results" MODIFIED="1734946906694" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$voltage_control_ree.coverage" NAME="voltage_control_ree Coverage Results" MODIFIED="1714141815714" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acopf" />

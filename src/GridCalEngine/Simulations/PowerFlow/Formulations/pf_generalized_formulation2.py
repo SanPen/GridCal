@@ -480,7 +480,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              tau=self.nc.active_branch_data.tap_angle,
                              vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                              vtap_t=self.nc.passive_branch_data.virtual_tap_t)
-        print("Ybus\n",self.Ybus.toarray())
+
+        if self.options.verbose > 1:
+            print("Ybus\n",self.Ybus.toarray())
+
     def _analyze_branch_controls(self) -> None:
         """
         Analyze the control branches and compute the indices

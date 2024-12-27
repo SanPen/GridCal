@@ -140,7 +140,7 @@ class BusData:
 
         return data
 
-    def set_busmode(self, idx: int, val: BusMode):
+    def set_bus_mode(self, idx: int, val: BusMode):
         """
         Set bus mode
         :param idx: int

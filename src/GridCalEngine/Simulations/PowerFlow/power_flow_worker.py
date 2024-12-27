@@ -13,7 +13,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResu
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation import PfBasicFormulation
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation2 import PfGeneralizedFormulation
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation import PfAdvancedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
@@ -324,7 +324,7 @@ def solve(nc: NumericalCircuit,
             elif solver_type == SolverType.LM:
                 if nc.any_control:
                     # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
+                    problem = PfAdvancedFormulation(V0=final_solution.V,
                                                        S0=S0,
                                                        I0=I0,
                                                        Y0=Y0,
@@ -380,7 +380,7 @@ def solve(nc: NumericalCircuit,
             elif solver_type == SolverType.NR:
                 if nc.any_control:
                     # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
+                    problem = PfAdvancedFormulation(V0=final_solution.V,
                                                        S0=S0,
                                                        I0=I0,
                                                        Y0=Y0,
@@ -411,7 +411,7 @@ def solve(nc: NumericalCircuit,
             elif solver_type == SolverType.PowellDogLeg:
                 if nc.any_control:
                     # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
+                    problem = PfAdvancedFormulation(V0=final_solution.V,
                                                        S0=S0,
                                                        I0=I0,
                                                        Y0=Y0,

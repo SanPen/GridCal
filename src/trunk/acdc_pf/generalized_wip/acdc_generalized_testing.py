@@ -25,9 +25,23 @@ def solve_generalized(grid: gce.MultiCircuit, options: PowerFlowOptions) -> Nume
     :param options:
     :return:
     """
-    nc = gce.compile_numerical_circuit_at(grid)
-    islands = nc.split_into_islands(consider_hvdc_as_island_links=True, )
+    nc = gce.compile_numerical_circuit_at(
+        grid,
+        t_idx=None,
+        apply_temperature=False,
+        branch_tolerance_mode=gce.BranchImpedanceMode.Specified,
+        opf_results=None,
+        use_stored_guess=False,
+        bus_dict=None,
+        areas_dict=None,
+        control_taps_modules=options.control_taps_modules,
+        control_taps_phase=options.control_taps_phase,
+        control_remote_voltage=options.control_remote_voltage,
+    )
+
+    islands = nc.split_into_islands(consider_hvdc_as_island_links=True)
     logger = Logger()
+
     island = islands[0]
     problem = PfGeneralizedFormulation(V0=island.Vbus,
                                        S0=island.Sbus,
@@ -48,7 +62,7 @@ def solve_generalized(grid: gce.MultiCircuit, options: PowerFlowOptions) -> Nume
 
     logger.print("Logger")
 
-    return solution
+    return problem, solution
 
 
 def test_ieee_grids():
@@ -76,7 +90,7 @@ def test_ieee_grids():
         fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'RAW', f1)
         grid = FileOpen(fname).open()
 
-        solution = solve_generalized(grid=grid, options=options)
+        problem, solution = solve_generalized(grid=grid, options=options)
 
         # load the associated results file
         df_v = pd.read_excel(os.path.join(TEST_FOLDER, 'data', 'results', f2), sheet_name='Vabs', index_col=0)
@@ -113,7 +127,7 @@ def test_zip() -> None:
     grid = FileOpen(fname).open()
 
     options = PowerFlowOptions(tolerance=1e-6)
-    solution = solve_generalized(grid=grid, options=options)
+    problem, solution = solve_generalized(grid=grid, options=options)
 
     Vm_psse = np.array([1.00000, 0.98933, 0.98560, 0.98579])
     Va_psse = np.deg2rad(np.array([0.00000, -5.1287, -9.1535, -11.4464]))
@@ -133,7 +147,7 @@ def test_controllable_shunt() -> None:
     fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'Controllable_shunt_example.gridcal')
     grid = FileOpen(fname).open()
     options = PowerFlowOptions(control_q=False)
-    solution = solve_generalized(grid=grid, options=options)
+    problem, solution = solve_generalized(grid=grid, options=options)
 
     Vm = np.abs(solution.V)
     Vm_test = np.array([[1., 1.0164564, 1.02]])
@@ -161,7 +175,7 @@ def test_voltage_local_control_with_generation() -> None:
                                control_q=False,
                                retry_with_other_methods=False)
 
-    solution = solve_generalized(grid=grid, options=options)
+    problem, solution = solve_generalized(grid=grid, options=options)
 
     vm = np.abs(solution.V)
 
@@ -176,7 +190,7 @@ def test_voltage_local_control_with_generation() -> None:
                                control_q=False,
                                retry_with_other_methods=False)
 
-    solution = solve_generalized(grid=grid, options=options)
+    problem, solution = solve_generalized(grid=grid, options=options)
 
     results = gce.power_flow(grid, options)
     vm = np.abs(solution.V)
@@ -204,7 +218,7 @@ def test_voltage_remote_control_with_generation() -> None:
                                    retry_with_other_methods=False,
                                    control_remote_voltage=control_remote_voltage)
 
-        solution = solve_generalized(grid=grid, options=options)
+        problem, solution = solve_generalized(grid=grid, options=options)
 
         vm = np.abs(solution.V)
 
@@ -239,7 +253,7 @@ def test_voltage_control_with_ltc() -> None:
                                    control_remote_voltage=False,
                                    apply_temperature_correction=False)
 
-        solution = solve_generalized(grid=grid, options=options)
+        problem, solution = solve_generalized(grid=grid, options=options)
 
         vm = np.abs(solution.V)
 
@@ -270,8 +284,7 @@ def test_qf_control_with_ltc() -> None:
                                    retry_with_other_methods=False,
                                    control_taps_modules=control_taps_modules)
 
-
-        solution = solve_generalized(grid=grid, options=options)
+        problem, solution = solve_generalized(grid=grid, options=options)
 
         assert solution.converged
 
@@ -300,7 +313,7 @@ def test_qt_control_with_ltc() -> None:
                                    retry_with_other_methods=False,
                                    control_taps_modules=control_taps_modules)
 
-        solution = solve_generalized(grid=grid, options=options)
+        problem, solution = solve_generalized(grid=grid, options=options)
 
         assert solution.converged
 
@@ -328,7 +341,7 @@ def test_power_flow_control_with_pst_pf() -> None:
                                    retry_with_other_methods=False,
                                    control_taps_phase=control_taps_phase)
 
-        solution = solve_generalized(grid=grid, options=options)
+        problem, solution = solve_generalized(grid=grid, options=options)
 
         assert solution.converged
 
@@ -357,7 +370,7 @@ def test_power_flow_control_with_pst_pt() -> None:
                                    control_taps_phase=control_taps_phase,
                                    max_iter=80)
 
-        solution = solve_generalized(grid=grid, options=options)
+        problem, solution = solve_generalized(grid=grid, options=options)
 
         assert solution.converged
 
@@ -385,7 +398,7 @@ def test_fubm() -> None:
                                    control_taps_phase=True,
                                    control_remote_voltage=True,
                                    verbose=0)
-    solution = solve_generalized(grid=grid, options=options)
+    problem, solution = solve_generalized(grid=grid, options=options)
 
     vm = np.abs(solution.V)
     expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
@@ -425,7 +438,6 @@ def test_power_flow_12bus_acdc() -> None:
     # for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
     # run power flow
 
-
     options = PowerFlowOptions(solver_type=gce.SolverType.NR,
                                verbose=0,
                                control_q=False,
@@ -433,7 +445,7 @@ def test_power_flow_12bus_acdc() -> None:
                                control_taps_phase=True,
                                max_iter=80)
 
-    solution = solve_generalized(grid=grid, options=options)
+    problem, solution = solve_generalized(grid=grid, options=options)
 
     assert np.allclose(expected_v, solution.V, atol=1e-6)
 
