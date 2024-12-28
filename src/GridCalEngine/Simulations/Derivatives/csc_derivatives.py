@@ -1269,3 +1269,449 @@ def dSt_dbeq_csc(sf_indices, beq_indices) -> CxCSC:
     # the whole thing is zero
 
     return mat
+@njit()
+def dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) -> CxCSC:
+    """
+        pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
+        pq_sqrt = np.sqrt(pq)
+        pq_sqrt += 1e-20
+        dLacdc_dVm = (alpha2[vsc_order] * pq_sqrt * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])
+                      + 2 * alpha3[vsc_order] * (pq) / (
+                              Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))
+    """
+    n_cols = len(i_u_vm)
+    n_rows = nvsc
+    max_nnz = nvsc
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    i_lookup = make_lookup(nvsc, T)
+    nnz = 0
+    for k in range(nvsc):
+        i_idx = i_lookup[k]
+
+        if i_idx > -1:
+            t = T[k]
+            pq = Pt[k] * Pt[k] + Qt[k] * Qt[k]
+            pq_sqrt = np.sqrt(pq)
+            pq_sqrt += 1e-20
+
+            dLossvsc_dVmt = alpha2[k] * pq_sqrt * Qt[k] / (V[t] * V[t]) + 2 * alpha3[k] * pq / (V[t] * V[t] * V[t])
+
+            Tx[nnz] = dLossvsc_dVmt
+            Ti[nnz] = i_idx
+            Tj[nnz] = k
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+# @njit()
+def dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf) -> CSC:
+    """
+    Compute dLossvsc_dPfvsc in CSC format with column indices aligned to u_vsc_pf.
+
+    :param nvsc: Total number of rows in the matrix (number of VSCs).
+    :param u_vsc_pf: Indices to define the column indices for the sparse matrix.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(u_vsc_pf)  # Number of columns (length of u_vsc_pf).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = len(u_vsc_pf)  # Maximum number of non-zero entries.
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k in range(len(u_vsc_pf)):
+        t = u_vsc_pf[k]
+
+        # Add -1 to the data for the sparse matrix
+        dLacdc_dPf = -1.0
+
+        # Populate COO format arrays
+        Tx[nnz] = dLacdc_dPf
+        Ti[nnz] = k  # Row index corresponds to the current VSC
+        Tj[nnz] = t  # Column index aligns with u_vsc_pf
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+
+    return mat.real
+
+
+@njit()
+def dLossvsc_dPtvsc_csc(nvsc, i_u_pt, alpha2, alpha3, Vm, Pt, T_acdc) -> CSC:
+    """
+    Compute the sparse matrix for the derivative of loss with respect to Pt in CSC format.
+
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param i_u_pt: Column indices for the sparse matrix.
+    :param alpha2: Array of alpha2 coefficients.
+    :param alpha3: Array of alpha3 coefficients.
+    :param Vm: Voltage magnitudes at buses.
+    :param Pt: Active power flows.
+    :param T_acdc: Indices for AC/DC terminal buses.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(i_u_pt)  # Number of columns (length of i_u_pt).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = len(i_u_pt)  # Maximum number of non-zero entries.
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k in range(nvsc):
+        t = T_acdc[k]
+        pq = Pt[k] * Pt[k]  # Assume no reactive power (Qt) in this context
+        pq_sqrt = np.sqrt(pq)
+        pq_sqrt += 1e-20  # Avoid division by zero
+
+        # Compute the derivative for this VSC
+        dLacdc_dPt = (
+            1.0
+            - alpha2[k] * Pt[k] / (Vm[t] * pq_sqrt)
+            - 2 * alpha3[k] * Pt[k] / (Vm[t] * Vm[t])
+        )
+        dLacdc_dPt *= -1
+
+        # Populate COO format arrays
+        Tx[nnz] = dLacdc_dPt
+        Ti[nnz] = k  # Row index corresponds to the current VSC
+        Tj[nnz] = k  # Column index aligns with VSC order
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+
+    return mat.real
+
+@njit()
+def dLossvsc_dQtvsc_csc(nvsc, i_u_qt, alpha2, alpha3, Vm, Qt, T_acdc) -> CxCSC:
+    """
+    Compute the sparse matrix for the derivative of loss with respect to Qt in CSC format.
+
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param i_u_qt: Column indices for the sparse matrix.
+    :param alpha2: Array of alpha2 coefficients.
+    :param alpha3: Array of alpha3 coefficients.
+    :param Vm: Voltage magnitudes at buses.
+    :param Qt: Reactive power flows.
+    :param T_acdc: Indices for AC/DC terminal buses.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(i_u_qt)  # Number of columns (length of i_u_qt).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = len(i_u_qt)  # Maximum number of non-zero entries.
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k in range(nvsc):
+        t = T_acdc[k]
+        pq = Qt[k] * Qt[k]  # Only reactive power (Qt) in this context
+        pq_sqrt = np.sqrt(pq)
+        pq_sqrt += 1e-20  # Avoid division by zero
+
+        # Compute the derivative for this VSC
+        _a = alpha2[k] * Qt[k] / (Vm[t] * pq_sqrt)
+        _b = 2 * alpha3[k] * Qt[k] / (Vm[t] * Vm[t])
+        dLacdc_dQt = -_a - _b
+        dLacdc_dQt *= -1
+
+        # Populate COO format arrays
+        Tx[nnz] = dLacdc_dQt
+        Ti[nnz] = k  # Row index corresponds to the current VSC
+        Tj[nnz] = k  # Column index aligns with VSC order
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+
+    return mat
+
+
+
+@njit()
+def create_identity_matrix(n):
+    """
+    Create an identity matrix of size n x n using the CxCSC class.
+
+    :param n: Size of the identity matrix.
+    :return: Identity matrix in CxCSC format.
+    """
+    max_nnz = n  # Maximum non-zero entries in the identity matrix
+    mat = CxCSC(n, n, max_nnz, False)
+
+    # Arrays for row indices, column indices, and values
+    Ti = np.arange(n, dtype=np.int32)  # Row indices (0 to n-1)
+    Tj = np.arange(n, dtype=np.int32)  # Column indices (0 to n-1)
+    Tx = np.ones(n, dtype=np.complex128)  # Values (all 1.0 for identity matrix)
+
+    # Fill the CxCSC matrix
+    mat.fill_from_coo(Ti, Tj, Tx, n)
+
+    return mat
+
+
+# @njit()
+def dP_dPfvsc_csc(nbus, i_k_p, u_vsc_pf, F_vsc) -> CSC:
+    """
+    Compute dP_dPfvsc in CSC format.
+
+    :param nbus: Total number of rows in the matrix (number of buses).
+    :param i_k_p: Indices for the rows corresponding to the power injections.
+    :param u_vsc_pf: Column indices for the sparse matrix.
+    :param F_vsc: From bus indices for VSCs.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(u_vsc_pf)  # Number of columns (length of u_vsc_pf).
+    n_rows = i_k_p  # Number of rows (equal to nbus).
+    max_nnz = len(u_vsc_pf)  # Maximum number of non-zero entries.
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k in range(len(i_k_p)):
+        row_idx = i_k_p[k]  # Row index corresponds to the power injection location
+        col_idx = u_vsc_pf[k]  # Column index aligns with the VSCs
+        from_bus = F_vsc[k]  # From bus for the VSC
+
+        # Compute the contribution for the sparse matrix
+        dP_dPf = 1.0 if row_idx == from_bus else 0.0
+
+        # Populate COO format arrays
+        Tx[nnz] = dP_dPf
+        Ti[nnz] = row_idx
+        Tj[nnz] = col_idx
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+
+    return mat.real
+
+@njit()
+def dInj_dVa_csc(nhvdc, i_u_va, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc) -> CSC:
+    """
+    Compute dInj_dVa in CSC format for HVDC systems.
+
+    :param nhvdc: Number of HVDC systems (rows of the matrix).
+    :param i_u_va: Column indices for the sparse matrix (corresponding to voltage angles Va).
+    :param hvdc_pset: HVDC power setpoints.
+    :param hvdc_r: HVDC resistance values.
+    :param hvdc_droop: HVDC droop coefficients.
+    :param V: Voltage magnitudes at buses.
+    :param F_hvdc: From-bus indices for HVDC.
+    :param T_hvdc: To-bus indices for HVDC.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(i_u_va)  # Number of columns (length of i_u_va).
+    n_rows = nhvdc  # Number of rows (equal to nhvdc).
+    max_nnz = 2 * nhvdc  # Maximum number of non-zero entries (2 per HVDC system).
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k in range(nhvdc):
+        from_bus = F_hvdc[k]  # From-bus index
+        to_bus = T_hvdc[k]  # To-bus index
+
+        # Row index for this HVDC system
+        row_idx = k
+
+        # From-side derivative (positive hvdc_droop)
+        Tx[nnz] = hvdc_droop[k]
+        Ti[nnz] = row_idx
+        Tj[nnz] = from_bus
+        nnz += 1
+
+        # To-side derivative (negative hvdc_droop)
+        Tx[nnz] = -hvdc_droop[k]
+        Ti[nnz] = row_idx
+        Tj[nnz] = to_bus
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+
+    return mat.real
+
+
+@njit()
+def dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
+    """
+    Compute the derivative of HVDC losses with respect to Vm in CSC format.
+
+    :param nhvdc: Number of HVDC systems (rows of the matrix).
+    :param i_u_vm: Column indices for the sparse matrix (corresponding to Vm).
+    :param Vm: Voltage magnitudes at buses.
+    :param Pf_hvdc: Active power flow on the from-side of HVDC.
+    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
+    :param hvdc_r: HVDC resistance values.
+    :param F_hvdc: From-bus indices for HVDC.
+    :param T_hvdc: To-bus indices for HVDC (not used here).
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(i_u_vm)  # Number of columns (length of i_u_vm).
+    n_rows = nhvdc  # Number of rows (equal to nhvdc).
+    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k in range(nhvdc):
+        from_bus = F_hvdc[k]  # From-bus index
+        Vm_from = Vm[from_bus]  # Voltage magnitude at from-bus
+        Pf = Pf_hvdc[k]  # Active power flow on from-side
+        R = hvdc_r[k]  # HVDC resistance
+
+        # Compute the derivative for the from-side
+        dLosshvdc_dVm = -R * (Pf**2) / (Vm_from**2)
+
+        # Populate COO format arrays
+        Tx[nnz] = dLosshvdc_dVm
+        Ti[nnz] = k  # Row index corresponds to the current HVDC system
+        Tj[nnz] = from_bus  # Column index corresponds to the from-bus
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+
+    return mat.real
+
+
+@njit()
+def dLosshvdc_dPfhvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
+    """
+    Compute the derivative of HVDC losses with respect to Pf_hvdc in CSC format.
+
+    :param nhvdc: Number of HVDC systems (rows and columns of the matrix).
+    :param hvdc_droop_idx: Indices corresponding to HVDC droop control.
+    :param Vm: Voltage magnitudes at buses.
+    :param Pf_hvdc: Active power flow on the from-side of HVDC.
+    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
+    :param hvdc_r: HVDC resistance values.
+    :param F_hvdc: From-bus indices for HVDC.
+    :param T_hvdc: To-bus indices for HVDC (not used here).
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = nhvdc  # The matrix is square, with dimensions nhvdc x nhvdc.
+    n_rows = nhvdc  # The number of rows matches nhvdc.
+    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k in range(nhvdc):
+        from_bus = F_hvdc[k]  # From-bus index
+        Vm_from = Vm[from_bus]  # Voltage magnitude at from-bus
+        Pf = Pf_hvdc[k]  # Active power flow on from-side
+        R = hvdc_r[k]  # HVDC resistance
+
+        # Compute the derivative
+        dLosshvdc_dPf = 1 -R * Pf / Vm_from
+
+        # Populate COO format arrays
+        Tx[nnz] = dLosshvdc_dPf
+        Ti[nnz] = k  # Row index corresponds to the current HVDC system
+        Tj[nnz] = k  # Column index corresponds to the current HVDC system
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+
+    return mat.real
+
+@njit()
+def dLosshvdc_dPthvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
+    """
+    Compute the derivative of HVDC losses with respect to Pt_hvdc in CSC format.
+
+    :param nhvdc: Number of HVDC systems (rows and columns of the matrix).
+    :param hvdc_droop_idx: Indices corresponding to HVDC droop control (not used here).
+    :param Vm: Voltage magnitudes at buses (not used here).
+    :param Pf_hvdc: Active power flow on the from-side of HVDC (not used here).
+    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
+    :param hvdc_r: HVDC resistance values (not used here).
+    :param F_hvdc: From-bus indices for HVDC (not used here).
+    :param T_hvdc: To-bus indices for HVDC (not used here).
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = nhvdc  # The matrix is square, with dimensions nhvdc x nhvdc.
+    n_rows = nhvdc  # The number of rows matches nhvdc.
+    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.ones(max_nnz, dtype=np.complex128)  # All values are 1
+    Ti = np.arange(max_nnz, dtype=np.int32)  # Diagonal row indices
+    Tj = np.arange(max_nnz, dtype=np.int32)  # Diagonal column indices
+
+    # Simply a identity matrix
+    mat.fill_from_coo(Ti, Tj, Tx, max_nnz)
+
+    return mat.real
+
+
+
+@njit()
+def dLosshvdc_dPthvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
+    """
+    Compute the derivative of HVDC losses with respect to Pt_hvdc in CSC format.
+
+    :param nhvdc: Number of HVDC systems (rows and columns of the matrix).
+    :param hvdc_droop_idx: Indices corresponding to HVDC droop control (not used here).
+    :param Vm: Voltage magnitudes at buses (not used here).
+    :param Pf_hvdc: Active power flow on the from-side of HVDC (not used here).
+    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
+    :param hvdc_r: HVDC resistance values (not used here).
+    :param F_hvdc: From-bus indices for HVDC (not used here).
+    :param T_hvdc: To-bus indices for HVDC (not used here).
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = nhvdc  # The matrix is square, with dimensions nhvdc x nhvdc.
+    n_rows = nhvdc  # The number of rows matches nhvdc.
+    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.ones(max_nnz, dtype=np.complex128)  # All values are 1
+    Ti = np.arange(max_nnz, dtype=np.int32)  # Diagonal row indices
+    Tj = np.arange(max_nnz, dtype=np.int32)  # Diagonal column indices
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti, Tj, Tx, max_nnz)
+
+    return mat.real
+

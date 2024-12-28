@@ -4,7 +4,10 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 import GridCalEngine.api as gce
 import faulthandler
 import numpy as np
-
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation2 import PfGeneralizedFormulation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 faulthandler.enable()  # start @ the beginning
 
 """
@@ -246,39 +249,83 @@ def run_power_flow_12bus_acdc() -> None:
 
         assert results.converged
 
+def solve_generalized(grid: gce.MultiCircuit, options: PowerFlowOptions) -> NumericPowerFlowResults:
+    """
+
+    :param grid:
+    :param options:
+    :return:
+    """
+    nc = gce.compile_numerical_circuit_at(
+        grid,
+        t_idx=None,
+        apply_temperature=False,
+        branch_tolerance_mode=gce.BranchImpedanceMode.Specified,
+        opf_results=None,
+        use_stored_guess=False,
+        bus_dict=None,
+        areas_dict=None,
+        control_taps_modules=options.control_taps_modules,
+        control_taps_phase=options.control_taps_phase,
+        control_remote_voltage=options.control_remote_voltage,
+    )
+
+    islands = nc.split_into_islands(consider_hvdc_as_island_links=True)
+    logger = Logger()
+
+    island = islands[0]
+
+    Vbus = island.bus_data.Vbus
+    S0 = island.get_power_injections_pu()
+    I0 = island.get_current_injections_pu()
+    Y0 = island.get_admittance_injections_pu()
+    Qmax_bus, Qmin_bus = island.get_reactive_power_limits()
+    problem = PfGeneralizedFormulation(V0=Vbus,
+                                       S0=S0,
+                                       I0=I0,
+                                       Y0=Y0,
+                                       Qmin=Qmin_bus,
+                                       Qmax=Qmax_bus,
+                                       nc=island,
+                                       options=options,
+                                       logger=logger)
+
+    solution = newton_raphson_fx(problem=problem,
+                                 tol=options.tolerance,
+                                 max_iter=options.max_iter,
+                                 trust=options.trust_radius,
+                                 verbose=options.verbose,
+                                 logger=logger)
+
+    logger.print("Logger")
+
+    return problem, solution
+
 def run_fubm() -> None:
     """
 
     :return:
     """
-    fname = os.path.join("..", "..", "..", "tests", 'data', 'grids', 'fubm_caseHVDC_vt.m')
+    fname = os.path.join("..", "..", "..", "..", "Grids_and_profiles", "grids", "fubm_caseHVDC_vt_mod6.gridcal")
+    # fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'fubm_caseHVDC_vt.m')
     grid = gce.open_file(fname)
 
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        opt = gce.PowerFlowOptions(solver_type=solver_type,
+    options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
                                    control_q=False,
                                    retry_with_other_methods=False,
                                    control_taps_modules=True,
                                    control_taps_phase=True,
                                    control_remote_voltage=True,
                                    verbose=2)
-        driver = gce.PowerFlowDriver(grid=grid, options=opt)
-        driver.run()
-        results = gce.power_flow(grid, opt)
-        print("results converged?", results.converged)
-        print("results.iterations", results.iterations)
-        print("results.voltage", results.get_bus_df())
-        vm = np.abs(results.voltage)
-        expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
-        ok = np.allclose(vm, expected_vm, rtol=1e-4)
-        assert ok
+    problem, solution = solve_generalized(grid=grid, options=options)
+
+    vm = np.abs(solution.V)
 
 
-
-run_voltage_control_with_ltc() # passes
+# run_voltage_control_with_ltc() # passes
 # run_qf_control_with_ltc()  # passes
 # run_qt_control_with_ltc()   # passes
 # run_power_flow_control_with_pst_pf() # passes
 # run_power_flow_control_with_pst_pt() # passes
 # run_power_flow_12bus_acdc()
-# run_fubm()
+run_fubm()

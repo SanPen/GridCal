@@ -31,8 +31,14 @@ from GridCalEngine.Simulations.Derivatives.matpower_derivatives import dSbus_dV_
 # @njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
+                 nvsc: int,
+                 nhvdc: int,
                  F: IntVec,
                  T: IntVec,
+                F_vsc: IntVec,
+                T_vsc: IntVec,
+                F_hvdc: IntVec,
+                T_hvdc: IntVec,
                  R: Vec,
                  X: Vec,
                  G: Vec,
@@ -46,7 +52,7 @@ def adv_jacobian(nbus: int,
                  Bc: Vec,
                  V: CxVec,
                  Vm: Vec,
-                 adm,
+                adm,
 
                  # Controllable Branch Indices
                  u_cbr_m: IntVec,
@@ -72,8 +78,18 @@ def adv_jacobian(nbus: int,
                  vsc_pt_set: Vec,
                  vsc_qt_set: Vec,
 
+                 #VSC Params
+                 alpha1: Vec,
+                 alpha2: Vec,
+                 alpha3: Vec,
+
                  # HVDC Indices
                  hvdc_droop_idx: IntVec,
+
+                 # HVDC Params
+                 hvdc_r,
+                 hvdc_pset,
+                 hvdc_droop,
 
                  # Bus Indices
                  i_u_vm: IntVec,
@@ -97,6 +113,10 @@ def adv_jacobian(nbus: int,
                  ytt_cbr: CxVec,
                  F_cbr: IntVec,
                  T_cbr: IntVec,
+                 conn_vsc_F: CSC,
+                 conn_vsc_T: CSC,
+                 conn_hvdc_F: CSC,
+                 conn_hvdc_T: CSC,
                  Ybus: CSC) -> CSC:
     """
     Compute the advanced jacobian
@@ -164,14 +184,11 @@ def adv_jacobian(nbus: int,
     dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus.indices, Ybus.indptr, dS_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus.indices, Ybus.indptr, dS_dVa_x)
 
-    # matpower derivatives
-    mp_dS_dVa, mp_dS_dVm = dSbus_dV_matpower(Ybus, V)
-    dS_dVm = scipy_to_cxmat(mp_dS_dVm)
-    dS_dVa = scipy_to_cxmat(mp_dS_dVa)
-    print()
-
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
+    dLossvsc_dVa_ = CxCSC(nvsc, len(i_u_va), 0, False)
+    dLosshvdc_dVa_ = CxCSC(nhvdc, len(i_u_va), 0, False)
+    dInj_dVa_ = deriv.dInj_dVa_csc(nhvdc, i_u_va, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc)
     dPf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, adm.yff, adm.yft, V, F, T).real
     dQf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_qf, i_u_va, adm.yff, adm.yft, V, F, T).imag
     dPt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, adm.ytf, V, F, T).real
@@ -179,6 +196,9 @@ def adv_jacobian(nbus: int,
 
     dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
     dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
+    dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc, T_vsc)
+    dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc)
+    dInj_dVm_ = CxCSC(nhvdc, len(i_u_vm), 0, False)
     dPf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_pf, i_u_vm, adm.yff, adm.yft, V, F, T).real
     dQf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_qf, i_u_vm, adm.yff, adm.yft, V, F, T).imag
     dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, adm.ytt, adm.ytf, V, F, T).real
@@ -186,6 +206,9 @@ def adv_jacobian(nbus: int,
 
     dP_dm__ = deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).real
     dQ_dm__ = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).imag
+    dLossvsc_dm_ = CxCSC(nvsc, len(u_cbr_m), 0, False)
+    dLosshvdc_dm_ = CxCSC(nhvdc, len(u_cbr_m), 0, False)
+    dInj_dm_ = CxCSC(nbus, len(u_cbr_m), 0, False)
     dPf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).real
     dQf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).imag
     dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).real
@@ -193,36 +216,113 @@ def adv_jacobian(nbus: int,
 
     dP_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, k, tap, V).real
     dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, k, tap, V).imag
+    dLossvsc_dtau_ = CxCSC(nvsc, len(u_cbr_tau), 0, False)
+    dLosshvdc_dtau_ = CxCSC(nhvdc, len(u_cbr_tau), 0, False)
+    dInj_dtau_ = CxCSC(nbus, len(u_cbr_tau), 0, False)
     dPf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, k, tap, V).real
     dQf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, k, tap, V).imag
     dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, k, tap, V).real
     dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, k, tap, V).imag
 
-    # compose the Jacobian
-    J = csc_stack_2d_ff(mats=
-                        [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__,
-                         dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__,
-                         dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_,
-                         dPt_dVa_, dPt_dVm_, dPt_dm_, dPt_dtau_,
-                         dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_,
-                         dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_],
-                        n_rows=6, n_cols=4)
+    # dP_dPfvsc__ = sp_slice(scipy_to_mat(conn_vsc_F.transpose()), i_k_p, u_vsc_pf)
+    dP_dPfvsc__ = deriv.dP_dPfvsc_csc(nbus, i_k_p, u_vsc_pf, F_vsc)
+    dQ_dPfvsc__ = CxCSC(len(i_k_q), len(u_vsc_pf), 0, False)
+    dLossvsc_dPfvsc_ = deriv.dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf)
+    dLosshvdc_dPfvsc_ = CxCSC(nhvdc, len(u_vsc_pf), 0, False)
+    dInj_dPfvsc_ = CxCSC(nbus, len(u_vsc_pf), 0, False)
+    dPf_dPfvsc_ = CxCSC(len(k_cbr_pf), len(u_vsc_pf), 0, False)
+    dQf_dPfvsc_ = CxCSC(len(k_cbr_qf), len(u_vsc_pf), 0, False)
+    dPt_dPfvsc_ = CxCSC(len(k_cbr_pt), len(u_vsc_pf), 0, False)
+    dQt_dPfvsc_ = CxCSC(len(k_cbr_qt), len(u_vsc_pf), 0, False)
 
-    # J = csc_stack_2d_ff(
-    #     mats=[
-    #         dP_dVm__, dP_dVa__, dP_dPfvsc__, dP_dPtvsc__, dP_dQtvsc__, dP_dPfhvdc__, dP_dPthvdc__, dP_dQfhvdc__, dP_dQthvdc__, dP_dm__, dP_dtau__,
-    #         dQ_dVm__, dQ_dVa__, dQ_dPfvsc__, dQ_dPtvsc__, dQ_dQtvsc__, dQ_dPfhvdc__, dQ_dPthvdc__, dQ_dQfhvdc__, dQ_dQthvdc__, dQ_dm__, dQ_dtau__,
-    #         dLossvsc_dVm_, dLossvsc_dVa_, dLossvsc_dPfvsc_, dLossvsc_dPtvsc_, dLossvsc_dQtvsc_, dLossvsc_dPfhvdc_, dLossvsc_dPthvdc_, dLossvsc_dQfhvdc_, dLossvsc_dQthvdc_, dLossvsc_dm_, dLossvsc_dtau_,
-    #         dLossHVDC_dVm_, dLossHVDC_dVa_, dLossHVDC_dPfvsc_, dLossHVDC_dPtvsc_, dLossHVDC_dQtvsc_, dLossHVDC_dPfhvdc_, dLossHVDC_dPthvdc_, dLossHVDC_dQfhvdc_, dLossHVDC_dQthvdc_, dLossHVDC_dm_, dLossHVDC_dtau_,
-    #         dInj_dVm_, dInj_dVa_, dInj_dPfvsc_, dInj_dPtvsc_, dInj_dQtvsc_, dInj_dPfhvdc_, dInj_dPthvdc_, dInj_dQfhvdc_, dInj_dQthvdc_, dInj_dm_, dInj_dtau_,
-    #         dPf_dVm_, dPf_dVa_, dPf_dPfvsc_, dPf_dPtvsc_, dPf_dQtvsc_, dPf_dPfhvdc_, dPf_dPthvdc_, dPf_dQfhvdc_, dPf_dQthvdc_, dPf_dm_, dPf_dtau_,
-    #         dQf_dVm_, dQf_dVa_, dQf_dPfvsc_, dQf_dPtvsc_, dQf_dQtvsc_, dQf_dPfhvdc_, dQf_dPthvdc_, dQf_dQfhvdc_, dQf_dQthvdc_, dQf_dm_, dQf_dtau_,
-    #         dPt_dVm_, dPt_dVa_, dPt_dPfvsc_, dPt_dPtvsc_, dPt_dQtvsc_, dPt_dPfhvdc_, dPt_dPthvdc_, dPt_dQfhvdc_, dPt_dQthvdc_, dPt_dm_, dPt_dtau_,
-    #         dQt_dVm_, dQt_dVa_, dQt_dPfvsc_, dQt_dPtvsc_, dQt_dQtvsc_, dQt_dPfhvdc_, dQt_dPthvdc_, dQt_dQfhvdc_, dQt_dQthvdc_, dQt_dm_, dQt_dtau_
-    #     ],
-    #     n_rows=9,
-    #     n_cols=11
-    # )
+    dP_dPtvsc__ = sp_slice(scipy_to_mat(conn_vsc_T.transpose()), i_k_p, u_vsc_pt)
+    # dP_dPtvsc__ = deriv.dP_dPtvsc_csc(nbus, i_k_p, u_vsc_pt, T_vsc)
+    dQ_dPtvsc__ = CxCSC(len(i_k_q), len(u_vsc_pt), 0, False)
+    dLossvsc_dPtvsc_ = deriv.dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, Vm, Pt_vsc, T_vsc)
+    dLosshvdc_dPtvsc_ = CxCSC(nhvdc, len(u_vsc_pt), 0, False)
+    dInj_dPtvsc_ = CxCSC(nbus, len(u_vsc_pt), 0, False)
+    dPf_dPtvsc_ = CxCSC(len(k_cbr_pf), len(u_vsc_pt), 0, False)
+    dQf_dPtvsc_ = CxCSC(len(k_cbr_qf), len(u_vsc_pt), 0, False)
+    dPt_dPtvsc_ = CxCSC(len(k_cbr_pt), len(u_vsc_pt), 0, False)
+    dQt_dPtvsc_ = CxCSC(len(k_cbr_qt), len(u_vsc_pt), 0, False)
+
+    dP_dQtvsc__ = CxCSC(len(i_k_p), len(u_vsc_qt), 0, False)
+    dQ_dQtvsc__ = sp_slice(scipy_to_mat(conn_vsc_F.transpose()), i_k_q, u_vsc_qt)
+    dLossvsc_dQtvsc_ = deriv.dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, Vm, Qt_vsc, T_vsc)
+    dLosshvdc_dQtvsc_ = CxCSC(nhvdc, len(u_vsc_qt), 0, False)
+    dInj_dQtvsc_ = CxCSC(nbus, len(u_vsc_qt), 0, False)
+    dPf_dQtvsc_ = CxCSC(len(k_cbr_pf), len(u_vsc_qt), 0, False)
+    dQf_dQtvsc_ = CxCSC(len(k_cbr_qf), len(u_vsc_qt), 0, False)
+    dPt_dQtvsc_ = CxCSC(len(k_cbr_pt), len(u_vsc_qt), 0, False)
+    dQt_dQtvsc_ = CxCSC(len(k_cbr_qt), len(u_vsc_qt), 0, False)
+
+    dP_dPfhvdc__ = sp_slice(scipy_to_mat(conn_hvdc_F.transpose()), i_k_p, hvdc_droop_idx)
+    dQ_dPfhvdc__ = CxCSC(len(i_k_q), len(hvdc_droop_idx), 0, False)
+    dLossvsc_dPfhvdc_ = CxCSC(nvsc, len(hvdc_droop_idx), 0, False)
+    dLosshvdc_dPfhvdc_ = deriv.dLosshvdc_dPfhvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc)
+    dInj_dPfhvdc_ = deriv.dInj_dPfhvdc_csc(nhvdc, hvdc_droop_idx, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc)
+    dPf_dPfhvdc_ = CxCSC(len(k_cbr_pf), len(hvdc_droop_idx), 0, False)
+    dQf_dPfhvdc_ = CxCSC(len(k_cbr_qf), len(hvdc_droop_idx), 0, False)
+    dPt_dPfhvdc_ = CxCSC(len(k_cbr_pt), len(hvdc_droop_idx), 0, False)
+    dQt_dPfhvdc_ = CxCSC(len(k_cbr_qt), len(hvdc_droop_idx), 0, False)
+
+    dP_dPthvdc__ = sp_slice(scipy_to_mat(conn_hvdc_T.transpose()), i_k_p, hvdc_droop_idx)
+    dQ_dPthvdc__ = CxCSC(len(i_k_q), len(hvdc_droop_idx), 0, False)
+    dLossvsc_dPthvdc_ = CxCSC(nvsc, len(hvdc_droop_idx), 0, False)
+    dLosshvdc_dPthvdc_ = deriv.dLosshvdc_dPthvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc)
+    dInj_dPthvdc_ = CxCSC(nhvdc, nhvdc, 0, False)
+    dPf_dPthvdc_ = CxCSC(len(k_cbr_pf), len(hvdc_droop_idx), 0, False)
+    dQf_dPthvdc_ = CxCSC(len(k_cbr_qf), len(hvdc_droop_idx), 0, False)
+    dPt_dPthvdc_ = CxCSC(len(k_cbr_pt), len(hvdc_droop_idx), 0, False)
+    dQt_dPthvdc_ = CxCSC(len(k_cbr_qt), len(hvdc_droop_idx), 0, False)
+
+    dP_dQfhvdc__ = CxCSC(len(i_k_q), len(hvdc_droop_idx), 0, False)
+    dQ_dQfhvdc__ = sp_slice(scipy_to_mat(conn_hvdc_F.transpose()), i_k_q, hvdc_droop_idx)
+    dLossvsc_dQfhvdc_ = CxCSC(nvsc, len(hvdc_droop_idx), 0, False)
+    dLosshvdc_dQfhvdc_ = CxCSC(nhvdc, len(hvdc_droop_idx), 0, False)
+    dInj_dQfhvdc_ = CxCSC(nhvdc, len(hvdc_droop_idx), 0, False)
+    dPf_dQfhvdc_ = CxCSC(len(k_cbr_pf), len(hvdc_droop_idx), 0, False)
+    dQf_dQfhvdc_ = CxCSC(len(k_cbr_qf), len(hvdc_droop_idx), 0, False)
+    dPt_dQfhvdc_ = CxCSC(len(k_cbr_pt), len(hvdc_droop_idx), 0, False)
+    dQt_dQfhvdc_ = CxCSC(len(k_cbr_qt), len(hvdc_droop_idx), 0, False)
+
+    dP_dQthvdc__ = CxCSC(len(i_k_q), len(hvdc_droop_idx), 0, False)
+    dQ_dQthvdc__ = sp_slice(scipy_to_mat(conn_hvdc_T.transpose()), i_k_q, hvdc_droop_idx)
+    dLossvsc_dQthvdc_ = CxCSC(nvsc, len(hvdc_droop_idx), 0, False)
+    dLosshvdc_dQthvdc_ = CxCSC(nhvdc, len(hvdc_droop_idx), 0, False)
+    dInj_dQthvdc_ = CxCSC(nhvdc, len(hvdc_droop_idx), 0, False)
+    dPf_dQthvdc_ = CxCSC(len(k_cbr_pf), len(hvdc_droop_idx), 0, False)
+    dQf_dQthvdc_ = CxCSC(len(k_cbr_qf), len(hvdc_droop_idx), 0, False)
+    dPt_dQthvdc_ = CxCSC(len(k_cbr_pt), len(hvdc_droop_idx), 0, False)
+    dQt_dQthvdc_ = CxCSC(len(k_cbr_qt), len(hvdc_droop_idx), 0, False)
+
+    # compose the Jacobian
+    # J = csc_stack_2d_ff(mats=
+    #                     [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__,
+    #                      dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__,
+    #                      dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_,
+    #                      dPt_dVa_, dPt_dVm_, dPt_dm_, dPt_dtau_,
+    #                      dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_,
+    #                      dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_],
+    #                     n_rows=6, n_cols=4)
+
+
+
+    J = csc_stack_2d_ff(
+        mats=[
+            dP_dVa__, dP_dVm__, dP_dPfvsc__, dP_dPtvsc__, dP_dQtvsc__, dP_dPfhvdc__, dP_dPthvdc__, dP_dQfhvdc__, dP_dQthvdc__, dP_dm__, dP_dtau__,
+            dQ_dVa__, dQ_dVm__, dQ_dPfvsc__, dQ_dPtvsc__, dQ_dQtvsc__, dQ_dPfhvdc__, dQ_dPthvdc__, dQ_dQfhvdc__, dQ_dQthvdc__, dQ_dm__, dQ_dtau__,
+            dLossvsc_dVa_, dLossvsc_dVm_, dLossvsc_dPfvsc_, dLossvsc_dPtvsc_, dLossvsc_dQtvsc_, dLossvsc_dPfhvdc_, dLossvsc_dPthvdc_, dLossvsc_dQfhvdc_, dLossvsc_dQthvdc_, dLossvsc_dm_, dLossvsc_dtau_,
+            dLosshvdc_dVa_, dLosshvdc_dVm_, dLosshvdc_dPfvsc_, dLosshvdc_dPtvsc_, dLosshvdc_dQtvsc_, dLosshvdc_dPfhvdc_, dLosshvdc_dPthvdc_, dLosshvdc_dQfhvdc_, dLosshvdc_dQthvdc_, dLosshvdc_dm_, dLosshvdc_dtau_,
+            dInj_dVa_,    dInj_dVm_, dInj_dPfvsc_, dInj_dPtvsc_, dInj_dQtvsc_, dInj_dPfhvdc_, dInj_dPthvdc_, dInj_dQfhvdc_, dInj_dQthvdc_, dInj_dm_, dInj_dtau_,
+            dPf_dVa_,     dPf_dVm_, dPf_dPfvsc_, dPf_dPtvsc_, dPf_dQtvsc_, dPf_dPfhvdc_, dPf_dPthvdc_, dPf_dQfhvdc_, dPf_dQthvdc_, dPf_dm_, dPf_dtau_,
+            dQf_dVa_,     dQf_dVm_, dQf_dPfvsc_, dQf_dPtvsc_, dQf_dQtvsc_, dQf_dPfhvdc_, dQf_dPthvdc_, dQf_dQfhvdc_, dQf_dQthvdc_, dQf_dm_, dQf_dtau_,
+            dPt_dVa_,     dPt_dVm_, dPt_dPfvsc_, dPt_dPtvsc_, dPt_dQtvsc_, dPt_dPfhvdc_, dPt_dPthvdc_, dPt_dQfhvdc_, dPt_dQthvdc_, dPt_dm_, dPt_dtau_,
+            dQt_dVa_,     dQt_dVm_, dQt_dPfvsc_, dQt_dPtvsc_, dQt_dQtvsc_, dQt_dPfhvdc_, dQt_dPthvdc_, dQt_dQfhvdc_, dQt_dQthvdc_, dQt_dm_, dQt_dtau_
+        ],
+        n_rows=9,
+        n_cols=11
+    )
 
     return J
 
@@ -2387,7 +2487,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:
@@ -2433,8 +2533,14 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             J_sym = adv_jacobian(nbus=self.nc.nbus,
                                  nbr=self.nc.nbr,
+                                 nvsc=self.nc.vsc_data.nelm,
+                                 nhvdc=self.nc.hvdc_data.nelm,
                                  F=self.nc.passive_branch_data.F,
                                  T=self.nc.passive_branch_data.T,
+                                 F_vsc=self.nc.vsc_data.F,
+                                 T_vsc=self.nc.vsc_data.T,
+                                 F_hvdc=self.nc.hvdc_data.F,
+                                 T_hvdc=self.nc.hvdc_data.T,
                                  R=self.nc.passive_branch_data.R,
                                  X=self.nc.passive_branch_data.X,
                                  G=self.nc.passive_branch_data.G,
@@ -2474,9 +2580,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                  vsc_pt_set=self.vsc_pt_set,
                                  vsc_qt_set=self.vsc_qt_set,
 
+                                 # VSC Params
+                                 alpha1=self.nc.vsc_data.alpha1,
+                                 alpha2=self.nc.vsc_data.alpha2,
+                                 alpha3=self.nc.vsc_data.alpha3,
+
                                  # HVDC Indices
                                  hvdc_droop_idx=self.hvdc_droop_idx,
 
+                                 # HVDC Params
+                                 hvdc_r=self.nc.hvdc_data.r,
+                                 hvdc_pset=self.nc.hvdc_data.Pset,
+                                 hvdc_droop=self.nc.hvdc_data.angle_droop,
+                                 
                                  # Bus Indices
                                  i_u_vm=self.i_u_vm,
                                  i_u_va=self.i_u_va,
@@ -2499,6 +2615,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                  ytt_cbr=self.ytt_cbr,
                                  F_cbr=self.F_cbr,
                                  T_cbr=self.T_cbr,
+                                 conn_vsc_F=self.nc.vsc_data.Cf,
+                                 conn_vsc_T=self.nc.vsc_data.Ct,
+                                 conn_hvdc_F=self.nc.hvdc_data.Cf,
+                                 conn_hvdc_T=self.nc.hvdc_data.Ct,
                                  Ybus=self.Ybus)
 
             # Jdense = np.array(J.todense())
