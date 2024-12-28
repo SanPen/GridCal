@@ -189,7 +189,7 @@ def csc_add_ff(Am, An, Aindptr, Aindices, Adata,
 
     w = np.zeros(m, dtype=nb.int32)
 
-    x = xalloc(m)   # get workspace
+    x = np.zeros(m, dtype=nb.float64)   # get workspace
 
     Cm, Cn, Cp, Ci, Cx, Cnzmax = csc_spalloc_f(m, n, anz + bnz)  # allocate result
 

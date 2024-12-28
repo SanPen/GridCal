@@ -7,7 +7,7 @@ from __future__ import annotations
 import warnings
 import math
 from typing import List
-from numba import njit, int32, float64, complex128
+import numba as nb
 from numba import types
 from numba.experimental import jitclass
 import numpy as np
@@ -17,12 +17,12 @@ from GridCalEngine.basic_structures import IntVec, IntMat, Vec, CxVec
 
 
 @jitclass([
-    ('n_rows', int32),
-    ('n_cols', int32),
-    ('nnz', int32),
-    ('data', float64[:]),
-    ('indices', int32[:]),
-    ('indptr', int32[:],),
+    ('n_rows', nb.int32),
+    ('n_cols', nb.int32),
+    ('nnz', nb.int32),
+    ('data', nb.float64[:]),
+    ('indices', nb.int32[:]),
+    ('indptr', nb.int32[:],),
     ('format', types.unicode_type)
 ])
 class CSC:
@@ -85,7 +85,7 @@ class CSC:
         self.indptr = np.empty(self.n_cols + 1, dtype=np.int32)
         self.indptr[0] = 0  # always
 
-        w = np.zeros(self.n_cols, dtype=int32)  # get workspace
+        w = np.zeros(self.n_cols, dtype=np.int32)  # get workspace
 
         for k in range(self.nnz):
             w[Tj[k]] += 1  # column counts
@@ -107,7 +107,7 @@ class CSC:
         """
         return self.n_rows, self.n_cols
 
-    def resize(self, nnz: int32):
+    def resize(self, nnz: np.int32):
         """
         Resize this matrix
         :param nnz: number of non-zeros
@@ -203,14 +203,79 @@ class CSC:
         else:
             raise TypeError
 
+    def __add__(self, B: "CSC" | float) -> "CSC" | np.ndarray:
+        """
+        @ operator
+        :param B: CSC matrix or ndarray
+        :return: CSC matrix or ndarray
+        """
+        if isinstance(B, CSC):
+
+            print(f"Adding CSC matrices: A.shape={self.shape}, B.shape={B.shape}")
+            print(f"CSC Matrix Data Types: A.data={self.data.dtype}, B.data={B.data.dtype}")
+
+            m = self.n_rows
+            n = B.n_cols
+
+            w = np.zeros(m, dtype=np.int32)
+
+            x = np.zeros(n, dtype=np.float64)  # get workspace
+
+            C = CSC(m, n, self.nnz + B.nnz, False)  # allocate result
+
+            nz = 0
+
+            for j in range(n):
+                C.indptr[j] = nz  # column j of C starts here
+
+                # nz = csc_scatter_f(self.indptr, self.indices, self.data, j, 1.0, w, x, j + 1, C.indices, nz)  # alpha*A(:,j)
+
+                # nz = csc_scatter_f(B.indptr, B.indices, B.data, j, 1.0, w, x, j + 1, C.indices, nz)  # beta*B(:,j)
+
+                mark = j + 1
+
+                for p in range(self.indptr[j], self.indptr[j + 1]):
+                    i = self.indices[p]  # A(i,j) is nonzero
+                    if w[i] < mark:
+                        w[i] = mark  # i is new entry in column j
+                        C.indices[nz] = i  # add i to pattern of C(:,j)
+                        nz = nz + 1
+                        x[i] = self.data[p]  # x(i) = beta*A(i,j)
+                    else:
+                        x[i] += self.data[p]  # i exists in C(:,j) already
+
+                for p in range(B.indptr[j], B.indptr[j + 1]):
+                    i = B.indices[p]  # A(i,j) is nonzero
+                    if w[i] < mark:
+                        w[i] = mark  # i is new entry in column j
+                        C.indices[nz] = i  # add i to pattern of C(:,j)
+                        nz = nz + 1
+                        x[i] = B.data[p]  # x(i) = beta*A(i,j)
+                    else:
+                        x[i] += B.data[p]  # i exists in C(:,j) already
+
+                for p in range(C.indptr[j], nz):
+                    C.data[p] = x[C.indices[p]]
+
+            C.indptr[n] = nz  # finalize the last column of C
+
+            return C
+
+        elif isinstance(B, float):
+            res = self.copy()
+            res.data += B
+            return res
+        else:
+            raise TypeError
+
 
 @jitclass([
-    ('n_rows', int32),
-    ('n_cols', int32),
-    ('nnz', int32),
-    ('data', complex128[:]),
-    ('indices', int32[:]),
-    ('indptr', int32[:],),
+    ('n_rows', nb.int32),
+    ('n_cols', nb.int32),
+    ('nnz', nb.int32),
+    ('data', nb.complex128[:]),
+    ('indices', nb.int32[:]),
+    ('indptr', nb.int32[:],),
     ('format', types.unicode_type)
 ])
 class CxCSC:
@@ -326,7 +391,7 @@ class CxCSC:
         A.data = self.data.imag
         return A
 
-    def resize(self, nnz: int32):
+    def resize(self, nnz: nb.int32):
         """
         Resize this matrix
         :param nnz: number of non-zeros
@@ -407,9 +472,9 @@ def scipy_to_mat(mat: csc_matrix) -> CSC:
         mat = mat.tocsc()
 
     x = CSC(mat.shape[0], mat.shape[1], mat.nnz, False)
-    x.data = mat.data.astype(float)
-    x.indices = mat.indices.astype(np.int32)
-    x.indptr = mat.indptr.astype(np.int32)
+    x.data[:] = mat.data.astype(np.float64)
+    x.indices[:] = mat.indices.astype(np.int32)
+    x.indptr[:] = mat.indptr.astype(np.int32)
     return x
 
 
@@ -470,7 +535,7 @@ def spsolve_csc(A: CSC, x: Vec) -> Vec:
         return factor.solve(x), True
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def pack_4_by_4(A: CSC, B: CSC, C: CSC, D: CSC) -> CSC:
     """
     Stack 4 CSC matrices in a 2 by 2 structure
@@ -525,7 +590,7 @@ def pack_4_by_4(A: CSC, B: CSC, C: CSC, D: CSC) -> CSC:
     return res
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def pack_3_by_4(A: CSC, B: CSC, C: CSC) -> CSC:
     """
     Stack 3 CSC matrices in a 2 by 2 structure
@@ -572,7 +637,7 @@ def pack_3_by_4(A: CSC, B: CSC, C: CSC) -> CSC:
     return res
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def csc_cumsum_i(p, c, n):
     """
     p [0..n] = cumulative sum of c [0..n-1], and then copy p [0..n-1] into c
@@ -594,7 +659,7 @@ def csc_cumsum_i(p, c, n):
     return int(nz2)  # return sum (c [0..n-1])
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def sp_transpose(A: CSC) -> CSC:
     """
     Actual CSC transpose unlike scipy's
@@ -603,7 +668,7 @@ def sp_transpose(A: CSC) -> CSC:
     """
     C = CSC(A.n_cols, A.n_rows, A.nnz, False)
 
-    w = np.zeros(A.n_rows, dtype=int32)
+    w = np.zeros(A.n_rows, dtype=np.int32)
 
     for p in range(A.indptr[A.n_cols]):
         w[A.indices[p]] += 1  # row counts
@@ -620,7 +685,7 @@ def sp_transpose(A: CSC) -> CSC:
     return C
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def sp_slice_cols(A: CSC, cols: IntMat) -> CSC:
     """
     Slice columns
@@ -654,7 +719,7 @@ def sp_slice_cols(A: CSC, cols: IntMat) -> CSC:
     return res
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def sp_slice_rows(mat: CSC, rows: np.ndarray) -> CSC:
     """
     Slice rows
@@ -667,7 +732,7 @@ def sp_slice_rows(mat: CSC, rows: np.ndarray) -> CSC:
     return sp_transpose(A)
 
 
-@njit()
+@nb.njit()
 def sp_slice(A: CSC, rows: IntVec, cols: IntVec):
     """
     /*
@@ -692,9 +757,9 @@ def sp_slice(A: CSC, rows: IntVec, cols: IntVec):
     B = CSC(n_rows, n_cols, A.nnz, False)
     B.indptr[p] = 0
 
-    # generate lookup for the non immediate axis (for CSC it is the rows) -> index lookup
-    lookup = np.zeros(A.n_rows, dtype=int32)
-    lookup[rows] = np.arange(n_rows, dtype=int32)
+    # generate lookup for the non-immediate axis (for CSC it is the rows) -> index lookup
+    lookup = np.zeros(A.n_rows, dtype=np.int32)
+    lookup[rows] = np.arange(n_rows, dtype=np.int32)
 
     for j in cols:  # sliced columns
 
@@ -718,7 +783,7 @@ def sp_slice(A: CSC, rows: IntVec, cols: IntVec):
     return B
 
 
-@njit()
+@nb.njit()
 def csc_stack_2d_ff(mats: List[CSC], n_rows: int = 1, n_cols: int = 1) -> CSC:
     """
     Assemble matrix from a list of matrices representing a "super matrix"
@@ -785,7 +850,7 @@ def csc_stack_2d_ff(mats: List[CSC], n_rows: int = 1, n_cols: int = 1) -> CSC:
     return res
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def diags(array: Vec) -> CSC:
     """
     Get diagonal sparse matrix from array
@@ -805,7 +870,7 @@ def diags(array: Vec) -> CSC:
     return res
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def diagc(m: int, value: float = 1.0) -> CSC:
     """
     Get diagonal sparse matrix from value
@@ -825,7 +890,7 @@ def diagc(m: int, value: float = 1.0) -> CSC:
     return res
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def make_lookup(size: int, indices: IntVec) -> IntVec:
     """
     Create a lookup array
@@ -833,12 +898,12 @@ def make_lookup(size: int, indices: IntVec) -> IntVec:
     :param indices: indices to map (i.e. pq indices)
     :return: lookup array, -1 at the indices that do not match with the "indices" input array
     """
-    lookup = np.full(size, -1, dtype=int32)
-    lookup[indices] = np.arange(len(indices), dtype=int32)
+    lookup = np.full(size, -1, dtype=np.int32)
+    lookup[indices] = np.arange(len(indices), dtype=np.int32)
     return lookup
 
 
-@njit(cache=False)
+@nb.njit(cache=False)
 def extend(A: CSC, last_col: Vec, last_row: Vec, corner_val: float) -> CSC:
     """
     B = |   A       last_col |
@@ -905,7 +970,7 @@ def extend(A: CSC, last_col: Vec, last_row: Vec, corner_val: float) -> CSC:
     return B
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def csc_multiply_ff(A: CSC, B: CSC) -> CSC:
     """
     Sparse matrix multiplication, C = A*B where A and B are CSC sparse matrices
@@ -920,15 +985,15 @@ def csc_multiply_ff(A: CSC, B: CSC) -> CSC:
     Cm = A.n_rows
     Cn = B.n_cols
 
-    w = np.zeros(Cn, dtype=int32)  # ialloc(m)  # get workspace
-    x = np.empty(Cn, dtype=float64)  # xalloc(m)  # get workspace
+    w = np.zeros(Cn, dtype=np.int32)  # ialloc(m)  # get workspace
+    x = np.empty(Cn, dtype=np.float64)  # xalloc(m)  # get workspace
 
     # allocate result
 
     Cnzmax = int(np.sqrt(Cm)) * anz + bnz  # the trick here is to allocate just enough memory to avoid reallocating
-    Cp = np.empty(Cn + 1, dtype=int32)
-    Ci = np.empty(Cnzmax, dtype=int32)
-    Cx = np.empty(Cnzmax, dtype=float64)
+    Cp = np.empty(Cn + 1, dtype=np.int32)
+    Ci = np.empty(Cnzmax, dtype=np.int32)
+    Cx = np.empty(Cnzmax, dtype=np.float64)
 
     for j in range(Cn):
 
@@ -941,13 +1006,13 @@ def csc_multiply_ff(A: CSC, B: CSC) -> CSC:
                 Cnzmax = Cp[A.n_cols]
 
             length = min(Cnzmax, len(Ci))
-            Cinew = np.empty(Cnzmax, dtype=int32)
+            Cinew = np.empty(Cnzmax, dtype=np.int32)
             for i in range(length):
                 Cinew[i] = Ci[i]
             Ci = Cinew
 
             length = min(Cnzmax, len(Cx))
-            Cxnew = np.empty(Cnzmax, dtype=float64)
+            Cxnew = np.empty(Cnzmax, dtype=np.float64)
             for i in range(length):
                 Cxnew[i] = Cx[i]
             Cx = Cxnew
@@ -985,7 +1050,7 @@ def csc_multiply_ff(A: CSC, B: CSC) -> CSC:
 
 # @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:])",
 #          parallel=False, nogil=True, fastmath=False, cache=True)  # fastmath=True breaks the code
-@njit(cache=True)
+@nb.njit(cache=True)
 def csc_multiply_ff2(Am, An, Ap, Ai, Ax,
                      Bm, Bn, Bp, Bi, Bx):
     """
@@ -1009,15 +1074,15 @@ def csc_multiply_ff2(Am, An, Ap, Ai, Ax,
     Cm = Am
     Cn = Bn
 
-    w = np.zeros(Cn, dtype=int32)  # ialloc(m)  # get workspace
-    x = np.empty(Cn, dtype=float64)  # xalloc(m)  # get workspace
+    w = np.zeros(Cn, dtype=np.int32)  # ialloc(m)  # get workspace
+    x = np.empty(Cn, dtype=np.float64)  # xalloc(m)  # get workspace
 
     # allocate result
 
     Cnzmax = int(np.sqrt(Cm)) * anz + bnz  # the trick here is to allocate just enough memory to avoid reallocating
-    Cp = np.empty(Cn + 1, dtype=int32)
-    Ci = np.empty(Cnzmax, dtype=int32)
-    Cx = np.empty(Cnzmax, dtype=float64)
+    Cp = np.empty(Cn + 1, dtype=np.int32)
+    Ci = np.empty(Cnzmax, dtype=np.int32)
+    Cx = np.empty(Cnzmax, dtype=np.float64)
 
     for j in range(Cn):
 
@@ -1030,13 +1095,13 @@ def csc_multiply_ff2(Am, An, Ap, Ai, Ax,
                 Cnzmax = Cp[An]
 
             length = min(Cnzmax, len(Ci))
-            Cinew = np.empty(Cnzmax, dtype=int32)
+            Cinew = np.empty(Cnzmax, dtype=np.int32)
             for i in range(length):
                 Cinew[i] = Ci[i]
             Ci = Cinew
 
             length = min(Cnzmax, len(Cx))
-            Cxnew = np.empty(Cnzmax, dtype=float64)
+            Cxnew = np.empty(Cnzmax, dtype=np.float64)
             for i in range(length):
                 Cxnew[i] = Cx[i]
             Cx = Cxnew
@@ -1070,7 +1135,7 @@ def csc_multiply_ff2(Am, An, Ap, Ai, Ax,
     return Cm, Cn, Cp, Cinew, Cxnew, Cnzmax
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def csc_multiply_cx(A: CxCSC, B: CSC) -> CxCSC:
     """
     Sparse matrix multiplication, C = A*B where A and B are CSC sparse matrices
@@ -1085,15 +1150,15 @@ def csc_multiply_cx(A: CxCSC, B: CSC) -> CxCSC:
     Cm = A.n_rows
     Cn = B.n_cols
 
-    w = np.zeros(Cn, dtype=int32)  # ialloc(m)  # get workspace
-    x = np.empty(Cn, dtype=complex128)  # xalloc(m)  # get workspace
+    w = np.zeros(Cn, dtype=np.int32)  # ialloc(m)  # get workspace
+    x = np.empty(Cn, dtype=np.complex128)  # xalloc(m)  # get workspace
 
     # allocate result
 
     Cnzmax = int(np.sqrt(Cm)) * anz + bnz  # the trick here is to allocate just enough memory to avoid reallocating
-    Cp = np.empty(Cn + 1, dtype=int32)
-    Ci = np.empty(Cnzmax, dtype=int32)
-    Cx = np.empty(Cnzmax, dtype=complex128)
+    Cp = np.empty(Cn + 1, dtype=np.int32)
+    Ci = np.empty(Cnzmax, dtype=np.int32)
+    Cx = np.empty(Cnzmax, dtype=np.complex128)
 
     for j in range(Cn):
 
@@ -1106,13 +1171,13 @@ def csc_multiply_cx(A: CxCSC, B: CSC) -> CxCSC:
                 Cnzmax = Cp[A.n_cols]
 
             length = min(Cnzmax, len(Ci))
-            Cinew = np.empty(Cnzmax, dtype=int32)
+            Cinew = np.empty(Cnzmax, dtype=np.int32)
             for i in range(length):
                 Cinew[i] = Ci[i]
             Ci = Cinew
 
             length = min(Cnzmax, len(Cx))
-            Cxnew = np.empty(Cnzmax, dtype=complex128)
+            Cxnew = np.empty(Cnzmax, dtype=np.complex128)
             for i in range(length):
                 Cxnew[i] = Cx[i]
             Cx = Cxnew
@@ -1148,7 +1213,7 @@ def csc_multiply_cx(A: CxCSC, B: CSC) -> CxCSC:
     return C
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def csc_matvec_ff(A: CSC, x: np.ndarray) -> np.ndarray:
     """
 
@@ -1159,14 +1224,14 @@ def csc_matvec_ff(A: CSC, x: np.ndarray) -> np.ndarray:
     assert A.n_cols == x.shape[0]
     if x.ndim == 1:
 
-        y = np.zeros(A.n_rows, dtype=float64)
+        y = np.zeros(A.n_rows, dtype=np.float64)
         for j in range(A.n_cols):
             for p in range(A.indptr[j], A.indptr[j + 1]):
                 y[A.indices[p]] += A.data[p] * x[j]
         return y
     elif x.ndim == 2:
         ncols = x.shape[1]
-        y = np.zeros((A.n_rows, ncols), dtype=float64)
+        y = np.zeros((A.n_rows, ncols), dtype=np.float64)
         for k in range(ncols):
             for j in range(A.n_cols):
                 for p in range(A.indptr[j], A.indptr[j + 1]):
@@ -1176,7 +1241,7 @@ def csc_matvec_ff(A: CSC, x: np.ndarray) -> np.ndarray:
         raise Exception("Wrong number of dimensions")
 
 
-@njit(cache=True)
+@nb.njit(cache=True)
 def csc_matvec_cx(A: CxCSC, x: np.ndarray) -> np.ndarray:
     """
 
@@ -1187,14 +1252,14 @@ def csc_matvec_cx(A: CxCSC, x: np.ndarray) -> np.ndarray:
     assert A.n_cols == x.shape[0]
     if x.ndim == 1:
 
-        y = np.zeros(A.n_rows, dtype=complex128)
+        y = np.zeros(A.n_rows, dtype=np.complex128)
         for j in range(A.n_cols):
             for p in range(A.indptr[j], A.indptr[j + 1]):
                 y[A.indices[p]] += A.data[p] * x[j]
         return y
     elif x.ndim == 2:
         ncols = x.shape[1]
-        y = np.zeros((A.n_rows, ncols), dtype=complex128)
+        y = np.zeros((A.n_rows, ncols), dtype=np.complex128)
         for k in range(ncols):
             for j in range(A.n_cols):
                 for p in range(A.indptr[j], A.indptr[j + 1]):
@@ -1202,3 +1267,124 @@ def csc_matvec_cx(A: CxCSC, x: np.ndarray) -> np.ndarray:
         return y
     else:
         raise Exception("Wrong number of dimensions")
+
+
+# @nb.njit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")
+@nb.njit(cache=True)
+def csc_scatter_f(Ap, Ai, Ax, j, beta, w, x, mark, Ci, nz):
+    """
+    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)
+    :param Ap:
+    :param Ai:
+    :param Ax:
+    :param j: the column of A to use
+    :param beta: scalar multiplied by A(:,j)
+    :param w: size m, node i is marked if w[i] = mark
+    :param x: size m, ignored if null
+    :param mark: mark value of w
+    :param Ci: pattern of x accumulated in C.i
+    :param nz: pattern of x placed in C starting at C.i[nz]
+    :return: new value of nz, -1 on error, x and w are modified
+    """
+
+    for p in range(Ap[j], Ap[j + 1]):
+        i = Ai[p]  # A(i,j) is nonzero
+        if w[i] < mark:
+            w[i] = mark  # i is new entry in column j
+            Ci[nz] = i  # add i to pattern of C(:,j)
+            nz += 1
+            x[i] = beta * Ax[p]  # x(i) = beta*A(i,j)
+        else:
+            x[i] += beta * Ax[p]  # i exists in C(:,j) already
+    return nz
+
+
+@nb.njit(cache=True)
+def csc_spalloc_f(m, n, nzmax):
+    """
+    Allocate a sparse matrix (triplet form or compressed-column form).
+
+    @param m: number of rows
+    @param n: number of columns
+    @param nzmax: maximum number of entries
+    @return: m, n, Aindptr, Aindices, Adata, Anzmax
+    """
+    Anzmax = max(nzmax, 1)
+    Aindptr = np.zeros(n + 1, dtype=np.int32)
+    Aindices = np.zeros(Anzmax, dtype=np.int32)
+    Adata = np.zeros(Anzmax, dtype=np.float64)
+    return m, n, Aindptr, Aindices, Adata, Anzmax
+
+
+@nb.njit(cache=True)
+def csc_add_ff(A: CSC, B: CSC, alpha, beta):
+    """
+    C = alpha*A + beta*B
+
+    @param A: column-compressed matrix
+    @param B: column-compressed matrix
+    @param alpha: scalar alpha
+    @param beta: scalar beta
+    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)
+    """
+
+    m = A.n_rows
+    n = B.n_cols
+
+    w = np.zeros(m, dtype=np.int32)
+
+    x = np.zeros(n, dtype=np.float64)  # get workspace
+
+    C = CSC(m, n, A.nnz + B.nnz, False)  # allocate result
+
+    nz = 0
+
+    for j in range(n):
+        C.indptr[j] = nz  # column j of C starts here
+
+        nz = csc_scatter_f(A.indptr, A.indices, A.data, j, alpha, w, x, j + 1, C.indices, nz)  # alpha*A(:,j)
+
+        nz = csc_scatter_f(B.indptr, B.indices, B.data, j, beta, w, x, j + 1, C.indices, nz)  # beta*B(:,j)
+
+        for p in range(C.indptr[j], nz):
+            C.data[p] = x[C.indices[p]]
+
+    C.indptr[n] = nz  # finalize the last column of C
+
+    return C  # success; free workspace, return C
+
+
+@nb.njit(cache=True)
+def csc_add_ff2(Am, An, Aindptr, Aindices, Adata, Bn, Bindptr, Bindices, Bdata):
+    """
+    C = A + B
+
+    @param A: column-compressed matrix
+    @param B: column-compressed matrix
+    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)
+    """
+    nz = 0
+
+    m, anz, n, Bp, Bx = Am, Aindptr[An], Bn, Bindptr, Bdata
+
+    bnz = Bp[n]
+
+    w = np.zeros(m, dtype=np.int32)
+
+    x = np.zeros(m, dtype=np.float64)  # get workspace
+
+    Cm, Cn, Cp, Ci, Cx, Cnzmax = csc_spalloc_f(m, n, anz + bnz)  # allocate result
+
+    for j in range(n):
+        Cp[j] = nz  # column j of C starts here
+
+        nz = csc_scatter_f(Aindptr, Aindices, Adata, j, 1.0, w, x, j + 1, Ci, nz)  # alpha*A(:,j)
+
+        nz = csc_scatter_f(Bindptr, Bindices, Bdata, j, 1.0, w, x, j + 1, Ci, nz)  # beta*B(:,j)
+
+        for p in range(Cp[j], nz):
+            Cx[p] = x[Ci[p]]
+
+    Cp[n] = nz  # finalize the last column of C
+
+    return Cm, Cn, Cp, Ci, Cx, nz  # success; free workspace, return C

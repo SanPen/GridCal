@@ -10,7 +10,7 @@ from scipy.sparse import csc_matrix, random, hstack, vstack
 from scipy.sparse import rand
 from scipy.sparse.linalg import spsolve as spsolve_scipy
 from GridCalEngine.Utils.Sparse.csc2 import (sp_slice, sp_slice_rows, csc_stack_2d_ff, scipy_to_mat, spsolve_csc,
-                                             extend, CSC, csc_multiply_ff)
+                                             extend, CSC, csc_multiply_ff, csc_add_ff)
 
 
 def get_scipy_random_matrix(m: int | None = None, n: int | None = None) -> csc_matrix:
@@ -171,3 +171,21 @@ def test_extend():
 #
 # def test_mat_vec_mult():
 #     pass
+
+
+# def test_sum():
+#
+#     for i in range(100):
+#         m = np.random.randint(1, 1000)
+#         n = np.random.randint(1, 1000)
+#         o = np.random.randint(1, 1000)
+#
+#         A1 = get_scipy_random_matrix(m, n)
+#         B1 = get_scipy_random_matrix(m, n)
+#         C1 = A1 + B1
+#
+#         A2 = scipy_to_mat(A1)
+#         B2 = scipy_to_mat(B1)
+#         C2 = A2 + B2
+#         # C2 = csc_add_ff(A2, B2, 1.0, 1.0)
+#         assert np.allclose(C1.toarray(), C2.toarray())
