@@ -252,7 +252,7 @@ def test_voltage_control_with_ltc() -> None:
 
     for control_taps_modules in [True, False]:
         options = PowerFlowOptions(gce.SolverType.NR,
-                                   verbose=0,
+                                   verbose=1,
                                    control_q=False,
                                    retry_with_other_methods=False,
                                    control_taps_modules=control_taps_modules,

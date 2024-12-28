@@ -17,6 +17,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff, \
     scipy_to_cxmat
+from GridCalEngine.Utils.Sparse.csc_numba import csc_add_ff
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -191,8 +192,10 @@ def adv_jacobian(nbus: int,
     dScbr_dVm = deriv.dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
     dScbr_dVa = deriv.dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
 
-    dS_dVa = deriv.add_CxCSC(dSy_dVa, dScbr_dVa)
-    dS_dVm = deriv.add_CxCSC(dSy_dVm, dScbr_dVm)
+    # add all factors contributing to dSbus/dx
+    dS_dVa = deriv.csc_add_wrapper(dSy_dVa, dScbr_dVa)
+    dS_dVm = deriv.csc_add_wrapper(dSy_dVm, dScbr_dVm)
+
 
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
@@ -2499,7 +2502,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:

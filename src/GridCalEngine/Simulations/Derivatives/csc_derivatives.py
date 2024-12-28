@@ -10,6 +10,7 @@ from typing import Tuple
 from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import CxVec, IntVec, Vec
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, make_lookup
+from GridCalEngine.Utils.Sparse.csc_numba import ialloc
 
 
 @njit(cache=True)
@@ -144,7 +145,7 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
     return idx_f, idx_t
 
 
-# @njit()
+@njit()
 def dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules) -> CxCSC:
     """
     Derivative of the controllable branch power flows w.r.t. voltage magnitude.
@@ -215,16 +216,13 @@ def dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap,
         Tj[nnz] = t
         nnz += 1
 
-    # handle duplicate index pairs to add their values
-    Ti, Tj, Tx = combine_duplicates_numba(Ti, Tj, Tx, nnz)
-
     # convert to csc
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
     return mat
 
 
-# @njit()
+@njit()
 def dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules) -> CxCSC:
     """
     Derivative of the controllable branch power flows w.r.t. voltage angle.
@@ -295,106 +293,117 @@ def dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap,
         Tj[nnz] = t
         nnz += 1
 
-    # handle duplicate index pairs to add their values
-    Ti, Tj, Tx = combine_duplicates_numba(Ti, Tj, Tx, nnz)
-
     # convert to csc
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
     return mat
 
 
-# @njit()
-def combine_duplicates_numba(Ti, Tj, Tx, nnz):
+@njit()
+def csc_add_wrapper(A: CxCSC, B: CxCSC, alpha: float=1.0, beta: float=1.0) -> CxCSC:
     """
-    Handle duplicates in COO-format sparse matrix entries by summing values.
-    This is a simplified version compatible with Numba.
-
-    :param Ti: Array of row indices (int32).
-    :param Tj: Array of column indices (int32).
-    :param Tx: Array of data values (float64).
-    :param nnz: Number of nonzero entries.
-    :return: Unique Ti, Tj, Tx arrays.
+    Wrapper for csc_add_ff
+    :param A: matrix A
+    :param B: matrix B
+    :param alpha: scalar alpha
+    :param beta: scalar beta
+    :return: matrix C = A * alpha + B * beta
     """
-    # Create a dictionary-like structure using arrays to track unique indices
-    max_size = nnz  # Maximum possible unique indices is nnz
-    unique_Ti = np.empty(max_size, dtype=np.int32)
-    unique_Tj = np.empty(max_size, dtype=np.int32)
-    unique_Tx = np.zeros(max_size, dtype=np.complex128)
+    Cm, Cn, Cp, Ci, Cx = csc_add_ff_comp(A.shape[0], A.shape[1], A.indptr, A.indices, A.data,
+                                    B.shape[0], B.shape[1], B.indptr, B.indices, B.data, 1.0, 1.0)
 
-    count = 0
-    for k in range(nnz):
-        found = False
-        for i in range(count):
-            if Ti[k] == unique_Ti[i] and Tj[k] == unique_Tj[i]:
-                # If duplicate is found, sum the values
-                unique_Tx[i] += Tx[k]
-                found = True
-                break
-        if not found:
-            # Add new unique index
-            unique_Ti[count] = Ti[k]
-            unique_Tj[count] = Tj[k]
-            unique_Tx[count] = Tx[k]
-            count += 1
-
-    # Truncate arrays to the actual number of unique elements
-    return unique_Ti[:count], unique_Tj[:count], unique_Tx[:count]
+    my_csc = CxCSC(Cm, Cn, len(Cx), False)
+    return my_csc.set(Ci, Cp, Cx)
 
 
-def add_CxCSC(mat1, mat2):
+@njit(cache=True)
+def csc_add_ff_comp(Am, An, Aindptr, Aindices, Adata,
+               Bm, Bn, Bindptr, Bindices, Bdata, alpha, beta):
     """
-    Add two CxCSC matrices.
+    C = alpha*A + beta*B
 
-    :param mat1: First CxCSC matrix.
-    :param mat2: Second CxCSC matrix.
-    :return: The sum of mat1 and mat2 as a CxCSC matrix.
+    @param A: column-compressed matrix
+    @param B: column-compressed matrix
+    @param alpha: scalar alpha
+    @param beta: scalar beta
+    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)
     """
-    # Ensure matrices have the same dimensions
-    if mat1.n_rows != mat2.n_rows or mat1.n_cols != mat2.n_cols:
-        raise ValueError("Matrices must have the same dimensions for addition.")
+    nz = 0
 
-    # Extract the CSC components
-    Ti1, Tj1, Tx1 = csc_to_coo(mat1.n_rows, mat1.n_cols, mat1.indptr, mat1.indices, mat1.data)
-    Ti2, Tj2, Tx2 = csc_to_coo(mat2.n_rows, mat2.n_cols, mat2.indptr, mat2.indices, mat2.data)
+    m, anz, n, Bp, Bx = Am, Aindptr[An], Bn, Bindptr, Bdata
 
-    # Concatenate the COO data
-    Ti = np.concatenate([Ti1, Ti2])
-    Tj = np.concatenate([Tj1, Tj2])
-    Tx = np.concatenate([Tx1, Tx2])
+    bnz = Bp[n]
 
-    # Handle duplicates by summing values
-    Ti, Tj, Tx = combine_duplicates_numba(Ti, Tj, Tx, len(Ti))
+    w = np.zeros(m, dtype=np.int32)
 
-    # Create a new CxCSC matrix and fill it from the combined COO data
-    result = CxCSC(mat1.n_rows, mat1.n_cols, len(Tx), False)
-    result.fill_from_coo(Ti, Tj, Tx, len(Tx))
+    x = np.zeros(m, dtype=np.complex128)
 
-    return result
+    Cm, Cn, Cp, Ci, Cx, Cnzmax = csc_spalloc_f(m, n, anz + bnz)  # allocate result
+
+    for j in range(n):
+        Cp[j] = nz  # column j of C starts here
+
+        nz = csc_scatter_f_comp(Aindptr, Aindices, Adata, j, alpha, w, x, j + 1, Ci, nz)  # alpha*A(:,j)
+
+        nz = csc_scatter_f_comp(Bindptr, Bindices, Bdata, j, beta, w, x, j + 1, Ci, nz)  # beta*B(:,j)
+
+        for p in range(Cp[j], nz):
+            Cx[p] = x[Ci[p]]
+
+    Cp[n] = nz  # finalize the last column of C
+
+    return Cm, Cn, Cp, Ci, Cx  # success; free workspace, return C
 
 
-def csc_to_coo(n_rows, n_cols, indptr, indices, data):
+@njit(cache=True)
+def csc_spalloc_f(m, n, nzmax):
     """
-    Convert a CSC matrix to COO format.
+    Allocate a sparse matrix (triplet form or compressed-column form).
 
-    :param n_rows: Number of rows in the matrix.
-    :param n_cols: Number of columns in the matrix.
-    :param indptr: CSC indptr array.
-    :param indices: CSC indices array.
-    :param data: CSC data array.
-    :return: (row_indices, col_indices, data_values) in COO format.
+    @param m: number of rows
+    @param n: number of columns
+    @param nzmax: maximum number of entries
+    @return: m, n, Aindptr, Aindices, Adata, Anzmax
     """
-    nnz = len(data)
-    row_indices = np.empty(nnz, dtype=np.int32)
-    col_indices = np.empty(nnz, dtype=np.int32)
-    
-    for col in range(n_cols):
-        start = indptr[col]
-        end = indptr[col + 1]
-        col_indices[start:end] = col  # All entries in this range belong to the current column
-        row_indices[start:end] = indices[start:end]
+    Anzmax = max(nzmax, 1)
+    Aindptr = ialloc(n + 1)
+    Aindices = ialloc(Anzmax)
+    Adata = xalloc_comp(Anzmax)
+    return m, n, Aindptr, Aindices, Adata, Anzmax
 
-    return row_indices, col_indices, data
+
+@njit(cache=True)
+def xalloc_comp(n):
+    return np.zeros(n, dtype=np.complex128)
+
+
+@njit(cache=True)
+def csc_scatter_f_comp(Ap, Ai, Ax, j, beta, w, x, mark, Ci, nz):
+    """
+    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)
+    :param Ap:
+    :param Ai:
+    :param Ax:
+    :param j: the column of A to use
+    :param beta: scalar multiplied by A(:,j)
+    :param w: size m, node i is marked if w[i] = mark
+    :param x: size m, ignored if null
+    :param mark: mark value of w
+    :param Ci: pattern of x accumulated in C.i
+    :param nz: pattern of x placed in C starting at C.i[nz]
+    :return: new value of nz, -1 on error, x and w are modified
+    """
+
+    for p in range(Ap[j], Ap[j + 1]):
+        i = Ai[p]  # A(i,j) is nonzero
+        if w[i] < mark:
+            w[i] = mark  # i is new entry in column j
+            Ci[nz] = i  # add i to pattern of C(:,j)
+            nz += 1
+            x[i] = beta * Ax[p]  # x(i) = beta*A(i,j)
+        else:
+            x[i] += beta * Ax[p]  # i exists in C(:,j) already
+    return nz
 
 
 @njit()
