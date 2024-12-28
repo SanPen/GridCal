@@ -144,6 +144,259 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
     return idx_f, idx_t
 
 
+# @njit()
+def dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules) -> CxCSC:
+    """
+    Derivative of the controllable branch power flows w.r.t. voltage magnitude.
+    :param nbus: number of buses
+    :param F_cbr: Array of branch "from" bus indices
+    :param T_cbr: Array of branch "to" bus indices
+    :param yff_cbr: Array of branch primitive admittances
+    :param yft_cbr: Array of branch primitive admittances
+    :param ytf_cbr: Array of branch primitive admittances
+    :param ytt_cbr: Array of branch primitive admittances
+    :param V: Array of complex voltages
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_modules: Array of branch tap modules
+    :return: dSbr_dVm
+    """
+
+    max_nnz = len(yff_cbr) * 4
+    mat = CxCSC(nbus, nbus, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nbr = len(yff_cbr)
+    tau = np.angle(tap)
+
+    nnz = 0
+    for k in range(nbr):  # for each branch ...
+        f = F_cbr[k]
+        t = T_cbr[k]
+        Vf = V[f]
+        Vt = V[t]
+
+        Vm_f = np.abs(Vf)
+        Vm_t = np.abs(Vt)
+
+        # dSf/dVmf
+        dsf_dvmf = (2 * Vm_f * np.conj(yff_cbr[k]) / (tap_modules[k] * tap_modules[k]) 
+                   + Vf / Vm_f * np.conj(Vt) * np.conj(yft_cbr[k]) * np.exp(-1j * tau[k]) / tap_modules[k])
+
+        # dSf/dVmt
+        dsf_dvmt = Vf * np.conj(Vt) / Vm_t * np.conj(yft_cbr[k]) * np.exp(-1j * tau[k]) / tap_modules[k]
+
+        # dSt/dVmf
+        dst_dvmf = Vt * np.conj(Vf) / Vm_f * np.conj(ytf_cbr[k]) * np.exp(1j * tau[k]) / tap_modules[k]
+
+        # dSt/dVmt
+        dst_dvmt = (2 * Vm_t * np.conj(ytt_cbr[k]) 
+                    + Vt / Vm_t * np.conj(Vf) * np.conj(ytf_cbr[k]) * np.exp(1j * tau[k]) / tap_modules[k])
+
+        # add to the triplets
+        Tx[nnz] = dsf_dvmf
+        Ti[nnz] = f
+        Tj[nnz] = f
+        nnz += 1
+
+        Tx[nnz] = dsf_dvmt
+        Ti[nnz] = f
+        Tj[nnz] = t
+        nnz += 1
+
+        Tx[nnz] = dst_dvmf
+        Ti[nnz] = t
+        Tj[nnz] = f
+        nnz += 1
+
+        Tx[nnz] = dst_dvmt
+        Ti[nnz] = t
+        Tj[nnz] = t
+        nnz += 1
+
+    # handle duplicate index pairs to add their values
+    Ti, Tj, Tx = combine_duplicates_numba(Ti, Tj, Tx, nnz)
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+# @njit()
+def dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules) -> CxCSC:
+    """
+    Derivative of the controllable branch power flows w.r.t. voltage angle.
+    :param nbus: number of buses
+    :param F_cbr: Array of branch "from" bus indices
+    :param T_cbr: Array of branch "to" bus indices
+    :param yff_cbr: Array of branch primitive admittances
+    :param yft_cbr: Array of branch primitive admittances
+    :param ytf_cbr: Array of branch primitive admittances
+    :param ytt_cbr: Array of branch primitive admittances
+    :param V: Array of complex voltages
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_modules: Array of branch tap modules
+    :return: dSbr_dVa
+    """
+
+    max_nnz = len(yff_cbr) * 4
+    mat = CxCSC(nbus, nbus, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nbr = len(yff_cbr)
+    tau = np.angle(tap)
+
+    nnz = 0
+    for k in range(nbr):  # for each branch ...
+        f = F_cbr[k]
+        t = T_cbr[k]
+        Vf = V[f]
+        Vt = V[t]
+
+        Vm_f = np.abs(Vf)
+        Vm_t = np.abs(Vt)
+        th_f = np.angle(Vf)
+        th_t = np.angle(Vt)
+
+        # dSf/dVaf
+        dsf_dvaf = 1j * Vf * np.conj(Vt) * np.conj(yft_cbr[k]) * np.exp(-1j * tau[k]) / tap_modules[k]
+
+        # dSf/dVat
+        dsf_dvat = -1j * Vf * np.conj(Vt) * np.conj(yft_cbr[k]) * np.exp(-1j * tau[k]) / tap_modules[k]
+
+        # dSt/dVaf
+        dst_dvaf = -1j * Vt * np.conj(Vt) * np.conj(ytf_cbr[k]) * np.exp(1j * tau[k]) / tap_modules[k]
+
+        # dSt/dVat
+        dst_dvat = 1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[k]) * np.exp(1j * tau[k]) / tap_modules[k]
+
+        # add to the triplets
+        Tx[nnz] = dsf_dvaf
+        Ti[nnz] = f
+        Tj[nnz] = f
+        nnz += 1
+
+        Tx[nnz] = dsf_dvat
+        Ti[nnz] = f
+        Tj[nnz] = t
+        nnz += 1
+
+        Tx[nnz] = dst_dvaf
+        Ti[nnz] = t
+        Tj[nnz] = f
+        nnz += 1
+
+        Tx[nnz] = dst_dvat
+        Ti[nnz] = t
+        Tj[nnz] = t
+        nnz += 1
+
+    # handle duplicate index pairs to add their values
+    Ti, Tj, Tx = combine_duplicates_numba(Ti, Tj, Tx, nnz)
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+# @njit()
+def combine_duplicates_numba(Ti, Tj, Tx, nnz):
+    """
+    Handle duplicates in COO-format sparse matrix entries by summing values.
+    This is a simplified version compatible with Numba.
+
+    :param Ti: Array of row indices (int32).
+    :param Tj: Array of column indices (int32).
+    :param Tx: Array of data values (float64).
+    :param nnz: Number of nonzero entries.
+    :return: Unique Ti, Tj, Tx arrays.
+    """
+    # Create a dictionary-like structure using arrays to track unique indices
+    max_size = nnz  # Maximum possible unique indices is nnz
+    unique_Ti = np.empty(max_size, dtype=np.int32)
+    unique_Tj = np.empty(max_size, dtype=np.int32)
+    unique_Tx = np.zeros(max_size, dtype=np.complex128)
+
+    count = 0
+    for k in range(nnz):
+        found = False
+        for i in range(count):
+            if Ti[k] == unique_Ti[i] and Tj[k] == unique_Tj[i]:
+                # If duplicate is found, sum the values
+                unique_Tx[i] += Tx[k]
+                found = True
+                break
+        if not found:
+            # Add new unique index
+            unique_Ti[count] = Ti[k]
+            unique_Tj[count] = Tj[k]
+            unique_Tx[count] = Tx[k]
+            count += 1
+
+    # Truncate arrays to the actual number of unique elements
+    return unique_Ti[:count], unique_Tj[:count], unique_Tx[:count]
+
+
+def add_CxCSC(mat1, mat2):
+    """
+    Add two CxCSC matrices.
+
+    :param mat1: First CxCSC matrix.
+    :param mat2: Second CxCSC matrix.
+    :return: The sum of mat1 and mat2 as a CxCSC matrix.
+    """
+    # Ensure matrices have the same dimensions
+    if mat1.n_rows != mat2.n_rows or mat1.n_cols != mat2.n_cols:
+        raise ValueError("Matrices must have the same dimensions for addition.")
+
+    # Extract the CSC components
+    Ti1, Tj1, Tx1 = csc_to_coo(mat1.n_rows, mat1.n_cols, mat1.indptr, mat1.indices, mat1.data)
+    Ti2, Tj2, Tx2 = csc_to_coo(mat2.n_rows, mat2.n_cols, mat2.indptr, mat2.indices, mat2.data)
+
+    # Concatenate the COO data
+    Ti = np.concatenate([Ti1, Ti2])
+    Tj = np.concatenate([Tj1, Tj2])
+    Tx = np.concatenate([Tx1, Tx2])
+
+    # Handle duplicates by summing values
+    Ti, Tj, Tx = combine_duplicates_numba(Ti, Tj, Tx, len(Ti))
+
+    # Create a new CxCSC matrix and fill it from the combined COO data
+    result = CxCSC(mat1.n_rows, mat1.n_cols, len(Tx), False)
+    result.fill_from_coo(Ti, Tj, Tx, len(Tx))
+
+    return result
+
+
+def csc_to_coo(n_rows, n_cols, indptr, indices, data):
+    """
+    Convert a CSC matrix to COO format.
+
+    :param n_rows: Number of rows in the matrix.
+    :param n_cols: Number of columns in the matrix.
+    :param indptr: CSC indptr array.
+    :param indices: CSC indices array.
+    :param data: CSC data array.
+    :return: (row_indices, col_indices, data_values) in COO format.
+    """
+    nnz = len(data)
+    row_indices = np.empty(nnz, dtype=np.int32)
+    col_indices = np.empty(nnz, dtype=np.int32)
+    
+    for col in range(n_cols):
+        start = indptr[col]
+        end = indptr[col + 1]
+        col_indices[start:end] = col  # All entries in this range belong to the current column
+        row_indices[start:end] = indices[start:end]
+
+    return row_indices, col_indices, data
+
+
 @njit()
 def dSf_dV_numba(Yf_nrows, Yf_ncols, Yf_indices, Yf_indptr, Yf_data, V, F, T) -> Tuple[CxCSC, CxCSC]:
     """

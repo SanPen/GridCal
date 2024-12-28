@@ -264,6 +264,8 @@ def test_voltage_control_with_ltc() -> None:
 
         vm = np.abs(solution.V)
 
+        print('LTC test case iterations: ', solution.iterations)
+
         assert solution.converged
 
         # check that the bus voltage module is the transformer voltage set point
@@ -452,7 +454,6 @@ def test_power_flow_12bus_acdc() -> None:
 
     problem, solution = solve_generalized(grid=grid, options=options)
 
-
     assert np.allclose(expected_v, solution.V, atol=1e-6)
 
     assert grid.vsc_devices[0].control1_val == solution.Pf_vsc[0]
@@ -472,3 +473,18 @@ def test_power_flow_12bus_acdc() -> None:
     assert grid.hvdc_lines[0].Pset == solution.Sf_hvdc[0].real
 
     assert solution.converged
+
+
+if __name__ == "__main__":
+    # test_ieee_grids()
+    # test_zip()
+    # test_controllable_shunt()
+    # test_voltage_local_control_with_generation()
+    # test_voltage_remote_control_with_generation()
+    test_voltage_control_with_ltc()
+    # test_qf_control_with_ltc()
+    # test_qt_control_with_ltc()
+    # test_power_flow_control_with_pst_pf()
+    # test_power_flow_control_with_pst_pt()
+    # test_fubm()
+    # test_power_flow_12bus_acdc()
