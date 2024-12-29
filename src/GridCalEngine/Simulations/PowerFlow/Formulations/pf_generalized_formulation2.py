@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 from numba import njit
-from scipy.sparse import diags
+from scipy.sparse import diags, csc_matrix
 from scipy.sparse import lil_matrix
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -16,7 +16,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff, \
-    scipy_to_cxmat
+    scipy_to_cxmat 
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -200,19 +200,80 @@ def adv_jacobian(nbus: int,
 
     # active transformers contribution
     # being tap = m exp(j*tau) and tap_modules = m
-    dScbr_dVm = deriv.dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
-    dScbr_dVa = deriv.dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
+    dScbr_dVm = deriv.dSbr_dVm_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
+    dScbr_dVa = deriv.dSbr_dVa_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
 
-    dS_dVm = deriv.csc_add_wrapper(dSy_dVm, dScbr_dVm)
-    dS_dVa = deriv.csc_add_wrapper(dSy_dVa, dScbr_dVa)
-    # dS_dVm = deriv.add_CxCSC(dSy_dVm, dScbr_dVm)
-    # dS_dVa = deriv.add_CxCSC(dSy_dVa, dScbr_dVa)
+    # -------------
+    # # try addition with coo to check
+    # dSy_dVm_coo = CSC((dSy_dVm.real.data, dSy_dVm.indices, dSy_dVm.indptr), shape=(nbus, nbus))
+    # dSy_dVa_coo = dSy_dVa.to_coo()
+    # dScbr_dVm_coo = dScbr_dVm.to_coo()
+    # dScbr_dVa_coo = dScbr_dVa.to_coo()
 
-    dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
-    dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
+    # dS_dVm = dSy_dVm_coo + dScbr_dVm_coo
+    # dS_dVa = dSy_dVa_coo + dScbr_dVa_coo  # check if implemented for complex
 
-    dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
-    dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
+    # -------------
+
+    # Sum not working well!! Try adding real + real and imag + imag
+    # dS_dVm = deriv.csc_add_wrapper(dSy_dVm, dScbr_dVm)
+    # dS_dVa = deriv.csc_add_wrapper(dSy_dVa, dScbr_dVa)
+
+    # convert to regular csc_matrix to handle the sum
+    dSy_dVm_r = csc_matrix((dSy_dVm.real.data, dSy_dVm.indices, dSy_dVm.indptr), shape=(dSy_dVm.n_rows, dSy_dVm.n_cols))
+    dSy_dVa_r = csc_matrix((dSy_dVa.real.data, dSy_dVa.indices, dSy_dVa.indptr), shape=(dSy_dVa.n_rows, dSy_dVa.n_cols))
+    dScbr_dVm_r = csc_matrix((dScbr_dVm.real.data, dScbr_dVm.indices, dScbr_dVm.indptr), shape=(dScbr_dVm.n_rows, dScbr_dVm.n_cols))
+    dScbr_dVa_r = csc_matrix((dScbr_dVa.real.data, dScbr_dVa.indices, dScbr_dVa.indptr), shape=(dScbr_dVa.n_rows, dScbr_dVa.n_cols))
+
+    dSy_dVm_i = csc_matrix((dSy_dVm.imag.data, dSy_dVm.indices, dSy_dVm.indptr), shape=(dSy_dVm.n_rows, dSy_dVm.n_cols))
+    dSy_dVa_i = csc_matrix((dSy_dVa.imag.data, dSy_dVa.indices, dSy_dVa.indptr), shape=(dSy_dVa.n_rows, dSy_dVa.n_cols))
+    dScbr_dVm_i = csc_matrix((dScbr_dVm.imag.data, dScbr_dVm.indices, dScbr_dVm.indptr), shape=(dScbr_dVm.n_rows, dScbr_dVm.n_cols))
+    dScbr_dVa_i = csc_matrix((dScbr_dVa.imag.data, dScbr_dVa.indices, dScbr_dVa.indptr), shape=(dScbr_dVa.n_rows, dScbr_dVa.n_cols))
+
+    # dSy_dVm_r = dSy_dVm.real
+    # dSy_dVa_r = dSy_dVa.real
+    # dScbr_dVm_r = dScbr_dVm.real
+    # dScbr_dVa_r = dScbr_dVa.real
+
+    # dSy_dVm_i = dSy_dVm.imag
+    # dSy_dVa_i = dSy_dVa.imag
+    # dScbr_dVm_i = dScbr_dVm.imag
+    # dScbr_dVa_i = dScbr_dVa.imag
+
+    # dS_dVm_r = csc_add_ff2_wrapper(dSy_dVm_r, dScbr_dVm_r)
+    # dS_dVa_r = csc_add_ff2_wrapper(dSy_dVa_r, dScbr_dVa_r)
+    # dS_dVm_i = csc_add_ff2_wrapper(dSy_dVm_i, dScbr_dVm_i)
+    # dS_dVa_i = csc_add_ff2_wrapper(dSy_dVa_i, dScbr_dVa_i)
+
+    dS_dVm_r0 = dSy_dVm_r + dScbr_dVm_r
+    dS_dVa_r0 = dSy_dVa_r + dScbr_dVa_r
+    dS_dVm_i0 = dSy_dVm_i + dScbr_dVm_i
+    dS_dVa_i0 = dSy_dVa_i + dScbr_dVa_i
+
+    dS_dVm_r = CSC(n_rows=dS_dVm_r0.shape[0], n_cols=dS_dVm_r0.shape[1], nnz=len(dS_dVm_r0.data), force_zeros=False)
+    dS_dVm_r.set(dS_dVm_r0.indices, dS_dVm_r0.indptr, dS_dVm_r0.data)
+
+    dS_dVa_r = CSC(n_rows=dS_dVa_r0.shape[0], n_cols=dS_dVa_r0.shape[1], nnz=len(dS_dVa_r0.data), force_zeros=False)
+    dS_dVa_r.set(dS_dVa_r0.indices, dS_dVa_r0.indptr, dS_dVa_r0.data)
+
+    dS_dVm_i = CSC(n_rows=dS_dVm_i0.shape[0], n_cols=dS_dVm_i0.shape[1], nnz=len(dS_dVm_i0.data), force_zeros=False)
+    dS_dVm_i.set(dS_dVm_i0.indices, dS_dVm_i0.indptr, dS_dVm_i0.data)
+
+    dS_dVa_i = CSC(n_rows=dS_dVa_i0.shape[0], n_cols=dS_dVa_i0.shape[1], nnz=len(dS_dVa_i0.data), force_zeros=False)
+    dS_dVa_i.set(dS_dVa_i0.indices, dS_dVa_i0.indptr, dS_dVa_i0.data)
+
+    # dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
+    # dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
+
+    # dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
+    # dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
+
+    dP_dVm__ = sp_slice(dS_dVm_r, i_k_p, i_u_vm)
+    dQ_dVm__ = sp_slice(dS_dVm_i, i_k_q, i_u_vm)
+
+    dP_dVa__ = sp_slice(dS_dVa_r, i_k_p, i_u_va)
+    dQ_dVa__ = sp_slice(dS_dVa_i, i_k_q, i_u_va)
+
 
     # -------------------
 
@@ -2523,7 +2584,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:
@@ -2531,7 +2592,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if autodiff:
             J = calc_autodiff_jacobian(func=self.compute_f,
                                        x=self.var2x(),
-                                       h=1e-6)
+                                       h=1e-8)
 
             if self.options.verbose > 1:
                 print("(pf_generalized_formulation.py) J: ")
