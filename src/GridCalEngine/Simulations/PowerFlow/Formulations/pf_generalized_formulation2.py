@@ -212,12 +212,7 @@ def adv_jacobian(nbus: int,
     dScbr_dVm = deriv.dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
     dScbr_dVa = deriv.dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
 
-    # VSCs contribution
-    # dSbus_dPvsc = 
-
-    # HVDCs contribution
-
-    # additions
+    #TODO: this doesn't look like a good usage of this: why is this a member function?
     dS_dVm = CxCSC.csc_matrix_matrix_addition(dSy_dVm, dScbr_dVm)
     dS_dVa = CxCSC.csc_matrix_matrix_addition(dSy_dVa, dScbr_dVa)
 
