@@ -187,86 +187,77 @@ class CSC:
                     A.data[p] += val
         return A
 
-    def __matmul__(self, B: "CSC" | np.ndarray) -> "CSC" | np.ndarray:
+    def mul(self, B: "CSC") -> "CSC":
         """
         @ operator
         :param B: CSC matrix or ndarray
         :return: CSC matrix or ndarray
         """
-        if isinstance(B, CSC):
-            # return csc_multiply_ff(self, B)
-            Cm, Cn, Cp, Ci, Cx, Cnz = csc_multiply_ff2(self.n_rows, self.n_cols, self.indptr, self.indices, self.data,
-                                                       B.n_rows, B.n_cols, B.indptr, B.indices, B.data)
-            return CSC(Cm, Cn, Cnz, False).set(Ci, Cp, Cx)
-        elif isinstance(B, np.ndarray):
-            return csc_matvec_ff(self, B)
-        else:
-            raise TypeError
+        return csc_multiply_ff(self, B)
 
-    def __add__(self, B: "CSC" | float) -> "CSC" | np.ndarray:
+    def sum(self, B: "CSC") -> "CSC" | np.ndarray:
         """
         @ operator
         :param B: CSC matrix or ndarray
         :return: CSC matrix or ndarray
         """
-        if isinstance(B, CSC):
 
-            print(f"Adding CSC matrices: A.shape={self.shape}, B.shape={B.shape}")
-            print(f"CSC Matrix Data Types: A.data={self.data.dtype}, B.data={B.data.dtype}")
+        m = self.n_rows
+        n = B.n_cols
 
-            m = self.n_rows
-            n = B.n_cols
+        w = np.zeros(m, dtype=np.int32)
 
-            w = np.zeros(m, dtype=np.int32)
+        x = np.zeros(n, dtype=np.float64)  # get workspace
 
-            x = np.zeros(n, dtype=np.float64)  # get workspace
+        C = CSC(m, n, self.nnz + B.nnz, False)  # allocate result
 
-            C = CSC(m, n, self.nnz + B.nnz, False)  # allocate result
+        nz = 0
 
-            nz = 0
+        for j in range(n):
+            C.indptr[j] = nz  # column j of C starts here
 
-            for j in range(n):
-                C.indptr[j] = nz  # column j of C starts here
+            # nz = csc_scatter_f(self.indptr, self.indices, self.data, j, 1.0, w, x, j + 1, C.indices, nz)  # alpha*A(:,j)
 
-                # nz = csc_scatter_f(self.indptr, self.indices, self.data, j, 1.0, w, x, j + 1, C.indices, nz)  # alpha*A(:,j)
+            # nz = csc_scatter_f(B.indptr, B.indices, B.data, j, 1.0, w, x, j + 1, C.indices, nz)  # beta*B(:,j)
 
-                # nz = csc_scatter_f(B.indptr, B.indices, B.data, j, 1.0, w, x, j + 1, C.indices, nz)  # beta*B(:,j)
+            mark = j + 1
 
-                mark = j + 1
+            for p in range(self.indptr[j], self.indptr[j + 1]):
+                i = self.indices[p]  # A(i,j) is nonzero
+                if w[i] < mark:
+                    w[i] = mark  # i is new entry in column j
+                    C.indices[nz] = i  # add i to pattern of C(:,j)
+                    nz = nz + 1
+                    x[i] = self.data[p]  # x(i) = beta*A(i,j)
+                else:
+                    x[i] += self.data[p]  # i exists in C(:,j) already
 
-                for p in range(self.indptr[j], self.indptr[j + 1]):
-                    i = self.indices[p]  # A(i,j) is nonzero
-                    if w[i] < mark:
-                        w[i] = mark  # i is new entry in column j
-                        C.indices[nz] = i  # add i to pattern of C(:,j)
-                        nz = nz + 1
-                        x[i] = self.data[p]  # x(i) = beta*A(i,j)
-                    else:
-                        x[i] += self.data[p]  # i exists in C(:,j) already
+            for p in range(B.indptr[j], B.indptr[j + 1]):
+                i = B.indices[p]  # A(i,j) is nonzero
+                if w[i] < mark:
+                    w[i] = mark  # i is new entry in column j
+                    C.indices[nz] = i  # add i to pattern of C(:,j)
+                    nz = nz + 1
+                    x[i] = B.data[p]  # x(i) = beta*A(i,j)
+                else:
+                    x[i] += B.data[p]  # i exists in C(:,j) already
 
-                for p in range(B.indptr[j], B.indptr[j + 1]):
-                    i = B.indices[p]  # A(i,j) is nonzero
-                    if w[i] < mark:
-                        w[i] = mark  # i is new entry in column j
-                        C.indices[nz] = i  # add i to pattern of C(:,j)
-                        nz = nz + 1
-                        x[i] = B.data[p]  # x(i) = beta*A(i,j)
-                    else:
-                        x[i] += B.data[p]  # i exists in C(:,j) already
+            for p in range(C.indptr[j], nz):
+                C.data[p] = x[C.indices[p]]
 
-                for p in range(C.indptr[j], nz):
-                    C.data[p] = x[C.indices[p]]
+        C.indptr[n] = nz  # finalize the last column of C
 
-            C.indptr[n] = nz  # finalize the last column of C
+        return C
 
-            return C
+    def add_scalar(self, val: float) -> "CSC":
+        res = self.copy()
+        res.data += val
+        return res
 
-        elif isinstance(B, float):
-            res = self.copy()
-            res.data += B
-            return res
-        else:
-            raise TypeError
+    def prod_scalar(self, val: float) -> "CSC":
+        res = self.copy()
+        res.data *= val
+        return res
 
 
 @jitclass([
@@ -558,13 +549,11 @@ class CxCSC:
         data = np.array(data, dtype=np.complex128)
         indices = np.array(indices, dtype=np.int32)
         indptr = np.array(indptr, dtype=np.int32)
-        shape = np.array([m, k], dtype=np.int32)
 
-        my_mat = CxCSC(n_rows = m, n_cols = k, nnz = len(data), force_zeros = False)
+        my_mat = CxCSC(n_rows=m, n_cols=k, nnz=len(data), force_zeros=False)
         my_mat.set(indices, indptr, data)
 
         return my_mat
-
 
 
 def mat_to_scipy(csc: CSC | CxCSC) -> csc_matrix:
@@ -1163,8 +1152,6 @@ def csc_multiply_ff(A: CSC, B: CSC) -> CSC:
     return C
 
 
-# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:])",
-#          parallel=False, nogil=True, fastmath=False, cache=True)  # fastmath=True breaks the code
 @nb.njit(cache=True)
 def csc_multiply_ff2(Am, An, Ap, Ai, Ax,
                      Bm, Bn, Bp, Bi, Bx):
