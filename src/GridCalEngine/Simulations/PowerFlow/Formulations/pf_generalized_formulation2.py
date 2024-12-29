@@ -226,11 +226,19 @@ def adv_jacobian(nbus: int,
     m_r = u_rel_cbr_m
     t_r = u_rel_cbr_tau
 
-    dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).real
-    dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).imag
+    # dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).real
+    # dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).imag
 
-    dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).real
-    dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).imag
+    # dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).real
+    # dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).imag
+
+    dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).imag
+
+    dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).imag
+
+
 
 
     # -------- ROW 3 (VSCs) ---------
@@ -2557,7 +2565,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:

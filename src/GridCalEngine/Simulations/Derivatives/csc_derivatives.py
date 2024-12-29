@@ -177,9 +177,9 @@ def dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, y
     tau = np.angle(tap)
 
     nnz = 0
-    for k, cidx in enumerate(cbr):  # for each controllable branch ...
-        f = F_cbr[k]
-        t = T_cbr[k]
+    for _, c in enumerate(cbr):  # for each controllable branch ...
+        f = F_cbr[c]
+        t = T_cbr[c]
         Vf = V[f]
         Vt = V[t]
 
@@ -187,24 +187,24 @@ def dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, y
         Vm_t = np.abs(Vt)
 
         # dSf/dVmf
-        dsf_dvmf = (2 * Vm_f * np.conj(yff_cbr[k]) / (tap_modules[cidx] * tap_modules[cidx]) 
-                   + Vf / Vm_f * np.conj(Vt) * np.conj(yft_cbr[k]) * np.exp(-1j * tau[cidx]) / tap_modules[cidx]
-                   -2 * Vm_f * np.conj(yff0[k]) 
-                   - Vf / Vm_f * np.conj(Vt) * np.conj(yft0[k]))
+        dsf_dvmf = (2 * Vm_f * np.conj(yff_cbr[c]) / (tap_modules[c] * tap_modules[c]) 
+                   + Vf / Vm_f * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+                   -2 * Vm_f * np.conj(yff0[c]) 
+                   - Vf / Vm_f * np.conj(Vt) * np.conj(yft0[c]))
 
         # dSf/dVmt
-        dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft_cbr[k]) * np.exp(-1j * tau[cidx]) / tap_modules[cidx]
-                    - Vf * np.conj(Vt) / Vm_t * np.conj(yft0[k]))
+        dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+                    - Vf * np.conj(Vt) / Vm_t * np.conj(yft0[c]))
 
         # dSt/dVmf
-        dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf_cbr[k]) * np.exp(1j * tau[cidx]) / tap_modules[cidx]
-                    - Vt * np.conj(Vf) / Vm_f * np.conj(ytf0[k]))
+        dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+                    - Vt * np.conj(Vf) / Vm_f * np.conj(ytf0[c]))
 
         # dSt/dVmt
-        dst_dvmt = (2 * Vm_t * np.conj(ytt_cbr[k]) 
-                    + Vt / Vm_t * np.conj(Vf) * np.conj(ytf_cbr[k]) * np.exp(1j * tau[cidx]) / tap_modules[cidx]
-                    - 2 * Vm_t * np.conj(ytt0[k])
-                    - Vt / Vm_t * np.conj(Vf) * np.conj(ytf0[k]))
+        dst_dvmt = (2 * Vm_t * np.conj(ytt_cbr[c]) 
+                    + Vt / Vm_t * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+                    - 2 * Vm_t * np.conj(ytt0[c])
+                    - Vt / Vm_t * np.conj(Vf) * np.conj(ytf0[c]))
 
         # add to the triplets
         Tx[nnz] = dsf_dvmf
@@ -265,27 +265,27 @@ def dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, y
     tau = np.angle(tap)
 
     nnz = 0
-    for k, cidx in enumerate(cbr):  # for each controllable branch ...
-        f = F_cbr[k]
-        t = T_cbr[k]
+    for _, c in enumerate(cbr):  # for each controllable branch ...
+        f = F_cbr[c]
+        t = T_cbr[c]
         Vf = V[f]
         Vt = V[t]
 
         # dSf/dVaf
-        dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft_cbr[k]) * np.exp(-1j * tau[cidx]) / tap_modules[cidx]
-                    -1j * Vf * np.conj(Vt) * np.conj(yft0[k]))
+        dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+                    -1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
 
         # dSf/dVat
-        dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft_cbr[k]) * np.exp(-1j * tau[cidx]) / tap_modules[cidx]
-                    +1j * Vf * np.conj(Vt) * np.conj(yft0[k]))
+        dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+                    +1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
 
         # dSt/dVaf
-        dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[k]) * np.exp(1j * tau[cidx]) / tap_modules[cidx]
-                    +1j * Vt * np.conj(Vf) * np.conj(ytf0[k]))
+        dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+                    +1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
 
         # dSt/dVat
-        dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[k]) * np.exp(1j * tau[cidx]) / tap_modules[cidx]
-                    -1j * Vt * np.conj(Vf) * np.conj(ytf0[k]))
+        dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+                    -1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
 
         # add to the triplets
         Tx[nnz] = dsf_dvaf
@@ -1165,9 +1165,9 @@ def dSbus_dtau_josep_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, y
 
     nnz = 0
     # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
-    for k_counter, k in enumerate(tau_indices):
-        f = F[k]
-        t = T[k]
+    for k_count, c in enumerate(tau_indices):
+        f = F[c]
+        t = T[c]
         f_idx = j_lookup[f]
         t_idx = j_lookup[t]
 
@@ -1179,21 +1179,21 @@ def dSbus_dtau_josep_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, y
         # from side
         if f_idx >= 0:
 
-            dsf_dtau = -1j * Vf * np.conj(Vt) * np.conj(yft_cbr[k_counter]) * np.exp(-1j * np.angle(tap[k])) / tap_module[k]
+            dsf_dtau = -1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * np.angle(tap[c])) / tap_module[c]
 
             Tx[nnz] = dsf_dtau
             Ti[nnz] = f_idx
-            Tj[nnz] = k_counter
+            Tj[nnz] = k_count
             nnz += 1
 
         # to side
         if t_idx >= 0:
             
-            dst_dtau = 1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[k_counter]) * np.exp(1j * np.angle(tap[k])) / tap_module[k]
+            dst_dtau = 1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * np.angle(tap[c])) / tap_module[c]
 
             Tx[nnz] = dst_dtau
             Ti[nnz] = t_idx
-            Tj[nnz] = k_counter
+            Tj[nnz] = k_count
             nnz += 1
 
     # convert to csc
@@ -1480,9 +1480,9 @@ def dSbus_dm_josep_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, yff_c
 
     nnz = 0
     # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
-    for k_counter, k in enumerate(m_indices):
-        f = F[k]
-        t = T[k]
+    for k_count, c in enumerate(m_indices):
+        f = F[c]
+        t = T[c]
         f_idx = j_lookup[f]
         t_idx = j_lookup[t]
 
@@ -1494,22 +1494,22 @@ def dSbus_dm_josep_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, yff_c
         # from side
         if f_idx >= 0:
 
-            dsf_dm = (-2 * Vm_f * Vm_f * np.conj(yff_cbr[k_counter]) / (tap_module[k] * tap_module[k] * tap_module[k])
-                      -1 * Vf * np.conj(Vt) * np.conj(yft_cbr[k_counter]) * np.exp(-1j * np.angle(tap[k])) / (tap_module[k] * tap_module[k]))
+            dsf_dm = (-2 * Vm_f * Vm_f * np.conj(yff_cbr[c]) / (tap_module[c] * tap_module[c] * tap_module[c])
+                      -1 * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * np.angle(tap[c])) / (tap_module[c] * tap_module[c]))
 
             Tx[nnz] = dsf_dm
             Ti[nnz] = f_idx
-            Tj[nnz] = k_counter
+            Tj[nnz] = k_count
             nnz += 1
 
         # to side
         if t_idx >= 0:
             
-            dst_dm = -1 * Vt * np.conj(Vf) * np.conj(ytf_cbr[k_counter]) * np.exp(1j * np.angle(tap[k])) / (tap_module[k] * tap_module[k])
+            dst_dm = -1 * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * np.angle(tap[c])) / (tap_module[c] * tap_module[c])
 
             Tx[nnz] = dst_dm
             Ti[nnz] = t_idx
-            Tj[nnz] = k_counter
+            Tj[nnz] = k_count
             nnz += 1
 
     # convert to csc
