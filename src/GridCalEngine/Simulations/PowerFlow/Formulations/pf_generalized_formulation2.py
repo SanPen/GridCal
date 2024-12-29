@@ -212,6 +212,12 @@ def adv_jacobian(nbus: int,
     dScbr_dVm = deriv.dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
     dScbr_dVa = deriv.dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
 
+    # VSCs contribution
+    # dSbus_dPvsc = 
+
+    # HVDCs contribution
+
+    # additions
     dS_dVm = CxCSC.csc_matrix_matrix_addition(dSy_dVm, dScbr_dVm)
     dS_dVa = CxCSC.csc_matrix_matrix_addition(dSy_dVa, dScbr_dVa)
 
@@ -2554,7 +2560,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def Jacobian(self, autodiff: bool = True) -> CSC:
+    def Jacobian(self, autodiff: bool = False) -> CSC:
         """
         Get the Jacobian
         :return:

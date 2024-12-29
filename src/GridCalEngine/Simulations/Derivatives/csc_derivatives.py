@@ -2544,7 +2544,7 @@ def create_identity_matrix(n):
     return mat
 
 
-# @njit()
+@njit()
 def dP_dPfvsc_csc(nbus, i_k_p, u_vsc_pf, F_vsc) -> CSC:
     """
     Compute dP_dPfvsc in CSC format.

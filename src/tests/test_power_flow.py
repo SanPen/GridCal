@@ -283,7 +283,9 @@ def test_voltage_control_with_ltc() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
     """
-    fname = os.path.join('data', 'grids', '5Bus_LTC_FACTS_Fig4.7.gridcal')
+
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    fname = os.path.join(SCRIPT_DIR, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7.gridcal')
 
     grid = gce.open_file(fname)
     bus_dict = grid.get_bus_index_dict()
@@ -501,3 +503,7 @@ def test_power_flow_12bus_acdc() -> None:
         assert np.allclose(expected_v, results.voltage, atol=1e-6)
 
         assert results.converged
+
+
+if __name__ == "__main__":
+    test_voltage_control_with_ltc()
