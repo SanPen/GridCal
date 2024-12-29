@@ -748,6 +748,84 @@ def dSf_dVm_csc(nbus, br_indices, bus_indices, yff, yft, V, F, T) -> CxCSC:
 
 
 @njit()
+def dSf_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap, tap_module) -> CxCSC:
+    """
+
+    :param nbus: number of buses
+    :param br_indices:
+    :param bus_indices:
+    :param yff:
+    :param yft:
+    :param ytf:
+    :param ytt:
+    :param yff0:
+    :param yft0:
+    :param ytf0:
+    :param ytt0:
+    :param V:
+    :param F:
+    :param T:
+    :param tap:
+    :param tap_module:
+    :return:
+    """
+    n_row = len(br_indices)
+    n_cols = len(bus_indices)
+    max_nnz = len(yff) * 2
+    mat = CxCSC(n_row, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(nbus, bus_indices)
+
+    tap_ang = np.angle(tap)
+
+    nnz = 0
+    # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
+    for k_counter, k in enumerate(br_indices):
+        f = F[k]
+        t = T[k]
+        f_idx = j_lookup[f]
+        t_idx = j_lookup[t]
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        Vf = V[f]
+        Vt = V[t]
+
+        if f_idx >= 0 or t_idx >= 0:
+
+            # dSf/dVmf
+            dsf_dvmf = (2 * Vm_f * np.conj(yff[k]) / (tap_module[k] * tap_module[k]) 
+                    + Vf / Vm_f * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
+                    -2 * Vm_f * np.conj(yff0[k]) 
+                    - Vf / Vm_f * np.conj(Vt) * np.conj(yft0[k]))
+
+            # dSf/dVmt
+            dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
+                        - Vf * np.conj(Vt) / Vm_t * np.conj(yft0[k]))
+
+            # from side
+            if f_idx >= 0:
+                Tx[nnz] = dsf_dvmf
+                Ti[nnz] = k_counter
+                Tj[nnz] = f_idx
+                nnz += 1
+
+            # to side
+            if t_idx >= 0:
+                Tx[nnz] = dsf_dvmt
+                Ti[nnz] = k_counter
+                Tj[nnz] = t_idx
+                nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
 def dPfdp_dVm_csc(nbus, br_indices, bus_indices, yff, yft, kdp, V, F, T) -> CSC:
     """
     dSf_dVm[br_indices, bus_indices]
@@ -876,6 +954,80 @@ def dSf_dVa_csc(nbus, br_indices, bus_indices, yff, yft, V, F, T) -> CxCSC:
 
 
 @njit()
+def dSf_dVa_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap, tap_module) -> CxCSC:
+    """
+
+    :param nbus: number of buses
+    :param br_indices:
+    :param bus_indices:
+    :param yff:
+    :param yft:
+    :param ytf:
+    :param ytt:
+    :param yff0:
+    :param yft0:
+    :param ytf0:
+    :param ytt0:
+    :param V:
+    :param F:
+    :param T:
+    :param tap:
+    :param tap_module:
+    :return:
+    """
+    n_row = len(br_indices)
+    n_cols = len(bus_indices)
+    max_nnz = len(yff) * 2
+    mat = CxCSC(n_row, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(nbus, bus_indices)
+
+    tap_ang = np.angle(tap)
+
+    nnz = 0
+    # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
+    for k_counter, k in enumerate(br_indices):
+        f = F[k]
+        t = T[k]
+        f_idx = j_lookup[f]
+        t_idx = j_lookup[t]
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        Vf = V[f]
+        Vt = V[t]
+
+        if f_idx >= 0 or t_idx >= 0:
+
+            dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
+                    -1j * Vf * np.conj(Vt) * np.conj(yft0[k]))
+
+            dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
+                    +1j * Vf * np.conj(Vt) * np.conj(yft0[k]))
+
+            # from side
+            if f_idx >= 0:
+                Tx[nnz] = dsf_dvaf
+                Ti[nnz] = k_counter
+                Tj[nnz] = f_idx
+                nnz += 1
+
+            # to side
+            if t_idx >= 0:
+                Tx[nnz] = dsf_dvat
+                Ti[nnz] = k_counter
+                Tj[nnz] = t_idx
+                nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
 def dSt_dVm_csc(nbus, br_indices, bus_indices, ytt, ytf, V, F, T) -> CxCSC:
     """
 
@@ -925,6 +1077,82 @@ def dSt_dVm_csc(nbus, br_indices, bus_indices, ytt, ytf, V, F, T) -> CxCSC:
             Ti[nnz] = k_counter
             Tj[nnz] = t_idx
             nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dSt_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap, tap_module) -> CxCSC:
+    """
+
+    :param nbus: number of buses
+    :param br_indices:
+    :param bus_indices:
+    :param yff:
+    :param yft:
+    :param ytf:
+    :param ytt:
+    :param yff0:
+    :param yft0:
+    :param ytf0:
+    :param ytt0:
+    :param V:
+    :param F:
+    :param T:
+    :param tap:
+    :param tap_module:
+    :return:
+    """
+    n_row = len(br_indices)
+    n_cols = len(bus_indices)
+    max_nnz = len(yff) * 2
+    mat = CxCSC(n_row, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(nbus, bus_indices)
+
+    tap_ang = np.angle(tap)
+
+    nnz = 0
+    # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
+    for k_counter, k in enumerate(br_indices):
+        f = F[k]
+        t = T[k]
+        f_idx = j_lookup[f]
+        t_idx = j_lookup[t]
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        Vf = V[f]
+        Vt = V[t]
+
+        if f_idx >= 0 or t_idx >= 0:
+
+            dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
+                        - Vt * np.conj(Vf) / Vm_f * np.conj(ytf0[k]))
+
+            dst_dvmt = (2 * Vm_t * np.conj(ytt[k]) 
+                        + Vt / Vm_t * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
+                        - 2 * Vm_t * np.conj(ytt0[k])
+                        - Vt / Vm_t * np.conj(Vf) * np.conj(ytf0[k]))
+
+            # from side
+            if f_idx >= 0:
+                Tx[nnz] = dst_dvmf
+                Ti[nnz] = k_counter
+                Tj[nnz] = f_idx
+                nnz += 1
+
+            # to side
+            if t_idx >= 0:
+                Tx[nnz] = dst_dvmt
+                Ti[nnz] = k_counter
+                Tj[nnz] = t_idx
+                nnz += 1
 
     # convert to csc
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
@@ -989,6 +1217,81 @@ def dSt_dVa_csc(nbus, br_indices, bus_indices, ytf, V, F, T) -> CxCSC:
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
     return mat
+
+
+@njit()
+def dSt_dVa_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap, tap_module) -> CxCSC:
+    """
+
+    :param nbus: number of buses
+    :param br_indices:
+    :param bus_indices:
+    :param yff:
+    :param yft:
+    :param ytf:
+    :param ytt:
+    :param yff0:
+    :param yft0:
+    :param ytf0:
+    :param ytt0:
+    :param V:
+    :param F:
+    :param T:
+    :param tap:
+    :param tap_module:
+    :return:
+    """
+    n_row = len(br_indices)
+    n_cols = len(bus_indices)
+    max_nnz = len(yff) * 2
+    mat = CxCSC(n_row, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(nbus, bus_indices)
+
+    tap_ang = np.angle(tap)
+
+    nnz = 0
+    # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
+    for k_counter, k in enumerate(br_indices):
+        f = F[k]
+        t = T[k]
+        f_idx = j_lookup[f]
+        t_idx = j_lookup[t]
+        Vm_f = np.abs(V[f])
+        Vm_t = np.abs(V[t])
+        Vf = V[f]
+        Vt = V[t]
+
+        if f_idx >= 0 or t_idx >= 0:
+
+            dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
+                    +1j * Vt * np.conj(Vf) * np.conj(ytf0[k]))
+
+            dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
+                    -1j * Vt * np.conj(Vf) * np.conj(ytf0[k]))
+
+            # from side
+            if f_idx >= 0:
+                Tx[nnz] = dst_dvaf
+                Ti[nnz] = k_counter
+                Tj[nnz] = f_idx
+                nnz += 1
+
+            # to side
+            if t_idx >= 0:
+                Tx[nnz] = dst_dvat
+                Ti[nnz] = k_counter
+                Tj[nnz] = t_idx
+                nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1253,6 +1556,66 @@ def dSf_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
 
 @njit()
+def dSf_dtau_josep_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, yff, yft, ytf, ytt,
+                tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
+    """
+    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
+    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+
+    :param nbr
+    :param sf_indices: array of sf indices
+    :param m_indices: array of branch indices with tau control
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param yff: Array of branch yff values
+    :param yft: Array of branch yft values
+    :param ytf: Array of branch ytf values
+    :param ytt: Array of branch ytt values
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_module: Array of tap modules
+    :param V: Array of complex voltages
+    :return: dSf_dsh
+    """
+    n_cols = len(tau_indices)
+    n_rows = len(sf_indices)
+    max_nnz = len(tau_indices)
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    i_lookup = make_lookup(nbr, sf_indices)
+    nnz = 0
+
+    tap_ang = np.angle(tap)
+
+    for k_idx, k in enumerate(tau_indices):
+        i_idx = i_lookup[k]
+
+        if i_idx > -1:
+            f = F[k]
+            t = T[k]
+
+            Vm_f = np.abs(V[f])
+            Vm_t = np.abs(V[t])
+            Vf = V[f]
+            Vt = V[t]
+
+            dsf_dtau = -1j * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
+
+            # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
+            Tx[nnz] = dsf_dtau
+            Ti[nnz] = i_idx
+            Tj[nnz] = k_idx
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
 def dSt_dtau_csc(nbr, st_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec, tap: CxVec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
@@ -1293,6 +1656,66 @@ def dSt_dtau_csc(nbr, st_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
             # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
             Tx[nnz] = V[t] * np.conj(ytf_dsh * V[f])
+            Ti[nnz] = i_idx
+            Tj[nnz] = k_idx
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dSt_dtau_josep_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, yff, yft, ytf, ytt,
+                tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
+    """
+    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
+    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+
+    :param nbr
+    :param sf_indices: array of sf indices
+    :param m_indices: array of branch indices with tau control
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param yff: Array of branch yff values
+    :param yft: Array of branch yft values
+    :param ytf: Array of branch ytf values
+    :param ytt: Array of branch ytt values
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_module: Array of tap modules
+    :param V: Array of complex voltages
+    :return: dSf_dsh
+    """
+    n_cols = len(tau_indices)
+    n_rows = len(sf_indices)
+    max_nnz = len(tau_indices)
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    i_lookup = make_lookup(nbr, sf_indices)
+    nnz = 0
+
+    tap_ang = np.angle(tap)
+
+    for k_idx, k in enumerate(tau_indices):
+        i_idx = i_lookup[k]
+
+        if i_idx > -1:
+            f = F[k]
+            t = T[k]
+
+            Vm_f = np.abs(V[f])
+            Vm_t = np.abs(V[t])
+            Vf = V[f]
+            Vt = V[t]
+
+            dst_dtau = 1j * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
+
+            # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
+            Tx[nnz] = dst_dtau
             Ti[nnz] = i_idx
             Tj[nnz] = k_idx
             nnz += 1
@@ -1575,6 +1998,67 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
 
 
 @njit()
+def dSf_dm_josep_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, yff, yft, ytf, ytt,
+                tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
+    """
+    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
+    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+
+    :param nbr
+    :param sf_indices: array of sf indices
+    :param m_indices: array of branch indices with tau control
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param yff: Array of branch yff values
+    :param yft: Array of branch yft values
+    :param ytf: Array of branch ytf values
+    :param ytt: Array of branch ytt values
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_module: Array of tap modules
+    :param V: Array of complex voltages
+    :return: dSf_dsh
+    """
+    n_cols = len(m_indices)
+    n_rows = len(sf_indices)
+    max_nnz = len(m_indices)
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    i_lookup = make_lookup(nbr, sf_indices)
+    nnz = 0
+
+    tap_ang = np.angle(tap)
+
+    for k_idx, k in enumerate(m_indices):
+        i_idx = i_lookup[k]
+
+        if i_idx > -1:
+            f = F[k]
+            t = T[k]
+
+            Vm_f = np.abs(V[f])
+            Vm_t = np.abs(V[t])
+            Vf = V[f]
+            Vt = V[t]
+
+            dsf_dm = (-2 * Vm_f * Vm_f * np.conj(yff[k]) / (tap_module[k] * tap_module[k] * tap_module[k])
+                  -1 * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / (tap_module[k] * tap_module[k]))
+
+            # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
+            Tx[nnz] = dsf_dm
+            Ti[nnz] = i_idx
+            Tj[nnz] = k_idx
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
 def dSt_dm_csc(nbr, st_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec,
                tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
@@ -1624,6 +2108,68 @@ def dSt_dm_csc(nbr, st_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kcon
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
     return mat
+
+
+@njit()
+def dSt_dm_josep_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, yff, yft, ytf, ytt,
+                tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
+    """
+    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
+    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+
+    :param nbr
+    :param sf_indices: array of sf indices
+    :param m_indices: array of branch indices with tau control
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param yff: Array of branch yff values
+    :param yft: Array of branch yft values
+    :param ytf: Array of branch ytf values
+    :param ytt: Array of branch ytt values
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_module: Array of tap modules
+    :param V: Array of complex voltages
+    :return: dSf_dsh
+    """
+    n_cols = len(m_indices)
+    n_rows = len(sf_indices)
+    max_nnz = len(m_indices)
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    i_lookup = make_lookup(nbr, sf_indices)
+    nnz = 0
+
+    tap_ang = np.angle(tap)
+
+    for k_idx, k in enumerate(m_indices):
+        i_idx = i_lookup[k]
+
+        if i_idx > -1:
+            f = F[k]
+            t = T[k]
+
+            Vm_f = np.abs(V[f])
+            Vm_t = np.abs(V[t])
+            Vf = V[f]
+            Vt = V[t]
+
+            dst_dm = -1 * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / (tap_module[k] * tap_module[k])
+
+            # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
+            Tx[nnz] = dst_dm
+            Ti[nnz] = i_idx
+            Tj[nnz] = k_idx
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
 
 
 @njit()
