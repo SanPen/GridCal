@@ -2342,6 +2342,8 @@ def dSt_dbeq_csc(sf_indices, beq_indices) -> CxCSC:
     # the whole thing is zero
 
     return mat
+
+
 @njit()
 def dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) -> CxCSC:
     """
@@ -2355,26 +2357,29 @@ def dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) 
     n_cols = len(i_u_vm)
     n_rows = nvsc
     max_nnz = nvsc
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
-    i_lookup = make_lookup(nvsc, T)
     nnz = 0
-    for k in range(nvsc):
-        i_idx = i_lookup[k]
 
-        if i_idx > -1:
-            t = T[k]
-            pq = Pt[k] * Pt[k] + Qt[k] * Qt[k]
+    j_lookup = make_lookup(len(i_u_vm), i_u_vm)
+    i_u_vm_set = set(i_u_vm)
+
+    for kidx, kvsc in enumerate(range(nvsc)):
+        t = T[kidx]
+
+        if t in i_u_vm_set:
+            Vm_t = np.abs(V[t])
+            pq = Pt[kidx] * Pt[kidx] + Qt[kidx] * Qt[kidx]
             pq_sqrt = np.sqrt(pq)
             pq_sqrt += 1e-20
 
-            dLossvsc_dVmt = alpha2[k] * pq_sqrt * Qt[k] / (V[t] * V[t]) + 2 * alpha3[k] * pq / (V[t] * V[t] * V[t])
+            dLossvsc_dVmt = alpha2[kidx] * pq_sqrt / (Vm_t * Vm_t) + 2 * alpha3[kidx] * pq / (Vm_t * Vm_t * Vm_t)
 
-            Tx[nnz] = dLossvsc_dVmt
-            Ti[nnz] = i_idx
-            Tj[nnz] = k
+            Tx[nnz] = - dLossvsc_dVmt
+            Ti[nnz] = kidx 
+            Tj[nnz] = j_lookup[t]
             nnz += 1
 
     # convert to csc
@@ -2383,8 +2388,8 @@ def dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) 
     return mat
 
 
-# @njit()
-def dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf) -> CSC:
+@njit()
+def dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf) -> CSC:
     """
     Compute dLossvsc_dPfvsc in CSC format with column indices aligned to u_vsc_pf.
 
@@ -2396,29 +2401,117 @@ def dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf) -> CSC:
     n_rows = nvsc  # Number of rows (equal to nvsc).
     max_nnz = len(u_vsc_pf)  # Maximum number of non-zero entries.
 
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
 
     nnz = 0  # Counter for non-zero entries
 
-    for k in range(len(u_vsc_pf)):
-        t = u_vsc_pf[k]
-
-        # Add -1 to the data for the sparse matrix
-        dLacdc_dPf = -1.0
+    for k, vsc in enumerate(u_vsc_pf):
 
         # Populate COO format arrays
-        Tx[nnz] = dLacdc_dPf
-        Ti[nnz] = k  # Row index corresponds to the current VSC
-        Tj[nnz] = t  # Column index aligns with u_vsc_pf
+        Tx[nnz] = -1.0
+        Ti[nnz] = vsc  # Row index corresponds to the current VSC
+        Tj[nnz] = k  # Column index aligns with u_vsc_pf
         nnz += 1
 
     # Convert to CSC
-    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
-    return mat.real
+    return mat
+
+
+def dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
+    """
+    Compute the sparse matrix for the derivative of loss with respect to Pt in CSC format.
+
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param u_vsc_pt: Column indices for the sparse matrix.
+    :param alpha2: Array of alpha2 coefficients.
+    :param alpha3: Array of alpha3 coefficients.
+    :param Vm: Voltage magnitudes at buses.
+    :param Pt: Active power flows.
+    :param Qt: Reactive power flows.
+    :param T_vsc: Indices for VSC buses.
+    :return: Sparse matrix in CSC format.
+    """
+
+    n_cols = len(u_vsc_pt)  # Number of columns (length of i_u_pt).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = len(u_vsc_pt)  # Maximum number of non-zero entries.
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(len(u_vsc_pt), u_vsc_pt)
+
+    nnz = 0  # Counter for non-zero entries
+    Vm = np.abs(V)
+
+    for k, vsc in enumerate(u_vsc_pt):
+        t = T_vsc[vsc]
+        Vm_t = Vm[t]
+        val = alpha2[vsc] / Vm_t * 1 / np.sqrt(Pt[vsc] * Pt[vsc] + Qt[vsc] * Qt[vsc] + 1e-20) * Pt[vsc] + 2 * alpha3[vsc] * Pt[vsc] / (Vm_t * Vm_t) - 1
+
+        # Populate COO format arrays
+        Tx[nnz] = val
+        Ti[nnz] = vsc  # Row index corresponds to the current VSC
+        Tj[nnz] = k  # Column index aligns with u_vsc_pf, should be equal to k
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+def dLossvsc_dQtvsc_josep_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
+    """
+    Compute the sparse matrix for the derivative of loss with respect to Qt in CSC format.
+
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param u_vsc_pt: Column indices for the sparse matrix.
+    :param alpha2: Array of alpha2 coefficients.
+    :param alpha3: Array of alpha3 coefficients.
+    :param Vm: Voltage magnitudes at buses.
+    :param Pt: Active power flows.
+    :param Qt: Reactive power flows.
+    :param T_vsc: Indices for VSC buses.
+    :return: Sparse matrix in CSC format.
+    """
+
+    n_cols = len(u_vsc_qt)  # Number of columns (length of i_u_qt).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = len(u_vsc_qt)  # Maximum number of non-zero entries.
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(len(u_vsc_qt), u_vsc_qt)
+
+    nnz = 0  # Counter for non-zero entries
+    Vm = np.abs(V)
+
+    for k, vsc in enumerate(u_vsc_qt):
+        t = T_vsc[vsc]
+        Vm_t = Vm[t]
+        val = alpha2[vsc] / Vm_t * 1 / np.sqrt(Pt[vsc] * Pt[vsc] + Qt[vsc] * Qt[vsc] + 1e-20) * Qt[vsc] + 2 * alpha3[vsc] * Qt[vsc] / (Vm_t * Vm_t)
+
+        # Populate COO format arrays
+        Tx[nnz] = val
+        Ti[nnz] = vsc  # Row index corresponds to the current VSC
+        Tj[nnz] = k  # Column index aligns with u_vsc_pf, should be equal to k
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
 
 
 @njit()
@@ -2544,45 +2637,81 @@ def create_identity_matrix(n):
 
 
 @njit()
-def dP_dPfvsc_csc(nbus, i_k_p, u_vsc_pf, F_vsc) -> CSC:
+def dP_dPfvsc_csc(i_k_p, u_vsc_pf, F_vsc) -> CSC:
     """
     Compute dP_dPfvsc in CSC format.
 
-    :param nbus: Total number of rows in the matrix (number of buses).
     :param i_k_p: Indices for the rows corresponding to the power injections.
     :param u_vsc_pf: Column indices for the sparse matrix.
     :param F_vsc: From bus indices for VSCs.
     :return: Sparse matrix in CSC format.
     """
     n_cols = len(u_vsc_pf)  # Number of columns (length of u_vsc_pf).
-    n_rows = i_k_p  # Number of rows (equal to nbus).
+    n_rows = len(i_k_p)  # Number of rows (equal to nbus).
     max_nnz = len(u_vsc_pf)  # Maximum number of non-zero entries.
 
     mat = CxCSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Tx = np.empty(max_nnz, dtype=np.float64)
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
 
+    i_k_p_set = set(i_k_p)
     nnz = 0  # Counter for non-zero entries
 
-    for k in range(len(i_k_p)):
-        row_idx = i_k_p[k]  # Row index corresponds to the power injection location
-        col_idx = u_vsc_pf[k]  # Column index aligns with the VSCs
-        from_bus = F_vsc[k]  # From bus for the VSC
-
-        # Compute the contribution for the sparse matrix
-        dP_dPf = 1.0 if row_idx == from_bus else 0.0
-
-        # Populate COO format arrays
-        Tx[nnz] = dP_dPf
-        Ti[nnz] = row_idx
-        Tj[nnz] = col_idx
-        nnz += 1
+    # my way below
+    for vsc_idx, vsc in enumerate(u_vsc_pf):
+        f_bus = F_vsc[vsc]
+        if f_bus in i_k_p_set:
+            Tx[nnz] = 1.0
+            Ti[nnz] = f_bus
+            Tj[nnz] = vsc_idx
+            nnz += 1
 
     # Convert to CSC
-    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
     return mat.real
+
+
+@njit()
+def dPQ_dPQft_csc(i_k_pq, u_dev_pq, FT_dev) -> CSC:
+    """
+    Calculate the derivatives of the power balance with respect to injections of branches
+    The method works for vscs and transformers without loss of generality
+
+    :param i_k_pq: Indices for the rows corresponding to the power injections.
+    :param u_dev_pq: Column indices for the sparse matrix.
+    :param FT_dev: From or bus indices.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(u_dev_pq)  # Number of columns (length of u_vsc_pf).
+    n_rows = len(i_k_pq)  # Number of rows (equal to nbus).
+    max_nnz = len(u_dev_pq)  # Maximum number of non-zero entries.
+
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    i_k_p_set = set(i_k_pq)
+    j_lookup = make_lookup(len(i_k_pq), i_k_pq)
+    vsc_lookup = make_lookup(len(u_dev_pq), u_dev_pq)
+    nnz = 0  # Counter for non-zero entries
+
+    # my way below
+    for dev_idx, dev in enumerate(u_dev_pq):
+        f_bus = FT_dev[dev]
+        if f_bus in i_k_p_set:
+            Tx[nnz] = 1.0
+            Ti[nnz] = j_lookup[f_bus]
+            Tj[nnz] = vsc_lookup[dev]
+            nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat.real
+
 
 @njit()
 def dInj_dVa_csc(nhvdc, i_u_va, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc) -> CSC:

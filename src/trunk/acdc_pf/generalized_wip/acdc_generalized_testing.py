@@ -415,33 +415,33 @@ def test_fubm() -> None:
     assert ok
 
 
-# def test_fubm_new() -> None:
-#     """
+def test_fubm_new() -> None:
+    """
 
-#     :return:
-#     """
-#     fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'fubm_caseHVDC_vt_josep.gridcal')
-#     grid = gce.open_file(fname)
+    :return:
+    """
+    fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'fubm_caseHVDC_vt_josep.gridcal')
+    grid = gce.open_file(fname)
 
-#     options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
-#                                    control_q=False,
-#                                    retry_with_other_methods=False,
-#                                    control_taps_modules=True,
-#                                    control_taps_phase=True,
-#                                    control_remote_voltage=True,
-#                                    verbose=1)
-#     problem, solution = solve_generalized(grid=grid, options=options)
+    options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=True,
+                                   control_taps_phase=True,
+                                   control_remote_voltage=True,
+                                   verbose=2)
+    problem, solution = solve_generalized(grid=grid, options=options)
 
-#     vm = np.abs(solution.V)
-#     expected_vm = np.abs(np.array([1.01+0j, 
-#                                    1.0120148113290914-0.00414941372825624j, 
-#                                    1.01116+0j, 
-#                                    1.0111600156849796+0j,
-#                                    1.0117031232472475-0.03475745116898685j,
-#                                    1.0194294344036188-0.03411199600606859j]))
+    vm = np.abs(solution.V)
+    expected_vm = np.abs(np.array([1.01+0j, 
+                                   1.0120148113290914-0.00414941372825624j, 
+                                   1.01116+0j, 
+                                   1.0111600156849796+0j,
+                                   1.0117031232472475-0.03475745116898685j,
+                                   1.0194294344036188-0.03411199600606859j]))
 
-#     ok = np.allclose(vm, expected_vm, rtol=1e-4)
-#     assert ok
+    ok = np.allclose(vm, expected_vm, rtol=1e-4)
+    assert ok
 
 
 def test_power_flow_12bus_acdc() -> None:
@@ -516,7 +516,7 @@ if __name__ == "__main__":
     # test_power_flow_control_with_pst_pf()
     # test_power_flow_control_with_pst_pt()
     # test_fubm()
-    # test_fubm_new()
+    test_fubm_new()
     # test_power_flow_12bus_acdc()
 
     pass
