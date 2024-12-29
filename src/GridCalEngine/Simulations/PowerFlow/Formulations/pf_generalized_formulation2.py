@@ -58,6 +58,8 @@ def adv_jacobian(nbus: int,
                  u_cbr_m: IntVec,
                  u_cbr_tau: IntVec,
                  cbr: IntVec,
+                 u_rel_cbr_m: IntVec,
+                 u_rel_cbr_tau: IntVec,
                  k_cbr_pf: IntVec,
                  k_cbr_pt: IntVec,
                  k_cbr_qf: IntVec,
@@ -140,6 +142,8 @@ def adv_jacobian(nbus: int,
     :param u_cbr_m:
     :param u_cbr_tau:
     :param cbr:
+    :param u_rel_cbr_m: relative m indices
+    :param u_rel_cbr_tau: relative tau indices
     :param k_cbr_pf:
     :param k_cbr_pt:
     :param k_cbr_qf:
@@ -296,9 +300,8 @@ def adv_jacobian(nbus: int,
     # m_r = np.array([np.where(cbr==i)[0][0] for i in u_cbr_m])
     # t_r = np.array([np.where(cbr==i)[0][0] for i in u_cbr_tau])
 
-    cbr_dic = {val: idx for idx, val in enumerate(cbr)}
-    m_r = np.array([cbr_dic[val] for val in u_cbr_m], dtype=np.int32)
-    t_r = np.array([cbr_dic[val] for val in u_cbr_tau], dtype=np.int32)
+    m_r = u_rel_cbr_m
+    t_r = u_rel_cbr_tau
 
     # m_r = [cbr.index(i) for i in u_cbr_m]
     # t_r = [cbr.index(i) for i in u_cbr_tau]
@@ -603,6 +606,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.u_cbr_m = np.zeros(0, dtype=int)
         self.u_cbr_tau = np.zeros(0, dtype=int)
         self.cbr = np.zeros(0, dtype=int)
+        self.u_rel_cbr_m = np.zeros(0, dtype=int)
+        self.u_rel_cbr_tau = np.zeros(0, dtype=int)
         self.k_cbr_pf = np.zeros(0, dtype=int)
         self.k_cbr_pt = np.zeros(0, dtype=int)
         self.k_cbr_qf = np.zeros(0, dtype=int)
@@ -613,6 +618,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cbr_qt_set = np.zeros(0, dtype=float)
         self._analyze_branch_controls()
         self.cbr = np.union1d(self.u_cbr_m, self.u_cbr_tau)
+        cbr_dic = {val: idx for idx, val in enumerate(self.cbr)}
+        self.u_rel_cbr_m = np.array([cbr_dic[val] for val in self.u_cbr_m], dtype=np.int32)
+        self.u_rel_cbr_t = np.array([cbr_dic[val] for val in self.u_cbr_tau], dtype=np.int32)
 
         # VSC Indices
         self.u_vsc_pf = np.zeros(0, dtype=int)
@@ -2661,6 +2669,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                  u_cbr_m=self.u_cbr_m,
                                  u_cbr_tau=self.u_cbr_tau,
                                  cbr=self.cbr,
+                                 u_rel_cbr_m=self.u_rel_cbr_m,
+                                 u_rel_cbr_tau=self.u_rel_cbr_tau,
                                  k_cbr_pf=self.k_cbr_pf,
                                  k_cbr_pt=self.k_cbr_pt,
                                  k_cbr_qf=self.k_cbr_qf,
