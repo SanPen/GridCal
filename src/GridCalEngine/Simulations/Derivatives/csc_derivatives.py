@@ -1802,7 +1802,7 @@ def derivatives_ma_csc_numba(nbus, nbr, iXxma, F, T, Ys, kconv, tap, tap_module,
 
 # original one
 @njit()
-def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec, Beq: Vec,
+def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec,
                  kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
@@ -1813,7 +1813,6 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
     :param Bc: Array of branch total susceptance values (sum of the two legs)
-    :param Beq: Array of regulation susceptance of the FUBM model
     :param kconv: Array of "k2" parameters
     :param tap: Array of branch complex taps (m * exp(1j * tau)
     :param tap_module: Array of tap modules
@@ -1840,7 +1839,7 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
         # from side
         if f_idx >= 0:
-            YttB = Ys[k] + 1j * (Bc[k] / 2 + Beq[k])
+            YttB = Ys[k] + 1j * (Bc[k] / 2)
             dyff_dm = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))
             dyft_dm = Ys[k] / (kconv[k] * tap_module[k] * np.conj(tap[k]))
             Tx[nnz] = V[f] * np.conj(dyff_dm * V[f] + dyft_dm * V[t])
