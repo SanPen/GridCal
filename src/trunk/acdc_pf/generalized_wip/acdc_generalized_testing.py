@@ -252,7 +252,7 @@ def test_voltage_control_with_ltc() -> None:
 
     for control_taps_modules in [True, False]:
         options = PowerFlowOptions(gce.SolverType.NR,
-                                   verbose=2,
+                                   verbose=1,
                                    control_q=False,
                                    retry_with_other_methods=False,
                                    control_taps_modules=control_taps_modules,
@@ -288,7 +288,7 @@ def test_qf_control_with_ltc() -> None:
     for control_taps_modules in [True, False]:
 
         options = PowerFlowOptions(gce.SolverType.NR,
-                                   verbose=0,
+                                   verbose=1,
                                    control_q=False,
                                    retry_with_other_methods=False,
                                    control_taps_modules=control_taps_modules)
@@ -481,8 +481,8 @@ if __name__ == "__main__":
     # test_controllable_shunt()
     # test_voltage_local_control_with_generation()
     # test_voltage_remote_control_with_generation()
-    test_voltage_control_with_ltc()
-    # test_qf_control_with_ltc()
+    # test_voltage_control_with_ltc()
+    test_qf_control_with_ltc()
     # test_qt_control_with_ltc()
     # test_power_flow_control_with_pst_pf()
     # test_power_flow_control_with_pst_pt()

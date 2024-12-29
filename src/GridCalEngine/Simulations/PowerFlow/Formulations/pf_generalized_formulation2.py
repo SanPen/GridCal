@@ -615,25 +615,25 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
 
         # Controllable branches ----------------------------------------------------------------------------------------
-        ys = 1.0 / (nc.passive_branch_data.R[self.cbr]
-                    + 1.0j * nc.passive_branch_data.X[self.cbr] + 1e-20)  # series admittance
-        bc2 = (nc.passive_branch_data.G[self.cbr] + 1j * nc.passive_branch_data.B[self.cbr]) / 2.0  # shunt admittance
-        vtap_f = nc.passive_branch_data.virtual_tap_f[self.cbr]
-        vtap_t = nc.passive_branch_data.virtual_tap_t[self.cbr]
+        ys = 1.0 / (nc.passive_branch_data.R
+                    + 1.0j * nc.passive_branch_data.X + 1e-20)  # series admittance
+        bc2 = (nc.passive_branch_data.G + 1j * nc.passive_branch_data.B) / 2.0  # shunt admittance
+        vtap_f = nc.passive_branch_data.virtual_tap_f
+        vtap_t = nc.passive_branch_data.virtual_tap_t
         self.yff_cbr = (ys + bc2) / (vtap_f * vtap_f)
         self.yft_cbr = -ys / (vtap_f * vtap_t)
         self.ytf_cbr = -ys / (vtap_t * vtap_f)
         self.ytt_cbr = (ys + bc2) / (vtap_t * vtap_t)
-        self.F_cbr = self.nc.passive_branch_data.F[self.cbr]
-        self.T_cbr = self.nc.passive_branch_data.T[self.cbr]
+        self.F_cbr = self.nc.passive_branch_data.F
+        self.T_cbr = self.nc.passive_branch_data.T
 
         # This is fully constant and hence we could precompute it
         m0 = self.nc.active_branch_data.tap_module.copy()
         tau0 = self.nc.active_branch_data.tap_angle.copy()
 
-        self.yff0 = self.yff_cbr / (m0[self.cbr] * m0[self.cbr])
-        self.yft0 = self.yft_cbr / (m0[self.cbr] * np.exp(-1.0j * tau0[self.cbr]))
-        self.ytf0 = self.ytf_cbr / (m0[self.cbr] * np.exp(1.0j * tau0[self.cbr]))
+        self.yff0 = self.yff_cbr / (m0 * m0)
+        self.yft0 = self.yft_cbr / (m0 * np.exp(-1.0j * tau0))
+        self.ytf0 = self.ytf_cbr / (m0 * np.exp(1.0j * tau0))
         self.ytt0 = self.ytt_cbr
 
 
@@ -2386,20 +2386,29 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2[self.u_cbr_m] = m
         tau2[self.u_cbr_tau] = tau
 
-        yff = (self.yff_cbr / (m2[self.cbr] * m2[self.cbr]))
-        yft = self.yft_cbr / (m2[self.cbr] * np.exp(-1.0j * tau2[self.cbr]))
-        ytf = self.ytf_cbr / (m2[self.cbr] * np.exp(1.0j * tau2[self.cbr]))
+        yff = (self.yff_cbr / (m2 * m2))
+        yft = self.yft_cbr / (m2 * np.exp(-1.0j * tau2))
+        ytf = self.ytf_cbr / (m2 * np.exp(1.0j * tau2))
         ytt = self.ytt_cbr
 
-        Vf_cbr = V[self.F_cbr]
-        Vt_cbr = V[self.T_cbr]
-        Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff - self.yff0) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft - self.yft0))
-        St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt - self.ytt0) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf - self.ytf0))
+        Vf_cbr = V[self.F_cbr[self.cbr]]
+        Vt_cbr = V[self.T_cbr[self.cbr]]
+        yff_ = yff[self.cbr]
+        yft_ = yft[self.cbr]
+        ytf_ = ytf[self.cbr]
+        ytt_ = ytt[self.cbr]
+        yff0_ = self.yff0[self.cbr]
+        yft0_ = self.yft0[self.cbr]
+        ytf0_ = self.ytf0[self.cbr]
+        ytt0_ = self.ytt0[self.cbr]
+
+        Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff_ - yff0_) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft_ - yft0_))
+        St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
 
         # difference between the actual power and the power calculated with the passive term (initial admittance)
         AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        AScalc_cbr[self.F_cbr] += Sf_cbr
-        AScalc_cbr[self.T_cbr] += St_cbr
+        AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
+        AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2548,7 +2557,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def Jacobian(self, autodiff: bool = False) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:
