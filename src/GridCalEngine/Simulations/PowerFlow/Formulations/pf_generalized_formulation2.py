@@ -193,8 +193,14 @@ def adv_jacobian(nbus: int,
     :param Ybus:
     :return:
     """
+
+    # g(x) = 0
+    # g = [Pbus, Qbus, loss vsc, loss hvdc, inj hvdc, Pf, Pt, Qf, Qt]
+    # x = [Va, Vm, Pfvsc, Ptvsc, Qtvsc, Pf_hvdc, Pt_hvdc, Qf_hvdc, Qt_hvdc, m, tau]
+
     tap = polar_to_rect(tap_modules, tap_angles)
 
+    # -------- ROW 1 + ROW 2 (Sbus) ---------
     # bus-bus derivatives (always needed)
     
     # passive admittance contribution
@@ -204,8 +210,8 @@ def adv_jacobian(nbus: int,
 
     # active transformers contribution
     # being tap = m exp(j*tau) and tap_modules = m
-    dScbr_dVm = deriv.dSbr_dVm_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
-    dScbr_dVa = deriv.dSbr_dVa_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
+    dScbr_dVm = deriv.dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
+    dScbr_dVa = deriv.dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
 
     dS_dVm = CxCSC.csc_matrix_matrix_addition(dSy_dVm, dScbr_dVm)
     dS_dVa = CxCSC.csc_matrix_matrix_addition(dSy_dVa, dScbr_dVa)
@@ -216,53 +222,61 @@ def adv_jacobian(nbus: int,
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
 
+    # Relative indices renaming. They are employed to grab only the necessary y primitives
+    m_r = u_rel_cbr_m
+    t_r = u_rel_cbr_tau
 
-    # -------------------
+    dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).imag
 
-    # dScbr_dm = deriv.dSbr_dm_csc(nbus, u_cbr_m, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
-    # dScbr_dtau = deriv.dSbr_dtau_csc(nbus, u_cbr_tau, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
+    dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).imag
 
-    # -------------------
+
+    # -------- ROW 3 (VSCs) ---------
     
-    dLossvsc_dVa_ = CxCSC(nvsc, len(i_u_va), 0, False)
-    dLosshvdc_dVa_ = CxCSC(nhvdc, len(i_u_va), 0, False)
-    dInj_dVa_ = deriv.dInj_dVa_csc(nhvdc, i_u_va, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc)
+    # -------- ROW 4 + ROW 5 (HVDCs) ---------
+
+    # -------- ROW 6 + ROW 7 + ROW 8 + ROW 9 (contr. branch powers) ---------
     dPf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, adm.yff, adm.yft, V, F, T).real
     dQf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_qf, i_u_va, adm.yff, adm.yft, V, F, T).imag
     dPt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, adm.ytf, V, F, T).real
     dQt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_qt, i_u_va, adm.ytf, V, F, T).imag
 
-    dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc, T_vsc)
-    dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc)
-    dInj_dVm_ = CxCSC(nhvdc, len(i_u_vm), 0, False)
     dPf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_pf, i_u_vm, adm.yff, adm.yft, V, F, T).real
     dQf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_qf, i_u_vm, adm.yff, adm.yft, V, F, T).imag
     dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, adm.ytt, adm.ytf, V, F, T).real
     dQt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, adm.ytt, adm.ytf, V, F, T).imag
 
-    # Relatie indieces to grab only the necessary y primitives
-    m_r = u_rel_cbr_m
-    t_r = u_rel_cbr_tau
-
-    dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).real
-    dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).imag
-    dLossvsc_dm_ = CxCSC(nvsc, len(u_cbr_m), 0, False)
-    dLosshvdc_dm_ = CxCSC(nhvdc, len(u_cbr_m), 0, False)
-    dInj_dm_ = CxCSC(nbus, len(u_cbr_m), 0, False)
     dPf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).real
     dQf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).imag
     dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).real
     dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).imag
 
-    dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).real
-    dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).imag
-    dLossvsc_dtau_ = CxCSC(nvsc, len(u_cbr_tau), 0, False)
-    dLosshvdc_dtau_ = CxCSC(nhvdc, len(u_cbr_tau), 0, False)
-    dInj_dtau_ = CxCSC(nbus, len(u_cbr_tau), 0, False)
     dPf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, k, tap, V).real
     dQf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, k, tap, V).imag
     dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, k, tap, V).real
     dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, k, tap, V).imag
+
+    # -----------
+
+
+    dLossvsc_dVa_ = CxCSC(nvsc, len(i_u_va), 0, False)
+    dLosshvdc_dVa_ = CxCSC(nhvdc, len(i_u_va), 0, False)
+    dInj_dVa_ = deriv.dInj_dVa_csc(nhvdc, i_u_va, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc)
+
+    dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc, T_vsc)
+    dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc)
+    dInj_dVm_ = CxCSC(nhvdc, len(i_u_vm), 0, False)
+
+    dLossvsc_dm_ = CxCSC(nvsc, len(u_cbr_m), 0, False)
+    dLosshvdc_dm_ = CxCSC(nhvdc, len(u_cbr_m), 0, False)
+    dInj_dm_ = CxCSC(nbus, len(u_cbr_m), 0, False)
+
+    dLossvsc_dtau_ = CxCSC(nvsc, len(u_cbr_tau), 0, False)
+    dLosshvdc_dtau_ = CxCSC(nhvdc, len(u_cbr_tau), 0, False)
+    dInj_dtau_ = CxCSC(nbus, len(u_cbr_tau), 0, False)
+
 
     # # dP_dPfvsc__ = sp_slice(scipy_to_mat(conn_vsc_F.transpose()), i_k_p, u_vsc_pf)
     # dP_dPfvsc__ = deriv.dP_dPfvsc_csc(nbus, i_k_p, u_vsc_pf, F_vsc)

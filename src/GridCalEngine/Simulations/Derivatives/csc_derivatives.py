@@ -146,7 +146,7 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
 
 
 @njit()
-def dSbr_dVm_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules) -> CxCSC:
+def dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules) -> CxCSC:
     """
     Derivative of the controllable branch power flows w.r.t. voltage magnitude.
     :param nbus: number of buses
@@ -233,8 +233,8 @@ def dSbr_dVm_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yf
     return mat
 
 
-# @njit()
-def dSbr_dVa_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules) -> CxCSC:
+@njit()
+def dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules) -> CxCSC:
     """
     Derivative of the controllable branch power flows w.r.t. voltage angle.
     :param nbus: number of buses
