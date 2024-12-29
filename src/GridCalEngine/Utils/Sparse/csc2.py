@@ -516,6 +516,55 @@ class CxCSC:
         else:
             raise TypeError
 
+    def csc_matrix_matrix_addition(self, b: CxCSC) -> CxCSC:
+        # Get the shape of the matrices
+        m, n1 = self.shape
+        n2, k = b.shape
+
+        # Initialize the arrays that define the result matrix
+        data = []
+        indices = []
+        indptr = [0]
+
+        # Loop over the columns of the matrices
+        for j in range(k):
+            # Initialize a dictionary to store the non-zero elements of the j-th column of the result matrix
+            col_dict = {}
+            # Loop over the non-zero elements of the j-th column of the first matrix
+            for ja in range(self.indptr[j], self.indptr[j + 1]):
+                # Get the row index and value of the non-zero element
+                ia = self.indices[ja]
+                va = self.data[ja]
+                # Add the non-zero element to the dictionary
+                col_dict[ia] = va
+            # Loop over the non-zero elements of the j-th column of the second matrix
+            for jb in range(b.indptr[j], b.indptr[j + 1]):
+                # Get the row index and value of the non-zero element
+                ib = b.indices[jb]
+                vb = b.data[jb]
+                # Add the non-zero element to the dictionary
+                if ib in col_dict:
+                    col_dict[ib] += vb
+                else:
+                    col_dict[ib] = vb
+            # Add the non-zero elements of the j-th column of the result matrix to the data and indices arrays
+            for i, val in col_dict.items():
+                data.append(val)
+                indices.append(i)
+            # Add the index of the next column to the indptr array of the result matrix
+            indptr.append(len(data))
+
+        # Create the CSC matrix from the data, indices, and indptr arrays of the result matrix
+        data = np.array(data, dtype=np.complex128)
+        indices = np.array(indices, dtype=np.int32)
+        indptr = np.array(indptr, dtype=np.int32)
+        shape = np.array([m, k], dtype=np.int32)
+
+        my_mat = CxCSC(n_rows = m, n_cols = k, nnz = len(data), force_zeros = False)
+        my_mat.set(indices, indptr, data)
+
+        return my_mat
+
 
 
 def mat_to_scipy(csc: CSC | CxCSC) -> csc_matrix:
