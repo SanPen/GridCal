@@ -1074,9 +1074,68 @@ def derivatives_tau_csc_numba(nbus, nbr, iPxsh,
 
     return dSbus_dsh, dSf_dsh, dSt_dsh
 
+# original one
+@njit()
+def dSbus_dtau_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec,
+                   kconv: Vec, tap: CxVec, V: CxVec) -> CxCSC:
+    """
+    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
+    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
+    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
+
+    :param nbus:
+    :param bus_indices:
+    :param tau_indices: array of indices {iPfsh or iPfdp}
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Ys: Array of branch series admittances
+    :param kconv: Array of "k2" parameters
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param V: Array of complex voltages
+    :return: dSbus_dsh
+    """
+    n_cols = len(tau_indices)
+    n_rows = len(bus_indices)
+    max_nnz = len(tau_indices) * 2
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    i_lookup = make_lookup(nbus, bus_indices)
+
+    nnz = 0
+    # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
+    for k_counter, k in enumerate(tau_indices):
+        f = F[k]
+        t = T[k]
+        f_idx = i_lookup[f]
+        t_idx = i_lookup[t]
+
+        # from side
+        if f_idx >= 0:
+            yft_dsh = -Ys[k] / (-1j * kconv[k] * np.conj(tap[k]))
+            Tx[nnz] = V[f] * np.conj(yft_dsh * V[t])
+            Ti[nnz] = f_idx
+            Tj[nnz] = k_counter
+            nnz += 1
+
+        # to side
+        if t_idx >= 0:
+            ytf_dsh = -Ys[k] / (1j * kconv[k] * tap[k])
+            Tx[nnz] = V[t] * np.conj(ytf_dsh * V[f])
+            Ti[nnz] = t_idx
+            Tj[nnz] = k_counter
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
 
 @njit()
-def dSbus_dtau_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, yff_cbr: CxVec, yft_cbr: CxVec,
+def dSbus_dtau_josep_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, yff_cbr: CxVec, yft_cbr: CxVec,
                  ytf_cbr: CxVec, ytt_cbr: CxVec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
@@ -1328,8 +1387,70 @@ def derivatives_ma_csc_numba(nbus, nbr, iXxma, F, T, Ys, kconv, tap, tap_module,
     return dSbus_dma, dSf_dma, dSt_dma
 
 
-# @njit()
-def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, yff_cbr: CxVec, yft_cbr: CxVec,
+# original one
+@njit()
+def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec, Beq: Vec,
+                 kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
+    """
+
+    :param nbus:
+    :param bus_indices:
+    :param m_indices:
+    :param F: Array of branch "from" bus indices
+    :param T: Array of branch "to" bus indices
+    :param Ys: Array of branch series admittances
+    :param Bc: Array of branch total susceptance values (sum of the two legs)
+    :param Beq: Array of regulation susceptance of the FUBM model
+    :param kconv: Array of "k2" parameters
+    :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_module: Array of tap modules
+    :param V: Array of complex voltages
+    :return:
+    """
+    n_cols = len(m_indices)
+    n_rows = len(bus_indices)
+    max_nnz = len(m_indices) * 2
+    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(nbus, bus_indices)
+
+    nnz = 0
+    # for j_counter, j in enumerate(bus_indices):  # para cada columna j ...
+    for k_counter, k in enumerate(m_indices):
+        f = F[k]
+        t = T[k]
+        f_idx = j_lookup[f]
+        t_idx = j_lookup[t]
+
+        # from side
+        if f_idx >= 0:
+            YttB = Ys[k] + 1j * (Bc[k] / 2 + Beq[k])
+            dyff_dm = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))
+            dyft_dm = Ys[k] / (kconv[k] * tap_module[k] * np.conj(tap[k]))
+            Tx[nnz] = V[f] * np.conj(dyff_dm * V[f] + dyft_dm * V[t])
+            Ti[nnz] = f_idx
+            Tj[nnz] = k_counter
+            nnz += 1
+
+        # to side
+        if t_idx >= 0:
+            dytf_dm = Ys[k] / (kconv[k] * tap_module[k] * tap[k])
+            Tx[nnz] = V[t] * np.conj(dytf_dm * V[f])
+            Ti[nnz] = t_idx
+            Tj[nnz] = k_counter
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dSbus_dm_josep_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, yff_cbr: CxVec, yft_cbr: CxVec,
                  ytf_cbr: CxVec, ytt_cbr: CxVec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
