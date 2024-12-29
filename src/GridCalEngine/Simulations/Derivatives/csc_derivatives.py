@@ -797,13 +797,10 @@ def dSf_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, y
 
             # dSf/dVmf
             dsf_dvmf = (2 * Vm_f * np.conj(yff[k]) / (tap_module[k] * tap_module[k]) 
-                    + Vf / Vm_f * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
-                    -2 * Vm_f * np.conj(yff0[k]) 
-                    - Vf / Vm_f * np.conj(Vt) * np.conj(yft0[k]))
+                    + Vf / Vm_f * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k])
 
             # dSf/dVmt
-            dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
-                        - Vf * np.conj(Vt) / Vm_t * np.conj(yft0[k]))
+            dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k])
 
             # from side
             if f_idx >= 0:
@@ -1001,11 +998,9 @@ def dSf_dVa_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, y
 
         if f_idx >= 0 or t_idx >= 0:
 
-            dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
-                    -1j * Vf * np.conj(Vt) * np.conj(yft0[k]))
+            dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k])
 
-            dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k]
-                    +1j * Vf * np.conj(Vt) * np.conj(yft0[k]))
+            dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft[k]) * np.exp(-1j * tap_ang[k]) / tap_module[k])
 
             # from side
             if f_idx >= 0:
@@ -1132,13 +1127,10 @@ def dSt_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, y
 
         if f_idx >= 0 or t_idx >= 0:
 
-            dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
-                        - Vt * np.conj(Vf) / Vm_f * np.conj(ytf0[k]))
+            dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k])
 
             dst_dvmt = (2 * Vm_t * np.conj(ytt[k]) 
-                        + Vt / Vm_t * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
-                        - 2 * Vm_t * np.conj(ytt0[k])
-                        - Vt / Vm_t * np.conj(Vf) * np.conj(ytf0[k]))
+                        + Vt / Vm_t * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k])
 
             # from side
             if f_idx >= 0:
@@ -1267,11 +1259,9 @@ def dSt_dVa_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, y
 
         if f_idx >= 0 or t_idx >= 0:
 
-            dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
-                    +1j * Vt * np.conj(Vf) * np.conj(ytf0[k]))
+            dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k])
 
-            dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k]
-                    -1j * Vt * np.conj(Vf) * np.conj(ytf0[k]))
+            dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf[k]) * np.exp(1j * tap_ang[k]) / tap_module[k])
 
             # from side
             if f_idx >= 0:

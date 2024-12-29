@@ -2528,10 +2528,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             loss_vsc,
             loss_hvdc,
             inj_hvdc,
-            self.cbr_pf_set - Pf_cbr,
-            self.cbr_pt_set - Pt_cbr,
-            self.cbr_qf_set - Qf_cbr,
-            self.cbr_qt_set - Qt_cbr
+            Pf_cbr - self.cbr_pf_set,
+            Pt_cbr - self.cbr_pt_set,
+            Qf_cbr - self.cbr_qf_set,
+            Qt_cbr - self.cbr_qt_set
         ]
 
         return _f
