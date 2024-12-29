@@ -17,7 +17,6 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, scipy_to_mat, mat_to_scipy, sp_slice, csc_stack_2d_ff, \
     scipy_to_cxmat
-from GridCalEngine.Utils.Sparse.csc_numba import csc_add_ff
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -192,13 +191,24 @@ def adv_jacobian(nbus: int,
     dScbr_dVm = deriv.dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
     dScbr_dVa = deriv.dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
 
-    # add all factors contributing to dSbus/dx
-    dS_dVa = deriv.csc_add_wrapper(dSy_dVa, dScbr_dVa)
     dS_dVm = deriv.csc_add_wrapper(dSy_dVm, dScbr_dVm)
+    dS_dVa = deriv.csc_add_wrapper(dSy_dVa, dScbr_dVa)
+    # dS_dVm = deriv.add_CxCSC(dSy_dVm, dScbr_dVm)
+    # dS_dVa = deriv.add_CxCSC(dSy_dVa, dScbr_dVa)
 
+    dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
+    dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
 
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
+
+    # -------------------
+
+    # dScbr_dm = deriv.dSbr_dm_csc(nbus, u_cbr_m, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
+    # dScbr_dtau = deriv.dSbr_dtau_csc(nbus, u_cbr_tau, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
+
+    # -------------------
+    
     dLossvsc_dVa_ = CxCSC(nvsc, len(i_u_va), 0, False)
     dLosshvdc_dVa_ = CxCSC(nhvdc, len(i_u_va), 0, False)
     dInj_dVa_ = deriv.dInj_dVa_csc(nhvdc, i_u_va, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc)
@@ -207,8 +217,7 @@ def adv_jacobian(nbus: int,
     dPt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, adm.ytf, V, F, T).real
     dQt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_qt, i_u_va, adm.ytf, V, F, T).imag
 
-    dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
-    dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
+
     dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc, T_vsc)
     dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc)
     dInj_dVm_ = CxCSC(nhvdc, len(i_u_vm), 0, False)
@@ -217,8 +226,8 @@ def adv_jacobian(nbus: int,
     dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, adm.ytt, adm.ytf, V, F, T).real
     dQt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, adm.ytt, adm.ytf, V, F, T).imag
 
-    dP_dm__ = deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).real
-    dQ_dm__ = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, k, tap, tap_modules, V).imag
+    dP_dm__ = deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).imag
     dLossvsc_dm_ = CxCSC(nvsc, len(u_cbr_m), 0, False)
     dLosshvdc_dm_ = CxCSC(nhvdc, len(u_cbr_m), 0, False)
     dInj_dm_ = CxCSC(nbus, len(u_cbr_m), 0, False)
@@ -227,8 +236,8 @@ def adv_jacobian(nbus: int,
     dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).real
     dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).imag
 
-    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, k, tap, V).real
-    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, k, tap, V).imag
+    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).imag
     dLossvsc_dtau_ = CxCSC(nvsc, len(u_cbr_tau), 0, False)
     dLosshvdc_dtau_ = CxCSC(nhvdc, len(u_cbr_tau), 0, False)
     dInj_dtau_ = CxCSC(nbus, len(u_cbr_tau), 0, False)
@@ -2502,7 +2511,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return self._f
 
-    def Jacobian(self, autodiff: bool = False) -> CSC:
+    def Jacobian(self, autodiff: bool = True) -> CSC:
         """
         Get the Jacobian
         :return:
