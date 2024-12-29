@@ -111,6 +111,12 @@ def adv_jacobian(nbus: int,
                  yft_cbr: CxVec,
                  ytf_cbr: CxVec,
                  ytt_cbr: CxVec,
+
+                 yff0: CxVec,
+                 yft0: CxVec,
+                 ytf0: CxVec,
+                 ytt0: CxVec,
+
                  F_cbr: IntVec,
                  T_cbr: IntVec,
                  conn_vsc_F: CSC,
@@ -172,6 +178,12 @@ def adv_jacobian(nbus: int,
     :param yft_cbr:
     :param ytf_cbr:
     :param ytt_cbr:
+
+    :param yff0: 
+    :param yft0: 
+    :param ytf0: 
+    :param ytt0: 
+
     :param F_cbr:
     :param T_cbr:
     :param Ybus:
@@ -188,8 +200,8 @@ def adv_jacobian(nbus: int,
 
     # active transformers contribution
     # being tap = m exp(j*tau) and tap_modules = m
-    dScbr_dVm = deriv.dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
-    dScbr_dVa = deriv.dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules)
+    dScbr_dVm = deriv.dSbr_dVm_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
+    dScbr_dVa = deriv.dSbr_dVa_csc(nbus, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
 
     dS_dVm = deriv.csc_add_wrapper(dSy_dVm, dScbr_dVm)
     dS_dVa = deriv.csc_add_wrapper(dSy_dVa, dScbr_dVa)
@@ -2637,6 +2649,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                  yft_cbr=self.yft_cbr,
                                  ytf_cbr=self.ytf_cbr,
                                  ytt_cbr=self.ytt_cbr,
+
+                                 yff0=self.yff0,
+                                 yft0=self.yft0,
+                                 ytf0=self.ytf0,
+                                 ytt0=self.ytt0,
+
                                  F_cbr=self.F_cbr,
                                  T_cbr=self.T_cbr,
                                  conn_vsc_F=self.nc.vsc_data.Cf,
