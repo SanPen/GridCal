@@ -292,8 +292,19 @@ def adv_jacobian(nbus: int,
     dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, adm.ytt, adm.ytf, V, F, T).real
     dQt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, adm.ytt, adm.ytf, V, F, T).imag
 
-    dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).real
-    dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).imag
+    # Relatie indieces to grab only the necessary y primitives
+    # m_r = np.array([np.where(cbr==i)[0][0] for i in u_cbr_m])
+    # t_r = np.array([np.where(cbr==i)[0][0] for i in u_cbr_tau])
+
+    cbr_dic = {val: idx for idx, val in enumerate(cbr)}
+    m_r = np.array([cbr_dic[val] for val in u_cbr_m], dtype=np.int32)
+    t_r = np.array([cbr_dic[val] for val in u_cbr_tau], dtype=np.int32)
+
+    # m_r = [cbr.index(i) for i in u_cbr_m]
+    # t_r = [cbr.index(i) for i in u_cbr_tau]
+
+    dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr[m_r], yft_cbr[m_r], ytf_cbr[m_r], ytt_cbr[m_r], tap, tap_modules, V).imag
     dLossvsc_dm_ = CxCSC(nvsc, len(u_cbr_m), 0, False)
     dLosshvdc_dm_ = CxCSC(nhvdc, len(u_cbr_m), 0, False)
     dInj_dm_ = CxCSC(nbus, len(u_cbr_m), 0, False)
@@ -302,8 +313,8 @@ def adv_jacobian(nbus: int,
     dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).real
     dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, k, tap, tap_modules, V).imag
 
-    dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).real
-    dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules, V).imag
+    dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr[t_r], yft_cbr[t_r], ytf_cbr[t_r], ytt_cbr[t_r], tap, tap_modules, V).imag
     dLossvsc_dtau_ = CxCSC(nvsc, len(u_cbr_tau), 0, False)
     dLosshvdc_dtau_ = CxCSC(nhvdc, len(u_cbr_tau), 0, False)
     dInj_dtau_ = CxCSC(nbus, len(u_cbr_tau), 0, False)
