@@ -451,6 +451,72 @@ class CxCSC:
         else:
             raise TypeError
 
+    def __add__(self, B: "CxCSC" | float) -> "CxCSC" | np.ndarray:
+        """
+        @ operator
+        :param B: CSC matrix or ndarray
+        :return: CSC matrix or ndarray
+        """
+        if isinstance(B, CxCSC):
+
+            print(f"Adding CxCSC matrices: A.shape={self.shape}, B.shape={B.shape}")
+            print(f"CxCSC Matrix Data Types: A.data={self.data.dtype}, B.data={B.data.dtype}")
+
+            m = self.n_rows
+            n = B.n_cols
+
+            w = np.zeros(m, dtype=np.int32)
+
+            x = np.zeros(n, dtype=np.complex128)  # get workspace
+
+            C = CxCSC(m, n, self.nnz + B.nnz, False)  # allocate result
+
+            nz = 0
+
+            for j in range(n):
+                C.indptr[j] = nz  # column j of C starts here
+
+                # nz = csc_scatter_f(self.indptr, self.indices, self.data, j, 1.0, w, x, j + 1, C.indices, nz)  # alpha*A(:,j)
+
+                # nz = csc_scatter_f(B.indptr, B.indices, B.data, j, 1.0, w, x, j + 1, C.indices, nz)  # beta*B(:,j)
+
+                mark = j + 1
+
+                for p in range(self.indptr[j], self.indptr[j + 1]):
+                    i = self.indices[p]  # A(i,j) is nonzero
+                    if w[i] < mark:
+                        w[i] = mark  # i is new entry in column j
+                        C.indices[nz] = i  # add i to pattern of C(:,j)
+                        nz = nz + 1
+                        x[i] = self.data[p]  # x(i) = beta*A(i,j)
+                    else:
+                        x[i] += self.data[p]  # i exists in C(:,j) already
+
+                for p in range(B.indptr[j], B.indptr[j + 1]):
+                    i = B.indices[p]  # A(i,j) is nonzero
+                    if w[i] < mark:
+                        w[i] = mark  # i is new entry in column j
+                        C.indices[nz] = i  # add i to pattern of C(:,j)
+                        nz = nz + 1
+                        x[i] = B.data[p]  # x(i) = beta*A(i,j)
+                    else:
+                        x[i] += B.data[p]  # i exists in C(:,j) already
+
+                for p in range(C.indptr[j], nz):
+                    C.data[p] = x[C.indices[p]]
+
+            C.indptr[n] = nz  # finalize the last column of C
+
+            return C
+
+        elif isinstance(B, float):
+            res = self.copy()
+            res.data += B
+            return res
+        else:
+            raise TypeError
+
+
 
 def mat_to_scipy(csc: CSC | CxCSC) -> csc_matrix:
     """

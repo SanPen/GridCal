@@ -204,14 +204,8 @@ def adv_jacobian(nbus: int,
     dScbr_dVa = deriv.dSbr_dVa_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap, tap_modules)
 
     # -------------
-    # # try addition with coo to check
-    # dSy_dVm_coo = CSC((dSy_dVm.real.data, dSy_dVm.indices, dSy_dVm.indptr), shape=(nbus, nbus))
-    # dSy_dVa_coo = dSy_dVa.to_coo()
-    # dScbr_dVm_coo = dScbr_dVm.to_coo()
-    # dScbr_dVa_coo = dScbr_dVa.to_coo()
-
-    # dS_dVm = dSy_dVm_coo + dScbr_dVm_coo
-    # dS_dVa = dSy_dVa_coo + dScbr_dVa_coo  # check if implemented for complex
+    # try addition methods in directly CxCSC format
+    # dS_dVm_josep = dSy_dVm.real + dScbr_dVm.real
 
     # -------------
 
