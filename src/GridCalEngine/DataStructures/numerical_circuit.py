@@ -9,7 +9,6 @@ import numba as nb
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from cma.bbobbenchmarks import F1
 
 from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.Topology.simulation_indices import SimulationIndices
@@ -51,6 +50,7 @@ ALL_STRUCTS = Union[
     FluidP2XData,
     FluidPathData
 ]
+
 
 @nb.njit(cache=True)
 def build_reducible_branches_C_coo(F: IntVec, T: IntVec, reducible: IntVec, active: IntVec):
@@ -302,7 +302,6 @@ def check_arr(arr: Vec | IntVec | BoolVec | CxVec,
                              value=f"min diff: {diff.min()}, max diff: {diff.max()}",
                              expected_value=tol)
         return 1
-
 
 
 class NumericalCircuit:
@@ -1311,26 +1310,6 @@ class NumericalCircuit:
         :return: csc_matrix
         """
 
-        # if consider_hvdc_as_island_links:
-        #     structs = [self.passive_branch_data, self.vsc_data, self.hvdc_data]
-        #     n_elm = self.passive_branch_data.nelm + self.vsc_data.nelm + self.hvdc_data.nelm
-        # else:
-        #     structs = [self.passive_branch_data, self.vsc_data]
-        #     n_elm = self.passive_branch_data.nelm + self.vsc_data.nelm
-        #
-        # """
-        # Note: this works because the three structures inherit
-        # the basic connectivity from the same parent structure
-        # """
-        #
-        # C = sp.lil_matrix((n_elm, self.bus_data.nbus), dtype=int)
-        # for struct in structs:
-        #     for k in range(struct.nelm):
-        #         f = struct.F[k]
-        #         t = struct.T[k]
-        #         if struct.active[k] and self.bus_data.active[f] and self.bus_data.active[t]:
-        #             C[k, f] = 1
-        #             C[k, t] = 1
         if consider_hvdc_as_island_links:
             i, j, data, n_elm = build_branches_C_coo_3(
                 bus_active=self.bus_data.active,
@@ -1425,13 +1404,13 @@ class NumericalCircuit:
                                               F=self.passive_branch_data.F,
                                               T=self.passive_branch_data.T)
         hvdc_idx = tp.get_island_branch_indices(bus_map=bus_map,
-                                              elm_active=self.hvdc_data.active,
-                                              F=self.hvdc_data.F,
-                                              T=self.hvdc_data.T)
+                                                elm_active=self.hvdc_data.active,
+                                                F=self.hvdc_data.F,
+                                                T=self.hvdc_data.T)
         vsc_idx = tp.get_island_branch_indices(bus_map=bus_map,
-                                              elm_active=self.vsc_data.active,
-                                              F=self.vsc_data.F,
-                                              T=self.vsc_data.T)
+                                               elm_active=self.vsc_data.active,
+                                               F=self.vsc_data.F,
+                                               T=self.vsc_data.T)
 
         load_idx = tp.get_island_monopole_indices(bus_map=bus_map,
                                                   elm_active=self.load_data.active,
@@ -1440,11 +1419,11 @@ class NumericalCircuit:
                                                  elm_active=self.generator_data.active,
                                                  elm_bus=self.generator_data.bus_idx)
         batt_idx = tp.get_island_monopole_indices(bus_map=bus_map,
-                                                 elm_active=self.battery_data.active,
-                                                 elm_bus=self.battery_data.bus_idx)
+                                                  elm_active=self.battery_data.active,
+                                                  elm_bus=self.battery_data.bus_idx)
         shunt_idx = tp.get_island_monopole_indices(bus_map=bus_map,
-                                                 elm_active=self.shunt_data.active,
-                                                 elm_bus=self.shunt_data.bus_idx)
+                                                   elm_active=self.shunt_data.active,
+                                                   elm_bus=self.shunt_data.bus_idx)
 
         nc = NumericalCircuit(
             nbus=len(bus_idx),
@@ -1463,10 +1442,6 @@ class NumericalCircuit:
             sbase=self.Sbase,
             t_idx=self.t_idx,
         )
-
-
-
-
 
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
@@ -1488,8 +1463,6 @@ class NumericalCircuit:
             nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
 
         return nc
-
-
 
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,
@@ -1547,17 +1520,17 @@ class NumericalCircuit:
         check_arr(self.passive_branch_data.F, nc_2.passive_branch_data.F, tol, 'BranchData', 'F', logger)
         check_arr(self.passive_branch_data.T, nc_2.passive_branch_data.T, tol, 'BranchData', 'T', logger)
         check_arr(self.passive_branch_data.active, nc_2.passive_branch_data.active, tol,
-                 'BranchData', 'active', logger)
+                  'BranchData', 'active', logger)
         check_arr(self.passive_branch_data.R, nc_2.passive_branch_data.R, tol, 'BranchData', 'r', logger)
         check_arr(self.passive_branch_data.X, nc_2.passive_branch_data.X, tol, 'BranchData', 'x', logger)
         check_arr(self.passive_branch_data.G, nc_2.passive_branch_data.G, tol, 'BranchData', 'g', logger)
         check_arr(self.passive_branch_data.B, nc_2.passive_branch_data.B, tol, 'BranchData', 'b', logger)
         check_arr(self.passive_branch_data.rates, nc_2.passive_branch_data.rates, tol, 'BranchData',
-                 'rates', logger)
+                  'rates', logger)
         check_arr(self.active_branch_data.tap_module, nc_2.active_branch_data.tap_module, tol,
-                 'BranchData', 'tap_module', logger)
+                  'BranchData', 'tap_module', logger)
         check_arr(self.active_branch_data.tap_angle, nc_2.active_branch_data.tap_angle, tol,
-                 'BranchData', 'tap_angle', logger)
+                  'BranchData', 'tap_angle', logger)
 
         check_arr(self.passive_branch_data.G0, nc_2.passive_branch_data.G0, tol, 'BranchData', 'g0', logger)
 
@@ -1582,7 +1555,7 @@ class NumericalCircuit:
 
         # load data
         check_arr(self.load_data.active, nc_2.load_data.active, tol, 'LoadData',
-                 'active', logger)
+                  'active', logger)
         check_arr(self.load_data.S, nc_2.load_data.S, tol, 'LoadData', 'S', logger)
         check_arr(self.load_data.I, nc_2.load_data.I, tol, 'LoadData', 'I', logger)
         check_arr(self.load_data.Y, nc_2.load_data.Y, tol, 'LoadData', 'Y', logger)
@@ -1663,4 +1636,3 @@ class NumericalCircuit:
             return 0, "AC"
         else:
             return 2, "AC/DC"
-

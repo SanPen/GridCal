@@ -12,7 +12,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptio
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCalEngine.api as gce
-from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation2 import PfGeneralizedFormulation
+from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
