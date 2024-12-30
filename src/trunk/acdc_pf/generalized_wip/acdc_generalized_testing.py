@@ -550,7 +550,8 @@ def test_generator_Q_lims() -> None:
                                    control_taps_modules=False,
                                    control_taps_phase=False,
                                    control_remote_voltage=False,
-                                   apply_temperature_correction=False)
+                                   apply_temperature_correction=False,
+                                   distributed_slack=True)
 
         problem, solution = solve_generalized(grid=grid, options=options)
 

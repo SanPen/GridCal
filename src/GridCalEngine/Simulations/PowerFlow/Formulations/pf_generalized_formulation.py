@@ -14,7 +14,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 # from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff, csc_add_cx)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method, compute_slack_distribution
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -2543,9 +2543,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         
                 # check and adjust the reactive power
                 # only update once, from voltage regulated to PQ injection
+                i_k_vm = np.setdiff1d(np.arange(self.nc.nbus), self.i_u_vm)
+                pv = np.intersect1d(i_k_vm, self.i_k_p)
                 changed, i_u_vm, i_k_q = control_q_josep_method(self.Scalc, self.S0,
-                                                                 self.nc.nbus, self.i_u_vm,
-                                                                 self.i_k_p, self.i_k_q,
+                                                                pv, self.i_u_vm, self.i_k_q,
                                                                  self.Qmin, self.Qmax)
         
                 if len(changed) > 0:
@@ -2556,19 +2557,23 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         
                     # the composition of x may have changed, so recompute
                     x = self.var2x()
-                    print()
-        #
-        #     # update Slack control
-        #     if self.options.distributed_slack:
-        #         ok, delta = compute_slack_distribution(
-        #             Scalc=self.Scalc,
-        #             vd=self.vd,
-        #             bus_installed_power=self.nc.bus_data.installed_power
-        #         )
-        #         if ok:
-        #             any_change = True
-        #             # Update the objective power to reflect the slack distribution
-        #             self.S0 += delta
+
+            # update Slack control
+            # as before but noticed it can cause slow convergence
+            if self.options.distributed_slack:
+                nbus_ar = np.arange(self.nc.nbus)
+                i_k_vm = np.setdiff1d(nbus_ar, self.i_u_vm)
+                i_k_va = np.setdiff1d(nbus_ar, self.i_u_va)
+                vd = np.intersect1d(i_k_va, i_k_vm)
+                ok, delta = compute_slack_distribution(
+                    Scalc=self.Scalc,
+                    vd=vd,
+                    bus_installed_power=self.nc.bus_data.installed_power
+                )
+                if ok:
+                    any_change = True
+                    # Update the objective power to reflect the slack distribution
+                    self.S0 += delta
         #
         #     # update the tap module control
         #     if self.options.control_taps_modules:

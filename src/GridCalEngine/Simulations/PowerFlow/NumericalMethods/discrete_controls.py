@@ -215,9 +215,9 @@ def control_q_inside_method(Scalc: CxVec, S0: CxVec,
     return changed, pv, pq, pqv, p
 
 
-# @nb.njit(cache=True)
+@nb.njit()
 def control_q_josep_method(Scalc: CxVec, S0: CxVec,
-                           nbus: int, i_u_vm: IntVec, i_k_p: IntVec, i_k_q: IntVec,
+                           pv: IntVec, i_u_vm: IntVec, i_k_q: IntVec,
                            Qmin: Vec, Qmax: Vec):
     """
     Control of reactive power within the numerical method
@@ -234,9 +234,7 @@ def control_q_josep_method(Scalc: CxVec, S0: CxVec,
     """
     changed = list()
 
-    # i_k_vm = np.arange(nbus) - i_u_vm
-    i_k_vm = np.setdiff1d(np.arange(nbus), i_u_vm)
-    pv = np.intersect1d(i_k_vm, i_k_p)
+
     for k, i in enumerate(pv):
         Q = Scalc[i].imag
         if Q > Qmax[i]:
