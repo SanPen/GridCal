@@ -547,6 +547,6 @@ if __name__ == "__main__":
     # test_fubm()
     # test_fubm_new()
     # test_hvdc_new()
-    test_power_flow_12bus_acdc()
+    # test_power_flow_12bus_acdc()
 
     pass
