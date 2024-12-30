@@ -321,29 +321,31 @@ def adv_jacobian(nbus: int,
     dQt_dQthvdc_ = CSC(len(k_cbr_qt), nhvdc, 0, False)
 
     # compose the Jacobian
-    J = csc_stack_2d_ff(mats=
-                        [dP_dVa__, dP_dVm__, dP_dPfvsc__, dP_dPtvsc__, dP_dQtvsc__, dP_dPfhvdc__, dP_dPthvdc__,
-                         dP_dQfhvdc__, dP_dQthvdc__, dP_dm__, dP_dtau__,
-                         dQ_dVa__, dQ_dVm__, dQ_dPfvsc__, dQ_dPtvsc__, dQ_dQtvsc__, dQ_dPfhvdc__, dQ_dPthvdc__,
-                         dQ_dQfhvdc__, dQ_dQthvdc__, dQ_dm__, dQ_dtau__,
-                         dLossvsc_dVa_, dLossvsc_dVm_, dLossvsc_dPfvsc_, dLossvsc_dPtvsc_, dLossvsc_dQtvsc_,
-                         dLossvsc_dPfhvdc_, dLossvsc_dPthvdc_, dLossvsc_dQfhvdc_, dLossvsc_dQthvdc_, dLossvsc_dm_,
-                         dLossvsc_dtau_,
-                         dLosshvdc_dVa_, dLosshvdc_dVm_, dLosshvdc_dPfvsc_, dLosshvdc_dPtvsc_, dLosshvdc_dQtvsc_,
-                         dLosshvdc_dPfhvdc_, dLosshvdc_dPthvdc_, dLosshvdc_dQfhvdc_, dLosshvdc_dQthvdc_, dLosshvdc_dm_,
-                         dLosshvdc_dtau_,
-                         dInjhvdc_dVa_, dInjhvdc_dVm_, dInjhvdc_dPfvsc_, dInjhvdc_dPtvsc_, dInjhvdc_dQtvsc_,
-                         dInjhvdc_dPfhvdc_, dInjhvdc_dPthvdc_, dInjhvdc_dQfhvdc_, dInjhvdc_dQthvdc_, dInjhvdc_dm_,
-                         dInjhvdc_dtau_,
-                         dPf_dVa_, dPf_dVm_, dPf_dPfvsc_, dPf_dPtvsc_, dPf_dQtvsc_, dPf_dPfhvdc_, dPf_dPthvdc_,
-                         dPf_dQfhvdc_, dPf_dQthvdc_, dPf_dm_, dPf_dtau_,
-                         dPt_dVa_, dPt_dVm_, dPt_dPfvsc_, dPt_dPtvsc_, dPt_dQtvsc_, dPt_dPfhvdc_, dPt_dPthvdc_,
-                         dPt_dQfhvdc_, dPt_dQthvdc_, dPt_dm_, dPt_dtau_,
-                         dQf_dVa_, dQf_dVm_, dQf_dPfvsc_, dQf_dPtvsc_, dQf_dQtvsc_, dQf_dPfhvdc_, dQf_dPthvdc_,
-                         dQf_dQfhvdc_, dQf_dQthvdc_, dQf_dm_, dQf_dtau_,
-                         dQt_dVa_, dQt_dVm_, dQt_dPfvsc_, dQt_dPtvsc_, dQt_dQtvsc_, dQt_dPfhvdc_, dQt_dPthvdc_,
-                         dQt_dQfhvdc_, dQt_dQthvdc_, dQt_dm_, dQt_dtau_],
-                        n_rows=9, n_cols=11)
+    J = csc_stack_2d_ff(
+        mats=
+        [dP_dVa__, dP_dVm__, dP_dPfvsc__, dP_dPtvsc__, dP_dQtvsc__, dP_dPfhvdc__, dP_dPthvdc__,
+         dP_dQfhvdc__, dP_dQthvdc__, dP_dm__, dP_dtau__,
+         dQ_dVa__, dQ_dVm__, dQ_dPfvsc__, dQ_dPtvsc__, dQ_dQtvsc__, dQ_dPfhvdc__, dQ_dPthvdc__,
+         dQ_dQfhvdc__, dQ_dQthvdc__, dQ_dm__, dQ_dtau__,
+         dLossvsc_dVa_, dLossvsc_dVm_, dLossvsc_dPfvsc_, dLossvsc_dPtvsc_, dLossvsc_dQtvsc_,
+         dLossvsc_dPfhvdc_, dLossvsc_dPthvdc_, dLossvsc_dQfhvdc_, dLossvsc_dQthvdc_, dLossvsc_dm_,
+         dLossvsc_dtau_,
+         dLosshvdc_dVa_, dLosshvdc_dVm_, dLosshvdc_dPfvsc_, dLosshvdc_dPtvsc_, dLosshvdc_dQtvsc_,
+         dLosshvdc_dPfhvdc_, dLosshvdc_dPthvdc_, dLosshvdc_dQfhvdc_, dLosshvdc_dQthvdc_, dLosshvdc_dm_,
+         dLosshvdc_dtau_,
+         dInjhvdc_dVa_, dInjhvdc_dVm_, dInjhvdc_dPfvsc_, dInjhvdc_dPtvsc_, dInjhvdc_dQtvsc_,
+         dInjhvdc_dPfhvdc_, dInjhvdc_dPthvdc_, dInjhvdc_dQfhvdc_, dInjhvdc_dQthvdc_, dInjhvdc_dm_,
+         dInjhvdc_dtau_,
+         dPf_dVa_, dPf_dVm_, dPf_dPfvsc_, dPf_dPtvsc_, dPf_dQtvsc_, dPf_dPfhvdc_, dPf_dPthvdc_,
+         dPf_dQfhvdc_, dPf_dQthvdc_, dPf_dm_, dPf_dtau_,
+         dPt_dVa_, dPt_dVm_, dPt_dPfvsc_, dPt_dPtvsc_, dPt_dQtvsc_, dPt_dPfhvdc_, dPt_dPthvdc_,
+         dPt_dQfhvdc_, dPt_dQthvdc_, dPt_dm_, dPt_dtau_,
+         dQf_dVa_, dQf_dVm_, dQf_dPfvsc_, dQf_dPtvsc_, dQf_dQtvsc_, dQf_dPfhvdc_, dQf_dPthvdc_,
+         dQf_dQfhvdc_, dQf_dQthvdc_, dQf_dm_, dQf_dtau_,
+         dQt_dVa_, dQt_dVm_, dQt_dPfvsc_, dQt_dPtvsc_, dQt_dQtvsc_, dQt_dPfhvdc_, dQt_dPthvdc_,
+         dQt_dQfhvdc_, dQt_dQthvdc_, dQt_dm_, dQt_dtau_],
+        n_rows=9, n_cols=11
+    )
 
     return J
 
@@ -504,9 +506,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.S0: CxVec = S0
         self.I0: CxVec = I0
         self.Y0: CxVec = Y0
-
-        self.Qmin = Qmin
-        self.Qmax = Qmax
 
         # arrays for branch control types (nbr)
         # self.tap_module_control_mode = nc.active_branch_data.tap_module_control_mode
