@@ -504,7 +504,7 @@ def test_power_flow_12bus_acdc() -> None:
     # run power flow
 
     options = PowerFlowOptions(solver_type=gce.SolverType.NR,
-                               verbose=0,
+                               verbose=1,
                                control_q=False,
                                retry_with_other_methods=False,
                                control_taps_phase=True,
@@ -546,7 +546,7 @@ if __name__ == "__main__":
     # test_power_flow_control_with_pst_pt()
     # test_fubm()
     # test_fubm_new()
-    test_hvdc_new()
-    # test_power_flow_12bus_acdc()
+    # test_hvdc_new()
+    test_power_flow_12bus_acdc()
 
     pass

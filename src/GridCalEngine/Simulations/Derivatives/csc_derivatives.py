@@ -2958,34 +2958,26 @@ def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hv
     j_lookup = make_lookup(nbus, i_u_va)
     nnz = 0  # Counter for non-zero entries
 
-    if len(hvdc_droop_idx) > 0:
-        hvdc_lookup = make_lookup(nhvdc, hvdc_droop_idx)
+    hvdc_lookup = make_lookup(nhvdc, hvdc_droop_idx)
 
     for k in range(nhvdc):
         
-        if len(hvdc_droop_idx) > 0:
-            if hvdc_lookup[k] >= 0:
-                # Compute the derivative for the from-side
-                dInjhvdc_dVaf = -hvdc_droop[k]
-                dInjhvdc_dVat = +hvdc_droop[k] 
-            else:
-                dInjhvdc_dVaf = 0.
-                dInjhvdc_dVat = 0.
+        if hvdc_lookup[k] >= 0:
+            # Compute the derivative for the from-side
+            dInjhvdc_dVaf = -hvdc_droop[k]
+            dInjhvdc_dVat = +hvdc_droop[k] 
 
-        else:
-            dInjhvdc_dVaf = 0.
-            dInjhvdc_dVat = 0.
 
-        # Populate COO format arrays
-        Tx[nnz] = dInjhvdc_dVaf
-        Ti[nnz] = k  # Row index corresponds to the current HVDC system
-        Tj[nnz] = j_lookup[F_hvdc[k]]  # Column index corresponds to the from-bus
-        nnz += 1
+            # Populate COO format arrays
+            Tx[nnz] = dInjhvdc_dVaf
+            Ti[nnz] = k  # Row index corresponds to the current HVDC system
+            Tj[nnz] = j_lookup[F_hvdc[k]]  # Column index corresponds to the from-bus
+            nnz += 1
 
-        Tx[nnz] = dInjhvdc_dVat
-        Ti[nnz] = k  # Row index corresponds to the current HVDC system
-        Tj[nnz] = j_lookup[T_hvdc[k]]  # Column index corresponds to the from-bus
-        nnz += 1
+            Tx[nnz] = dInjhvdc_dVat
+            Ti[nnz] = k  # Row index corresponds to the current HVDC system
+            Tj[nnz] = j_lookup[T_hvdc[k]]  # Column index corresponds to the from-bus
+            nnz += 1
 
     # Convert to CSC
     mat.fill_from_coo(Ti, Tj, Tx, nnz)

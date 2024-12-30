@@ -240,7 +240,8 @@ def adv_jacobian(nbus: int,
     dQ_dPtvsc__ = CSC(len(i_k_q), len(u_vsc_pt), 0, False)  # fully empty 
     dQ_dQtvsc__ = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_q, u_vsc_qt, T_vsc)
 
-    hvdc_range = np.array(range(nhvdc))
+    # hvdc_range = np.array(range(nhvdc))
+    hvdc_range = np.arange(nhvdc)
     dP_dPfhvdc__ = deriv.dPQ_dPQft_csc(nbus, nhvdc, i_k_p, hvdc_range, F_hvdc)
     dP_dPthvdc__ = deriv.dPQ_dPQft_csc(nbus, nhvdc, i_k_p, hvdc_range, T_hvdc)
     dP_dQfhvdc__ = CSC(len(i_k_p), nhvdc, 0, False)  # fully empty
@@ -282,7 +283,10 @@ def adv_jacobian(nbus: int,
     dLosshvdc_dtau_ = CSC(nhvdc, len(u_cbr_tau), 0, False)
 
     # -------- ROW 5 (inj HVDCs) ---------
-    dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hvdc, T_hvdc)
+    if len(hvdc_droop_idx) > 0:
+        dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hvdc, T_hvdc)
+    else:
+        dInjhvdc_dVa_ = CSC(nhvdc, len(i_u_va), 0, False)
     
     dInjhvdc_dVm_ = CSC(nhvdc, len(i_u_vm), 0, False)
     dInjhvdc_dPfvsc_ = CSC(nhvdc, len(u_vsc_pf), 0, False)
