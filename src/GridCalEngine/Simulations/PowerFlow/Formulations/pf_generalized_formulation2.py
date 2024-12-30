@@ -215,10 +215,10 @@ def adv_jacobian(nbus: int,
                                              ytf0, ytt0, V, tap, tap_modules)
 
     # TODO: this doesn't look like a good usage of this: why is this a member function?
-    dS_dVm = CxCSC.csc_matrix_matrix_addition(dSy_dVm, dScbr_dVm)
-    dS_dVa = CxCSC.csc_matrix_matrix_addition(dSy_dVa, dScbr_dVa)
-    # dS_dVm = csc_add_cx(dSy_dVm, dScbr_dVm)
-    # dS_dVa = csc_add_cx(dSy_dVa, dScbr_dVa)
+    # dS_dVm = CxCSC.csc_matrix_matrix_addition(dSy_dVm, dScbr_dVm)
+    # dS_dVa = CxCSC.csc_matrix_matrix_addition(dSy_dVa, dScbr_dVa)
+    dS_dVm = csc_add_cx(dSy_dVm, dScbr_dVm)
+    dS_dVa = csc_add_cx(dSy_dVa, dScbr_dVa)
 
     dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
     dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
@@ -236,17 +236,17 @@ def adv_jacobian(nbus: int,
     dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, tap, tap_modules,
                                        V).imag
 
-    dP_dPfvsc__ = deriv.dPQ_dPQft_csc(i_k_p, u_vsc_pf, F_vsc)
-    dP_dPtvsc__ = deriv.dPQ_dPQft_csc(i_k_p, u_vsc_pt, T_vsc)
+    dP_dPfvsc__ = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_p, u_vsc_pf, F_vsc)
+    dP_dPtvsc__ = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_p, u_vsc_pt, T_vsc)
     dP_dQtvsc__ = CSC(len(i_k_p), len(u_vsc_qt), 0, False)  # fully empty 
 
     dQ_dPfvsc__ = CSC(len(i_k_q), len(u_vsc_pf), 0, False)  # fully empty 
     dQ_dPtvsc__ = CSC(len(i_k_q), len(u_vsc_pt), 0, False)  # fully empty 
-    dQ_dQtvsc__ = deriv.dPQ_dPQft_csc(i_k_q, u_vsc_qt, T_vsc)
+    dQ_dQtvsc__ = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_q, u_vsc_qt, T_vsc)
 
     # -------- ROW 3 (VSCs) ---------
     dLossvsc_dVa_ = CSC(nvsc, len(i_u_va), 0, False)
-    dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc,
+    dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc,
                                            T_vsc)
     dLossvsc_dPfvsc_ = deriv.dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf)
     dLossvsc_dPtvsc_ = deriv.dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)

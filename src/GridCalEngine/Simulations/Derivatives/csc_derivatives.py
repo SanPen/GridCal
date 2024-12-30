@@ -2355,7 +2355,7 @@ def dSt_dbeq_csc(sf_indices, beq_indices) -> CxCSC:
 
 
 @njit()
-def dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) -> CxCSC:
+def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) -> CxCSC:
     """
         pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
         pq_sqrt = np.sqrt(pq)
@@ -2373,13 +2373,13 @@ def dLossvsc_dVm_csc(nvsc, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) 
     Tj = np.empty(max_nnz, dtype=np.int32)
     nnz = 0
 
-    j_lookup = make_lookup(len(i_u_vm), i_u_vm)
-    i_u_vm_set = set(i_u_vm)
+    j_lookup = make_lookup(nbus, i_u_vm)
 
-    for kidx, kvsc in enumerate(range(nvsc)):
+    for kidx in range(nvsc):
         t = T[kidx]
 
-        if t in i_u_vm_set:
+        if j_lookup[t] >= 0:
+
             Vm_t = np.abs(V[t])
             pq = Pt[kidx] * Pt[kidx] + Qt[kidx] * Qt[kidx]
             pq_sqrt = np.sqrt(pq)
@@ -2419,6 +2419,7 @@ def dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf) -> CSC:
     nnz = 0  # Counter for non-zero entries
 
     for k, vsc in enumerate(u_vsc_pf):
+
         # Populate COO format arrays
         Tx[nnz] = -1.0
         Ti[nnz] = vsc  # Row index corresponds to the current VSC
@@ -2431,6 +2432,7 @@ def dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf) -> CSC:
     return mat
 
 
+@njit()
 def dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
     """
     Compute the sparse matrix for the derivative of loss with respect to Pt in CSC format.
@@ -2478,6 +2480,7 @@ def dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) 
     return mat
 
 
+@njit()
 def dLossvsc_dQtvsc_josep_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
     """
     Compute the sparse matrix for the derivative of loss with respect to Qt in CSC format.
@@ -2644,15 +2647,19 @@ def dP_dPfvsc_csc(i_k_p, u_vsc_pf, F_vsc) -> CSC:
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
 
-    i_k_p_set = set(i_k_p)
+    j_lookup = make_lookup(len(i_k_p), i_k_p)
+    # i_k_p_set = set(i_k_p)
     nnz = 0  # Counter for non-zero entries
 
     # my way below
     for vsc_idx, vsc in enumerate(u_vsc_pf):
         f_bus = F_vsc[vsc]
-        if f_bus in i_k_p_set:
+
+        if j_lookup[f_bus] >= 0:
+        # if f_bus in i_k_p_set:
             Tx[nnz] = 1.0
-            Ti[nnz] = f_bus
+            # Ti[nnz] = f_bus
+            Ti[nnz] = j_lookup[f_bus]
             Tj[nnz] = vsc_idx
             nnz += 1
 
@@ -2663,7 +2670,7 @@ def dP_dPfvsc_csc(i_k_p, u_vsc_pf, F_vsc) -> CSC:
 
 
 @njit()
-def dPQ_dPQft_csc(i_k_pq, u_dev_pq, FT_dev) -> CSC:
+def dPQ_dPQft_csc(nbus, nvsc, i_k_pq, u_dev_pq, FT_dev) -> CSC:
     """
     Calculate the derivatives of the power balance with respect to injections of branches
     The method works for vscs and transformers without loss of generality
@@ -2682,15 +2689,17 @@ def dPQ_dPQft_csc(i_k_pq, u_dev_pq, FT_dev) -> CSC:
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
 
-    i_k_p_set = set(i_k_pq)
-    j_lookup = make_lookup(len(i_k_pq), i_k_pq)
-    vsc_lookup = make_lookup(len(u_dev_pq), u_dev_pq)
+    j_lookup = make_lookup(nbus, i_k_pq)
+    vsc_lookup = make_lookup(nvsc, u_dev_pq)
     nnz = 0  # Counter for non-zero entries
 
     # my way below
     for dev_idx, dev in enumerate(u_dev_pq):
         f_bus = FT_dev[dev]
-        if f_bus in i_k_p_set:
+
+        if j_lookup[f_bus] >= 0:
+        # if f_bus in i_k_p_set:
+        # if vsc_lookup[dev] >= 0:
             Tx[nnz] = 1.0
             Ti[nnz] = j_lookup[f_bus]
             Tj[nnz] = vsc_lookup[dev]

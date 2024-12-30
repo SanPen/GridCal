@@ -430,7 +430,7 @@ def test_fubm_new() -> None:
                                    control_taps_modules=True,
                                    control_taps_phase=True,
                                    control_remote_voltage=True,
-                                   verbose=2)
+                                   verbose=1)
     problem, solution = solve_generalized(grid=grid, options=options)
 
     vm = np.abs(solution.V)
