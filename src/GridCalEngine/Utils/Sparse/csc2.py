@@ -1402,6 +1402,34 @@ def csc_scatter_f(Ap, Ai, Ax, j, beta, w, x, mark, Ci, nz):
 
 
 @nb.njit(cache=True)
+def csc_scatter_cx(Ap, Ai, Ax, j, beta, w, x, mark, Ci, nz):
+    """
+    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)
+    :param Ap:
+    :param Ai:
+    :param Ax:
+    :param j: the column of A to use
+    :param beta: scalar multiplied by A(:,j)
+    :param w: size m, node i is marked if w[i] = mark
+    :param x: size m, ignored if null
+    :param mark: mark value of w
+    :param Ci: pattern of x accumulated in C.i
+    :param nz: pattern of x placed in C starting at C.i[nz]
+    :return: new value of nz, -1 on error, x and w are modified
+    """
+
+    for p in range(Ap[j], Ap[j + 1]):
+        i = Ai[p]  # A(i,j) is nonzero
+        if w[i] < mark:
+            w[i] = mark  # i is new entry in column j
+            Ci[nz] = i  # add i to pattern of C(:,j)
+            nz += 1
+            x[i] = beta * Ax[p]  # x(i) = beta*A(i,j)
+        else:
+            x[i] += beta * Ax[p]  # i exists in C(:,j) already
+    return nz
+
+@nb.njit(cache=True)
 def csc_spalloc_f(m, n, nzmax):
     """
     Allocate a sparse matrix (triplet form or compressed-column form).
@@ -1419,7 +1447,23 @@ def csc_spalloc_f(m, n, nzmax):
 
 
 @nb.njit(cache=True)
-def csc_add_ff(A: CSC, B: CSC, alpha, beta):
+def csc_spalloc_cx(m, n, nzmax):
+    """
+    Allocate a sparse matrix (triplet form or compressed-column form).
+
+    @param m: number of rows
+    @param n: number of columns
+    @param nzmax: maximum number of entries
+    @return: m, n, Aindptr, Aindices, Adata, Anzmax
+    """
+    Anzmax = max(nzmax, 1)
+    Aindptr = np.zeros(n + 1, dtype=np.int32)
+    Aindices = np.zeros(Anzmax, dtype=np.int32)
+    Adata = np.zeros(Anzmax, dtype=np.complex128)
+    return m, n, Aindptr, Aindices, Adata, Anzmax
+
+@nb.njit(cache=True)
+def csc_add_ff(A: CSC, B: CSC, alpha = 1.0, beta = 1.0) -> CSC:
     """
     C = alpha*A + beta*B
 
@@ -1438,6 +1482,44 @@ def csc_add_ff(A: CSC, B: CSC, alpha, beta):
     x = np.zeros(n, dtype=np.float64)  # get workspace
 
     C = CSC(m, n, A.nnz + B.nnz, False)  # allocate result
+
+    nz = 0
+
+    for j in range(n):
+        C.indptr[j] = nz  # column j of C starts here
+
+        nz = csc_scatter_f(A.indptr, A.indices, A.data, j, alpha, w, x, j + 1, C.indices, nz)  # alpha*A(:,j)
+
+        nz = csc_scatter_f(B.indptr, B.indices, B.data, j, beta, w, x, j + 1, C.indices, nz)  # beta*B(:,j)
+
+        for p in range(C.indptr[j], nz):
+            C.data[p] = x[C.indices[p]]
+
+    C.indptr[n] = nz  # finalize the last column of C
+
+    return C  # success; free workspace, return C
+
+
+# @nb.njit(cache=True)
+def csc_add_cx(A: CxCSC, B: CxCSC, alpha = 1.0, beta = 1.0) -> CxCSC:
+    """
+    C = alpha*A + beta*B
+
+    @param A: column-compressed matrix
+    @param B: column-compressed matrix
+    @param alpha: scalar alpha
+    @param beta: scalar beta
+    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)
+    """
+
+    m = A.n_rows
+    n = B.n_cols
+
+    w = np.zeros(m, dtype=np.int32)
+
+    x = np.zeros(n, dtype=np.complex128)  # get workspace
+
+    C = CxCSC(m, n, A.nnz + B.nnz, False)  # allocate result
 
     nz = 0
 
@@ -1490,3 +1572,50 @@ def csc_add_ff2(Am, An, Aindptr, Aindices, Adata, Bn, Bindptr, Bindices, Bdata):
     Cp[n] = nz  # finalize the last column of C
 
     return Cm, Cn, Cp, Ci, Cx, nz  # success; free workspace, return C
+
+
+
+
+@nb.njit(cache=True)
+def csc_add_cx2(Am, An, Aindptr, Aindices, Adata, Bn, Bindptr, Bindices, Bdata):
+    """
+    C = A + B
+
+    @param A: column-compressed matrix
+    @param B: column-compressed matrix
+    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)
+    """
+    nz = 0
+
+    m, anz, n, Bp, Bx = Am, Aindptr[An], Bn, Bindptr, Bdata
+
+    bnz = Bp[n]
+
+    w = np.zeros(m, dtype=np.int32)
+
+    x = np.zeros(m, dtype=np.complex128)  # get workspace
+
+    Cm, Cn, Cp, Ci, Cx, Cnzmax = csc_spalloc_cx(m, n, anz + bnz)  # allocate result
+
+    for j in range(n):
+        Cp[j] = nz  # column j of C starts here
+
+        nz = csc_scatter_cx(Aindptr, Aindices, Adata, j, 1.0, w, x, j + 1, Ci, nz)  # alpha*A(:,j)
+
+        nz = csc_scatter_cx(Bindptr, Bindices, Bdata, j, 1.0, w, x, j + 1, Ci, nz)  # beta*B(:,j)
+
+        for p in range(Cp[j], nz):
+            Cx[p] = x[Ci[p]]
+
+    Cp[n] = nz  # finalize the last column of C
+
+    return Cm, Cn, Cp, Ci, Cx, nz  # success; free workspace, return C
+
+
+def csc_add_cx3(A: CxCSC, B: CxCSC) -> CxCSC:
+    Cm, Cn, Cp, Ci, Cx, nz = csc_add_cx2(
+        A.n_rows, A.n_cols, A.indptr, A.indices, A.data,
+        B.n_cols, B.indptr, B.indices, B.data
+    )
+
+    return CxCSC(Cm, Cn, nz, False).set(Ci, Cp, Cx)

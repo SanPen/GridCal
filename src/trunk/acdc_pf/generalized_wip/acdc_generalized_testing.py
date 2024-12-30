@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-
+from typing import Tuple
 import os
 import pandas as pd
 import numpy as np
@@ -19,7 +19,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_FOLDER = os.path.join(SCRIPT_DIR, "..", "..", "..", "tests")
 
 
-def solve_generalized(grid: gce.MultiCircuit, options: PowerFlowOptions) -> NumericPowerFlowResults:
+def solve_generalized(grid: gce.MultiCircuit,
+                      options: PowerFlowOptions) -> Tuple[PfGeneralizedFormulation, NumericPowerFlowResults]:
     """
 
     :param grid:
