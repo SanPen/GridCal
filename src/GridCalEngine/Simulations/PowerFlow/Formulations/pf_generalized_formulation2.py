@@ -28,7 +28,7 @@ from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
 from GridCalEngine.Simulations.Derivatives.matpower_derivatives import dSbus_dV_matpower
 
 
-# @njit()
+@njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  nvsc: int,
@@ -52,7 +52,6 @@ def adv_jacobian(nbus: int,
                  Bc: Vec,
                  V: CxVec,
                  Vm: Vec,
-                 adm,
 
                  # Controllable Branch Indices
                  u_cbr_m: IntVec,
@@ -121,11 +120,8 @@ def adv_jacobian(nbus: int,
 
                  F_cbr: IntVec,
                  T_cbr: IntVec,
-                 conn_vsc_F: CSC,
-                 conn_vsc_T: CSC,
-                 conn_hvdc_F: CSC,
-                 conn_hvdc_T: CSC,
-                 Ybus: CSC) -> CSC:
+
+                 Ybus: CxCSC) -> CSC:
     """
     Compute the advanced jacobian
     :param nbus:
@@ -259,6 +255,8 @@ def adv_jacobian(nbus: int,
     dLossvsc_dtau_ = CSC(nvsc, len(u_cbr_tau), 0, False)
 
     # -------- ROW 4 + ROW 5 (HVDCs) ---------
+    # dLosshvdc_dVa_ = CSC(nhvdc, len(i_u_va), 0, False)
+    # dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, Vm, Pf_hvdc, hvdc_r, F_hvdc)
 
     # -------- ROW 6 + ROW 7 + ROW 8 + ROW 9 (contr. branch powers) ---------
     dPf_dVa_ = deriv.dSf_dVa_josep_csc(nbus, k_cbr_pf, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0,
@@ -2636,6 +2634,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angles = expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0)
             tap = polar_to_rect(tap_modules, tap_angles)
 
+            hvdc_r_pu = self.nc.hvdc_data.r / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase)
+
             adm = compute_admittances(
                 R=self.nc.passive_branch_data.R,
                 X=self.nc.passive_branch_data.X,
@@ -2653,6 +2653,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 seq=1,
                 add_windings_phase=False
             )
+
+            Ybus_cxcsc = CxCSC(self.nc.nbus, self.nc.nbus, len(self.Ybus.data), False)
+            Ybus_cxcsc.set(self.Ybus.indices, self.Ybus.indptr, self.Ybus.data)
 
             J_sym = adv_jacobian(nbus=self.nc.nbus,
                                  nbr=self.nc.nbr,
@@ -2677,7 +2680,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                  Bc=self.nc.passive_branch_data.B,
                                  V=self.V,
                                  Vm=self.Vm,
-                                 adm=adm,
 
                                  # Controllable Branch Indices
                                  u_cbr_m=self.u_cbr_m,
@@ -2714,7 +2716,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                  hvdc_droop_idx=self.hvdc_droop_idx,
 
                                  # HVDC Params
-                                 hvdc_r=self.nc.hvdc_data.r,
+                                 hvdc_r=hvdc_r_pu,
                                  hvdc_pset=self.nc.hvdc_data.Pset,
                                  hvdc_droop=self.nc.hvdc_data.angle_droop,
 
@@ -2746,11 +2748,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                                  F_cbr=self.F_cbr,
                                  T_cbr=self.T_cbr,
-                                 conn_vsc_F=self.nc.vsc_data.Cf,
-                                 conn_vsc_T=self.nc.vsc_data.Ct,
-                                 conn_hvdc_F=self.nc.hvdc_data.Cf,
-                                 conn_hvdc_T=self.nc.hvdc_data.Ct,
-                                 Ybus=self.Ybus)
+
+                                 Ybus=Ybus_cxcsc,
+                                #  Ybus=self.Ybus
+                                 )
 
             # Jdense = np.array(J.todense())
             # dff = pd.DataFrame(Jdense)

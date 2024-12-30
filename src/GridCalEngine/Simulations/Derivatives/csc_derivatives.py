@@ -2399,6 +2399,11 @@ def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, 
 
 
 @njit()
+def dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, Vm, Pf_hvdc, hvdc_r, F_hvdc):
+    pass
+
+
+@njit()
 def dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf) -> CSC:
     """
     Compute dLossvsc_dPfvsc in CSC format with column indices aligned to u_vsc_pf.

@@ -1500,7 +1500,7 @@ def csc_add_ff(A: CSC, B: CSC, alpha = 1.0, beta = 1.0) -> CSC:
     return C  # success; free workspace, return C
 
 
-# @nb.njit(cache=True)
+@nb.njit()
 def csc_add_cx(A: CxCSC, B: CxCSC, alpha = 1.0, beta = 1.0) -> CxCSC:
     """
     C = alpha*A + beta*B
