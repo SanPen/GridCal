@@ -2399,8 +2399,126 @@ def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, 
 
 
 @njit()
-def dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, Vm, Pf_hvdc, hvdc_r, F_hvdc):
-    pass
+def dLosshvdc_dVm_josep_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc):
+    """
+    dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
+    """
+    n_cols = len(i_u_vm)
+    n_rows = nhvdc
+    max_nnz = nhvdc
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    nnz = 0
+
+    j_lookup = make_lookup(nbus, i_u_vm)
+
+    for kidx in range(nhvdc):
+        f = F_hvdc[kidx]
+
+        if j_lookup[f] >= 0:
+
+            Vm_f = np.abs(V[f])
+            dLosshvdc_dVmf = - 2 * hvdc_r[kidx] * Pf_hvdc[kidx] / (Vm_f * Vm_f * Vm_f)
+
+            Tx[nnz] = dLosshvdc_dVmf
+            Ti[nnz] = kidx
+            Tj[nnz] = j_lookup[f]
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dLosshvdc_dPfhvdc_josep_csc(nhvdc, V, hvdc_r, F_hvdc):
+    """
+    dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
+    """
+    n_cols = nhvdc
+    n_rows = nhvdc
+    max_nnz = nhvdc
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    nnz = 0
+
+    for kidx in range(nhvdc):
+        f = F_hvdc[kidx]
+        Vm_f = np.abs(V[f])
+        dLosshvdc_dPfhvdc = hvdc_r[kidx] / (Vm_f * Vm_f) - 1
+
+        Tx[nnz] = dLosshvdc_dPfhvdc
+        Ti[nnz] = kidx
+        Tj[nnz] = kidx
+        nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dLosshvdc_dPthvdc_josep_csc(nhvdc):
+    """
+    dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
+    """
+    n_cols = nhvdc
+    n_rows = nhvdc
+    max_nnz = nhvdc
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    nnz = 0
+
+    for kidx in range(nhvdc):
+
+        dLosshvdc_dPthvdc = - 1
+
+        Tx[nnz] = dLosshvdc_dPthvdc
+        Ti[nnz] = kidx
+        Tj[nnz] = kidx
+        nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dInjhvdc_dPfhvdc_josep_csc(nhvdc):
+    """
+    dInjhvdc = Pf_hvdc - Pset - droop(Va[f] - Va[t])
+    """
+    n_cols = nhvdc
+    n_rows = nhvdc
+    max_nnz = nhvdc
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    nnz = 0
+
+    for kidx in range(nhvdc):
+
+        dInjhvdc_dPthvdc = + 1
+
+        Tx[nnz] = dInjhvdc_dPthvdc
+        Ti[nnz] = kidx
+        Tj[nnz] = kidx
+        nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
 
 
 @njit()
@@ -2814,6 +2932,67 @@ def dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvd
     return mat.real
 
 
+# @njit()
+def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hvdc, T_hvdc) -> CSC:
+    """
+    Compute dInjhvdc_dVa in CSC format for HVDC systems.
+
+    :param nhvdc: Number of HVDC systems (rows of the matrix).
+    :param nbus: Number of buses in the system.
+    :param i_u_va: Column indices for the sparse matrix (corresponding to voltage angles Va).
+    :param hvdc_droop_idx: Indices corresponding to HVDC droop control.
+    :param hvdc_droop: HVDC droop coefficients.
+    :param F_hvdc: From-bus indices for HVDC.
+    :param T_hvdc: To-bus indices for HVDC.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(i_u_va)
+    n_rows = nhvdc  # Number of rows (equal to nhvdc).
+    max_nnz = 2 * nhvdc  # Maximum number of non-zero entries (two for HVDC, touches 2 buses)
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    j_lookup = make_lookup(nbus, i_u_va)
+    nnz = 0  # Counter for non-zero entries
+
+    if len(hvdc_droop_idx) > 0:
+        hvdc_lookup = make_lookup(nhvdc, hvdc_droop_idx)
+
+    for k in range(nhvdc):
+        
+        if len(hvdc_droop_idx) > 0:
+            if hvdc_lookup[k] >= 0:
+                # Compute the derivative for the from-side
+                dInjhvdc_dVaf = -hvdc_droop[k]
+                dInjhvdc_dVat = +hvdc_droop[k] 
+            else:
+                dInjhvdc_dVaf = 0.
+                dInjhvdc_dVat = 0.
+
+        else:
+            dInjhvdc_dVaf = 0.
+            dInjhvdc_dVat = 0.
+
+        # Populate COO format arrays
+        Tx[nnz] = dInjhvdc_dVaf
+        Ti[nnz] = k  # Row index corresponds to the current HVDC system
+        Tj[nnz] = j_lookup[F_hvdc[k]]  # Column index corresponds to the from-bus
+        nnz += 1
+
+        Tx[nnz] = dInjhvdc_dVat
+        Ti[nnz] = k  # Row index corresponds to the current HVDC system
+        Tj[nnz] = j_lookup[T_hvdc[k]]  # Column index corresponds to the from-bus
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
 @njit()
 def dLosshvdc_dPfhvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
     """
@@ -2833,7 +3012,7 @@ def dLosshvdc_dPfhvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F
     n_rows = nhvdc  # The number of rows matches nhvdc.
     max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
 
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    mat = CSC(n_rows, n_cols, max_nnz, False)
     Tx = np.empty(max_nnz, dtype=np.complex128)
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
@@ -2880,7 +3059,7 @@ def dLosshvdc_dPthvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F
     n_rows = nhvdc  # The number of rows matches nhvdc.
     max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
 
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    mat = CSC(n_rows, n_cols, max_nnz, False)
     Tx = np.ones(max_nnz, dtype=np.complex128)  # All values are 1
     Ti = np.arange(max_nnz, dtype=np.int32)  # Diagonal row indices
     Tj = np.arange(max_nnz, dtype=np.int32)  # Diagonal column indices
@@ -2910,7 +3089,7 @@ def dLosshvdc_dPthvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F
     n_rows = nhvdc  # The number of rows matches nhvdc.
     max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
 
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    mat = CSC(n_rows, n_cols, max_nnz, False)
     Tx = np.ones(max_nnz, dtype=np.complex128)  # All values are 1
     Ti = np.arange(max_nnz, dtype=np.int32)  # Diagonal row indices
     Tj = np.arange(max_nnz, dtype=np.int32)  # Diagonal column indices

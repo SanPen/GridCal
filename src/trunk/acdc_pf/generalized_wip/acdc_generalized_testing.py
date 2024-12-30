@@ -445,6 +445,34 @@ def test_fubm_new() -> None:
     assert ok
 
 
+def test_hvdc_new() -> None:
+    """
+
+    :return:
+    """
+    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5bus_HVDC_simple.gridcal')
+    grid = gce.open_file(fname)
+
+    options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=True,
+                                   control_taps_phase=True,
+                                   control_remote_voltage=True,
+                                   verbose=1)
+    problem, solution = solve_generalized(grid=grid, options=options)
+
+    vm = np.abs(solution.V)
+    expected_vm = np.abs([1.0233985 -0.00175023j, 
+                          1.12339917-0.00136459j,
+                          1.02343677-0.00175086j,
+                          1.0222    +0.j        ,
+                          1.0111    +0.j        ])
+
+    ok = np.allclose(vm, expected_vm, rtol=1e-4)
+    assert ok
+
+
 def test_power_flow_12bus_acdc() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
@@ -517,7 +545,8 @@ if __name__ == "__main__":
     # test_power_flow_control_with_pst_pf()
     # test_power_flow_control_with_pst_pt()
     # test_fubm()
-    test_fubm_new()
+    # test_fubm_new()
+    test_hvdc_new()
     # test_power_flow_12bus_acdc()
 
     pass
