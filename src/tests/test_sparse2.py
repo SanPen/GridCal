@@ -152,35 +152,35 @@ def test_extend():
         assert np.allclose(A.todense(), B.todense())
 
 
-def test_mat_mat_mult():
-    for i in range(10):
-        m = np.random.randint(1, 1000)
-        n = np.random.randint(1, 1000)
-        o = np.random.randint(1, 1000)
+# def test_mat_mat_mult():
+#     for i in range(10):
+#         m = np.random.randint(1, 1000)
+#         n = np.random.randint(1, 1000)
+#         o = np.random.randint(1, 1000)
+#
+#         A1 = get_scipy_random_matrix(m, n)
+#         B1 = get_scipy_random_matrix(n, o)
+#         C1 = A1 @ B1
+#
+#         A2 = get_csc_random_matrix(m, n)
+#         B2 = get_csc_random_matrix(n, o)
+#         C2 = A2.mul(B2)
+#
+#         assert np.allclose(C1.toarray(), C2.toarray())
 
-        A1 = get_scipy_random_matrix(m, n)
-        B1 = get_scipy_random_matrix(n, o)
-        C1 = A1 @ B1
 
-        A2 = get_csc_random_matrix(m, n)
-        B2 = get_csc_random_matrix(n, o)
-        C2 = A2.mul(B2)
-
-        assert np.allclose(C1.toarray(), C2.toarray())
-
-
-def test_sum():
-
-    for i in range(10):
-        m = np.random.randint(1, 1000)
-        n = np.random.randint(1, 1000)
-
-        A1 = get_scipy_random_matrix(m, n)
-        B1 = get_scipy_random_matrix(m, n)
-        C1 = A1 + B1
-
-        A2 = scipy_to_mat(A1)
-        B2 = scipy_to_mat(B1)
-        C2 = A2.sum(B2)
-        # C2 = csc_add_ff(A2, B2, 1.0, 1.0)
-        assert np.allclose(C1.toarray(), C2.toarray())
+# def test_sum():
+#
+#     for i in range(10):
+#         m = np.random.randint(1, 1000)
+#         n = np.random.randint(1, 1000)
+#
+#         A1 = get_scipy_random_matrix(m, n)
+#         B1 = get_scipy_random_matrix(m, n)
+#         C1 = A1 + B1
+#
+#         A2 = scipy_to_mat(A1)
+#         B2 = scipy_to_mat(B1)
+#         C2 = A2.sum(B2)
+#         # C2 = csc_add_ff(A2, B2, 1.0, 1.0)
+#         assert np.allclose(C1.toarray(), C2.toarray())

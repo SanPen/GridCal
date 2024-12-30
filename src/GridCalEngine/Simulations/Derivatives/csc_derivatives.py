@@ -2355,7 +2355,7 @@ def dSt_dbeq_csc(sf_indices, beq_indices) -> CxCSC:
 
 
 @njit()
-def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) -> CxCSC:
+def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) -> CSC:
     """
         pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
         pq_sqrt = np.sqrt(pq)
