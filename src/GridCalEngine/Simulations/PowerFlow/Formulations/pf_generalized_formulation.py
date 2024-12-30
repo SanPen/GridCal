@@ -2716,58 +2716,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Sf = Vf * np.conj(If)
         St = Vt * np.conj(It)
 
-        Pf_cbr = calcSf(k=self.k_cbr_pf,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m,
-                        tau=tau,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
-
-        Pt_cbr = calcSt(k=self.k_cbr_pt,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m,
-                        tau=tau,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
-
-        Qf_cbr = calcSf(k=self.k_cbr_qf,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m,
-                        tau=tau,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
-
-        Qt_cbr = calcSt(k=self.k_cbr_qt,
-                        V=V,
-                        F=self.nc.passive_branch_data.F,
-                        T=self.nc.passive_branch_data.T,
-                        R=self.nc.passive_branch_data.R,
-                        X=self.nc.passive_branch_data.X,
-                        G=self.nc.passive_branch_data.G,
-                        B=self.nc.passive_branch_data.B,
-                        m=m,
-                        tau=tau,
-                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
-
         # Branch losses in MVA
         losses = (Sf + St) * self.nc.Sbase
 
