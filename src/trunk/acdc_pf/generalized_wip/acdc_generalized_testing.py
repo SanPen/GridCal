@@ -533,6 +533,41 @@ def test_power_flow_12bus_acdc() -> None:
     assert solution.converged
 
 
+def test_generator_Q_lims() -> None:
+    """
+    Check that we can shift the controls well when hitting Q limits
+    """
+    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_Qlim.gridcal')
+
+    grid = gce.open_file(fname)
+    bus_dict = grid.get_bus_index_dict()
+
+    for control_q in [True, False]:
+        options = PowerFlowOptions(gce.SolverType.NR,
+                                   verbose=1,
+                                   control_q=control_q,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=False,
+                                   control_taps_phase=False,
+                                   control_remote_voltage=False,
+                                   apply_temperature_correction=False)
+
+        problem, solution = solve_generalized(grid=grid, options=options)
+
+        vm = np.abs(solution.V)
+        qbus = solution.Scalc[3].imag
+
+        assert solution.converged
+
+        # check that the bus Q is at the limit
+        ok = np.isclose(qbus, grid.generators[1].Qmin / grid.Sbase, atol=options.tolerance)
+
+        if control_q:
+            assert ok
+        else:
+            assert not ok
+
+
 if __name__ == "__main__":
     # test_ieee_grids()
     # test_zip()
@@ -548,5 +583,6 @@ if __name__ == "__main__":
     # test_fubm_new()
     # test_hvdc_new()
     # test_power_flow_12bus_acdc()
+    test_generator_Q_lims()
 
     pass

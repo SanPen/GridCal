@@ -14,6 +14,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 # from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff, csc_add_cx)
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -507,6 +508,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.I0: CxVec = I0
         self.Y0: CxVec = Y0
 
+        self.Qmin = Qmin
+        self.Qmax = Qmax
+
         # arrays for branch control types (nbr)
         # self.tap_module_control_mode = nc.active_branch_data.tap_module_control_mode
         # self.tap_controlled_buses = nc.active_branch_data.tap_phase_control_mode
@@ -618,6 +622,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         if self.options.verbose > 1:
             print("Ybus\n", self.Ybus.toarray())
+
+    def update_Qlim_indices(self, i_u_vm: IntVec, i_k_q: IntVec) -> None:
+        """
+        Update the indices due to applying Q limits
+        :param i_u_vm: Indices of unknown voltage magnitudes
+        :param i_k_q: Indices of Q controlled buses
+        """
+        self.i_u_vm = i_u_vm
+        self.i_k_q = i_k_q
 
     def analyze_bus_controls(self) -> None:
         """
@@ -2469,6 +2482,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # total nodal power --------------------------------------------------------------------------------------------
         Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
+        self.Scalc = Scalc  # needed for the Q control check to use
         dS = Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
@@ -2517,32 +2531,32 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self._error = compute_fx_error(self._f)
 
         # Update controls only below a certain error
-        # if update_controls and self._error < self._controls_tol:
-        #     any_change = False
-        #     branch_ctrl_change = False
-        #
-        #     # review reactive power limits
-        #     # it is only worth checking Q limits with a low error
-        #     # since with higher errors, the Q values may be far from realistic
-        #     # finally, the Q control only makes sense if there are pv nodes
-        #     if self.options.control_Q and (len(self.pv) + len(self.p)) > 0:
-        #
-        #         # check and adjust the reactive power
-        #         # this function passes pv buses to pq when the limits are violated,
-        #         # but not pq to pv because that is unstable
-        #         changed, pv, pq, pqv, p = control_q_inside_method(self.Scalc, self.S0,
-        #                                                           self.pv, self.pq,
-        #                                                           self.pqv, self.p,
-        #                                                           self.Qmin, self.Qmax)
-        #
-        #         if len(changed) > 0:
-        #             any_change = True
-        #
-        #             # update the bus type lists
-        #             self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
-        #
-        #             # the composition of x may have changed, so recompute
-        #             x = self.var2x()
+        if update_controls and self._error < self._controls_tol:
+            any_change = False
+            branch_ctrl_change = False
+        
+            # generator reactive power limits
+            # condition to enter:
+            # 1. At least two voltage controlled buses (1 slack and one with a shiftable generator)
+            # 2. At least two buses with a free Q (1 slack and one with a shiftable generator)
+            if self.options.control_Q and (self.nc.nbus - len(self.i_u_vm) >= 2) and (self.nc.nbus - len(self.i_k_q)) >= 2:
+        
+                # check and adjust the reactive power
+                # only update once, from voltage regulated to PQ injection
+                changed, i_u_vm, i_k_q = control_q_josep_method(self.Scalc, self.S0,
+                                                                 self.nc.nbus, self.i_u_vm,
+                                                                 self.i_k_p, self.i_k_q,
+                                                                 self.Qmin, self.Qmax)
+        
+                if len(changed) > 0:
+                    any_change = True
+        
+                    # update the bus type lists
+                    self.update_Qlim_indices(i_u_vm=i_u_vm, i_k_q=i_k_q)
+        
+                    # the composition of x may have changed, so recompute
+                    x = self.var2x()
+                    print()
         #
         #     # update Slack control
         #     if self.options.distributed_slack:
@@ -2612,12 +2626,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         #         vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.S0.real, types=self.bus_types)
         #         self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
         #
-        #     if any_change or branch_ctrl_change:
-        #         # recompute the error based on the new Scalc and S0
-        #         self._f = self.fx()
-        #
-        #         # compute the rror
-        #         self._error = compute_fx_error(self._f)
+            if any_change or branch_ctrl_change:
+                # recompute the error based on the new Scalc and S0
+                self._f = self.fx()
+        
+                # compute the rror
+                self._error = compute_fx_error(self._f)
 
         # converged?
         self._converged = self._error < self.options.tolerance
@@ -2629,9 +2643,145 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def fx(self) -> Vec:
         """
-        Used? No
+        Used? Yes! Needed when updating the controls
         :return:
         """
+
+        # remember that Ybus here is computed with the fixed taps
+        V = polar_to_rect(self.Vm, self.Va)
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
+        Scalc_passive = compute_power(self.Ybus, V)
+
+        # Controllable branches ----------------------------------------------------------------------------------------
+        # Power at the controlled branches
+        m2 = self.nc.active_branch_data.tap_module.copy()
+        tau2 = self.nc.active_branch_data.tap_angle.copy()
+        m2[self.u_cbr_m] = self.m
+        tau2[self.u_cbr_tau] = self.tau
+
+        yff = (self.yff_cbr / (m2 * m2))
+        yft = self.yft_cbr / (m2 * np.exp(-1.0j * tau2))
+        ytf = self.ytf_cbr / (m2 * np.exp(1.0j * tau2))
+        ytt = self.ytt_cbr
+
+        Vf_cbr = V[self.F_cbr[self.cbr]]
+        Vt_cbr = V[self.T_cbr[self.cbr]]
+        yff_ = yff[self.cbr]
+        yft_ = yft[self.cbr]
+        ytf_ = ytf[self.cbr]
+        ytt_ = ytt[self.cbr]
+        yff0_ = self.yff0[self.cbr]
+        yft0_ = self.yft0[self.cbr]
+        ytf0_ = self.ytf0[self.cbr]
+        ytt0_ = self.ytt0[self.cbr]
+
+        Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff_ - yff0_) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft_ - yft0_))
+        St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
+
+        # difference between the actual power and the power calculated with the passive term (initial admittance)
+        AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
+        AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
+
+        Pf_cbr = calcSf(k=self.k_cbr_pf,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Pt_cbr = calcSt(k=self.k_cbr_pt,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).real
+
+        Qf_cbr = calcSf(k=self.k_cbr_qf,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+
+        Qt_cbr = calcSt(k=self.k_cbr_qt,
+                        V=V,
+                        F=self.nc.passive_branch_data.F,
+                        T=self.nc.passive_branch_data.T,
+                        R=self.nc.passive_branch_data.R,
+                        X=self.nc.passive_branch_data.X,
+                        G=self.nc.passive_branch_data.G,
+                        B=self.nc.passive_branch_data.B,
+                        m=m2,
+                        tau=tau2,
+                        vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                        vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
+
+        # VSC ----------------------------------------------------------------------------------------------------------
+        T_vsc = self.nc.vsc_data.T
+        It = np.sqrt(self.Pt_vsc * self.Pt_vsc + self.Qt_vsc * self.Qt_vsc) / self.Vm[T_vsc]
+        It2 = It * It
+        PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
+                     + self.nc.vsc_data.alpha2 * It
+                     + self.nc.vsc_data.alpha1)
+
+        loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
+        St_vsc = self.Pt_vsc + 1j * self.Qt_vsc
+
+        Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+
+        # HVDC ---------------------------------------------------------------------------------------------------------
+        Vmf_hvdc = self.Vm[self.nc.hvdc_data.F]
+        zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
+        Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(self.Pf_hvdc / Vmf_hvdc, 2.0)
+        loss_hvdc = Ploss_hvdc - self.Pf_hvdc - self.Pt_hvdc
+
+        Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
+        if len(self.hvdc_droop_idx):
+            Vaf_hvdc = self.Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
+            Vat_hvdc = self.Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
+            Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
+        inj_hvdc = self.Pf_hvdc - Pinj_hvdc
+
+        Sf_hvdc = self.Pf_hvdc + 1j * self.Qf_hvdc
+        St_hvdc = self.Pt_hvdc + 1j * self.Qt_hvdc
+        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+
+        # total nodal power --------------------------------------------------------------------------------------------
+        Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
+        self.Scalc = Scalc  # needed for the Q control check to use
+        dS = Scalc - Sbus
+
+        # compose the residuals vector ---------------------------------------------------------------------------------
+        self._f = np.r_[
+            dS[self.i_k_p].real,
+            dS[self.i_k_q].imag,
+            loss_vsc,
+            loss_hvdc,
+            inj_hvdc,
+            Pf_cbr - self.cbr_pf_set,
+            Pt_cbr - self.cbr_pt_set,
+            Qf_cbr - self.cbr_qf_set,
+            Qt_cbr - self.cbr_qt_set
+        ]
 
         return self._f
 
@@ -2849,9 +2999,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_hvdc = (self.Pt_hvdc + 1j * self.Qt_hvdc) * self.nc.Sbase
         loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rates + 1e-20)
 
+        # Basic bus powers
+        # Sbus_const = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
+        Sbus_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+        Sbus_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        Sbus_br = Sf @ self.nc.passive_branch_data.Cf + St @ self.nc.passive_branch_data.Ct
+        # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
+        Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
+
         return NumericPowerFlowResults(
             V=self.V,
-            Scalc=self.Scalc * self.nc.Sbase,
+            # Scalc=self.Scalc * self.nc.Sbase,
+            Scalc=Sbus,
             m=expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0),
             tau=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
             Sf=Sf * self.nc.Sbase,

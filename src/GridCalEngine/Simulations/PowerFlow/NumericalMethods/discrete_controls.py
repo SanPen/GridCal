@@ -215,6 +215,49 @@ def control_q_inside_method(Scalc: CxVec, S0: CxVec,
     return changed, pv, pq, pqv, p
 
 
+# @nb.njit(cache=True)
+def control_q_josep_method(Scalc: CxVec, S0: CxVec,
+                           nbus: int, i_u_vm: IntVec, i_k_p: IntVec, i_k_q: IntVec,
+                           Qmin: Vec, Qmax: Vec):
+    """
+    Control of reactive power within the numerical method
+    Assume we only want to change regular PV buses to PQ buses (as in the conventional method)
+    :param Scalc: Calculated power array (changed inside)
+    :param S0: Specified power array (changed inside)
+    :param nbus: Number of buses
+    :param i_u_vm: array of buses with unknown Vm (changed inside)
+    :param i_k_p: array of buses with known P (changed inside)
+    :param i_k_q: array of buses with known Q (changed inside)
+    :param Qmin: Array of lower bus reactive power limits per bus in p.u.
+    :param Qmax: Array of upper bus reactive power limits per bus in p.u.
+    :return: any change?, i_u_vm, i_k_q
+    """
+    changed = list()
+
+    # i_k_vm = np.arange(nbus) - i_u_vm
+    i_k_vm = np.setdiff1d(np.arange(nbus), i_u_vm)
+    pv = np.intersect1d(i_k_vm, i_k_p)
+    for k, i in enumerate(pv):
+        Q = Scalc[i].imag
+        if Q > Qmax[i]:
+            S0[i] = np.complex128(complex(S0[i].real, Qmax[i]))
+            changed.append(i)
+        elif Q < Qmin[i]:
+            S0[i] = np.complex128(complex(S0[i].real, Qmin[i]))
+            changed.append(i)
+
+    if len(changed) > 0:
+        # convert PV nodes to PQ
+        # we are able to avoid deletions
+        vm_to_q = np.array(changed)
+        i_k_q = np.concatenate((i_k_q, vm_to_q))
+        i_u_vm = np.concatenate((i_u_vm, vm_to_q))
+        i_k_q.sort()
+        i_u_vm.sort()
+
+    return changed, i_u_vm, i_k_q
+
+
 def compute_slack_distribution(Scalc: CxVec, vd: IntVec, bus_installed_power: Vec) -> Tuple[bool, Vec]:
     """
     Slack distribution logic
