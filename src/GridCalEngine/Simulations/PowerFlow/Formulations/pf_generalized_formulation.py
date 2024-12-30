@@ -12,6 +12,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
+# from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff, csc_add_cx)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
@@ -504,6 +505,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.I0: CxVec = I0
         self.Y0: CxVec = Y0
 
+        self.Qmin = Qmin
+        self.Qmax = Qmax
+
         # arrays for branch control types (nbr)
         # self.tap_module_control_mode = nc.active_branch_data.tap_module_control_mode
         # self.tap_controlled_buses = nc.active_branch_data.tap_phase_control_mode
@@ -563,8 +567,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.i_k_q = np.where(self.is_q_controlled == 1)[0]
 
         # Unknowns -----------------------------------------------------------------------------------------------------
-        # self._Vm = np.zeros(nc.bus_data.nbus)
-        # self._Va = np.zeros(nc.bus_data.nbus)
+        # Va and Vm are set internally
         self.Pf_vsc = np.zeros(nc.vsc_data.nelm)
         self.Pt_vsc = np.zeros(nc.vsc_data.nelm)
         self.Qt_vsc = np.zeros(nc.vsc_data.nelm)
@@ -617,10 +620,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if self.options.verbose > 1:
             print("Ybus\n", self.Ybus.toarray())
 
+    def analyze_bus_controls(self) -> None:
+        """
+        Analyze the bus indices from the boolean marked arrays
+        """
+        self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
+        self.i_u_va = np.where(self.is_va_controlled == 0)[0]
+        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
+        self.i_k_q = np.where(self.is_q_controlled == 1)[0]
+
     def _analyze_branch_controls(self) -> None:
         """
         Analyze the control branches and compute the indices
-        :return: None
         """
         # Controllable Branch Indices
         u_cbr_m = list()
@@ -2506,6 +2517,109 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         self._error = compute_fx_error(self._f)
 
+        # Update controls only below a certain error
+        # if update_controls and self._error < self._controls_tol:
+        #     any_change = False
+        #     branch_ctrl_change = False
+        #
+        #     # review reactive power limits
+        #     # it is only worth checking Q limits with a low error
+        #     # since with higher errors, the Q values may be far from realistic
+        #     # finally, the Q control only makes sense if there are pv nodes
+        #     if self.options.control_Q and (len(self.pv) + len(self.p)) > 0:
+        #
+        #         # check and adjust the reactive power
+        #         # this function passes pv buses to pq when the limits are violated,
+        #         # but not pq to pv because that is unstable
+        #         changed, pv, pq, pqv, p = control_q_inside_method(self.Scalc, self.S0,
+        #                                                           self.pv, self.pq,
+        #                                                           self.pqv, self.p,
+        #                                                           self.Qmin, self.Qmax)
+        #
+        #         if len(changed) > 0:
+        #             any_change = True
+        #
+        #             # update the bus type lists
+        #             self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
+        #
+        #             # the composition of x may have changed, so recompute
+        #             x = self.var2x()
+        #
+        #     # update Slack control
+        #     if self.options.distributed_slack:
+        #         ok, delta = compute_slack_distribution(
+        #             Scalc=self.Scalc,
+        #             vd=self.vd,
+        #             bus_installed_power=self.nc.bus_data.installed_power
+        #         )
+        #         if ok:
+        #             any_change = True
+        #             # Update the objective power to reflect the slack distribution
+        #             self.S0 += delta
+        #
+        #     # update the tap module control
+        #     if self.options.control_taps_modules:
+        #         for i, k in enumerate(self.idx_dm):
+        #
+        #             m_taps = self.nc.passive_branch_data.m_taps[i]
+        #
+        #             if self.options.orthogonalize_controls and m_taps is not None:
+        #                 _, self.m[i] = find_closest_number(arr=m_taps, target=self.m[i])
+        #
+        #             if self.m[i] < self.nc.active_branch_data.tap_module_min[k]:
+        #                 self.m[i] = self.nc.active_branch_data.tap_module_min[k]
+        #                 self.tap_module_control_mode[k] = TapModuleControl.fixed
+        #                 branch_ctrl_change = True
+        #                 self.logger.add_info("Min tap module reached",
+        #                                      device=self.nc.passive_branch_data.names[k],
+        #                                      value=self.m[i])
+        #
+        #             if self.m[i] > self.nc.active_branch_data.tap_module_max[k]:
+        #                 self.m[i] = self.nc.active_branch_data.tap_module_max[k]
+        #                 self.tap_module_control_mode[k] = TapModuleControl.fixed
+        #                 branch_ctrl_change = True
+        #                 self.logger.add_info("Max tap module reached",
+        #                                      device=self.nc.passive_branch_data.names[k],
+        #                                      value=self.m[i])
+        #
+        #     # update the tap phase control
+        #     if self.options.control_taps_phase:
+        #
+        #         for i, k in enumerate(self.idx_dtau):
+        #
+        #             tau_taps = self.nc.passive_branch_data.tau_taps[i]
+        #
+        #             if self.options.orthogonalize_controls and tau_taps is not None:
+        #                 _, self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
+        #
+        #             if self.tau[i] < self.nc.active_branch_data.tap_angle_min[k]:
+        #                 self.tau[i] = self.nc.active_branch_data.tap_angle_min[k]
+        #                 self.tap_phase_control_mode[k] = TapPhaseControl.fixed
+        #                 branch_ctrl_change = True
+        #                 self.logger.add_info("Min tap phase reached",
+        #                                      device=self.nc.passive_branch_data.names[k],
+        #                                      value=self.tau[i])
+        #
+        #             if self.tau[i] > self.nc.active_branch_data.tap_angle_max[k]:
+        #                 self.tau[i] = self.nc.active_branch_data.tap_angle_max[k]
+        #                 self.tap_phase_control_mode[k] = TapPhaseControl.fixed
+        #                 branch_ctrl_change = True
+        #                 self.logger.add_info("Max tap phase reached",
+        #                                      device=self.nc.passive_branch_data.names[k],
+        #                                      value=self.tau[i])
+        #
+        #     if branch_ctrl_change:
+        #         # k_v_m = self.analyze_branch_controls()
+        #         vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.S0.real, types=self.bus_types)
+        #         self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
+        #
+        #     if any_change or branch_ctrl_change:
+        #         # recompute the error based on the new Scalc and S0
+        #         self._f = self.fx()
+        #
+        #         # compute the rror
+        #         self._error = compute_fx_error(self._f)
+
         # converged?
         self._converged = self._error < self.options.tolerance
 
@@ -2546,7 +2660,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             # build the symbolic Jacobian
             tap_modules = expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0)
             tap_angles = expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0)
-
 
             hvdc_r_pu = self.nc.hvdc_data.r / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase)
 

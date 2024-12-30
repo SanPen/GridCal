@@ -28,7 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="renamed pf_generalized_formulation2.py to pf_generalized_formulation.py&#10;Passing Ybus to the jacobian by components">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="deleted unused code">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1531,7 +1532,7 @@
       <workItem from="1735377259508" duration="9042000" />
       <workItem from="1735544437072" duration="11058000" />
       <workItem from="1735561352324" duration="11095000" />
-      <workItem from="1735578596595" duration="1240000" />
+      <workItem from="1735578596595" duration="2361000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1876,7 +1877,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="609" />
+    <option name="localTasksCounter" value="610" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1923,7 +1924,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.3.0" />
     <MESSAGE value="minimal changes to the versioning" />
     <MESSAGE value="PTDF tests passing" />
     <MESSAGE value="NTC tests passing" />
@@ -1948,7 +1948,8 @@
     <MESSAGE value="added csc_add_cx" />
     <MESSAGE value="commented out the add and mult sparse2 tests&#10;Fixed derivatives type from CxCSC to CSC in dLossvsc_dVm_csc" />
     <MESSAGE value="renamed pf_generalized_formulation2.py to pf_generalized_formulation.py&#10;Passing Ybus to the jacobian by components" />
-    <option name="LAST_COMMIT_MESSAGE" value="renamed pf_generalized_formulation2.py to pf_generalized_formulation.py&#10;Passing Ybus to the jacobian by components" />
+    <MESSAGE value="deleted unused code" />
+    <option name="LAST_COMMIT_MESSAGE" value="deleted unused code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
