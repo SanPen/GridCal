@@ -2932,8 +2932,8 @@ def dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvd
     return mat.real
 
 
-# @njit()
-def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hvdc, T_hvdc) -> CSC:
+@njit()
+def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc) -> CSC:
     """
     Compute dInjhvdc_dVa in CSC format for HVDC systems.
 
@@ -2946,6 +2946,7 @@ def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hv
     :param T_hvdc: To-bus indices for HVDC.
     :return: Sparse matrix in CSC format.
     """
+
     n_cols = len(i_u_va)
     n_rows = nhvdc  # Number of rows (equal to nhvdc).
     max_nnz = 2 * nhvdc  # Maximum number of non-zero entries (two for HVDC, touches 2 buses)
@@ -2958,26 +2959,22 @@ def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hv
     j_lookup = make_lookup(nbus, i_u_va)
     nnz = 0  # Counter for non-zero entries
 
-    hvdc_lookup = make_lookup(nhvdc, hvdc_droop_idx)
-
     for k in range(nhvdc):
-        
-        if hvdc_lookup[k] >= 0:
-            # Compute the derivative for the from-side
-            dInjhvdc_dVaf = -hvdc_droop[k]
-            dInjhvdc_dVat = +hvdc_droop[k] 
 
+        # Compute the derivative for the from-side
+        dInjhvdc_dVaf = -hvdc_droop[k]
+        dInjhvdc_dVat = +hvdc_droop[k] 
 
-            # Populate COO format arrays
-            Tx[nnz] = dInjhvdc_dVaf
-            Ti[nnz] = k  # Row index corresponds to the current HVDC system
-            Tj[nnz] = j_lookup[F_hvdc[k]]  # Column index corresponds to the from-bus
-            nnz += 1
+        # Populate COO format arrays
+        Tx[nnz] = dInjhvdc_dVaf
+        Ti[nnz] = k  # Row index corresponds to the current HVDC system
+        Tj[nnz] = j_lookup[F_hvdc[k]]  # Column index corresponds to the from-bus
+        nnz += 1
 
-            Tx[nnz] = dInjhvdc_dVat
-            Ti[nnz] = k  # Row index corresponds to the current HVDC system
-            Tj[nnz] = j_lookup[T_hvdc[k]]  # Column index corresponds to the from-bus
-            nnz += 1
+        Tx[nnz] = dInjhvdc_dVat
+        Ti[nnz] = k  # Row index corresponds to the current HVDC system
+        Tj[nnz] = j_lookup[T_hvdc[k]]  # Column index corresponds to the from-bus
+        nnz += 1
 
     # Convert to CSC
     mat.fill_from_coo(Ti, Tj, Tx, nnz)

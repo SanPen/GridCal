@@ -28,7 +28,7 @@ from GridCalEngine.basic_structures import Vec, IntVec, CxVec, BoolVec, Logger
 from GridCalEngine.Simulations.Derivatives.matpower_derivatives import dSbus_dV_matpower
 
 
-# @njit()
+@njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  nvsc: int,
@@ -283,10 +283,7 @@ def adv_jacobian(nbus: int,
     dLosshvdc_dtau_ = CSC(nhvdc, len(u_cbr_tau), 0, False)
 
     # -------- ROW 5 (inj HVDCs) ---------
-    if len(hvdc_droop_idx) > 0:
-        dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop_idx, hvdc_droop, F_hvdc, T_hvdc)
-    else:
-        dInjhvdc_dVa_ = CSC(nhvdc, len(i_u_va), 0, False)
+    dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc)
     
     dInjhvdc_dVm_ = CSC(nhvdc, len(i_u_vm), 0, False)
     dInjhvdc_dPfvsc_ = CSC(nhvdc, len(u_vsc_pf), 0, False)
@@ -2731,6 +2728,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Ybus_cxcsc = CxCSC(self.nc.nbus, self.nc.nbus, len(self.Ybus.data), False)
             Ybus_cxcsc.set(self.Ybus.indices, self.Ybus.indptr, self.Ybus.data)
 
+            hvdc_droop_redone = np.zeros(self.nc.hvdc_data.nelm, dtype=float)
+            if len(self.hvdc_droop_idx) > 0:
+                hvdc_droop_redone[self.hvdc_droop_idx] = self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx]
+
             J_sym = adv_jacobian(nbus=self.nc.nbus,
                                  nbr=self.nc.nbr,
                                  nvsc=self.nc.vsc_data.nelm,
@@ -2792,7 +2793,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                  # HVDC Params
                                  hvdc_r=hvdc_r_pu,
                                  hvdc_pset=self.nc.hvdc_data.Pset,
-                                 hvdc_droop=self.nc.hvdc_data.angle_droop,
+                                 #  hvdc_droop=self.nc.hvdc_data.angle_droop,
+                                 hvdc_droop=hvdc_droop_redone,
 
                                  # Bus Indices
                                  i_u_vm=self.i_u_vm,
