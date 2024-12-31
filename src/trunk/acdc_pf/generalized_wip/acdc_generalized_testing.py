@@ -89,7 +89,7 @@ def test_ieee_grids():
     ]
 
     options = PowerFlowOptions(gce.SolverType.NR,
-                               verbose=0,
+                               verbose=1,
                                control_q=False,
                                retry_with_other_methods=False)
 
@@ -599,6 +599,39 @@ def test_transformer_m_lims() -> None:
         assert solution.converged
 
 
+def test_transformer_tau_lims() -> None:
+    """
+    Check that we can shift the controls well when dealing with continuous tau
+    """
+    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_tlim.gridcal')
+
+    grid = gce.open_file(fname)
+
+    for control_tap_phase in [True, False]:
+        options = PowerFlowOptions(gce.SolverType.NR,
+                                   verbose=1,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=False,
+                                   control_taps_phase=control_tap_phase,
+                                   control_remote_voltage=False,
+                                   apply_temperature_correction=False,
+                                   distributed_slack=False)
+
+        problem, solution = solve_generalized(grid=grid, options=options)
+
+        # check that the transformer m hits a limit
+        mtrafo = solution.tap_angle[7]
+        ok = np.isclose(mtrafo, grid.transformers2w[0].tap_phase_max, atol=options.tolerance)
+
+        if control_tap_phase:
+            assert ok
+        else:
+            assert not ok
+
+        assert solution.converged
+
+
 if __name__ == "__main__":
     # test_ieee_grids()
     # test_zip()
@@ -614,7 +647,8 @@ if __name__ == "__main__":
     # test_fubm_new()
     # test_hvdc_new()
     # test_power_flow_12bus_acdc()
-    test_generator_Q_lims()
+    # test_generator_Q_lims()
     # test_transformer_m_lims()
+    test_transformer_tau_lims()
 
     pass

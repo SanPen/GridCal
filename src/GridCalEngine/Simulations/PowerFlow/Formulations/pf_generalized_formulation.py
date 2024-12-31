@@ -2619,32 +2619,45 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         
                     if len(m_changed_ind) > 0:
                         self.m = np.delete(self.m, m_changed_ind)
-        #
-        #     # update the tap phase control
-        #     if self.options.control_taps_phase:
-        #
-        #         for i, k in enumerate(self.idx_dtau):
-        #
-        #             tau_taps = self.nc.passive_branch_data.tau_taps[i]
-        #
-        #             if self.options.orthogonalize_controls and tau_taps is not None:
-        #                 _, self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
-        #
-        #             if self.tau[i] < self.nc.active_branch_data.tap_angle_min[k]:
-        #                 self.tau[i] = self.nc.active_branch_data.tap_angle_min[k]
-        #                 self.tap_phase_control_mode[k] = TapPhaseControl.fixed
-        #                 branch_ctrl_change = True
-        #                 self.logger.add_info("Min tap phase reached",
-        #                                      device=self.nc.passive_branch_data.names[k],
-        #                                      value=self.tau[i])
-        #
-        #             if self.tau[i] > self.nc.active_branch_data.tap_angle_max[k]:
-        #                 self.tau[i] = self.nc.active_branch_data.tap_angle_max[k]
-        #                 self.tap_phase_control_mode[k] = TapPhaseControl.fixed
-        #                 branch_ctrl_change = True
-        #                 self.logger.add_info("Max tap phase reached",
-        #                                      device=self.nc.passive_branch_data.names[k],
-        #                                      value=self.tau[i])
+        
+            # update the tap phase control
+            if self.options.control_taps_phase:
+                t_changed_ind = list()
+        
+                for i, k in enumerate(self.u_cbr_tau):
+        
+                    tau_taps = self.nc.passive_branch_data.tau_taps[k]
+        
+                    if self.options.orthogonalize_controls and tau_taps is not None:
+                        _, self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
+        
+                    if self.tau[i] < self.nc.active_branch_data.tap_angle_min[k]:
+                        self.tau[i] = self.nc.active_branch_data.tap_angle_min[k]
+                        t_changed_ind.append(i)
+
+                        self.nc.active_branch_data.tap_phase_control_mode[k] = TapPhaseControl.fixed
+                        self.nc.active_branch_data.tap_angle[k] = self.tau[i]
+
+                        branch_ctrl_change = True
+                        self.logger.add_info("Min tap phase reached",
+                                             device=self.nc.passive_branch_data.names[k],
+                                             value=self.tau[i])
+        
+                    if self.tau[i] > self.nc.active_branch_data.tap_angle_max[k]:
+                        self.tau[i] = self.nc.active_branch_data.tap_angle_max[k]
+                        t_changed_ind.append(i)
+
+                        self.nc.active_branch_data.tap_phase_control_mode[k] = TapPhaseControl.fixed
+                        self.nc.active_branch_data.tap_angle[k] = self.tau[i]
+
+                        branch_ctrl_change = True
+                        self.logger.add_info("Max tap phase reached",
+                                             device=self.nc.passive_branch_data.names[k],
+                                             value=self.tau[i])
+
+                    if len(t_changed_ind) > 0:
+                        self.tau = np.delete(self.tau, t_changed_ind)
+        
         #
             if branch_ctrl_change:
                 self._analyze_branch_controls()
