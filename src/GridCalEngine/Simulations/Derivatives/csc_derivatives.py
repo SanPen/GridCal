@@ -9,7 +9,8 @@ from numba import njit, complex128, int32
 from typing import Tuple
 from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import CxVec, IntVec, Vec
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, make_lookup
+from GridCalEngine.Utils.NumericalMethods.common import make_lookup
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC
 from GridCalEngine.Utils.Sparse.csc_numba import ialloc
 
 

@@ -994,19 +994,6 @@ def diagc(m: int, value: float = 1.0) -> CSC:
     return res
 
 
-@nb.njit(cache=True)
-def make_lookup(size: int, indices: IntVec) -> IntVec:
-    """
-    Create a lookup array
-    :param size: Size of the thing (i.e. number of buses)
-    :param indices: indices to map (i.e. pq indices)
-    :return: lookup array, -1 at the indices that do not match with the "indices" input array
-    """
-    lookup = np.full(size, -1, dtype=np.int32)
-    lookup[indices] = np.arange(len(indices), dtype=np.int32)
-    return lookup
-
-
 @nb.njit(cache=False)
 def extend(A: CSC, last_col: Vec, last_row: Vec, corner_val: float) -> CSC:
     """

@@ -29,7 +29,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added placeholder code for the controls update">
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/ac_jacobian.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/ac_jacobian.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/csc_derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/csc_derivatives.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalServer/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalServer/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -280,7 +284,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids/CGMES_2_4_15" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in acdc_generalized_testing.py">
+  <component name="RunManager" selected="Python tests.pytest in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -741,9 +745,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in acdc_generalized_testing.py" />
         <item itemvalue="Python tests.pytest for test_sparse2.test_sum" />
-        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in test_sparse2.py" />
         <item itemvalue="Python tests.pytest for acdc_generalized_testing.test_ieee_grids" />
       </list>
@@ -1531,7 +1535,10 @@
       <workItem from="1735377259508" duration="9042000" />
       <workItem from="1735544437072" duration="11058000" />
       <workItem from="1735561352324" duration="11095000" />
-      <workItem from="1735578596595" duration="2871000" />
+      <workItem from="1735578596595" duration="2999000" />
+      <workItem from="1735590189898" duration="1051000" />
+      <workItem from="1735632600550" duration="633000" />
+      <workItem from="1735651819937" duration="407000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1876,7 +1883,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="611" />
+    <option name="localTasksCounter" value="612" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
