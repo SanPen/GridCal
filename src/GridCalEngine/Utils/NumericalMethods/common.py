@@ -7,7 +7,7 @@ from typing import Callable, Tuple
 import numpy as np
 import numba as nb
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import Vec, CscMat
+from GridCalEngine.basic_structures import Vec, CscMat, IntVec
 
 
 def check_function_and_args(func: Callable, args: Tuple, n_used_for_solver: int) -> bool:
@@ -182,3 +182,16 @@ def find_closest_number(arr: Vec, target: float) -> Tuple[int, float]:
 
     # if we reached here, something went wrong...
     return 0, arr[0]
+
+
+@nb.njit(cache=True)
+def make_lookup(size: int, indices: IntVec) -> IntVec:
+    """
+    Create a lookup array
+    :param size: Size of the thing (i.e. number of buses)
+    :param indices: indices to map (i.e. pq indices)
+    :return: lookup array, -1 at the indices that do not match with the "indices" input array
+    """
+    lookup = np.full(size, -1, dtype=np.int32)
+    lookup[indices] = np.arange(len(indices), dtype=np.int32)
+    return lookup

@@ -540,7 +540,6 @@ def test_generator_Q_lims() -> None:
     fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_Qlim.gridcal')
 
     grid = gce.open_file(fname)
-    bus_dict = grid.get_bus_index_dict()
 
     for control_q in [True, False]:
         options = PowerFlowOptions(gce.SolverType.NR,
@@ -551,22 +550,53 @@ def test_generator_Q_lims() -> None:
                                    control_taps_phase=False,
                                    control_remote_voltage=False,
                                    apply_temperature_correction=False,
-                                   distributed_slack=True)
+                                   distributed_slack=False)
 
         problem, solution = solve_generalized(grid=grid, options=options)
 
-        vm = np.abs(solution.V)
-        qbus = solution.Scalc[3].imag
-
-        assert solution.converged
-
         # check that the bus Q is at the limit
+        qbus = solution.Scalc[3].imag
         ok = np.isclose(qbus, grid.generators[1].Qmin / grid.Sbase, atol=options.tolerance)
 
         if control_q:
             assert ok
         else:
             assert not ok
+
+        assert solution.converged
+
+
+def test_transformer_m_lims() -> None:
+    """
+    Check that we can shift the controls well when dealing with continuous m
+    """
+    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_mlim.gridcal')
+
+    grid = gce.open_file(fname)
+
+    for control_tap_modules in [True, False]:
+        options = PowerFlowOptions(gce.SolverType.NR,
+                                   verbose=1,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=control_tap_modules,
+                                   control_taps_phase=False,
+                                   control_remote_voltage=False,
+                                   apply_temperature_correction=False,
+                                   distributed_slack=False)
+
+        problem, solution = solve_generalized(grid=grid, options=options)
+
+        # check that the transformer m hits a limit
+        mtrafo = solution.tap_module[7]
+        ok = np.isclose(mtrafo, grid.transformers2w[0].tap_module_max, atol=options.tolerance)
+
+        if control_tap_modules:
+            assert ok
+        else:
+            assert not ok
+
+        assert solution.converged
 
 
 if __name__ == "__main__":
@@ -585,5 +615,6 @@ if __name__ == "__main__":
     # test_hvdc_new()
     # test_power_flow_12bus_acdc()
     test_generator_Q_lims()
+    # test_transformer_m_lims()
 
     pass
