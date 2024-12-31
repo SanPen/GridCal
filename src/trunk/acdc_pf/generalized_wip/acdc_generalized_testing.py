@@ -289,10 +289,12 @@ def test_qf_control_with_ltc() -> None:
     for control_taps_modules in [True, False]:
 
         options = PowerFlowOptions(gce.SolverType.NR,
-                                   verbose=2,
+                                   verbose=1,
                                    control_q=False,
                                    retry_with_other_methods=False,
-                                   control_taps_modules=control_taps_modules)
+                                   control_taps_modules=control_taps_modules,
+                                   control_taps_phase=False,
+                                   orthogonalize_controls=False)
 
         problem, solution = solve_generalized(grid=grid, options=options)
 
@@ -321,7 +323,8 @@ def test_qt_control_with_ltc() -> None:
                                    verbose=1,
                                    control_q=False,
                                    retry_with_other_methods=False,
-                                   control_taps_modules=control_taps_modules)
+                                   control_taps_modules=control_taps_modules,
+                                   orthogonalize_controls=False)
 
         problem, solution = solve_generalized(grid=grid, options=options)
 
@@ -349,7 +352,8 @@ def test_power_flow_control_with_pst_pf() -> None:
                                    verbose=0,
                                    control_q=False,
                                    retry_with_other_methods=False,
-                                   control_taps_phase=control_taps_phase)
+                                   control_taps_phase=control_taps_phase,
+                                   orthogonalize_controls=False)
 
         problem, solution = solve_generalized(grid=grid, options=options)
 
@@ -378,6 +382,7 @@ def test_power_flow_control_with_pst_pt() -> None:
                                    control_q=False,
                                    retry_with_other_methods=False,
                                    control_taps_phase=control_taps_phase,
+                                   orthogonalize_controls=False,
                                    max_iter=80)
 
         problem, solution = solve_generalized(grid=grid, options=options)
@@ -649,6 +654,6 @@ if __name__ == "__main__":
     # test_power_flow_12bus_acdc()
     # test_generator_Q_lims()
     # test_transformer_m_lims()
-    test_transformer_tau_lims()
+    # test_transformer_tau_lims()
 
     pass

@@ -686,8 +686,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 cbr_qt_set.append(self.nc.active_branch_data.Qset[k])
 
             elif ctrl_m == TapModuleControl.fixed:
-                bus_idx = self.nc.active_branch_data.tap_controlled_buses[k]
-                self.is_vm_controlled[bus_idx] = False
+                # bus_idx = self.nc.active_branch_data.tap_controlled_buses[k]
+                # self.is_vm_controlled[bus_idx] = False
                 # self.m[k] = self.nc.active_branch_data.tap_module[k]
                 pass
 
@@ -2658,13 +2658,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     if len(t_changed_ind) > 0:
                         self.tau = np.delete(self.tau, t_changed_ind)
         
-        #
             if branch_ctrl_change:
+                self.bus_types = self.nc.bus_data.bus_types.copy()
+                self.is_p_controlled = self.nc.bus_data.is_p_controlled.copy()
+                self.is_q_controlled = self.nc.bus_data.is_q_controlled.copy()
+                self.is_vm_controlled = self.nc.bus_data.is_vm_controlled.copy()
+                self.is_va_controlled = self.nc.bus_data.is_va_controlled.copy()
                 self._analyze_branch_controls()
                 self.analyze_bus_controls()
                 # the composition of x may have changed, so recompute
                 x = self.var2x()
-
 
                 # vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.S0.real, types=self.bus_types)
                 # self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
