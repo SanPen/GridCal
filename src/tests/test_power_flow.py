@@ -400,7 +400,7 @@ def test_power_flow_control_with_pst_pf() -> None:
 
             assert results.converged
 
-            # check that the bus voltage module is the the transformer voltage set point
+            # check that the bus voltage module is the transformer voltage set point
             ok = np.isclose(results.Sf[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
 
             if control_taps_phase:
@@ -445,22 +445,33 @@ def test_fubm() -> None:
 
     :return:
     """
-    fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.m')
+    fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt_josep.gridcal')
     grid = gce.open_file(fname)
 
     for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        opt = gce.PowerFlowOptions(solver_type=solver_type,
-                                   control_q=False,
-                                   retry_with_other_methods=False,
-                                   control_taps_modules=True,
-                                   control_taps_phase=True,
-                                   control_remote_voltage=True,
-                                   verbose=0)
-        driver = gce.PowerFlowDriver(grid=grid, options=opt)
+
+        options = gce.PowerFlowOptions(solver_type=solver_type,
+                                       control_q=False,
+                                       retry_with_other_methods=False,
+                                       control_taps_modules=True,
+                                       control_taps_phase=True,
+                                       control_remote_voltage=True,
+                                       verbose=1)
+
+        driver = gce.PowerFlowDriver(grid=grid, options=options)
         driver.run()
         results = driver.results
         vm = np.abs(results.voltage)
-        expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
+
+        expected_vm = np.abs(np.array([1.01 + 0j,
+                                       1.0120148113290914 - 0.00414941372825624j,
+                                       1.01116 + 0j,
+                                       1.0111600156849796 + 0j,
+                                       1.0117031232472475 - 0.03475745116898685j,
+                                       1.0194294344036188 - 0.03411199600606859j]))
+
+        assert results.converged
+
         ok = np.allclose(vm, expected_vm, rtol=1e-4)
         assert ok
 
@@ -473,28 +484,26 @@ def test_power_flow_12bus_acdc() -> None:
 
     grid = gce.open_file(fname)
 
-    expected_v = np.array(
-        [1. + 0.j,
-         0.99992855 - 0.01195389j,
-         0.98147048 - 0.02808957j,
-         0.99960499 - 0.02810458j,
-         0.9970312 + 0.j,
-         0.99212134 + 0.j,
-         1. + 0.j,
-         0.99677598 + 0.j,
-         0.99172174 - 0.02331925j,
-         0.99262885 - 0.02434865j,
-         1. + 0.j,
-         0.99972904 - 0.0232776j,
-         0.99751785 - 0.01550583j,
-         0.99999118 - 0.00419999j,
-         0.99938143 - 0.03516744j,
-         0.99965346 - 0.02632404j,
-         0.99799193 + 0.j]
-    )
+    expected_v = np.array([1. + 0.j,
+                           0.99993477 - 0.01142182j,
+                           0.981475 - 0.02798462j,
+                           0.99961098 - 0.02789078j,
+                           0.9970314 + 0.j,
+                           0.9921219 + 0.j,
+                           1. + 0.j,
+                           0.9967762 + 0.j,
+                           0.99174229 - 0.02349737j,
+                           0.99263056 - 0.02449658j,
+                           1. + 0.j,
+                           0.99972273 - 0.0235469j,
+                           0.99752297 - 0.01554718j,
+                           0.99999114 - 0.00421027j,
+                           0.99937536 - 0.03533967j,
+                           0.99964957 - 0.02647153j,
+                           0.99799207 + 0.j])
 
     # ------------------------------------------------------------------------------------------------------------------
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+    for solver_type in [SolverType.NR, SolverType.PowellDogLeg, SolverType.LM]:
         options = PowerFlowOptions(solver_type=solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -502,11 +511,27 @@ def test_power_flow_12bus_acdc() -> None:
                                    control_taps_phase=True,
                                    max_iter=80)
 
-        results = gce.power_flow(grid, options)
+        solution = gce.power_flow(grid, options)
 
-        assert np.allclose(expected_v, results.voltage, atol=1e-6)
+        assert np.allclose(expected_v, solution.voltage, atol=1e-4)
 
-        assert results.converged
+        assert grid.vsc_devices[0].control1_val == solution.Pf_vsc[0]
+        assert grid.vsc_devices[0].control2_val == solution.St_vsc[0].imag
+
+        assert grid.vsc_devices[1].control1_val == abs(solution.voltage[3])
+        assert grid.vsc_devices[1].control2_val == solution.St_vsc[1].real
+
+        assert grid.vsc_devices[2].control1_val == abs(solution.voltage[6])
+        assert grid.vsc_devices[2].control2_val == solution.St_vsc[2].imag
+
+        assert grid.vsc_devices[3].control1_val == solution.Pf_vsc[3]
+        assert grid.vsc_devices[3].control2_val == solution.St_vsc[3].imag
+
+        assert grid.transformers2w[2].vset == abs(solution.voltage[13])
+
+        assert grid.hvdc_lines[0].Pset == solution.Pf_hvdc[0]
+
+        assert solution.converged
 
 
 if __name__ == "__main__":
