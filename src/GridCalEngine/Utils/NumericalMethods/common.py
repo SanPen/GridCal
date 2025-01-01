@@ -7,7 +7,7 @@ from typing import Callable, Tuple
 import numpy as np
 import numba as nb
 from matplotlib import pyplot as plt
-from GridCalEngine.basic_structures import Vec, CscMat, IntVec
+from GridCalEngine.basic_structures import Vec, CscMat, IntVec, CxVec
 
 
 def check_function_and_args(func: Callable, args: Tuple, n_used_for_solver: int) -> bool:
@@ -195,3 +195,17 @@ def make_lookup(size: int, indices: IntVec) -> IntVec:
     lookup = np.full(size, -1, dtype=np.int32)
     lookup[indices] = np.arange(len(indices), dtype=np.int32)
     return lookup
+
+@nb.njit(cache=True)
+def make_complex(r: Vec, i: Vec) -> CxVec:
+    """
+    Fastest way to create complex arrays
+    :param r:
+    :param i:
+    :return:
+    """
+    assert len(r) == len(i)
+    res = np.empty(len(r), dtype=np.complex128)
+    for k in range(len(r)):
+        res[k] = complex(r[k], i[k])
+    return res

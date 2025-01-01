@@ -12,7 +12,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
-from GridCalEngine.Utils.NumericalMethods.common import find_closest_number, make_lookup
+from GridCalEngine.Utils.NumericalMethods.common import find_closest_number, make_complex
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff, csc_add_cx)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method, compute_slack_distribution
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
@@ -368,8 +368,8 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     :param vtap_t:
     :return:
     """
-    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
-    bc2 = (G + 1j * B) / 2.0  # shunt admittance
+    ys = 1.0 / make_complex(R, X + 1e-20)  # series admittance
+    bc2 = make_complex(G, B) / 2.0  # shunt admittance
     yff = (ys + bc2) / (m * m * vtap_f * vtap_f)
     yft = -ys / (m * np.exp(-1.0j * tau) * vtap_f * vtap_t)
     ytf = -ys / (m * np.exp(1.0j * tau) * vtap_t * vtap_f)
@@ -589,7 +589,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Controllable branches ----------------------------------------------------------------------------------------
         ys = 1.0 / (nc.passive_branch_data.R
                     + 1.0j * nc.passive_branch_data.X + 1e-20)  # series admittance
-        bc2 = (nc.passive_branch_data.G + 1j * nc.passive_branch_data.B) / 2.0  # shunt admittance
+        bc2 = make_complex(nc.passive_branch_data.G, nc.passive_branch_data.B) / 2.0  # shunt admittance
         vtap_f = nc.passive_branch_data.virtual_tap_f
         vtap_t = nc.passive_branch_data.virtual_tap_t
         self.yff_cbr = (ys + bc2) / (vtap_f * vtap_f)
@@ -2463,7 +2463,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha1)
 
         loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
-        St_vsc = Pt_vsc + 1j * Qt_vsc
+        St_vsc = make_complex(Pt_vsc, Qt_vsc)
 
         Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
@@ -2480,8 +2480,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
         inj_hvdc = Pf_hvdc - Pinj_hvdc
 
-        Sf_hvdc = Pf_hvdc + 1j * Qf_hvdc
-        St_hvdc = Pt_hvdc + 1j * Qt_hvdc
+        Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
+        St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
         Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
@@ -2790,7 +2790,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha1)
 
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
-        St_vsc = self.Pt_vsc + 1j * self.Qt_vsc
+        St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
         Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
@@ -2807,8 +2807,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
         inj_hvdc = self.Pf_hvdc - Pinj_hvdc
 
-        Sf_hvdc = self.Pf_hvdc + 1j * self.Qf_hvdc
-        St_hvdc = self.Pt_hvdc + 1j * self.Qt_hvdc
+        Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc)
+        St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc)
         Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
@@ -3012,8 +3012,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         vtap_f = self.nc.passive_branch_data.virtual_tap_f
         vtap_t = self.nc.passive_branch_data.virtual_tap_t
 
-        ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
-        bc2 = (G + 1j * B) / 2.0  # shunt admittance
+        ys = 1.0 / make_complex(R, X + 1e-20)  # series admittance
+        bc2 = make_complex(G, B) / 2.0  # shunt admittance
         yff = (ys + bc2) / (m * m * vtap_f * vtap_f)
         yft = -ys / (m * np.exp(-1.0j * tau) * vtap_f * vtap_t)
         ytf = -ys / (m * np.exp(1.0j * tau) * vtap_t * vtap_f)
@@ -3027,22 +3027,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Branch losses in MVA
         losses = (Sf + St) * self.nc.Sbase
 
-        # branch voltage increment
-        Vbranch = Vf - Vt
-
         # Branch loading in p.u.
         loading = Sf * self.nc.Sbase / (self.nc.passive_branch_data.rates + 1e-9)
 
         # VSC ----------------------------------------------------------------------------------------------------------
         Pf_vsc = self.Pf_vsc
-        St_vsc = (self.Pt_vsc + 1j * self.Qt_vsc)
+        St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
         If_vsc = Pf_vsc / np.abs(V[self.nc.vsc_data.F])
         It_vsc = St_vsc / np.conj(V[self.nc.vsc_data.T])
-        loading_vsc = abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20) * self.nc.Sbase
+        loading_vsc = np.abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20) * self.nc.Sbase
 
         # HVDC ---------------------------------------------------------------------------------------------------------
-        Sf_hvdc = (self.Pf_hvdc + 1j * self.Qf_hvdc) * self.nc.Sbase
-        St_hvdc = (self.Pt_hvdc + 1j * self.Qt_hvdc) * self.nc.Sbase
+        Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc) * self.nc.Sbase
+        St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc) * self.nc.Sbase
         loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rates + 1e-20)
 
         # Basic bus powers
@@ -3055,10 +3052,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return NumericPowerFlowResults(
             V=self.V,
-            # Scalc=self.Scalc * self.nc.Sbase,
-            Scalc=Sbus,
-            # m=expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0),
-            # tau=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
+            Scalc=Sbus * self.nc.Sbase,
             m=m,
             tau=tau,
             Sf=Sf * self.nc.Sbase,

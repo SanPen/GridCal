@@ -337,7 +337,7 @@ def test_qf_control_with_ltc() -> None:
 
             assert results.converged
 
-            # check that the bus voltage module is the the transformer voltage set point
+            # check that the bus voltage module is the transformer voltage set point
             ok = np.isclose(results.Sf[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
 
             if control_taps_modules:

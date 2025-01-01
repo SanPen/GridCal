@@ -15,8 +15,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-TEST_FOLDER = os.path.join(SCRIPT_DIR, "..", "..", "..", "tests")
+TEST_FOLDER = os.path.join("")
 
 
 def solve_generalized(grid: gce.MultiCircuit,
@@ -95,14 +94,14 @@ def test_ieee_grids():
 
     for f1, f2 in files:
 
-        fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'RAW', f1)
+        fname = os.path.join('data', 'grids', 'RAW', f1)
         grid = FileOpen(fname).open()
 
         problem, solution = solve_generalized(grid=grid, options=options)
 
         # load the associated results file
-        df_v = pd.read_excel(os.path.join(TEST_FOLDER, 'data', 'results', f2), sheet_name='Vabs', index_col=0)
-        df_p = pd.read_excel(os.path.join(TEST_FOLDER, 'data', 'results', f2), sheet_name='Pbranch', index_col=0)
+        df_v = pd.read_excel(os.path.join('data', 'results', f2), sheet_name='Vabs', index_col=0)
+        df_p = pd.read_excel(os.path.join('data', 'results', f2), sheet_name='Pbranch', index_col=0)
 
         v_gc = np.abs(solution.V)
         v_psse = df_v.values[:, 0]
@@ -131,7 +130,7 @@ def test_zip() -> None:
     Test the power flow with ZIP loads compared to PSSe
     """
 
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'ZIP_load_example.raw')
+    fname = os.path.join('data', 'grids', 'ZIP_load_example.raw')
     grid = FileOpen(fname).open()
 
     options = PowerFlowOptions(tolerance=1e-6)
@@ -152,7 +151,7 @@ def test_controllable_shunt() -> None:
     This tests that the controllable shunt is indeed controlling voltage at 1.02 at the third bus
     """
 
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'Controllable_shunt_example.gridcal')
+    fname = os.path.join('data', 'grids', 'Controllable_shunt_example.gridcal')
     grid = FileOpen(fname).open()
     options = PowerFlowOptions(control_q=False)
     problem, solution = solve_generalized(grid=grid, options=options)
@@ -167,7 +166,7 @@ def test_voltage_local_control_with_generation() -> None:
     """
     Check that a generator can perform remote voltage regulation
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
 
     grid = gce.open_file(fname)
 
@@ -211,7 +210,7 @@ def test_voltage_remote_control_with_generation() -> None:
     """
     Check that a generator can perform remote voltage regulation
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
 
     grid = gce.open_file(fname)
 
@@ -245,7 +244,7 @@ def test_voltage_control_with_ltc() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7.gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_LTC_FACTS_Fig4.7.gridcal')
 
     grid = gce.open_file(fname)
     bus_dict = grid.get_bus_index_dict()
@@ -282,7 +281,7 @@ def test_qf_control_with_ltc() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_PST_FACTS_Fig4.10(Qf).gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10(Qf).gridcal')
 
     grid = gce.open_file(fname)
 
@@ -313,7 +312,7 @@ def test_qt_control_with_ltc() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_PST_FACTS_Fig4.10(Qf).gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10(Qf).gridcal')
 
     grid = gce.open_file(fname)
     grid.transformers2w[0].tap_module_control_mode = gce.TapModuleControl.Qt
@@ -343,7 +342,7 @@ def test_power_flow_control_with_pst_pf() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_PST_FACTS_Fig4.10.gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10.gridcal')
 
     grid = gce.open_file(fname)
 
@@ -372,7 +371,7 @@ def test_power_flow_control_with_pst_pt() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_PST_FACTS_Fig4.10(Pt).gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10(Pt).gridcal')
 
     grid = gce.open_file(fname)
 
@@ -403,7 +402,7 @@ def test_power_flow_control_with_pst_pt() -> None:
 #
 #     :return:
 #     """
-#     fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'fubm_caseHVDC_vt.m')
+#     fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.m')
 #     grid = gce.open_file(fname)
 #
 #     options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
@@ -426,7 +425,7 @@ def test_fubm_new() -> None:
 
     :return:
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'fubm_caseHVDC_vt_josep.gridcal')
+    fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt_josep.gridcal')
     grid = gce.open_file(fname)
 
     options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
@@ -455,7 +454,7 @@ def test_hvdc_new() -> None:
 
     :return:
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5bus_HVDC_simple.gridcal')
+    fname = os.path.join('data', 'grids', '5bus_HVDC_simple.gridcal')
     grid = gce.open_file(fname)
 
     options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
@@ -482,7 +481,7 @@ def test_power_flow_12bus_acdc() -> None:
     """
     Check that a transformer can regulate the voltage at a bus
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', 'AC-DC with all and DCload.gridcal')
+    fname = os.path.join('data', 'grids', 'AC-DC with all and DCload.gridcal')
 
     grid = gce.open_file(fname)
 
@@ -542,7 +541,7 @@ def test_generator_Q_lims() -> None:
     """
     Check that we can shift the controls well when hitting Q limits
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_Qlim.gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_LTC_FACTS_Fig4.7_Qlim.gridcal')
 
     grid = gce.open_file(fname)
 
@@ -575,7 +574,7 @@ def test_transformer_m_lims() -> None:
     """
     Check that we can shift the controls well when dealing with continuous m
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_mlim.gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_LTC_FACTS_Fig4.7_mlim.gridcal')
 
     grid = gce.open_file(fname)
 
@@ -608,7 +607,7 @@ def test_transformer_tau_lims() -> None:
     """
     Check that we can shift the controls well when dealing with continuous tau
     """
-    fname = os.path.join(TEST_FOLDER, 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_tlim.gridcal')
+    fname = os.path.join('data', 'grids', '5Bus_LTC_FACTS_Fig4.7_tlim.gridcal')
 
     grid = gce.open_file(fname)
 
