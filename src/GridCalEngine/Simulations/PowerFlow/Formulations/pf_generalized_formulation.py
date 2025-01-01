@@ -14,7 +14,8 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Utils.NumericalMethods.common import find_closest_number, make_complex
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff, csc_add_cx)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method, compute_slack_distribution
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method, \
+    compute_slack_distribution
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -2538,27 +2539,28 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if update_controls and self._error < self._controls_tol:
             any_change = False
             branch_ctrl_change = False
-        
+
             # generator reactive power limits
             # condition to enter:
             # 1. At least two voltage controlled buses (1 slack and one with a shiftable generator)
             # 2. At least two buses with a free Q (1 slack and one with a shiftable generator)
-            if self.options.control_Q and (self.nc.nbus - len(self.i_u_vm) >= 2) and (self.nc.nbus - len(self.i_k_q)) >= 2:
-        
+            if self.options.control_Q and (self.nc.nbus - len(self.i_u_vm) >= 2) and (
+                    self.nc.nbus - len(self.i_k_q)) >= 2:
+
                 # check and adjust the reactive power
                 # only update once, from voltage regulated to PQ injection
                 i_k_vm = np.setdiff1d(np.arange(self.nc.nbus), self.i_u_vm)
                 pv = np.intersect1d(i_k_vm, self.i_k_p)
                 changed, i_u_vm, i_k_q = control_q_josep_method(self.Scalc, self.S0,
                                                                 pv, self.i_u_vm, self.i_k_q,
-                                                                 self.Qmin, self.Qmax)
-        
+                                                                self.Qmin, self.Qmax)
+
                 if len(changed) > 0:
                     any_change = True
-        
+
                     # update the bus type lists
                     self.update_Qlim_indices(i_u_vm=i_u_vm, i_k_q=i_k_q)
-        
+
                     # the composition of x may have changed, so recompute
                     x = self.var2x()
 
@@ -2578,22 +2580,21 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     any_change = True
                     # Update the objective power to reflect the slack distribution
                     self.S0 += delta
-            
 
             # update the tap module control
             if self.options.control_taps_modules:
                 m_changed_ind = list()
                 for i, k in enumerate(self.u_cbr_m):
-        
+
                     # m_taps = self.nc.passive_branch_data.m_taps[i]
                     m_taps = self.nc.passive_branch_data.m_taps[k]
-        
+
                     if self.options.orthogonalize_controls and m_taps is not None:
                         _, self.m[i] = find_closest_number(arr=m_taps, target=self.m[i])
-        
+
                     if self.m[i] < self.nc.active_branch_data.tap_module_min[k]:
                         self.m[i] = self.nc.active_branch_data.tap_module_min[k]
-                        m_changed_ind.append(i) 
+                        m_changed_ind.append(i)
 
                         # self.tap_module_control_mode[k] = TapModuleControl.fixed
                         self.nc.active_branch_data.tap_module_control_mode[k] = TapModuleControl.fixed
@@ -2603,10 +2604,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         self.logger.add_info("Min tap module reached",
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.m[i])
-        
+
                     if self.m[i] > self.nc.active_branch_data.tap_module_max[k]:
                         self.m[i] = self.nc.active_branch_data.tap_module_max[k]
-                        m_changed_ind.append(i) 
+                        m_changed_ind.append(i)
 
                         # self.tap_module_control_mode[k] = TapModuleControl.fixed
                         self.nc.active_branch_data.tap_module_control_mode[k] = TapModuleControl.fixed
@@ -2616,21 +2617,21 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         self.logger.add_info("Max tap module reached",
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.m[i])
-        
+
                     if len(m_changed_ind) > 0:
                         self.m = np.delete(self.m, m_changed_ind)
-        
+
             # update the tap phase control
             if self.options.control_taps_phase:
                 t_changed_ind = list()
-        
+
                 for i, k in enumerate(self.u_cbr_tau):
-        
+
                     tau_taps = self.nc.passive_branch_data.tau_taps[k]
-        
+
                     if self.options.orthogonalize_controls and tau_taps is not None:
                         _, self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
-        
+
                     if self.tau[i] < self.nc.active_branch_data.tap_angle_min[k]:
                         self.tau[i] = self.nc.active_branch_data.tap_angle_min[k]
                         t_changed_ind.append(i)
@@ -2642,7 +2643,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         self.logger.add_info("Min tap phase reached",
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.tau[i])
-        
+
                     if self.tau[i] > self.nc.active_branch_data.tap_angle_max[k]:
                         self.tau[i] = self.nc.active_branch_data.tap_angle_max[k]
                         t_changed_ind.append(i)
@@ -2657,7 +2658,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                     if len(t_changed_ind) > 0:
                         self.tau = np.delete(self.tau, t_changed_ind)
-        
+
             if branch_ctrl_change:
                 self.bus_types = self.nc.bus_data.bus_types.copy()
                 self.is_p_controlled = self.nc.bus_data.is_p_controlled.copy()
@@ -2671,11 +2672,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                 # vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.S0.real, types=self.bus_types)
                 # self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
-        #
+            #
             if any_change or branch_ctrl_change:
                 # recompute the error based on the new Scalc and S0
                 self._f = self.fx()
-        
+
                 # compute the rror
                 self._error = compute_fx_error(self._f)
 

@@ -300,7 +300,8 @@ def test_voltage_control_with_ltc() -> None:
                                        control_taps_modules=control_taps_modules,
                                        control_taps_phase=False,
                                        control_remote_voltage=False,
-                                       apply_temperature_correction=False)
+                                       apply_temperature_correction=False,
+                                       orthogonalize_controls=False)
 
             results = gce.power_flow(grid, options)
 
@@ -331,6 +332,7 @@ def test_qf_control_with_ltc() -> None:
                                        verbose=0,
                                        control_q=False,
                                        retry_with_other_methods=False,
+                                       orthogonalize_controls=False,
                                        control_taps_modules=control_taps_modules)
 
             results = gce.power_flow(grid, options)
@@ -361,6 +363,7 @@ def test_qt_control_with_ltc() -> None:
                                        verbose=0,
                                        control_q=False,
                                        retry_with_other_methods=False,
+                                       orthogonalize_controls=False,
                                        control_taps_modules=control_taps_modules)
 
             results = gce.power_flow(grid, options)
@@ -390,7 +393,8 @@ def test_power_flow_control_with_pst_pf() -> None:
                                        verbose=0,
                                        control_q=False,
                                        retry_with_other_methods=False,
-                                       control_taps_phase=control_taps_phase)
+                                       control_taps_phase=control_taps_phase,
+                                       orthogonalize_controls=False)
 
             results = gce.power_flow(grid, options)
 
@@ -420,6 +424,7 @@ def test_power_flow_control_with_pst_pt() -> None:
                                        control_q=False,
                                        retry_with_other_methods=False,
                                        control_taps_phase=control_taps_phase,
+                                       orthogonalize_controls=False,
                                        max_iter=80)
 
             results = gce.power_flow(grid, options)
@@ -490,7 +495,6 @@ def test_power_flow_12bus_acdc() -> None:
 
     # ------------------------------------------------------------------------------------------------------------------
     for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-
         options = PowerFlowOptions(solver_type=solver_type,
                                    verbose=0,
                                    control_q=False,
