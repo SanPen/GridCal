@@ -622,7 +622,7 @@ def get_generator_data(
         data.x1[k] = elm.X1
         data.x2[k] = elm.X2
 
-        data.availability[k] = 1.0
+
         data.ramp_up[k] = elm.RampUp
         data.ramp_down[k] = elm.RampDown
         data.min_time_up[k] = elm.MinTimeUp
@@ -643,6 +643,7 @@ def get_generator_data(
             data.active[k] = elm.active_prof[t_idx]
             data.pf[k] = elm.Pf_prof[t_idx]
             data.v[k] = elm.Vset_prof[t_idx]
+            data.availability[k] = elm.availability_prof[t_idx]
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
@@ -682,6 +683,7 @@ def get_generator_data(
             data.active[k] = elm.active
             data.pf[k] = elm.Pf
             data.v[k] = elm.Vset
+            data.availability[k] = elm.availability
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
@@ -789,7 +791,6 @@ def get_battery_data(
         data.pmin[k] = elm.Pmin
         data.enom[k] = elm.Enom
 
-        data.availability[k] = 1.0
         data.ramp_up[k] = elm.RampUp
         data.ramp_down[k] = elm.RampDown
         data.min_time_up[k] = elm.MinTimeUp
@@ -812,6 +813,7 @@ def get_battery_data(
             data.active[k] = elm.active_prof[t_idx]
             data.pf[k] = elm.Pf_prof[t_idx]
             data.v[k] = elm.Vset_prof[t_idx]
+            data.availability[k] = elm.availability_prof[t_idx]
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
@@ -852,6 +854,7 @@ def get_battery_data(
             data.active[k] = elm.active
             data.pf[k] = elm.Pf
             data.v[k] = elm.Vset
+            data.availability[k] = elm.availability
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost

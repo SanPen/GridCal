@@ -63,7 +63,7 @@ class GeneratorData:
         self.cost_0: Vec = np.zeros(nelm, dtype=float)
         self.cost_2: Vec = np.zeros(nelm, dtype=float)
         self.startup_cost: Vec = np.zeros(nelm, dtype=float)
-        self.availability: Vec = np.zeros(nelm, dtype=float)
+        self.availability: Vec = np.ones(nelm, dtype=float)
         self.ramp_up: Vec = np.zeros(nelm, dtype=float)
         self.ramp_down: Vec = np.zeros(nelm, dtype=float)
         self.min_time_up: Vec = np.zeros(nelm, dtype=float)
@@ -298,28 +298,32 @@ class GeneratorData:
         Get generator Qmax per bus
         :return:
         """
-        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.qmax * self.active)
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx,
+                              magnitude=self.get_available_qmax() * self.active)
 
     def get_qmin_per_bus(self) -> Vec:
         """
         Get generator Qmin per bus
         :return:
         """
-        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.qmin * self.active)
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx,
+                              magnitude=self.get_available_qmin() * self.active)
 
     def get_pmax_per_bus(self) -> Vec:
         """
         Get generator Pmax per bus
         :return:
         """
-        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.pmax * self.active)
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx,
+                              magnitude=self.get_available_pmax() * self.active)
 
     def get_pmin_per_bus(self) -> Vec:
         """
         Get generator Pmin per bus
         :return:
         """
-        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.pmin * self.active)
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx,
+                              magnitude=self.get_available_pmin() * self.active)
 
     def get_array_per_bus_obj(self, arr: Vec) -> Vec:
         """
@@ -404,3 +408,45 @@ class GeneratorData:
         j = np.arange(self.nelm, dtype=int)
         data = np.ones(self.nelm, dtype=int)
         return coo_matrix((data, (self.bus_idx, j)), shape=(self.nbus, self.nelm), dtype=int).tocsc()
+
+    def get_available_pmax(self):
+        """
+        Pmax with the availability applied
+        :return: Pmax x availability
+        """
+        return self.pmax * self.availability
+
+    def get_available_pmin(self):
+        """
+        Pmin with the availability applied
+        :return: Pmin x availability
+        """
+        return self.pmin * self.availability
+
+    def get_available_qmax(self):
+        """
+        Qmax with the availability applied
+        :return: Qmax x availability
+        """
+        return self.qmax * self.availability
+
+    def get_available_qmin(self):
+        """
+        Qmin with the availability applied
+        :return: Qmin x availability
+        """
+        return self.qmin * self.availability
+
+    def avg_p_range_at(self, idx: IntVec):
+        """
+
+        :return:
+        """
+        return (self.pmax[idx] + self.pmin[idx]) * self.availability / 2.0
+
+    def avg_q_range_at(self, idx: IntVec):
+        """
+
+        :return:
+        """
+        return (self.qmax[idx] + self.qmin[idx]) * self.availability / 2.0

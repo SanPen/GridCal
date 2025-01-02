@@ -559,8 +559,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         Pg_max = nc.generator_data.p / Sbase
         Pg_min = nc.generator_data.p / Sbase
     else:
-        Pg_max = nc.generator_data.pmax / Sbase
-        Pg_min = nc.generator_data.pmin / Sbase
+        Pg_max = nc.generator_data.get_available_pmax() / Sbase
+        Pg_min = nc.generator_data.get_available_pmin() / Sbase
 
     Pg_max[slackgens] = nc.generator_data.pmax[slackgens] / Sbase
     Pg_min[slackgens] = nc.generator_data.pmin[slackgens] / Sbase
@@ -740,10 +740,16 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
     else:
-        p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:ngen]] +
-                       nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
-        q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:ngen]] +
-                       nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
+
+        p0gen = np.r_[
+            nc.generator_data.avg_p_range_at(gen_disp_idx[:ngen]) / nc.Sbase,
+            np.zeros(nsh)
+        ]
+
+        q0gen = np.r_[
+            nc.generator_data.avg_q_range_at(gen_disp_idx[:ngen]) / nc.Sbase,
+            np.zeros(nsh)
+        ]
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.active_branch_data.tap_module[k_m]

@@ -32,6 +32,7 @@ class Generator(GeneratorParent):
                  active: bool = True,
                  Pmin: float = 0.0,
                  Pmax: float = 9999.0,
+                 availability: float = 1.0,
                  Cost: float = 1.0,
                  Cost2: float = 0.0,
                  Cost0: float = 0.0,
@@ -52,13 +53,13 @@ class Generator(GeneratorParent):
                  srap_enabled: bool = True,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
-        Voltage controlled generator. This generators supports several reactive power
+        Generator.
         :param name: Name of the generator
         :param idtag: UUID code
         :param code: secondary code
         :param P: Active power in MW
         :param power_factor: Power factor
-        :param vset: Voltage setpoint in per unit
+        :param vset: Voltage set point in per unit
         :param is_controlled: Is the generator voltage controlled?
         :param Qmin: Minimum reactive power in MVAr
         :param Qmax: Maximum reactive power in MVAr
@@ -95,6 +96,7 @@ class Generator(GeneratorParent):
                                  P=P,
                                  Pmin=Pmin,
                                  Pmax=Pmax,
+                                 availability=availability,
                                  Cost=Cost,
                                  mttf=mttf,
                                  mttr=mttr,
