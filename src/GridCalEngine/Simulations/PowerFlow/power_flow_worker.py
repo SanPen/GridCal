@@ -81,7 +81,8 @@ def solve(nc: NumericalCircuit,
           indices: SimulationIndices,
           options: PowerFlowOptions,
           V0: CxVec,
-          S0: CxVec,
+          S_base: CxVec,
+          Shvdc: CxVec,
           logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -89,7 +90,8 @@ def solve(nc: NumericalCircuit,
     :param indices: SimulationIndices
     :param options: PowerFlow options
     :param V0: Array of initial voltages
-    :param S0: Array of power Injections
+    :param S_base: Array of power Injections
+    :param Shvdc: Array of power injections due t the HVDC lines (only used in some algorithms)
     :param logger: Logger
     :return: NumericPowerFlowResults 
     """
@@ -124,8 +126,8 @@ def solve(nc: NumericalCircuit,
     Y0 = nc.get_admittance_injections_pu()
 
     if len(indices.vd) == 0:
-        solution = NumericPowerFlowResults(V=np.zeros(len(S0), dtype=complex),
-                                           Scalc=S0,
+        solution = NumericPowerFlowResults(V=np.zeros(len(S_base), dtype=complex),
+                                           Scalc=S_base + Shvdc,
                                            m=nc.active_branch_data.tap_module,
                                            tau=nc.active_branch_data.tap_angle,
                                            Sf=np.zeros(nc.nbr, dtype=complex),
@@ -161,7 +163,7 @@ def solve(nc: NumericalCircuit,
         final_solution = NumericPowerFlowResults(V=V0,
                                                  converged=False,
                                                  norm_f=1e200,
-                                                 Scalc=S0,
+                                                 Scalc=S_base + Shvdc,
                                                  m=nc.active_branch_data.tap_module,
                                                  tau=nc.active_branch_data.tap_angle,
                                                  Sf=np.zeros(nc.nbr, dtype=complex),
@@ -197,7 +199,7 @@ def solve(nc: NumericalCircuit,
                                            Yt=adm.Yt,
                                            Yseries=adms.Yseries,
                                            V0=V0,  # take V0 instead of V
-                                           S0=S0,
+                                           S0=S_base + Shvdc,
                                            Ysh0=adms.Yshunt,
                                            pq=indices.pq,
                                            pv=indices.pv,
@@ -220,7 +222,7 @@ def solve(nc: NumericalCircuit,
                                                    Yt=adm.Yt,
                                                    Yseries=adms.Yseries,
                                                    V0=V0,  # take V0 instead of V
-                                                   S0=S0 + delta,
+                                                   S0=S_base + Shvdc + delta,
                                                    Ysh0=adms.Yshunt,
                                                    pq=indices.pq,
                                                    pv=indices.pv,
@@ -244,7 +246,7 @@ def solve(nc: NumericalCircuit,
                                      Bpqpv=Bpqpv,
                                      Bref=Bref,
                                      Bf=lin_adm.Bf,
-                                     S0=S0,
+                                     S0=S_base + Shvdc,
                                      I0=I0,
                                      Y0=Y0,
                                      V0=V0,
@@ -264,7 +266,7 @@ def solve(nc: NumericalCircuit,
                                              Bpqpv=Bpqpv,
                                              Bref=Bref,
                                              Bf=lin_adm.Bf,
-                                             S0=S0,
+                                             S0=S_base + Shvdc + delta,
                                              I0=I0,
                                              Y0=Y0,
                                              V0=V0,
@@ -282,7 +284,7 @@ def solve(nc: NumericalCircuit,
                                       Yf=adm.Yf,
                                       Yt=adm.Yt,
                                       Ys=adms.Yseries,
-                                      S0=S0,
+                                      S0=S_base + Shvdc,
                                       V0=V0,
                                       pq=indices.pq,
                                       pv=indices.pv,
@@ -297,7 +299,7 @@ def solve(nc: NumericalCircuit,
                                               Yf=adm.Yf,
                                               Yt=adm.Yt,
                                               Ys=adms.Yseries,
-                                              S0=S0,
+                                              S0=S_base + Shvdc + delta,
                                               V0=V0,
                                               pq=indices.pq,
                                               pv=indices.pv,
@@ -309,7 +311,7 @@ def solve(nc: NumericalCircuit,
                                         Ybus=adm.Ybus,
                                         Yf=adm.Yf,
                                         Yt=adm.Yt,
-                                        S0=S0,
+                                        S0=S_base + Shvdc,
                                         I0=I0,
                                         Y0=Y0,
                                         V0=V0,
@@ -333,7 +335,7 @@ def solve(nc: NumericalCircuit,
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
                     problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S0,
+                                                       S0=S_base,
                                                        I0=I0,
                                                        Y0=Y0,
                                                        Qmin=Qmin,
@@ -344,7 +346,7 @@ def solve(nc: NumericalCircuit,
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,
-                                                 S0=S0,
+                                                 S0=S_base + Shvdc,
                                                  I0=I0,
                                                  Y0=Y0,
                                                  Qmin=Qmin,
@@ -365,7 +367,7 @@ def solve(nc: NumericalCircuit,
 
                 solution = pflw.FDPF(nc=nc,
                                      Vbus=V0,
-                                     S0=S0,
+                                     S0=S_base + Shvdc,
                                      I0=I0,
                                      Y0=Y0,
                                      Ybus=adm.Ybus,
@@ -391,7 +393,7 @@ def solve(nc: NumericalCircuit,
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
                     problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S0,
+                                                       S0=S_base,
                                                        I0=I0,
                                                        Y0=Y0,
                                                        Qmin=Qmin,
@@ -402,7 +404,7 @@ def solve(nc: NumericalCircuit,
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,
-                                                 S0=S0,
+                                                 S0=S_base + Shvdc,
                                                  I0=I0,
                                                  Y0=Y0,
                                                  Qmin=Qmin,
@@ -422,7 +424,7 @@ def solve(nc: NumericalCircuit,
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
                     problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S0,
+                                                       S0=S_base + Shvdc,
                                                        I0=I0,
                                                        Y0=Y0,
                                                        Qmin=Qmin,
@@ -433,7 +435,7 @@ def solve(nc: NumericalCircuit,
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,
-                                                 S0=S0,
+                                                 S0=S_base,
                                                  I0=I0,
                                                  Y0=Y0,
                                                  Qmin=Qmin,
@@ -454,7 +456,7 @@ def solve(nc: NumericalCircuit,
                                           Ybus=adm.Ybus,
                                           Yf=adm.Yf,
                                           Yt=adm.Yt,
-                                          S0=S0,
+                                          S0=S_base + Shvdc,
                                           V0=final_solution.V,
                                           I0=I0,
                                           Y0=Y0,
@@ -577,9 +579,12 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         if len(indices.vd) > 0:
 
             if Sbus_input is None:
-                Sbus = Sbus_base + Shvdc[island.bus_data.original_idx]
+                Sbus_island = Sbus_base
             else:
-                Sbus = (Sbus_input + Shvdc)[island.bus_data.original_idx]
+                Sbus_island = Sbus_input[island.bus_data.original_idx]
+
+            Shvdc_island = Shvdc[island.bus_data.original_idx]
+            # Sbus = Sbus_base
 
             # call the numerical methods
             solution, report = solve(
@@ -587,7 +592,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 indices=indices,
                 options=options,
                 V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],
-                S0=Sbus,
+                S_base=Sbus_island,
+                Shvdc=Shvdc_island,
                 logger=logger
             )
 
@@ -607,7 +613,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     # Compile HVDC results (available for the complete grid since HVDC line as
     # formulated are split objects
     # Pt is the "generation" at the sending point
-    # Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc
+    # TODO: this is should only be done for methods that do not handle HVDC separating islands.
     results.Pf_hvdc = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
     results.Pt_hvdc = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
     results.loading_hvdc = loading_hvdc

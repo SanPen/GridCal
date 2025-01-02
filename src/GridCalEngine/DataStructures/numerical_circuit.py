@@ -536,6 +536,10 @@ class NumericalCircuit:
         self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
 
+        if self.active_branch_data.any_pf_control is False:
+            if self.vsc_data.nelm > 0:
+                self.active_branch_data.any_pf_control = True
+
     def copy(self) -> "NumericalCircuit":
         """
         Deep copy of ths object
