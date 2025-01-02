@@ -12,6 +12,7 @@ try:
     from GridCalEngine.Devices import *
     from GridCalEngine.DataStructures import *
     from GridCalEngine.Topology import *
+    from GridCalEngine.Compilers import *
     PROPERLY_LOADED_API = True
 except ModuleNotFoundError as e:
     print("Modules not found :/", e)

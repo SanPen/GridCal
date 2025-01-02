@@ -42,7 +42,7 @@ def load_iPA(file_name) -> MultiCircuit:
     # main grid
     vector_red = data['Red']
 
-    '''
+    """
     {'id': 0, 
     'Tipo': 1, 
     'E': 0, 
@@ -64,7 +64,7 @@ def load_iPA(file_name) -> MultiCircuit:
     'Conf': 'abc', 
     'LineaMT': '2030:98075347', 
     'Unom': 15.0}
-    '''
+    """
 
     for entry in vector_red:
 

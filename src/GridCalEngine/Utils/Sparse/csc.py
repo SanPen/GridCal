@@ -170,7 +170,7 @@ class CscMat(csc_matrix):
                 return y
             elif len(other.shape) == 2:
 
-                '''
+                """
 
                  * Input Arguments:
                  *   I  n_row            - number of rows in A
@@ -196,7 +196,7 @@ class CscMat(csc_matrix):
                                  const T Ax[],
                                  const T Xx[],
                                        T Yx[])
-                '''
+                """
                 n_col, n_vecs = other.shape
 
                 y = np.zeros((self.m, n_vecs), dtype=np.float64)

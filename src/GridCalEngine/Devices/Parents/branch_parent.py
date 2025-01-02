@@ -20,6 +20,22 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
 
 
+def set_bus(bus: Bus, cn: ConnectivityNode) -> Tuple[Bus | None, ConnectivityNode | None]:
+    """
+
+    :param bus:
+    :param cn:
+    :return:
+    """
+    if bus is None:
+        if cn is None:
+            return None, None
+        else:
+            return cn.bus, cn
+    else:
+        return bus, cn
+
+
 class BranchParent(PhysicalDevice):
     """
     This class serves to represent the basic branch
@@ -35,6 +51,7 @@ class BranchParent(PhysicalDevice):
                  cn_from: Union[ConnectivityNode, None],
                  cn_to: Union[ConnectivityNode, None],
                  active: bool,
+                 reducible: bool,
                  rate: float,
                  contingency_factor: float,
                  protection_rating_factor: float,
@@ -45,7 +62,7 @@ class BranchParent(PhysicalDevice):
                  build_status: BuildStatus,
                  capex: float,
                  opex: float,
-                 Cost: float,
+                 cost: float,
                  device_type: DeviceType):
         """
 
@@ -66,7 +83,7 @@ class BranchParent(PhysicalDevice):
         :param build_status: Branch build status. Used in expansion planning.
         :param capex: Cost of investment. (e/MW)
         :param opex: Cost of operation. (e/MWh)
-        :param Cost: Cost of overloads. Used in OPF (e/MWh)
+        :param cost: Cost of overloads. Used in OPF (e/MWh)
         :param device_type: device_type (passed on)
         """
 
@@ -77,17 +94,13 @@ class BranchParent(PhysicalDevice):
                                 device_type=device_type)
 
         # connectivity
-        self.bus_from = bus_from
-        self._bus_from_prof = Profile(default_value=bus_from, data_type=DeviceType.BusDevice)
-
-        self.bus_to = bus_to
-        self._bus_to_prof = Profile(default_value=bus_to, data_type=DeviceType.BusDevice)
-
-        self.cn_from = cn_from
-        self.cn_to = cn_to
+        self._bus_from, self._cn_from = set_bus(bus_from, cn_from)
+        self._bus_to, self._cn_to = set_bus(bus_to, cn_to)
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
+
+        self.reducible = bool(reducible)
 
         self.contingency_enabled: bool = contingency_enabled
 
@@ -97,9 +110,9 @@ class BranchParent(PhysicalDevice):
 
         self.mttr = mttr
 
-        self.Cost = Cost
+        self.Cost = cost
 
-        self._Cost_prof = Profile(default_value=Cost, data_type=float)
+        self._Cost_prof = Profile(default_value=cost, data_type=float)
 
         self.capex = capex
 
@@ -142,6 +155,9 @@ class BranchParent(PhysicalDevice):
 
         self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
 
+        self.register('reducible', units="", tpe=bool,
+                      definition='Is the branch to be reduced by the topology preprocessor?')
+
         self.register('rate', units="MVA", tpe=float, definition='Thermal rating power', profile_name="rate_prof")
         self.register('contingency_factor', units="p.u.", tpe=float,
                       definition='Rating multiplier for contingencies', profile_name="contingency_factor_prof")
@@ -166,84 +182,82 @@ class BranchParent(PhysicalDevice):
                       definition="Group where this branch belongs")
 
     @property
-    def bus_from_prof(self) -> Profile:
+    def bus_from(self) -> Bus:
         """
-        Bus profile
-        :return: Profile
+        Bus
+        :return: Bus
         """
-        return self._bus_from_prof
+        return self._bus_from
 
-    @bus_from_prof.setter
-    def bus_from_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._bus_from_prof = val
-        elif isinstance(val, np.ndarray):
-            self._bus_from_prof.set(arr=val)
+    @bus_from.setter
+    def bus_from(self, val: Bus):
+        if val is None:
+            self._bus_from = val
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a bus_from_prof')
+            if isinstance(val, Bus):
+                self._bus_from = val
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a _bus_from')
 
     @property
-    def bus_to_prof(self) -> Profile:
+    def bus_to(self) -> Bus:
         """
-        Bus profile
-        :return: Profile
+        Bus
+        :return: Bus
         """
-        return self._bus_to_prof
+        return self._bus_to
 
-    @bus_to_prof.setter
-    def bus_to_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._bus_to_prof = val
-        elif isinstance(val, np.ndarray):
-            self._bus_to_prof.set(arr=val)
+    @bus_to.setter
+    def bus_to(self, val: Bus):
+        if val is None:
+            self._bus_to = val
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a bus_to_prof')
+            if isinstance(val, Bus):
+                self._bus_to = val
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a _bus_to')
 
-    def get_bus_from_at(self, t_idx: Union[None, int]) -> Bus:
+    @property
+    def cn_from(self) -> ConnectivityNode:
         """
-        Returns the bus_from at a particular point in time
-        :param t_idx: time index (None for snapshot, int for profile values)
-        :return: Bus device
+        Bus
+        :return: Bus
         """
-        if t_idx is None:
-            return self.bus_from
-        else:
-            return self._bus_from_prof[t_idx]
+        return self._cn_from
 
-    def set_bus_from_at(self, t_idx: Union[None, int], val: Bus):
-        """
-        Returns the bus from at a particular point in time
-        :param t_idx: time index (None for snapshot, int for profile values)
-        :param val: Bus object to set
-        :return: Bus device
-        """
-        if t_idx is None:
-            self.bus_from = val
+    @cn_from.setter
+    def cn_from(self, val: ConnectivityNode):
+        if val is None:
+            self._cn_from = val
         else:
-            self._bus_from_prof[t_idx] = val
+            if isinstance(val, ConnectivityNode):
+                self._cn_from = val
 
-    def get_bus_to_at(self, t_idx: Union[None, int]) -> Bus:
-        """
-        Returns the bus_to at a particular point in time
-        :param t_idx: time index (None for snapshot, int for profile values)
-        :return: Bus device
-        """
-        if t_idx is None:
-            return self.bus_to
-        else:
-            return self._bus_to_prof[t_idx]
+                if self.bus_from is None:
+                    self.bus_from = self._cn_from.bus
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
 
-    def set_bus_to_at(self, t_idx: Union[None, int], val: Bus):
+    @property
+    def cn_to(self) -> ConnectivityNode:
         """
-        Returns the bus to at a particular point in time
-        :param t_idx: time index (None for snapshot, int for profile values)
-        :param val: Bus object to set
-        :return: Bus device
+        Bus
+        :return: Bus
         """
-        if t_idx is None:
-            self.bus_to = val
+        return self._cn_to
+
+    @cn_to.setter
+    def cn_to(self, val: ConnectivityNode):
+        if val is None:
+            self._cn_to = val
         else:
-            self._bus_to_prof[t_idx] = val
+            if isinstance(val, ConnectivityNode):
+                self._cn_to = val
+
+                if self.bus_to is None:
+                    self.bus_to = self._cn_to.bus
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node to')
 
     @property
     def active_prof(self) -> Profile:
@@ -403,10 +417,25 @@ class BranchParent(PhysicalDevice):
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
-        Always unit virtual taps (unless proven otherwise)
-        :return: tap_f, tap_t
+        Get the branch virtual taps
+
+        The virtual taps generate when a line nominal voltage ate the two connection buses differ
+
+        Returns:
+            **tap_f** (float, 1.0): Virtual tap at the *from* side
+            **tap_t** (float, 1.0): Virtual tap at the *to* side
         """
-        return 1.0, 1.0
+        # resolve how the transformer is actually connected and set the virtual taps
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+
+        if bus_f_v == bus_t_v:
+            return 1.0, 1.0
+        else:
+            if bus_f_v > 0.0 and bus_t_v > 0.0:
+                return 1.0, bus_f_v / bus_t_v
+            else:
+                return 1.0, 1.0
 
     def get_coordinates(self):
         """
@@ -525,12 +554,10 @@ class BranchParent(PhysicalDevice):
             return None
 
     def get_from_and_to_objects(self,
-                                t_idx: Union[int, None] = None,
                                 logger: Logger = Logger(),
                                 prefer_node_breaker: bool = True) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
         """
         Get the from and to connection objects of the branch
-        :param t_idx: Time index (optional)
         :param logger: Logger object
         :param prefer_node_breaker: If true the connectivity nodes are examined first,
                                     otherwise the buses are returned right away
@@ -538,8 +565,8 @@ class BranchParent(PhysicalDevice):
         """
 
         # Pick the right bus
-        bus_from = self.bus_from if t_idx is None else self.bus_from_prof[t_idx]
-        bus_to = self.bus_to if t_idx is None else self.bus_to_prof[t_idx]
+        bus_from = self.bus_from
+        bus_to = self.bus_to
 
         if not prefer_node_breaker:
             # if we're not preferrig node breaker, return the bus-branch buses whatever they may be

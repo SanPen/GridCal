@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 from typing import List, Any, Dict, Union, Tuple
 import pandas as pd
@@ -37,16 +38,15 @@ class CDF:
     Inverse Cumulative density function of a given array of data
     """
 
-    def __init__(self, data: Vec):
+    def __init__(self, data: Vec | pd.Series):
         """
         Constructor
-        @param data: Array (list or numpy array)
+        @param data: Array (DataFrame or numpy array)
         """
         # Create the CDF of the data
         # sort the data:
-        if type(data) is pd.DataFrame:
+        if isinstance(data, pd.Series):
             self.arr = np.sort(np.ndarray.flatten(data.values))
-
         else:
             self.arr = np.sort(data, axis=0)
 
@@ -136,7 +136,7 @@ class CDF:
         else:
             return np.interp(prob, self.prob, self.arr)
 
-    def expectation(self) -> float:
+    def expectation(self) -> float | complex:
         """
         Returns the CDF expected value (AKA the mean)
         :return: expectation
@@ -296,7 +296,7 @@ class LogEntry:
         Get list representation of this entry
         :return:
         """
-        return [self.time, self.device_class, self.device_property,  self.device, self.value, self.expected_value]
+        return [self.time, self.device_class, self.device_property, self.device, self.value, self.expected_value]
 
     def __str__(self):
         return "{0} {1}: {2} {3} {4} {5}".format(self.time,
@@ -333,7 +333,7 @@ class Logger:
         """
         self.entries.append(LogEntry(txt))
 
-    def has_logs(self):
+    def has_logs(self) -> bool:
         """
         Are there any logs?
         :return: True / False
@@ -464,7 +464,8 @@ class Logger:
                                      object_value=str(object_value),
                                      expected_object_value=str(expected_object_value)))
 
-    def to_dict(self) -> Union[Dict[str, Dict[str, List[Tuple[str, str, str, str]]]], Dict[str, Dict[str, List[List[str]]]]]:
+    def to_dict(self) -> Union[
+        Dict[str, Dict[str, List[Tuple[str, str, str, str]]]], Dict[str, Dict[str, List[List[str]]]]]:
         """
         Get the logs sorted by severity and message
         :return: Dictionary[Dictionary[List[time, device, value, expected value]]]
@@ -538,7 +539,7 @@ class Logger:
             print(title)
         print(self.to_df())
 
-    def __str__(self):
+    def __str__(self) -> str:
 
         val = ''
         for e in self.entries:
@@ -633,7 +634,7 @@ class ConvergenceReport:
         self.elapsed_ = list()
         self.iterations_ = list()
 
-    def add(self, method, converged, error, elapsed, iterations):
+    def add(self, method, converged: bool, error: float, elapsed: float, iterations: int):
         """
 
         :param method:
@@ -820,7 +821,7 @@ class CompressedJsonStruct:
         :return:
         """
         nf = len(self.__fields)
-        self.__data = [[None] * nf for i in range(n)]
+        self.__data = [[None] * nf for _ in range(n)]
 
     def set_at(self, i, col_name, val):
         """
@@ -831,3 +832,80 @@ class CompressedJsonStruct:
         """
         j = self.get_col_index(prop=col_name)
         self.__data[i][j] = val
+
+
+class ListSet(list):
+    """
+    This is a class that behaves like a list except for the query "in" where it behaves like a set O(1)
+    """
+
+    def __init__(self, iterable=None):
+        """Initialize the ListSet with an optional iterable."""
+        super().__init__()
+        self._set = set()
+        if iterable:
+            self.extend(iterable)
+
+    def append(self, value):
+        """Append an item to the list if it's not already present."""
+        if value not in self._set:
+            super().append(value)
+            self._set.add(value)
+
+    def extend(self, iterable):
+        """Extend the list by appending elements from the iterable, ensuring uniqueness."""
+        for value in iterable:
+            self.append(value)
+
+    def insert(self, index, value):
+        """Insert an item at a given position if it's not already present."""
+        if value not in self._set:
+            super().insert(index, value)
+            self._set.add(value)
+
+    def remove(self, value):
+        """Remove the first occurrence of a value. Raises ValueError if not found."""
+        super().remove(value)
+        self._set.remove(value)
+
+    def pop(self, index=-1):
+        """Remove and return the item at the given position."""
+        value = super().pop(index)
+        self._set.remove(value)
+        return value
+
+    def clear(self):
+        """Remove all items from the list."""
+        super().clear()
+        self._set.clear()
+
+    def __contains__(self, value):
+        """Check if the value is in the ListSet using the internal set for O(1) queries."""
+        return value in self._set
+
+    def __add__(self, other):
+        """Return a new ListSet containing elements from self and other, ensuring uniqueness."""
+        return ListSet(self + [item for item in other if item not in self._set])
+
+    def __iadd__(self, other):
+        """Extend the ListSet in place with elements from other, ensuring uniqueness."""
+        self.extend(other)
+        return self
+
+    def __setitem__(self, index, value):
+        """Set the item at the given index, ensuring uniqueness."""
+        if value in self._set and self[index] != value:
+            raise ValueError(f"Duplicate value '{value}' is not allowed in ListSet.")
+        self._set.discard(self[index])  # Remove the old value from the set
+        super().__setitem__(index, value)
+        self._set.add(value)
+
+    def __delitem__(self, index):
+        """Delete the item at the given index."""
+        value = self[index]
+        super().__delitem__(index)
+        self._set.remove(value)
+
+    def copy(self):
+        """Return a shallow copy of the ListSet."""
+        return ListSet(self)

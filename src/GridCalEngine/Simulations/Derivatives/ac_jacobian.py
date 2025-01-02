@@ -9,7 +9,8 @@ from scipy.sparse import csr_matrix, csc_matrix
 from GridCalEngine.Simulations.Derivatives.csr_derivatives import dSbus_dV_numba_sparse_csr
 from GridCalEngine.Simulations.Derivatives.csc_derivatives import dSbus_dV_numba_sparse_csc
 from GridCalEngine.basic_structures import IntVec, CxVec
-from GridCalEngine.Utils.Sparse.csc2 import make_lookup, CSC
+from GridCalEngine.Utils.NumericalMethods.common import make_lookup
+from GridCalEngine.Utils.Sparse.csc2 import CSC
 
 
 @jit(nopython=True, cache=True)

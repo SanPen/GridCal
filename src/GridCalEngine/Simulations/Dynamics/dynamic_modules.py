@@ -1203,7 +1203,7 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
     max_iter = 20
 
     # compose dynamic controllers
-    '''
+    """
     class DynamicModels(Enum):
     NoModel = 0,
     SM4 = 1,
@@ -1212,7 +1212,7 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
     EG = 4,
     SAM = 5,
     DAM = 6  
-    '''
+    """
     sm4_idx = list()
     sm6b_idx = list()
     vsc_idx = list()
@@ -1322,8 +1322,8 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
             H[k] = dynamic_devices[k].H
             Rr[k] = dynamic_devices[k].Rr
             Xr[k] = dynamic_devices[k].Xr
-            Rs[k] = dynamic_devices[k].Rs
-            Xs[k] = dynamic_devices[k].Xs
+            Rs[k] = dynamic_devices[k].R
+            Xs[k] = dynamic_devices[k].X
             Xq[k] = dynamic_devices[k].Xq
             a[k] = dynamic_devices[k].a
             Xm[k] = dynamic_devices[k].Xm
@@ -1336,8 +1336,8 @@ def dynamic_simulation(n, Vbus, Sbus, Ybus, Sbase, fBase, t_sim, h, dynamic_devi
             H[k] = dynamic_devices[k].H
             Rr[k] = dynamic_devices[k].Rr
             Xr[k] = dynamic_devices[k].Xr
-            Rs[k] = dynamic_devices[k].Rs
-            Xs[k] = dynamic_devices[k].Xs
+            Rs[k] = dynamic_devices[k].R
+            Xs[k] = dynamic_devices[k].X
             Rr2[k] = dynamic_devices[k].Rr2
             Xr2[k] = dynamic_devices[k].Xr2
             a[k] = dynamic_devices[k].a

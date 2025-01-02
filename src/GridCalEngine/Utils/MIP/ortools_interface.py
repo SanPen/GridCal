@@ -10,14 +10,17 @@ other solver interface easily
 """
 
 from typing import List, Union, Tuple, Iterable
-import ortools.linear_solver.pywraplp as ort
-from ortools.linear_solver.python import model_builder
-from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded
-from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
-from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
-from ortools.linear_solver.python.model_builder import Variable as LpVar
-from ortools.linear_solver.python.model_builder import _Sum as LpSum
-# from ortools.init.python import init
+try:
+    import ortools.linear_solver.pywraplp as ort
+    from ortools.linear_solver.python import model_builder
+    from ortools.linear_solver.python.model_builder import BoundedLinearExpression as LpCstBounded
+    from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
+    from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
+    from ortools.linear_solver.python.model_builder import Variable as LpVar
+    from ortools.linear_solver.python.model_builder import _Sum as LpSum
+except ImportError:
+    print("Ortools not installed :(")
+
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 

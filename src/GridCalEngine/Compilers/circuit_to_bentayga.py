@@ -553,6 +553,7 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data = NumericalCircuit(nbus=0,
                                 nbr=0,
                                 nhvdc=0,
+                                nvsc=0,
                                 nload=0,
                                 ngen=0,
                                 nbatt=0,
@@ -567,9 +568,9 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.Vbus_ = btg_data.Vbus.reshape(-1, 1)
         data.Sbus_ = btg_data.Sbus.reshape(-1, 1)
         data.Ibus_ = btg_data.Ibus
-        data.branch_data.names = np.array(btg_data.branch_data.names)
-        data.branch_data.virtual_tap_f = btg_data.branch_data.virtual_tap_f
-        data.branch_data.virtual_tap_t = btg_data.branch_data.virtual_tap_t
+        data.passive_branch_data.names = np.array(btg_data.passive_branch_data.names)
+        data.passive_branch_data.virtual_tap_f = btg_data.passive_branch_data.virtual_tap_f
+        data.passive_branch_data.virtual_tap_t = btg_data.passive_branch_data.virtual_tap_t
 
         data.bus_data.names = np.array(btg_data.bus_data.names)
 
@@ -597,7 +598,7 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.pqpv_ = btg_data.bus_types_data.pqpv
 
         data.bus_data.original_idx = btg_data.bus_data.original_indices
-        data.branch_data.original_idx = btg_data.branch_data.original_indices
+        data.passive_branch_data.original_idx = btg_data.passive_branch_data.original_indices
 
         data.Qmax_bus_ = btg_data.Qmax_bus
         data.Qmin_bus_ = btg_data.Qmin_bus
@@ -690,12 +691,14 @@ def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
     results = PowerFlowResults(n=grid.get_bus_number(),
                                m=grid.get_branch_number_wo_hvdc(),
                                n_hvdc=grid.get_hvdc_number(),
+                               n_vsc=grid.get_vsc_number(),
                                n_gen=grid.get_generators_number(),
                                n_batt=grid.get_batteries_number(),
                                n_sh=grid.get_shunt_like_device_number(),
                                bus_names=res.names,
                                branch_names=res.names,
                                hvdc_names=res.hvdc_names,
+                               vsc_names=grid.get_vsc_names(),
                                gen_names=grid.get_generator_names(),
                                batt_names=grid.get_battery_names(),
                                sh_names=grid.get_shunt_like_devices_names(),
@@ -717,10 +720,10 @@ def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
     results.T = res.T
     results.hvdc_F = res.F_hvdc
     results.hvdc_T = res.T_hvdc
-    results.hvdc_Pf = res.hvdc_Pf[0, :]
-    results.hvdc_Pt = res.hvdc_Pt[0, :]
-    results.hvdc_loading = res.hvdc_loading[0, :]
-    results.hvdc_losses = res.hvdc_losses[0, :]
+    results.Pf_hvdc = res.Pf_hvdc[0, :]
+    results.Pt_hvdc = res.Pt_hvdc[0, :]
+    results.loading_hvdc = res.loading_hvdc[0, :]
+    results.losses_hvdc = res.losses_hvdc[0, :]
     results.bus_area_indices = grid.get_bus_area_indices()
     results.area_names = [a.name for a in grid.areas]
 

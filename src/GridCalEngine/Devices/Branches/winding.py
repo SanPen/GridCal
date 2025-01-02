@@ -151,6 +151,7 @@ class Winding(Transformer2W):
                                tap_phase_max=tap_phase_max,
                                tap_phase_min=tap_phase_min,
                                active=active,
+                               reducible=False,
                                tolerance=tolerance,
                                cost=cost,
                                mttf=mttf,

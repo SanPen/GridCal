@@ -148,7 +148,7 @@ class Bus(PhysicalDevice):
         self.is_dc = bool(is_dc)
 
         # determine if this bus is part of a composite transformer such as a 3-winding transformer
-        self.is_internal = bool(is_internal)
+        self._internal = bool(is_internal)
 
         # position and dimensions
         self.x = float(xpos)
@@ -163,10 +163,10 @@ class Bus(PhysicalDevice):
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
                       profile_name='')
         self.register(key='is_dc', units='', tpe=bool, definition='Is this bus of DC type?.', profile_name='')
-        self.register(key='is_internal', units='', tpe=bool,
+        self.register(key='internal', units='', tpe=bool,
                       definition='Is this bus part of a composite transformer, '
                                  'such as  a 3-winding transformer or a fluid node?.',
-                      profile_name='', old_names=['is_tr_bus'])
+                      profile_name='', old_names=['is_tr_bus', 'is_internal'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
@@ -349,3 +349,11 @@ class Bus(PhysicalDevice):
                 lat = self.substation.latitude
 
         return lon, lat
+
+    @property
+    def internal(self):
+        return self._internal
+
+    @internal.setter
+    def internal(self, val: bool):
+        self._internal = val

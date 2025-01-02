@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import time
+from typing import Tuple
 import numpy as np
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -33,7 +34,7 @@ def compute_beta(a: Vec, b: Vec, delta: float):
         return delta2_norm2a / (c + np.sqrt(c * c + norm2_ba * delta2_norm2a))
 
 
-def compute_hdl(hgn: Vec, hsd: Vec, g: Vec, alpha: float, delta: float, f_error: float) -> Vec:
+def compute_hdl(hgn: Vec, hsd: Vec, g: Vec, alpha: float, delta: float, f_error: float) -> Tuple[Vec, float]:
     """
     Compute the Hdl vector
     :param hgn: Hgn vector
@@ -86,7 +87,7 @@ def powell_fx(problem: PfFormulationTemplate,
     x = problem.var2x()
 
     if len(x) == 0:
-        # if the lenght of x is zero, means that there's nothing to solve
+        # if the length of x is zero, means that there's nothing to solve
         # for instance there might be a single node that is a slack node
         return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
@@ -138,14 +139,13 @@ def powell_fx(problem: PfFormulationTemplate,
             hdl, L0_Lhdl = compute_hdl(hgn=hgn, hsd=hsd, g=g, alpha=alpha, delta=delta, f_error=f_error)
 
             if verbose > 1:
-                import pandas as pd
-                print("H:\n", pd.DataFrame(J.toarray()).to_string(index=False))
-                print("f:\n", f)
-                print("dx:\n", hdl)
+                print("J:\n", problem.get_jacobian_df(J))
+                print("F:\n", problem.get_f_df(f))
+                print("dx:\n", problem.get_x_df(hgn))
 
-            tol2 = tol * (norm(x) + tol)
-
-            f_error_new, converged, x, f = problem.update(x + hdl, update_controls=True)
+            # tol2 = tol * (norm(x) + tol)
+            update_controls = f_error < (tol * 100)
+            f_error_new, converged, x, f = problem.update(x + hdl, update_controls=update_controls)
 
             rho = (f_error - f_error_new) / L0_Lhdl if L0_Lhdl > 0 else -1.0
 

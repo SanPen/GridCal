@@ -985,9 +985,14 @@ class GridMapWidget(BaseDiagramWidget):
                        hvdc_loading: Vec = None,
                        hvdc_active: IntVec = None,
                        loading_label: str = 'loading',
+                       vsc_Pf: Vec = None,
+                       vsc_Pt: Vec = None,
+                       vsc_Qt: Vec = None,
+                       vsc_losses: Vec = None,
+                       vsc_loading: Vec = None,
+                       vsc_active: IntVec = None,
                        ma: Vec = None,
                        theta: Vec = None,
-                       Beq: Vec = None,
                        fluid_node_p2x_flow: Vec = None,
                        fluid_node_current_level: Vec = None,
                        fluid_node_spillage: Vec = None,
@@ -1017,10 +1022,15 @@ class GridMapWidget(BaseDiagramWidget):
         :param hvdc_losses: HVDC branch losses [MW]
         :param hvdc_loading: HVDC Branch loading [%]
         :param hvdc_active: HVDC Branch status
+        :param vsc_Pf: VSC branch flows "from" [MW]
+        :param vsc_Pt: VSC branch flows "to" [MW]
+        :param vsc_Qt: VSC branch flows "to" [Mvar]
+        :param vsc_losses: VSC branch losses [MW]
+        :param vsc_loading: VSC Branch loading [%]
+        :param vsc_active: VSC Branch status
         :param loading_label: String saling whatever the loading label means
         :param ma: branch phase shift angle (rad)
         :param theta: branch tap module (p.u.)
-        :param Beq: Branch equivanet susceptance (p.u.)
         :param fluid_node_p2x_flow: P2X flow rate (m3)
         :param fluid_node_current_level: Current level (m3)
         :param fluid_node_spillage: Spillage (m3)

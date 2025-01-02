@@ -7,3 +7,4 @@ import GridCalEngine.Compilers.circuit_to_data
 # import GridCalEngine.Compilers.circuit_to_bentayga
 # import GridCalEngine.Compilers.circuit_to_newton_pa
 # import GridCalEngine.Compilers.circuit_to_pgm
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at

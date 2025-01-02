@@ -4,15 +4,12 @@
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
 import pandas as pd
-from scipy.sparse import csc_matrix as csc
-from scipy.sparse import lil_matrix
 import GridCalEngine.api as gce
 from GridCalEngine.basic_structures import Vec
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from typing import Callable, Tuple
 
 
 def x2var(x, n_vm, n_va, n_P, n_Q):
@@ -208,16 +205,19 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
     c1 = nc.generator_data.cost_1
     c2 = nc.generator_data.cost_2
 
-    Ybus = nc.Ybus
-    Yf = nc.Yf
-    Yt = nc.Yt
-    Cg = nc.generator_data.C_bus_elm
+    adm = nc.get_admittance_matrices()
+    idx = nc.get_simulation_indices()
+
+    Ybus = adm.Ybus
+    Yf = adm.Yf
+    Yt = adm.Yt
+    Cg = nc.generator_data.get_C_bus_elm()
 
     # Bus identification lists
-    slack = nc.vd
-    no_slack = nc.pqpv
-    from_idx = nc.F
-    to_idx = nc.T
+    slack = idx.vd
+    no_slack = idx.pqpv
+    from_idx = nc.passive_branch_data.F
+    to_idx = nc.passive_branch_data.T
 
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
@@ -227,11 +227,11 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
     Qg_min = nc.generator_data.qmin / Sbase
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
-    rates = nc.rates / Sbase
+    rates = nc.passive_branch_data.rates / Sbase
     Va_max = nc.bus_data.angle_max
     Va_min = nc.bus_data.angle_min
 
-    nbr = nc.branch_data.nelm
+    nbr = nc.passive_branch_data.nelm
     nbus = nc.bus_data.nbus
     ngen = nc.generator_data.nelm
     n_no_slack = len(no_slack)
@@ -252,8 +252,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
 
     # ignore power from Z and I of the load
     s0gen = (pf_results.Sbus - nc.load_data.get_injections_per_bus()) / nc.Sbase
-    p0gen = nc.generator_data.C_bus_elm.T @ np.real(s0gen)
-    q0gen = nc.generator_data.C_bus_elm.T @ np.imag(s0gen)
+    p0gen = Cg.T @ np.real(s0gen)
+    q0gen = Cg.T @ np.imag(s0gen)
 
     # compose the initial values
     x0 = var2x(vm=np.abs(pf_results.voltage),
@@ -282,7 +282,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions
     df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
 
     if verbose > 0:
-        print()
         print("Bus:\n", df_bus)
         print("Gen:\n", df_gen)
         print("Error", result.error)

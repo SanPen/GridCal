@@ -31,7 +31,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
@@ -64,6 +64,7 @@ class SimulationsMain(TimeEventsMain):
         self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
         self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
         self.solvers_dict[SolverType.DC.value] = SolverType.DC
+        # self.solvers_dict[SolverType.GENERALISED.value] = SolverType.GENERALISED
 
         self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
         self.ui.solver_comboBox.setCurrentIndex(0)
@@ -218,7 +219,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
-        self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
+
         self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
         self.ui.actionNodal_capacity.triggered.connect(self.run_nodal_capacity)
 
@@ -1343,7 +1344,7 @@ class SimulationsMain(TimeEventsMain):
                     _, pf_results = self.session.power_flow
                     if pf_results is not None:
                         Pf = pf_results.Sf.real
-                        Pf_hvdc = pf_results.hvdc_Pf.real
+                        Pf_hvdc = pf_results.Pf_hvdc.real
                         use_provided_flows = True
                     else:
                         warning_msg('There were no power flow values available. Linear flows will be used.')
@@ -1632,10 +1633,10 @@ class SimulationsMain(TimeEventsMain):
                                                                   verbose=0)
 
                     if use_alpha:
-                        '''
+                        """
                         use the current power situation as start
                         and a linear combination of the current situation as target
-                        '''
+                        """
                         # lock the UI
                         self.LOCK()
 
@@ -1665,9 +1666,9 @@ class SimulationsMain(TimeEventsMain):
                                          text_func=self.ui.progress_label.setText)
 
                     elif use_profiles:
-                        '''
+                        """
                         Here the start and finish power states are taken from the profiles
-                        '''
+                        """
                         if start_idx > -1 and end_idx > -1:
 
                             # lock the UI
@@ -2663,7 +2664,7 @@ class SimulationsMain(TimeEventsMain):
 
     def run_topology_processor(self):
         """
-        Run the topology processor on the grid completelly
+        Run the topology processor on the grid completely
         """
 
         if not self.session.is_this_running(SimulationTypes.TopologyProcessor_run):

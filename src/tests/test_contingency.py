@@ -4,7 +4,9 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 import numpy as np
+import pandas as pd
 from GridCalEngine.api import *
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
 def test_contingency() -> None:
@@ -28,8 +30,8 @@ def test_contingency() -> None:
     cont_analysis_driver.run()
     print("")
 
-    for i, line in enumerate(main_circuit.get_lines()):
-        line.active = False
+    for i, lne in enumerate(main_circuit.get_lines()):
+        lne.active = False
         pf_driver = PowerFlowDriver(grid=main_circuit, options=pf_options)
         pf_driver.run()
 
@@ -38,7 +40,7 @@ def test_contingency() -> None:
 
         assert cont_analysis_driver.results.Sf[i, i] == complex(0, 0)
 
-        line.active = True
+        lne.active = True
 
 
 def test_linear_contingency():
@@ -62,56 +64,83 @@ def test_linear_contingency():
     print("")
 
 
-# def test_lodf():
-#     fname = os.path.join('data', 'grids', 'IEEE14_contingency.gridcal')
+# def test_ieee14_contingencies() -> None:
+#     """
+#     Check that the contingencies match conceptually
+#     :return:
+#     """
+#     fname = os.path.join('data', 'grids', 'Matpower', 'case14.m')
+#
+#     res_file = os.path.join('data', 'results', 'IEEE14_con_results_matpower.xlsx')
 #     main_circuit = FileOpen(fname).open()
+#     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 #     pf_options = PowerFlowOptions(SolverType.NR,
-#                                   verbose=False,
-#                                   initialize_with_existing_solution=False,
-#                                   dispatch_storage=True,
+#                                   retry_with_other_methods=False,
 #                                   control_q=False,
-#                                   control_p=False)
+#                                   control_taps_phase=False,
+#                                   control_taps_modules=False,
+#                                   control_remote_voltage=False,)
 #
-#     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
-#     linear_analysis.run()
-#     linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
-#     linear_multi_contingency.update(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
+#     vm_df = pd.read_excel(res_file, sheet_name='Vm', index_col=0)
+#     va_df = pd.read_excel(res_file, sheet_name='Va', index_col=0)
+#     Pf_df = pd.read_excel(res_file, sheet_name='Pf', index_col=0)
+#     Qf_df = pd.read_excel(res_file, sheet_name='Qf', index_col=0)
 #
-#     options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyEngine.PTDF)
-#     cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
-#                                                      linear_multiple_contingencies=linear_multi_contingency)
-#     cont_analysis_driver.run()
+#     for k in range(nc.passive_branch_data.nelm):
+#         nc.passive_branch_data.active[k] = 0
+#
+#         res = multi_island_pf_nc(nc=nc, options=pf_options)
+#
+#         try:
+#             vm_expected = vm_df.values[:, k]
+#             va_expected = va_df.values[:, k]
+#             vm = np.abs(res.voltage)
+#             va = np.angle(res.voltage, deg=True)
+#
+#             # TODO: Comparing with PSSe, it is the same value...do the PSSe comaprison instead
+#             assert np.allclose(vm, vm_expected, atol=1e-3)
+#             assert np.allclose(va, va_expected, atol=1e-3)
+#         except AttributeError:
+#             print()
+#
+#         nc.passive_branch_data.active[k] = 1
 
 
-# def test_ptdf():  # ver tests archivo de tests de PTDF
-#     fname = os.path.join('data', 'grids', 'case14.m')
+
+# def test_ieee14_contingencies_psse() -> None:
+#     """
+#     Check that the contingencies match conceptually
+#     :return:
+#     """
+#     fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+#
+#     res_file = os.path.join('data', 'results', 'IEEE14_con_results.xlsx')
 #     main_circuit = FileOpen(fname).open()
+#     nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 #     pf_options = PowerFlowOptions(SolverType.NR,
-#                                   verbose=False,
-#                                   initialize_with_existing_solution=False,
-#                                   dispatch_storage=True,
+#                                   retry_with_other_methods=False,
 #                                   control_q=False,
-#                                   control_p=False)
+#                                   control_taps_phase=False,
+#                                   control_taps_modules=False,
+#                                   control_remote_voltage=False,)
 #
-#     branches = main_circuit.get_branches()
+#     vm_df = pd.read_excel(res_file, sheet_name='Vm', index_col=0)
+#     va_df = pd.read_excel(res_file, sheet_name='Va', index_col=0)
 #
-#     branches_id = [x.code for x in branches]
-#     print(branches_id)
-#     nodes = main_circuit.get_buses()
-#     nodes_id = [x.code for x in nodes]
-#     print(nodes_id)
+#     for k in range(nc.passive_branch_data.nelm):
+#         nc.passive_branch_data.active[k] = 0
 #
-#     ptdf_result = np.loadtxt(os.path.join('data', 'results', 'comparison', 'IEEE 14 ptdf.csv'), delimiter=',')
+#         res = multi_island_pf_nc(nc=nc, options=pf_options)
 #
-#     linear_analysis_opt = LinearAnalysisOptions(distribute_slack=False, correct_values=False)
+#         try:
+#             vm_expected = vm_df[k+1].values
+#             va_expected = va_df[k+1].values
+#             vm = np.abs(res.voltage)
+#             va = np.angle(res.voltage, deg=True)
 #
-#     linear_analysis = LinearAnalysisDriver(grid=main_circuit, options=linear_analysis_opt)
-#     linear_analysis.run()
+#             assert np.allclose(vm, vm_expected, atol=1e-3)
+#             assert np.allclose(va, va_expected, atol=1e-3)
+#         except AttributeError:
+#             print()
 #
-#     #TODO Revisar orden
-#     #res = linear_analysis.results.PTDF - ptdf_result
-#     #print(res)
-#     assert(np.isclose(linear_analysis.results.PTDF, ptdf_result).all())
-
-if __name__ == '__main__':
-    test_contingency()
+#         nc.passive_branch_data.active[k] = 1

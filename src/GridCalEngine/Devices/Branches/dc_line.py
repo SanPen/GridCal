@@ -80,6 +80,7 @@ class DcLine(BranchParent):
                               cn_from=None,
                               cn_to=None,
                               active=active,
+                              reducible=False,
                               rate=rate,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
@@ -90,7 +91,7 @@ class DcLine(BranchParent):
                               build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              Cost=cost,
+                              cost=cost,
                               device_type=DeviceType.DCLineDevice)
 
         # List of measurements

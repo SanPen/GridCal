@@ -205,7 +205,7 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
 
     elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
-                                # B=b_init,   # TODO Binit
+                                B=b_init,
                                 vset=vset,
                                 code=busnum_id,
                                 is_nonlinear=True)
@@ -276,7 +276,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
     :return:
     """
 
-    '''
+    """
     R1-2, X1-2 The measured impedance of the transformer between the buses to which its first
         and second windings are connected.
 
@@ -292,7 +292,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         should specify the three-phase load loss.
 
         R1-2 = 0.0 by default, but no default is allowed for X1-2.
-    '''
+    """
 
     psse_elm.CKT = str(psse_elm.CKT).replace("'", "")
 
