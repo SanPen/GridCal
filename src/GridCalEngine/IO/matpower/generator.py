@@ -64,17 +64,19 @@ class MatpowerGenerator:
         self.gen_status = int(row[7])       # Generator status
         self.pmax = float(row[8])           # Maximum real power output
         self.pmin = float(row[9])           # Minimum real power output
-        self.pc1 = float(row[10])           # Lower real power output of PQ capability curve
-        self.pc2 = float(row[11])           # Upper real power output of PQ capability curve
-        self.qc1min = float(row[12])        # Minimum reactive power at Pc1
-        self.qc1max = float(row[13])        # Maximum reactive power at Pc1
-        self.qc2min = float(row[14])        # Minimum reactive power at Pc2
-        self.qc2max = float(row[15])        # Maximum reactive power at Pc2
-        self.ramp_agc = float(row[16])      # Ramp rate for load following/AGC
-        self.ramp_10 = float(row[17])       # Ramp rate for 10-minute reserves
-        self.ramp_30 = float(row[18])       # Ramp rate for 30-minute reserves
-        self.ramp_q = float(row[19])        # Ramp rate for reactive power
-        self.apf = float(row[20])           # Area participation factor
+
+        if len(row) > 10:
+            self.pc1 = float(row[10])           # Lower real power output of PQ capability curve
+            self.pc2 = float(row[11])           # Upper real power output of PQ capability curve
+            self.qc1min = float(row[12])        # Minimum reactive power at Pc1
+            self.qc1max = float(row[13])        # Maximum reactive power at Pc1
+            self.qc2min = float(row[14])        # Minimum reactive power at Pc2
+            self.qc2max = float(row[15])        # Maximum reactive power at Pc2
+            self.ramp_agc = float(row[16])      # Ramp rate for load following/AGC
+            self.ramp_10 = float(row[17])       # Ramp rate for 10-minute reserves
+            self.ramp_30 = float(row[18])       # Ramp rate for 30-minute reserves
+            self.ramp_q = float(row[19])        # Ramp rate for reactive power
+            self.apf = float(row[20])           # Area participation factor
 
         if len(row) > 21:
             self.mu_pmax = float(row[21])       # Kuhn-Tucker multiplier on upper Pg limit

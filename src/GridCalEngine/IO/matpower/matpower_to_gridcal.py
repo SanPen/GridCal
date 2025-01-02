@@ -140,11 +140,11 @@ def convert_dc_buses(circuit: MultiCircuit,
             load = dev.Load(P=m_bus.pdc, Q=0)
             circuit.add_load(bus=bus, api_obj=load)
 
-        # Add the shunt
-        if m_bus.cdc != 0:
-            g = 1e-6 * 2.0 * np.pi * freq * (m_bus.base_kvdc * 1e3) ** 2  # MW @ v=1 p.u.
-            shunt = dev.Shunt(G=g, B=0.0)
-            circuit.add_shunt(bus=bus, api_obj=shunt)
+        # Add the shunt (not used in power flow...)
+        # if m_bus.cdc != 0:
+        #     g = 1e-6 * 2.0 * np.pi * freq * (m_bus.base_kvdc * 1e3) ** 2  # MW @ v=1 p.u.
+        #     shunt = dev.Shunt(G=g, B=0.0)
+        #     circuit.add_shunt(bus=bus, api_obj=shunt)
 
     return bus_dict
 
@@ -597,7 +597,7 @@ def convert_converters(circuit: MultiCircuit,
 
         if rate == 0.0:
             # in matpower rate=0 means not limited by rating
-            rate = 10000
+            rate = 10000.0
             monitor_loading = False
         else:
             monitor_loading = True
@@ -610,19 +610,23 @@ def convert_converters(circuit: MultiCircuit,
             rate=rate,
             monitor_loading=monitor_loading,
             active=bool(br.status),
-            alpha1=br.loss_a,
+            alpha3=br.loss_a,
             alpha2=br.loss_b,
-            alpha3=br.loss_crec + br.loss_cinv,  # TODO: check how to handle this
+            alpha1=br.loss_crec + br.loss_cinv,  # TODO: check how to handle this
             kdp=br.droop,
         )
 
-        if br.pdcset != 0:
-            branch.control1 = ConverterControlType.Pdc
-            branch.control1_val = br.pdcset
+        if br.p_g != 0:
+            branch.control1 = ConverterControlType.Pac
+            branch.control1_val = br.p_g
 
-        if br.vdcset != 0.0:
-            branch.control2 = ConverterControlType.Vm_dc
-            branch.control2_val = br.vdcset
+        if br.q_g != 0:
+            branch.control1 = ConverterControlType.Qac
+            branch.control1_val = br.q_g
+
+        elif br.vtar != 0.0:
+            branch.control2 = ConverterControlType.Vm_ac
+            branch.control2_val = br.vtar
 
         circuit.add_vsc(obj=branch)
         logger.add_info('Branch as 2w transformer', f'Branch {code}')

@@ -10,14 +10,31 @@ class MatAcDcConverter:
 
     def __init__(self):
         # Initialize all attributes to default values
+
+        # Converter buses, control parameters and AC system data
         self.busdc_i = 0  # DC bus number
         self.busac_i = 0  # AC bus number
+
+        """
+        CONVTYPE_DC constants
+        3 DCDROOP - DC voltage droop
+        2 DCSLACK - DC slack bus
+        1 DCNOSLACK -  constant active power bus
+        
+        CONVTYPE_AC constants
+        2 PVC - constant voltage converter control
+        1 PQC - constant reactive power converter control
+        """
         self.type_dc = 0  # DC converter type
         self.type_ac = 0  # AC converter type
+
+
         self.p_g = 0.0  # Active power generation (MW)
         self.q_g = 0.0  # Reactive power generation (MVAr)
-        self.islcc = 0  # Isolated operation flag
+        self.islcc = 0  # is LCC?
         self.vtar = 1.0  # Target voltage (p.u.)
+
+        # Impedance values
         self.rtf = 0.0  # Transformer resistance (p.u.)
         self.xtf = 0.0  # Transformer reactance (p.u.)
         self.transformer = 0  # Transformer presence flag
@@ -32,14 +49,20 @@ class MatAcDcConverter:
         self.vmmin = 0.9  # Minimum AC voltage (p.u.)
         self.imax = 0.0  # Maximum current (p.u.)
         self.status = 1  # Converter status (1=In-service, 0=Out-of-service)
-        self.loss_a = 0.0  # Loss coefficient A
-        self.loss_b = 0.0  # Loss coefficient B
-        self.loss_crec = 0.0  # Rectifier constant loss (MW)
-        self.loss_cinv = 0.0  # Inverter constant loss (MW)
-        self.droop = 0.0  # Droop control coefficient
-        self.pdcset = 0.0  # DC power setpoint (MW)
-        self.vdcset = 1.0  # DC voltage setpoint (p.u.)
-        self.dvdcset = 0.0  # DC voltage deviation setpoint (p.u.)
+
+        # Converter loss data
+        self.loss_a = 0.0  # a, constant loss coefficient (MW)
+        self.loss_b = 0.0  # b, linear loss coefficient (kV)
+        self.loss_crec = 0.0  # r ec , rectifier quadratic loss coefficient (Ω)
+        self.loss_cinv = 0.0  # c i nv , inverter quadratic loss coefficient (Ω)
+
+        # DC voltage droop constants (optional)
+        self.droop = 0.0  # k, DC voltage droop (MW/p.u)
+        self.pdcset = 0.0  # voltage droop power set-point (MW)
+        self.vdcset = 1.0  # voltage droop voltage set-point (p.u.)
+        self.dvdcset = 0.0  # voltage droop voltage set-point (p.u.)
+
+        # Columns typically added after the power flow
         self.pacmax = 0.0  # Maximum AC active power (MW)
         self.pacmin = 0.0  # Minimum AC active power (MW)
         self.qacmax = 0.0  # Maximum AC reactive power (MVAr)
