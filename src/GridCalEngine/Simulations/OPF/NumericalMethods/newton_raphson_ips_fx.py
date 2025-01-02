@@ -110,7 +110,7 @@ def calc_gradcond(lx: Vec, lam: Vec, mu: Vec):
 
 def calc_ccond(mu: Vec, z: Vec, x: Vec):
     """
-    :param mu: Vector of mu mutipliers
+    :param mu: Vector of mu multipliers
     :param z: Vector of z slack variables
     :param x: State vector
     :return: Vector of ccond
@@ -121,7 +121,7 @@ def calc_ccond(mu: Vec, z: Vec, x: Vec):
 def calc_ocond(f: float, f_prev: float):
     """
 
-    :param f: Value of objective funciton
+    :param f: Value of objective function
     :param f_prev: Previous value of objective function
     :return: Variation of the objective function
     """
@@ -439,8 +439,6 @@ def interior_point_solver(x0: Vec,
         # record evolution
         feascond_evolution[iter_counter] = feascond
         error_evolution[iter_counter] = error
-
-
 
         te_iter = timeit.default_timer()
         new_times = np.r_[new_times_i+new_times_0, te_nrstep - ts_nrstep, te_mult - ts_mult, te_steps - ts_steps, te_conds - ts_conds, te_iter - ts_iter]

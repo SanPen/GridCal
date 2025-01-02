@@ -3,14 +3,14 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 import timeit
-
+from typing import Tuple
 import numpy as np
 from scipy import sparse as sp
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Utils.Sparse.csc import diags
-from typing import Tuple
+
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, csr_matrix, csc_matrix
 from GridCalEngine.enumerations import AcOpfMode
 
