@@ -11,9 +11,9 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl, ConverterControlType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
-import GridCalEngine.IO.matpower.matpower_branch_definitions as matpower_branches
-import GridCalEngine.IO.matpower.matpower_bus_definitions as matpower_buses
-import GridCalEngine.IO.matpower.matpower_gen_definitions as matpower_gen
+import GridCalEngine.IO.matpower.legacy.matpower_branch_definitions as matpower_branches
+import GridCalEngine.IO.matpower.legacy.matpower_bus_definitions as matpower_buses
+import GridCalEngine.IO.matpower.legacy.matpower_gen_definitions as matpower_gen
 
 
 def find_between(s: str, first: str, last: str) -> str:

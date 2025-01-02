@@ -309,7 +309,7 @@ def test_voltage_control_with_ltc() -> None:
 
             assert results.converged
 
-            # check that the bus voltage module is the the transformer voltage set point
+            # check that the bus voltage module is the transformer voltage set point
             ok = np.isclose(vm[ctrl_idx], grid.transformers2w[0].vset, atol=options.tolerance)
 
             if control_taps_modules:
@@ -370,7 +370,7 @@ def test_qt_control_with_ltc() -> None:
 
             assert results.converged
 
-            # check that the bus voltage module is the the transformer voltage set point
+            # check that the bus voltage module is the transformer voltage set point
             ok = np.isclose(results.St[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
 
             if control_taps_modules:
@@ -431,7 +431,7 @@ def test_power_flow_control_with_pst_pt() -> None:
 
             assert results.converged
 
-            # check that the bus voltage module is the the transformer voltage set point
+            # check that the bus voltage module is the transformer voltage set point
             ok = np.isclose(results.St[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
 
             if control_taps_phase:
