@@ -30,7 +30,6 @@ class GeneratorParent(InjectionParent):
                  P: float,
                  Pmin: float,
                  Pmax: float,
-                 availability: float,
                  Cost: float,
                  mttf: float,
                  mttr: float,
@@ -82,6 +81,8 @@ class GeneratorParent(InjectionParent):
 
         self.P = float(P)
         self._P_prof = Profile(default_value=self.P, data_type=float)
+        self._Pmax_prof = Profile(default_value=Pmax, data_type=float)
+        self._Pmin_prof = Profile(default_value=Pmin, data_type=float)
 
         self.srap_enabled = bool(srap_enabled)
         self._srap_enabled_prof = Profile(default_value=self.srap_enabled, data_type=bool)
@@ -92,19 +93,16 @@ class GeneratorParent(InjectionParent):
         # Maximum dispatched power in MW
         self.Pmax = float(Pmax)
 
-        self.availability = availability
-        self._availability_prof = Profile(default_value=self.availability, data_type=float)
-
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
                       editable=True, profile_name="control_bus_prof")
 
         self.register(key='control_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
                       definition='Control connectivity node', editable=True)
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
-        self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
-        self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
-        self.register(key='availability', units='p.u.', tpe=float, definition='Availability of the generator in p.u.',
-                      profile_name='availability_prof')
+        self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.',
+                      profile_name='Pmin_prof')
+        self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.',
+                      profile_name='Pmax_prof')
         self.register(key='srap_enabled', units='', tpe=bool,
                       definition='Is the unit available for SRAP participation?',
                       editable=True, profile_name="srap_enabled_prof")
@@ -161,21 +159,38 @@ class GeneratorParent(InjectionParent):
             raise Exception(str(type(val)) + 'not supported to be set into srap_enabled_prof')
 
     @property
-    def availability_prof(self) -> Profile:
+    def Pmax_prof(self) -> Profile:
         """
-        Cost profile
+        Pmax profile
         :return: Profile
         """
-        return self._availability_prof
+        return self._Pmax_prof
 
-    @availability_prof.setter
-    def availability_prof(self, val: Union[Profile, np.ndarray]):
+    @Pmax_prof.setter
+    def Pmax_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
-            self._availability_prof = val
+            self._Pmax_prof = val
         elif isinstance(val, np.ndarray):
-            self._availability_prof.set(arr=val)
+            self._Pmax_prof.set(arr=val)
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a availability_prof')
+            raise Exception(str(type(val)) + 'not supported to be set into a Pmax_prof')
+
+    @property
+    def Pmin_prof(self) -> Profile:
+        """
+        Pmin profile
+        :return: Profile
+        """
+        return self._Pmin_prof
+
+    @Pmin_prof.setter
+    def Pmin_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Pmin_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Pmin_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Pmin_prof')
 
     def get_S(self) -> complex:
         """

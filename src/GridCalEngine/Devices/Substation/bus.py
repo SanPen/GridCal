@@ -100,6 +100,9 @@ class Bus(PhysicalDevice):
 
         self.Va0 = float(Va0)
 
+        self._Vmin_prof = Profile(default_value=vmin, data_type=float)
+        self._Vmax_prof = Profile(default_value=vmax, data_type=float)
+
         self.angle_min = float(angle_min)
 
         self.angle_max = float(angle_max)
@@ -171,9 +174,9 @@ class Bus(PhysicalDevice):
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
         self.register(key='Vmin', units='p.u.', tpe=float, definition='Lower range of allowed voltage module.',
-                      profile_name='')
+                      profile_name='Vmin_prof')
         self.register(key='Vmax', units='p.u.', tpe=float, definition='Higher range of allowed voltage module.',
-                      profile_name='')
+                      profile_name='Vmax_prof')
         self.register(key='Vm_cost', units='e/unit', tpe=float, definition='Cost of over and under voltages',
                       old_names=['voltage_module_cost'])
         self.register(key='angle_min', units='rad.', tpe=float, definition='Lower range of allowed voltage angle.',
@@ -221,6 +224,41 @@ class Bus(PhysicalDevice):
             self._active_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
+
+    @property
+    def Vmin_prof(self) -> Profile:
+        """
+        Pmin profile
+        :return: Profile
+        """
+        return self._Vmin_prof
+
+    @Vmin_prof.setter
+    def Vmin_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vmin_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vmin_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vmin_prof')
+
+    @property
+    def Vmax_prof(self) -> Profile:
+        """
+        Pmin profile
+        :return: Profile
+        """
+        return self._Vmin_prof
+
+    @Vmax_prof.setter
+    def Vmax_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Vmax_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Vmax_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Vmax_prof')
+
 
     @property
     def voltage_level(self) -> Union[VoltageLevel, None]:

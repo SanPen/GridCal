@@ -723,12 +723,10 @@ def add_linear_generation_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.add_cst(
-                            cst=gen_vars.p[t, k] >= (gen_data_t.availability[k] * gen_data_t.pmin[k] /
-                                                     Sbase * gen_vars.producing[t, k]),
+                            cst=gen_vars.p[t, k] >= (gen_data_t.pmin[k] / Sbase * gen_vars.producing[t, k]),
                             name=join("gen_geq_Pmin", [t, k], "_"))
                         prob.add_cst(
-                            cst=gen_vars.p[t, k] <= (gen_data_t.availability[k] * gen_data_t.pmax[k] /
-                                                     Sbase * gen_vars.producing[t, k]),
+                            cst=gen_vars.p[t, k] <= (gen_data_t.pmax[k] / Sbase * gen_vars.producing[t, k]),
                             name=join("gen_leq_Pmax", [t, k], "_"))
 
                     if t is not None:
@@ -756,8 +754,8 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                     if not skip_generation_limits:
                         set_var_bounds(var=gen_vars.p[t, k],
-                                       lb=gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase,
-                                       ub=gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase)
+                                       lb=gen_data_t.pmin[k] / Sbase,
+                                       ub=gen_data_t.pmax[k] / Sbase)
 
                 # add the ramp constraints
                 if ramp_constraints and t is not None:
@@ -874,13 +872,11 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.add_cst(
-                            cst=(batt_vars.p[t, k] >= (batt_data_t.availability[k] * batt_data_t.pmin[k] /
-                                                       Sbase * batt_vars.producing[t, k])),
+                            cst=(batt_vars.p[t, k] >= (batt_data_t.pmin[k] / Sbase * batt_vars.producing[t, k])),
                             name=join("batt_geq_Pmin", [t, k], "_"))
 
                         prob.add_cst(
-                            cst=(batt_vars.p[t, k] <= (batt_data_t.availability[k] * batt_data_t.pmax[k] /
-                                                       Sbase * batt_vars.producing[t, k])),
+                            cst=(batt_vars.p[t, k] <= (batt_data_t.pmax[k] / Sbase * batt_vars.producing[t, k])),
                             name=join("batt_leq_Pmax", [t, k], "_"))
 
                     if t is not None:
@@ -911,8 +907,8 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         set_var_bounds(var=batt_vars.p[t, k],
-                                       lb=batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase,
-                                       ub=batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
+                                       lb=batt_data_t.pmin[k] / Sbase,
+                                       ub=batt_data_t.pmax[k] / Sbase)
 
                 # compute the time increment in hours
                 dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
