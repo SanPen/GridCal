@@ -306,7 +306,7 @@ class Generator(GeneratorParent):
         Qmax profile
         :return: Profile
         """
-        return self._Pmax_prof
+        return self._Qmax_prof
 
     @Qmax_prof.setter
     def Qmax_prof(self, val: Union[Profile, np.ndarray]):
