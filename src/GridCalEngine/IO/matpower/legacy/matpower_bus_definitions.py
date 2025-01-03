@@ -5,8 +5,6 @@ __author__ = 'spv86_000'
 from numpy import flatnonzero as find, intc, double, zeros, r_, where, delete
 from scipy.sparse import csr_matrix as sparse
 
-from .matpower_gen_definitions import GEN_BUS, GEN_STATUS
-from .matpower_storage_definitions import BUS_S, STO_STATUS, StorageDispatchMode
 
 from warnings import warn
 """
@@ -141,95 +139,3 @@ bus_headers = ["bus_i",
                "Collapsed",
                "Dispatchable",
                "Fix_power"]
-
-
-def bustypes(bus, gen, storage, Sbus, storage_dispatch_mode=StorageDispatchMode.no_dispatch):
-    """
-    Builds index lists of each type of bus (C{REF}, C{PV}, C{PQ}).
-
-    Generators with "out-of-service" status are treated as L{PQ} buses with
-    zero generation (regardless of C{Pg}/C{Qg} values in gen). Expects C{bus}
-    and C{gen} have been converted to use internal consecutive bus numbering.
-    :param bus: bus data
-    :param gen: generator data
-    :param storage:
-    :param Sbus:
-    :param storage_dispatch_mode:
-    :return: index lists of each bus type
-    """
-    # flag to indicate that it is impossible to solve the grid
-    the_grid_is_disabled = False
-
-    # get generator status
-    nb = bus.shape[0]
-    ng = gen.shape[0]
-    ns = storage.shape[0]
-
-    # gen connection matrix, element i, j is 1 if, generator j at bus i is ON
-    Cg = sparse((gen[:, GEN_STATUS] > 0, (gen[:, GEN_BUS], range(ng))), (nb, ng))
-
-    # gen connection matrix, element i, j is 1 if, storage j at bus i is ON
-    Cs = sparse((storage[:, STO_STATUS] > 0, (storage[:, BUS_S], range(ns))), (nb, ns))
-
-    # set all the nn ref buses type to PQ
-    non_ref = find(bus[:, BUS_TYPE] != REF)
-    bus[non_ref, BUS_TYPE] = PQ
-
-    # Pick the selected reference buses
-    ref = find(bus[:, BUS_TYPE] == REF)
-
-    # Set the buses type according to the storage devices dispatch mode
-    if storage_dispatch_mode == StorageDispatchMode.dispatch_vd:
-        sto_bus = storage[Cs.indices, BUS_S].astype(int)
-        bus[sto_bus, BUS_TYPE] = REF
-        # Add the storage buses to the reference
-        ref = r_[ref, sto_bus]
-
-    elif storage_dispatch_mode == StorageDispatchMode.dispatch_pv:
-        sto_bus = storage[Cs.indices, BUS_S].astype(int)
-        bus[sto_bus, BUS_TYPE] = PV
-
-    elif storage_dispatch_mode == StorageDispatchMode.no_dispatch:
-        # Pick the selected reference buses
-        ref = find(bus[:, BUS_TYPE] == REF)
-
-    # Set the generator buses to PV
-    gen_bus = gen[Cg.indices, GEN_BUS].astype(int)
-    bus[gen_bus, BUS_TYPE] = PV
-
-    # assembly the list of PQ nodes
-    pq = find(bus[:, BUS_TYPE] == PQ)
-    # assembly the list of PV nodes
-    pv = find(bus[:, BUS_TYPE] == PV)
-    # Remove the references from PV
-    pv_ref_idx = where(pv==ref)[0]
-    pv = delete(pv, pv_ref_idx)
-
-    # Select a reference from the PV nodes is no reference was set
-    if len(ref) == 0:
-        if len(pv) > 0:
-            ref = [pv[0]]    # use the first PV bus
-            pv = pv[1:]      # take it off PV list
-        else:
-            # look for positive power Injections to take the largest as the slack
-            positive_power_injections = Sbus.real[where(Sbus.real > 0)[0]]
-            if len(positive_power_injections) > 0:
-                idx = where(Sbus.real == max(positive_power_injections))[0]
-                if len(idx) == 1:
-                    ref = idx
-                    i = where(pq == idx[0])[0][0]
-                    pq = delete(pq, i)
-                else:
-                    warn('It was not possible to find a slack bus')
-                    the_grid_is_disabled = True
-            else:
-                warn('It was not possible to find a slack bus')
-                the_grid_is_disabled = True
-
-    # create the types array
-    types = zeros(nb)
-    types[ref] = REF
-    types[pv] = PV
-    types[pq] = PQ
-
-    return ref, pv, pq, types, the_grid_is_disabled

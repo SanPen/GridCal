@@ -12,7 +12,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.enumerations import ResultTypes, DeviceType, SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import (helm_coefficients_josep,
                                                                                   sigma_function)
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -322,6 +322,11 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
 
         else:
             logger.add_info('No slack nodes in the island', str(i))
+
+    # expand voltages if there was a bus topology reduction
+    if nc.topology_performed:
+        results.sigma_re = nc.propagate_bus_result(results.sigma_re)
+        results.sigma_im = nc.propagate_bus_result(results.sigma_im)
 
     return results
 

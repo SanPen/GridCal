@@ -14,7 +14,8 @@ class Battery(Generator):
     """
 
     def __init__(self, name='batt', idtag=None, P=0.0, power_factor=0.8, vset=1.0,
-                 is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999, Pmin=-9999, Pmax=9999,
+                 is_controlled=True, Qmin=-9999, Qmax=9999, Snom=9999, Enom=9999,
+                 Pmin=-9999, Pmax=9999, availability=1.0,
                  Cost=1.0, active=True, Sbase=100,
                  enabled_dispatch=True, mttf=0.0, mttr=0.0, charge_efficiency=0.9, discharge_efficiency=0.9,
                  max_soc=0.99, min_soc=0.3, soc=0.8, charge_per_cycle=0.1, discharge_per_cycle=0.1,
@@ -67,7 +68,7 @@ class Battery(Generator):
                            is_controlled=is_controlled,
                            Qmin=Qmin, Qmax=Qmax, Snom=Snom,
                            active=active,
-                           Pmin=Pmin, Pmax=Pmax,
+                           Pmin=Pmin, Pmax=Pmax, availability=availability,
                            Cost=Cost,
                            Sbase=Sbase,
                            enabled_dispatch=enabled_dispatch,

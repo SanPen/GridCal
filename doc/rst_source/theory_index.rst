@@ -12,6 +12,7 @@ General
     theory/from_objects_to_matrices
     theory/branch_model
     theory/xfo_sc
+    theory/topology_processing
 
 Power Flow
 ------------------
@@ -33,6 +34,7 @@ The following subsections include theory about the power flow algorithms support
     theory/power_flow/post_power_flow
     theory/power_flow/continuation_power_flow
     theory/power_flow/distributed_slack
+    theory/power_flow/generalized_power_flow
 
 
 Optimal power flow

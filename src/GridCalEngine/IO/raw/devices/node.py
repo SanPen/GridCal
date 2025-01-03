@@ -75,21 +75,24 @@ class RawNode(RawObject):
         :param version:
         :param logger:
         """
-
-        if version >= 35:
+        if version == 34:
+            # I, ISW, PDES, PTOL, 'ARNAME'
+            self.NI, self.NAME, self.I, self.STATUS = data[0]
+            self.NAME = self.NAME.replace("'", "").strip()
+        elif version == 35:
             # I, ISW, PDES, PTOL, 'ARNAME'
             self.ISUB, self.NI, self.NAME, self.I, self.STATUS, self.VM, self.VA = data[0]
 
             self.NAME = self.NAME.replace("'", "").strip()
         else:
-            logger.add_warning('Areas not defined for version', str(version))
+            logger.add_warning('Node not defined for version', str(version))
 
     def get_raw_line(self, version):
 
         if version >= 29:
             return self.format_raw_line([self.ISUB, self.NI, self.NAME, self.I, self.STATUS, self.VM, self.VA])
         else:
-            raise Exception('Areas not defined for version', str(version))
+            raise Exception('Node not defined for version', str(version))
 
     def get_id(self) -> str:
         return "{0}_{1}".format(self.ISUB, self.NI)

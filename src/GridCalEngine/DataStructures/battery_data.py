@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+
 import numpy as np
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.basic_structures import Vec, IntVec
@@ -31,15 +32,16 @@ class BatteryData(GeneratorData):
         self.charge_efficiency: Vec = np.ones(nelm)
         self.efficiency: Vec = np.ones(nelm)
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BatteryData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec) -> "BatteryData":
         """
         Slice battery data by given indices
         :param elm_idx: array of element indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus to index
         :return: new BatteryData instance
         """
 
-        data = super().slice(elm_idx, bus_idx)
+        data = super().slice(elm_idx, bus_idx, bus_map)
 
         data.enom = self.enom[elm_idx]
         data.e_min = self.e_min[elm_idx]

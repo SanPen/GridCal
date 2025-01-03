@@ -3,4 +3,4 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from GridCalEngine.IO.matpower.matpower_parser import parse_matpower_file, get_matpower_case_data
+from GridCalEngine.IO.matpower.legacy.matpower_parser import parse_matpower_file, get_matpower_case_data

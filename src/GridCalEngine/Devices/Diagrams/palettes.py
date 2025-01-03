@@ -66,7 +66,7 @@ def tso_line_palette_bgr(v, loading, warning_lvl=0.9, overload_lvl=1.15):
     :return: BGR
     """
 
-    '''
+    """
     3 niveles de rojo
     •	RGB 205,97,85                 <50%
     •	RGB 192,57,43                  
@@ -76,7 +76,7 @@ def tso_line_palette_bgr(v, loading, warning_lvl=0.9, overload_lvl=1.15):
     •	RGB 125,206,160               <50%
     •	RGB 39,174,96                  
     •	RGB 25,111,61                 >85%    
-    '''
+    """
 
     if v >= 400:
 

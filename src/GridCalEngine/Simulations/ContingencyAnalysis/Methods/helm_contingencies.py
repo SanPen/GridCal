@@ -9,8 +9,9 @@ from typing import List
 from GridCalEngine.basic_structures import IntVec, CxVec
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_dY, \
-    helm_preparation_dY, HelmPreparation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import (helm_coefficients_dY,
+                                                                                  helm_preparation_dY,
+                                                                                  HelmPreparation)
 
 
 def calc_V_outage(nc: NumericalCircuit,
@@ -64,21 +65,19 @@ def calc_V_outage(nc: NumericalCircuit,
     #                                    Ysh0=Ysh0, pq=pq, pv=pv, sl=vd, pqpv=pqpv)
 
     # compute the admittance of the contingency branches
-    adm = compute_admittances(R=nc.branch_data.R[contingency_br_indices],
-                              X=nc.branch_data.X[contingency_br_indices],
-                              G=nc.branch_data.G[contingency_br_indices],
-                              B=nc.branch_data.B[contingency_br_indices],
-                              k=nc.branch_data.k[contingency_br_indices],
-                              tap_module=nc.branch_data.tap_module[contingency_br_indices],
-                              vtap_f=nc.branch_data.virtual_tap_f[contingency_br_indices],
-                              vtap_t=nc.branch_data.virtual_tap_t[contingency_br_indices],
-                              tap_angle=nc.branch_data.tap_angle[contingency_br_indices],
-                              Beq=nc.branch_data.Beq[contingency_br_indices],
-                              Cf=nc.branch_data.C_branch_bus_f[contingency_br_indices, :],
-                              Ct=nc.branch_data.C_branch_bus_t[contingency_br_indices, :],
-                              Gsw=nc.branch_data.G0sw[contingency_br_indices],
-                              Yshunt_bus=np.zeros(nc.nbus),
-                              conn=nc.branch_data.conn[contingency_br_indices],
+    adm = compute_admittances(R=nc.passive_branch_data.R[contingency_br_indices],
+                              X=nc.passive_branch_data.X[contingency_br_indices],
+                              G=nc.passive_branch_data.G[contingency_br_indices],
+                              B=nc.passive_branch_data.B[contingency_br_indices],
+                              k=nc.passive_branch_data.k[contingency_br_indices],
+                              tap_module=nc.active_branch_data.tap_module[contingency_br_indices],
+                              vtap_f=nc.passive_branch_data.virtual_tap_f[contingency_br_indices],
+                              vtap_t=nc.passive_branch_data.virtual_tap_t[contingency_br_indices],
+                              tap_angle=nc.active_branch_data.tap_angle[contingency_br_indices],
+                              Cf=nc.passive_branch_data.Cf[contingency_br_indices, :],
+                              Ct=nc.passive_branch_data.Ct[contingency_br_indices, :],
+                              Yshunt_bus=np.zeros(nc.nbus, dtype=complex),
+                              conn=nc.passive_branch_data.conn[contingency_br_indices],
                               seq=1,
                               add_windings_phase=False)
 
@@ -106,10 +105,10 @@ def calc_V_outage(nc: NumericalCircuit,
                                            max_coeff=10)
 
     # compute flows
-    Sf = (nc.Cf * V) * np.conj(nc.Yf * V) * nc.Sbase
+    Sf = (nc.passive_branch_data.Cf * V) * np.conj(adm.Yf * V) * nc.Sbase
 
     # compute contingency loading
-    loading = Sf / (nc.contingency_rates + 1e-9)
+    loading = Sf / (nc.passive_branch_data.rates + 1e-9)
 
     return V, Sf, loading, norm_f
 
@@ -118,6 +117,7 @@ class HelmVariations:
     """
     Class to quickly evaluate topological variations based on HELM coefficients
     """
+
     def __init__(self, numerical_circuit: NumericalCircuit):
         """
         Constructor

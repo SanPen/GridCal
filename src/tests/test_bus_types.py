@@ -15,7 +15,7 @@ def test_1():
     sn_nc = gce.compile_numerical_circuit_at(circuit)
 
     # snapshot types
-    sn_types = sn_nc.bus_types
+    sn_types = sn_nc.bus_data.bus_types
 
     # the first time step does not change the generator status, hence it should be equal to the snapshot
     expected = [3, 2, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1]

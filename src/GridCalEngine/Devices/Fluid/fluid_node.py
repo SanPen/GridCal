@@ -209,4 +209,4 @@ class FluidNode(PhysicalDevice):
         """
         if isinstance(val, Bus):
             self._bus = val
-            self._bus.is_internal = True
+            self._bus.internal = True

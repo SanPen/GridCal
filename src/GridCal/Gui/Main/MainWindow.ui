@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1220</width>
-    <height>752</height>
+    <width>1431</width>
+    <height>977</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -422,6 +422,9 @@ QProgressBar::chunk{
                           </property>
                           <property name="bottomMargin">
                            <number>4</number>
+                          </property>
+                          <property name="verticalSpacing">
+                           <number>2</number>
                           </property>
                           <item row="17" column="0">
                            <widget class="QLabel" name="label_118">
@@ -3476,6 +3479,9 @@ QProgressBar::chunk{
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_17">
+              <property name="spacing">
+               <number>2</number>
+              </property>
               <item>
                <widget class="QLabel" name="label_82">
                 <property name="font">
@@ -10007,8 +10013,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1220</width>
-     <height>21</height>
+     <width>1431</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="font">
@@ -10114,7 +10120,6 @@ QProgressBar::chunk{
     <addaction name="actionFuse_devices"/>
     <addaction name="actionre_index_time"/>
     <addaction name="actionScale"/>
-    <addaction name="actionProcess_topology"/>
     <addaction name="separator"/>
     <addaction name="actionLaunch_data_analysis_tool"/>
     <addaction name="actionFix_generators_active_based_on_the_power"/>

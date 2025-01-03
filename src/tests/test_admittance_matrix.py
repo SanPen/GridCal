@@ -25,7 +25,11 @@ def __check__(fname):
 
     # check the consistency of each island
     for island in islands:
-        assert ((island.Ybus - (island.Yseries + diags(island.Yshunt))).data < 1e-9).all()
+
+        adm = island.get_admittance_matrices()
+        adms = island.get_series_admittance_matrices()
+
+        assert ((adm.Ybus - (adms.Yseries + diags(adms.Yshunt))).data < 1e-9).all()
 
     return True
 

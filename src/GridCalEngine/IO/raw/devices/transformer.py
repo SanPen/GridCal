@@ -57,7 +57,7 @@ class RawTransformer(RawObject):
         self.VMA1 = 1.1
         self.VMI1 = 0.9
         self.NTP1 = 33
-        self.TAB1 = 0
+        self.TAB1 = 0  # number of the impedance correction table
         self.CR1 = 0
         self.CX1 = 0
         self.CNXA1 = 0
@@ -76,7 +76,7 @@ class RawTransformer(RawObject):
         self.VMA2 = 1.1
         self.VMI2 = 0.9
         self.NTP2 = 33
-        self.TAB2 = 0
+        self.TAB2 = 0  # number of the impedance correction table
         self.CR2 = 0
         self.CX2 = 0
         self.CNXA2 = 0
@@ -93,7 +93,7 @@ class RawTransformer(RawObject):
         self.VMA3 = 1.1
         self.VMI3 = 0.9
         self.NTP3 = 0
-        self.TAB3 = 0
+        self.TAB3 = 0  # number of the impedance correction table
         self.CR3 = 0
         self.CX3 = 0
         self.CNXA3 = 0

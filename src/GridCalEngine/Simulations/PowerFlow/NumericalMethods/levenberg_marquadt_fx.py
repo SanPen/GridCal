@@ -134,7 +134,9 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
 
                 # update x
                 x -= dx
-                error, converged, x, dz = problem.update(x, update_controls=True)
+
+                update_controls = error < (tol * 100)
+                error, converged, x, dz = problem.update(x, update_controls=update_controls)
 
             else:
                 update_jacobian = False

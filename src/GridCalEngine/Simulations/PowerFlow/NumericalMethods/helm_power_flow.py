@@ -14,9 +14,11 @@ from warnings import warn
 from scipy.sparse import csc_matrix, coo_matrix
 from scipy.sparse import hstack as hs, vstack as vs
 from scipy.sparse.linalg import spsolve, factorized
+
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, CscMat, CxVec, IntVec
 
 
 def epsilon(Sn, n, E):
@@ -244,7 +246,10 @@ def conv3(A, B, c, indices):
     return suma
 
 
-def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False,
+def helm_coefficients_josep(Ybus: CscMat,
+                            Yseries: CxVec, V0: CxVec, S0: CxVec, Ysh0: CxVec,
+                            pq: IntVec, pv: IntVec, sl: IntVec, pqpv: IntVec,
+                            tolerance: float = 1e-6, max_coeff: int = 30, verbose: int = 0,
                             logger: Logger = None):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
@@ -466,7 +471,7 @@ class HelmPreparation:
         self.nbus = nbus
 
 
-def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False,
+def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose: int = 0,
                         logger: Logger = None) -> HelmPreparation:
     """
     This function returns the constant objects to run many HELM simulations
@@ -549,7 +554,8 @@ def helm_preparation_dY(Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, verbose=False,
                            pq_, pv_, pqpv_, sl, npqpv, nbus)
 
 
-def helm_coefficients_dY(dY, sys_mat_factorization, Uini, Xini, Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
+def helm_coefficients_dY(dY, sys_mat_factorization, Uini, Xini,
+                         Yslack, Ysh, Ybus, vec_P, vec_Q, S0,
                          vec_W, V0, Vslack, pq, pv, pqpv, npqpv, nbus, sl,
                          tolerance=1e-6, max_coeff=10):
     """
@@ -661,11 +667,18 @@ def helm_coefficients_dY(dY, sys_mat_factorization, Uini, Xini, Yslack, Ysh, Ybu
     return U, V, iter_, norm_f
 
 
-def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, vd, no_slack, tolerance=1e-6, max_coefficients=30, use_pade=True,
-               verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
+def helm_josep(nc: NumericalCircuit,
+               Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+               Yseries: CscMat, V0: CxVec, S0: CxVec, Ysh0: CxVec,
+               pq: IntVec, pv: IntVec, vd: IntVec, no_slack: IntVec,
+               tolerance: float = 1e-6, max_coefficients: int = 30, use_pade: bool = True,
+               verbose: int = 0, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
+    :param nc: NumericalCircuit
     :param Ybus: Complete admittance matrix
+    :param Yf: admittance from matrix
+    :param Yt: admittance to matrix
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
@@ -686,11 +699,30 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, vd, no_slack, tolerance=1e-6
 
     n = Yseries.shape[0]
     if n < 2:
-        # return NumericPowerFlowResults(V0, True, 0.0, S0, None, None, None, None, None, None, 0, 0.0)
-        return NumericPowerFlowResults(V=V0, converged=True, norm_f=0.0,
-                                       Scalc=S0, m=None, tau=None, Beq=None,
-                                       Ybus=None, Yf=None, Yt=None,
-                                       iterations=0, elapsed=0.0)
+        return NumericPowerFlowResults(V=V0,
+                                       Scalc=S0,
+                                       m=np.ones(nc.nbr, dtype=float),
+                                       tau=np.zeros(nc.nbr, dtype=float),
+                                       Sf=np.zeros(nc.nbr, dtype=complex),
+                                       St=np.zeros(nc.nbr, dtype=complex),
+                                       If=np.zeros(nc.nbr, dtype=complex),
+                                       It=np.zeros(nc.nbr, dtype=complex),
+                                       loading=np.zeros(nc.nbr, dtype=complex),
+                                       losses=np.zeros(nc.nbr, dtype=complex),
+                                       Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                       If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                       losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                       Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                       norm_f=0.0,
+                                       converged=False,
+                                       iterations=0,
+                                       elapsed=0.0)
 
     # compute the series of coefficients
     U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=Ybus,
@@ -716,7 +748,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, vd, no_slack, tolerance=1e-6
         V = V0.copy()
         try:
             V[no_slack] = pade4all(max_coefficients - 1, U, 1)
-        except:
+        except RuntimeError:
             warn('Padè failed :(, using coefficients summation')
             V[no_slack] = U.sum(axis=0)
 
@@ -730,7 +762,45 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, vd, no_slack, tolerance=1e-6
     elapsed = time.time() - start_time
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
-    return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
-                                   Ybus=None, Yf=None, Yt=None,
-                                   iterations=iter_, elapsed=elapsed)
+    # return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
+    #                                Scalc=Scalc, m=None, tau=None,
+    #                                Ybus=None, Yf=None, Yt=None,
+    #                                iterations=iter_, elapsed=elapsed)
+    # Compute the Branches power and the slack buses power
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = cf.power_flow_post_process_nonlinear(
+        Sbus=Scalc,
+        V=V,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        pv=pv,
+        vd=vd,
+        Ybus=Ybus,
+        Yf=Yf,
+        Yt=Yt,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase)
+
+    return NumericPowerFlowResults(V=V,
+                                   Scalc=Scalc * nc.Sbase,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Sf,
+                                   St=St,
+                                   If=If,
+                                   It=It,
+                                   loading=loading,
+                                   losses=losses,
+                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   norm_f=norm_f,
+                                   converged=converged,
+                                   iterations=iter_,
+                                   elapsed=elapsed)

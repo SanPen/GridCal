@@ -20,8 +20,8 @@ def start_server(key_fname: str = "key.pem", cert_fname: str = "cert.pem", host:
     Start server function
     :param key_fname: name of the key file that the server generates
     :param cert_fname: name of the certificate file that the server generates
-    :param host: Hosting ip (localhost ussually)
-    :param port: Port to serve (8000 ussually)
+    :param host: Hosting ip (localhost usually)
+    :param port: Port to serve (8000 usually)
     """
     print("""
 ┏┓  • ┓┏┓  ┓┏┓          

@@ -16,6 +16,7 @@ import shutil
 from PySide6.QtGui import QPixmap
 
 from GridCalEngine.IO.file_system import plugins_path
+from GridCal.__version__ import __GridCal_VERSION__
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
@@ -110,6 +111,7 @@ class PluginInfo:
         self.code_file_path = ""
         self.icon_path = ""
         self.version = "0.0.0"
+        self.gridcal_version = "5.2.0"
 
         self.main_fcn: PluginFunction = PluginFunction()
 
@@ -137,6 +139,7 @@ class PluginInfo:
         return {
             "name": self.name,
             "version": self.version,
+            "gridcal_version": self.gridcal_version,
             "path": self.code_file_path,
             "icon_path": self.icon_path,
             "main_fcn": self.main_fcn.to_dict(),
@@ -150,6 +153,7 @@ class PluginInfo:
         """
         self.name = data.get('name', '')
         self.version = data.get('version', '0.0.0')
+        self.gridcal_version = data.get('gridcal_version', '5.2.0')
         self.code_file_path = data.get('path', '')
         self.icon_path = data.get('icon_path', '')
 
@@ -184,6 +188,33 @@ class PluginInfo:
             self.icon = QPixmap(icon_path)
         else:
             print(f"Plugin {self.name}: Path {icon_path} not found :/")
+
+    def is_greater(self, other: "PluginInfo") -> int:
+
+        v1_tuple = tuple(map(int, self.version.split(".")))
+        v2_tuple = tuple(map(int, other.version.split(".")))
+
+        # Compare the tuples
+        if v1_tuple < v2_tuple:
+            return 1
+        elif v1_tuple > v2_tuple:
+            return -1
+        else:
+            return 0
+
+    def is_compatible(self) -> int:
+        """
+        Check if the plugin is compatible
+        :return:
+        """
+        v1_tuple = tuple(map(int, __GridCal_VERSION__.split(".")))
+        v2_tuple = tuple(map(int, self.gridcal_version.split(".")))
+
+        # Compare the tuples
+        if v1_tuple < v2_tuple:
+            return False
+        else:
+            return True
 
 
 class PluginsInfo:
@@ -284,7 +315,8 @@ def pack_plugin(name: str,
                 main_name: str,
                 icon_file: str,
                 version: str,
-                call_gui: bool):
+                call_gui: bool,
+                gridcal_version: str = "5.2.10"):
     """
     Create plugin package
     :param name: Name of the plugin
@@ -294,7 +326,8 @@ def pack_plugin(name: str,
     :param icon_file: icon file (relative to pkg_folder)
     :param version: Version of the plugin
     :param call_gui: does the main function
-    :return:
+    :param gridcal_version: gridcal version of the plugin
+    :return: final name of the plugin
     """
     plugin_data = {
         "plugins_tech_version": "1.0.0",
@@ -302,6 +335,7 @@ def pack_plugin(name: str,
         "path": python_file,
         "icon_path": icon_file,
         "version": version,
+        "gridcal_version": gridcal_version,
         "main_fcn": {
                         "name": main_name,
                         "alias": name,
@@ -309,7 +343,8 @@ def pack_plugin(name: str,
                     }
     }
 
-    filename_zip = f'{name}_plugin.gcplugin'
+    v2 = version.replace(".", "_")
+    filename_zip = f'{name}_{v2}.gcplugin'
     with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
 
         folder_name = os.path.basename(pkg_folder)

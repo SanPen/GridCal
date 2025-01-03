@@ -5,7 +5,7 @@
 
 import numpy as np
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
-
+from GridCalEngine.enumerations import BusMode
 
 class BusData:
     """
@@ -29,6 +29,10 @@ class BusData:
         self.angle_min: Vec = np.full(nbus, fill_value=-3.14, dtype=float)
         self.angle_max: Vec = np.full(nbus, fill_value=3.14, dtype=float)
         self.bus_types: IntVec = np.empty(nbus, dtype=int)
+        self.is_p_controlled = np.zeros(nbus, dtype=bool)
+        self.is_q_controlled = np.zeros(nbus, dtype=bool)
+        self.is_vm_controlled = np.zeros(nbus, dtype=bool)
+        self.is_va_controlled = np.zeros(nbus, dtype=bool)
         self.installed_power: Vec = np.zeros(nbus, dtype=float)
         self.srap_availbale_power: Vec = np.zeros(nbus, dtype=float)
         self.is_dc: BoolVec = np.empty(nbus, dtype=bool)
@@ -45,6 +49,7 @@ class BusData:
         self.b_fixed = np.zeros(nbus, dtype=float)  # same concept, but susceptance from shunts
 
         self.original_idx: IntVec = np.zeros(nbus, dtype=int)
+
 
     def slice(self, elm_idx: IntVec) -> "BusData":
         """
@@ -68,6 +73,10 @@ class BusData:
         data.angle_max = self.angle_max[elm_idx]
 
         data.bus_types = self.bus_types[elm_idx]
+        data.is_p_controlled = self.is_p_controlled[elm_idx]
+        data.is_q_controlled = self.is_q_controlled[elm_idx]
+        data.is_vm_controlled = self.is_vm_controlled[elm_idx]
+        data.is_va_controlled = self.is_va_controlled[elm_idx]
         data.installed_power = self.installed_power[elm_idx]
         data.srap_availbale_power = self.srap_availbale_power[elm_idx]
         data.is_dc = self.is_dc[elm_idx]
@@ -112,6 +121,10 @@ class BusData:
         data.angle_max = self.angle_max.copy()
 
         data.bus_types = self.bus_types.copy()
+        data.is_p_controlled = self.is_p_controlled.copy()
+        data.is_q_controlled = self.is_q_controlled.copy()
+        data.is_vm_controlled = self.is_vm_controlled.copy()
+        data.is_va_controlled = self.is_va_controlled.copy()
         data.installed_power = self.installed_power.copy()
         data.srap_availbale_power = self.srap_availbale_power.copy()
         data.is_dc = self.is_dc.copy()
@@ -126,6 +139,74 @@ class BusData:
         data.original_idx = self.original_idx.copy()
 
         return data
+
+    def set_bus_mode(self, idx: int, val: BusMode):
+        """
+        Set bus mode
+        :param idx: int
+        :param val: BusMode
+        """
+        self.bus_types[idx] = val.value
+        is_dc = self.is_dc[idx]
+        if val == BusMode.PQ_tpe:
+            if is_dc:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = False
+                self.is_va_controlled[idx] = True
+            else:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = True
+                self.is_vm_controlled[idx] = False
+                self.is_va_controlled[idx] = False
+        elif val == BusMode.PV_tpe:
+            if is_dc:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = True
+            else:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = False
+
+        elif val == BusMode.Slack_tpe:
+            if is_dc:
+                self.is_p_controlled[idx] = False
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = True
+            else:
+                self.is_p_controlled[idx] = False
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = True
+        elif val == BusMode.PQV_tpe:
+            if is_dc:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = True
+            else:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = True
+                self.is_vm_controlled[idx] = True
+                self.is_va_controlled[idx] = False
+        elif val == BusMode.P_tpe:
+            if is_dc:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = False
+                self.is_va_controlled[idx] = True
+            else:
+                self.is_p_controlled[idx] = True
+                self.is_q_controlled[idx] = False
+                self.is_vm_controlled[idx] = False
+                self.is_va_controlled[idx] = False
+
+        else:
+            raise ValueError("Unexpected bus mode")
 
     def __len__(self) -> int:
         return self.nbus

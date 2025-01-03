@@ -49,7 +49,7 @@ def test_iee14_cgmes() -> None:
 
     if not ok_nc:
         logger_nc.print("CGMES roundtrip comparison with the original")
-        logger_nc.to_xlsx("tuc_17_1_ieee14.xlsx")
+        logger_nc.to_xlsx(os.path.join("output", "tuc_17_1_ieee14.xlsx"))
     else:
         print("TUC 17.1 ok")
 
@@ -64,7 +64,7 @@ def test_iee14_cgmes() -> None:
 
     if not ok_nc3:
         logger_nc3.print("CGMES cim-converter comparison with the original")
-        logger_nc3.to_xlsx("tuc_17_1_ieee14_cim_converter.xlsx")
+        logger_nc3.to_xlsx(os.path.join("output", "tuc_17_1_ieee14_cim_converter.xlsx"))
     else:
         print("TUC Cimconverter 17.1 ok")
 

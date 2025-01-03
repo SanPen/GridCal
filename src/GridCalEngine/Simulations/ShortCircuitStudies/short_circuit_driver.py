@@ -18,7 +18,7 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import Line, Bus
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_options import ShortCircuitOptions
 from GridCalEngine.enumerations import FaultType, SimulationTypes
@@ -66,7 +66,7 @@ class ShortCircuitDriver(DriverTemplate):
 
         self.__cancel__ = False
 
-        self._is_running = False
+
 
     def get_steps(self):
         """
@@ -136,7 +136,7 @@ class ShortCircuitDriver(DriverTemplate):
         return br1, br2, middle_bus
 
     @staticmethod
-    def single_short_circuit(calculation_inputs: NumericalCircuit,
+    def single_short_circuit(nc: NumericalCircuit,
                              Vpf: CxVec,
                              Zf: complex,
                              island_bus_index: int,
@@ -150,18 +150,19 @@ class ShortCircuitDriver(DriverTemplate):
         :param fault_type: FaultType
         @return: short circuit results
         """
+        adm = nc.get_admittance_matrices()
         # compute Zbus
         # is dense, so no need to store it as sparse
-        if calculation_inputs.Ybus.shape[0] > 1:
+        if adm.Ybus.shape[0] > 1:
             if fault_type == FaultType.ph3:
-                return short_circuit_ph3(calculation_inputs=calculation_inputs,
-                                         Vpf=Vpf[calculation_inputs.original_bus_idx],
+                return short_circuit_ph3(nc=nc,
+                                         Vpf=Vpf[nc.bus_data.original_idx],
                                          Zf=Zf,
                                          bus_index=island_bus_index)
 
             elif fault_type in [FaultType.LG, FaultType.LL, FaultType.LLG]:
-                return short_circuit_unbalanced(calculation_inputs=calculation_inputs,
-                                                Vpf=Vpf[calculation_inputs.original_bus_idx],
+                return short_circuit_unbalanced(nc=nc,
+                                                Vpf=Vpf[nc.bus_data.original_idx],
                                                 Zf=Zf,
                                                 bus_index=island_bus_index,
                                                 fault_type=fault_type)
@@ -170,20 +171,20 @@ class ShortCircuitDriver(DriverTemplate):
                 raise Exception('Unknown fault type!')
 
         # if we get here, no short circuit was done, so declare empty results and exit --------------------------------
-        nbus = calculation_inputs.Ybus.shape[0]
-        nbr = calculation_inputs.nbr
+        nbus = adm.Ybus.shape[0]
+        nbr = nc.nbr
 
         # voltage, Sf, loading, losses, error, converged, Qpv
-        results = ShortCircuitResults(n=calculation_inputs.nbus,
-                                      m=calculation_inputs.nbr,
-                                      n_hvdc=calculation_inputs.nhvdc,
-                                      bus_names=calculation_inputs.bus_names,
-                                      branch_names=calculation_inputs.branch_names,
-                                      hvdc_names=calculation_inputs.hvdc_names,
-                                      bus_types=calculation_inputs.bus_types,
+        results = ShortCircuitResults(n=nc.nbus,
+                                      m=nc.nbr,
+                                      n_hvdc=nc.nhvdc,
+                                      bus_names=nc.bus_data.names,
+                                      branch_names=nc.passive_branch_data.names,
+                                      hvdc_names=nc.hvdc_data.names,
+                                      bus_types=nc.bus_data.bus_types,
                                       area_names=None)
 
-        results.Sbus = calculation_inputs.Sbus
+        results.Sbus = nc.get_power_injections_pu()
         results.voltage = np.zeros(nbus, dtype=complex)
         results.Sf = np.zeros(nbr, dtype=complex)
         results.If = np.zeros(nbr, dtype=complex)
@@ -223,25 +224,24 @@ class ShortCircuitDriver(DriverTemplate):
             grid = self.grid
 
         # Compile the grid
-        numerical_circuit = compile_numerical_circuit_at(circuit=grid,
+        nc = compile_numerical_circuit_at(circuit=grid,
                                                          t_idx=None,
                                                          apply_temperature=self.pf_options.apply_temperature_correction,
                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                                          opf_results=self.opf_results,
                                                          logger=self.logger)
 
-        calculation_inputs = numerical_circuit.split_into_islands(
-            ignore_single_node_islands=self.pf_options.ignore_single_node_islands)
+        calculation_inputs = nc.split_into_islands(
+            ignore_single_node_islands=self.pf_options.ignore_single_node_islands
+        )
 
-        results = ShortCircuitResults(n=numerical_circuit.nbus,
-                                      m=numerical_circuit.nbr,
-                                      n_hvdc=numerical_circuit.nhvdc,
-                                      bus_names=numerical_circuit.bus_names,
-                                      branch_names=numerical_circuit.branch_names,
-                                      hvdc_names=numerical_circuit.hvdc_names,
-                                      bus_types=numerical_circuit.bus_types)
-
-        results.bus_types = numerical_circuit.bus_types
+        results = ShortCircuitResults(n=nc.nbus,
+                                      m=nc.nbr,
+                                      n_hvdc=nc.nhvdc,
+                                      bus_names=nc.bus_data.names,
+                                      branch_names=nc.passive_branch_data.names,
+                                      hvdc_names=nc.hvdc_data.names,
+                                      bus_types=nc.bus_data.bus_types)
 
         Zf = self.compile_zf(grid)
 
@@ -258,34 +258,40 @@ class ShortCircuitDriver(DriverTemplate):
                 island_bus_index = reverse_bus_index.get(self.options.bus_index, None)
 
                 if island_bus_index is not None:
-                    res = self.single_short_circuit(calculation_inputs=island,
+                    res = self.single_short_circuit(nc=island,
                                                     Vpf=self.pf_results.voltage[island.bus_data.original_idx],
                                                     Zf=Zf[island.bus_data.original_idx],
                                                     island_bus_index=island_bus_index,
                                                     fault_type=self.options.fault_type)
 
                     # merge results
-                    results.apply_from_island(res, island.bus_data.original_idx, island.branch_data.original_idx)
+                    results.apply_from_island(res, island.bus_data.original_idx, island.passive_branch_data.original_idx)
 
         else:  # single island
 
-            res = self.single_short_circuit(calculation_inputs=calculation_inputs[0],
+            res = self.single_short_circuit(nc=calculation_inputs[0],
                                             Vpf=self.pf_results.voltage,
                                             Zf=Zf,
                                             island_bus_index=self.options.bus_index,
                                             fault_type=self.options.fault_type)
 
             # merge results
-            results.apply_from_island(res, calculation_inputs[0].original_bus_idx,
-                                      calculation_inputs[0].original_branch_idx)
+            results.apply_from_island(res, calculation_inputs[0].bus_data.original_idx,
+                                      calculation_inputs[0].passive_branch_data.original_idx)
 
         results.sc_type = self.options.fault_type
         results.sc_bus_index = self.options.bus_index
+
+        # expand voltages if there was a bus topology reduction
+        if nc.topology_performed:
+            results.voltage = nc.propagate_bus_result(results.voltage)
+            results.voltage1 = nc.propagate_bus_result(results.voltage1)
+            results.voltage0 = nc.propagate_bus_result(results.voltage0)
+            results.voltage2 = nc.propagate_bus_result(results.voltage2)
 
         self.results = results
         self.grid.short_circuit_results = results
         self._is_running = False
         self.toc()
 
-    def isRunning(self):
-        return self._is_running
+

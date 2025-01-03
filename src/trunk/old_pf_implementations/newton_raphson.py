@@ -97,7 +97,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
                     logger.add_error('NR Singular matrix @iter:'.format(iteration))
 
                     return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
-                                                   Scalc=S0, m=None, tau=None, Beq=None,
+                                                   Scalc=S0, m=None, tau=None,
                                                    Ybus=None, Yf=None, Yt=None,
                                                    iterations=iteration, elapsed=elapsed)
             except RuntimeError:
@@ -107,7 +107,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
                 logger.add_error('NR Singular matrix @iter:'.format(iteration))
 
                 return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
-                                               Scalc=S0, m=None, tau=None, Beq=None,
+                                               Scalc=S0, m=None, tau=None,
                                                Ybus=None, Yf=None, Yt=None,
                                                iterations=iteration, elapsed=elapsed)
 
@@ -171,7 +171,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
                 end = time.time()
                 elapsed = end - start
                 return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                               Scalc=Scalc, m=None, tau=None, Beq=None,
+                                               Scalc=Scalc, m=None, tau=None,
                                                Ybus=None, Yf=None, Yt=None,
                                                iterations=iteration, elapsed=elapsed)
 
@@ -210,6 +210,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
     elapsed = end - start
 
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, m=None, tau=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iteration, elapsed=elapsed)

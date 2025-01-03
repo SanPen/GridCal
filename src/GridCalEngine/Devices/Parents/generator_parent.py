@@ -30,6 +30,7 @@ class GeneratorParent(InjectionParent):
                  P: float,
                  Pmin: float,
                  Pmax: float,
+                 availability: float,
                  Cost: float,
                  mttf: float,
                  mttr: float,
@@ -91,6 +92,9 @@ class GeneratorParent(InjectionParent):
         # Maximum dispatched power in MW
         self.Pmax = float(Pmax)
 
+        self.availability = availability
+        self._availability_prof = Profile(default_value=self.availability, data_type=float)
+
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
                       editable=True, profile_name="control_bus_prof")
 
@@ -99,7 +103,8 @@ class GeneratorParent(InjectionParent):
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
         self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
-
+        self.register(key='availability', units='p.u.', tpe=float, definition='Availability of the generator in p.u.',
+                      profile_name='availability_prof')
         self.register(key='srap_enabled', units='', tpe=bool,
                       definition='Is the unit available for SRAP participation?',
                       editable=True, profile_name="srap_enabled_prof")
@@ -154,6 +159,23 @@ class GeneratorParent(InjectionParent):
             self._srap_enabled_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into srap_enabled_prof')
+
+    @property
+    def availability_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._availability_prof
+
+    @availability_prof.setter
+    def availability_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._availability_prof = val
+        elif isinstance(val, np.ndarray):
+            self._availability_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a availability_prof')
 
     def get_S(self) -> complex:
         """

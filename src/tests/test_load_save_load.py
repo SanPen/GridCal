@@ -19,6 +19,9 @@ def test_load_save_load() -> None:
     """
     folder = os.path.join('data', 'grids')
 
+    if not os.path.exists("output"):
+        os.makedirs("output")
+
     for name in ['IEEE39_1W.gridcal',
                  'hydro_grid_IEEE39.gridcal',
                  'IEEE57.gridcal',
@@ -31,7 +34,9 @@ def test_load_save_load() -> None:
         grid1 = gce.open_file(fname)
 
         name, ext = os.path.splitext(os.path.basename(fname))
-        fname2 = name + '_to_save' + ext
+
+        fname2 = os.path.join("output", name + '_to_save' + ext)
+
         gce.save_file(grid=grid1, filename=fname2)
 
         # open the main grid again
@@ -69,10 +74,17 @@ def test_load_save_load2() -> None:
     l2.rate_prof[1] = 30.0
     l3.rate_prof[1] = 40.0
 
-    gce.save_file(grid=grid1, filename='test_load_save_load2.gridcal')
+    if not os.path.exists("output"):
+        os.makedirs("output")
 
-    grid2 = gce.open_file('test_load_save_load2.gridcal')
+    o_file = os.path.join("output", "test_load_save_load2.gridcal")
+
+    gce.save_file(grid=grid1, filename=o_file)
+
+    grid2 = gce.open_file(o_file)
 
     equal, logger = grid2.compare_circuits(grid1, detailed_profile_comparison=True)
 
     assert equal
+
+    os.remove(o_file)

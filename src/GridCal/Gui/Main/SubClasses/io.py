@@ -23,7 +23,7 @@ from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
@@ -438,6 +438,12 @@ class IoMain(ConfigurationMain):
             info = get_plugin_info(fname)
 
             if info is not None:
+
+                if not info.is_compatible():
+                    error_msg(f"{info.name} {info.version} requires GridCal {info.gridcal_version}",
+                              "Plugin install")
+                    return
+
                 found = False
                 for key, plugin in self.plugins_info.plugins.items():
                     if plugin.name == info.name:
@@ -1121,4 +1127,3 @@ class IoMain(ConfigurationMain):
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
         self.change_theme_mode()
-

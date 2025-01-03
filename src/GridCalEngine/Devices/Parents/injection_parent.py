@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Union, List, TYPE_CHECKING
+from typing import Union, List, Tuple, TYPE_CHECKING
 import numpy as np
 
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
@@ -18,6 +18,22 @@ from GridCalEngine.Devices.Aggregation.facility import Facility
 if TYPE_CHECKING:
     from GridCalEngine.Devices import Technology
     from GridCalEngine.Devices.types import ALL_DEV_TYPES
+
+
+def set_bus(bus: Bus, cn: ConnectivityNode) -> Tuple[Bus | None, ConnectivityNode | None]:
+    """
+
+    :param bus:
+    :param cn:
+    :return:
+    """
+    if bus is None:
+        if cn is None:
+            return None, None
+        else:
+            return cn.bus, cn
+    else:
+        return bus, cn
 
 
 class InjectionParent(PhysicalDevice):
@@ -62,10 +78,7 @@ class InjectionParent(PhysicalDevice):
                                 code=code,
                                 device_type=device_type)
 
-        self._bus = bus
-        self._bus_prof = Profile(default_value=bus, data_type=DeviceType.BusDevice)
-
-        self.cn = cn
+        self._bus, self._cn = set_bus(bus, cn)
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
@@ -90,8 +103,7 @@ class InjectionParent(PhysicalDevice):
 
         self.scalable: bool = True
 
-        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus',
-                      editable=False, profile_name="bus_prof")
+        self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus', editable=False)
 
         self.register(key='cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
                       definition='Connection connectivity node', editable=False)
@@ -132,53 +144,32 @@ class InjectionParent(PhysicalDevice):
     def bus(self, val: Bus):
         if val is None:
             self._bus = val
-            self._bus_prof.fill(value=val)
         else:
             if isinstance(val, Bus):
                 self._bus = val
-                self._bus_prof.fill(value=val)
             else:
                 raise Exception(str(type(val)) + 'not supported to be set into a bus')
 
     @property
-    def bus_prof(self) -> Profile:
+    def cn(self) -> ConnectivityNode:
         """
-        Bus profile
-        :return: Profile
+        Bus
+        :return: Bus
         """
-        return self._bus_prof
+        return self._cn
 
-    @bus_prof.setter
-    def bus_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._bus_prof = val
-        elif isinstance(val, np.ndarray):
-            self._bus_prof.set(arr=val)
+    @cn.setter
+    def cn(self, val: ConnectivityNode):
+        if val is None:
+            self._cn = val
         else:
-            raise Exception(str(type(val)) + 'not supported to be set into a bus_prof')
+            if isinstance(val, ConnectivityNode):
+                self._cn = val
 
-    def get_bus_at(self, t_idx: Union[None, int]) -> Bus:
-        """
-        Returns the bus at a particular point in time
-        :param t_idx: time index (None for snapshot, int for profile values)
-        :return: Bus device
-        """
-        if t_idx is None:
-            return self.bus
-        else:
-            return self._bus_prof[t_idx]
-
-    def set_bus_at(self, t_idx: Union[None, int], val: Bus):
-        """
-        Returns the bus at a particular point in time
-        :param t_idx: time index (None for snapshot, int for profile values)
-        :param val: Bus object to set
-        :return: Bus device
-        """
-        if t_idx is None:
-            self.bus = val
-        else:
-            self._bus_prof[t_idx] = val
+                if self.bus is None:
+                    self.bus = self._cn.bus
+            else:
+                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node')
 
     @property
     def active_prof(self) -> Profile:

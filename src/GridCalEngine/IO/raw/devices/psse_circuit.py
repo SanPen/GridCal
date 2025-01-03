@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 from typing import List, Dict
+
+from GridCalEngine.IO.raw.devices.multi_section_line import RawMultiLineSection
 from GridCalEngine.IO.raw.devices.psse_object import RawObject, PsseProperty
 from GridCalEngine.IO.raw.devices.area import RawArea
 from GridCalEngine.IO.raw.devices.branch import RawBranch
@@ -23,6 +25,7 @@ from GridCalEngine.IO.raw.devices.zone import RawZone
 from GridCalEngine.IO.raw.devices.owner import RawOwner
 from GridCalEngine.IO.raw.devices.substation import RawSubstation
 from GridCalEngine.IO.raw.devices.gne_device import RawGneDevice
+from GridCalEngine.IO.raw.devices.impedance_correction_table import RawImpedanceCorrectionTable
 from GridCalEngine.IO.raw.devices.system_switching_device import RawSystemSwitchingDevice
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.basic_structures import Logger
@@ -77,6 +80,10 @@ class PsseCircuit(RawObject, BaseCircuit):
 
         self.gne: List[RawGneDevice] = list()
 
+        self.indiction_tables: List[RawImpedanceCorrectionTable] = list()
+
+        self.multi_line_sections: List[RawMultiLineSection] = list()
+
         self.register_property(property_name="areas", rawx_key="area", class_type=RawArea)
         self.register_property(property_name="inter_areas", rawx_key="iatrans", class_type=RawInterArea)
         self.register_property(property_name="zones", rawx_key="zone", class_type=RawZone)
@@ -84,7 +91,8 @@ class PsseCircuit(RawObject, BaseCircuit):
         self.register_property(property_name="buses", rawx_key="bus", class_type=RawBus)
         self.register_property(property_name="branches", rawx_key="acline", class_type=RawBranch)
         self.register_property(property_name="transformers", rawx_key="transformer", class_type=RawTransformer)
-        self.register_property(property_name="two_terminal_dc_lines", rawx_key="twotermdc", class_type=RawTwoTerminalDCLine)
+        self.register_property(property_name="two_terminal_dc_lines", rawx_key="twotermdc",
+                               class_type=RawTwoTerminalDCLine)
         self.register_property(property_name="vsc_dc_lines", rawx_key="vscdc", class_type=RawVscDCLine)
         self.register_property(property_name="facts", rawx_key="facts", class_type=RawFACTS)
         self.register_property(property_name="loads", rawx_key="load", class_type=RawLoad)
@@ -95,6 +103,10 @@ class PsseCircuit(RawObject, BaseCircuit):
         self.register_property(property_name="substations", rawx_key="sub", class_type=RawSubstation)
         self.register_property(property_name="switches", rawx_key="subswd", class_type=RawSystemSwitchingDevice)
         self.register_property(property_name="gne", rawx_key="gne", class_type=RawGneDevice)
+        self.register_property(property_name="indiction_tables", rawx_key="impcor",
+                               class_type=RawImpedanceCorrectionTable)
+        self.register_property(property_name="multi_line_sections", rawx_key="msline",
+                               class_type=RawMultiLineSection)
 
     def parse(self, data: List[int | float]) -> None:
         """

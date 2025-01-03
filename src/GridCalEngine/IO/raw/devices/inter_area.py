@@ -67,14 +67,14 @@ class RawInterArea(RawObject):
 
             self.ARNAME = self.ARNAME.replace("'", "").strip()
         else:
-            logger.add_warning('Areas not defined for version', str(version))
+            logger.add_warning('Inter-Areas not defined for version', str(version))
 
     def get_raw_line(self, version):
 
         if version >= 29:
             return self.format_raw_line([self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME])
         else:
-            raise Exception('Areas not defined for version', str(version))
+            raise Exception('Inter-Areas not defined for version', str(version))
 
     def get_id(self) -> str:
         return str(self.I)

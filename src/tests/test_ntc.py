@@ -20,7 +20,9 @@ def test_ntc_ultra_simple() -> None:
     info = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
                                            objects_to=[grid.areas[1]])
 
-    opf_options = gce.OptimalPowerFlowOptions()
+    opf_options = gce.OptimalPowerFlowOptions(
+        # export_model_fname="test_ntc_ultra_simple.lp"
+    )
     lin_options = gce.LinearAnalysisOptions()
 
     ntc_options = gce.OptimalNetTransferCapacityOptions(

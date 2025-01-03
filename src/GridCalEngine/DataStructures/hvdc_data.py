@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 
 import numpy as np
 from typing import List, Tuple, Set
-import scipy.sparse as sp
-import GridCalEngine.Topology.topology as tp
+from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.enumerations import HvdcControlType
-from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec
+from GridCalEngine.basic_structures import Vec, IntVec, Logger
 
 
-class HvdcData:
+class HvdcData(BranchParentData):
     """
     HvdcData
     """
@@ -22,20 +22,9 @@ class HvdcData:
         :param nelm: number of hvdcs
         :param nbus: number of buses
         """
-        self.nbus: int = nbus
-        self.nelm: int = nelm
+        BranchParentData.__init__(self, nelm=nelm, nbus=nbus)
 
-        self.names: StrVec = np.zeros(nelm, dtype=object)
-        self.idtag: StrVec = np.zeros(nelm, dtype=object)
-
-        self.active: BoolVec = np.zeros(nelm, dtype=int)
         self.dispatchable: IntVec = np.zeros(nelm, dtype=int)
-        self.F: IntVec = np.zeros(nelm, dtype=int)
-        self.T: IntVec = np.zeros(nelm, dtype=int)
-
-        self.rate: Vec = np.zeros(nelm, dtype=float)
-        self.contingency_rate: Vec = np.zeros(nelm, dtype=float)
-        self.protection_rates: Vec = np.zeros(nelm, dtype=float)
 
         self.r: Vec = np.zeros(nelm, dtype=float)
 
@@ -58,13 +47,6 @@ class HvdcData:
         self.Qmin_t: Vec = np.zeros(nelm, dtype=float)
         self.Qmax_t: Vec = np.zeros(nelm, dtype=float)
 
-        self.C_hvdc_bus_f: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
-                                                         dtype=int)  # this ons is just for splitting islands
-        self.C_hvdc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
-                                                         dtype=int)  # this ons is just for splitting islands
-
-        self.original_idx = np.zeros(nelm, dtype=int)
-
     def size(self) -> int:
         """
         Get size of the structure
@@ -73,24 +55,16 @@ class HvdcData:
 
         return self.nelm
 
-    def slice(self, elm_idx, bus_idx) -> "HvdcData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec, logger: Logger | None) -> "HvdcData":
         """
         Make a deep copy of this structure
         :return: new HvdcData instance
         """
+        data, bus_map = super().slice(elm_idx, bus_idx, bus_map, logger)
+        data: HvdcData = data
+        data.__class__ = HvdcData
 
-        data = HvdcData(nelm=len(elm_idx),
-                        nbus=len(bus_idx))
-
-        data.names = self.names[elm_idx]
-        data.idtag = self.idtag[elm_idx]
-
-        data.active = self.active[elm_idx]
         data.dispatchable = self.dispatchable[elm_idx]
-
-        data.rate = self.rate[elm_idx]
-        data.contingency_rate = self.contingency_rate[elm_idx]
-        data.protection_rates = self.protection_rates[elm_idx]
 
         data.r = self.r[elm_idx]
 
@@ -111,20 +85,20 @@ class HvdcData:
         data.Qmin_t = self.Qmin_t[elm_idx]
         data.Qmax_t = self.Qmax_t[elm_idx]
 
-        data.C_hvdc_bus_f = self.C_hvdc_bus_f[np.ix_(elm_idx, bus_idx)]
-        data.C_hvdc_bus_t = self.C_hvdc_bus_t[np.ix_(elm_idx, bus_idx)]
-
-        data.original_idx = elm_idx
-
-        # first slice, then remap
-        data.F = self.F[elm_idx]
-        data.T = self.T[elm_idx]
-        bus_map = {o: i for i, o in enumerate(bus_idx)}
-        for k in range(data.nelm):
-            data.F[k] = bus_map[data.F[k]]
-            data.T[k] = bus_map[data.T[k]]
-
         return data
+
+    def remap(self, bus_map_arr: IntVec):
+        """
+        Remapping of the branch buses
+        :param bus_map_arr: array of old-to-new buses
+        """
+        for k in range(self.nelm):
+            f = self.F[k]
+            t = self.T[k]
+            new_f = bus_map_arr[f]
+            new_t = bus_map_arr[t]
+            self.F[k] = new_f
+            self.T[k] = new_t
 
     def copy(self) -> "HvdcData":
         """
@@ -132,19 +106,10 @@ class HvdcData:
         :return: new HvdcData instance
         """
 
-        data = HvdcData(nelm=self.nelm, nbus=self.nbus)
+        data: HvdcData = super().copy()
+        data.__class__ = HvdcData
 
-        data.names = self.names.copy()
-        data.idtag = self.idtag.copy()
-
-        data.active = self.active.copy()
         data.dispatchable = self.dispatchable.copy()
-        data.F = self.F.copy()
-        data.T = self.T.copy()
-
-        data.rate = self.rate.copy()
-        data.contingency_rate = self.contingency_rate.copy()
-        data.protection_rates = self.protection_rates.copy()
 
         data.r = self.r.copy()
 
@@ -165,11 +130,6 @@ class HvdcData:
         data.Qmin_t = self.Qmin_t.copy()
         data.Qmax_t = self.Qmax_t.copy()
 
-        data.C_hvdc_bus_f = self.C_hvdc_bus_f.copy()
-        data.C_hvdc_bus_t = self.C_hvdc_bus_t.copy()
-
-        data.original_idx = self.original_idx.copy()
-
         return data
 
     def get_bus_indices_f(self) -> IntVec:
@@ -177,53 +137,58 @@ class HvdcData:
         Get bus indices "from"
         :return:
         """
-        return self.C_hvdc_bus_f * np.arange(self.C_hvdc_bus_f.shape[1])
+        return self.F
 
     def get_bus_indices_t(self) -> IntVec:
         """
         Get bus indices "to"
         :return:
         """
-        return self.C_hvdc_bus_t * np.arange(self.C_hvdc_bus_t.shape[1])
-
-    def get_island(self, bus_idx: IntVec):
-        """
-        Get HVDC indices of the island given by the bus indices
-        :param bus_idx: list of bus indices
-        :return: list of HVDC lines indices
-        """
-        if self.nelm:
-            return tp.get_elements_of_the_island(self.C_hvdc_bus_f + self.C_hvdc_bus_t, bus_idx, active=self.active)
-        else:
-            return np.zeros(0, dtype=int)
+        return self.T
 
     def get_qmax_from_per_bus(self) -> Vec:
         """
         Max reactive power in the From Bus
         :return: (nbus, nt) Qmax From
         """
-        return self.C_hvdc_bus_f.T * (self.Qmax_f * self.active).T
+        val = np.zeros(self.nbus)
+        for k in range(self.nelm):
+            i = self.F[k]
+            val[i] += self.Qmax_f[k] * self.active[k]
+        return val
 
     def get_qmin_from_per_bus(self) -> Vec:
         """
         Min reactive power in the From Bus
         :return: (nbus, nt) Qmin From
         """
-        return self.C_hvdc_bus_f.T * (self.Qmin_f * self.active).T
+        val = np.zeros(self.nbus)
+        for k in range(self.nelm):
+            i = self.F[k]
+            val[i] += self.Qmin_f[k] * self.active[k]
+        return val
 
     def get_qmax_to_per_bus(self) -> Vec:
         """
         Max reactive power in the To Bus
         :return: (nbus, nt) Qmax To
         """
-        return self.C_hvdc_bus_t.T * (self.Qmax_t * self.active).T
+        val = np.zeros(self.nbus)
+        for k in range(self.nelm):
+            i = self.T[k]
+            val[i] += self.Qmax_t[k] * self.active[k]
+        return val
 
     def get_qmin_to_per_bus(self) -> Vec:
         """
         Min reactive power in the To Bus
         :return: (nbus, nt) Qmin To
         """
-        return self.C_hvdc_bus_t.T * (self.Qmin_t * self.active).T
+        val = np.zeros(self.nbus)
+        for k in range(self.nelm):
+            i = self.T[k]
+            val[i] += self.Qmin_t[k] * self.active[k]
+        return val
 
     def get_angle_droop_in_pu_rad(self, Sbase: float):
         """
@@ -276,10 +241,10 @@ class HvdcData:
 
                     nfree += 1
 
-                    if Pcalc > self.rate[i]:
-                        Pcalc = self.rate[i]
-                    if Pcalc < -self.rate[i]:
-                        Pcalc = -self.rate[i]
+                    if Pcalc > self.rates[i]:
+                        Pcalc = self.rates[i]
+                    if Pcalc < -self.rates[i]:
+                        Pcalc = -self.rates[i]
 
                 else:
                     Pcalc = 0.0
@@ -302,7 +267,7 @@ class HvdcData:
                     Pt[i] = 0
 
                 # compute loading
-                loading[i] = Pf[i] / (self.rate[i] + 1e-20)
+                loading[i] = Pf[i] / (self.rates[i] + 1e-20)
 
                 # Pbus
                 Pbus[self.F[i]] += Pf[i] / Sbase

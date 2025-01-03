@@ -190,23 +190,33 @@ class CimExporter:
         if self.one_file_per_profile:
             i = 1
             for prof in profiles_to_export:
-                with zipfile.ZipFile(os.path.join(fpath, f"{name}_{prof}_001{extension}"), 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+                formated_name = f"{name}_{prof}_001{extension}"
+                xml_formated_name = f"{name}_{prof}_001.xml"
+                split_name = name.split('_')
+                if split_name.__len__() == 5:
+                    formated_name = f"{split_name[0]}_{split_name[1]}_{split_name[2]}_{prof}_{split_name[4]}{extension}"
+                    xml_formated_name = f"{split_name[0]}_{split_name[1]}_{split_name[2]}_{prof}_{split_name[4]}.xml"
+                with zipfile.ZipFile(os.path.join(fpath, formated_name), 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
                     self.cgmes_circuit.emit_text(f"Export {prof} profile file")
                     self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
                     i += 1
                     with BytesIO() as buffer:
                         self.serialize(stream=buffer, profile=prof)
-                        f_zip_ptr.writestr(f"{name}_{prof}_001.xml", buffer.getvalue())
+                        f_zip_ptr.writestr(xml_formated_name, buffer.getvalue())
         else:
             i = 1
             with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
                 for prof in profiles_to_export:
                     self.cgmes_circuit.emit_text(f"Export {prof} profile file")
                     self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
+                    formated_name = f"{name}_{prof}_001.xml"
+                    split_name = name.split('_')
+                    if split_name.__len__() == 5:
+                        formated_name = f"{split_name[0]}_{split_name[1]}_{split_name[2]}_{prof}_{split_name[4]}.xml"
                     i += 1
                     with BytesIO() as buffer:
                         self.serialize(stream=buffer, profile=prof)
-                        f_zip_ptr.writestr(f"{name}_{prof}_001.xml", buffer.getvalue())
+                        f_zip_ptr.writestr(formated_name, buffer.getvalue())
 
     def serialize(self, stream, profile):
         if not self.supports_profile(profile):

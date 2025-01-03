@@ -67,6 +67,8 @@ class DriverTemplate:
 
         self.__cancel__ = False
 
+        self._is_running = False
+
         self.__start = time.time()
 
     def tic(self, skip_logger=False):
@@ -148,6 +150,9 @@ class DriverTemplate:
         :return:
         """
         return self.__cancel__
+
+    def isRunning(self):
+        return self._is_running
 
 
 class TimeSeriesDriverTemplate(DriverTemplate):

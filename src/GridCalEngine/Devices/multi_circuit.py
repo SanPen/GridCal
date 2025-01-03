@@ -221,7 +221,7 @@ class MultiCircuit(Assets):
         Return an array of bus types
         :return: number
         """
-        return np.ones(len(self._buses), dtype=int)
+        return np.ones(len(self.buses), dtype=int)
 
     def get_dimensions(self):
         """
@@ -329,7 +329,7 @@ class MultiCircuit(Assets):
 
         bus_dictionary = dict()
 
-        for i, bus in enumerate(self._buses):
+        for i, bus in enumerate(self.buses):
             graph.add_node(i)
             bus_dictionary[bus.idtag] = i
 
@@ -508,12 +508,7 @@ class MultiCircuit(Assets):
                       cn_to=line.cn_to,
                       name='VSC',
                       active=line.active,
-                      rate=line.rate,
-                      r=line.R,
-                      x=line.X,
-                      Beq=line.B,
-                      tap_module=1.0,
-                      )
+                      rate=line.rate)
 
         vsc.active_prof = line.active_prof
         vsc.rate_prof = line.rate_prof
@@ -767,7 +762,7 @@ class MultiCircuit(Assets):
         Cf = lil_matrix((m, n))
         Ct = lil_matrix((m, n))
 
-        bus_dict = {bus: i for i, bus in enumerate(self._buses)}
+        bus_dict = {bus: i for i, bus in enumerate(self.buses)}
 
         k = 0
         for branch_list in self.get_branch_lists():
@@ -790,7 +785,7 @@ class MultiCircuit(Assets):
         :return: Adjacent matrix
         """
         Cf, Ct, C = self.get_bus_branch_connectivity_matrix()
-        A = C.T * C
+        A = C.T @ C
         return A.tocsc()
 
     @staticmethod
@@ -807,7 +802,7 @@ class MultiCircuit(Assets):
         """
         Get the mean coordinates of the system (lat, lon)
         """
-        coord = np.array([b.get_coordinates() for b in self._buses])
+        coord = np.array([b.get_coordinates() for b in self.buses])
 
         return coord.mean(axis=0).tolist()
 
@@ -915,10 +910,10 @@ class MultiCircuit(Assets):
         :return Logger object
         """
 
-        n = len(self._buses)
+        n = len(self.buses)
         lon = np.zeros(n)
         lat = np.zeros(n)
-        for i, bus in enumerate(self._buses):
+        for i, bus in enumerate(self.buses):
             lon[i] = bus.longitude
             lat[i] = bus.latitude
 
@@ -945,7 +940,7 @@ class MultiCircuit(Assets):
             y -= y_max - 100  # 100 is a healthy offset
 
         # assign the values
-        for i, bus in enumerate(self._buses):
+        for i, bus in enumerate(self.buses):
             if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.x = x[i]
                 bus.y = y[i]
@@ -961,10 +956,10 @@ class MultiCircuit(Assets):
         :param offset_y:
         :return:
         """
-        n = len(self._buses)
+        n = len(self.buses)
         x = np.zeros(n)
         y = np.zeros(n)
-        for i, bus in enumerate(self._buses):
+        for i, bus in enumerate(self.buses):
             x[i] = bus.x * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
@@ -983,7 +978,7 @@ class MultiCircuit(Assets):
         lat = lonlat[1]
 
         # assign the values
-        for i, bus in enumerate(self._buses):
+        for i, bus in enumerate(self.buses):
             if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.latitude = lat[i]
                 bus.longitude = lon[i]
@@ -1009,7 +1004,7 @@ class MultiCircuit(Assets):
             d[str(name)] = (lat, lon)
 
         # assign the values
-        for i, bus in enumerate(self._buses):
+        for i, bus in enumerate(self.buses):
             if bus.name in d.keys():
                 lat, lon = d[bus.name]
                 bus.latitude = lat
@@ -1030,8 +1025,8 @@ class MultiCircuit(Assets):
         """
         areas_dict = {elm: k for k, elm in enumerate(self.get_areas())}
 
-        lst = np.zeros(len(self._buses), dtype=int)
-        for k, bus in enumerate(self._buses):
+        lst = np.zeros(len(self.buses), dtype=int)
+        for k, bus in enumerate(self.buses):
             if bus.area is not None:
                 lst[k] = areas_dict.get(bus.area, 0)
             else:
@@ -1044,7 +1039,7 @@ class MultiCircuit(Assets):
         :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self._buses):
+        for k, bus in enumerate(self.buses):
             if bus.area in areas:
                 lst.append((k, bus))
         return lst
@@ -1055,7 +1050,7 @@ class MultiCircuit(Assets):
         :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self._buses):
+        for k, bus in enumerate(self.buses):
             if bus.zone in zones:
                 lst.append((k, bus))
         return lst
@@ -1066,7 +1061,7 @@ class MultiCircuit(Assets):
         :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self._buses):
+        for k, bus in enumerate(self.buses):
             if bus.country in countries:
                 lst.append((k, bus))
         return lst
@@ -1588,9 +1583,9 @@ class MultiCircuit(Assets):
         Get the buses stored voltage guess
         :return: array of complex voltages per bus
         """
-        v = np.zeros(len(self._buses), dtype=complex)
+        v = np.zeros(len(self.buses), dtype=complex)
 
-        for i, bus in enumerate(self._buses):
+        for i, bus in enumerate(self.buses):
             if bus.active:
                 v[i] = cmath.rect(bus.Vm0, bus.Va0)
 
@@ -2110,7 +2105,7 @@ class MultiCircuit(Assets):
         # add profiles if required
         if self.time_profile is not None:
 
-            for bus in circuit._buses:
+            for bus in circuit.buses:
                 bus.create_profiles(index=self.time_profile)
 
             for lst in [circuit._lines, circuit._transformers2w, circuit._hvdc_lines]:
@@ -2370,7 +2365,7 @@ class MultiCircuit(Assets):
         Clean dead references
         """
         logger = Logger()
-        bus_set = set(self._buses)
+        bus_set = set(self.buses)
         cn_set = set(self._connectivity_nodes)
         all_dev, dict_ok = self.get_all_elements_dict()
         nt = self.get_time_number()
@@ -2387,15 +2382,16 @@ class MultiCircuit(Assets):
         """
         Convert this MultiCircuit in-place from bus/branch to node/breaker network model
         """
+        # TODO: Modify this to reflect the new reality...
 
         bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
-        for bus in self._buses:
+        for bus in self.buses:
             bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
             self.add_bus_bar(bus_bar)
             bus_to_busbar_cn[bus.idtag] = bus_bar.cn
             bus_bar.cn.code = bus.code  # for soft checking later
-            if bus_bar.cn.default_bus:
-                bus_bar.cn.default_bus.code = bus.code  # for soft checking later
+            if bus_bar.cn.bus:
+                bus_bar.cn.bus.code = bus.code  # for soft checking later
 
         # add the cn's at the branches
         for lst in [self.get_branches(), self.get_switches()]:
@@ -2418,13 +2414,13 @@ class MultiCircuit(Assets):
         """
 
         bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
-        for bus in self._buses:
+        for bus in self.buses:
             bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
             self.add_bus_bar(bus_bar)
             bus_to_busbar_cn[bus.idtag] = bus_bar.cn
             bus_bar.cn.code = bus.code  # for soft checking later
-            if bus_bar.cn.default_bus:
-                bus_bar.cn.default_bus.code = bus.code  # for soft checking later
+            if bus_bar.cn.bus:
+                bus_bar.cn.bus.code = bus.code  # for soft checking later
 
         # branches
         for elm in self.get_branches():

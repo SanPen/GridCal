@@ -1,6 +1,6 @@
 import os
 import GridCalEngine.api as gce
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 # from GridCalEngine.enumerations import TransformerControlType

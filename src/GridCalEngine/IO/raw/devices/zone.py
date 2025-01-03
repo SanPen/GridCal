@@ -49,7 +49,7 @@ class RawZone(RawObject):
         if version >= 29:
             return self.format_raw_line([self.I, self.ZONAME])
         else:
-            raise Exception('Areas not defined for version', str(version))
+            raise Exception('Zone not defined for version', str(version))
 
     def get_id(self) -> str:
         return str(self.I)

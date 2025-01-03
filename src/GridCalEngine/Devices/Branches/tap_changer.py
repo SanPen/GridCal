@@ -8,6 +8,7 @@ import pandas as pd
 from typing import Union, Dict
 from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 from GridCalEngine.enumerations import TapChangerTypes
+from GridCalEngine.basic_structures import Logger
 
 
 class TapChanger:
@@ -61,9 +62,11 @@ class TapChanger:
         self._negative_low = False
 
         # Calculated arrays
-        self._ndv = np.zeros(self._total_positions)
-        self._tau_array = np.zeros(self._total_positions)
-        self._m_array = np.zeros(self._total_positions)
+        self._ndv = np.zeros(self._total_positions)  # increment of voltage positions
+        self._tau_array = np.zeros(self._total_positions)  # tap phase positions
+        self._m_array = np.zeros(self._total_positions)  # tap module positions
+        self._k_re_array = np.ones(self._total_positions)  # impedance correction positions (real)
+        self._k_im_array = np.ones(self._total_positions)  # impedance correction positions (imag)
         self.recalc()
 
     @property
@@ -164,13 +167,16 @@ class TapChanger:
             "normal_position": self.normal_position,
             "tap_position": self._tap_position,
             "type": str(self.tc_type),
-            "negative_low": self._negative_low
+            "negative_low": self._negative_low,
+            "impedance_correction_real": self._k_re_array.tolist(),
+            "impedance_correction_imag": self._k_im_array.tolist(),
         }
 
-    def parse(self, data: Dict[str, Union[str, float]]):
+    def parse(self, data: Dict[str, Union[str, float]], logger: Logger = Logger()) -> None:
         """
         Parse the tap data
         :param data: dictionary representation of the tap
+        :param logger: logger instance
         """
         self.asymmetry_angle = data.get("asymmetry_angle", 90.0)
         self.total_positions = data.get("total_positions", 5)
@@ -180,6 +186,25 @@ class TapChanger:
         self.tap_position = data.get("tap_position", 2)
         self.tc_type = TapChangerTypes(data.get("type", TapChangerTypes.NoRegulation.value))
         self._negative_low = data.get("negative_low", False)
+
+        # parse the impedance corerction factors
+
+        _k_re_array = data.get("impedance_correction_real", None)
+        if _k_re_array is not None:
+            if len(_k_re_array) == self.total_positions:
+                self._k_re_array = np.array(_k_re_array)
+            else:
+                self._k_re_array = np.ones(self._total_positions)
+                logger.add_warning("Incorrect impedance table length")
+
+        _k_im_array = data.get("impedance_correction_imag", None)
+        if _k_im_array is not None:
+            if len(_k_im_array) == self.total_positions:
+                self._k_im_array = np.array(_k_im_array)
+            else:
+                self._k_im_array = np.ones(self._total_positions)
+                logger.add_warning("Incorrect impedance table length")
+
         self.recalc()
 
     def to_df(self) -> pd.DataFrame:
@@ -187,7 +212,13 @@ class TapChanger:
         Get DaraFrame of the values
         :return: DataFrame
         """
-        return pd.DataFrame(data={'Steps': self._ndv, 'tau': self._tau_array, 'm': self._m_array})
+        return pd.DataFrame(data={
+            'Steps': self._ndv,
+            'tau': self._tau_array,
+            'm': self._m_array,
+            'impedance_correction_real': self._k_re_array,
+            'impedance_correction_imag': self._k_im_array,
+        })
 
     def reset(self) -> None:
         """
@@ -288,7 +319,7 @@ class TapChanger:
         :return: phase in radians
         """
         if self.tap_position < len(self._tau_array):
-            return self._tau_array[self.tap_position]
+            return float(self._tau_array[self.tap_position])
         else:
             print("tap position out of range")
             return 0.0
@@ -299,7 +330,7 @@ class TapChanger:
         :return: voltage regulation module
         """
         if self.tap_position < len(self._m_array):
-            return self._m_array[self.tap_position]
+            return float(self._m_array[self.tap_position])
         else:
             print("tap position out of range")
             return 1.0
@@ -409,6 +440,8 @@ class TapChanger:
         self._ndv = np.zeros(self._total_positions)
         self._tau_array = np.zeros(self._total_positions)
         self._m_array = np.zeros(self._total_positions)
+        self._k_re_array = np.ones(self._total_positions)  # impedance correction positions (real)
+        self._k_im_array = np.ones(self._total_positions)  # impedance correction positions (imag)
         self.recalc()
 
     def get_cgmes_values(self):
