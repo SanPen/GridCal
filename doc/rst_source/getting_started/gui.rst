@@ -9,7 +9,7 @@ framework. This allows GridCal to be multi-platform and to have sufficient
 performance to handle thousands of graphical items in the editor, to be
 responsive and plenty of other attributes of consumer software.
 
-.. figure:: figures/gridcal_gui.png
+.. figure:: ./../figures/gridcal_gui.png
     :alt: GridCal user interface.
     :scale: 50 %
     
@@ -44,7 +44,7 @@ The schematic view is where you construct the grid in GridCal. The usage is quit
 
 The schematic objects are coloured based on the results of the latest simulation.
 
-.. figure:: figures/model-schematic.png
+.. figure:: ./../figures/model-schematic.png
     :alt: Schematic view and editor
     :scale: 50 %
 
@@ -53,7 +53,7 @@ the schematic editor is augmented with a bar that allows you to select the appro
 of the grid. When the simulation has a time component, like time series or voltage collapse, the bar will
 allow you to visualize each individual step of the simulation and navigate through them.
 
-.. figure:: figures/model-schematic-2.png
+.. figure:: ./../figures/model-schematic-2.png
     :alt: Schematic view and editor extended
     :scale: 50 %
 
@@ -64,7 +64,7 @@ Some times is far more practical to edit the objects in bulk. For that, GridCal 
 of the objects. All the static properties of the objects can be edited here. For the properties with time series
 we have the "time events" tab.
 
-.. figure:: figures/model-objects.png
+.. figure:: ./../figures/model-objects.png
     :alt: GridCal objects tabular editor.
     :scale: 50 %
 
@@ -76,7 +76,7 @@ available to assign to each branch. When a template is assigned to a branch, som
 template. The properties affected are the resistance (R), reactance (X), Conductance (G), Susceptance (B)
 and the branch rating (Rate).
 
-.. figure:: figures/model-objects-2.png
+.. figure:: ./../figures/model-objects-2.png
     :alt: GridCal objects tabular editor 2.
     :scale: 50 %
 
@@ -88,14 +88,14 @@ GridCal features an analysis and diagnostics tool (F8) that allows to inspect at
 of the grid objects. For instance if there were outliers in the branches resistance, it would be evident
 from the histogram charts.
 
-.. figure:: figures/analysis.png
+.. figure:: ./../figures/analysis.png
     :alt: GridCal objects analysis.
     :scale: 50 %
 
 A detailed table of common problems is provided in the diagnostics tab. This allows you to go back to the
 tabular editor and fix the issues found.
 
-.. figure:: figures/diagnostic.png
+.. figure:: ./../figures/diagnostic.png
     :alt: GridCal objects diagnostic.
     :scale: 50 %
 
@@ -114,7 +114,7 @@ properties of the branch objects.
 
 Visit the theory section to learn more about these models.
 
-.. figure:: figures/model-types.png
+.. figure:: ./../figures/model-types.png
     :alt: GridCal device type templates editor.
     :scale: 50 %
 
@@ -124,7 +124,7 @@ Overhead line editor
 The overhead line editor allows you to define an overhead line in any way you want, bundling many wires per phase if you
 need and including the neutral. The equations for this functionality are taken from the EMTP theory book.
 
-.. figure:: figures/tower.png
+.. figure:: ./../figures/tower.png
     :alt: GridCal overhead lines editor.
     :scale: 50 %
 
@@ -140,7 +140,7 @@ Time series
 This screen allows you to visualize, create and manipulate the profiles of the
 various magnitudes of the program.
 
-.. figure:: figures/model-time.png
+.. figure:: ./../figures/model-time.png
     :alt: GridCal time series tabular editor.
     :scale: 50 %
 
@@ -155,7 +155,7 @@ to import the profiles. Each column of the imported file is treated as an indivi
 The imported profiles can be normalized and scaled. Each profile can be assigned in a number of ways to the objects for
 which the profiles are being imported.
 
-.. figure:: figures/profiles_import.png
+.. figure:: ./../figures/profiles_import.png
     :alt: GridCal time series import interface.
     :scale: 50 %
 
@@ -172,7 +172,7 @@ Array viewer
 The array viewer is an utility to inspect the array-like objects that are being passed to the numerical methods.
 These are arranged per island of the circuit.
 
-.. figure:: figures/model-arrays.png
+.. figure:: ./../figures/model-arrays.png
     :alt: GridCal compiled arrays for calculation viewer.
     :scale: 50 %
 
@@ -181,7 +181,7 @@ Comments editor
 
 Simple text box where to write comments about the project.
 
-.. figure:: figures/model-coments.png
+.. figure:: ./../figures/model-coments.png
     :alt: GridCal model comments editor.
     :scale: 50 %
 
@@ -194,7 +194,7 @@ The results view is where ou can visualize the results for all the available sim
 This feature stands out from the commercial power systems software where to simply view the results is not
 standarized or simple.
 
-.. figure:: figures/results.png
+.. figure:: ./../figures/results.png
     :alt: GridCal results graphical viewer.
     :scale: 50 %
 
@@ -204,7 +204,7 @@ Tabular view
 The tabular view of the results displays the same information as the graphical view but numerically such that you can
 copy it to a spreadsheet software, or save them for later use.
 
-.. figure:: figures/results-data.png
+.. figure:: ./../figures/results-data.png
     :alt: GridCal results tabular viewer.
     :scale: 50 %
 
@@ -217,7 +217,7 @@ The console in GridCal is a very nice addition that allows some degree of automa
 user interface. The console is a normal python console (embedded in a python program!) where the circuit declared
 in the user interface (app) is accessible (App.circuit).
 
-.. figure:: figures/console.png
+.. figure:: ./../figures/console.png
     :alt: GridCal python console (python from within python!).
     :scale: 50 %
 
@@ -251,7 +251,7 @@ Plotting style
 Power flow
 ^^^^^^^^^^
 
-.. figure:: figures/settings-pf.png
+.. figure:: ./../figures/settings-pf.png
     :alt: GridCal power flow settings.
     :scale: 50 %
 
@@ -316,7 +316,7 @@ Apply impedance tolerances
 Optimal power flow
 ^^^^^^^^^^^^^^^^^^
 
-.. figure:: figures/settings-opf.png
+.. figure:: ./../figures/settings-opf.png
     :alt: GridCal Optimal power flow settings.
     :scale: 50 %
 
@@ -343,7 +343,7 @@ Control batteries
 Voltage stability
 ^^^^^^^^^^^^^^^^^
 
-.. figure:: figures/settings-stability.png
+.. figure:: ./../figures/settings-stability.png
     :alt: GridCal voltage collapse settings.
     :scale: 50 %
 
@@ -369,7 +369,7 @@ Use departure and target points from time series
 Stochastic power flow
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. figure:: figures/settings-stochastic.png
+.. figure:: ./../figures/settings-stochastic.png
     :alt: GridCal stochastic power flow settings.
     :scale: 50 %
 
@@ -392,7 +392,7 @@ Additional islands until stop
 Topology
 ^^^^^^^^
 
-.. figure:: figures/settings-topology.png
+.. figure:: ./../figures/settings-topology.png
     :alt: GridCal topology processor settings.
     :scale: 50 %
 

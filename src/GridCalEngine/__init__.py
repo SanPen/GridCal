@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from __future__ import annotations
+
 try:
     from GridCalEngine.enumerations import *
     from GridCalEngine.basic_structures import *
@@ -13,6 +14,7 @@ try:
     from GridCalEngine.DataStructures import *
     from GridCalEngine.Topology import *
     from GridCalEngine.Compilers import *
+
     PROPERLY_LOADED_API = True
 except ModuleNotFoundError as e:
     print("Modules not found :/", e)

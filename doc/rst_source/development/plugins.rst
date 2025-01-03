@@ -10,10 +10,10 @@ on GridCal's scripting console. Usually it is located in a folder called `.GridC
 Inside the `.GridCal` folder you will find a folder called `plugins`.
 For each plugin that we want to have, need three files in there to declare our plugin. The files are:
 
-- `plugins.plugin.json`: This is the plugin declaration file.
-It is a JSON file where you add your plugin information.
+- `plugins.plugin.json`: This is the plugin declaration file. It is a JSON file where you add your plugin information.
 - `plugin1.py`: This is where you write your plugin.
 - `icon1.svg`: This is your icon to display in the plugins drop-down menu. You can create it with a design program such as InkScape.
+
 
 The content of `plugins.plugin.json` is:
 
@@ -41,6 +41,7 @@ The four parameters that we must specify are:
 - `icon_path`: Path of the SVG icon that you want to use. you can leave the field blank and GridCal will use an internal icon.
 - `main_fcn`: Entry to declare the main function of the plugin accesible from the `plugins`menu in the user interface.
 - `investments_fcn`: (optional) this is a custom function to be called with the investments.
+
 
 The content of `plugin1.py` is:
 

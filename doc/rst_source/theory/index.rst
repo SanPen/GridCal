@@ -9,10 +9,18 @@ General
 .. toctree::
     :maxdepth: 3
 
-    theory/from_objects_to_matrices
-    theory/branch_model
-    theory/xfo_sc
-    theory/topology_processing
+    from_objects_to_matrices
+    branch_model
+    xfo_sc
+    topology_processing
+
+Topology
+------------
+
+.. toctree::
+    :maxdepth: 3
+
+    topology_processing
 
 Power Flow
 ------------------
@@ -25,16 +33,16 @@ The following subsections include theory about the power flow algorithms support
 .. toctree::
     :maxdepth: 3
 
-    theory/power_flow/newton_raphson
-    theory/power_flow/levenberg_marquardt
-    theory/power_flow/fast_decoupled
-    theory/power_flow/dc_approximation
-    theory/power_flow/linear_ac_power_flow
-    theory/power_flow/holomorphic_embedding
-    theory/power_flow/post_power_flow
-    theory/power_flow/continuation_power_flow
-    theory/power_flow/distributed_slack
-    theory/power_flow/generalized_power_flow
+    power_flow/newton_raphson
+    power_flow/levenberg_marquardt
+    power_flow/fast_decoupled
+    power_flow/dc_approximation
+    power_flow/linear_ac_power_flow
+    power_flow/holomorphic_embedding
+    power_flow/post_power_flow
+    power_flow/continuation_power_flow
+    power_flow/distributed_slack
+    power_flow/generalized_power_flow
 
 
 Optimal power flow
@@ -43,12 +51,12 @@ Optimal power flow
 .. toctree::
     :maxdepth: 3
 
-    theory/opf/opf
-    theory/opf/opf_dc_ts
-    theory/opf/opf_ac_ts
-    theory/opf/hydro
-    theory/opf/acopf
-    theory/opf/nodal_cap_ex
+    opf/opf
+    opf/opf_dc_ts
+    opf/opf_ac_ts
+    opf/hydro
+    opf/acopf
+    opf/nodal_cap_ex
 
 
 Short Circuit
@@ -57,7 +65,7 @@ Short Circuit
 .. toctree::
     :maxdepth: 3
 
-    theory/short_circuit/3_phase_sc
+    short_circuit/3_phase_sc
 
 
 Linear factors
@@ -66,8 +74,8 @@ Linear factors
 .. toctree::
     :maxdepth: 3
 
-    theory/linear/ptdf
-    theory/linear/srap
+    linear/ptdf
+    linear/srap
 
 
 Investments Evaluation
@@ -76,4 +84,5 @@ Investments Evaluation
 .. toctree::
     :maxdepth: 3
 
-    theory/investments_evaluation
+    investments_evaluation
+    investments_evaluation_nsga3

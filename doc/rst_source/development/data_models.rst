@@ -4525,16 +4525,15 @@ Battery
     control_bus               Bus                          False                 Control bus                                                                 True                
     control_cn                Connectivity Node            False                 Control connectivity node                                                   False               
     P                         float                MW      False                 Active power                                                                True                
-    Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          False               
-    Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          False               
-    availability              float                p.u.    False                 Availability of the generator in p.u.                                       True                
+    Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          True                
+    Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          True                
     srap_enabled              bool                         False                 Is the unit available for SRAP participation?                               True                
     is_controlled             bool                         False                 Is this generator voltage-controlled?                                       False               
     Pf                        float                        False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
     Vset                      float                p.u.    False                 Set voltage. This is used for controlled generators.                        True                
     Snom                      float                MVA     False                 Nominal power.                                                              False               
-    Qmin                      float                MVAr    False                 Minimum reactive power.                                                     False               
-    Qmax                      float                MVAr    False                 Maximum reactive power.                                                     False               
+    Qmin                      float                MVAr    False                 Minimum reactive power.                                                     True                
+    Qmax                      float                MVAr    False                 Maximum reactive power.                                                     True                
     use_reactive_power_curve  bool                         False                 Use the reactive power capability curve?                                    False               
     q_curve                   Generator Q curve    MVAr    False                 Capability curve data (double click on the generator to edit)               False               
     R1                        float                p.u.    False                 Total positive sequence resistance.                                         False               
@@ -4652,8 +4651,8 @@ Bus
     Vnom                 float                kV      False                 Nominal line voltage of the bus.                                                                 False               
     Vm0                  float                p.u.    False                 Voltage module guess.                                                                            False               
     Va0                  float                rad.    False                 Voltage angle guess.                                                                             False               
-    Vmin                 float                p.u.    False                 Lower range of allowed voltage module.                                                           False               
-    Vmax                 float                p.u.    False                 Higher range of allowed voltage module.                                                          False               
+    Vmin                 float                p.u.    False                 Lower range of allowed voltage module.                                                           True                
+    Vmax                 float                p.u.    False                 Higher range of allowed voltage module.                                                          True                
     Vm_cost              float                e/unit  False                 Cost of over and under voltages                                                                  False               
     angle_min            float                rad.    False                 Lower range of allowed voltage angle.                                                            False               
     angle_max            float                rad.    False                 Higher range of allowed voltage angle.                                                           False               
@@ -5141,16 +5140,15 @@ Generator
     control_bus               Bus                          False                 Control bus                                                                 True                
     control_cn                Connectivity Node            False                 Control connectivity node                                                   False               
     P                         float                MW      False                 Active power                                                                True                
-    Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          False               
-    Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          False               
-    availability              float                p.u.    False                 Availability of the generator in p.u.                                       True                
+    Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          True                
+    Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          True                
     srap_enabled              bool                         False                 Is the unit available for SRAP participation?                               True                
     is_controlled             bool                         False                 Is this generator voltage-controlled?                                       False               
     Pf                        float                        False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
     Vset                      float                p.u.    False                 Set voltage. This is used for controlled generators.                        True                
     Snom                      float                MVA     False                 Nominal power.                                                              False               
-    Qmin                      float                MVAr    False                 Minimum reactive power.                                                     False               
-    Qmax                      float                MVAr    False                 Maximum reactive power.                                                     False               
+    Qmin                      float                MVAr    False                 Minimum reactive power.                                                     True                
+    Qmax                      float                MVAr    False                 Maximum reactive power.                                                     True                
     use_reactive_power_curve  bool                         False                 Use the reactive power capability curve?                                    False               
     q_curve                   Generator Q curve    MVAr    False                 Capability curve data (double click on the generator to edit)               False               
     R1                        float                p.u.    False                 Total positive sequence resistance.                                         False               

@@ -450,10 +450,10 @@ class IoMain(ConfigurationMain):
                         found = True
 
                 if found:
-                    ok = yes_no_question( f"There is a plugin already: "
-                                    f"{plugin.name} {plugin.version} "
-                                    f"The new plugin is {info.version}. "
-                                    f"Install?", "Plugin install")
+                    ok = yes_no_question(f"There is a plugin already: "
+                                         f"{plugin.name} {plugin.version} "
+                                         f"The new plugin is {info.version}. "
+                                         f"Install?", "Plugin install")
                     if not ok:
                         return
 
