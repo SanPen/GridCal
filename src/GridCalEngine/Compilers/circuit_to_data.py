@@ -571,6 +571,162 @@ def get_shunt_data(
         ii += 1
 
 
+def fill_generator_parent(
+        k: int,
+        data: GeneratorData | BatteryData,
+        elm: dev.Generator | dev.Battery,
+        bus_dict,
+        bus_voltage_used: BoolVec,
+        logger: Logger,
+        bus_data: BusData,
+        t_idx=-1,
+        time_series=False,
+        use_stored_guess=False,
+        control_remote_voltage: bool = True,
+) -> None:
+    """
+    Fill the common ancestor of generation and batteries
+    :param k:
+    :param data:
+    :param elm:
+    :param bus_dict:
+    :param bus_voltage_used:
+    :param logger:
+    :param bus_data:
+    :param t_idx:
+    :param time_series:
+    :param use_stored_guess:
+    :param control_remote_voltage:
+    :return:
+    """
+
+    i = bus_dict[elm.bus]
+    data.bus_idx[k] = i
+    data.names[k] = elm.name
+    data.idtag[k] = elm.idtag
+    data.original_idx[k] = k
+    data.mttf[k] = elm.mttf
+    data.mttr[k] = elm.mttr
+
+    data.controllable[k] = elm.is_controlled
+    data.installed_p[k] = elm.Snom
+
+    # r0, r1, r2, x0, x1, x2
+    data.r0[k] = elm.R0
+    data.r1[k] = elm.R1
+    data.r2[k] = elm.R2
+    data.x0[k] = elm.X0
+    data.x1[k] = elm.X1
+    data.x2[k] = elm.X2
+
+    data.ramp_up[k] = elm.RampUp
+    data.ramp_down[k] = elm.RampDown
+    data.min_time_up[k] = elm.MinTimeUp
+    data.min_time_down[k] = elm.MinTimeDown
+
+    data.dispatchable[k] = elm.enabled_dispatch
+
+    data.snom[k] = elm.Snom
+
+    if time_series:
+        data.p[k] = elm.P_prof[t_idx]
+        data.active[k] = elm.active_prof[t_idx]
+        data.pf[k] = elm.Pf_prof[t_idx]
+        data.v[k] = elm.Vset_prof[t_idx]
+        data.pmax[k] = elm.Pmax_prof[t_idx]
+        data.pmin[k] = elm.Pmin_prof[t_idx]
+
+        if elm.use_reactive_power_curve:
+            data.qmin[k] = elm.q_curve.get_qmin(data.p[i])
+            data.qmax[k] = elm.q_curve.get_qmax(data.p[i])
+        else:
+            data.qmin[k] = elm.Qmin_prof[t_idx]
+            data.qmax[k] = elm.Qmax_prof[t_idx]
+
+        data.cost_0[k] = elm.Cost0_prof[t_idx]
+        data.cost_1[k] = elm.Cost_prof[t_idx]
+        data.cost_2[k] = elm.Cost2_prof[t_idx]
+
+        if elm.active_prof[t_idx]:
+
+            if elm.srap_enabled_prof[t_idx] and data.p[k] > 0.0:
+                bus_data.srap_availbale_power[i] += data.p[k]
+
+            if elm.is_controlled:
+                if elm.control_bus_prof[t_idx] is not None:
+                    remote_control = True
+                    j = bus_dict[elm.control_bus_prof[t_idx]]
+                else:
+                    remote_control = False
+                    j = -1
+
+                data.controllable_bus_idx[k] = j
+
+                set_bus_control_voltage(i=i,
+                                        j=j,
+                                        remote_control=remote_control and control_remote_voltage,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset_prof[t_idx],
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
+
+    else:
+
+        data.p[k] = elm.P
+        data.active[k] = elm.active
+        data.pf[k] = elm.Pf
+        data.v[k] = elm.Vset
+        data.pmax[k] = elm.Pmax
+        data.pmin[k] = elm.Pmin
+
+        # reactive power limits, for the given power value
+        if elm.use_reactive_power_curve:
+            data.qmin[k] = elm.q_curve.get_qmin(data.p[i])
+            data.qmax[k] = elm.q_curve.get_qmax(data.p[i])
+        else:
+            data.qmin[k] = elm.Qmin
+            data.qmax[k] = elm.Qmax
+
+        data.cost_0[k] = elm.Cost0
+        data.cost_1[k] = elm.Cost
+        data.cost_2[k] = elm.Cost2
+
+        if elm.active:
+
+            if elm.srap_enabled and data.p[k] > 0.0:
+                bus_data.srap_availbale_power[i] += data.p[k]
+
+            if elm.is_controlled:
+                if elm.control_bus is not None:
+                    remote_control = True
+                    j = bus_dict[elm.control_bus]
+                else:
+                    remote_control = False
+                    j = -1
+
+                data.controllable_bus_idx[k] = j
+
+                set_bus_control_voltage(i=i,
+                                        j=j,
+                                        remote_control=remote_control and control_remote_voltage,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
+
+    # reactive power-sharing data
+    if data.active[k]:
+        if data.controllable[k]:
+            bus_data.q_shared_total[i] += data.p[k]
+            data.q_share[k] = data.p[k]
+        else:
+            bus_data.q_fixed[i] += data.get_q_at(k)
+
+
 def get_generator_data(
         data: GeneratorData,
         circuit: MultiCircuit,
@@ -605,138 +761,24 @@ def get_generator_data(
 
         gen_index_dict[elm.idtag] = k  # associate the idtag to the index
 
-        i = bus_dict[elm.bus]
-        data.bus_idx[k] = i
-        data.names[k] = elm.name
-        data.idtag[k] = elm.idtag
-        data.original_idx[k] = k
-        data.mttf[k] = elm.mttf
-        data.mttr[k] = elm.mttr
+        fill_generator_parent(k=k,
+                              elm=elm,
+                              data=data,
+                              bus_data=bus_data,
+                              bus_dict=bus_dict,
+                              bus_voltage_used=bus_voltage_used,
+                              logger=logger,
+                              t_idx=t_idx,
+                              time_series=time_series,
+                              use_stored_guess=use_stored_guess,
+                              control_remote_voltage=control_remote_voltage)
 
-        data.controllable[k] = elm.is_controlled
-        data.installed_p[k] = elm.Snom
-
-        # r0, r1, r2, x0, x1, x2
-        data.r0[k] = elm.R0
-        data.r1[k] = elm.R1
-        data.r2[k] = elm.R2
-        data.x0[k] = elm.X0
-        data.x1[k] = elm.X1
-        data.x2[k] = elm.X2
-
-
-        data.ramp_up[k] = elm.RampUp
-        data.ramp_down[k] = elm.RampDown
-        data.min_time_up[k] = elm.MinTimeUp
-        data.min_time_down[k] = elm.MinTimeDown
-
-        data.dispatchable[k] = elm.enabled_dispatch
-
-        data.snom[k] = elm.Snom
-
-        if time_series:
-
-            if opf_results is not None:
+        if opf_results is not None:
+            # overwrite P with the OPF results
+            if time_series:
                 data.p[k] = opf_results.generator_power[t_idx, k] - opf_results.generator_shedding[t_idx, k]
             else:
-                data.p[k] = elm.P_prof[t_idx]
-
-            data.active[k] = elm.active_prof[t_idx]
-            data.pf[k] = elm.Pf_prof[t_idx]
-            data.v[k] = elm.Vset_prof[t_idx]
-            data.pmax[k] = elm.Pmax_prof[t_idx]
-            data.pmin[k] = elm.Pmin_prof[t_idx]
-
-            data.cost_0[k] = elm.Cost0_prof[t_idx]
-            data.cost_1[k] = elm.Cost_prof[t_idx]
-            data.cost_2[k] = elm.Cost2_prof[t_idx]
-
-            if elm.active_prof[t_idx]:
-
-                if elm.srap_enabled_prof[t_idx] and data.p[k] > 0.0:
-                    bus_data.srap_availbale_power[i] += data.p[k]
-
-                if elm.is_controlled:
-                    if elm.control_bus_prof[t_idx] is not None:
-                        remote_control = True
-                        j = bus_dict[elm.control_bus_prof[t_idx]]
-                    else:
-                        remote_control = False
-                        j = -1
-
-                    data.controllable_bus_idx[k] = j
-
-                    set_bus_control_voltage(i=i,
-                                            j=j,
-                                            remote_control=remote_control and control_remote_voltage,
-                                            bus_name=elm.bus.name,
-                                            bus_data=bus_data,
-                                            bus_voltage_used=bus_voltage_used,
-                                            candidate_Vm=elm.Vset_prof[t_idx],
-                                            use_stored_guess=use_stored_guess,
-                                            logger=logger)
-
-        else:
-            if opf_results is not None:
                 data.p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
-            else:
-                data.p[k] = elm.P
-
-            data.active[k] = elm.active
-            data.pf[k] = elm.Pf
-            data.v[k] = elm.Vset
-            data.pmax[k] = elm.Pmax
-            data.pmin[k] = elm.Pmin
-
-            data.cost_0[k] = elm.Cost0
-            data.cost_1[k] = elm.Cost
-            data.cost_2[k] = elm.Cost2
-
-            if elm.active:
-
-                if elm.srap_enabled and data.p[k] > 0.0:
-                    bus_data.srap_availbale_power[i] += data.p[k]
-
-                if elm.is_controlled:
-                    if elm.control_bus is not None:
-                        remote_control = True
-                        j = bus_dict[elm.control_bus]
-                    else:
-                        remote_control = False
-                        j = -1
-
-                    data.controllable_bus_idx[k] = j
-
-                    set_bus_control_voltage(i=i,
-                                            j=j,
-                                            remote_control=remote_control and control_remote_voltage,
-                                            bus_name=elm.bus.name,
-                                            bus_data=bus_data,
-                                            bus_voltage_used=bus_voltage_used,
-                                            candidate_Vm=elm.Vset,
-                                            use_stored_guess=use_stored_guess,
-                                            logger=logger)
-
-        # reactive power limits, for the given power value
-        if time_series:
-            data.qmin[k] = elm.Qmin_prof[t_idx]
-            data.qmax[k] = elm.Qmax_prof[t_idx]
-        elif elm.use_reactive_power_curve:
-            data.qmin[k] = elm.q_curve.get_qmin(data.p[i])
-            data.qmax[k] = elm.q_curve.get_qmax(data.p[i])
-        else:
-            data.qmin[k] = elm.Qmin
-            data.qmax[k] = elm.Qmax
-
-        # reactive power sharing data
-        if data.active[k]:
-            if data.controllable[k]:
-                bus_data.q_shared_total[i] += data.p[k]
-                data.q_share[k] = data.p[k]
-            else:
-                bus_data.q_fixed[i] += data.get_q_at(k)
-
-        # data.C_bus_elm[i, k] = 1
 
     return gen_index_dict
 
@@ -772,36 +814,19 @@ def get_battery_data(
 
     for k, elm in enumerate(circuit.get_batteries()):
 
-        i = bus_dict[elm.bus]
-        data.bus_idx[k] = i
+        fill_generator_parent(k=k,
+                              elm=elm,
+                              data=data,
+                              bus_data=bus_data,
+                              bus_dict=bus_dict,
+                              bus_voltage_used=bus_voltage_used,
+                              logger=logger,
+                              t_idx=t_idx,
+                              time_series=time_series,
+                              use_stored_guess=use_stored_guess,
+                              control_remote_voltage=control_remote_voltage)
 
-        data.names[k] = elm.name
-        data.idtag[k] = elm.idtag
-        data.original_idx[k] = k
-        data.mttf[k] = elm.mttf
-        data.mttr[k] = elm.mttr
-
-        data.controllable[k] = elm.is_controlled
-        data.installed_p[k] = elm.Snom
-
-        # r0, r1, r2, x0, x1, x2
-        data.r0[k] = elm.R0
-        data.r1[k] = elm.R1
-        data.r2[k] = elm.R2
-        data.x0[k] = elm.X0
-        data.x1[k] = elm.X1
-        data.x2[k] = elm.X2
-
-        data.dispatchable[k] = elm.enabled_dispatch
-        data.pmax[k] = elm.Pmax
-        data.pmin[k] = elm.Pmin
         data.enom[k] = elm.Enom
-
-        data.ramp_up[k] = elm.RampUp
-        data.ramp_down[k] = elm.RampDown
-        data.min_time_up[k] = elm.MinTimeUp
-        data.min_time_down[k] = elm.MinTimeDown
-
         data.min_soc[k] = elm.min_soc
         data.max_soc[k] = elm.max_soc
         data.soc_0[k] = elm.soc_0
@@ -810,103 +835,12 @@ def get_battery_data(
         data.discharge_efficiency[k] = elm.discharge_efficiency
         data.charge_efficiency[k] = elm.charge_efficiency
 
-        if time_series:
-            if opf_results is not None:
+        if opf_results is not None:
+            # overwrite P with the OPF results
+            if time_series:
                 data.p[k] = opf_results.battery_power[t_idx, k]
             else:
-                data.p[k] = elm.P_prof[t_idx]
-
-            data.active[k] = elm.active_prof[t_idx]
-            data.pf[k] = elm.Pf_prof[t_idx]
-            data.v[k] = elm.Vset_prof[t_idx]
-
-            data.cost_0[k] = elm.Cost0_prof[t_idx]
-            data.cost_1[k] = elm.Cost_prof[t_idx]
-            data.cost_2[k] = elm.Cost2_prof[t_idx]
-
-            if elm.active_prof[t_idx]:
-
-                if elm.srap_enabled_prof[t_idx] and data.p[k] > 0.0:
-                    bus_data.srap_availbale_power[i] += data.p[k]
-
-                if elm.is_controlled:
-
-                    if elm.control_bus_prof[t_idx] is not None:
-                        remote_control = True
-                        j = bus_dict[elm.control_bus_prof[t_idx]]
-                    else:
-                        remote_control = False
-                        j = -1
-
-                    data.controllable_bus_idx[k] = j
-
-                    set_bus_control_voltage(i=i,
-                                            j=j,
-                                            remote_control=remote_control and control_remote_voltage,
-                                            bus_name=elm.bus.name,
-                                            bus_data=bus_data,
-                                            bus_voltage_used=bus_voltage_used,
-                                            candidate_Vm=elm.Vset_prof[t_idx],
-                                            use_stored_guess=use_stored_guess,
-                                            logger=logger)
-
-        else:
-            if opf_results is not None:
                 data.p[k] = opf_results.battery_power[k]
-            else:
-                data.p[k] = elm.P
-
-            data.active[k] = elm.active
-            data.pf[k] = elm.Pf
-            data.v[k] = elm.Vset
-
-            data.cost_0[k] = elm.Cost0
-            data.cost_1[k] = elm.Cost
-            data.cost_2[k] = elm.Cost2
-
-            if elm.active:
-
-                if elm.srap_enabled and data.p[k] > 0.0:
-                    bus_data.srap_availbale_power[i] += data.p[k]
-
-                if elm.is_controlled:
-
-                    if elm.control_bus is not None:
-                        remote_control = True
-                        j = bus_dict[elm.control_bus]
-                    else:
-                        remote_control = False
-                        j = -1
-
-                    data.controllable_bus_idx[k] = j
-
-                    set_bus_control_voltage(i=i,
-                                            j=j,
-                                            remote_control=remote_control and control_remote_voltage,
-                                            bus_name=elm.bus.name,
-                                            bus_data=bus_data,
-                                            bus_voltage_used=bus_voltage_used,
-                                            candidate_Vm=elm.Vset,
-                                            use_stored_guess=use_stored_guess,
-                                            logger=logger)
-
-        # reactive power limits, for the given power value
-        if elm.use_reactive_power_curve:
-            data.qmin[k] = elm.q_curve.get_qmin(data.p[i])
-            data.qmax[k] = elm.q_curve.get_qmax(data.p[i])
-        else:
-            data.qmin[k] = elm.Qmin
-            data.qmax[k] = elm.Qmax
-
-        # reactive power sharing data
-        if data.active[k]:
-            if data.controllable[k]:
-                bus_data.q_shared_total[i] += data.p[k]
-                data.q_share[k] = data.p[k]
-            else:
-                bus_data.q_fixed[i] += data.get_q_at(k)
-
-        # data.C_bus_elm[i, k] = 1
 
 
 def fill_parent_branch(i: int,
