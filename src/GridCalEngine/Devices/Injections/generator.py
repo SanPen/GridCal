@@ -32,7 +32,6 @@ class Generator(GeneratorParent):
                  active: bool = True,
                  Pmin: float = 0.0,
                  Pmax: float = 9999.0,
-                 availability: float = 1.0,
                  Cost: float = 1.0,
                  Cost2: float = 0.0,
                  Cost0: float = 0.0,
@@ -96,7 +95,6 @@ class Generator(GeneratorParent):
                                  P=P,
                                  Pmin=Pmin,
                                  Pmax=Pmax,
-                                 availability=availability,
                                  Cost=Cost,
                                  mttf=mttf,
                                  mttr=mttr,
@@ -173,6 +171,9 @@ class Generator(GeneratorParent):
         self.RampUp = 1e20
         self.RampDown = 1e20
 
+        self._Qmin_prof = Profile(default_value=Qmin, data_type=float)
+        self._Qmax_prof = Profile(default_value=Qmax, data_type=float)
+
         self._Cost2_prof = Profile(default_value=self.Cost2, data_type=float)
         self._Cost0_prof = Profile(default_value=self.Cost0, data_type=float)
 
@@ -207,8 +208,10 @@ class Generator(GeneratorParent):
         self.register(key='Vset', units='p.u.', tpe=float,
                       definition='Set voltage. This is used for controlled generators.', profile_name='Vset_prof')
         self.register(key='Snom', units='MVA', tpe=float, definition='Nominal power.')
-        self.register(key='Qmin', units='MVAr', tpe=float, definition='Minimum reactive power.')
-        self.register(key='Qmax', units='MVAr', tpe=float, definition='Maximum reactive power.')
+        self.register(key='Qmin', units='MVAr', tpe=float, definition='Minimum reactive power.',
+                      profile_name='Qmin_prof')
+        self.register(key='Qmax', units='MVAr', tpe=float, definition='Maximum reactive power.',
+                      profile_name='Qmax_prof')
         self.register(key='use_reactive_power_curve', units='', tpe=bool,
                       definition='Use the reactive power capability curve?')
         self.register(key='q_curve', units='MVAr', tpe=SubObjectType.GeneratorQCurve,
@@ -278,6 +281,42 @@ class Generator(GeneratorParent):
             self._Vset_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Vset_prof')
+
+
+    @property
+    def Qmin_prof(self) -> Profile:
+        """
+        Qmin profile
+        :return: Profile
+        """
+        return self._Qmin_prof
+
+    @Qmin_prof.setter
+    def Qmin_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Qmin_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Qmin_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Qmin_prof')
+
+    @property
+    def Qmax_prof(self) -> Profile:
+        """
+        Qmax profile
+        :return: Profile
+        """
+        return self._Pmax_prof
+
+    @Qmax_prof.setter
+    def Qmax_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Qmax_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Qmax_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Qmax_prof')
+
 
     @property
     def Cost2_prof(self) -> Profile:
