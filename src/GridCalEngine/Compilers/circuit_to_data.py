@@ -238,8 +238,6 @@ def get_bus_data(bus_data: BusData,
         bus_data.original_idx[i] = i
         bus_data.names[i] = bus.name
         bus_data.idtag[i] = bus.idtag
-        bus_data.Vmin[i] = bus.Vmin
-        bus_data.Vmax[i] = bus.Vmax
         bus_data.Vnom[i] = bus.Vnom
         bus_data.cost_v[i] = bus.Vm_cost
         bus_data.Vbus[i] = bus.get_voltage_guess(use_stored_guess=use_stored_guess)
@@ -263,8 +261,12 @@ def get_bus_data(bus_data: BusData,
 
         if time_series:
             bus_data.active[i] = bus.active_prof[t_idx]
+            bus_data.Vmin[i] = bus.Vmin_prof[t_idx]
+            bus_data.Vmax[i] = bus.Vmax_prof[t_idx]
         else:
             bus_data.active[i] = bus.active
+            bus_data.Vmin[i] = bus.Vmin
+            bus_data.Vmax[i] = bus.Vmax
 
     return None
 
@@ -629,8 +631,7 @@ def get_generator_data(
         data.min_time_down[k] = elm.MinTimeDown
 
         data.dispatchable[k] = elm.enabled_dispatch
-        data.pmax[k] = elm.Pmax
-        data.pmin[k] = elm.Pmin
+
         data.snom[k] = elm.Snom
 
         if time_series:
@@ -643,6 +644,8 @@ def get_generator_data(
             data.active[k] = elm.active_prof[t_idx]
             data.pf[k] = elm.Pf_prof[t_idx]
             data.v[k] = elm.Vset_prof[t_idx]
+            data.pmax[k] = elm.Pmax_prof[t_idx]
+            data.pmin[k] = elm.Pmin_prof[t_idx]
 
             data.cost_0[k] = elm.Cost0_prof[t_idx]
             data.cost_1[k] = elm.Cost_prof[t_idx]
@@ -682,6 +685,8 @@ def get_generator_data(
             data.active[k] = elm.active
             data.pf[k] = elm.Pf
             data.v[k] = elm.Vset
+            data.pmax[k] = elm.Pmax
+            data.pmin[k] = elm.Pmin
 
             data.cost_0[k] = elm.Cost0
             data.cost_1[k] = elm.Cost
@@ -713,7 +718,10 @@ def get_generator_data(
                                             logger=logger)
 
         # reactive power limits, for the given power value
-        if elm.use_reactive_power_curve:
+        if time_series:
+            data.qmin[k] = elm.Qmin_prof[t_idx]
+            data.qmax[k] = elm.Qmax_prof[t_idx]
+        elif elm.use_reactive_power_curve:
             data.qmin[k] = elm.q_curve.get_qmin(data.p[i])
             data.qmax[k] = elm.q_curve.get_qmax(data.p[i])
         else:

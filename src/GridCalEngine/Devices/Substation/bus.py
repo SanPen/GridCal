@@ -248,7 +248,7 @@ class Bus(PhysicalDevice):
         Pmin profile
         :return: Profile
         """
-        return self._Vmin_prof
+        return self._Vmax_prof
 
     @Vmax_prof.setter
     def Vmax_prof(self, val: Union[Profile, np.ndarray]):
