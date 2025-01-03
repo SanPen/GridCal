@@ -463,7 +463,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             elm.tap_changer.dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
 
             elm.tap_changer.dV = 0.058288457
-            elm.tap_changer.tap_position = 18
+            elm.tap_changer.tap_position = 3
 
             elm.tap_changer.recalc()
             elm.tap_phase = elm.tap_changer.get_tap_phase()

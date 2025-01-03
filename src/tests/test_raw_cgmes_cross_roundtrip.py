@@ -142,9 +142,20 @@ def run_raw_to_cgmes(import_path: str | list[str],
         print("Y2_elements", nc2.Ybus.A[mask])
         print("Y_diff", nc1.Ybus.A[mask] - nc2.Ybus.A[mask])
 
-    assert np.allclose(np.abs(pf1_res.voltage), np.abs(pf2_res.voltage), atol=1e-5)
-
     assert ok
+
+    pf_ok = np.allclose(np.abs(pf1_res.voltage), np.abs(pf2_res.voltage), atol=1e-5)
+    if pf_ok:
+        print("\nOK! SUCCESS for PowerFlow results!\n")
+    else:
+        print(np.abs(pf1_res.voltage))
+        print(np.abs(pf2_res.voltage))
+        print("Diff")
+        print(np.abs(pf2_res.voltage) - np.abs(pf1_res.voltage))
+
+    assert pf_ok
+
+
 
 
 def test_raw_to_cgmes_cross_roundtrip():
@@ -165,11 +176,11 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'DACF_20240404_00_IGM'
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
+    test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
 
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
