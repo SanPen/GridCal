@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   GridCalEngine.Simulations.PowerFlow.Formulations
    GridCalEngine.Simulations.PowerFlow.NumericalMethods
 
 Submodules

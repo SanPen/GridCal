@@ -12,14 +12,6 @@ Subpackages
 Submodules
 ----------
 
-GridCalEngine.Utils.MIP.ortools\_interface module
--------------------------------------------------
-
-.. automodule:: GridCalEngine.Utils.MIP.ortools_interface
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 GridCalEngine.Utils.MIP.pulp\_interface module
 ----------------------------------------------
 

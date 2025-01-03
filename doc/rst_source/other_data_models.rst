@@ -3974,6 +3974,19 @@ RawGneDevice
     =============  ==========  =====  ============
 
 
+RawImpedanceCorrectionTable
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    =============  ==========  =====  ============
+    property_name  class_type  units  descriptions
+    =============  ==========  =====  ============
+    idtag          str                Element UUID
+    I              int                Area number 
+    =============  ==========  =====  ============
+
+
 RawInductionMachine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -4065,6 +4078,31 @@ RawLoad
     DGENM          int                Distributed generation mode 0:off, 1: on.                             
     LOADTYPE       str                Load type                                                             
     =============  ==========  =====  ======================================================================
+
+
+RawMultiLineSection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    =============  ==========  =====  ================
+    property_name  class_type  units    descriptions  
+    =============  ==========  =====  ================
+    idtag          str                Element UUID    
+    I              int                From bus        
+    J              int                Bus to          
+    ID             float              Multi section ID
+    MET            int                Metered flag    
+    DUM1           int                Dummy bus 1     
+    DUM2           int                Dummy bus 2     
+    DUM3           int                Dummy bus 3     
+    DUM4           int                Dummy bus 4     
+    DUM5           int                Dummy bus 5     
+    DUM6           int                Dummy bus 6     
+    DUM7           int                Dummy bus 7     
+    DUM8           int                Dummy bus 8     
+    DUM9           int                Dummy bus 9     
+    =============  ==========  =====  ================
 
 
 RawOwner
@@ -4472,7 +4510,7 @@ Battery
     action                    enum ActionType              False                 Object action to perform. Only used for model merging.                      False               
     comment                   str                          False                 User comment                                                                False               
     modelling_authority       Modelling Authority          False                 Modelling authority of this asset                                           False               
-    bus                       Bus                          False                 Connection bus                                                              True                
+    bus                       Bus                          False                 Connection bus                                                              False               
     cn                        Connectivity Node            False                 Connection connectivity node                                                False               
     active                    bool                         False                 Is the load active?                                                         True                
     mttf                      float                h       False                 Mean time to failure                                                        False               
@@ -4483,11 +4521,13 @@ Battery
     Cost                      float                e/MWh   False                 Cost of not served energy. Used in OPF.                                     True                
     facility                  Facility                     False                 Facility where this is located                                              False               
     technologies              AssociationsList     p.u.    False                 List of technologies                                                        False               
+    scalable                  bool                         False                 Is the load scalable?                                                       False               
     control_bus               Bus                          False                 Control bus                                                                 True                
     control_cn                Connectivity Node            False                 Control connectivity node                                                   False               
     P                         float                MW      False                 Active power                                                                True                
     Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          False               
     Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          False               
+    availability              float                p.u.    False                 Availability of the generator in p.u.                                       True                
     srap_enabled              bool                         False                 Is the unit available for SRAP participation?                               True                
     is_controlled             bool                         False                 Is this generator voltage-controlled?                                       False               
     Pf                        float                        False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
@@ -4543,6 +4583,7 @@ Branch
     cn_from                   Connectivity Node           False                 Name of the connectivity node at the "from" side                                                                                                                                                                                          False               
     cn_to                     Connectivity Node           False                 Name of the connectivity node at the "to" side                                                                                                                                                                                            False               
     active                    bool                        False                 Is active?                                                                                                                                                                                                                                True                
+    reducible                 bool                        False                 Is the branch to be reduced by the topology preprocessor?                                                                                                                                                                                 False               
     rate                      float                MVA    False                 Thermal rating power                                                                                                                                                                                                                      True                
     contingency_factor        float                p.u.   False                 Rating multiplier for contingencies                                                                                                                                                                                                       True                
     protection_rating_factor  float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                                                                                                                                         True                
@@ -4607,7 +4648,7 @@ Bus
     active               bool                         False                 Is the bus active? used to disable the bus.                                                      True                
     is_slack             bool                         False                 Force the bus to be of slack type.                                                               False               
     is_dc                bool                         False                 Is this bus of DC type?.                                                                         False               
-    is_internal          bool                         False                 Is this bus part of a composite transformer, such as  a 3-winding transformer or a fluid node?.  False               
+    internal             bool                         False                 Is this bus part of a composite transformer, such as  a 3-winding transformer or a fluid node?.  False               
     Vnom                 float                kV      False                 Nominal line voltage of the bus.                                                                 False               
     Vm0                  float                p.u.    False                 Voltage module guess.                                                                            False               
     Va0                  float                rad.    False                 Voltage angle guess.                                                                             False               
@@ -4648,7 +4689,7 @@ BusBar
     comment              str                        False                 User comment                                            False               
     modelling_authority  Modelling Authority        False                 Modelling authority of this asset                       False               
     voltage_level        Voltage level              False                 Substation voltage level (optional)                     False               
-    cn                   Connectivity Node          False                 Internal connectvity node                               False               
+    cn                   Connectivity Node          False                 Internal connectivity node                              False               
     ===================  ===================  ====  =========  =========  ======================================================  ===========  =======
 
 
@@ -4677,21 +4718,21 @@ Connectivity Node
 
 .. table::
 
-    ===================  ===================  ====  =========  =========  ======================================================  ===========  =======
-           name              class_type       unit  mandatory  max_chars                       descriptions                       has_profile  comment
-    ===================  ===================  ====  =========  =========  ======================================================  ===========  =======
-    idtag                str                        False                 Unique ID                                               False               
-    name                 str                        False                 Name of the device.                                     False               
-    code                 str                        False                 Secondary ID                                            False               
-    action               enum ActionType            False                 Object action to perform. Only used for model merging.  False               
-    comment              str                        False                 User comment                                            False               
-    modelling_authority  Modelling Authority        False                 Modelling authority of this asset                       False               
-    Vnom                 float                kV    False                 Nominal line voltage of the cn.                         False               
-    dc                   bool                       False                 is this a DC connectivity node?                         False               
-    internal             bool                       False                 is internal of a busbar?                                False               
-    default_bus          Bus                        False                 Default bus to use for topology processing (optional)   False               
-    voltage_level        Voltage level              False                 Voltage level of this connectivity node (optional)      False               
-    ===================  ===================  ====  =========  =========  ======================================================  ===========  =======
+    ===================  ===================  ====  =========  =========  =================================================================  ===========  =======
+           name              class_type       unit  mandatory  max_chars                            descriptions                             has_profile  comment
+    ===================  ===================  ====  =========  =========  =================================================================  ===========  =======
+    idtag                str                        False                 Unique ID                                                          False               
+    name                 str                        False                 Name of the device.                                                False               
+    code                 str                        False                 Secondary ID                                                       False               
+    action               enum ActionType            False                 Object action to perform. Only used for model merging.             False               
+    comment              str                        False                 User comment                                                       False               
+    modelling_authority  Modelling Authority        False                 Modelling authority of this asset                                  False               
+    Vnom                 float                kV    False                 Nominal line voltage of the cn.                                    False               
+    dc                   bool                       False                 is this a DC connectivity node?                                    False               
+    internal             bool                       False                 is internal of a busbar?                                           False               
+    bus                  Bus                        False                 The CN is just a bus by other means. This is the important thing.  False               
+    voltage_level        Voltage level              False                 Voltage level of this connectivity node (optional)                 False               
+    ===================  ===================  ====  =========  =========  =================================================================  ===========  =======
 
 
 Contingency
@@ -4745,7 +4786,7 @@ Controllable shunt
     action               enum ActionType             False                 Object action to perform. Only used for model merging.                 False               
     comment              str                         False                 User comment                                                           False               
     modelling_authority  Modelling Authority         False                 Modelling authority of this asset                                      False               
-    bus                  Bus                         False                 Connection bus                                                         True                
+    bus                  Bus                         False                 Connection bus                                                         False               
     cn                   Connectivity Node           False                 Connection connectivity node                                           False               
     active               bool                        False                 Is the load active?                                                    True                
     mttf                 float                h      False                 Mean time to failure                                                   False               
@@ -4756,6 +4797,7 @@ Controllable shunt
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                                True                
     facility             Facility                    False                 Facility where this is located                                         False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                                   False               
+    scalable             bool                        False                 Is the load scalable?                                                  False               
     G                    float                MW     False                 Active power                                                           True                
     B                    float                MVAr   False                 Reactive power                                                         True                
     G0                   float                MW     False                 Zero sequence active power of the impedance component at V=1.0 p.u.    True                
@@ -4801,7 +4843,7 @@ Current injection
     action               enum ActionType             False                 Object action to perform. Only used for model merging.  False               
     comment              str                         False                 User comment                                            False               
     modelling_authority  Modelling Authority         False                 Modelling authority of this asset                       False               
-    bus                  Bus                         False                 Connection bus                                          True                
+    bus                  Bus                         False                 Connection bus                                          False               
     cn                   Connectivity Node           False                 Connection connectivity node                            False               
     active               bool                        False                 Is the load active?                                     True                
     mttf                 float                h      False                 Mean time to failure                                    False               
@@ -4812,6 +4854,7 @@ Current injection
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                 True                
     facility             Facility                    False                 Facility where this is located                          False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                    False               
+    scalable             bool                        False                 Is the load scalable?                                   False               
     Ir                   float                MW     False                 Active power of the current component at V=1.0 p.u.     True                
     Ii                   float                MVAr   False                 Reactive power of the current component at V=1.0 p.u.   True                
     ===================  ===================  =====  =========  =========  ======================================================  ===========  =======
@@ -4836,6 +4879,7 @@ DC line
     cn_from                   Connectivity Node           False                 Name of the connectivity node at the "from" side                                                                             False               
     cn_to                     Connectivity Node           False                 Name of the connectivity node at the "to" side                                                                               False               
     active                    bool                        False                 Is active?                                                                                                                   True                
+    reducible                 bool                        False                 Is the branch to be reduced by the topology preprocessor?                                                                    False               
     rate                      float                MVA    False                 Thermal rating power                                                                                                         True                
     contingency_factor        float                p.u.   False                 Rating multiplier for contingencies                                                                                          True                
     protection_rating_factor  float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                            True                
@@ -4888,7 +4932,7 @@ External grid
     action                 enum ActionType                 False                 Object action to perform. Only used for model merging.                     False               
     comment                str                             False                 User comment                                                               False               
     modelling_authority    Modelling Authority             False                 Modelling authority of this asset                                          False               
-    bus                    Bus                             False                 Connection bus                                                             True                
+    bus                    Bus                             False                 Connection bus                                                             False               
     cn                     Connectivity Node               False                 Connection connectivity node                                               False               
     active                 bool                            False                 Is the load active?                                                        True                
     mttf                   float                  h        False                 Mean time to failure                                                       False               
@@ -4899,6 +4943,7 @@ External grid
     Cost                   float                  e/MWh    False                 Cost of not served energy. Used in OPF.                                    True                
     facility               Facility                        False                 Facility where this is located                                             False               
     technologies           AssociationsList       p.u.     False                 List of technologies                                                       False               
+    scalable               bool                            False                 Is the load scalable?                                                      False               
     P                      float                  MW       False                 Active power                                                               True                
     Q                      float                  MVAr     False                 Reactive power                                                             True                
     mode                   enum ExternalGridMode           False                 Operation mode of the external grid (voltage or load)                      False               
@@ -5081,7 +5126,7 @@ Generator
     action                    enum ActionType              False                 Object action to perform. Only used for model merging.                      False               
     comment                   str                          False                 User comment                                                                False               
     modelling_authority       Modelling Authority          False                 Modelling authority of this asset                                           False               
-    bus                       Bus                          False                 Connection bus                                                              True                
+    bus                       Bus                          False                 Connection bus                                                              False               
     cn                        Connectivity Node            False                 Connection connectivity node                                                False               
     active                    bool                         False                 Is the load active?                                                         True                
     mttf                      float                h       False                 Mean time to failure                                                        False               
@@ -5092,11 +5137,13 @@ Generator
     Cost                      float                e/MWh   False                 Cost of not served energy. Used in OPF.                                     True                
     facility                  Facility                     False                 Facility where this is located                                              False               
     technologies              AssociationsList     p.u.    False                 List of technologies                                                        False               
+    scalable                  bool                         False                 Is the load scalable?                                                       False               
     control_bus               Bus                          False                 Control bus                                                                 True                
     control_cn                Connectivity Node            False                 Control connectivity node                                                   False               
     P                         float                MW      False                 Active power                                                                True                
     Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          False               
     Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          False               
+    availability              float                p.u.    False                 Availability of the generator in p.u.                                       True                
     srap_enabled              bool                         False                 Is the unit available for SRAP participation?                               True                
     is_controlled             bool                         False                 Is this generator voltage-controlled?                                       False               
     Pf                        float                        False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
@@ -5145,6 +5192,7 @@ HVDC Line
     cn_from                   Connectivity Node             False                 Name of the connectivity node at the "from" side                                   False               
     cn_to                     Connectivity Node             False                 Name of the connectivity node at the "to" side                                     False               
     active                    bool                          False                 Is active?                                                                         True                
+    reducible                 bool                          False                 Is the branch to be reduced by the topology preprocessor?                          False               
     rate                      float                 MVA     False                 Thermal rating power                                                               True                
     contingency_factor        float                 p.u.    False                 Rating multiplier for contingencies                                                True                
     protection_rating_factor  float                 p.u.    False                 Rating multiplier that indicates the maximum flow before the protections tripping  True                
@@ -5230,6 +5278,7 @@ Line
     cn_from                          Connectivity Node           False                 Name of the connectivity node at the "from" side                                                                                                                                                                                          False               
     cn_to                            Connectivity Node           False                 Name of the connectivity node at the "to" side                                                                                                                                                                                            False               
     active                           bool                        False                 Is active?                                                                                                                                                                                                                                True                
+    reducible                        bool                        False                 Is the branch to be reduced by the topology preprocessor?                                                                                                                                                                                 False               
     rate                             float                MVA    False                 Thermal rating power                                                                                                                                                                                                                      True                
     contingency_factor               float                p.u.   False                 Rating multiplier for contingencies                                                                                                                                                                                                       True                
     protection_rating_factor         float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                                                                                                                                         True                
@@ -5280,7 +5329,7 @@ Load
     action               enum ActionType             False                 Object action to perform. Only used for model merging.   False               
     comment              str                         False                 User comment                                             False               
     modelling_authority  Modelling Authority         False                 Modelling authority of this asset                        False               
-    bus                  Bus                         False                 Connection bus                                           True                
+    bus                  Bus                         False                 Connection bus                                           False               
     cn                   Connectivity Node           False                 Connection connectivity node                             False               
     active               bool                        False                 Is the load active?                                      True                
     mttf                 float                h      False                 Mean time to failure                                     False               
@@ -5291,6 +5340,7 @@ Load
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                  True                
     facility             Facility                    False                 Facility where this is located                           False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                     False               
+    scalable             bool                        False                 Is the load scalable?                                    False               
     P                    float                MW     False                 Active power                                             True                
     Q                    float                MVAr   False                 Reactive power                                           True                
     Ir                   float                MW     False                 Active power of the current component at V=1.0 p.u.      True                
@@ -5437,6 +5487,7 @@ Series reactance
     cn_from                   Connectivity Node           False                 Name of the connectivity node at the "from" side                                                                                                                                                                                          False               
     cn_to                     Connectivity Node           False                 Name of the connectivity node at the "to" side                                                                                                                                                                                            False               
     active                    bool                        False                 Is active?                                                                                                                                                                                                                                True                
+    reducible                 bool                        False                 Is the branch to be reduced by the topology preprocessor?                                                                                                                                                                                 False               
     rate                      float                MVA    False                 Thermal rating power                                                                                                                                                                                                                      True                
     contingency_factor        float                p.u.   False                 Rating multiplier for contingencies                                                                                                                                                                                                       True                
     protection_rating_factor  float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                                                                                                                                         True                
@@ -5478,7 +5529,7 @@ Shunt
     action               enum ActionType             False                 Object action to perform. Only used for model merging.                 False               
     comment              str                         False                 User comment                                                           False               
     modelling_authority  Modelling Authority         False                 Modelling authority of this asset                                      False               
-    bus                  Bus                         False                 Connection bus                                                         True                
+    bus                  Bus                         False                 Connection bus                                                         False               
     cn                   Connectivity Node           False                 Connection connectivity node                                           False               
     active               bool                        False                 Is the load active?                                                    True                
     mttf                 float                h      False                 Mean time to failure                                                   False               
@@ -5489,6 +5540,7 @@ Shunt
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                                True                
     facility             Facility                    False                 Facility where this is located                                         False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                                   False               
+    scalable             bool                        False                 Is the load scalable?                                                  False               
     G                    float                MW     False                 Active power                                                           True                
     B                    float                MVAr   False                 Reactive power                                                         True                
     G0                   float                MW     False                 Zero sequence active power of the impedance component at V=1.0 p.u.    True                
@@ -5510,7 +5562,7 @@ Static Generator
     action               enum ActionType             False                 Object action to perform. Only used for model merging.  False               
     comment              str                         False                 User comment                                            False               
     modelling_authority  Modelling Authority         False                 Modelling authority of this asset                       False               
-    bus                  Bus                         False                 Connection bus                                          True                
+    bus                  Bus                         False                 Connection bus                                          False               
     cn                   Connectivity Node           False                 Connection connectivity node                            False               
     active               bool                        False                 Is the load active?                                     True                
     mttf                 float                h      False                 Mean time to failure                                    False               
@@ -5521,6 +5573,7 @@ Static Generator
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                 True                
     facility             Facility                    False                 Facility where this is located                          False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                    False               
+    scalable             bool                        False                 Is the load scalable?                                   False               
     P                    float                MW     False                 Active power                                            True                
     Q                    float                MVAr   False                 Reactive power                                          True                
     ===================  ===================  =====  =========  =========  ======================================================  ===========  =======
@@ -5575,6 +5628,7 @@ Switch
     cn_from                   Connectivity Node           False                 Name of the connectivity node at the "from" side                                   False               
     cn_to                     Connectivity Node           False                 Name of the connectivity node at the "to" side                                     False               
     active                    bool                        False                 Is active?                                                                         True                
+    reducible                 bool                        False                 Is the branch to be reduced by the topology preprocessor?                          False               
     rate                      float                MVA    False                 Thermal rating power                                                               True                
     contingency_factor        float                p.u.   False                 Rating multiplier for contingencies                                                True                
     protection_rating_factor  float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping  True                
@@ -5659,6 +5713,7 @@ Transformer
     cn_from                     Connectivity Node               False                 Name of the connectivity node at the "from" side                                                                                                                                                                                           False               
     cn_to                       Connectivity Node               False                 Name of the connectivity node at the "to" side                                                                                                                                                                                             False               
     active                      bool                            False                 Is active?                                                                                                                                                                                                                                 True                
+    reducible                   bool                            False                 Is the branch to be reduced by the topology preprocessor?                                                                                                                                                                                  False               
     rate                        float                    MVA    False                 Thermal rating power                                                                                                                                                                                                                       True                
     contingency_factor          float                    p.u.   False                 Rating multiplier for contingencies                                                                                                                                                                                                        True                
     protection_rating_factor    float                    p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                                                                                                                                          True                
@@ -5815,6 +5870,7 @@ UPFC
     cn_from                   Connectivity Node           False                 Name of the connectivity node at the "from" side                                   False               
     cn_to                     Connectivity Node           False                 Name of the connectivity node at the "to" side                                     False               
     active                    bool                        False                 Is active?                                                                         True                
+    reducible                 bool                        False                 Is the branch to be reduced by the topology preprocessor?                          False               
     rate                      float                MVA    False                 Thermal rating power                                                               True                
     contingency_factor        float                p.u.   False                 Rating multiplier for contingencies                                                True                
     protection_rating_factor  float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping  True                
@@ -5887,6 +5943,7 @@ VSC
     cn_from                   Connectivity Node                     False                 Name of the connectivity node at the "from" side                                   False               
     cn_to                     Connectivity Node                     False                 Name of the connectivity node at the "to" side                                     False               
     active                    bool                                  False                 Is active?                                                                         True                
+    reducible                 bool                                  False                 Is the branch to be reduced by the topology preprocessor?                          False               
     rate                      float                      MVA        False                 Thermal rating power                                                               True                
     contingency_factor        float                      p.u.       False                 Rating multiplier for contingencies                                                True                
     protection_rating_factor  float                      p.u.       False                 Rating multiplier that indicates the maximum flow before the protections tripping  True                
@@ -5949,6 +6006,7 @@ Winding
     cn_from                     Connectivity Node               False                 Name of the connectivity node at the "from" side                                                                                                                                                                                           False               
     cn_to                       Connectivity Node               False                 Name of the connectivity node at the "to" side                                                                                                                                                                                             False               
     active                      bool                            False                 Is active?                                                                                                                                                                                                                                 True                
+    reducible                   bool                            False                 Is the branch to be reduced by the topology preprocessor?                                                                                                                                                                                  False               
     rate                        float                    MVA    False                 Thermal rating power                                                                                                                                                                                                                       True                
     contingency_factor          float                    p.u.   False                 Rating multiplier for contingencies                                                                                                                                                                                                        True                
     protection_rating_factor    float                    p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                                                                                                                                          True                

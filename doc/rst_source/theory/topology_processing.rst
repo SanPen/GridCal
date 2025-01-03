@@ -1,53 +1,96 @@
+======================
+Topology Processing
+======================
 
-Topology processing
-########################
+Introduction
+------------
 
-In this section we are going to explain how to do topology processing properly for once and for all.
-This is a topic of capital importance in power systems that is rarely dealt with.
+In this section, we are going to explain how to do topology processing properly for once and for all. This topic is of
+capital importance in power systems but is rarely dealt with in a structured and comprehensive manner.
 
-A power systems model is a graph. A graph is an abstract construction where relationships are stored.
-In power systems, we want to store the relationships between calculation places (buses from now on)
-by the means of edges (branches from now on). For the purpose of power systems, both buses and branches have properties
-that determine the relationships and even the variation of the relationships with time.
+A power system model is essentially a graph. A graph is an abstract construct where relationships are represented.
+In power systems, we aim to store the relationships between calculation points (referred to as buses from now on)
+through edges (referred to as branches from now on). Both buses and branches in power systems have properties
+that define the relationships and even how these relationships vary over time.
 
-In less abstract terms, the topology processing is to determine the simulatable sub-circuits within a circuit.
-In this case a circuit is a collection of equipment, its relationships and states in the most general terms.
+What is a Graph in Power Systems?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-From circuit theory we get that:
+To understand topology processing, it's essential to grasp the basics of graph theory. In a power system graph:
+
+- **Nodes (Buses):** Represent points of calculation, such as substations, generation points, or load centers.
+- **Edges (Branches):** Represent the connections, such as transmission lines, transformers, or circuit breakers.
+
+This abstraction simplifies the network while retaining its essential connectivity and operational properties.
+
+Why is Topology Processing Important?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Topology processing ensures that the network's operational model accurately reflects its physical state. Without
+proper processing, analyses may yield inaccurate results, leading to operational inefficiencies or even failures.
+
+Key reasons include:
+
+- Ensuring the model is computationally feasible.
+- Identifying and correcting data inconsistencies.
+- Optimizing the simulation by reducing unnecessary complexities.
+
+In less abstract terms, topology processing is about determining the simulatable sub-circuits within a circuit.
+Here, a circuit refers to a collection of equipment, its relationships, and states in the most general sense.
+
+From circuit theory, we derive the following fundamental relationship:
 
 .. math::
 
     Y \times V = I^*
 
-Where Y is the nodal admittance matrix, V is the bus voltages vector and I is the current injections
-vector at the buses. To solve for V we need to invert Y:
+Where:
+
+- :math:`Y` is the nodal admittance matrix.
+- :math:`V` is the vector of bus voltages.
+- :math:`I` is the vector of current injections at the buses.
+
+To solve for :math:`V`, we need to invert :math:`Y`:
 
 .. math::
 
     V = Y^{-1} \times I^*
 
-The issue here is that Y may not be invertible for any general collection of equipment, hence we need to find the
-sub-circuits. Also there may be branches in the circuit with zero-impedance which would make Y singular. We need
-to get rid of those as well.
+However, :math:`Y` may not always be invertible for any arbitrary collection of equipment. This necessitates finding
+sub-circuits. Additionally, certain branches in the circuit might have zero impedance, making :math:`Y` singular. We
+must eliminate these problematic branches as part of the processing.
 
-In broad terms the topology process is to:
+Steps in Topology Processing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Reduce problematic branches (i.e. switches and jumpers)
-2. Find the simulatable islands
-3. Segment the circuit in the sub-circuits
-4. Simulate each circuit independently *
-5. Reassemble the results to match the circuit
+Broadly, topology processing involves the following steps:
 
-Steps 2 ~ 5 are only necessary for those simulations that rely on equality constraints such as the power flow.
-Simulations that create overdetermined linear systems like the optimization ones,
-do not need to handle islands separately.
+1. **Reduce problematic branches:** Address switches and jumpers that cause issues.
+2. **Find the simulatable islands:** Identify isolated groups of interconnected elements.
+3. **Segment the circuit into sub-circuits:** Divide the system into smaller, manageable parts.
+4. **Simulate each circuit independently:** Perform separate analyses for each sub-circuit.*
+5. **Reassemble the results:** Combine outcomes to match the original circuit structure.
 
-In performing the topology processing steps, we only need one special function: the islands search.
+.. note::
+
+   Steps 2 to 5 are necessary only for simulations reliant on equality constraints, such as power flow. Simulations
+   involving overdetermined linear systems, such as optimizations, do not require separate handling of islands.
+
+Special Function: Island Search
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Performing topology processing requires one critical function: the island search. This function identifies
+interconnected segments of the network, ensuring accurate representation of the system's operational state.
+
+
 
 1 Reducing problematic branches
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------------
 
-Let's consider the following circuit to be processed:
+In the context of power systems, certain branches can cause computational issues due to their characteristics,
+such as zero impedance or inactive status. These branches, referred to as "problematic branches," must be
+effectively reduced to ensure accurate simulations and analyses. To better understand this, let’s examine the
+following example circuit:
 
 +----------+--------+-----------+-----------+--------+
 | Bus from | Bus to | Reducible | impedance | active |
@@ -61,9 +104,11 @@ Let's consider the following circuit to be processed:
 | 2        |  3     | yes       | 0         | no     |
 +----------+--------+-----------+-----------+--------+
 
-We have 4 buses and 4 branches, 2 of those branches are reducible.
-Now we need to construct the adjacency matrix of the reducible branches
-with the following algorithm:
+This circuit consists of 4 buses and 4 branches. Two of these branches are marked as "reducible," meaning their
+removal is needed to not impact the network's functional properties for simulation purposes.
+These zero-impedance branches do not contribute to the network’s overall impedance matrix, but would make
+it singular if added. To identify reducible branches, we construct an adjacency matrix representing
+connections between buses. The adjacency matrix is computed using the following algorithm:
 
 .. code-block::
 
@@ -98,15 +143,18 @@ A method that is found to be approximately 2.5 times faster in practice is the f
     end-for
     A = C.transpose x C
 
-Obviously C and A in these algorithms must be sparse, otherwise you would need an intractable amount of memory
-to compute A for very large grids. This is the case everywhere in power systems.
+.. note::
 
-The nifty trick of composing A with the reducible elements, allows us to use a standard island-finding function
-to find which buses are grouped by reducible branches, therefore indicating that all those buses are
-"the same bus" for calculation.
+    Both methods require matrices `C` and `A` to be sparse. Dense matrices would demand excessive memory and
+    computational resources, making them impractical for power system applications.
 
-In our case, the bus 0 and bus 1 merge into a single one. For practicality we will just indicate that
-bus 1 is now the bus 0. The bus 2 and bus 3 remain ungrouped. After processing, the calculation grid should be:
+
+The nifty trick of composing A with the reducible elements, allows us to use a standard island-finding
+algorithms can identify groups of interconnected buses. These groups are treated as equivalent nodes for
+simulation purposes. In the given example, buses 0 and 1 are grouped, meaning bus 1 is effectively merged
+into bus 0. Buses 2 and 3 remain as independent nodes.
+
+After processing the reducible branches, the simplified circuit is:
 
 +----------+--------+-----------+
 | Bus from | Bus to | impedance |
@@ -118,7 +166,7 @@ bus 1 is now the bus 0. The bus 2 and bus 3 remain ungrouped. After processing, 
 
 
 2 Finding the simulatable islands
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------
 
 Now that we have a system without reducible branches, we need to proceed with the cleaning and island slicing.
 For that we need to compute the Adjacency matrix, this time using the active branches:
@@ -139,32 +187,53 @@ For that we need to compute the Adjacency matrix, this time using the active bra
 
     A = C.transpose x C
 
-After computing A, we use the standard island-detection function to detect the groups of buses joined by viable
-branches. This is, the simulatable islands.
+1. **Initialization:** A sparse auxiliary matrix `C` is initialized to capture branch
+   connections.
+2. **Branch Iteration:** Each branch is checked for activity and the corresponding buses
+   are verified to be active.
+3. **Matrix Assembly:** Connections between the "from" and "to" buses are recorded in `C`.
+4. **Adjacency Matrix Construction:** The final adjacency matrix `A` is obtained through
+   a matrix multiplication operation on `C`.
+
+With the adjacency matrix `A` constructed, standard island-detection algorithms can be
+applied to identify groups of interconnected buses. These groups, referred to as
+"simulatable islands," represent sub-networks that can independently support simulation.
 
 .. code-block::
 
     islands = find_islands(A)
 
-The islands variable is a list of vectors, each of which contains the indices of the buses of an island.
-Now, for every island we need to slice the data, so let's proceed to step 3.
+The `islands` variable contains a list of vectors, where each vector represents the
+indices of buses within a single island. For example, in a simple network, two
+interconnected buses might form one island, while isolated buses form separate islands.
 
-Ofcourse, each island must have a voltage source (i.e. a slack node)
-otherwise there is no way the island is powered and it will be in blackout.
+For each identified island, it is crucial to verify the presence of at least one voltage
+source or slack node. Without a slack node, the island cannot be powered, resulting in a
+blackout for that portion of the network. Slack nodes provide the necessary reference
+voltage and power balance for the island’s operation.
+
 
 3 Segment the circuit into islands
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------
 
-We know that and island is a vector of bus indices. So given that we need to slice the grid data structures using
-that information. A data structure of buses would be immediately sliceable with the bus indices, but what about
-a structure with branch data or a structure with load data?
+After removing problematic branches, the next crucial step is to segment the circuit
+into islands. An island is defined as a group of interconnected buses that form an
+independent sub-network. This segmentation is essential for accurately analyzing and
+simulating the system. To achieve this, we slice the grid's data structures based on
+the island information.
 
-To be efficient we construct a bus mapping array from the original indices to the island indices. For the
-sake of an example let's imagine that we have a circuit with 8 buses and the island we are dealing with has 4 buses
-(4, 5, 6, 7).
+An island is represented as a vector of bus indices. For instance, if an island
+contains buses 4, 5, 6, and 7, this vector would be `[4, 5, 6, 7]`. Using this
+information, slicing a data structure containing only bus data is straightforward.
+However, slicing structures such as branch or load data requires additional steps.
 
-- We declare an original array of size 8 filled with -1.
-- We set the new island indices into the original island positions in that array:
+To efficiently handle slicing, we create a bus mapping array that maps the original
+bus indices to the indices of the island. For example, consider a circuit with 8
+buses, where the island comprises buses 4, 5, 6, and 7. The mapping process is as
+follows:
+
+1. Initialize an array of size 8 filled with `-1` to represent unmapped buses.
+2. Assign new island indices to the corresponding positions in the array.
 
 .. code-block::
 
@@ -179,7 +248,8 @@ sake of an example let's imagine that we have a circuit with 8 buses and the isl
     The bus map is:
     bus_map = (-1, -1, -1, -1, 0, 1, 2, 3)
 
-Let's imagine that the grid has the following branch data:
+
+Now, consider the following branch data for the grid:
 
 +----------+----------+--------+
 | Name     | bus_from | bus_to |
@@ -244,14 +314,19 @@ Using the bus_map, we need to re-map the "from" and "to" buses of the sliced str
 | 7:Branch | 1        | 2      |
 +----------+----------+--------+
 
-For a structure like loads would be exactly the same but using only one bus index instead of "from" and "to".
+For data structures like loads, the slicing process is similar. However, these
+structures typically involve a single bus index rather than "from" and "to" indices.
+By consistently applying the bus mapping array, we can accurately extract relevant
+data for any island.
 
-The collection of sliced structures becomes a new circuit that we can effectively use in numerical calculations like
-power flows. In practice this step has far more value that what one may anticipate since it cleans the grid of
-any inactive buses, branches or devices that would pollute our simulation without noticing, causing errors.
+Segmenting the circuit into islands eliminates inactive buses, branches, and devices
+that might otherwise introduce errors into simulations. This step significantly
+improves computational efficiency and ensures cleaner, more reliable data for
+numerical calculations such as power flow analysis. The resulting islands form
+distinct, manageable sub-networks ready for independent simulation and analysis.
 
 Islands search function
-^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------
 
 The island search function is a depth-first search that exploits the CSC structure of the adjacency matrix.
 The particular version of the DFS algorithm presented here avoids recursivity in favor of cues for faster execution.
@@ -318,64 +393,105 @@ The particular version of the DFS algorithm presented here avoids recursivity in
 
 
 The spirit of CIM
-^^^^^^^^^^^^^^^^^^
+------------------------
 
-If you've encountered CIM or CGMES, or participated in guild discussions, you've likely heard about **node-breaker**
-and **bus-branch** modeling styles as distinct approaches. ENTSO-e's introductory CGMES training has historically
-taught that you can model using either **connectivity nodes** or **buses**. This guidance has been shared with
-hundreds of engineers accustomed to simpler models of buses, lines, etc. only to face a what seems to be
-gratuitous complexity.
+If you've encountered CIM or CGMES, or participated in guild discussions, you've
+likely heard about **node-breaker** and **bus-branch** modeling styles as distinct
+approaches. ENTSO-e's introductory CGMES training has historically taught that
+you can model using either **connectivity nodes** or **buses**. This guidance has
+been shared with hundreds of engineers accustomed to simpler models of buses,
+lines, etc., only to face what seems to be gratuitous complexity.
 
-After deep examination one finds that this complexity is indeed unjustified.
-The **node-breaker** and **bus-branch** philosophies are fundamentally
-the same, as we have experimented in the described processes.
-The modelling approaches are often thought of as:
+After deep examination, one finds that this complexity is indeed unjustified.
+The **node-breaker** and **bus-branch** philosophies are fundamentally the same,
+as demonstrated through the processes described in this document.
 
-- **Bus-branch modeling**: This style involves using **TopologicalNodes** and no switches.
-- **Node-breaker modeling**: This style involves using **ConnectivityNodes** and switches.
+.. note::
 
-A common misconception is that bus-branch models lack switches, whereas node-breaker models include them. In
-practice, both approaches can incorporate switches. That fact is often discoursed at the official CGMES trainings.
-But, if a **ConnectivityNode** can have a 1:1 association with a **TopologicalNode**,
-this involves that any ConnectivityNode ultimately represents a TopologicalNode.
-So, what’s the difference? **There is no difference. Both styles are fundamentally the same.**
+    - A ConnectivityNode is a **bus** before the topology processing.
+    - A TopologyNode is a **bus** after the topology processing.
 
-CIM’s design philosophy is to model grids using **ConnectivityNodes**, with **TopologicalNodes** emerging
-naturally through topological reductions (e.g., simplifying branches). The need for TopologicalNodes is purely
-situational and not fundamental. Over time, the practice of treating detailed models as node-breaker models
-and processed less detailed models as bus-branch has created an artificial divide that has proven
-impractical and needlessly complicated. One can understand that the lack of a properly clear topology processing
-has probably sparked this complexity as some sort of middle ground that ends up being the worst of both  approaches.
+The modeling approaches are often thought of as follows:
 
-If we examine the original spirit of CIM: **ConnectivityNodes are no different from traditional Buses.**
-The distinction is a myth that adds unnecessary complexity to modeling workflows.
+- **Bus-branch modeling:** This style involves using **TopologicalNodes** and
+  no switches.
+- **Node-breaker modeling:** This style involves using **ConnectivityNodes**
+  and switches.
+
+**Debunking Misconceptions**
+
+A common misconception is that bus-branch models lack switches, whereas node-
+breaker models include them. In practice, both approaches can incorporate
+switches. This fact is often emphasized in official CGMES trainings. If a
+**ConnectivityNode** must have a 0:1 association with a **TopologicalNode**, this
+implies that any ConnectivityNode ultimately represents a TopologicalNode.
+This reinforces the argument that both are two faces of the same coin.
+**There is no difference. Both styles are fundamentally the same.**
+
+**The Philosophy Behind CIM**
+
+One would imagine that the intent behind CIM’s design philosophy is to model
+grids using **ConnectivityNodes**, with **TopologicalNodes** emerging naturally
+through topological reductions (e.g., simplifying branches).
+This implies that we should not share TopologicalNodes, since those are
+internal artifacts of a calculation software such as GridCal.
+
+Over time, the practice of treating detailed models as node-breaker models
+and processed, less-detailed models as bus-branch has created an
+artificial divide that has proven impractical and needlessly complicated.
+
+**Why the Complexity?**
+
+One can understand that the lack of a properly clear topology processing method
+has likely sparked this complexity, creating a middle ground that combines the
+worst aspects of both approaches. Engineers attempting to reconcile the two
+styles often encounter unnecessary confusion and inefficiency.
+
+**Revisiting CIM’s Spirit**
+
+If we examine the original spirit of CIM: **ConnectivityNodes are no different
+from traditional Buses.** The distinction is a myth that adds unnecessary
+complexity to modeling workflows. By adhering to this perspective, we can
+simplify processes and focus on building more efficient and accurate models.
 
 
 How is it done in GridCal?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------
 
-In GridCal, the **MultiCircuit** serves as the grid's in-memory database. It is crucial that no topological processing
-is ever performed directly on the MultiCircuit. Doing so risks altering the topology of elements, potentially breaking
-the consistency of the original configuration.
+In GridCal, the **MultiCircuit** serves as the grid's in-memory database. It is
+crucial that no topological processing is ever performed directly on the
+MultiCircuit. Doing so risks altering the topology of elements, potentially
+breaking the consistency of the original configuration.
 
-For example, imagine a generator initially connected to **Bus 1**. After performing topological processing, it might
-end up connected to **Bus 2**. How could we recover the original connection to **Bus 1**? Simply put, we cannot.
+**Why Avoid Topological Processing on MultiCircuit?**
 
-If topology processing should not occur over the database, then where should it be done?
+Consider the following example: Imagine a generator initially connected to
+**Bus 1**. After performing topological processing, it might end up connected to
+**Bus 2**. How could we recover the original connection to **Bus 1**? Simply put,
+we cannot. Altering the MultiCircuit directly compromises its integrity,
+making it impossible to restore the original topology.
 
-Fortunately, GridCal provides the **NumericalCircuit**, a snapshot of the MultiCircuit at a specific state. This
-snapshot is **fungible**, meaning any modifications made to it will not impact the original MultiCircuit and will
-vanish after the calculation. As such, all topology processing steps are performed on the **NumericalCircuit**, as
-described earlier in this section.
+**The Role of NumericalCircuit**
+
+If topology processing should not occur over the database, then where should it
+be done? Fortunately, GridCal provides the **NumericalCircuit**, a snapshot of
+the MultiCircuit at a specific state. This snapshot is **fungible**, meaning any
+modifications made to it will not impact the original MultiCircuit and will
+vanish after the calculation. As such, all topology processing steps are
+performed on the **NumericalCircuit**, as described earlier in this section.
 
 **CIM Compatibility Adjustments**
 
-To ensure compatibility with CIM standards, we have introduced a single adjustment:
+To ensure compatibility with CIM standards, we have introduced a single
+adjustment:
 
-- Every **ConnectivityNode** must either create a bus or be associated with an existing bus.
-- Similarly, every **BusBar** must either create a connectivity node or be associated with one.
+- Every **ConnectivityNode** must either create a bus or be associated with an
+  existing bus.
+- Similarly, every **BusBar** must either create a connectivity node or be
+  associated with one.
 
-This guarantees that no matter which object you use for modeling, the system will ultimately rely on buses,
-maintaining consistency across all calculation processes.
+This guarantees that no matter which object you use for modeling, the system
+will ultimately rely on buses, maintaining consistency across all calculation
+processes.
 
 

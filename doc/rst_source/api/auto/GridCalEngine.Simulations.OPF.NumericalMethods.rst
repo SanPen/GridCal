@@ -12,18 +12,18 @@ GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf module
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf\_autodif module
-----------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_autodif
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 GridCalEngine.Simulations.OPF.NumericalMethods.ac\_opf\_derivatives module
 --------------------------------------------------------------------------
 
 .. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+GridCalEngine.Simulations.OPF.NumericalMethods.newton\_raphson\_ips\_fx module
+------------------------------------------------------------------------------
+
+.. automodule:: GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx
    :members:
    :undoc-members:
    :show-inheritance:

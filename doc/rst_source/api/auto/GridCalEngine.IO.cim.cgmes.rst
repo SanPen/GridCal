@@ -30,6 +30,14 @@ GridCalEngine.IO.cim.cgmes.cgmes\_circuit module
    :undoc-members:
    :show-inheritance:
 
+GridCalEngine.IO.cim.cgmes.cgmes\_create\_instances module
+----------------------------------------------------------
+
+.. automodule:: GridCalEngine.IO.cim.cgmes.cgmes_create_instances
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.IO.cim.cgmes.cgmes\_data\_parser module
 -----------------------------------------------------
 
@@ -62,10 +70,10 @@ GridCalEngine.IO.cim.cgmes.cgmes\_export module
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.IO.cim.cgmes.cgmes\_poperty module
-------------------------------------------------
+GridCalEngine.IO.cim.cgmes.cgmes\_property module
+-------------------------------------------------
 
-.. automodule:: GridCalEngine.IO.cim.cgmes.cgmes_poperty
+.. automodule:: GridCalEngine.IO.cim.cgmes.cgmes_property
    :members:
    :undoc-members:
    :show-inheritance:

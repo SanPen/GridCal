@@ -28,9 +28,78 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="some tweaks in the converter thing">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="fixed HvdcData typo">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.AboutDialogue.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Analysis.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.CascadingSteps.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.ContingencyPlanner.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.CoordinatesInput.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.MapWidget.Branches.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.MapWidget.Substation.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.MapWidget.Tiles.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.MapWidget.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.SchematicWidget.Branches.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.SchematicWidget.Fluid.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.SchematicWidget.Injections.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.SchematicWidget.Substation.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.SchematicWidget.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Diagrams.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.GridGenerator.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.LoadCatalogue.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.LoadDesigner.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Main.SubClasses.Model.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Main.SubClasses.Results.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Main.SubClasses.Scripting.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Main.SubClasses.Server.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Main.SubClasses.Settings.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Main.SubClasses.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Main.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.ProfilesInput.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.RosetaExplorer.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.SigmaAnalysis.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.SolarPowerWizard.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.SubstationDesigner.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.SyncDialogue.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.SystemScaler.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.TowerBuilder.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.TreeModelViewer.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Visualization.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.Widgets.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.WindPowerWizard.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Gui.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.Session.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.qdarktheme.qtpy.QtCore.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.qdarktheme.qtpy.QtGui.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.qdarktheme.qtpy.QtSvg.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.qdarktheme.qtpy.QtWidgets.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.qdarktheme.qtpy.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.qdarktheme.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.qdarktheme.widget_gallery.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.ThirdParty.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.data.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCal.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.matpower.legacy.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.OPF.Formulations.rst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.PowerFlow.Formulations.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/hvdc_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/hvdc_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.DataStructures.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.DataStructures.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.cim.cgmes.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.matpower.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.matpower.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.raw.devices.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.IO.raw.devices.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.Derivatives.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.Derivatives.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.OPF.NumericalMethods.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.OPF.NumericalMethods.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.OPF.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.OPF.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.PowerFlow.NumericalMethods.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.PowerFlow.NumericalMethods.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.PowerFlow.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.PowerFlow.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.StateEstimation.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Simulations.StateEstimation.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.MIP.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.MIP.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.ThirdParty.nptyping.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.ThirdParty.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/api/auto/GridCalEngine.Utils.ThirdParty.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/other_data_models.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/other_data_models.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation_nsga3.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation_nsga3.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/topology_processing.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/topology_processing.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,61 +197,62 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_nonlinear_contingency.test_non_linear_factors.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ntc.test_ntc_ultra_simple.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ptdf.test_mlodf.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_cgmes_ieeee.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_power_flow.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.matpower_grids.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
-    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/CGMES_2_4_15&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
+    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
+    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
+    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
+    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
+    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
+    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
+    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
+    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
+    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
+    "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor": "Debug",
+    "Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor": "Run",
+    "Python tests.pytest for test_nonlinear_contingency.test_non_linear_factors.executor": "Debug",
+    "Python tests.pytest for test_ntc.test_ntc_ultra_simple.executor": "Debug",
+    "Python tests.pytest for test_ptdf.test_mlodf.executor": "Debug",
+    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor": "Debug",
+    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor": "Debug",
+    "Python tests.pytest in test_cgmes_ieeee.py.executor": "Run",
+    "Python tests.pytest in test_power_flow.py.executor": "Run",
+    "Python tests.pytest in test_topology_processor.py.executor": "Run",
+    "Python tests.pytest in tests.executor": "Run",
+    "Python.AnalysisDialogue.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.GridCalMain.executor": "Run",
+    "Python.cgmes_rdfs_graph.executor": "Run",
+    "Python.make.executor": "Run",
+    "Python.matpower_grids.executor": "Run",
+    "Python.new_circuit_objects.executor": "Run",
+    "Python.pymoo_example.executor": "Debug",
+    "Python.raw_imp_exp_test.executor": "Run",
+    "Python.update_gui_file.executor": "Run",
+    "Python.upload_to_pypi.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "199__finalize__cgmes__import",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/CGMES_2_4_15",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -204,7 +274,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Branches" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.make">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -471,7 +541,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="matpower_chart" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -480,12 +550,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/checks_pf" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/checks_pf/matpower_chart.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -677,7 +747,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.matpower_chart" />
+      <item itemvalue="Python.make" />
       <item itemvalue="Python.matpower_grids" />
       <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
@@ -685,11 +755,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.make" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.matpower_grids" />
         <item itemvalue="Python.upload_to_pypi" />
-        <item itemvalue="Python.matpower_chart" />
       </list>
     </recent_temporary>
   </component>
@@ -1438,7 +1508,7 @@
       <workItem from="1735133340290" duration="7005000" />
       <workItem from="1735834659987" duration="16683000" />
       <workItem from="1735855561573" duration="1892000" />
-      <workItem from="1735894161263" duration="359000" />
+      <workItem from="1735894161263" duration="6063000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1783,7 +1853,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="525" />
+    <option name="localTasksCounter" value="526" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1829,7 +1899,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minor update" />
     <MESSAGE value="Refactor Map elements" />
     <MESSAGE value="Buf fix glitch when selecting nodes in map" />
     <MESSAGE value="Map refactor, move event fixed" />
@@ -1854,7 +1923,8 @@
     <MESSAGE value="small bug fixes&#10;stated the migration of the acopf to a problem-like class" />
     <MESSAGE value="new matpower parser with capability to read matacdc cases" />
     <MESSAGE value="some tweaks in the converter thing" />
-    <option name="LAST_COMMIT_MESSAGE" value="some tweaks in the converter thing" />
+    <MESSAGE value="fixed HvdcData typo" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed HvdcData typo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2525,7 +2595,7 @@
     <SUITE FILE_PATH="coverage/GridCal$profile_dialogue.coverage" NAME="profile_dialogue Coverage Results" MODIFIED="1674068478204" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput" />
     <SUITE FILE_PATH="coverage/GridCal$system_scaler.coverage" NAME="system_scaler Coverage Results" MODIFIED="1710502330985" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/SystemScaler" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_src_tests_test_api_helm_test_api_helm.coverage" NAME="pytest for src.tests.test_api_helm.test_api_helm Coverage Results" MODIFIED="1732903304629" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/GridCal$make.coverage" NAME="make Coverage Results" MODIFIED="1731333126127" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/doc" />
+    <SUITE FILE_PATH="coverage/GridCal$make.coverage" NAME="make Coverage Results" MODIFIED="1735902382289" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/doc" />
     <SUITE FILE_PATH="coverage/GridCal$newton_equivalence_test.coverage" NAME="newton_equivalence_test Coverage Results" MODIFIED="1678866293763" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_time_series_py.coverage" NAME="Nosetests in test_time_series.py Coverage Results" MODIFIED="1686759385773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_topology_processor_test_island_slicing.coverage" NAME="pytest for test_topology_processor.test_island_slicing Coverage Results" MODIFIED="1735231041489" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

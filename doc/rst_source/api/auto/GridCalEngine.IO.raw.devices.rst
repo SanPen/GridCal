@@ -60,6 +60,14 @@ GridCalEngine.IO.raw.devices.gne\_device module
    :undoc-members:
    :show-inheritance:
 
+GridCalEngine.IO.raw.devices.impedance\_correction\_table module
+----------------------------------------------------------------
+
+.. automodule:: GridCalEngine.IO.raw.devices.impedance_correction_table
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.IO.raw.devices.induction\_machine module
 ------------------------------------------------------
 
@@ -80,6 +88,14 @@ GridCalEngine.IO.raw.devices.load module
 ----------------------------------------
 
 .. automodule:: GridCalEngine.IO.raw.devices.load
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+GridCalEngine.IO.raw.devices.multi\_section\_line module
+--------------------------------------------------------
+
+.. automodule:: GridCalEngine.IO.raw.devices.multi_section_line
    :members:
    :undoc-members:
    :show-inheritance:

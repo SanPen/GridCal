@@ -76,30 +76,6 @@ GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton\_raphson\_fx module
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf\_advanced\_formulation module
--------------------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf\_basic\_formulation module
-----------------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_basic_formulation
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf\_formulation\_template module
--------------------------------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell\_fx module
 ----------------------------------------------------------------------
 
