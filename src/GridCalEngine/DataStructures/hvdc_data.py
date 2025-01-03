@@ -241,10 +241,10 @@ class HvdcData(BranchParentData):
 
                     nfree += 1
 
-                    if Pcalc > self.rate[i]:
-                        Pcalc = self.rate[i]
-                    if Pcalc < -self.rate[i]:
-                        Pcalc = -self.rate[i]
+                    if Pcalc > self.rates[i]:
+                        Pcalc = self.rates[i]
+                    if Pcalc < -self.rates[i]:
+                        Pcalc = -self.rates[i]
 
                 else:
                     Pcalc = 0.0
