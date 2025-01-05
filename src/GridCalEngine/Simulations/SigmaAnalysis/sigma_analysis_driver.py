@@ -258,43 +258,48 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
         theta=np.zeros(nc.nbus),
     )
 
-    calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
-    if len(calculation_inputs) == 0:
+    if len(islands) == 0:
         return results
 
     # simulate each island and merge the results
-    for i, island in enumerate(calculation_inputs):
+    for i in range(len(islands)):
+        island = islands[i]
+        indices = island.get_simulation_indices()
 
-        if len(island.vd) > 0:
+        if len(indices.vd) > 0:
+            S0 = island.get_power_injections_pu()
+            Sbus = S0 + Shvdc[island.bus_data.original_idx]
 
-            Sbus = island.Sbus + Shvdc[island.original_bus_idx]
+            adm = nc.get_admittance_matrices()
+            adms = nc.get_series_admittance_matrices()
 
             # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
-            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=island.Ybus,
-                                                                   Yseries=island.Yseries,
-                                                                   V0=island.Vbus,
+            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=adm.Ybus,
+                                                                   Yseries=adms.Yseries,
+                                                                   V0=island.bus_data.Vbus,
                                                                    S0=Sbus,
-                                                                   Ysh0=island.Yshunt,
-                                                                   pq=island.pq,
-                                                                   pv=island.pv,
-                                                                   sl=island.vd,
-                                                                   pqpv=island.pqpv,
+                                                                   Ysh0=adms.Yshunt,
+                                                                   pq=indices.pq,
+                                                                   pv=indices.pv,
+                                                                   sl=indices.vd,
+                                                                   no_slack=indices.no_slack,
                                                                    tolerance=options.tolerance,
                                                                    max_coeff=options.max_iter,
                                                                    verbose=False,
                                                                    logger=logger)
 
             # compute the sigma values
-            n = island.nbus
+            n = island.bus_data.nbus
             sig_re = np.zeros(n, dtype=float)
             sig_im = np.zeros(n, dtype=float)
 
             try:
                 if iter_ > 1:
-                    sigma = sigma_function(U, X, iter_ - 1, island.Vbus[island.vd])
-                    sig_re[island.pqpv] = np.real(sigma)
-                    sig_im[island.pqpv] = np.imag(sigma)
+                    sigma = sigma_function(U, X, iter_ - 1, island.bus_data.Vbus[indices.vd])
+                    sig_re[indices.no_slack] = np.real(sigma)
+                    sig_im[indices.no_slack] = np.imag(sigma)
                 else:
                     sig_re = np.zeros(n, dtype=float)
                     sig_im = np.zeros(n, dtype=float)
@@ -307,18 +312,16 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
             sigma_distances = sigma_distance(sig_re, sig_im)
 
             # store the results
-            island_results = SigmaAnalysisResults(n=len(island.Vbus))
+            island_results = SigmaAnalysisResults(n=n)
             island_results.lambda_value = 1.0
-            island_results.Sbus = island.Sbus
+            island_results.Sbus = Sbus
             island_results.sigma_re = sig_re
             island_results.sigma_im = sig_im
             island_results.distances = sigma_distances
             island_results.converged = converged
 
-            bus_original_idx = island.original_bus_idx
-
             # merge the results from this island
-            results.apply_from_island(island_results, bus_original_idx)
+            results.apply_from_island(island_results, island.bus_data.original_idx)
 
         else:
             logger.add_info('No slack nodes in the island', str(i))

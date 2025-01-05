@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 from GridCalEngine.IO.file_handler import FileOpen
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -532,6 +532,94 @@ def test_power_flow_12bus_acdc() -> None:
         assert grid.hvdc_lines[0].Pset == solution.Pf_hvdc[0]
 
         assert solution.converged
+
+
+def test_hvdc_all_methods() -> None:
+
+    fname = os.path.join('data', 'grids', '8_nodes_2_islands_hvdc.gridcal')
+
+    grid = gce.open_file(fname)
+
+    grid.hvdc_lines[0].Pset = 10 # this is what we'll check later
+
+    for solver_type in [SolverType.NR,
+                        SolverType.LM,
+                        SolverType.PowellDogLeg,
+                        SolverType.IWAMOTO,
+                        SolverType.FASTDECOUPLED,
+                        SolverType.HELM,
+                        SolverType.DC,
+                        SolverType.LACPF,]:
+
+        print(solver_type)
+
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        nc = gce.compile_numerical_circuit_at(
+            grid,
+            t_idx=None,
+            apply_temperature=False,
+            branch_tolerance_mode=gce.BranchImpedanceMode.Specified,
+            opf_results=None,
+            use_stored_guess=False,
+            bus_dict=None,
+            areas_dict=None,
+            control_taps_modules=options.control_taps_modules,
+            control_taps_phase=options.control_taps_phase,
+            control_remote_voltage=options.control_remote_voltage,
+        )
+
+        logger = gce.Logger()
+        res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
+
+        if not res.converged:
+            logger.print(f"Errors on {solver_type.value}:")
+
+        assert res.converged
+        assert res.Pf_hvdc[0] == 10.0
+
+    # repeat forcing to use the special formulations
+    for solver_type in [SolverType.NR,
+                        SolverType.LM,
+                        SolverType.PowellDogLeg]:
+        print(solver_type)
+
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        nc = gce.compile_numerical_circuit_at(
+            grid,
+            t_idx=None,
+            apply_temperature=False,
+            branch_tolerance_mode=gce.BranchImpedanceMode.Specified,
+            opf_results=None,
+            use_stored_guess=False,
+            bus_dict=None,
+            areas_dict=None,
+            control_taps_modules=options.control_taps_modules,
+            control_taps_phase=options.control_taps_phase,
+            control_remote_voltage=options.control_remote_voltage,
+        )
+
+        # force using the special formulations
+        nc.active_branch_data._any_pf_control = True
+
+        logger = gce.Logger()
+        res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
+
+        if not res.converged:
+            logger.print(f"Errors on {solver_type.value}:")
+
+        assert res.converged
+        assert res.Pf_hvdc[0] == 10.0
+
+
+
 
 
 if __name__ == "__main__":

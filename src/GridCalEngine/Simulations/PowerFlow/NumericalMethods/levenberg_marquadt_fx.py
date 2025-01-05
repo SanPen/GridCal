@@ -85,6 +85,11 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
 
             if update_jacobian:
                 H = mat_to_scipy(problem.Jacobian())
+
+                if H.shape[0] != H.shape[1]:
+                    logger.add_error("Jacobian not square, check the controls!", "Levenberg-Marquadt")
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
                 # system matrix
                 # H1 = H^t
                 Ht = H.T  # .tocsr()

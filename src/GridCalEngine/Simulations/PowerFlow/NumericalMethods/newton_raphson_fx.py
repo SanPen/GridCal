@@ -79,6 +79,10 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 # compute update step: J x Δx = Δg
                 J: CSC = problem.Jacobian()
 
+                if J.shape[0] != J.shape[1]:
+                    logger.add_error("Jacobian not square, check the controls!", "Newton-Raphson")
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+
                 dx, ok = spsolve_csc(J, -f)
 
                 if verbose > 1:

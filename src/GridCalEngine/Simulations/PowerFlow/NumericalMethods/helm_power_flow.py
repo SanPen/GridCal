@@ -247,8 +247,8 @@ def conv3(A, B, c, indices):
 
 
 def helm_coefficients_josep(Ybus: CscMat,
-                            Yseries: CxVec, V0: CxVec, S0: CxVec, Ysh0: CxVec,
-                            pq: IntVec, pv: IntVec, sl: IntVec, pqpv: IntVec,
+                            Yseries: CscMat, V0: CxVec, S0: CxVec, Ysh0: CxVec,
+                            pq: IntVec, pv: IntVec, sl: IntVec, no_slack: IntVec,
                             tolerance: float = 1e-6, max_coeff: int = 30, verbose: int = 0,
                             logger: Logger = None):
     """
@@ -262,7 +262,7 @@ def helm_coefficients_josep(Ybus: CscMat,
     :param pq: list of pq nodes
     :param pv: list of pv nodes
     :param sl: list of slack nodes
-    :param pqpv: sorted list of pq and pv nodes
+    :param no_slack: sorted list of pq and pv nodes
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :param verbose: print intermediate information
@@ -270,7 +270,7 @@ def helm_coefficients_josep(Ybus: CscMat,
     :return: U, X, Q, V, iterations
     """
 
-    npqpv = len(pqpv)
+    npqpv = len(no_slack)
     npv = len(pv)
     nsl = len(sl)
     n = Yseries.shape[0]
@@ -291,15 +291,15 @@ def helm_coefficients_josep(Ybus: CscMat,
         logger.add_debug(df.to_string())
 
     # build the reduced system
-    Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
-    Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
+    Yred = Yseries[np.ix_(no_slack, no_slack)]  # admittance matrix without slack buses
+    Yslack = -Yseries[np.ix_(no_slack, sl)]  # yes, it is the negative of this
     G = Yred.real.copy()  # real parts of Yij
     B = Yred.imag.copy()  # imaginary parts of Yij
-    vec_P = S0.real[pqpv]
-    vec_Q = S0.imag[pqpv]
+    vec_P = S0.real[no_slack]
+    vec_Q = S0.imag[no_slack]
     Vslack = V0[sl]
-    Ysh = Ysh0[pqpv]
-    Vm0 = np.abs(V0[pqpv])
+    Ysh = Ysh0[no_slack]
+    Vm0 = np.abs(V0[no_slack])
     vec_W = Vm0 * Vm0
 
     # indices 0 based in the internal scheme
@@ -363,7 +363,7 @@ def helm_coefficients_josep(Ybus: CscMat,
     V = np.empty(n, dtype=complex)
     V[sl] = V0[sl]
     c = 2
-    V[pqpv] = U[:c, :].sum(axis=0)
+    V[no_slack] = U[:c, :].sum(axis=0)
     iter_ = 1
     if verbose:
         logger.add_debug("MAT", MAT.toarray())
@@ -412,11 +412,11 @@ def helm_coefficients_josep(Ybus: CscMat,
         X[c, :] = -conv1(U, X, c) / np.conj(U[0, :])
 
         # compute power mismatch
-        V[pqpv] += U[c, :]
+        V[no_slack] += U[c, :]
 
         if V.real.max() < 10:
             Scalc = cf.compute_power(Ybus, V)
-            norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, pqpv, pq))
+            norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, no_slack, pq))
             converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
         else:
             # completely erroneous
@@ -733,7 +733,7 @@ def helm_josep(nc: NumericalCircuit,
                                                            pq=pq,
                                                            pv=pv,
                                                            sl=vd,
-                                                           pqpv=no_slack,
+                                                           no_slack=no_slack,
                                                            tolerance=tolerance,
                                                            max_coeff=max_coefficients,
                                                            verbose=verbose,

@@ -165,12 +165,12 @@ class SolverType(Enum):
     """
 
     NR = 'Newton Raphson'
-    NRFD_XB = 'Fast decoupled XB'
-    NRFD_BX = 'Fast decoupled BX'
+    # NRFD_XB = 'Fast decoupled XB'
+    # NRFD_BX = 'Fast decoupled BX'
     GAUSS = 'Gauss-Seidel'
     DC = 'Linear DC'
     HELM = 'Holomorphic Embedding'
-    ZBUS = 'Z-Gauss-Seidel'
+    # ZBUS = 'Z-Gauss-Seidel'
     PowellDogLeg = "Powell's Dog Leg"
     IWAMOTO = 'Iwamoto-Newton-Raphson'
     CONTINUATION_NR = 'Continuation-Newton-Raphson'
@@ -182,9 +182,9 @@ class SolverType(Enum):
     NONLINEAR_OPF = 'Nonlinear OPF'
     SIMPLE_OPF = 'Simple dispatch'
     Proportional_OPF = 'Proportional OPF'
-    DYCORS_OPF = 'DYCORS OPF'
-    GA_OPF = 'Genetic Algorithm OPF'
-    NELDER_MEAD_OPF = 'Nelder Mead OPF'
+    # DYCORS_OPF = 'DYCORS OPF'
+    # GA_OPF = 'Genetic Algorithm OPF'
+    # NELDER_MEAD_OPF = 'Nelder Mead OPF'
     BFS = 'Backwards-Forward substitution'
     BFS_linear = 'Backwards-Forward substitution (linear)'
     Constant_Impedance_linear = 'Constant impedance linear'

@@ -94,6 +94,11 @@ def powell_fx(problem: PfFormulationTemplate,
     delta = trust
     f_error, converged, x, f = problem.update(x, update_controls=False)
     J = mat_to_scipy(problem.Jacobian())
+
+    if J.shape[0] != J.shape[1]:
+        logger.add_error("Jacobian not square, check the controls!", "Powell")
+        return problem.get_solution(elapsed=time.time() - start, iterations=0)
+
     g = J.T @ f
 
     iteration = 0
@@ -151,6 +156,11 @@ def powell_fx(problem: PfFormulationTemplate,
 
             if rho > 0.0 or len(f) != J.shape[0]:
                 J = mat_to_scipy(problem.Jacobian())  # compute the Jacobian too
+
+                if J.shape[0] != J.shape[1]:
+                    logger.add_error("Jacobian not square, check the controls!", "Powell")
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+
                 g = J.T @ f
                 f_error = f_error_new
 
