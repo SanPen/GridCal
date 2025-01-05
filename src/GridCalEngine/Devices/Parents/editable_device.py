@@ -7,6 +7,7 @@ import uuid
 import numpy as np
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Union, Type, Tuple
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection,
                                         TapModuleControl, TapPhaseControl, SubObjectType, ConverterControlType,
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
@@ -217,7 +218,7 @@ class EditableDevice:
 
         self.action: ActionType = ActionType.NoAction
 
-        # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
+        # list of registered properties. This is supremely useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()
 
         # dictionary of properties
@@ -828,3 +829,27 @@ class EditableDevice:
         g = random.randint(0, 128)
         b = random.randint(0, 128)
         return self.rgb2hex(r, g, b)
+
+    def new_idtag(self):
+        """
+        Generate a new IdTag
+        """
+        self._idtag = uuid.uuid4().hex  # generate a proper UUIDv4 string
+
+    def replace_objects(self, old_object: Any, new_obj: Any, logger: Logger) -> None:
+        """
+        Replace object in this objects' properties
+        :param old_object: object to replace
+        :param new_obj: object used to replace the old one
+        :param logger: Logger to record what happened
+        """
+        for key, prop in self.registered_properties.items():
+
+            obj = getattr(self, prop.name)
+
+            if obj == old_object:
+                setattr(self, prop.name, new_obj)
+                logger.add_info(msg="Replaced object",
+                                device=self.idtag + ":" + self.name,
+                                device_property=prop.name,
+                                value=str(new_obj))

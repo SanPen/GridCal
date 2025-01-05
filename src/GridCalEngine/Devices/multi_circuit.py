@@ -2093,10 +2093,25 @@ class MultiCircuit(Assets):
         # if any error in the logger, bad
         return logger.error_count() == 0, logger, dgrid
 
-    def add_circuit(self, circuit: "MultiCircuit") -> Logger:
+    def add_circuit(self, new_grid: "MultiCircuit") -> Logger:
         """
-        Add a circuit to this circuit
-        :param circuit: Circuit to insert
+        Add a circuit to this circuit, keeping all elements (this is not equal to a circuit merge)
+        :param new_grid: Circuit to insert
+        :return: Logger
+        """
+
+        # re-id all elements
+        new_grid.new_idtags()
+
+        # add is the same as merge but the idtags are renewed so that there are no conflicts
+        logger = self.merge_circuit(new_grid)
+
+        return logger
+
+    def merge_circuit(self, new_grid: "MultiCircuit") -> Logger:
+        """
+        Add a circuit to this circuit, keeping all elements (this is not equal to a circuit merge)
+        :param new_grid: Circuit to insert
         :return: Logger
         """
 
@@ -2105,15 +2120,11 @@ class MultiCircuit(Assets):
         # add profiles if required
         if self.time_profile is not None:
 
-            for bus in circuit.buses:
-                bus.create_profiles(index=self.time_profile)
+            new_grid.time_profile = self.time_profile
+            new_grid.ensure_profiles_exist()
 
-            for lst in [circuit._lines, circuit._transformers2w, circuit._hvdc_lines]:
-                for branch in lst:
-                    branch.create_profiles(index=self.time_profile)
-
-        for api_object in circuit.items():
-            self.add_or_replace_object(api_obj=api_object, logger=logger)
+        for new_elm in new_grid.items():
+            self.add_or_replace_object(api_obj=new_elm, logger=logger)
 
         return logger
 

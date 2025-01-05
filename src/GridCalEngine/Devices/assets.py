@@ -355,7 +355,13 @@ class Assets:
         Set the time array
         :return: pd.DatetimeIndex
         """
-        self._time_profile = value
+        if isinstance(value, pd.DatetimeIndex):
+            self._time_profile = value
+        else:
+            try:
+                self._time_profile = pd.to_datetime(value)
+            except TypeError:
+                warnings.warn(f"Trying to set time profile with something else {type(value)}")
 
     def get_all_time_indices(self) -> IntVec:
         """
@@ -6269,3 +6275,20 @@ class Assets:
             raise Exception(f'elm_type not understood: {elm_type.value}')
 
         return elm, dictionary_of_lists
+
+    def new_idtags(self) -> None:
+        """
+        Generates new idtags for every object in this assets class
+        """
+        for elm in self.get_all_elements_iter():
+            elm.new_idtag()
+
+    def replace_objects(self, old_object: Any, new_obj: Any, logger: Logger) -> None:
+        """
+        Replace object for every object in this assets class
+        :param old_object: object to replace
+        :param new_obj: object used to replace the old one
+        :param logger: Logger to record what happened
+        """
+        for elm in self.get_all_elements_iter():
+            elm.replace_objects(old_object=old_object, new_obj=new_obj, logger=logger)

@@ -1103,7 +1103,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         nbus = self.circuit.get_bus_number()
-        nbr = self.circuit.get_branch_number()
+        nbr = self.circuit.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)
 
         bus_active = self.circuit.get_bus_actives(t_idx=t_idx)
         br_active = self.circuit.get_branch_actives(t_idx=t_idx, add_vsc=False, add_hvdc=False, add_switch=True)

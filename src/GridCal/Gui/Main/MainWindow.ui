@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1431</width>
-    <height>977</height>
+    <width>1182</width>
+    <height>755</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -38,13 +38,13 @@
    </size>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonIconOnly</enum>
+   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
   </property>
   <property name="documentMode">
    <bool>false</bool>
   </property>
   <property name="tabShape">
-   <enum>QTabWidget::Rounded</enum>
+   <enum>QTabWidget::TabShape::Rounded</enum>
   </property>
   <property name="dockNestingEnabled">
    <bool>false</bool>
@@ -69,10 +69,10 @@
     <item row="3" column="0">
      <widget class="QFrame" name="progress_frame">
       <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+       <enum>QFrame::Shape::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Shadow::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
        <item row="2" column="3">
@@ -182,16 +182,16 @@ QProgressBar::chunk{
            </font>
           </property>
           <property name="tabPosition">
-           <enum>QTabWidget::South</enum>
+           <enum>QTabWidget::TabPosition::South</enum>
           </property>
           <property name="tabShape">
-           <enum>QTabWidget::Rounded</enum>
+           <enum>QTabWidget::TabShape::Rounded</enum>
           </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
           <property name="elideMode">
-           <enum>Qt::ElideNone</enum>
+           <enum>Qt::TextElideMode::ElideNone</enum>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -220,10 +220,10 @@ QProgressBar::chunk{
             <item>
              <widget class="QFrame" name="frame_6">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_5">
                <property name="leftMargin">
@@ -241,7 +241,7 @@ QProgressBar::chunk{
                <item>
                 <widget class="QSplitter" name="diagram_selection_splitter">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                  <widget class="QFrame" name="schematic_frame">
                   <property name="sizePolicy">
@@ -251,10 +251,10 @@ QProgressBar::chunk{
                    </sizepolicy>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_3">
                    <property name="leftMargin">
@@ -282,10 +282,10 @@ QProgressBar::chunk{
                    </size>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_2">
                    <property name="leftMargin">
@@ -308,7 +308,7 @@ QProgressBar::chunk{
                       </font>
                      </property>
                      <property name="tabPosition">
-                      <enum>QTabWidget::North</enum>
+                      <enum>QTabWidget::TabPosition::North</enum>
                      </property>
                      <property name="currentIndex">
                       <number>0</number>
@@ -345,7 +345,7 @@ QProgressBar::chunk{
                           <string>List of available diagrams</string>
                          </property>
                          <property name="frameShape">
-                          <enum>QFrame::NoFrame</enum>
+                          <enum>QFrame::Shape::NoFrame</enum>
                          </property>
                         </widget>
                        </item>
@@ -375,7 +375,7 @@ QProgressBar::chunk{
                        <item>
                         <widget class="QTreeView" name="combinationsTreeView">
                          <property name="frameShape">
-                          <enum>QFrame::NoFrame</enum>
+                          <enum>QFrame::Shape::NoFrame</enum>
                          </property>
                         </widget>
                        </item>
@@ -405,10 +405,10 @@ QProgressBar::chunk{
                        <item>
                         <widget class="QFrame" name="frame_58">
                          <property name="frameShape">
-                          <enum>QFrame::NoFrame</enum>
+                          <enum>QFrame::Shape::NoFrame</enum>
                          </property>
                          <property name="frameShadow">
-                          <enum>QFrame::Raised</enum>
+                          <enum>QFrame::Shadow::Raised</enum>
                          </property>
                          <layout class="QGridLayout" name="gridLayout">
                           <property name="leftMargin">
@@ -513,10 +513,10 @@ QProgressBar::chunk{
                           <item row="25" column="0" colspan="2">
                            <widget class="QFrame" name="frame_30">
                             <property name="frameShape">
-                             <enum>QFrame::NoFrame</enum>
+                             <enum>QFrame::Shape::NoFrame</enum>
                             </property>
                             <property name="frameShadow">
-                             <enum>QFrame::Raised</enum>
+                             <enum>QFrame::Shadow::Raised</enum>
                             </property>
                             <layout class="QHBoxLayout" name="horizontalLayout_18">
                              <property name="leftMargin">
@@ -604,7 +604,7 @@ QProgressBar::chunk{
                                 <string>Export</string>
                                </property>
                                <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
                                </property>
                               </widget>
                              </item>
@@ -659,10 +659,10 @@ QProgressBar::chunk{
                           <item row="10" column="0" colspan="2">
                            <widget class="QFrame" name="frame_39">
                             <property name="frameShape">
-                             <enum>QFrame::NoFrame</enum>
+                             <enum>QFrame::Shape::NoFrame</enum>
                             </property>
                             <property name="frameShadow">
-                             <enum>QFrame::Raised</enum>
+                             <enum>QFrame::Shadow::Raised</enum>
                             </property>
                             <layout class="QFormLayout" name="formLayout_3">
                              <property name="leftMargin">
@@ -747,7 +747,7 @@ QProgressBar::chunk{
                                 <string>Schematic</string>
                                </property>
                                <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
                                </property>
                               </widget>
                              </item>
@@ -769,10 +769,10 @@ QProgressBar::chunk{
                           <item row="16" column="0" colspan="2">
                            <widget class="QFrame" name="frame_22">
                             <property name="frameShape">
-                             <enum>QFrame::NoFrame</enum>
+                             <enum>QFrame::Shape::NoFrame</enum>
                             </property>
                             <property name="frameShadow">
-                             <enum>QFrame::Raised</enum>
+                             <enum>QFrame::Shadow::Raised</enum>
                             </property>
                             <layout class="QHBoxLayout" name="horizontalLayout_15">
                              <property name="leftMargin">
@@ -860,7 +860,7 @@ QProgressBar::chunk{
                                 <string>Map</string>
                                </property>
                                <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
                                </property>
                               </widget>
                              </item>
@@ -870,7 +870,7 @@ QProgressBar::chunk{
                           <item row="28" column="1">
                            <spacer name="verticalSpacer">
                             <property name="orientation">
-                             <enum>Qt::Vertical</enum>
+                             <enum>Qt::Orientation::Vertical</enum>
                             </property>
                             <property name="sizeHint" stdset="0">
                              <size>
@@ -1103,10 +1103,10 @@ QProgressBar::chunk{
                           <item row="0" column="0" colspan="2">
                            <widget class="QFrame" name="frame_3">
                             <property name="frameShape">
-                             <enum>QFrame::NoFrame</enum>
+                             <enum>QFrame::Shape::NoFrame</enum>
                             </property>
                             <property name="frameShadow">
-                             <enum>QFrame::Raised</enum>
+                             <enum>QFrame::Shadow::Raised</enum>
                             </property>
                             <layout class="QFormLayout" name="formLayout_2">
                              <property name="leftMargin">
@@ -1191,7 +1191,7 @@ QProgressBar::chunk{
                                 <string>General</string>
                                </property>
                                <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
                                </property>
                               </widget>
                              </item>
@@ -1284,10 +1284,10 @@ QProgressBar::chunk{
                    <item>
                     <widget class="QFrame" name="grid_colouring_frame">
                      <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
+                      <enum>QFrame::Shape::NoFrame</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
+                      <enum>QFrame::Shadow::Raised</enum>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_31">
                       <property name="leftMargin">
@@ -1313,7 +1313,7 @@ QProgressBar::chunk{
                          <string>Snapshot</string>
                         </property>
                         <property name="alignment">
-                         <set>Qt::AlignCenter</set>
+                         <set>Qt::AlignmentFlag::AlignCenter</set>
                         </property>
                        </widget>
                       </item>
@@ -1361,7 +1361,7 @@ QProgressBar::chunk{
                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                         </property>
                         <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                         <enum>Qt::Orientation::Horizontal</enum>
                         </property>
                        </widget>
                       </item>
@@ -1401,14 +1401,14 @@ QProgressBar::chunk{
             <item>
              <widget class="QSplitter" name="dataStructuresSplitter">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <widget class="QFrame" name="frame_26">
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_27">
                 <property name="topMargin">
@@ -1431,10 +1431,10 @@ QProgressBar::chunk{
               </widget>
               <widget class="QFrame" name="frame_38">
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_26">
                 <property name="leftMargin">
@@ -1452,7 +1452,7 @@ QProgressBar::chunk{
                 <item>
                  <widget class="QTabWidget" name="tabWidget_5">
                   <property name="tabPosition">
-                   <enum>QTabWidget::East</enum>
+                   <enum>QTabWidget::TabPosition::East</enum>
                   </property>
                   <property name="currentIndex">
                    <number>0</number>
@@ -1490,10 +1490,10 @@ QProgressBar::chunk{
                        </size>
                       </property>
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::Shape::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <layout class="QHBoxLayout" name="horizontalLayout_28">
                        <property name="leftMargin">
@@ -1538,7 +1538,7 @@ QProgressBar::chunk{
                        <item>
                         <spacer name="horizontalSpacer_2">
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
@@ -1577,10 +1577,10 @@ QProgressBar::chunk{
                     <item>
                      <widget class="QFrame" name="frame_9">
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::Shape::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <layout class="QHBoxLayout" name="horizontalLayout_25">
                        <property name="leftMargin">
@@ -1615,7 +1615,7 @@ QProgressBar::chunk{
                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Time slider&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Move this time slider to select the appropriate time slot to view.&lt;/p&gt;&lt;p&gt;The first position sets the snapshot values, the rest attend to the time series values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                          </property>
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                         </widget>
                        </item>
@@ -1636,14 +1636,14 @@ QProgressBar::chunk{
                           <string>Snapshot</string>
                          </property>
                          <property name="alignment">
-                          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
                          </property>
                         </widget>
                        </item>
                        <item>
                         <spacer name="horizontalSpacer_9">
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
@@ -1716,10 +1716,10 @@ QProgressBar::chunk{
                        </size>
                       </property>
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::Shape::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Plain</enum>
+                       <enum>QFrame::Shadow::Plain</enum>
                       </property>
                       <layout class="QHBoxLayout" name="horizontalLayout_9">
                        <property name="leftMargin">
@@ -1754,7 +1754,7 @@ QProgressBar::chunk{
                        <item>
                         <spacer name="horizontalSpacer_8">
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
@@ -1770,10 +1770,10 @@ QProgressBar::chunk{
                     <item>
                      <widget class="QFrame" name="frame_20">
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::Shape::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_14">
                        <property name="leftMargin">
@@ -1826,10 +1826,10 @@ QProgressBar::chunk{
                     <item>
                      <widget class="QFrame" name="frame">
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::Shape::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <layout class="QHBoxLayout" name="horizontalLayout">
                        <property name="leftMargin">
@@ -1922,7 +1922,7 @@ QProgressBar::chunk{
                        <item>
                         <spacer name="horizontalSpacer">
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
@@ -1957,23 +1957,23 @@ QProgressBar::chunk{
                        </font>
                       </property>
                       <property name="layoutDirection">
-                       <enum>Qt::LeftToRight</enum>
+                       <enum>Qt::LayoutDirection::LeftToRight</enum>
                       </property>
                       <property name="alternatingRowColors">
                        <bool>true</bool>
                       </property>
                       <property name="selectionMode">
-                       <enum>QAbstractItemView::ContiguousSelection</enum>
+                       <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
                       </property>
                      </widget>
                     </item>
                     <item>
                      <widget class="QFrame" name="frame_12">
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::Shape::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <layout class="QHBoxLayout" name="horizontalLayout_4">
                        <property name="leftMargin">
@@ -2049,7 +2049,7 @@ QProgressBar::chunk{
                        <item>
                         <spacer name="horizontalSpacer_13">
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
@@ -2179,14 +2179,14 @@ QProgressBar::chunk{
             <item>
              <widget class="QSplitter" name="simulationDataSplitter">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <widget class="QFrame" name="frame_28">
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_19">
                 <property name="rightMargin">
@@ -2246,10 +2246,10 @@ QProgressBar::chunk{
               </widget>
               <widget class="QFrame" name="frame_29">
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_23">
                 <property name="leftMargin">
@@ -2264,7 +2264,7 @@ QProgressBar::chunk{
                 <item row="0" column="5">
                  <spacer name="horizontalSpacer_23">
                   <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
+                   <enum>Qt::Orientation::Horizontal</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
@@ -2383,10 +2383,10 @@ QProgressBar::chunk{
         <item>
          <widget class="QFrame" name="frame_33">
           <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
+           <enum>QFrame::Shape::NoFrame</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_28">
            <property name="leftMargin">
@@ -2404,18 +2404,18 @@ QProgressBar::chunk{
            <item>
             <widget class="QSplitter" name="results_splitter">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <widget class="QSplitter" name="splitter">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <widget class="QFrame" name="frame_61">
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_10">
                 <property name="topMargin">
@@ -2434,10 +2434,10 @@ QProgressBar::chunk{
                 <item>
                  <widget class="QFrame" name="frame_62">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_34">
                    <property name="leftMargin">
@@ -2505,7 +2505,7 @@ QProgressBar::chunk{
                    <item>
                     <spacer name="horizontalSpacer_22">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -2536,10 +2536,10 @@ QProgressBar::chunk{
               </widget>
               <widget class="QFrame" name="frame_14">
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_6">
                 <property name="rightMargin">
@@ -2555,10 +2555,10 @@ QProgressBar::chunk{
                 <item>
                  <widget class="QFrame" name="frame_60">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_33">
                    <property name="leftMargin">
@@ -2620,7 +2620,7 @@ QProgressBar::chunk{
                    <item>
                     <spacer name="horizontalSpacer_21">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -2652,7 +2652,7 @@ QProgressBar::chunk{
              </widget>
              <widget class="QTabWidget" name="tabWidget_4">
               <property name="tabPosition">
-               <enum>QTabWidget::East</enum>
+               <enum>QTabWidget::TabPosition::East</enum>
               </property>
               <property name="currentIndex">
                <number>0</number>
@@ -2684,10 +2684,10 @@ QProgressBar::chunk{
                 <item>
                  <widget class="QFrame" name="frame_16">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_23">
                    <property name="leftMargin">
@@ -2708,10 +2708,10 @@ QProgressBar::chunk{
                 <item>
                  <widget class="QFrame" name="frame_5">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_24">
                    <property name="leftMargin">
@@ -2737,20 +2737,20 @@ QProgressBar::chunk{
                       <bool>true</bool>
                      </property>
                      <property name="selectionMode">
-                      <enum>QAbstractItemView::ExtendedSelection</enum>
+                      <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
                      </property>
                      <property name="selectionBehavior">
-                      <enum>QAbstractItemView::SelectItems</enum>
+                      <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
                      </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QFrame" name="frame_8">
                      <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
+                      <enum>QFrame::Shape::NoFrame</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
+                      <enum>QFrame::Shadow::Raised</enum>
                      </property>
                      <layout class="QHBoxLayout" name="horizontalLayout_2">
                       <property name="leftMargin">
@@ -2789,7 +2789,7 @@ QProgressBar::chunk{
                       <item>
                        <spacer name="horizontalSpacer_20">
                         <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                         <enum>Qt::Orientation::Horizontal</enum>
                         </property>
                         <property name="sizeHint" stdset="0">
                          <size>
@@ -2955,17 +2955,17 @@ QProgressBar::chunk{
                    </font>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                   <enum>QFrame::Shape::StyledPanel</enum>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QFrame" name="frame_56">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_5">
                    <property name="leftMargin">
@@ -2983,7 +2983,7 @@ QProgressBar::chunk{
                    <item>
                     <spacer name="horizontalSpacer_16">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -3044,10 +3044,10 @@ QProgressBar::chunk{
         <item>
          <widget class="QFrame" name="frame_10">
           <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
+           <enum>QFrame::Shape::NoFrame</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_34">
            <property name="leftMargin">
@@ -3065,14 +3065,14 @@ QProgressBar::chunk{
            <item>
             <widget class="QSplitter" name="splitter_4">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <widget class="QFrame" name="frame_11">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_35">
                <property name="leftMargin">
@@ -3090,10 +3090,10 @@ QProgressBar::chunk{
                <item>
                 <widget class="QFrame" name="frame_55">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_3">
                   <property name="leftMargin">
@@ -3177,7 +3177,7 @@ QProgressBar::chunk{
                <item>
                 <widget class="QPlainTextEdit" name="sourceCodeTextEdit">
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                 </widget>
                </item>
@@ -3185,14 +3185,14 @@ QProgressBar::chunk{
              </widget>
              <widget class="QSplitter" name="console_splitter">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <widget class="QFrame" name="frame_53">
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_32">
                 <property name="leftMargin">
@@ -3210,7 +3210,7 @@ QProgressBar::chunk{
                 <item>
                  <widget class="QTabWidget" name="tabWidget_2">
                   <property name="tabPosition">
-                   <enum>QTabWidget::East</enum>
+                   <enum>QTabWidget::TabPosition::East</enum>
                   </property>
                   <property name="currentIndex">
                    <number>0</number>
@@ -3271,7 +3271,7 @@ QProgressBar::chunk{
                     <item>
                      <widget class="QTreeView" name="sourceCodeTreeView">
                       <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
+                       <enum>QFrame::Shape::StyledPanel</enum>
                       </property>
                      </widget>
                     </item>
@@ -3313,19 +3313,19 @@ QProgressBar::chunk{
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
+           <enum>QFrame::Shape::NoFrame</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_12">
            <item>
             <widget class="QFrame" name="frame_41">
              <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
+              <enum>QFrame::Shape::NoFrame</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_13">
               <property name="leftMargin">
@@ -3413,7 +3413,7 @@ QProgressBar::chunk{
                  <string>General settings</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                 <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                 </property>
                </widget>
               </item>
@@ -3460,23 +3460,23 @@ QProgressBar::chunk{
               </palette>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
+              <enum>QFrame::Shadow::Plain</enum>
              </property>
              <property name="lineWidth">
               <number>4</number>
              </property>
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QFrame" name="frame_25">
              <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
+              <enum>QFrame::Shape::NoFrame</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_17">
               <property name="spacing">
@@ -3613,10 +3613,10 @@ QProgressBar::chunk{
               <item>
                <widget class="QFrame" name="frame_43">
                 <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
+                 <enum>QFrame::Shape::NoFrame</enum>
                 </property>
                 <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
+                 <enum>QFrame::Shadow::Raised</enum>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_23">
                  <property name="leftMargin">
@@ -3704,7 +3704,7 @@ QProgressBar::chunk{
                     <string>Engine</string>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                    <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                    </property>
                   </widget>
                  </item>
@@ -3733,10 +3733,10 @@ QProgressBar::chunk{
               <item>
                <widget class="QFrame" name="frame_37">
                 <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
+                 <enum>QFrame::Shape::NoFrame</enum>
                 </property>
                 <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
+                 <enum>QFrame::Shadow::Raised</enum>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_19">
                  <property name="leftMargin">
@@ -3824,7 +3824,7 @@ QProgressBar::chunk{
                     <string>Plotting</string>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                    <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                    </property>
                   </widget>
                  </item>
@@ -3849,7 +3849,7 @@ QProgressBar::chunk{
            <item>
             <spacer name="verticalSpacer_3">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -3891,7 +3891,7 @@ QProgressBar::chunk{
            <bool>false</bool>
           </property>
           <property name="tabPosition">
-           <enum>QTabWidget::South</enum>
+           <enum>QTabWidget::TabPosition::South</enum>
           </property>
           <property name="currentIndex">
            <number>0</number>
@@ -3903,7 +3903,7 @@ QProgressBar::chunk{
            </size>
           </property>
           <property name="elideMode">
-           <enum>Qt::ElideNone</enum>
+           <enum>Qt::TextElideMode::ElideNone</enum>
           </property>
           <property name="usesScrollButtons">
            <bool>false</bool>
@@ -4005,7 +4005,7 @@ QProgressBar::chunk{
                <string>Power flow</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
               </property>
              </widget>
             </item>
@@ -4049,23 +4049,23 @@ QProgressBar::chunk{
                </palette>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
+               <enum>QFrame::Shadow::Plain</enum>
               </property>
               <property name="lineWidth">
                <number>4</number>
               </property>
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
              </widget>
             </item>
             <item row="2" column="0" colspan="3">
              <widget class="QFrame" name="frame_19">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_22">
                <item row="0" column="0">
@@ -4083,7 +4083,7 @@ QProgressBar::chunk{
                <item row="13" column="0">
                 <spacer name="verticalSpacer_10">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -4277,7 +4277,7 @@ QProgressBar::chunk{
             <item row="2" column="6">
              <spacer name="horizontalSpacer_5">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -4360,7 +4360,7 @@ QProgressBar::chunk{
                <string>PTDF / LODF</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
               </property>
              </widget>
             </item>
@@ -4404,23 +4404,23 @@ QProgressBar::chunk{
                </palette>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
+               <enum>QFrame::Shadow::Plain</enum>
               </property>
               <property name="lineWidth">
                <number>4</number>
               </property>
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
              </widget>
             </item>
             <item row="2" column="4" colspan="2">
              <widget class="QFrame" name="frame_32">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_14">
                <property name="topMargin">
@@ -4513,7 +4513,7 @@ QProgressBar::chunk{
                <item row="8" column="0">
                 <spacer name="verticalSpacer_12">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -4526,10 +4526,10 @@ QProgressBar::chunk{
                <item row="0" column="0" colspan="2">
                 <widget class="QFrame" name="frame_42">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_14">
                   <property name="leftMargin">
@@ -4596,10 +4596,10 @@ QProgressBar::chunk{
             <item row="2" column="3">
              <widget class="QFrame" name="frame_36">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
+               <enum>QFrame::Shadow::Plain</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
                <item>
@@ -4806,7 +4806,7 @@ QProgressBar::chunk{
                <item>
                 <spacer name="verticalSpacer_14">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -4839,10 +4839,10 @@ QProgressBar::chunk{
             <item>
              <widget class="QFrame" name="frame_21">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_2">
                <property name="topMargin">
@@ -4954,13 +4954,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -5078,10 +5078,10 @@ QProgressBar::chunk{
                <item row="0" column="0" colspan="3">
                 <widget class="QFrame" name="frame_44">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_16">
                   <property name="leftMargin">
@@ -5169,7 +5169,7 @@ QProgressBar::chunk{
                      <string>Continuation power flow</string>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                     <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                     </property>
                    </widget>
                   </item>
@@ -5206,7 +5206,7 @@ QProgressBar::chunk{
                <item row="16" column="0" colspan="3">
                 <spacer name="verticalSpacer_7">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -5222,7 +5222,7 @@ QProgressBar::chunk{
             <item>
              <spacer name="horizontalSpacer_24">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -5264,7 +5264,7 @@ QProgressBar::chunk{
                <item row="8" column="0">
                 <spacer name="verticalSpacer_21">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -5462,7 +5462,7 @@ QProgressBar::chunk{
             <item row="3" column="5">
              <spacer name="horizontalSpacer_10">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -5584,7 +5584,7 @@ QProgressBar::chunk{
                <item row="10" column="0">
                 <spacer name="verticalSpacer_18">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -5713,7 +5713,7 @@ QProgressBar::chunk{
                <string>Optimal Power Flow</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
               </property>
              </widget>
             </item>
@@ -5757,13 +5757,13 @@ QProgressBar::chunk{
                </palette>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
+               <enum>QFrame::Shadow::Plain</enum>
               </property>
               <property name="lineWidth">
                <number>4</number>
               </property>
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -5808,7 +5808,7 @@ QProgressBar::chunk{
                <item row="7" column="0">
                 <spacer name="verticalSpacer_5">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -6077,7 +6077,7 @@ QProgressBar::chunk{
                <item row="12" column="1">
                 <spacer name="verticalSpacer_23">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -6253,7 +6253,7 @@ QProgressBar::chunk{
                <item row="5" column="0">
                 <spacer name="verticalSpacer_22">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -6357,13 +6357,13 @@ QProgressBar::chunk{
                </palette>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
+               <enum>QFrame::Shadow::Plain</enum>
               </property>
               <property name="lineWidth">
                <number>4</number>
               </property>
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -6395,7 +6395,7 @@ QProgressBar::chunk{
             <item row="2" column="4" rowspan="2">
              <spacer name="horizontalSpacer_6">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -6425,7 +6425,7 @@ QProgressBar::chunk{
                <item row="3" column="0">
                 <spacer name="verticalSpacer_24">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -6638,7 +6638,7 @@ QProgressBar::chunk{
                <item row="4" column="0">
                 <spacer name="verticalSpacer_6">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -6723,13 +6723,13 @@ QProgressBar::chunk{
                </palette>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
+               <enum>QFrame::Shadow::Plain</enum>
               </property>
               <property name="lineWidth">
                <number>4</number>
               </property>
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -6788,7 +6788,7 @@ QProgressBar::chunk{
             <item row="2" column="2">
              <spacer name="horizontalSpacer_4">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -6818,10 +6818,10 @@ QProgressBar::chunk{
             <item>
              <widget class="QFrame" name="frame_40">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_4">
                <item row="1" column="0" colspan="2">
@@ -6864,13 +6864,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -6951,14 +6951,14 @@ QProgressBar::chunk{
                <item row="2" column="0" colspan="2">
                 <widget class="QSplitter" name="splitter_2">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                  <widget class="QFrame" name="frame_34">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_9">
                    <item row="0" column="0">
@@ -6989,10 +6989,10 @@ QProgressBar::chunk{
                  </widget>
                  <widget class="QFrame" name="frame_35">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_30">
                    <item row="0" column="0">
@@ -7046,10 +7046,10 @@ QProgressBar::chunk{
             <item>
              <widget class="QFrame" name="frame_76">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_28">
                <property name="topMargin">
@@ -7058,10 +7058,10 @@ QProgressBar::chunk{
                <item row="3" column="2" rowspan="15">
                 <widget class="QFrame" name="frame_4">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QFormLayout" name="formLayout">
                   <item row="0" column="0" colspan="2">
@@ -7127,10 +7127,10 @@ QProgressBar::chunk{
                <item row="3" column="0" colspan="2">
                 <widget class="QFrame" name="frame_13">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_25">
                   <item row="7" column="0">
@@ -7333,7 +7333,7 @@ QProgressBar::chunk{
                   <item row="10" column="0">
                    <spacer name="verticalSpacer_19">
                     <property name="orientation">
-                     <enum>Qt::Vertical</enum>
+                     <enum>Qt::Orientation::Vertical</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -7358,10 +7358,10 @@ QProgressBar::chunk{
                <item row="0" column="0" colspan="2">
                 <widget class="QFrame" name="frame_78">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_41">
                   <property name="leftMargin">
@@ -7449,7 +7449,7 @@ QProgressBar::chunk{
                      <string>Contingencies</string>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                     <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                     </property>
                    </widget>
                   </item>
@@ -7459,7 +7459,7 @@ QProgressBar::chunk{
                <item row="3" column="3">
                 <spacer name="horizontalSpacer_28">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -7509,13 +7509,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -7542,10 +7542,10 @@ QProgressBar::chunk{
             <item>
              <widget class="QFrame" name="frame_18">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_21">
                <property name="topMargin">
@@ -7598,13 +7598,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -7656,7 +7656,7 @@ QProgressBar::chunk{
                   <string>Investment evaluation</string>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                  </property>
                 </widget>
                </item>
@@ -7700,13 +7700,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -7785,7 +7785,7 @@ QProgressBar::chunk{
                   <string>Node grouping</string>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                  </property>
                 </widget>
                </item>
@@ -7924,10 +7924,10 @@ QProgressBar::chunk{
                <item row="8" column="1">
                 <widget class="QFrame" name="frame_59">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_32">
                   <property name="leftMargin">
@@ -7990,7 +7990,7 @@ QProgressBar::chunk{
                      <string>Clustering</string>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                     <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                     </property>
                    </widget>
                   </item>
@@ -8085,7 +8085,7 @@ QProgressBar::chunk{
                <item row="33" column="1">
                 <spacer name="verticalSpacer_16">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -8147,13 +8147,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -8249,10 +8249,10 @@ QProgressBar::chunk{
                </size>
               </property>
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
                <property name="topMargin">
@@ -8352,7 +8352,7 @@ QProgressBar::chunk{
                   <string>Cascading</string>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                  </property>
                 </widget>
                </item>
@@ -8428,7 +8428,7 @@ QProgressBar::chunk{
                   <string>Stochastic power flow</string>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                  <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                  </property>
                 </widget>
                </item>
@@ -8472,13 +8472,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -8529,13 +8529,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -8560,7 +8560,7 @@ QProgressBar::chunk{
                <item row="12" column="1">
                 <spacer name="verticalSpacer_8">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -8652,7 +8652,7 @@ QProgressBar::chunk{
             <item>
              <spacer name="horizontalSpacer_3">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -8682,7 +8682,7 @@ QProgressBar::chunk{
             <item row="0" column="2">
              <spacer name="horizontalSpacer_18">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -8695,10 +8695,10 @@ QProgressBar::chunk{
             <item row="0" column="0">
              <widget class="QFrame" name="frame_27">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_21">
                <property name="topMargin">
@@ -8707,10 +8707,10 @@ QProgressBar::chunk{
                <item>
                 <widget class="QFrame" name="frame_48">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_20">
                   <property name="leftMargin">
@@ -8798,7 +8798,7 @@ QProgressBar::chunk{
                      <string>Grid reduction</string>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                     <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                     </property>
                    </widget>
                   </item>
@@ -8845,13 +8845,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -8912,7 +8912,7 @@ QProgressBar::chunk{
                <item>
                 <spacer name="verticalSpacer_11">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -8928,10 +8928,10 @@ QProgressBar::chunk{
             <item row="0" column="1">
              <widget class="QFrame" name="frame_31">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_25">
                <property name="topMargin">
@@ -8940,10 +8940,10 @@ QProgressBar::chunk{
                <item>
                 <widget class="QFrame" name="frame_50">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_22">
                   <property name="leftMargin">
@@ -9031,7 +9031,7 @@ QProgressBar::chunk{
                      <string>Branch rating</string>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                     <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
                     </property>
                    </widget>
                   </item>
@@ -9078,23 +9078,23 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QFrame" name="frame_23">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_15">
                   <item>
@@ -9151,7 +9151,7 @@ QProgressBar::chunk{
                <item>
                 <spacer name="verticalSpacer_15">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -9190,17 +9190,14 @@ QProgressBar::chunk{
                </size>
               </property>
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_11">
-               <item row="10" column="1">
-                <widget class="QComboBox" name="raw_export_version_comboBox"/>
-               </item>
-               <item row="4" column="0" colspan="2">
-                <widget class="QLabel" name="model_version_label">
+               <item row="5" column="0" colspan="2">
+                <widget class="QLabel" name="user_name_label">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -9211,52 +9208,24 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
-                <widget class="QLabel" name="label_131">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>85</red>
-                       <green>87</green>
-                       <blue>83</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>0</red>
-                       <green>0</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
+               <item row="10" column="1">
+                <widget class="QComboBox" name="raw_export_version_comboBox"/>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QLabel" name="file_information_label">
                  <property name="font">
                   <font>
-                   <pointsize>16</pointsize>
+                   <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Raw files</string>
+                  <string>...</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                 <property name="textInteractionFlags">
+                  <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextSelectableByKeyboard|Qt::TextInteractionFlag::TextSelectableByMouse</set>
                  </property>
                 </widget>
                </item>
@@ -9282,100 +9251,6 @@ QProgressBar::chunk{
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="QLabel" name="label_39">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>File path</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_136">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/new2c.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="2">
-                <widget class="QLabel" name="file_information_label">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                 <property name="textInteractionFlags">
-                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0" colspan="2">
-                <widget class="QLabel" name="user_name_label">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0" colspan="2">
-                <widget class="QCheckBox" name="saveResultsCheckBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>If checked, the results are stored inside the gridcal file in a compressed format.</string>
-                 </property>
-                 <property name="text">
-                  <string>Save results in .gridcal files</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="label_112">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Export version</string>
                  </property>
                 </widget>
                </item>
@@ -9428,66 +9303,15 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="11" column="1">
-                <spacer name="verticalSpacer_20">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+               <item row="4" column="0" colspan="2">
+                <widget class="QLabel" name="model_version_label">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>436</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="1" column="0" colspan="2">
-                <widget class="Line" name="line_28">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                 <property name="text">
+                  <string>...</string>
                  </property>
                 </widget>
                </item>
@@ -9531,20 +9355,196 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <widget class="QCheckBox" name="saveResultsCheckBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>If checked, the results are stored inside the gridcal file in a compressed format.</string>
+                 </property>
+                 <property name="text">
+                  <string>Save results in .gridcal files</string>
                  </property>
                 </widget>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="label_24">
+                <widget class="QLabel" name="label_155">
                  <property name="text">
                   <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="2">
+                <widget class="Line" name="line_28">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="1">
+                <spacer name="verticalSpacer_20">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>436</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_136">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/new2c.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QLabel" name="label_131">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>0</red>
+                       <green>0</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Raw files</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="QLabel" name="label_112">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Export version</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="2">
+                <widget class="QLabel" name="label_39">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>File path</string>
                  </property>
                 </widget>
                </item>
@@ -9560,10 +9560,10 @@ QProgressBar::chunk{
                </size>
               </property>
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_5">
                <item row="1" column="0" colspan="3">
@@ -9606,13 +9606,13 @@ QProgressBar::chunk{
                   </palette>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>4</number>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -9835,7 +9835,7 @@ QProgressBar::chunk{
             <item>
              <spacer name="horizontalSpacer_27">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -9871,10 +9871,10 @@ QProgressBar::chunk{
             <item>
              <widget class="QFrame" name="frame_2">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_8">
                <property name="leftMargin">
@@ -9966,14 +9966,14 @@ QProgressBar::chunk{
                   <string>Type here the GridCal server password (ask your IT team)</string>
                  </property>
                  <property name="echoMode">
-                  <enum>QLineEdit::Password</enum>
+                  <enum>QLineEdit::EchoMode::Password</enum>
                  </property>
                 </widget>
                </item>
                <item>
                 <spacer name="horizontalSpacer_7">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -10013,8 +10013,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1431</width>
-     <height>24</height>
+     <width>1182</width>
+     <height>20</height>
     </rect>
    </property>
    <property name="font">
@@ -10206,7 +10206,7 @@ QProgressBar::chunk{
     </size>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonIconOnly</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -10341,7 +10341,7 @@ QProgressBar::chunk{
     <string>F5</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::TextHeuristicRole</enum>
+    <enum>QAction::MenuRole::TextHeuristicRole</enum>
    </property>
   </action>
   <action name="actionPower_Flow_Time_series">
@@ -11396,7 +11396,7 @@ QProgressBar::chunk{
     </font>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionUse_clustering">
