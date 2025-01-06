@@ -488,8 +488,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                  Qmin: Vec, Qmax: Vec,
                  nc: NumericalCircuit,
                  options: PowerFlowOptions,
-                 logger: Logger,
-                 consider_hvdc_lines: bool = True):
+                 logger: Logger):
         """
         Constructor
         :param V0: Initial voltage solution
@@ -506,8 +505,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.nc: NumericalCircuit = nc
 
         self.logger: Logger = logger
-
-        self.consider_hvdc_lines = consider_hvdc_lines
 
         self.S0: CxVec = S0
         self.I0: CxVec = I0
@@ -566,8 +563,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC Indices
         self.hvdc_droop_idx = np.zeros(0, dtype=int)
-        if self.consider_hvdc_lines:
-            self._analyze_hvdc_controls()
+        self._analyze_hvdc_controls()
 
         # Bus indices
         self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
@@ -2337,10 +2333,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: Residual vector
         """
 
-        if self.consider_hvdc_lines:
-            nhvdc = self.nc.hvdc_data.nelm
-        else:
-            nhvdc = 0
+        nhvdc = self.nc.hvdc_data.nelm
 
         a = len(self.i_u_va)
         b = a + len(self.i_u_vm)
@@ -2868,18 +2861,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_angles = expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0)
 
             # HVDC
-            if self.consider_hvdc_lines:
-                nhvdc = self.nc.hvdc_data.nelm
+            nhvdc = self.nc.hvdc_data.nelm
 
-                hvdc_r_pu = self.nc.hvdc_data.r / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase)
+            hvdc_r_pu = self.nc.hvdc_data.r / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase)
 
-                hvdc_droop_redone = np.zeros(self.nc.hvdc_data.nelm, dtype=float)
-                if len(self.hvdc_droop_idx) > 0:
-                    hvdc_droop_redone[self.hvdc_droop_idx] = self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx]
-            else:
-                nhvdc = 0
-                hvdc_r_pu = np.zeros(0, dtype=float)
-                hvdc_droop_redone = np.zeros(0, dtype=float)
+            hvdc_droop_redone = np.zeros(self.nc.hvdc_data.nelm, dtype=float)
+            if len(self.hvdc_droop_idx) > 0:
+                hvdc_droop_redone[self.hvdc_droop_idx] = self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx]
 
             assert isspmatrix_csc(self.Ybus)
 

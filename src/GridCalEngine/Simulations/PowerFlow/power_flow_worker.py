@@ -30,18 +30,8 @@ from GridCalEngine.basic_structures import CxVec, Vec
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Compilers.circuit_to_data import VALID_OPF_RESULTS
 
-"""
-multi_island_pf
-  |-> multi_island_pf_nc
-            |-> split_into_islands  (Deals with HvdcLine injections)
-                    |-> for each island:
-                            |-> single_island_pf
-                                    |-> solve
 
-"""
-
-
-def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: PowerFlowResults) -> None:
+def __split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: PowerFlowResults) -> None:
     """
     This function splits the reactive power of the power flow solution (nbus) into reactive power per device that
     is able to control reactive power as an injection (generators, batteries, shunts)
@@ -77,15 +67,241 @@ def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: 
     results.shunt_q = Qvar[bus_idx_sh] * sh_q_share
 
 
-def solve(nc: NumericalCircuit,
-          indices: SimulationIndices,
-          options: PowerFlowOptions,
-          V0: CxVec,
-          S_base: CxVec,
-          Shvdc: CxVec,
-          logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
+def __solve_island_complete_support(nc: NumericalCircuit,
+                                    indices: SimulationIndices,
+                                    options: PowerFlowOptions,
+                                    V0: CxVec,
+                                    S_base: CxVec,
+                                    logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
+    This routine supports all controls, VSC's and Hvdc links
+    Does not require grids to be split by HvdcLines
+    :param nc: SnapshotData circuit, this ensures on-demand admittances computation
+    :param indices: SimulationIndices
+    :param options: PowerFlow options
+    :param V0: Array of initial voltages
+    :param S_base: Array of power Injections
+    :param logger: Logger
+    :return: NumericPowerFlowResults
+    """
+    report = ConvergenceReport()
+    if options.retry_with_other_methods:
+        if nc.active_branch_data.any_pf_control:
+            solver_list = [SolverType.NR,
+                           SolverType.PowellDogLeg,
+                           SolverType.LM]
+        else:
+            solver_list = [SolverType.NR,
+                           SolverType.PowellDogLeg,
+                           SolverType.HELM,
+                           SolverType.IWAMOTO,
+                           SolverType.LM,
+                           SolverType.LACPF]
+
+        if options.solver_type in solver_list:
+            solver_list.remove(options.solver_type)
+
+        solvers = [options.solver_type] + solver_list
+    else:
+        # No retry selected
+        solvers = [options.solver_type]
+
+    # set worked = false to enter the loop
+    solver_idx = 0
+
+    # set the initial value
+    Qmax, Qmin = nc.get_reactive_power_limits()
+    I0 = nc.get_current_injections_pu()
+    Y0 = nc.get_admittance_injections_pu()
+
+    if len(indices.vd) == 0:
+        solution = NumericPowerFlowResults(V=np.zeros(len(S_base), dtype=complex),
+                                           Scalc=S_base,
+                                           m=nc.active_branch_data.tap_module,
+                                           tau=nc.active_branch_data.tap_angle,
+                                           Sf=np.zeros(nc.nbr, dtype=complex),
+                                           St=np.zeros(nc.nbr, dtype=complex),
+                                           If=np.zeros(nc.nbr, dtype=complex),
+                                           It=np.zeros(nc.nbr, dtype=complex),
+                                           loading=np.zeros(nc.nbr, dtype=complex),
+                                           losses=np.zeros(nc.nbr, dtype=complex),
+                                           Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           converged=False,
+                                           norm_f=1e200,
+                                           iterations=0,
+                                           elapsed=0)
+
+        # method, converged: bool, error: float, elapsed: float, iterations: int
+        report.add(method=SolverType.NoSolver, converged=True, error=0.0, elapsed=0.0, iterations=0)
+        logger.add_error('Not solving power flow because there is no slack bus')
+        return solution
+
+    else:
+
+        adm = nc.get_admittance_matrices()
+
+        final_solution = NumericPowerFlowResults(V=V0,
+                                                 converged=False,
+                                                 norm_f=1e200,
+                                                 Scalc=S_base,
+                                                 m=nc.active_branch_data.tap_module,
+                                                 tau=nc.active_branch_data.tap_angle,
+                                                 Sf=np.zeros(nc.nbr, dtype=complex),
+                                                 St=np.zeros(nc.nbr, dtype=complex),
+                                                 If=np.zeros(nc.nbr, dtype=complex),
+                                                 It=np.zeros(nc.nbr, dtype=complex),
+                                                 loading=np.zeros(nc.nbr, dtype=complex),
+                                                 losses=np.zeros(nc.nbr, dtype=complex),
+                                                 Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                                 If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                                 losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                                 Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 iterations=0,
+                                                 elapsed=0)
+
+        while solver_idx < len(solvers) and not final_solution.converged:
+            # get the solver
+            solver_type = solvers[solver_idx]
+
+            # Levenberg-Marquardt
+            if solver_type == SolverType.LM:
+                # Solve NR with the AC/DC algorithm
+                problem = PfGeneralizedFormulation(V0=final_solution.V,
+                                                   S0=S_base,
+                                                   I0=I0,
+                                                   Y0=Y0,
+                                                   Qmin=Qmin,
+                                                   Qmax=Qmax,
+                                                   nc=nc,
+                                                   options=options,
+                                                   logger=logger)
+
+                solution = levenberg_marquadt_fx(problem=problem,
+                                                 tol=options.tolerance,
+                                                 max_iter=options.max_iter,
+                                                 trust=options.trust_radius,
+                                                 verbose=options.verbose,
+                                                 logger=logger)
+
+            # Newton-Raphson (full, but non-generalized)
+            elif solver_type == SolverType.NR:
+                # Solve NR with the AC/DC algorithm
+                problem = PfGeneralizedFormulation(V0=final_solution.V,
+                                                   S0=S_base,
+                                                   I0=I0,
+                                                   Y0=Y0,
+                                                   Qmin=Qmin,
+                                                   Qmax=Qmax,
+                                                   nc=nc,
+                                                   options=options,
+                                                   logger=logger)
+
+                solution = newton_raphson_fx(problem=problem,
+                                             tol=options.tolerance,
+                                             max_iter=options.max_iter,
+                                             trust=options.trust_radius,
+                                             verbose=options.verbose,
+                                             logger=logger)
+
+            # Powell's Dog Leg (full)
+            elif solver_type == SolverType.PowellDogLeg:
+
+                # Solve NR with the AC/DC algorithm
+                problem = PfGeneralizedFormulation(V0=final_solution.V,
+                                                   S0=S_base,
+                                                   I0=I0,
+                                                   Y0=Y0,
+                                                   Qmin=Qmin,
+                                                   Qmax=Qmax,
+                                                   nc=nc,
+                                                   options=options,
+                                                   logger=logger)
+
+                solution = powell_fx(problem=problem,
+                                     tol=options.tolerance,
+                                     max_iter=options.max_iter,
+                                     trust=options.trust_radius,
+                                     verbose=options.verbose,
+                                     logger=logger)
+
+            else:
+                # for any other method, raise exception
+                raise Exception(solver_type.value + ' Not supported in power flow mode')
+
+            # record the solution type
+            solution.method = solver_type
+
+            # record the method used, if it improved the solution
+            if abs(solution.norm_f) < abs(final_solution.norm_f):
+                report.add(method=solver_type,
+                           converged=solution.converged,
+                           error=solution.norm_f,
+                           elapsed=solution.elapsed,
+                           iterations=solution.iterations)
+
+                if solution.method in [SolverType.DC, SolverType.LACPF]:
+                    # if the method is linear, we do not check the solution quality
+                    final_solution = solution
+                else:
+                    # if the method is supposed to be exact, we check the solution quality
+                    if abs(solution.norm_f) < 0.1:
+                        final_solution = solution
+                    else:
+                        logger.add_info('Tried solution is garbage',
+                                        solver_type.value,
+                                        value="{:.4e}".format(solution.norm_f),
+                                        expected_value=0.1)
+            else:
+                logger.add_info('Tried solver but it did not improve the solution',
+                                solver_type.value,
+                                value="{:.4e}".format(solution.norm_f),
+                                expected_value=final_solution.norm_f)
+
+            # next solver
+            solver_idx += 1
+
+        if not final_solution.converged:
+            logger.add_error('Did not converge, even after retry!',
+                             device='Error',
+                             value="{:.4e}".format(final_solution.norm_f),
+                             expected_value=f"<{options.tolerance}")
+
+        if final_solution.tap_module is None:
+            final_solution.tap_module = nc.active_branch_data.tap_module
+
+        if final_solution.tap_angle is None:
+            final_solution.tap_angle = nc.active_branch_data.tap_angle
+
+        return final_solution, report
+
+
+def __solve_island_limited_support(nc: NumericalCircuit,
+                                   indices: SimulationIndices,
+                                   options: PowerFlowOptions,
+                                   V0: CxVec,
+                                   S_base: CxVec,
+                                   Shvdc: CxVec,
+                                   logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
+    """
+    Run a power flow simulation using the selected method (no outer loop controls).
+    This routine supports remove voltage controls,and Hvdc links through external injections (Shvdc)
+    Also requires grids to be split by HvdcLines
     :param nc: SnapshotData circuit, this ensures on-demand admittances computation
     :param indices: SimulationIndices
     :param options: PowerFlow options
@@ -332,28 +548,14 @@ def solve(nc: NumericalCircuit,
 
             # Levenberg-Marquardt
             elif solver_type == SolverType.LM:
-                if nc.active_branch_data.any_pf_control:
-                    # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S_base + Shvdc,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       nc=nc,
-                                                       options=options,
-                                                       logger=logger,
-                                                       consider_hvdc_lines=False)
-                else:
-                    # Solve NR with the AC algorithm
-                    problem = PfBasicFormulation(V0=final_solution.V,
-                                                 S0=S_base + Shvdc,
-                                                 I0=I0,
-                                                 Y0=Y0,
-                                                 Qmin=Qmin,
-                                                 Qmax=Qmax,
-                                                 nc=nc,
-                                                 options=options)
+                problem = PfBasicFormulation(V0=final_solution.V,
+                                             S0=S_base + Shvdc,
+                                             I0=I0,
+                                             Y0=Y0,
+                                             Qmin=Qmin,
+                                             Qmax=Qmax,
+                                             nc=nc,
+                                             options=options)
 
                 solution = levenberg_marquadt_fx(problem=problem,
                                                  tol=options.tolerance,
@@ -391,28 +593,14 @@ def solve(nc: NumericalCircuit,
 
             # Newton-Raphson (full, but non-generalized)
             elif solver_type == SolverType.NR:
-                if nc.active_branch_data.any_pf_control:
-                    # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S_base + Shvdc,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       nc=nc,
-                                                       options=options,
-                                                       logger=logger,
-                                                       consider_hvdc_lines=False)
-                else:
-                    # Solve NR with the AC algorithm
-                    problem = PfBasicFormulation(V0=final_solution.V,
-                                                 S0=S_base + Shvdc,
-                                                 I0=I0,
-                                                 Y0=Y0,
-                                                 Qmin=Qmin,
-                                                 Qmax=Qmax,
-                                                 nc=nc,
-                                                 options=options)
+                problem = PfBasicFormulation(V0=final_solution.V,
+                                             S0=S_base + Shvdc,
+                                             I0=I0,
+                                             Y0=Y0,
+                                             Qmin=Qmin,
+                                             Qmax=Qmax,
+                                             nc=nc,
+                                             options=options)
 
                 solution = newton_raphson_fx(problem=problem,
                                              tol=options.tolerance,
@@ -423,28 +611,14 @@ def solve(nc: NumericalCircuit,
 
             # Powell's Dog Leg (full)
             elif solver_type == SolverType.PowellDogLeg:
-                if nc.active_branch_data.any_pf_control:
-                    # Solve NR with the AC/DC algorithm
-                    problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S_base + Shvdc,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       nc=nc,
-                                                       options=options,
-                                                       logger=logger,
-                                                       consider_hvdc_lines=False)
-                else:
-                    # Solve NR with the AC algorithm
-                    problem = PfBasicFormulation(V0=final_solution.V,
-                                                 S0=S_base,
-                                                 I0=I0,
-                                                 Y0=Y0,
-                                                 Qmin=Qmin,
-                                                 Qmax=Qmax,
-                                                 nc=nc,
-                                                 options=options)
+                problem = PfBasicFormulation(V0=final_solution.V,
+                                             S0=S_base,
+                                             I0=I0,
+                                             Y0=Y0,
+                                             Qmin=Qmin,
+                                             Qmax=Qmax,
+                                             nc=nc,
+                                             options=options)
 
                 solution = powell_fx(problem=problem,
                                      tol=options.tolerance,
@@ -527,6 +701,186 @@ def solve(nc: NumericalCircuit,
         return final_solution, report
 
 
+def __multi_island_pf_nc_complete_support(nc: NumericalCircuit,
+                                          options: PowerFlowOptions,
+                                          logger: Logger | None = None,
+                                          V_guess: Union[CxVec, None] = None,
+                                          Sbus_input: Union[CxVec, None] = None) -> PowerFlowResults:
+    """
+    Multiple islands power flow (this is the most generic power flow function)
+
+    multi_island_pf
+      |-> multi_island_pf_nc
+                |-> split_into_islands
+                        |-> for each island:
+                                |-> __solve_island_complete_support
+                                        |-> solve
+
+    :param nc: SnapshotData instance
+    :param options: PowerFlowOptions instance
+    :param logger: logger
+    :param V_guess: voltage guess
+    :param Sbus_input: Use this power injections if provided
+    :return: PowerFlowResults instance
+    """
+    if logger is None:
+        logger = Logger()
+
+    # declare results
+    results = PowerFlowResults(
+        n=nc.nbus,
+        m=nc.nbr,
+        n_hvdc=nc.nhvdc,
+        n_vsc=nc.nvsc,
+        n_gen=nc.ngen,
+        n_batt=nc.nbatt,
+        n_sh=nc.nshunt,
+        bus_names=nc.bus_data.names,
+        branch_names=nc.passive_branch_data.names,
+        hvdc_names=nc.hvdc_data.names,
+        vsc_names=nc.vsc_data.names,
+        gen_names=nc.generator_data.names,
+        batt_names=nc.battery_data.names,
+        sh_names=nc.shunt_data.names,
+        bus_types=nc.bus_data.bus_types,
+    )
+
+    # compute islands
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
+                                    consider_hvdc_as_island_links=False,
+                                    logger=logger)
+
+    for i, island in enumerate(islands):
+
+        indices = island.get_simulation_indices()
+        Sbus_base = island.get_power_injections_pu()
+
+        if len(indices.vd) > 0:
+
+            # call the numerical methods
+            solution, report = __solve_island_complete_support(
+                nc=island,
+                indices=indices,
+                options=options,
+                V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],
+                S_base=Sbus_base if Sbus_input is None else Sbus_input[island.bus_data.original_idx],
+                logger=logger
+            )
+
+            # merge the results from this island
+            results.apply_from_island(
+                results=solution,
+                b_idx=island.bus_data.original_idx,
+                br_idx=island.passive_branch_data.original_idx,
+                hvdc_idx=island.hvdc_data.original_idx,
+                vsc_idx=island.vsc_data.original_idx
+            )
+            results.convergence_reports.append(report)
+
+        else:
+            logger.add_info('No slack nodes in the island', str(i))
+
+    return results
+
+
+def __multi_island_pf_nc_limited_support(nc: NumericalCircuit,
+                                         options: PowerFlowOptions,
+                                         logger: Logger | None = None,
+                                         V_guess: Union[CxVec, None] = None,
+                                         Sbus_input: Union[CxVec, None] = None) -> PowerFlowResults:
+    """
+    Multiple islands power flow (this is the most generic power flow function)
+
+    multi_island_pf
+      |-> multi_island_pf_nc
+                |-> split_into_islands  (Deals with HvdcLine injections)
+                        |-> for each island:
+                                |-> single_island_pf
+                                        |-> solve
+
+    :param nc: SnapshotData instance
+    :param options: PowerFlowOptions instance
+    :param logger: logger
+    :param V_guess: voltage guess
+    :param Sbus_input: Use this power injections if provided
+    :return: PowerFlowResults instance
+    """
+    if logger is None:
+        logger = Logger()
+
+    # declare results
+    results = PowerFlowResults(
+        n=nc.nbus,
+        m=nc.nbr,
+        n_hvdc=nc.nhvdc,
+        n_vsc=nc.nvsc,
+        n_gen=nc.ngen,
+        n_batt=nc.nbatt,
+        n_sh=nc.nshunt,
+        bus_names=nc.bus_data.names,
+        branch_names=nc.passive_branch_data.names,
+        hvdc_names=nc.hvdc_data.names,
+        vsc_names=nc.vsc_data.names,
+        gen_names=nc.generator_data.names,
+        batt_names=nc.battery_data.names,
+        sh_names=nc.shunt_data.names,
+        bus_types=nc.bus_data.bus_types,
+    )
+
+    # compose the HVDC power Injections
+    # since the power flow methods don't support HVDC directly, we need this step
+    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(
+        Sbase=nc.Sbase,
+        theta=np.zeros(nc.nbus),
+    )
+
+    # compute islands
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
+                                    consider_hvdc_as_island_links=True,
+                                    logger=logger)
+
+    for i, island in enumerate(islands):
+
+        indices = island.get_simulation_indices()
+        Sbus_base = island.get_power_injections_pu()
+
+        if len(indices.vd) > 0:
+
+            # call the numerical methods
+            solution, report = __solve_island_limited_support(
+                nc=island,
+                indices=indices,
+                options=options,
+                V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],
+                S_base=Sbus_base if Sbus_input is None else Sbus_input[island.bus_data.original_idx],
+                Shvdc=Shvdc[island.bus_data.original_idx],
+                logger=logger
+            )
+
+            # merge the results from this island
+            results.apply_from_island(
+                results=solution,
+                b_idx=island.bus_data.original_idx,
+                br_idx=island.passive_branch_data.original_idx,
+                hvdc_idx=island.hvdc_data.original_idx,
+                vsc_idx=island.vsc_data.original_idx
+            )
+            results.convergence_reports.append(report)
+
+        else:
+            logger.add_info('No slack nodes in the island', str(i))
+
+    # Compile HVDC results (available for the complete grid since HVDC line as
+    # formulated are split objects
+    # Pt is the "generation" at the sending point
+    results.Pf_hvdc = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
+    results.Pt_hvdc = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
+    results.loading_hvdc = loading_hvdc
+    results.losses_hvdc = Losses_hvdc * nc.Sbase
+
+    return results
+
+
 def multi_island_pf_nc(nc: NumericalCircuit,
                        options: PowerFlowOptions,
                        logger: Logger | None = None,
@@ -563,71 +917,28 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         bus_types=nc.bus_data.bus_types,
     )
 
-    # compose the HVDC power Injections
-    Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(
-        Sbase=nc.Sbase,
-        theta=np.zeros(nc.nbus),
+    results = __multi_island_pf_nc_complete_support(
+        nc=nc,
+        options=options,
+        logger=logger,
+        V_guess=V_guess,
+        Sbus_input=Sbus_input,
     )
 
-    # compute islands
-    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
-                                    consider_hvdc_as_island_links=True,
-                                    logger=logger)
-
-    for i, island in enumerate(islands):
-
-        indices = island.get_simulation_indices()
-        Sbus_base = island.get_power_injections_pu()
-
-        if len(indices.vd) > 0:
-
-            if Sbus_input is None:
-                Sbus_island = Sbus_base
-            else:
-                Sbus_island = Sbus_input[island.bus_data.original_idx]
-
-            Shvdc_island = Shvdc[island.bus_data.original_idx]
-            # Sbus = Sbus_base
-
-            # call the numerical methods
-            solution, report = solve(
-                nc=island,
-                indices=indices,
-                options=options,
-                V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],
-                S_base=Sbus_island,
-                Shvdc=Shvdc_island,
-                logger=logger
-            )
-
-            # merge the results from this island
-            results.apply_from_island(
-                results=solution,
-                b_idx=island.bus_data.original_idx,
-                br_idx=island.passive_branch_data.original_idx,
-                hvdc_idx=island.hvdc_data.original_idx,
-                vsc_idx=island.vsc_data.original_idx
-            )
-            results.convergence_reports.append(report)
-
-        else:
-            logger.add_info('No slack nodes in the island', str(i))
-
-    # Compile HVDC results (available for the complete grid since HVDC line as
-    # formulated are split objects
-    # Pt is the "generation" at the sending point
-    # TODO: this is should only be done for methods that do not handle HVDC separating islands.
-    results.Pf_hvdc = - Pf_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
-    results.Pt_hvdc = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
-    results.loading_hvdc = loading_hvdc
-    results.losses_hvdc = Losses_hvdc * nc.Sbase
+    results = __multi_island_pf_nc_limited_support(
+        nc=nc,
+        options=options,
+        logger=logger,
+        V_guess=V_guess,
+        Sbus_input=Sbus_input,
+    )
 
     # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
         results.voltage = nc.propagate_bus_result(results.voltage)
 
     # do the reactive power partition and store the values
-    split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
+    __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
 
     return results
 
