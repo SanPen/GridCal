@@ -30,8 +30,12 @@ def test_ieee_grids():
         ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
     ]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
-                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
+    for solver_type in [SolverType.NR,
+                        SolverType.IWAMOTO,
+                        SolverType.LM,
+                        SolverType.FASTDECOUPLED,
+                        SolverType.PowellDogLeg,
+                        SolverType.HELM]:
 
         print(solver_type)
 
@@ -57,13 +61,8 @@ def test_ieee_grids():
             p_gc = power_flow.results.Sf.real
             p_psse = df_p.values[:, 0]
 
-            # br_codes = [e.code for e in main_circuit.get_branches_wo_hvdc()]
-            # p_gc_df = pd.DataFrame(data=p_gc, columns=[0], index=br_codes)
-            # pf_diff_df = p_gc_df - df_p
-
-            v_ok = np.allclose(v_gc, v_psse, atol=1e-2)
-            flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
-            # flow_ok = (np.abs(pf_diff_df.values) < 1e-3).all()
+            v_ok = np.allclose(v_gc, v_psse, atol=1e-4)
+            flow_ok = np.allclose(p_gc, p_psse, atol=1e-2)
 
             if not v_ok:
                 print('power flow voltages test for {} failed'.format(fname))
@@ -535,7 +534,9 @@ def test_power_flow_12bus_acdc() -> None:
 
 
 def test_hvdc_all_methods() -> None:
-
+    """
+    Checks that the HVDC logic is working for all power flow methods
+    """
     fname = os.path.join('data', 'grids', '8_nodes_2_islands_hvdc.gridcal')
 
     grid = gce.open_file(fname)
@@ -613,7 +614,7 @@ def test_hvdc_all_methods() -> None:
         res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
 
         if not res.converged:
-            logger.print(f"Errors on {solver_type.value}:")
+            logger.print(f"Errors on {solver_type.value} with controls:")
 
         assert res.converged
         assert res.Pf_hvdc[0] == 10.0
