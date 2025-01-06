@@ -511,6 +511,8 @@ def test_power_flow_12bus_acdc() -> None:
 
         solution = gce.power_flow(grid, options)
 
+        assert solution.converged
+
         assert np.allclose(expected_v, solution.voltage, atol=1e-4)
 
         assert grid.vsc_devices[0].control1_val == solution.Pf_vsc[0]
@@ -529,7 +531,7 @@ def test_power_flow_12bus_acdc() -> None:
 
         assert grid.hvdc_lines[0].Pset == solution.Pf_hvdc[0]
 
-        assert solution.converged
+
 
 
 def test_hvdc_all_methods() -> None:

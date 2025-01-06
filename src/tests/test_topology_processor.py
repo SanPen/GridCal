@@ -1089,4 +1089,29 @@ def test_island_slicing():
     assert lst_ok(islands[1].generator_data.names, ['G3', 'G4'])
 
 
+def test_segmenting_by_hvdc():
+    fname = os.path.join('data', 'grids', '8_nodes_2_islands_hvdc.gridcal')
 
+    grid = open_file(fname)
+
+    nc = compile_numerical_circuit_at(
+        grid,
+        t_idx=None,
+        apply_temperature=False,
+        branch_tolerance_mode=BranchImpedanceMode.Specified,
+        opf_results=None,
+        use_stored_guess=False,
+        bus_dict=None,
+        areas_dict=None,
+        control_taps_modules=True,
+        control_taps_phase=True,
+        control_remote_voltage=True,
+    )
+
+    islands_1 = nc.split_into_islands(consider_hvdc_as_island_links=True)
+
+    assert len(islands_1) == 1
+
+    islands_1 = nc.split_into_islands(consider_hvdc_as_island_links=False)
+
+    assert len(islands_1) == 2
