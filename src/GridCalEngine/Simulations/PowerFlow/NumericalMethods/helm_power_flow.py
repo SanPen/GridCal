@@ -246,15 +246,193 @@ def conv3(A, B, c, indices):
     return suma
 
 
-def helm_coefficients_josep(Ybus: CscMat,
-                            Yseries: CscMat, V0: CxVec, S0: CxVec, Ysh0: CxVec,
-                            pq: IntVec, pv: IntVec, sl: IntVec, no_slack: IntVec,
-                            tolerance: float = 1e-6, max_coeff: int = 30, verbose: int = 0,
+# def helm_coefficients_josep(Ybus: CscMat,
+#                             Yseries: CscMat, V0: CxVec, S0: CxVec, Ysh0: CxVec,
+#                             pq: IntVec, pv: IntVec, sl: IntVec, no_slack: IntVec,
+#                             tolerance: float = 1e-6, max_coeff: int = 30, verbose: int = 0,
+#                             logger: Logger = None):
+#     """
+#     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
+#     THis function just returns the coefficients for further usage in other routines
+#     :param Ybus: Admittance matrix
+#     :param Yseries: Admittance matrix of the series elements
+#     :param V0: vector of specified voltages
+#     :param S0: vector of specified power
+#     :param Ysh0: vector of shunt admittances (including the shunts of the Branches)
+#     :param pq: list of pq nodes
+#     :param pv: list of pv nodes
+#     :param sl: list of slack nodes
+#     :param no_slack: sorted list of pq and pv nodes
+#     :param tolerance: target error (or tolerance)
+#     :param max_coeff: maximum number of coefficients
+#     :param verbose: print intermediate information
+#     :param logger: Logger object to store the debug info
+#     :return: U, X, Q, V, iterations
+#     """
+#
+#     npqpv = len(no_slack)
+#     npv = len(pv)
+#     nsl = len(sl)
+#     n = Yseries.shape[0]
+#
+#     # --------------------------- PREPARING IMPLEMENTATION -------------------------------------------------------------
+#     U = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # voltages
+#     X = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # compute X=1/conj(U)
+#     Q = np.zeros((max_coeff + 1, npqpv), dtype=complex)  # unknown reactive powers
+#
+#     if n < 2:
+#         return U, X, Q, 0
+#
+#     if verbose:
+#         logger.add_debug('Yseries', Yseries.toarray())
+#
+#         df = pd.DataFrame(data=np.c_[Ysh0.imag, S0.real, S0.imag, np.abs(V0)],
+#                           columns=['Ysh', 'P0', 'Q0', 'V0'])
+#         logger.add_debug(df.to_string())
+#
+#     # build the reduced system
+#     Yred = Yseries[np.ix_(no_slack, no_slack)]  # admittance matrix without slack buses
+#     Yslack = -Yseries[np.ix_(no_slack, sl)]  # yes, it is the negative of this
+#     G = Yred.real.copy()  # real parts of Yij
+#     B = Yred.imag.copy()  # imaginary parts of Yij
+#     vec_P = S0.real[no_slack]
+#     vec_Q = S0.imag[no_slack]
+#     Vslack = V0[sl]
+#     Ysh = Ysh0[no_slack]
+#     Vm0 = np.abs(V0[no_slack])
+#     vec_W = Vm0 * Vm0
+#
+#     # indices 0 based in the internal scheme
+#     nsl_counted = np.zeros(n, dtype=int)
+#     compt = 0
+#     for i in range(n):
+#         if i in sl:
+#             compt += 1
+#         nsl_counted[i] = compt
+#
+#     pq_ = pq - nsl_counted[pq]
+#     pv_ = pv - nsl_counted[pv]
+#     no_slack_ = np.sort(np.r_[pq_, pv_])
+#
+#     # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
+#
+#     if nsl > 1:
+#         U[0, :] = spsolve(Yred, Yslack.sum(axis=1))
+#     else:
+#         U[0, :] = spsolve(Yred, Yslack)
+#
+#     X[0, :] = 1 / np.conj(U[0, :])
+#
+#     # .......................CALCULATION OF TERMS [1] ------------------------------------------------------------------
+#     valor = np.zeros(npqpv, dtype=complex)
+#
+#     # get the current Injections that appear due to the slack buses reduction
+#     I_inj_slack = Yslack[no_slack_, :] * Vslack
+#
+#     valor[pq_] = (I_inj_slack[pq_]
+#                   - Yslack[pq_].sum(axis=1).A1
+#                   + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_]
+#                   - U[0, pq_] * Ysh[pq_])
+#
+#     valor[pv_] = (I_inj_slack[pv_]
+#                   - Yslack[pv_].sum(axis=1).A1
+#                   + (vec_P[pv_]) * X[0, pv_]
+#                   - U[0, pv_] * Ysh[pv_])
+#
+#     # compose the right-hand side vector
+#     RHS = np.r_[
+#         valor.real,
+#         valor.imag,
+#         vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
+#     ]
+#
+#     # Form the system matrix (MAT)
+#     Upv = U[0, pv_]
+#     Xpv = X[0, pv_]
+#     VRE = coo_matrix((2 * Upv.real, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+#     VIM = coo_matrix((2 * Upv.imag, (np.arange(npv), pv_)), shape=(npv, npqpv)).tocsc()
+#     XIM = coo_matrix((-Xpv.imag, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+#     XRE = coo_matrix((Xpv.real, (pv_, np.arange(npv))), shape=(npqpv, npv)).tocsc()
+#     EMPTY = csc_matrix((npv, npv))
+#
+#     MAT = vs((hs((G, -B, XIM)),
+#               hs((B, G, XRE)),
+#               hs((VRE, VIM, EMPTY))), format='csc')
+#
+#     converged = False
+#     V = np.empty(n, dtype=complex)
+#     V[sl] = V0[sl]
+#     c = 2
+#     V[no_slack] = U[:c, :].sum(axis=0)
+#     iter_ = 1
+#     if verbose:
+#         logger.add_debug("MAT", MAT.toarray())
+#
+#     # factorize (only once)
+#     # MAT_LU = factorized(MAT.tocsc())
+#
+#     # solve
+#     try:
+#         mat_factorized = factorized(MAT)
+#     except RuntimeError:
+#         warn("Unable to factorize HELM coefficients matrix :/")
+#         return U, X, Q, V, iter_, converged
+#
+#     LHS = mat_factorized(RHS)
+#     # LHS = spsolve(MAT, RHS)
+#
+#     # update coefficients
+#     U[1, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
+#     Q[0, pv_] = LHS[2 * npqpv:]
+#     X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
+#
+#     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
+#
+#     while c <= max_coeff and not converged:  # c defines the current depth
+#
+#         valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
+#         valor[pv_] = -1j * conv2(X, Q, c, pv_) - U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
+#
+#         RHS = np.r_[
+#             valor.real,
+#             valor.imag,
+#             -conv3(U, U, c, pv_).real
+#         ]
+#
+#         # LHS = spsolve(MAT, RHS)
+#         LHS = mat_factorized(RHS)
+#
+#         # update voltage coefficients
+#         U[c, :] = LHS[:npqpv] + 1j * LHS[npqpv:2 * npqpv]
+#
+#         # update reactive power
+#         Q[c - 1, pv_] = LHS[2 * npqpv:]
+#
+#         # update voltage inverse coefficients
+#         X[c, :] = -conv1(U, X, c) / np.conj(U[0, :])
+#
+#         # compute power mismatch
+#         V[no_slack] += U[c, :]
+#
+#         if V.real.max() < 10:
+#             Scalc = cf.compute_power(Ybus, V)
+#             norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, no_slack, pq))
+#             converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
+#         else:
+#             # completely erroneous
+#             break
+#
+#         iter_ += 1
+#         c += 1
+#
+#     return U, X, Q, V, iter_, converged
+
+
+def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coeff=30, verbose=False,
                             logger: Logger = None):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     THis function just returns the coefficients for further usage in other routines
-    :param Ybus: Admittance matrix
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
@@ -262,7 +440,7 @@ def helm_coefficients_josep(Ybus: CscMat,
     :param pq: list of pq nodes
     :param pv: list of pv nodes
     :param sl: list of slack nodes
-    :param no_slack: sorted list of pq and pv nodes
+    :param pqpv: sorted list of pq and pv nodes
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :param verbose: print intermediate information
@@ -270,7 +448,7 @@ def helm_coefficients_josep(Ybus: CscMat,
     :return: U, X, Q, V, iterations
     """
 
-    npqpv = len(no_slack)
+    npqpv = len(pqpv)
     npv = len(pv)
     nsl = len(sl)
     n = Yseries.shape[0]
@@ -291,15 +469,15 @@ def helm_coefficients_josep(Ybus: CscMat,
         logger.add_debug(df.to_string())
 
     # build the reduced system
-    Yred = Yseries[np.ix_(no_slack, no_slack)]  # admittance matrix without slack buses
-    Yslack = -Yseries[np.ix_(no_slack, sl)]  # yes, it is the negative of this
+    Yred = Yseries[np.ix_(pqpv, pqpv)]  # admittance matrix without slack buses
+    Yslack = -Yseries[np.ix_(pqpv, sl)]  # yes, it is the negative of this
     G = Yred.real.copy()  # real parts of Yij
     B = Yred.imag.copy()  # imaginary parts of Yij
-    vec_P = S0.real[no_slack]
-    vec_Q = S0.imag[no_slack]
+    vec_P = S0.real[pqpv]
+    vec_Q = S0.imag[pqpv]
     Vslack = V0[sl]
-    Ysh = Ysh0[no_slack]
-    Vm0 = np.abs(V0[no_slack])
+    Ysh = Ysh0[pqpv]
+    Vm0 = np.abs(V0[pqpv])
     vec_W = Vm0 * Vm0
 
     # indices 0 based in the internal scheme
@@ -312,7 +490,7 @@ def helm_coefficients_josep(Ybus: CscMat,
 
     pq_ = pq - nsl_counted[pq]
     pv_ = pv - nsl_counted[pv]
-    no_slack_ = np.sort(np.r_[pq_, pv_])
+    pqpv_ = np.sort(np.r_[pq_, pv_])
 
     # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
 
@@ -327,23 +505,16 @@ def helm_coefficients_josep(Ybus: CscMat,
     valor = np.zeros(npqpv, dtype=complex)
 
     # get the current Injections that appear due to the slack buses reduction
-    I_inj_slack = Yslack[no_slack_, :] * Vslack
+    I_inj_slack = Yslack[pqpv_, :] * Vslack
 
-    valor[pq_] = (I_inj_slack[pq_]
-                  - Yslack[pq_].sum(axis=1).A1
-                  + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_]
-                  - U[0, pq_] * Ysh[pq_])
-
-    valor[pv_] = (I_inj_slack[pv_]
-                  - Yslack[pv_].sum(axis=1).A1
-                  + (vec_P[pv_]) * X[0, pv_]
-                  - U[0, pv_] * Ysh[pv_])
+    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[
+        0, pq_] * Ysh[pq_]
+    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] - U[0, pv_] * Ysh[pv_]
 
     # compose the right-hand side vector
-    RHS = np.r_[
-        valor.real,
-        valor.imag,
-        vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
+    RHS = np.r_[valor.real,
+    valor.imag,
+    vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
     ]
 
     # Form the system matrix (MAT)
@@ -359,12 +530,6 @@ def helm_coefficients_josep(Ybus: CscMat,
               hs((B, G, XRE)),
               hs((VRE, VIM, EMPTY))), format='csc')
 
-    converged = False
-    V = np.empty(n, dtype=complex)
-    V[sl] = V0[sl]
-    c = 2
-    V[no_slack] = U[:c, :].sum(axis=0)
-    iter_ = 1
     if verbose:
         logger.add_debug("MAT", MAT.toarray())
 
@@ -372,12 +537,7 @@ def helm_coefficients_josep(Ybus: CscMat,
     # MAT_LU = factorized(MAT.tocsc())
 
     # solve
-    try:
-        mat_factorized = factorized(MAT)
-    except RuntimeError:
-        warn("Unable to factorize HELM coefficients matrix :/")
-        return U, X, Q, V, iter_, converged
-
+    mat_factorized = factorized(MAT)
     LHS = mat_factorized(RHS)
     # LHS = spsolve(MAT, RHS)
 
@@ -387,17 +547,20 @@ def helm_coefficients_josep(Ybus: CscMat,
     X[1, :] = -X[0, :] * np.conj(U[1, :]) / np.conj(U[0, :])
 
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
-
+    iter_ = 1
+    c = 2
+    converged = False
+    V = np.empty(n, dtype=complex)
+    V[sl] = V0[sl]
+    V[pqpv] = U[:c, :].sum(axis=0)
     while c <= max_coeff and not converged:  # c defines the current depth
 
         valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
         valor[pv_] = -1j * conv2(X, Q, c, pv_) - U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
-        RHS = np.r_[
-            valor.real,
-            valor.imag,
-            -conv3(U, U, c, pv_).real
-        ]
+        RHS = np.r_[valor.real,
+        valor.imag,
+        -conv3(U, U, c, pv_).real]
 
         # LHS = spsolve(MAT, RHS)
         LHS = mat_factorized(RHS)
@@ -412,11 +575,11 @@ def helm_coefficients_josep(Ybus: CscMat,
         X[c, :] = -conv1(U, X, c) / np.conj(U[0, :])
 
         # compute power mismatch
-        V[no_slack] += U[c, :]
+        V[pqpv] += U[c, :]
 
         if V.real.max() < 10:
             Scalc = cf.compute_power(Ybus, V)
-            norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, no_slack, pq))
+            norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, pqpv, pq))
             converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
         else:
             # completely erroneous
@@ -733,7 +896,7 @@ def helm_josep(nc: NumericalCircuit,
                                                            pq=pq,
                                                            pv=pv,
                                                            sl=vd,
-                                                           no_slack=no_slack,
+                                                           pqpv=no_slack,
                                                            tolerance=tolerance,
                                                            max_coeff=max_coefficients,
                                                            verbose=verbose,
