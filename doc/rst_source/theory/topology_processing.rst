@@ -5,29 +5,35 @@ Topology Processing
 Introduction
 ------------
 
-In this section, we are going to explain how to do topology processing properly for once and for all. This topic is of
-capital importance in power systems but is rarely dealt with in a structured and comprehensive manner.
+In this section, we are going to explain how to do topology processing properly
+for once and for all. This topic is of capital importance in power systems but is
+rarely dealt with in a structured and comprehensive manner.
 
-A power system model is essentially a graph. A graph is an abstract construct where relationships are represented.
-In power systems, we aim to store the relationships between calculation points (referred to as buses from now on)
-through edges (referred to as branches from now on). Both buses and branches in power systems have properties
-that define the relationships and even how these relationships vary over time.
+A power system model is essentially a graph. A graph is an abstract construct
+where relationships are represented. In power systems, we aim to store the
+relationships between calculation points (referred to as buses from now on)
+through edges (referred to as branches from now on). Both buses and branches
+in power systems have properties that define the relationships and even how
+these relationships vary over time.
 
-What is a Graph in Power Systems?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**What is a Graph in Power Systems?**
 
-To understand topology processing, it's essential to grasp the basics of graph theory. In a power system graph:
+To understand topology processing, it's essential to grasp the basics of graph
+theory. In a power system graph:
 
-- **Nodes (Buses):** Represent points of calculation, such as substations, generation points, or load centers.
-- **Edges (Branches):** Represent the connections, such as transmission lines, transformers, or circuit breakers.
+- **Nodes (Buses):** Represent points of calculation, such as substations,
+generation points, or load centers.
+- **Edges (Branches):** Represent the connections, such as transmission lines,
+transformers, or circuit breakers.
 
-This abstraction simplifies the network while retaining its essential connectivity and operational properties.
+This abstraction simplifies the network while retaining its essential
+connectivity and operational properties.
 
-Why is Topology Processing Important?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**Why is Topology Processing Important?**
 
-Topology processing ensures that the network's operational model accurately reflects its physical state. Without
-proper processing, analyses may yield inaccurate results, leading to operational inefficiencies or even failures.
+Topology processing ensures that the network's operational model accurately
+reflects its physical state. Without proper processing, analyses may yield
+inaccurate results, leading to operational inefficiencies or even failures.
 
 Key reasons include:
 
@@ -35,10 +41,13 @@ Key reasons include:
 - Identifying and correcting data inconsistencies.
 - Optimizing the simulation by reducing unnecessary complexities.
 
-In less abstract terms, topology processing is about determining the simulatable sub-circuits within a circuit.
-Here, a circuit refers to a collection of equipment, its relationships, and states in the most general sense.
-
-From circuit theory, we derive the following fundamental relationship:
+In less abstract terms, topology processing is about determining the simulatable
+sub-circuits within a circuit. Here, a circuit refers to a collection of equipment,
+its relationships, and states in the most general sense. We perform the topology
+processing as a precaution before simulating, because what we want is to be able to
+use the electrotechnical formulas to get the physical magnitudes, and for that we must
+abide to some rules. Thus, from circuit theory, we derive the following fundamental
+relationship:
 
 .. math::
 
@@ -56,8 +65,9 @@ To solve for :math:`V`, we need to invert :math:`Y`:
 
     V = Y^{-1} \times I^*
 
-However, :math:`Y` may not always be invertible for any arbitrary collection of equipment. This necessitates finding
-sub-circuits. Additionally, certain branches in the circuit might have zero impedance, making :math:`Y` singular. We
+However, :math:`Y` may not always be invertible for any arbitrary collection
+of equipment. This necessitates finding sub-circuits. Additionally, certain
+branches in the circuit might have zero impedance, making :math:`Y` singular. We
 must eliminate these problematic branches as part of the processing.
 
 Steps in Topology Processing
@@ -73,8 +83,9 @@ Broadly, topology processing involves the following steps:
 
 .. note::
 
-   Steps 2 to 5 are necessary only for simulations reliant on equality constraints, such as power flow. Simulations
-   involving overdetermined linear systems, such as optimizations, do not require separate handling of islands.
+   Steps 2 to 5 are necessary only for simulations reliant on equality constraints,
+    such as power flow. Simulations involving overdetermined linear systems, such as
+    optimizations, do not require separate handling of islands.
 
 Special Function: Island Search
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -325,6 +336,21 @@ improves computational efficiency and ensures cleaner, more reliable data for
 numerical calculations such as power flow analysis. The resulting islands form
 distinct, manageable sub-networks ready for independent simulation and analysis.
 
+Summary of the steps
+------------------------------------
+
+- First we must detect which buses are electrically (and topologically) the same as others.
+- Then we find the electrical islands.
+
+For both steps we use the islands search oved an adjacency matrix (A).
+In the first A we reflect the connections of the branches we want to reduce
+and all the buses, for the second A we reflect the connection of the branches
+that we want to keep.
+
+.. figure:: ./../figures/TopologyProcessing1.png
+    :alt: Topology processing steps
+
+
 Islands search function
 ------------------------------------
 
@@ -463,18 +489,22 @@ crucial that no topological processing is ever performed directly on the
 MultiCircuit. Doing so risks altering the topology of elements, potentially
 breaking the consistency of the original configuration.
 
-**Why Avoid Topological Processing on MultiCircuit?**
+**Why Avoid Topological Processing on the MultiCircuit?**
 
 Consider the following example: Imagine a generator initially connected to
 **Bus 1**. After performing topological processing, it might end up connected to
 **Bus 2**. How could we recover the original connection to **Bus 1**? Simply put,
 we cannot. Altering the MultiCircuit directly compromises its integrity,
-making it impossible to restore the original topology.
+making it impossible to restore the original topology. In CIM, this is probably why
+there are two distinct sets of objects; ConnectivityNode to maintain the structure
+and TopologicalNode to represent the final connectivity. This reinforces the idea
+that we must only model with ConnectivityNodes, which for simplicity are always
+buses in the end in GridCal.
 
 **The Role of NumericalCircuit**
 
 If topology processing should not occur over the database, then where should it
-be done? Fortunately, GridCal provides the **NumericalCircuit**, a snapshot of
+be done? The solution in GridCal is to provide the **NumericalCircuit**, a snapshot of
 the MultiCircuit at a specific state. This snapshot is **fungible**, meaning any
 modifications made to it will not impact the original MultiCircuit and will
 vanish after the calculation. As such, all topology processing steps are
@@ -492,6 +522,21 @@ adjustment:
 
 This guarantees that no matter which object you use for modeling, the system
 will ultimately rely on buses, maintaining consistency across all calculation
-processes.
+processes in every scenario and avoiding the superficial complexity of having two
+sets of objects for the same thing; Representing a node in a graph.
 
+By doing this, we also put an end to the node-breaker vs. bus-branch feud,
+allowing for compatibility with the so-called legacy models.
 
+Takeaways
+^^^^^^^^^^
+
+.. note::
+
+    - Bus-branch and node-breaker modelling styles are the same thing.
+    - In GridCal, always model with buses, you'll thank me later.
+    - In CIM/CGMES, model always with ConnectivityNodes and forget
+      about the TopologicalNodes, you'll thank me later.
+    - In topology processing, we use the find-islands algorithm, combined
+      with different compositions of adjacency matrices (A), element traversing
+      should only happen when composing the adjacency matrices.

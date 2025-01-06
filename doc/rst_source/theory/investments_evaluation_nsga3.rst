@@ -37,6 +37,7 @@ algorithm.
 
     Figure 1: MVRSM results with hypothetical improved Pareto front
 
+
 NSGA-III Theory
 _____________________
 The Non-Dominated Sorting Genetic Algorithm III is an evolutionary (genetic) algorithm designed to find the Pareto
@@ -55,6 +56,7 @@ is added to a reference direction, it is assigned randomly to maintain diversity
     :scale: 20 %
 
     Figure 2: (a) Non-dominated sorting (b) Points assigned to reference lines
+
 
 As NSGA-III converges, each reference direction seeks to find a representative non-
 dominated solution, eventually achieving a balanced distribution of solutions across
@@ -88,12 +90,14 @@ however, as the algorithm may struggle to adequately explore the solution space.
 
     Figure 3: (a) Dimension scaled by 2 has shallow curvature
 
+
 .. figure:: ../figures/nsga/4.png
     :alt: pop_size
     :align: center
     :scale: 20 %
 
      (b) Dimension scaled by 0.2 provides finds more optimal solutions due to its deeper curve
+
 
 
 Reference Directions
@@ -114,6 +118,7 @@ the maximum number of partitions is the population’s dimension.
     :scale: 40 %
 
     Figure 4: (a) No. partitions = population size / 10
+
 
 .. figure:: ../figures/nsga/normal.png
     :alt: normal
@@ -155,12 +160,14 @@ of sampling, the first three are unable to explore points past an investment cos
 
     Figure 5: (a) latin hypercube sampling
 
+
 .. figure:: ../figures/nsga/integer.png
     :alt: integer
     :align: center
     :scale: 40 %
 
     (b) integer random
+
 
 .. figure:: ../figures/nsga/binary.png
     :alt: binary
@@ -169,12 +176,14 @@ of sampling, the first three are unable to explore points past an investment cos
 
     (c) binary random
 
+
 .. figure:: ../figures/nsga/uniform.png
     :alt: uniform
     :align: center
     :scale: 40 %
 
     (d) binary uniform
+
 
 Selection
 ~~~~~~~~~~~~~~~~~~~~~
@@ -223,6 +232,7 @@ performances.
     :scale: 20 %
 
     Figure 6: 130-bus grid for evaluating investments
+
 
 
 After testing for an equal amount of time, the plots in Figure 7 proves the NSGA-

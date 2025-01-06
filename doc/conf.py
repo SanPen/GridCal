@@ -152,7 +152,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'GridCal.tex', 'GridCal Documentation', 'Santiago Pe\~nate Vera', 'manual'),
+    (master_doc, 'GridCal.tex', 'GridCal Documentation', 'Santiago Peñate Vera', 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
