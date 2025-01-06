@@ -498,7 +498,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         :param logger: Logger (modified in-place)
-        :param consider_hvdc_lines: activate or deactivate the HvdcLine formulation
         """
         PfFormulationTemplate.__init__(self, V0=V0, options=options)
 
@@ -2471,26 +2470,21 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
-        if self.consider_hvdc_lines:
-            Vmf_hvdc = Vm[self.nc.hvdc_data.F]
-            zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
-            Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc / Vmf_hvdc, 2.0)
-            loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
+        Vmf_hvdc = Vm[self.nc.hvdc_data.F]
+        zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
+        Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc / Vmf_hvdc, 2.0)
+        loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
 
-            Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
-            if len(self.hvdc_droop_idx):
-                Vaf_hvdc = Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
-                Vat_hvdc = Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
-                Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
-            inj_hvdc = Pf_hvdc - Pinj_hvdc
+        Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
+        if len(self.hvdc_droop_idx):
+            Vaf_hvdc = Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
+            Vat_hvdc = Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
+            Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
+        inj_hvdc = Pf_hvdc - Pinj_hvdc
 
-            Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
-            St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
-            Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
-        else:
-            loss_hvdc = np.zeros(0, dtype=complex)
-            inj_hvdc = np.zeros(0, dtype=complex)
-            Scalc_hvdc = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
+        St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
+        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
         Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc

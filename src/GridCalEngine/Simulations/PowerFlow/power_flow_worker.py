@@ -917,21 +917,33 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         bus_types=nc.bus_data.bus_types,
     )
 
-    results = __multi_island_pf_nc_complete_support(
-        nc=nc,
-        options=options,
-        logger=logger,
-        V_guess=V_guess,
-        Sbus_input=Sbus_input,
-    )
+    if nc.active_branch_data.any_pf_control:
 
-    results = __multi_island_pf_nc_limited_support(
-        nc=nc,
-        options=options,
-        logger=logger,
-        V_guess=V_guess,
-        Sbus_input=Sbus_input,
-    )
+        results = __multi_island_pf_nc_complete_support(
+            nc=nc,
+            options=options,
+            logger=logger,
+            V_guess=V_guess,
+            Sbus_input=Sbus_input,
+        )
+
+        if not results.converged:
+            results = __multi_island_pf_nc_limited_support(
+                nc=nc,
+                options=options,
+                logger=logger,
+                V_guess=V_guess,
+                Sbus_input=Sbus_input,
+            )
+
+    else:
+        results = __multi_island_pf_nc_limited_support(
+            nc=nc,
+            options=options,
+            logger=logger,
+            V_guess=V_guess,
+            Sbus_input=Sbus_input,
+        )
 
     # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
