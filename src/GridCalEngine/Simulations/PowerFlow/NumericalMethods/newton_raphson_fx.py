@@ -80,7 +80,13 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 J: CSC = problem.Jacobian()
 
                 if J.shape[0] != J.shape[1]:
-                    logger.add_error("Jacobian not square, check the controls!", "Newton-Raphson")
+                    logger.add_error("Jacobian not square, check the controls!", "Newton-Raphson",
+                                     value=J.shape[0], expected_value=J.shape[1])
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iteration,)
+
+                if J.shape[0] != len(f):
+                    logger.add_error("Jacobian and residuals have different sizes!", "Newton-Raphson",
+                                     value=len(f), expected_value=J.shape[0])
                     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
                 dx, ok = spsolve_csc(J, -f)

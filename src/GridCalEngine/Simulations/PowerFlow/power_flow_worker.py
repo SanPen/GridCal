@@ -335,14 +335,15 @@ def solve(nc: NumericalCircuit,
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
                     problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S_base,
+                                                       S0=S_base + Shvdc,
                                                        I0=I0,
                                                        Y0=Y0,
                                                        Qmin=Qmin,
                                                        Qmax=Qmax,
                                                        nc=nc,
                                                        options=options,
-                                                       logger=logger)
+                                                       logger=logger,
+                                                       consider_hvdc_lines=False)
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,
@@ -393,14 +394,15 @@ def solve(nc: NumericalCircuit,
                 if nc.active_branch_data.any_pf_control:
                     # Solve NR with the AC/DC algorithm
                     problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                       S0=S_base,
+                                                       S0=S_base + Shvdc,
                                                        I0=I0,
                                                        Y0=Y0,
                                                        Qmin=Qmin,
                                                        Qmax=Qmax,
                                                        nc=nc,
                                                        options=options,
-                                                       logger=logger)
+                                                       logger=logger,
+                                                       consider_hvdc_lines=False)
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,
@@ -431,7 +433,8 @@ def solve(nc: NumericalCircuit,
                                                        Qmax=Qmax,
                                                        nc=nc,
                                                        options=options,
-                                                       logger=logger)
+                                                       logger=logger,
+                                                       consider_hvdc_lines=False)
                 else:
                     # Solve NR with the AC algorithm
                     problem = PfBasicFormulation(V0=final_solution.V,

@@ -765,11 +765,6 @@ def helm_josep(nc: NumericalCircuit,
 
     elapsed = time.time() - start_time
 
-    # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
-    # return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-    #                                Scalc=Scalc, m=None, tau=None,
-    #                                Ybus=None, Yf=None, Yt=None,
-    #                                iterations=iter_, elapsed=elapsed)
     # Compute the Branches power and the slack buses power
     Sf, St, If, It, Vbranch, loading, losses, Sbus = cf.power_flow_post_process_nonlinear(
         Sbus=Scalc,
@@ -782,29 +777,32 @@ def helm_josep(nc: NumericalCircuit,
         Yf=Yf,
         Yt=Yt,
         branch_rates=nc.passive_branch_data.rates,
-        Sbase=nc.Sbase)
+        Sbase=nc.Sbase
+    )
 
-    return NumericPowerFlowResults(V=V,
-                                   Scalc=Scalc * nc.Sbase,
-                                   m=np.ones(nc.nbr, dtype=float),
-                                   tau=np.zeros(nc.nbr, dtype=float),
-                                   Sf=Sf,
-                                   St=St,
-                                   If=If,
-                                   It=It,
-                                   loading=loading,
-                                   losses=losses,
-                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
-                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                   norm_f=norm_f,
-                                   converged=converged,
-                                   iterations=iter_,
-                                   elapsed=elapsed)
+    return NumericPowerFlowResults(
+        V=V,
+        Scalc=Scalc * nc.Sbase,
+        m=np.ones(nc.nbr, dtype=float),
+        tau=np.zeros(nc.nbr, dtype=float),
+        Sf=Sf,
+        St=St,
+        If=If,
+        It=It,
+        loading=loading,
+        losses=losses,
+        Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+        St_vsc=np.zeros(nc.nvsc, dtype=complex),
+        If_vsc=np.zeros(nc.nvsc, dtype=float),
+        It_vsc=np.zeros(nc.nvsc, dtype=complex),
+        losses_vsc=np.zeros(nc.nvsc, dtype=float),
+        loading_vsc=np.zeros(nc.nvsc, dtype=float),
+        Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+        St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+        losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+        loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+        norm_f=norm_f,
+        converged=converged,
+        iterations=iter_,
+        elapsed=elapsed
+    )

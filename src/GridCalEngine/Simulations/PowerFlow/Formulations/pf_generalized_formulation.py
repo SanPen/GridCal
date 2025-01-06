@@ -488,7 +488,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                  Qmin: Vec, Qmax: Vec,
                  nc: NumericalCircuit,
                  options: PowerFlowOptions,
-                 logger: Logger):
+                 logger: Logger,
+                 consider_hvdc_lines: bool = True):
         """
         Constructor
         :param V0: Initial voltage solution
@@ -498,12 +499,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param nc: NumericalCircuit
         :param options: PowerFlowOptions
         :param logger: Logger (modified in-place)
+        :param consider_hvdc_lines: activate or deactivate the HvdcLine formulation
         """
         PfFormulationTemplate.__init__(self, V0=V0, options=options)
 
         self.nc: NumericalCircuit = nc
 
         self.logger: Logger = logger
+
+        self.consider_hvdc_lines = consider_hvdc_lines
 
         self.S0: CxVec = S0
         self.I0: CxVec = I0
@@ -562,7 +566,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC Indices
         self.hvdc_droop_idx = np.zeros(0, dtype=int)
-        self._analyze_hvdc_controls()
+        if self.consider_hvdc_lines:
+            self._analyze_hvdc_controls()
 
         # Bus indices
         self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
@@ -2248,7 +2253,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
 
         # HVDC Indices
-        # hvdc = list()
         hvdc_droop_idx = list()
 
         # HVDC LOOP
@@ -2333,15 +2337,20 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return: Residual vector
         """
 
+        if self.consider_hvdc_lines:
+            nhvdc = self.nc.hvdc_data.nelm
+        else:
+            nhvdc = 0
+
         a = len(self.i_u_va)
         b = a + len(self.i_u_vm)
         c = b + len(self.u_vsc_pf)
         d = c + len(self.u_vsc_pt)
         e = d + len(self.u_vsc_qt)
-        f = e + self.nc.hvdc_data.nelm
-        g = f + self.nc.hvdc_data.nelm
-        h = g + self.nc.hvdc_data.nelm
-        i = h + self.nc.hvdc_data.nelm
+        f = e + nhvdc
+        g = f + nhvdc
+        h = g + nhvdc
+        i = h + nhvdc
         j = i + len(self.u_cbr_m)
         k = j + len(self.u_cbr_tau)
 
@@ -2469,21 +2478,26 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
-        Vmf_hvdc = Vm[self.nc.hvdc_data.F]
-        zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
-        Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc / Vmf_hvdc, 2.0)
-        loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
+        if self.consider_hvdc_lines:
+            Vmf_hvdc = Vm[self.nc.hvdc_data.F]
+            zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
+            Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc / Vmf_hvdc, 2.0)
+            loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
 
-        Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
-        if len(self.hvdc_droop_idx):
-            Vaf_hvdc = Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
-            Vat_hvdc = Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
-            Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
-        inj_hvdc = Pf_hvdc - Pinj_hvdc
+            Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
+            if len(self.hvdc_droop_idx):
+                Vaf_hvdc = Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
+                Vat_hvdc = Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
+                Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
+            inj_hvdc = Pf_hvdc - Pinj_hvdc
 
-        Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
-        St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
-        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+            Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
+            St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
+            Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        else:
+            loss_hvdc = np.zeros(0, dtype=complex)
+            inj_hvdc = np.zeros(0, dtype=complex)
+            Scalc_hvdc = np.zeros(self.nc.bus_data.nbus, dtype=complex)
 
         # total nodal power --------------------------------------------------------------------------------------------
         Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
@@ -2846,10 +2860,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 print("(pf_generalized_formulation.py) J: ")
                 print(J.toarray())
                 print("J shape: ", J.shape)
-
-            # Jdense = np.array(J.todense())
-            # dff = pd.DataFrame(Jdense)
-            # dff.to_excel("Jacobian_autodiff.xlsx")
             return J
 
         else:
@@ -2857,11 +2867,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             tap_modules = expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0)
             tap_angles = expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0)
 
-            hvdc_r_pu = self.nc.hvdc_data.r / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase)
+            # HVDC
+            if self.consider_hvdc_lines:
+                nhvdc = self.nc.hvdc_data.nelm
 
-            hvdc_droop_redone = np.zeros(self.nc.hvdc_data.nelm, dtype=float)
-            if len(self.hvdc_droop_idx) > 0:
-                hvdc_droop_redone[self.hvdc_droop_idx] = self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx]
+                hvdc_r_pu = self.nc.hvdc_data.r / (self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase)
+
+                hvdc_droop_redone = np.zeros(self.nc.hvdc_data.nelm, dtype=float)
+                if len(self.hvdc_droop_idx) > 0:
+                    hvdc_droop_redone[self.hvdc_droop_idx] = self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx]
+            else:
+                nhvdc = 0
+                hvdc_r_pu = np.zeros(0, dtype=float)
+                hvdc_droop_redone = np.zeros(0, dtype=float)
 
             assert isspmatrix_csc(self.Ybus)
 
@@ -2869,7 +2887,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 nbus=self.nc.nbus,
                 nbr=self.nc.nbr,
                 nvsc=self.nc.vsc_data.nelm,
-                nhvdc=self.nc.hvdc_data.nelm,
+                nhvdc=nhvdc,
                 F=self.nc.passive_branch_data.F,
                 T=self.nc.passive_branch_data.T,
                 F_vsc=self.nc.vsc_data.F,
@@ -2941,6 +2959,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 print("(pf_generalized_formulation.py) J: ")
                 print(J_sym.toarray())
                 print("J shape: ", J_sym.shape)
+
+            if J_sym.shape[0] != J_sym.shape[1]:
+                print("Generalized J not square :(")
 
             return J_sym
 
