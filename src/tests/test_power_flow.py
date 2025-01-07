@@ -509,11 +509,16 @@ def test_power_flow_12bus_acdc() -> None:
                                    control_taps_phase=True,
                                    max_iter=80)
 
-        solution = gce.power_flow(grid, options)
+        driver = PowerFlowDriver(grid=grid, options=options)
+        driver.run()
+        solution = driver.results
+
+        if not solution.converged:
+            driver.logger.print("")
 
         assert solution.converged
 
-        assert np.allclose(expected_v, solution.voltage, atol=1e-4)
+        assert np.allclose(expected_v, solution.voltage, atol=1e-6)
 
         assert grid.vsc_devices[0].control1_val == solution.Pf_vsc[0]
         assert grid.vsc_devices[0].control2_val == solution.St_vsc[0].imag
@@ -623,4 +628,4 @@ def test_hvdc_all_methods() -> None:
 
 
 if __name__ == "__main__":
-    test_hvdc_all_methods()
+    test_power_flow_12bus_acdc()

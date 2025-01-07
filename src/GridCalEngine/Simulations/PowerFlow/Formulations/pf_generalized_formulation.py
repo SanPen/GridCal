@@ -2942,9 +2942,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 print(J_sym.toarray())
                 print("J shape: ", J_sym.shape)
 
-            if J_sym.shape[0] != J_sym.shape[1]:
-                print("Generalized J not square :(")
-
             return J_sym
 
     def get_x_names(self) -> List[str]:

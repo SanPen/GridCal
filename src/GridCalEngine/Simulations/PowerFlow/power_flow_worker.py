@@ -17,7 +17,7 @@ from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation impor
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_generalized_formulation import PfGeneralizedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquardt_fx
 from GridCalEngine.Topology.simulation_indices import SimulationIndices
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -71,7 +71,7 @@ def __solve_island_complete_support(nc: NumericalCircuit,
                                     indices: SimulationIndices,
                                     options: PowerFlowOptions,
                                     V0: CxVec,
-                                    S_base: CxVec,
+                                    S0: CxVec,
                                     logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -81,23 +81,18 @@ def __solve_island_complete_support(nc: NumericalCircuit,
     :param indices: SimulationIndices
     :param options: PowerFlow options
     :param V0: Array of initial voltages
-    :param S_base: Array of power Injections
+    :param S0: Array of power Injections
     :param logger: Logger
     :return: NumericPowerFlowResults
     """
+
+    logger.add_info('Using the complete support power flow method')
+
     report = ConvergenceReport()
     if options.retry_with_other_methods:
-        if nc.active_branch_data.any_pf_control:
-            solver_list = [SolverType.NR,
-                           SolverType.PowellDogLeg,
-                           SolverType.LM]
-        else:
-            solver_list = [SolverType.NR,
-                           SolverType.PowellDogLeg,
-                           SolverType.HELM,
-                           SolverType.IWAMOTO,
-                           SolverType.LM,
-                           SolverType.LACPF]
+        solver_list = [SolverType.NR,
+                       SolverType.PowellDogLeg,
+                       SolverType.LM]
 
         if options.solver_type in solver_list:
             solver_list.remove(options.solver_type)
@@ -116,8 +111,8 @@ def __solve_island_complete_support(nc: NumericalCircuit,
     Y0 = nc.get_admittance_injections_pu()
 
     if len(indices.vd) == 0:
-        solution = NumericPowerFlowResults(V=np.zeros(len(S_base), dtype=complex),
-                                           Scalc=S_base,
+        solution = NumericPowerFlowResults(V=np.zeros(len(S0), dtype=complex),
+                                           Scalc=S0,
                                            m=nc.active_branch_data.tap_module,
                                            tau=nc.active_branch_data.tap_angle,
                                            Sf=np.zeros(nc.nbr, dtype=complex),
@@ -144,16 +139,14 @@ def __solve_island_complete_support(nc: NumericalCircuit,
         # method, converged: bool, error: float, elapsed: float, iterations: int
         report.add(method=SolverType.NoSolver, converged=True, error=0.0, elapsed=0.0, iterations=0)
         logger.add_error('Not solving power flow because there is no slack bus')
-        return solution
+        return solution, report
 
     else:
-
-        adm = nc.get_admittance_matrices()
 
         final_solution = NumericPowerFlowResults(V=V0,
                                                  converged=False,
                                                  norm_f=1e200,
-                                                 Scalc=S_base,
+                                                 Scalc=S0,
                                                  m=nc.active_branch_data.tap_module,
                                                  tau=nc.active_branch_data.tap_angle,
                                                  Sf=np.zeros(nc.nbr, dtype=complex),
@@ -179,11 +172,10 @@ def __solve_island_complete_support(nc: NumericalCircuit,
             # get the solver
             solver_type = solvers[solver_idx]
 
-            # Levenberg-Marquardt
             if solver_type == SolverType.LM:
-                # Solve NR with the AC/DC algorithm
+
                 problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                   S0=S_base,
+                                                   S0=S0,
                                                    I0=I0,
                                                    Y0=Y0,
                                                    Qmin=Qmin,
@@ -192,18 +184,16 @@ def __solve_island_complete_support(nc: NumericalCircuit,
                                                    options=options,
                                                    logger=logger)
 
-                solution = levenberg_marquadt_fx(problem=problem,
-                                                 tol=options.tolerance,
-                                                 max_iter=options.max_iter,
-                                                 trust=options.trust_radius,
-                                                 verbose=options.verbose,
-                                                 logger=logger)
+                solution = levenberg_marquardt_fx(problem=problem,
+                                                  tol=options.tolerance,
+                                                  max_iter=options.max_iter,
+                                                  verbose=options.verbose,
+                                                  logger=logger)
 
-            # Newton-Raphson (full, but non-generalized)
             elif solver_type == SolverType.NR:
-                # Solve NR with the AC/DC algorithm
+
                 problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                   S0=S_base,
+                                                   S0=S0,
                                                    I0=I0,
                                                    Y0=Y0,
                                                    Qmin=Qmin,
@@ -219,12 +209,10 @@ def __solve_island_complete_support(nc: NumericalCircuit,
                                              verbose=options.verbose,
                                              logger=logger)
 
-            # Powell's Dog Leg (full)
             elif solver_type == SolverType.PowellDogLeg:
 
-                # Solve NR with the AC/DC algorithm
                 problem = PfGeneralizedFormulation(V0=final_solution.V,
-                                                   S0=S_base,
+                                                   S0=S0,
                                                    I0=I0,
                                                    Y0=Y0,
                                                    Qmin=Qmin,
@@ -296,7 +284,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                    options: PowerFlowOptions,
                                    V0: CxVec,
                                    S_base: CxVec,
-                                   Shvdc: CxVec,
+                                   Shvdc: Vec,
                                    logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
@@ -311,19 +299,17 @@ def __solve_island_limited_support(nc: NumericalCircuit,
     :param logger: Logger
     :return: NumericPowerFlowResults 
     """
+
+    logger.add_info('Using the limited support power flow method')
+
     report = ConvergenceReport()
     if options.retry_with_other_methods:
-        if nc.active_branch_data.any_pf_control:
-            solver_list = [SolverType.NR,
-                           SolverType.PowellDogLeg,
-                           SolverType.LM]
-        else:
-            solver_list = [SolverType.NR,
-                           SolverType.PowellDogLeg,
-                           SolverType.HELM,
-                           SolverType.IWAMOTO,
-                           SolverType.LM,
-                           SolverType.LACPF]
+        solver_list = [SolverType.NR,
+                       SolverType.PowellDogLeg,
+                       SolverType.HELM,
+                       SolverType.IWAMOTO,
+                       SolverType.LM,
+                       SolverType.LACPF]
 
         if options.solver_type in solver_list:
             solver_list.remove(options.solver_type)
@@ -341,9 +327,11 @@ def __solve_island_limited_support(nc: NumericalCircuit,
     I0 = nc.get_current_injections_pu()
     Y0 = nc.get_admittance_injections_pu()
 
+    Sbase_plus_hvdc = S_base + Shvdc
+
     if len(indices.vd) == 0:
         solution = NumericPowerFlowResults(V=np.zeros(len(S_base), dtype=complex),
-                                           Scalc=S_base + Shvdc,
+                                           Scalc=Sbase_plus_hvdc,
                                            m=nc.active_branch_data.tap_module,
                                            tau=nc.active_branch_data.tap_angle,
                                            Sf=np.zeros(nc.nbr, dtype=complex),
@@ -370,7 +358,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
         # method, converged: bool, error: float, elapsed: float, iterations: int
         report.add(method=SolverType.NoSolver, converged=True, error=0.0, elapsed=0.0, iterations=0)
         logger.add_error('Not solving power flow because there is no slack bus')
-        return solution
+        return solution, report
 
     else:
 
@@ -379,7 +367,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
         final_solution = NumericPowerFlowResults(V=V0,
                                                  converged=False,
                                                  norm_f=1e200,
-                                                 Scalc=S_base + Shvdc,
+                                                 Scalc=Sbase_plus_hvdc,
                                                  m=nc.active_branch_data.tap_module,
                                                  tau=nc.active_branch_data.tap_angle,
                                                  Sf=np.zeros(nc.nbr, dtype=complex),
@@ -415,7 +403,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                            Yt=adm.Yt,
                                            Yseries=adms.Yseries,
                                            V0=V0,  # take V0 instead of V
-                                           S0=S_base + Shvdc,
+                                           S0=Sbase_plus_hvdc,
                                            Ysh0=adms.Yshunt,
                                            pq=indices.pq,
                                            pv=indices.pv,
@@ -438,7 +426,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                                    Yt=adm.Yt,
                                                    Yseries=adms.Yseries,
                                                    V0=V0,  # take V0 instead of V
-                                                   S0=S_base + Shvdc + delta,
+                                                   S0=Sbase_plus_hvdc + delta,
                                                    Ysh0=adms.Yshunt,
                                                    pq=indices.pq,
                                                    pv=indices.pv,
@@ -462,7 +450,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                      Bpqpv=Bpqpv,
                                      Bref=Bref,
                                      Bf=lin_adm.Bf,
-                                     S0=S_base + Shvdc,
+                                     S0=Sbase_plus_hvdc,
                                      I0=I0,
                                      Y0=Y0,
                                      V0=V0,
@@ -482,7 +470,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                              Bpqpv=Bpqpv,
                                              Bref=Bref,
                                              Bf=lin_adm.Bf,
-                                             S0=S_base + Shvdc + delta,
+                                             S0=Sbase_plus_hvdc + delta,
                                              I0=I0,
                                              Y0=Y0,
                                              V0=V0,
@@ -500,7 +488,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                       Yf=adm.Yf,
                                       Yt=adm.Yt,
                                       Ys=adms.Yseries,
-                                      S0=S_base + Shvdc,
+                                      S0=Sbase_plus_hvdc,
                                       V0=V0,
                                       pq=indices.pq,
                                       pv=indices.pv,
@@ -515,7 +503,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                               Yf=adm.Yf,
                                               Yt=adm.Yt,
                                               Ys=adms.Yseries,
-                                              S0=S_base + Shvdc + delta,
+                                              S0=Sbase_plus_hvdc + delta,
                                               V0=V0,
                                               pq=indices.pq,
                                               pv=indices.pv,
@@ -527,7 +515,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                         Ybus=adm.Ybus,
                                         Yf=adm.Yf,
                                         Yt=adm.Yt,
-                                        S0=S_base + Shvdc,
+                                        S0=Sbase_plus_hvdc,
                                         I0=I0,
                                         Y0=Y0,
                                         V0=V0,
@@ -549,7 +537,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
             # Levenberg-Marquardt
             elif solver_type == SolverType.LM:
                 problem = PfBasicFormulation(V0=final_solution.V,
-                                             S0=S_base + Shvdc,
+                                             S0=Sbase_plus_hvdc,
                                              I0=I0,
                                              Y0=Y0,
                                              Qmin=Qmin,
@@ -557,12 +545,11 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                              nc=nc,
                                              options=options)
 
-                solution = levenberg_marquadt_fx(problem=problem,
-                                                 tol=options.tolerance,
-                                                 max_iter=options.max_iter,
-                                                 trust=options.trust_radius,
-                                                 verbose=options.verbose,
-                                                 logger=logger)
+                solution = levenberg_marquardt_fx(problem=problem,
+                                                  tol=options.tolerance,
+                                                  max_iter=options.max_iter,
+                                                  verbose=options.verbose,
+                                                  logger=logger)
 
             # Fast decoupled
             elif solver_type == SolverType.FASTDECOUPLED:
@@ -570,7 +557,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
 
                 solution = pflw.FDPF(nc=nc,
                                      Vbus=V0,
-                                     S0=S_base + Shvdc,
+                                     S0=Sbase_plus_hvdc,
                                      I0=I0,
                                      Y0=Y0,
                                      Ybus=adm.Ybus,
@@ -594,7 +581,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
             # Newton-Raphson (full, but non-generalized)
             elif solver_type == SolverType.NR:
                 problem = PfBasicFormulation(V0=final_solution.V,
-                                             S0=S_base + Shvdc,
+                                             S0=Sbase_plus_hvdc,
                                              I0=I0,
                                              Y0=Y0,
                                              Qmin=Qmin,
@@ -633,7 +620,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                           Ybus=adm.Ybus,
                                           Yf=adm.Yf,
                                           Yt=adm.Yt,
-                                          S0=S_base + Shvdc,
+                                          S0=Sbase_plus_hvdc,
                                           V0=final_solution.V,
                                           I0=I0,
                                           Y0=Y0,
@@ -763,7 +750,7 @@ def __multi_island_pf_nc_complete_support(nc: NumericalCircuit,
                 indices=indices,
                 options=options,
                 V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],
-                S_base=Sbus_base if Sbus_input is None else Sbus_input[island.bus_data.original_idx],
+                S0=Sbus_base if Sbus_input is None else Sbus_input[island.bus_data.original_idx],
                 logger=logger
             )
 

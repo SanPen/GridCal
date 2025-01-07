@@ -656,3 +656,6 @@ if __name__ == "__main__":
     # test_transformer_tau_lims()
 
     pass
+
+if __name__ == "__main__":
+    test_power_flow_12bus_acdc()

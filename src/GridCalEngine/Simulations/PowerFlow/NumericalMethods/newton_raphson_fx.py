@@ -73,37 +73,38 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 print(f'Iter: {iteration}')
                 print('-' * 200)
 
-            # compute update step
+            J: CSC = problem.Jacobian()
+
+            if J.shape[0] != J.shape[1]:
+                logger.add_error("Jacobian not square, check the controls!", "Newton-Raphson",
+                                 value=J.shape[0], expected_value=J.shape[1])
+                return problem.get_solution(elapsed=time.time() - start, iterations=iteration, )
+
+            if J.shape[0] != len(f):
+                logger.add_error("Jacobian and residuals have different sizes!", "Newton-Raphson",
+                                 value=len(f), expected_value=J.shape[0])
+                return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+
+
             try:
 
                 # compute update step: J x Δx = Δg
-                J: CSC = problem.Jacobian()
-
-                if J.shape[0] != J.shape[1]:
-                    logger.add_error("Jacobian not square, check the controls!", "Newton-Raphson",
-                                     value=J.shape[0], expected_value=J.shape[1])
-                    return problem.get_solution(elapsed=time.time() - start, iterations=iteration,)
-
-                if J.shape[0] != len(f):
-                    logger.add_error("Jacobian and residuals have different sizes!", "Newton-Raphson",
-                                     value=len(f), expected_value=J.shape[0])
-                    return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
-
                 dx, ok = spsolve_csc(J, -f)
 
-                if verbose > 1:
-                    print("J:\n", problem.get_jacobian_df(J))
-                    print("F:\n", problem.get_f_df(f))
-                    print("dx:\n", problem.get_x_df(dx))
-
-                if not ok:
-                    logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
-                    print("(newton_raphson_fx.py) Singular Jacobian")
-                    return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
             except RuntimeError:
                 logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
                 print("(newton_raphson_fx.py) Singular Jacobian")
                 return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+
+            if not ok:
+                logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
+                print("(newton_raphson_fx.py) Singular Jacobian")
+                return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+
+            if verbose > 1:
+                print("J:\n", problem.get_jacobian_df(J))
+                print("F:\n", problem.get_f_df(f))
+                print("dx:\n", problem.get_x_df(dx))
 
             # line search
             mu = trust0
