@@ -102,12 +102,13 @@ def try_power_flow() -> None:
     grid = gce.open_file(fname)
 
     options = PowerFlowOptions(solver_type=gce.SolverType.NR,
-                               verbose=0,
+                               verbose=1,
                                control_q=False,
                                retry_with_other_methods=False,
                                initialize_with_existing_solution=False,
                                control_taps_phase=True,
                                control_taps_modules=False,
+                               tolerance=1e-5,
                                max_iter=80)
 
     problem, solution = solve_generalized(grid=grid, options=options, generalized=True)
@@ -115,6 +116,15 @@ def try_power_flow() -> None:
 
     print(solution.elapsed)
 
+    n_act = 0
+    n_inact = 0
+    for bus in grid.buses:
+        if bus.active:
+            n_act += 1
+        else:
+            n_inact += 1
+
+    print(n_act, n_inact)
     print(solution.norm_f)
 
     assert solution.converged
