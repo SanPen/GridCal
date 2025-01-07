@@ -534,9 +534,7 @@ def test_power_flow_12bus_acdc() -> None:
 
         assert grid.transformers2w[2].vset == abs(solution.voltage[13])
 
-        assert grid.hvdc_lines[0].Pset == solution.Pf_hvdc[0]
-
-
+        assert np.allclose(grid.hvdc_lines[0].Pset, solution.Pf_hvdc[0], atol=1e-10)
 
 
 def test_hvdc_all_methods() -> None:
