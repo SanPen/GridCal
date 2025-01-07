@@ -383,7 +383,7 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     return Ybus.tocsc()
 
 
-@njit(cache=True)
+# @njit(cache=True)
 def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """
@@ -2511,6 +2511,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qf_cbr - self.cbr_qf_set,
             Qt_cbr - self.cbr_qt_set
         ]
+
+        # Print index blocks of f
+        print('Lengths: ')
+        print(len(self.i_k_p), len(self.i_k_q), len(loss_vsc), len(loss_hvdc), len(inj_hvdc),
+              len(Pf_cbr), len(Pt_cbr), len(Qf_cbr), len(Qt_cbr))
+
+        print('Pf set: ', self.cbr_pf_set)
+        print('f errors: ')
+        # Get indices of troublesome values
+        for i, ff in enumerate(_f):
+            if abs(ff) > 0.5:
+                print(i, ff)
 
         return _f
 
