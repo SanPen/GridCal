@@ -28,8 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improvements in reporting and logging power flows">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Deleted test output files">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/output/IEEE14.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/output/raw_export_result/IEEE 14 bus.rawx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/output/raw_export_result/IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss.raw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/output/raw_to_cgmes_export_results/IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst_from_raw_GC.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/output/IEEE39_1W_results.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/output/tuc_17_1_ieee14_cim_converter.xlsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1487,7 +1493,7 @@
       <workItem from="1736122038036" duration="1572000" />
       <workItem from="1736159852001" duration="11722000" />
       <workItem from="1736234867701" duration="5425000" />
-      <workItem from="1736267184259" duration="6051000" />
+      <workItem from="1736267184259" duration="6472000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1832,7 +1838,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="538" />
+    <option name="localTasksCounter" value="539" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1885,7 +1891,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Bug fix for segment subdivision" />
     <MESSAGE value="Stopgap solution for zoom problem with maps" />
     <MESSAGE value="avoid changing tilesets to themselves" />
     <MESSAGE value="Fixed the CN children connection point" />
@@ -1910,7 +1915,8 @@
     <MESSAGE value="More topology docs" />
     <MESSAGE value="making HVDC optional in generalized PF" />
     <MESSAGE value="Improvements in reporting and logging power flows" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improvements in reporting and logging power flows" />
+    <MESSAGE value="Deleted test output files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deleted test output files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2679,7 +2685,7 @@
     <SUITE FILE_PATH="coverage/GridCal_debug$pytest_for_test_nonlinear_contingency_test_non_linear_factors.coverage" NAME="pytest for test_nonlinear_contingency.test_non_linear_factors Coverage Results" MODIFIED="1734953334134" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_continuation_power_flow.coverage" NAME="Nosetests for tests.test_continuation_power_flow Coverage Results" MODIFIED="1712338444431" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_power_flow_test_dc_pf_ieee14.coverage" NAME="Nosetests for test_power_flow.test_dc_pf_ieee14 Coverage Results" MODIFIED="1708459374133" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1736268381753" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1736278973275" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$LineBuilderDialogue.coverage" NAME="LineBuilderDialogue Coverage Results" MODIFIED="1633774223527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_in_test_deep_copy_py.coverage" NAME="pytest in test_deep_copy.py Coverage Results" MODIFIED="1724249395795" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_power_flow_test_power_flow_control_with_pst.coverage" NAME="pytest for test_power_flow.test_power_flow_control_with_pst Coverage Results" MODIFIED="1723561309289" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
