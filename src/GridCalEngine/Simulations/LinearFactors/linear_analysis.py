@@ -680,7 +680,7 @@ class LinearAnalysis:
                     else:
                         self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
 
-                elif len(island.vd) == 0:
+                elif len(indices.vd) == 0:
                     self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
 
                 else:
