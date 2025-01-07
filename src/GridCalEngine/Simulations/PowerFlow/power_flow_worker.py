@@ -734,7 +734,7 @@ def __multi_island_pf_nc_complete_support(nc: NumericalCircuit,
 
     # compute islands
     islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
-                                    consider_hvdc_as_island_links=False,
+                                    consider_hvdc_as_island_links=True,
                                     logger=logger)
 
     for i, island in enumerate(islands):
@@ -823,7 +823,7 @@ def __multi_island_pf_nc_limited_support(nc: NumericalCircuit,
 
     # compute islands
     islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
-                                    consider_hvdc_as_island_links=True,
+                                    consider_hvdc_as_island_links=False,
                                     logger=logger)
 
     for i, island in enumerate(islands):
