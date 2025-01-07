@@ -528,6 +528,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
         self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
 
+        # HVDC LOOP
+        for k in range(self.nc.hvdc_data.nelm):
+            self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.F[k]] = True
+            self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.T[k]] = True
+
         # Controllable Branch Indices
         self.u_cbr_m = np.zeros(0, dtype=int)
         self.u_cbr_tau = np.zeros(0, dtype=int)
@@ -2253,6 +2258,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # HVDC LOOP
         for k in range(self.nc.hvdc_data.nelm):
             # hvdc.append(k)
+            # self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.bus_f[k]] = True
+            # self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.bus_t[k]] = True
+            # self.nc.bus_data.bus_types[self.nc.hvdc_data.bus_f[k]] = BusMode.PQV
             if self.nc.hvdc_data.control_mode[k] == HvdcControlType.type_0_free:
                 hvdc_droop_idx.append(k)
 
