@@ -664,7 +664,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         cbr_qf_set = list()
         cbr_qt_set = list()
 
+        dic_old_to_new_bus = {val: idx for idx, val in enumerate(self.nc.bus_data.original_idx)}
+
         # CONTROLLABLE BRANCH LOOP
+        count_overl = 0
         for k in range(self.nc.passive_branch_data.nelm):
 
             ctrl_m = self.nc.active_branch_data.tap_module_control_mode[k]
@@ -675,11 +678,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                 # Every bus controlled by m has to become a PQV bus
                 bus_idx = self.nc.active_branch_data.tap_controlled_buses[k]
+                new_bus_idx = dic_old_to_new_bus[bus_idx]
                 # self.is_p_controlled[bus_idx] = True
                 # self.is_q_controlled[bus_idx] = True
-                self.is_vm_controlled[bus_idx] = True
-                # self.is_va_controlled[bus_idx] = True
-                u_cbr_m.append(k)
+                if not self.is_vm_controlled[new_bus_idx]:
+                    self.is_vm_controlled[new_bus_idx] = True
+                    u_cbr_m.append(k)
 
             elif ctrl_m == TapModuleControl.Qf:
                 u_cbr_m.append(k)
@@ -724,6 +728,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             else:
                 raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
 
+        print('count_overl', count_overl)
         self.u_cbr_m = np.array(u_cbr_m, dtype=int)
         self.u_cbr_tau = np.array(u_cbr_tau, dtype=int)
         self.cbr = np.array(cbr, dtype=int)
@@ -2512,17 +2517,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt_cbr - self.cbr_qt_set
         ]
 
-        # Print index blocks of f
-        print('Lengths: ')
-        print(len(self.i_k_p), len(self.i_k_q), len(loss_vsc), len(loss_hvdc), len(inj_hvdc),
-              len(Pf_cbr), len(Pt_cbr), len(Qf_cbr), len(Qt_cbr))
-
-        print('Pf set: ', self.cbr_pf_set)
-        print('f errors: ')
-        # Get indices of troublesome values
-        for i, ff in enumerate(_f):
-            if abs(ff) > 0.5:
-                print(i, ff)
 
         return _f
 

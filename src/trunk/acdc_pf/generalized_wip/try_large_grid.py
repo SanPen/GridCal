@@ -93,7 +93,8 @@ def try_power_flow() -> None:
     Check that a transformer can regulate the voltage at a bus
     """
     # fname = os.path.join('/Users', 'josep', 'Documents', 'Grids', '202206011015_vsc.gridcal')
-    fname = os.path.join('/Users', 'josep', 'Documents', 'Grids', '202206011015_original.gridcal')
+    # fname = os.path.join('/Users', 'josep', 'Documents', 'Grids', '202206011015_original.gridcal')
+    fname = os.path.join('/Users', 'josep', 'Documents', 'Grids', '202206011015_modified_tr.gridcal')
     # fname = os.path.join('/Users', 'josep', 'Documents', 'Grids', '202206011015_off_shunts.gridcal')
     # fname = os.path.join('/Users', 'josep', 'Documents', 'Grids', '202206011015_on_shunts.gridcal')
     # fname = os.path.join('/Users', 'josep', 'Documents', 'Grids', '202206011015_no_shunts.gridcal')
@@ -107,7 +108,7 @@ def try_power_flow() -> None:
                                retry_with_other_methods=False,
                                initialize_with_existing_solution=False,
                                control_taps_phase=True,
-                               control_taps_modules=False,
+                               control_taps_modules=True,
                                tolerance=1e-5,
                                max_iter=80)
 
