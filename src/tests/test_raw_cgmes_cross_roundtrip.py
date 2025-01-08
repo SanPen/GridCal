@@ -47,6 +47,36 @@ def create_file_open_options() -> FileOpenOptions:
     return options
 
 
+def get_power_flow_options() -> PowerFlowOptions:
+    """
+    
+    :return: 
+    """
+    pfo = PowerFlowOptions(
+        # solver_type=SolverType.NR,
+        # retry_with_other_methods=True,
+        # verbose=0,
+        # initialize_with_existing_solution=False,
+        # tolerance=1e-6,
+        # max_iter=25,
+        # max_outer_loop_iter=100,
+        # control_q=True,
+        control_taps_modules=True,
+        control_taps_phase=True,
+        control_remote_voltage=True,
+        # orthogonalize_controls=True,
+        # apply_temperature_correction=True,
+        # branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+        # distributed_slack=False,
+        ignore_single_node_islands=True,
+        # trust_radius=1.0,
+        # backtracking_parameter=0.05,
+        # use_stored_guess=False,
+        # generate_report=False
+    )
+    return pfo
+
+
 def run_raw_to_cgmes(import_path: str | list[str],
                      export_fname: str,
                      boundary_zip_path: str):
@@ -65,7 +95,7 @@ def run_raw_to_cgmes(import_path: str | list[str],
     # already done in raw_to_gridcal.py
 
     # run power flow
-    pf_options = PowerFlowOptions()
+    pf_options = get_power_flow_options()
     pf1_res = gce.power_flow(circuit1, pf_options)
     # pf_options = None
     # pf1_res = None
@@ -148,14 +178,21 @@ def run_raw_to_cgmes(import_path: str | list[str],
     if pf_ok:
         print("\nOK! SUCCESS for PowerFlow results!\n")
     else:
+        print("Tap modules")
+        print(pf1_res.tap_module)
+        print(pf2_res.tap_module)
+        print("Tap phase")
+        print(pf1_res.tap_angle)
+        print(pf2_res.tap_angle)
+        # running in the GUI they are matching
+
+        print("\nVoltages")
         print(np.abs(pf1_res.voltage))
         print(np.abs(pf2_res.voltage))
-        print("Diff")
+        print("Voltage abs diff")
         print(np.abs(pf2_res.voltage) - np.abs(pf1_res.voltage))
 
     assert pf_ok
-
-
 
 
 def test_raw_to_cgmes_cross_roundtrip():
@@ -170,17 +207,18 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE 14 bus'  # PASSEED
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'IEEE 30 bus'  # tap_module num error
+    # braches excessive voltage diff: PASSED if these branches are not added as trafos
+    # test_grid_name = 'IEEE 30 bus'  # num of transormer2w??!! (tap_module num error)
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
+    # test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
 
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
