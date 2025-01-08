@@ -142,10 +142,7 @@ class CDF:
         :return: expectation
         """
         n = len(self.arr)
-        if self.iscomplex:
-            return np.sum(self.arr) * (1 / n)
-        else:
-            return np.sum(self.arr) * (1 / n)
+        return np.sum(self.arr) * (1 / n)
 
     def plot(self, plt, LINEWIDTH: int, ax=None):
         """

@@ -8,3 +8,6 @@ def test_CDF_expectation():
 
     assert np.allclose(x.mean(), gce.CDF(x).expectation(), atol=1e-5)
 
+    x = random.rand(200)
+
+    assert np.allclose(x.mean(), gce.CDF(x).expectation(), atol=1e-5)
