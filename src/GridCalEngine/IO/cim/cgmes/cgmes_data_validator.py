@@ -66,7 +66,7 @@ class CgmesDataValidator:
         current_directory = os.path.dirname(__file__)
 
         rdf_serialization = Graph()
-        rdf_serialization.parse(source=os.path.join(current_directory, "export_docs\RDFSSerialisation.ttl"),
+        rdf_serialization.parse(source=os.path.join(current_directory, "export_docs", "RDFSSerialisation.ttl"),
                                 format="ttl")
         enum_dict = dict()
 
