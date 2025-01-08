@@ -14,6 +14,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDrive
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 import GridCalEngine.api as gce
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def test_ieee_grids():
     """
@@ -541,11 +543,8 @@ def test_hvdc_all_methods() -> None:
     """
     Checks that the HVDC logic is working for all power flow methods
     """
-    fname = os.path.join('data', 'grids', '8_nodes_2_islands_hvdc.gridcal')
-
+    fname = os.path.join(SCRIPT_DIR, 'data', 'grids', '8_nodes_2_islands_hvdc.gridcal')
     grid = gce.open_file(fname)
-
-    grid.hvdc_lines[0].Pset = 10  # this is what we'll check later
 
     for solver_type in [SolverType.NR,
                         SolverType.LM,
@@ -585,6 +584,8 @@ def test_hvdc_all_methods() -> None:
 
         assert res.converged
         assert res.Pf_hvdc[0] == 10.0
+        assert np.isclose(abs(res.voltage[6]), 1.01111, atol=1e-4)
+        assert np.isclose(abs(res.voltage[1]), 1.02222, atol=1e-4)
 
     # repeat forcing to use the special formulations
     for solver_type in [SolverType.NR,
@@ -623,7 +624,10 @@ def test_hvdc_all_methods() -> None:
 
         assert res.converged
         assert res.Pf_hvdc[0] == 10.0
+        assert np.isclose(abs(res.voltage[6]), 1.01111, atol=1e-4)
+        assert np.isclose(abs(res.voltage[1]), 1.02222, atol=1e-4)
 
 
 if __name__ == "__main__":
-    test_power_flow_12bus_acdc()
+    # test_power_flow_12bus_acdc()
+    test_hvdc_all_methods()

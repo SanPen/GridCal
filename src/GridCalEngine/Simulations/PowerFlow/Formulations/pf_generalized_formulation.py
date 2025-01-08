@@ -383,7 +383,7 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     return Ybus.tocsc()
 
 
-@njit(cache=True)
+# @njit(cache=True)
 def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """
@@ -527,6 +527,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
         self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
         self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
+
+        # HVDC LOOP
+        for k in range(self.nc.hvdc_data.nelm):
+            self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.F[k]] = True
+            self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.T[k]] = True
 
         # Controllable Branch Indices
         self.u_cbr_m = np.zeros(0, dtype=int)
@@ -2253,6 +2258,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # HVDC LOOP
         for k in range(self.nc.hvdc_data.nelm):
             # hvdc.append(k)
+            # self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.bus_f[k]] = True
+            # self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.bus_t[k]] = True
+            # self.nc.bus_data.bus_types[self.nc.hvdc_data.bus_f[k]] = BusMode.PQV
             if self.nc.hvdc_data.control_mode[k] == HvdcControlType.type_0_free:
                 hvdc_droop_idx.append(k)
 
@@ -2503,6 +2511,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qf_cbr - self.cbr_qf_set,
             Qt_cbr - self.cbr_qt_set
         ]
+
+        # Print index blocks of f
+        print('Lengths: ')
+        print(len(self.i_k_p), len(self.i_k_q), len(loss_vsc), len(loss_hvdc), len(inj_hvdc),
+              len(Pf_cbr), len(Pt_cbr), len(Qf_cbr), len(Qt_cbr))
+
+        print('Pf set: ', self.cbr_pf_set)
+        print('f errors: ')
+        # Get indices of troublesome values
+        for i, ff in enumerate(_f):
+            if abs(ff) > 0.5:
+                print(i, ff)
 
         return _f
 
