@@ -141,10 +141,11 @@ class CDF:
         Returns the CDF expected value (AKA the mean)
         :return: expectation
         """
+        n = len(self.arr)
         if self.iscomplex:
-            return np.sum(self.arr * self.prob)
+            return np.sum(self.arr) * (1 / n)
         else:
-            return np.sum(self.arr * self.prob)
+            return np.sum(self.arr) * (1 / n)
 
     def plot(self, plt, LINEWIDTH: int, ax=None):
         """
