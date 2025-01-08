@@ -348,7 +348,7 @@ def create_cgmes_regulating_control(cgmes_elm,
     rc.name = f'_RC_{mc_gen.name}'
     rc.shortName = rc.name
     rc.mode = RegulatingControlModeKind.voltage
-    rc.Terminal = cgmes_elm.Terminals
+    rc.Terminal = cgmes_elm.Terminals   # TODO get a terminal from the controlled bus !!!
 
     rc.RegulatingCondEq = cgmes_elm
     rc.discrete = False

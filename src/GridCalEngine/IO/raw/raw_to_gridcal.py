@@ -213,6 +213,7 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
     elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
                                 # B=b_init,   # TODO Binit
+                                # TODO adjust the step!
                                 vset=vset,
                                 code=busnum_id,
                                 is_nonlinear=True)
@@ -445,6 +446,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
 
             elm.tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
+            elm.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
             elm.regulation_bus = psse_bus_dict[psse_elm.CONT1]
 
         elif psse_elm.COD1 in [2, -2]:  # for reactive power flow control
@@ -471,11 +473,11 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             elm.tap_changer.recalc()
             elm.tap_phase = elm.tap_changer.get_tap_phase()
 
-            print()
+            print("Tap module, and phase calculated:",
+                  elm.tap_module, elm.tap_phase)
 
         elif psse_elm.COD1 in [4, -4]:  # for control of a dc line quantity
-            # (valid only for two-windingtransformers)
-
+            # (valid only for two-winding transformers)
             logger.add_error(msg="Not implemented transformer control. (COD1)",
                              value=psse_elm.COD1)
 
@@ -994,23 +996,24 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     branches_already_there = set()
 
     # Go through Transformers
-    for psse_branch in psse_circuit.transformers:
+    for psse_transformer in psse_circuit.transformers:
         # get the object
-        branch, n_windings = get_gridcal_transformer(psse_branch, psse_bus_dict, psse_circuit.SBASE, logger)
+        transformer, n_windings = get_gridcal_transformer(psse_transformer, psse_bus_dict, psse_circuit.SBASE, logger)
 
-        if branch.idtag not in branches_already_there:
+        if transformer.idtag not in branches_already_there:
             # Add to the circuit
             if n_windings == 2:
-                circuit.add_transformer2w(branch)
+                if transformer.LV != 1.0 and transformer.HV != 1.0:   # avoid adding middle bus
+                    circuit.add_transformer2w(transformer)
             elif n_windings == 3:
-                circuit.add_transformer3w(branch)
+                circuit.add_transformer3w(transformer)
             else:
                 raise Exception('Unsupported number of windings')
-            branches_already_there.add(branch.idtag)
+            branches_already_there.add(transformer.idtag)
 
         else:
             logger.add_warning('The RAW file has a repeated transformer and it is omitted from the model',
-                               branch.idtag)
+                               transformer.idtag)
 
     # Go through the Branches
     for psse_branch in psse_circuit.branches:
