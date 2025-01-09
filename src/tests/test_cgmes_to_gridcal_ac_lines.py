@@ -31,7 +31,7 @@ def cgmes_object():
     circuit = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     cl = CurrentLimit()
     cl.OperationalLimitSet = OperationalLimitSet()
-    cl.OperationalLimitSet.Terminal = ACDCTerminal()
+    cl.OperationalLimitSet.Terminal = Terminal()
     cl.OperationalLimitSet.Terminal.ConductingEquipment = ACLineSegment()
     cl.OperationalLimitSet.Terminal.ConductingEquipment.uuid = "branch_id"
     cl.value = 10
