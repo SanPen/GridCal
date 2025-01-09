@@ -10,7 +10,7 @@ other solver interface easily
 """
 from __future__ import annotations
 
-from typing import List, Union, Callable
+from typing import List, Union, Callable, Any
 import subprocess
 import GridCalEngine.Utils.ThirdParty.pulp as pulp
 from GridCalEngine.Utils.ThirdParty.pulp import HiGHS, CPLEX_CMD
@@ -339,7 +339,7 @@ class LpModel:
         return self.model.isMIP()
 
     @staticmethod
-    def get_value(x: Union[float, int, LpVar, LpExp, LpCst]) -> float:
+    def get_value(x: Union[float, int, LpVar, LpExp, LpCst, Any]) -> float:
         """
         Get the value of a variable stored in a numpy array of objects
         :param x: solver object (it may be a LP var or a number)

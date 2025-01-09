@@ -7,7 +7,8 @@ import numpy as np
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 
@@ -91,8 +92,8 @@ def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
 
     # Branches
     all_events += get_reliability_events(horizon,
-                                         nc.branch_data.mttf,
-                                         nc.branch_data.mttr,
+                                         nc.passive_branch_data.mttf,
+                                         nc.passive_branch_data.mttr,
                                          DeviceType.BranchDevice)
 
     all_events += get_reliability_events(horizon,
@@ -134,7 +135,7 @@ def run_events(nc: NumericalCircuit, events_list: list):
             pass
 
         elif tpe == DeviceType.BranchDevice:
-            nc.branch_data.active[i] = state
+            nc.passive_branch_data.active[i] = state
 
         elif tpe == DeviceType.GeneratorDevice:
             nc.generator_data.active[i] = state

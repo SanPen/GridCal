@@ -6,14 +6,13 @@ import os
 from GridCalEngine.api import *
 
 
-def test_non_linear_factors():
-    # Prepare simulation
-    # get the directory of this file
-    current_path = os.path.dirname(__file__)
+def test_non_linear_factors() -> None:
+    """
 
+    :return:
+    """
     # navigate to the grids folder
-    grids_path = os.path.join(current_path, 'data', 'grids')
-    fname = os.path.join(grids_path, 'RAW', 'IEEE 30 bus.raw')
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 30 bus.raw')
     main_circuit = FileOpen(fname).open()
 
     # Check results, run pf with line out
@@ -57,7 +56,7 @@ def test_non_linear_factors():
     pf = PowerFlowDriver(main_circuit, pf_options)
     pf.run()
 
-    # Print results ----------------------------------------------------------------------------------------------------
+    # Check results ----------------------------------------------------------------------------------------------------
 
     # check that the power flow effectivelly failed the indicated line
     assert pf.results.Sf[line_idx_test] == 0
@@ -69,8 +68,6 @@ def test_non_linear_factors():
     Vcont = abs(nl_simulation.results.voltage)
     Vexact = abs(pf.results.voltage)
     assert np.allclose(Vexact, Vcont[0, :], atol=1e-3)
-
-    return True
 
 
 if __name__ == '__main__':

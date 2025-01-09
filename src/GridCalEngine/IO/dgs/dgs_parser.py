@@ -208,7 +208,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
     # store tables for easy reference
 
-    '''
+    """
     ###############################################################################
     *  Line
     *
@@ -221,10 +221,10 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  fline: Parameters: Derating Factor
     *  outserv: Out of Service
     *  pStoch: Failures: Element model in StoTyplne
-    '''
+    """
     lines = data.get("ElmLne", np.zeros((0, 20)))
 
-    '''
+    """
     ###############################################################################
     *  Line Type
     *
@@ -245,13 +245,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  uline: Rated Voltage in kV
     *  xline: Parameters per Length 1,2-Sequence: Reactance X' in Ohm/km
     *  xline0: Parameters per Length Zero Sequence: Reactance X0' in Ohm/km
-    '''
+    """
     if "TypLne" in data.keys():
         lines_types = data["TypLne"]
     else:
         lines_types = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  2-Winding Transformer
     *
@@ -269,13 +269,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  ntrcn: Controller, Tap Changer 1: Automatic Tap Changing
     *  outserv: Out of Service
     *  ratfac: Rating Factor
-    '''
+    """
     if "ElmTr2" in data.keys():
         transformers = data["ElmTr2"]
     else:
         transformers = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  2-Winding Transformer Type
     *
@@ -304,13 +304,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  utrn_h: Rated Voltage: HV-Side in kV
     *  utrn_l: Rated Voltage: LV-Side in kV
     *  zx0hl_n: Zero Sequence Magnetising Impedance: Mag. Impedance/uk0
-    '''
+    """
     if "TypTr2" in data.keys():
         transformers_types = data["TypTr2"]
     else:
         transformers_types = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Terminal
     *
@@ -323,13 +323,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  outserv: Out of Service
     *  phtech: Phase Technology:ABC:ABC-N:BI:BI-N:2PH:2PH-N:1PH:1PH-N:N
     *  uknom: Nominal Voltage: Line-Line in kV
-    '''
+    """
     if "ElmTerm" in data.keys():
         buses = data["ElmTerm"]
     else:
         buses = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Cubicle
     *
@@ -339,13 +339,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  chr_name: Characteristic Name
     *  obj_bus: Bus Index
     *  obj_id: Connected with in Elm*
-    '''
+    """
     if "StaCubic" in data.keys():
         cubicles = data["StaCubic"]
     else:
         cubicles = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  General Load
     *
@@ -358,13 +358,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  plini: Operating Point: Active Power in MW
     *  qlini: Operating Point: Reactive Power in Mvar
     *  scale0: Operating Point: Scaling Factor
-    '''
+    """
     if "ElmLod" in data.keys():
         loads = data["ElmLod"]
     else:
         loads = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  External Grid
     *
@@ -382,13 +382,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  rntxnmin: Min. Values: R/X Ratio (min.)
     *  snss: Max. Values: Short-Circuit Power Sk''max in MVA
     *  snssmin: Min. Values: Short-Circuit Power Sk''min in MVA
-    '''
+    """
     if "ElmXnet" in data.keys():
         external = data["ElmXnet"]
     else:
         external = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Grid
     *
@@ -396,21 +396,21 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  loc_name: Name
     *  fold_id: In Folder
     *  frnom: Nominal Frequency in Hz
-    '''
+    """
     if "ElmNet" in data.keys():
         grid = data["ElmNet"]
     else:
         grid = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
-    '''
+    """
     if "ElmGenstat" in data.keys():
         static_generators = data["ElmGenstat"]
     else:
         static_generators = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Synchronous Machine
     *
@@ -428,13 +428,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  q_min: Reactive Power Operational Limits: Min. in p.u.
     *  qgini: Dispatch: Reactive Power in Mvar
     *  usetp: Dispatch: Voltage in p.u.
-    '''
+    """
     if "ElmSym" in data.keys():
         synchronous_machine = data["ElmSym"]
     else:
         synchronous_machine = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Synchronous Machine Type
     *
@@ -450,13 +450,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  xdsat: For single fed short-circuit: Reciprocal of short-circuit ratio (xdsat) in p.u.
     *  xdsss: Subtransient Reactance: saturated value xd''sat in p.u.
     *  xq: Synchronous Reactances: xq in p.u.
-    '''
+    """
     if "TypSym" in data.keys():
         synchronous_machine_type = data["TypSym"]
     else:
         synchronous_machine_type = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Asynchronous Machine
     *
@@ -469,13 +469,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  ngnum: Number of: parallel Machines
     *  outserv: Out of Service
     *  pgini: Dispatch: Active Power in MW
-    '''
+    """
     if "ElmAsm" in data.keys():
         asynchronous_machine = data["ElmAsm"]
     else:
         asynchronous_machine = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Synchronous Machine Type
     *
@@ -496,13 +496,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  ugn: Rated Voltage in kV
     *  xmrtr: Rotor Leakage Reac. Xrm in p.u.
     *  xstr: Stator Reactance Xs in p.u.
-    '''
+    """
     if "TypAsmo" in data.keys():
         asynchronous_machine_type = data["TypAsmo"]
     else:
         asynchronous_machine_type = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Shunt/Filter
     *
@@ -520,13 +520,13 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  qtotn: Design Parameter (per Step): Rated Reactive Power, L-C in Mvar
     *  shtype: Shunt Type
     *  ushnm: Nominal Voltage in kV
-    '''
+    """
     if "ElmShnt" in data.keys():
         shunts = data["ElmShnt"]
     else:
         shunts = np.zeros((0, 20))
 
-    '''
+    """
     ###############################################################################
     *  Breaker/Switch
     *
@@ -539,7 +539,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  nneutral: No. of Neutrals:0:1
     *  nphase: No. of Phases:1:2:3
     *  on_off: Closed
-    '''
+    """
     if "ElmCoup" in data.keys():
         switches = data["ElmCoup"]
     else:
@@ -554,7 +554,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
                synchronous_machine, asynchronous_machine]
 
     # construct the terminals dictionary
-    '''
+    """
     $$StaCubic;ID(a:40);loc_name(a:40);fold_id(p);chr_name(a:20);obj_bus(i);obj_id(p)
     ********************************************************************************
     *  Cubicle
@@ -566,7 +566,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  obj_bus: Bus Index
     *  obj_id: Connected with in Elm*
     ********************************************************************************
-    '''
+    """
     terminals_dict = dict()  # dictionary to store the terminals ID associated with an object ID
     cub_obj_idx = cubicles['obj_id'].values
     cub_term_idx = cubicles['fold_id'].values
@@ -596,7 +596,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     ####################################################################################################################
     # Terminals (nodes)
     ####################################################################################################################
-    '''
+    """
     ********************************************************************************
     *  Terminal
     *
@@ -609,7 +609,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  chr_name: Characteristic Name
     *  outserv: Out of Service
     ********************************************************************************
-    '''
+    """
     # print('Parsing terminals')
     buses_dict = dict()
     for i in range(len(buses)):
@@ -624,7 +624,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     ####################################################################################################################
     # External grids (slacks)
     ####################################################################################################################
-    '''
+    """
     ###############################################################################
     ********************************************************************************
     *  External Grid
@@ -646,7 +646,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  phiini: Operation Point: Angle in deg
     *  usetp: Operation Point: Voltage Setpoint in p.u.
     ********************************************************************************
-    '''
+    """
 
     for i in range(len(external)):
         ID = external['ID'][i]
@@ -797,7 +797,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     ####################################################################################################################
     # print('Parsing transformers')
 
-    '''
+    """
     ********************************************************************************
     *  2-Winding Transformer
     *
@@ -811,10 +811,10 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  constr: Year of Construction
     *  chr_name: Characteristic Name
     ********************************************************************************
-    '''
+    """
 
     if len(transformers_types) > 0:
-        '''
+        """
         ********************************************************************************
         *  2-Winding Transformer Type
         *
@@ -844,7 +844,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         *  manuf: Manufacturer
         *  chr_name: Characteristic Name
         ********************************************************************************
-        '''
+        """
         type_ID = transformers_types['ID'].values
         HV_nominal_voltage = transformers_types['utrn_h'].values
         LV_nominal_voltage = transformers_types['utrn_l'].values
@@ -919,7 +919,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     ####################################################################################################################
     # Loads (nodes)
     ####################################################################################################################
-    '''
+    """
     ********************************************************************************
     *  General Load
     *
@@ -932,7 +932,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
     *  qlini: Operating Point: Reactive Power in Mvar
     *  scale0: Operating Point: Scaling Factor
     ********************************************************************************
-    '''
+    """
     # print('Parsing Loads')
     if len(loads) > 0:
         loads_ID = loads['ID']

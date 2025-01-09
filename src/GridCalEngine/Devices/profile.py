@@ -7,7 +7,6 @@ from typing import Union, Dict, Tuple, List, Any
 from collections import Counter
 import numpy as np
 import numba as nb
-from numpy import dtype
 
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 from GridCalEngine.enumerations import DeviceType

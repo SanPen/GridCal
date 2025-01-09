@@ -7,7 +7,7 @@ import numba as nb
 import numpy as np
 from scipy.sparse import csc_matrix
 from typing import Tuple, Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, CscMat
 
 
 @nb.njit(cache=True)
@@ -62,7 +62,8 @@ def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
     :return: longer array
     """
     x = np.full(n, default)
-    x[idx] = arr
+    if len(arr):
+        x[idx] = arr
     return x
 
 
@@ -123,7 +124,7 @@ def compute_fx(Scalc: CxVec, Sbus: CxVec, idx_dP: IntVec, idx_dQ: IntVec) -> Vec
     return fx
 
 
-def compute_fx_error(fx) -> float:
+def compute_fx_error(fx: Vec) -> float:
     """
     Compute the infinite norm of fx
     this is the same as max(abs(fx))
@@ -346,3 +347,189 @@ def compute_acdc_fx(Vm: Vec,
         k += 1
 
     return fx
+
+
+# def power_flow_post_process(
+#         calculation_inputs: NumericalCircuit,
+#         Sbus: CxVec,
+#         V: CxVec,
+#         branch_rates: CxVec,
+#         Ybus: Union[CscMat, None] = None,
+#         Yf: Union[CscMat, None] = None,
+#         Yt: Union[CscMat, None] = None,
+#         method: Union[None, SolverType] = None
+# ) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
+#     """
+#     Compute the power Sf trough the Branches.
+#     :param calculation_inputs: NumericalCircuit
+#     :param Sbus: Array of computed nodal injections
+#     :param V: Array of computed nodal voltages
+#     :param branch_rates: Array of branch rates
+#     :param Ybus: Admittance matrix
+#     :param Yf: Admittance-from matrix
+#     :param Yt: Admittance-to matrix
+#     :param method: SolverType (the non-linear and Linear flow calculations differ)
+#     :return: Sf (MVA), St (MVA), If (p.u.), It (p.u.), Vbranch (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
+#     """
+#     # Compute the slack and pv buses power
+#     vd = calculation_inputs.vd
+#     pv = calculation_inputs.pv
+#
+#     if method not in [SolverType.DC]:
+#         if Ybus is None:
+#             Ybus = calculation_inputs.Ybus
+#         if Yf is None:
+#             Yf = calculation_inputs.Yf
+#         if Yt is None:
+#             Yt = calculation_inputs.Yt
+#
+#         # power at the slack nodes
+#         Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
+#
+#         # Reactive power at the pv nodes
+#         P_pv = Sbus[pv].real
+#         Q_pv = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
+#         Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
+#
+#         # Branches current, loading, etc
+#         Vf = V[calculation_inputs.passive_branch_data.F]
+#         Vt = V[calculation_inputs.passive_branch_data.T]
+#         If = Yf @ V
+#         It = Yt @ V
+#         Sf = Vf * np.conj(If)
+#         St = Vt * np.conj(It)
+#
+#         # Branch losses in MVA
+#         losses = (Sf + St) * calculation_inputs.Sbase
+#
+#         # branch voltage increment
+#         Vbranch = Vf - Vt
+#
+#         # Branch power in MVA
+#         Sfb = Sf * calculation_inputs.Sbase
+#         Stb = St * calculation_inputs.Sbase
+#
+#     else:
+#         # DC power flow
+#         theta = np.angle(V, deg=False)
+#         theta_f = theta[calculation_inputs.F]
+#         theta_t = theta[calculation_inputs.T]
+#
+#         b = 1.0 / (calculation_inputs.passive_branch_data.X * calculation_inputs.active_branch_data.tap_module)
+#         # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
+#
+#         Pf = b * (theta_f - theta_t - calculation_inputs.active_branch_data.tap_angle)
+#
+#         Sfb = Pf * calculation_inputs.Sbase
+#         Stb = -Pf * calculation_inputs.Sbase
+#
+#         Vf = V[calculation_inputs.passive_branch_data.F]
+#         Vt = V[calculation_inputs.passive_branch_data.T]
+#         Vbranch = Vf - Vt
+#         If = Pf / (Vf + 1e-20)
+#         It = -If
+#         # losses are not considered in the power flow computation
+#         losses = np.zeros(calculation_inputs.nbr)
+#
+#     # Branch loading in p.u.
+#     loading = Sfb / (branch_rates + 1e-9)
+#
+#     return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
+
+
+def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
+                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+                                      branch_rates: Vec, Sbase: float):
+    """
+
+    :param Sbus:
+    :param V:
+    :param F:
+    :param T:
+    :param pv:
+    :param vd:
+    :param Ybus:
+    :param Yf:
+    :param Yt:
+    :param branch_rates:
+    :param Sbase:
+    :return:
+    """
+
+    # power at the slack nodes
+    Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
+
+    # Reactive power at the pv nodes
+    P_pv = Sbus[pv].real
+    Q_pv = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
+    Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
+
+    # Branches current, loading, etc
+    Vf = V[F]
+    Vt = V[T]
+    If = Yf @ V
+    It = Yt @ V
+    Sf = Vf * np.conj(If)
+    St = Vt * np.conj(It)
+
+    # Branch losses in MVA
+    losses = (Sf + St) * Sbase
+
+    # branch voltage increment
+    Vbranch = Vf - Vt
+
+    # Branch power in MVA
+    Sfb = Sf * Sbase
+    Stb = St * Sbase
+
+    # Branch loading in p.u.
+    loading = Sfb / (branch_rates + 1e-9)
+
+    return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
+
+
+def power_flow_post_process_linear(Sbus: CxVec, V: CxVec,
+                                   active: IntVec, X: Vec, tap_module: Vec, tap_angle: Vec,
+                                   F: IntVec, T: IntVec,
+                                   branch_rates: Vec, Sbase: float):
+    """
+
+    :param Sbus:
+    :param V:
+    :param active:
+    :param X:
+    :param tap_module:
+    :param tap_angle:
+    :param F:
+    :param T:
+    :param branch_rates:
+    :param Sbase:
+    :return:
+    """
+
+    # DC power flow
+    theta = np.angle(V, deg=False)
+    theta_f = theta[F]
+    theta_t = theta[T]
+
+    b = active.astype(float) / (X * tap_module)
+    # Pf = calculation_inputs.Bf @ theta - b * calculation_inputs.branch_data.tap_angle
+
+    Pf = b * (theta_f - theta_t - tap_angle)
+
+    Sfb = Pf * Sbase
+    Stb = -Pf * Sbase
+
+    Vf = V[F]
+    Vt = V[T]
+    Vbranch = Vf - Vt
+    If = Pf / (Vf + 1e-20)
+    It = -If
+
+    # losses are not considered in the power flow computation
+    losses = np.zeros(len(X))
+
+    # Branch loading in p.u.
+    loading = Sfb / (branch_rates + 1e-9)
+
+    return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus

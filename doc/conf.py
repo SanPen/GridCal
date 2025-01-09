@@ -23,7 +23,7 @@ from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 # -- Project information -----------------------------------------------------
 
 project = 'GridCal'
-copyright = '2024, Santiago Peñate Vera et. al.'
+copyright = '2025, Santiago Peñate Vera et. al.'
 author = 'Santiago Peñate Vera et. al.'
 
 # The full version, including alpha/beta/rc tags
@@ -61,7 +61,7 @@ extensions.append('sphinx_rtd_theme')
 autosummary_generate = True
 
 # generate CGMES, PSSe and GridCal data models' rst files
-write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
+write_models_to_rst(os.path.join('rst_source', 'development', 'data_models.rst'))
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -130,6 +130,7 @@ htmlhelp_basename = 'GridCaldoc'
 fh = open('latex_preamble.tex', 'r+')
 PREAMBLE = fh.read()
 fh.close()
+latex_engine = 'xelatex'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
@@ -151,7 +152,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'GridCal.tex', 'GridCal Documentation', 'Santiago Pe\~nate Vera', 'manual'),
+    (master_doc, 'GridCal.tex', 'GridCal Documentation', 'Santiago Peñate Vera', 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------

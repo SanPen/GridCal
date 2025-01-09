@@ -262,16 +262,16 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     """
     nc = gce.compile_numerical_circuit_at(grid, t_idx=None)
 
-    adm = compute_passive_admittances(R=nc.branch_data.R,
-                                      X=nc.branch_data.X,
-                                      G=nc.branch_data.G,
-                                      B=nc.branch_data.B,
-                                      vtap_f=nc.branch_data.virtual_tap_f,
-                                      vtap_t=nc.branch_data.virtual_tap_t,
-                                      Cf=nc.branch_data.C_branch_bus_f.tocsc(),
-                                      Ct=nc.branch_data.C_branch_bus_t.tocsc(),
+    adm = compute_passive_admittances(R=nc.passive_branch_data.R,
+                                      X=nc.passive_branch_data.X,
+                                      G=nc.passive_branch_data.G,
+                                      B=nc.passive_branch_data.B,
+                                      vtap_f=nc.passive_branch_data.virtual_tap_f,
+                                      vtap_t=nc.passive_branch_data.virtual_tap_t,
+                                      Cf=nc.passive_branch_data.Cf.tocsc(),
+                                      Ct=nc.passive_branch_data.Ct.tocsc(),
                                       Yshunt_bus=nc.Yshunt_from_devices,
-                                      conn=nc.branch_data.conn,
+                                      conn=nc.passive_branch_data.conn,
                                       seq=1,
                                       add_windings_phase=False)
     Ybus = adm.Ybus
@@ -281,10 +281,10 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     S0 = nc.Sbus
     I0 = nc.Ibus
     Y0 = nc.YLoadBus
-    m = nc.branch_data.tap_module
-    tau = nc.branch_data.tap_angle
-    Cf = nc.branch_data.C_branch_bus_f
-    Ct = nc.branch_data.C_branch_bus_t
+    m = nc.passive_branch_data.tap_module
+    tau = nc.passive_branch_data.tap_angle
+    Cf = nc.passive_branch_data.Cf
+    Ct = nc.passive_branch_data.Ct
     F = nc.F
     T = nc.T
     Vm0 = np.abs(nc.Vbus)

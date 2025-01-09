@@ -4,269 +4,75 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 
-import GridCalEngine.Devices
+import numpy as np
+from scipy.sparse import lil_matrix, csc_matrix
 from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.api import power_flow
+from GridCalEngine.Topology.topology import compute_connectivity_flexible
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
-def createExampleGridDiagram1() -> MultiCircuit:
+def test_cn_makes_a_bus() -> None:
     """
-    This function creates a Multicircuit example from SE Diagram 1 in documentation to test topology processor
+    Checks if by crating a CN, we also create a bus
+    :return:
     """
+    grid = MultiCircuit()
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0"))
 
+    assert grid.get_bus_number() == 1
+
+
+def test_cn_makes_a_bus2():
+    """
+    Checks if by crating a CN, with a pre-existing bus, we don't create a new bus
+    """
+    grid = MultiCircuit()
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+
+    assert grid.get_bus_number() == 1
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
+
+    assert grid.get_bus_number() == 1
+
+    assert grid.buses[0] == b0
+
+
+def test_busbar_makes_a_bus():
+    """
+    Checks if by crating a busbar, we also create a cn and a bus
+    """
     grid = MultiCircuit()
 
-    # Add busbar representing physical nodes not the calculation ones
-    bus_bar_dict = {}
-    cn_dict = {}
-    for i in range(5):
-        bb = dev.BusBar(name='BB{}'.format(i + 1))
-        bb.cn.name = 'T{}'.format(i + 1)
-        bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
-        grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
-    for i in range(5, 11):  # create the rest of terminals
-        term_name = f"T{i + 1}"
-        cn = dev.ConnectivityNode(name=term_name)
-        cn_dict[term_name] = cn
-        grid.add_connectivity_node(cn)
+    assert grid.get_connectivity_nodes_number() == 1
 
-    # Add lines
-    line_data = {
-        'L1': ('T6', 'T9'),
-        'L2': ('T7', 'T10'),
-        'L3': ('T8', 'T11'),
-        'L4': ('T4', 'T5')
-    }
+    assert grid.get_bus_number() == 1
 
-    for line_name, (term_from_name, term_to_name) in line_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
-        grid.lines.append(li)
-
-    # Add switches
-    switch_data = {
-        'SW1': ('T1', 'T2', 'closed'),
-        'SW2': ('T1', 'T6', 'closed'),
-        'SW3': ('T2', 'T7', 'closed'),
-        'SW4': ('T2', 'T8', 'closed'),
-        'SW5': ('T3', 'T9', 'closed'),
-        'SW6': ('T4', 'T10', 'closed'),
-        'SW7': ('T4', 'T11', 'closed')
-    }
-
-    for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        active = active_name == 'closed'
-        s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
-        grid.switch_devices.append(s)
-
-    return grid
+    assert grid.buses[0] == bb3.cn.bus
 
 
-def createExampleGridTest1() -> MultiCircuit:
+def test_busbar_makes_a_bus2():
     """
-    This function creates a Multicircuit example from Grid Test 1 in documentation to test topology processor
+    Checks if by crating a busbar using an existing cn, we respect the exiting buses and cn's
     """
-
     grid = MultiCircuit()
 
-    # Add busbar representing physical nodes not the calculation ones
-    bus_bar_dict = {}
-    cn_dict = {}
-    for i in range(4):
-        bb = dev.BusBar(name='BB{}'.format(i + 1))
-        bb.cn.name = 'T{}'.format(i + 1)
-        bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
-        grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0"))
 
-    for i in range(4, 7):  # create the rest of terminals
-        term_name = f"T{i + 1}"
-        cn = dev.ConnectivityNode(name=term_name)
-        cn_dict[term_name] = cn
-        grid.add_connectivity_node(cn)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3", cn=cn0))
 
-    # Add lines
-    line_data = {
-        'L1': ('T6', 'T2'),
-        'L2': ('T2', 'T3'),
-        'L3': ('T5', 'T3')
-    }
+    assert grid.get_connectivity_nodes_number() == 1
 
-    for line_name, (term_from_name, term_to_name) in line_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
-        grid.lines.append(li)
+    assert grid.get_bus_number() == 1
 
-    # Add switches
-    switch_data = {
-        'SW1': ('T1', 'T5', 'open'),
-        'SW2': ('T4', 'T5', 'closed'),
-        'SW3': ('T1', 'T6', 'open'),
-        'SW4': ('T4', 'T6', 'closed'),
-        'SW5': ('T1', 'T7', 'closed')
-    }
+    assert grid.connectivity_nodes[0] == bb3.cn
 
-    for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        active = active_name == 'closed'
-        s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
-        grid.switch_devices.append(s)
-
-    return grid
-
-
-def createExampleGridTest2() -> MultiCircuit:
-    """
-    This function creates a Multicircuit example from Grid Test 2 in documentation to test topology processor
-    """
-
-    grid = MultiCircuit()
-
-    # Add busbar representing physical nodes not the calculation ones
-    bus_bar_dict = {}
-    cn_dict = {}
-    for i in range(5):
-        bb = dev.BusBar(name='BB{}'.format(i + 1))
-        bb.cn.name = 'T{}'.format(i + 1)
-        bus_bar_dict['BB{}'.format(i + 1)] = bb
-        cn_dict[bb.cn.name] = bb.cn  # each busbar has an internal connectivity node
-        grid.add_bus_bar(bb)  # both the bar and the internal cn are added to the grid
-
-    for i in range(5, 11):  # create the rest of terminals
-        term_name = f"T{i + 1}"
-        cn = dev.ConnectivityNode(name=term_name)
-        cn_dict[term_name] = cn
-        grid.add_connectivity_node(cn)
-
-    # Add lines
-    line_data = {
-        'L1': ('T6', 'T2'),
-        'L2': ('T7', 'T3'),
-        'L3': ('T2', 'T3')
-    }
-
-    for line_name, (term_from_name, term_to_name) in line_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
-        grid.lines.append(li)
-
-    # Add transformers
-    transformer_data = {
-        'TR1': ('T9', 'T10')
-    }
-
-    for tr_name, (term_from_name, term_to_name) in transformer_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        tr = dev.Transformer2W(name=tr_name, cn_from=cn_from, cn_to=cn_to)
-        grid.transformers2w.append(tr)
-
-    # Add switches
-    switch_data = {
-        'SW1': ('T1', 'T6', 'closed'),
-        'SW2': ('T6', 'T5', 'closed'),
-        'SW3': ('T1', 'T7', 'closed'),
-        'SW4': ('T7', 'T5', 'closed'),
-        'SW5': ('T1', 'T5', 'closed'),
-        'SW6': ('T8', 'T5', 'closed'),
-        'SW7': ('T8', 'T9', 'closed'),
-        'SW8': ('T10', 'T4', 'closed'),
-        'SW9': ('T1', 'T11', 'closed')
-    }
-
-    for switch_name, (term_from_name, term_to_name, active_name) in switch_data.items():
-        cn_from = cn_dict[term_from_name]
-        cn_to = cn_dict[term_to_name]
-        active = active_name == 'closed'
-        s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
-        grid.switch_devices.append(s)
-
-    return grid
-
-
-def test_topology_reduction():
-    """
-    This function tests topology reduction for Node/Breaker model networks
-    """
-    for grid_ in [createExampleGridTest2(), createExampleGridTest1(), createExampleGridDiagram1()]:
-
-        grid_.process_topology_at(t_idx=None)
-
-        assert grid_.buses, "Buses creation failed"
-
-        for l in grid_.get_branches():
-            assert l.bus_from, "{} without bus_from associated".format(l.type_name)
-            assert l.bus_to, "{} without bus_to associated".format(l.type_name)
-        # TODO: procesador topológico adaptarlo a transformadores de 3
-        if grid_.transformers3w:
-            for t in grid_.transformers3w:
-                assert t.bus1, "Transformer3w without bus1 associated"
-                assert t.bus2, "Transformer3w without bus2 associated"
-                assert t.bus3, "Transformer3w without bus3 associated"
-
-
-def test_topology_NL_microgrid() -> None:
-    fname = os.path.join('data', 'grids', 'CGMES_2_4_15', 'micro_grid_NL_T1.zip')
-    grid = FileOpen(fname).open()
-    logger = Logger()
-
-    info = grid.process_topology_at(debug=1, logger=logger)
-
-    cn_per_bus = info.get_cn_lists_per_bus()
-
-    bus_names = ['NL_TR_BUS2', 'N1230822413', 'NL_Busbar__4', 'NL-Busbar_2', 'N1230992195',
-                 'TN_Border_GY11', 'TN_Border_MA11', 'TN_Border_AL11', 'TN_Border_ST23', 'TN_Border_ST24']
-
-    cn_names = ['NL_TR_BUS2', 'NL_TR_BUS1', 'N1230822396', 'N1230822413', 'NL-Busbar_5', 'NL_Busbar__4', 'NL-Busbar_3',
-                'NL-Busbar_2', 'NL-_Busbar_1', 'N1230992201', 'N1230992198', 'N1230992195', 'N1230992231',
-                'N1230992228', 'Border_GY11', 'Border_ST23', 'Border_ST24', 'Border_MA11', 'Border_AL11']
-
-    cn_to_bus = {
-
-        # Green bus
-        'NL-_Busbar_1': '',
-        'N1230992201': '',
-        'N1230992198': '',
-        'N1230992195': '',
-
-        # ocre system bus 1
-        'NL_TR_BUS2': 'NL_TR_BUS2',
-        'NL-Busbar_5': 'NL_TR_BUS2',
-
-        # ocre system bus 2
-        'N1230822413': 'N1230822413',
-        'NL-Busbar_3': 'N1230822413',
-
-        # all purple bus
-        'NL-Busbar_2': '',
-        'NL_TR_BUS1': '',
-        'NL_Busbar__4': '',
-        'N1230992228': '',
-        'N1230992231': '',
-        'N1230822396': '',
-
-        # frontier buses (5 of them)
-        'Border_GY11': 'TN_Border_GY11',
-        'Border_ST23': 'TN_Border_ST23',
-        'Border_ST24': 'TN_Border_ST24',
-        'Border_MA11': 'TN_Border_MA11',
-        'Border_AL11': 'TN_Border_AL11'
-    }
-    # NOTE: Probably the candidate nodes are causing trouble here
-
-    logger.print()
-
-    print()
+    assert grid.buses[0] == bb3.cn.bus
 
 
 def test_topology_4_nodes_A():
@@ -282,7 +88,7 @@ def test_topology_4_nodes_A():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
@@ -298,16 +104,19 @@ def test_topology_4_nodes_A():
 
     """
     After processing,
+    branches: [L1, L2, SW1, SW2]
     L1 must be between B0 and B2
     L2 must be between B0 and a new bus that is not B0, B1 or B2
     SW1 must be in a self-loop where both buses are B0
     SW2 must be connected between B2 and the bus to of L2
     """
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b0 and l2.bus_to not in [b0, b1, b2]
-    assert sw1.bus_from == b0 and sw1.bus_to == b0
-    assert sw2.bus_from == b2 and sw2.bus_to == l2.bus_to
+    assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 3, 0, 3]).all()
+    assert np.equal(nc.generator_data.bus_idx, [3]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_B():
@@ -323,7 +132,7 @@ def test_topology_4_nodes_B():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
@@ -334,9 +143,6 @@ def test_topology_4_nodes_B():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     """
     After processing,
     L1 must be between B0 and B2
@@ -344,11 +150,13 @@ def test_topology_4_nodes_B():
     SW1 must be in a self-loop where both buses are B0
     SW2 must be in a self-loop where both buses are B2
     """
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b0 and l2.bus_to == b2
-    assert sw1.bus_from == b0 and sw1.bus_to == b0
-    assert sw2.bus_from == b2 and sw2.bus_to == b2
+    assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 2, 0, 2]).all()
+    assert np.equal(nc.generator_data.bus_idx, [2]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_C():
@@ -364,7 +172,7 @@ def test_topology_4_nodes_C():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
@@ -375,9 +183,6 @@ def test_topology_4_nodes_C():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     """
     After processing,
     L1 must be between B0 and B2
@@ -386,10 +191,13 @@ def test_topology_4_nodes_C():
     SW2 must be in a self-loop where both buses are B2
     """
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b1 and l2.bus_to == b2
-    assert sw1.bus_from == b0 and sw1.bus_to == b1
-    assert sw2.bus_from == b2 and sw2.bus_to == b2
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 2, 1, 2]).all()
+    assert np.equal(nc.generator_data.bus_idx, [2]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_D():
@@ -405,7 +213,7 @@ def test_topology_4_nodes_D():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
@@ -416,9 +224,6 @@ def test_topology_4_nodes_D():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     """
     After processing,
     L1 must be between B0 and B2
@@ -427,10 +232,13 @@ def test_topology_4_nodes_D():
     SW2 must be between B2 and L2 bus_to
     """
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b1 and l2.bus_to not in [b0, b1, b2]
-    assert sw1.bus_from == b0 and sw1.bus_to == b1
-    assert sw2.bus_from == b2 and sw2.bus_to == l2.bus_to
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 3, 1, 3]).all()
+    assert np.equal(nc.generator_data.bus_idx, [3]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_E():
@@ -448,7 +256,7 @@ def test_topology_4_nodes_E():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
@@ -459,9 +267,6 @@ def test_topology_4_nodes_E():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     """
     After processing,
     L1 must be between a new bus from cn0 and b2
@@ -470,10 +275,13 @@ def test_topology_4_nodes_E():
     SW2 must be in a self loop where both buses are L1.bus_to / b2
     """
 
-    assert l1.bus_from not in [b0, b1] and l1.bus_to == b2
-    assert l2.bus_from == l1.bus_from and l2.bus_to == b2
-    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l1.bus_from
-    assert sw2.bus_from == b2 and sw2.bus_to == b2
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [3, 3, 3, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 2, 3, 2]).all()
+    assert np.equal(nc.generator_data.bus_idx, [2]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_F():
@@ -491,7 +299,7 @@ def test_topology_4_nodes_F():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
@@ -502,9 +310,6 @@ def test_topology_4_nodes_F():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     """
     After processing,
     L1 must be between a new bus from cn0 and b2
@@ -513,10 +318,13 @@ def test_topology_4_nodes_F():
     SW2 must be in a self loop where both buses are b2
     """
 
-    assert l1.bus_from not in [b0, b1, b2] and l1.bus_to == b2
-    assert l2.bus_from not in [b0, b1, b2] and l2.bus_to == b2
-    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l2.bus_from
-    assert sw2.bus_from == b2 and sw2.bus_to == b2
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [3, 4, 3, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 2, 4, 2]).all()
+    assert np.equal(nc.generator_data.bus_idx, [2]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_G():
@@ -534,7 +342,7 @@ def test_topology_4_nodes_G():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
@@ -545,9 +353,6 @@ def test_topology_4_nodes_G():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     """
     After processing,
     L1 must be between a new bus from cn0 and b2
@@ -556,10 +361,13 @@ def test_topology_4_nodes_G():
     SW2 must be between L1.bus_to and L2.bus_to
     """
 
-    assert l1.bus_from not in [b0, b1, b2] and l1.bus_to == b2
-    assert l2.bus_from not in [b0, b1, b2] and l2.bus_to not in [b0, b1, b2]
-    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l2.bus_from
-    assert sw2.bus_from == l1.bus_to and sw2.bus_to == l2.bus_to
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [3, 4, 3, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 5, 4, 5]).all()
+    assert np.equal(nc.generator_data.bus_idx, [5]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_H():
@@ -577,7 +385,7 @@ def test_topology_4_nodes_H():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
@@ -588,9 +396,6 @@ def test_topology_4_nodes_H():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     """
     After processing,
     L1 must be between a new bus from cn0 and b2
@@ -599,10 +404,13 @@ def test_topology_4_nodes_H():
     SW2 must be between L1.bus_to and L2.bus_to
     """
 
-    assert l1.bus_from not in [b0, b1, b2] and l1.bus_to == b2
-    assert l2.bus_from == l1.bus_from and l2.bus_to not in [b0, b1, b2]
-    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l1.bus_from
-    assert sw2.bus_from == l1.bus_to and sw2.bus_to == l2.bus_to
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [3, 3, 3, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 5, 3, 5]).all()
+    assert np.equal(nc.generator_data.bus_idx, [5]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_A2():
@@ -619,7 +427,7 @@ def test_topology_4_nodes_A2():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))  # isolated
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=True))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=False))
@@ -628,10 +436,7 @@ def test_topology_4_nodes_A2():
     l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)  # isolated
 
     """
     In this test we are connecting to buses and CN,
@@ -645,10 +450,13 @@ def test_topology_4_nodes_A2():
     SW2 must be connected between B2 and B3
     """
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b0 and l2.bus_to == b3
-    assert sw1.bus_from == b0 and sw1.bus_to == b0
-    assert sw2.bus_from == b2 and sw2.bus_to == b3
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 3, 0, 3]).all()
+    assert np.equal(nc.generator_data.bus_idx, [4]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_B2():
@@ -665,7 +473,7 @@ def test_topology_4_nodes_B2():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))  # isolated
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=True))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=True))
@@ -674,10 +482,7 @@ def test_topology_4_nodes_B2():
     l2 = grid.add_line(dev.Line(name="L2", bus_from=b1, bus_to=b3, cn_from=cn1, cn_to=bb3.cn, x=0.01))
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)  # isolated
 
     """
     In this test we are connecting to buses and CN,
@@ -691,10 +496,13 @@ def test_topology_4_nodes_B2():
     SW2 must be in a self-loop where both buses are B2
     """
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b0 and l2.bus_to == b2
-    assert sw1.bus_from == b0 and sw1.bus_to == b0
-    assert sw2.bus_from == b2 and sw2.bus_to == b2
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [0, 0, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 2, 0, 2]).all()
+    assert np.equal(nc.generator_data.bus_idx, [4]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_C2():
@@ -711,7 +519,7 @@ def test_topology_4_nodes_C2():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=False))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=True))
@@ -721,9 +529,6 @@ def test_topology_4_nodes_C2():
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
 
     """
     In this test we are connecting to buses and CN,
@@ -737,10 +542,13 @@ def test_topology_4_nodes_C2():
     SW2 must be in a self-loop where both buses are B2
     """
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b1 and l2.bus_to == b2
-    assert sw1.bus_from == b0 and sw1.bus_to == b1
-    assert sw2.bus_from == b2 and sw2.bus_to == b2
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 2, 1, 2]).all()
+    assert np.equal(nc.generator_data.bus_idx, [4]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_4_nodes_D2():
@@ -757,7 +565,7 @@ def test_topology_4_nodes_D2():
     cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
     cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
 
-    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, cn_from=cn0, cn_to=cn1, active=False))
     sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, bus_to=b3, cn_to=bb3.cn, active=False))
@@ -767,9 +575,6 @@ def test_topology_4_nodes_D2():
 
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
 
     """
     In this test we are connecting to buses and CN,
@@ -783,10 +588,13 @@ def test_topology_4_nodes_D2():
     SW2 must be between B2 and B3
     """
 
-    assert l1.bus_from == b0 and l1.bus_to == b2
-    assert l2.bus_from == b1 and l2.bus_to == b3
-    assert sw1.bus_from == b0 and sw1.bus_to == b1
-    assert sw2.bus_from == b2 and sw2.bus_to == b3
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.passive_branch_data.F, [0, 1, 0, 2]).all()
+    assert np.equal(nc.passive_branch_data.T, [2, 3, 1, 3]).all()
+    assert np.equal(nc.generator_data.bus_idx, [4]).all()
+    assert np.equal(nc.load_data.bus_idx, [2]).all()
 
 
 def test_topology_2_nodes_A1():
@@ -799,20 +607,20 @@ def test_topology_2_nodes_A1():
     b1 = grid.add_bus(dev.Bus(name="B1"))
 
     sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=True))
-    grid.add_switch(sw1)
 
     g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
     ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b1)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
 
     """
     The switch is closed, hence B0 == B1
     the generator and the load must be connected to B0
     """
 
-    assert g1.bus == b0 and ld1.bus == b0
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.generator_data.bus_idx, [0]).all()
+    assert np.equal(nc.load_data.bus_idx, [0]).all()
 
 
 def test_topology_2_nodes_A2():
@@ -837,7 +645,11 @@ def test_topology_2_nodes_A2():
     The switch is open, the original buses must remain
     """
 
-    assert g1.bus == b0 and ld1.bus == b1
+    nc = compile_numerical_circuit_at(grid)
+    nc.process_reducible_branches()
+
+    assert np.equal(nc.generator_data.bus_idx, [0]).all()
+    assert np.equal(nc.load_data.bus_idx, [1]).all()
 
 
 def test_topology_3_nodes_A1() -> None:
@@ -857,9 +669,6 @@ def test_topology_3_nodes_A1() -> None:
     l1 = grid.add_line(dev.Line(name="L1", bus_from=b1, bus_to=b2, active=True))
     g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
     ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b2)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
 
     res = power_flow(grid)
 
@@ -884,9 +693,425 @@ def test_topology_3_nodes_A2() -> None:
     g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
     ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b2)
 
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
     res = power_flow(grid)
 
     assert res.voltage[2] == 0
+
+
+def test_nc_active_works() -> None:
+    """
+    This test checks that the failed branch by setting
+    the numerical circuit active status
+    has zero flow, for many power flow algorithms
+    """
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    main_circuit = FileOpen(fname).open()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    for slv in [SolverType.DC, SolverType.LACPF,
+                SolverType.NR, SolverType.LM, SolverType.PowellDogLeg, SolverType.IWAMOTO, SolverType.HELM,
+                SolverType.FASTDECOUPLED, SolverType.GAUSS]:
+        options = PowerFlowOptions(solver_type=slv)
+
+        for k in range(nc.passive_branch_data.nelm):
+            nc.passive_branch_data.active[k] = 0
+
+            res = multi_island_pf_nc(nc=nc, options=options)
+
+            assert res.Sf[k].real == 0.0
+            assert res.Sf[k].imag == 0.0
+
+            nc.passive_branch_data.active[k] = 1
+
+
+def test_adjacency_calc():
+    """
+    Compute the adjacency matrix
+    :return: csc_matrix
+    """
+
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+    main_circuit = FileOpen(fname).open()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+    consider_hvdc_as_island_links = True
+
+    for b_idx in range(nc.bus_data.nbus):
+
+        # set us state
+        nc.bus_data.active[b_idx] = 0
+
+        for br_idx in range(nc.passive_branch_data.nelm):
+
+            # fail branch
+            nc.passive_branch_data.active[br_idx] = 0
+
+            # ----------------------------------------------------------------------------------------------------------
+            conn_matrices = compute_connectivity_flexible(
+                branch_active=nc.passive_branch_data.active,
+                Cf_=nc.passive_branch_data.Cf.tocsc(),
+                Ct_=nc.passive_branch_data.Ct.tocsc(),
+                hvdc_active=nc.hvdc_data.active if consider_hvdc_as_island_links else None,
+                Cf_hvdc=nc.hvdc_data.Cf.tocsc() if consider_hvdc_as_island_links else None,
+                Ct_hvdc=nc.hvdc_data.Ct.tocsc() if consider_hvdc_as_island_links else None,
+                vsc_active=nc.vsc_data.active,
+                Cf_vsc=nc.vsc_data.Cf.tocsc(),
+                Ct_vsc=nc.vsc_data.Ct.tocsc()
+            )
+
+            A1 = conn_matrices.get_adjacency(nc.bus_data.active)
+
+            if consider_hvdc_as_island_links:
+                structs = [nc.passive_branch_data, nc.vsc_data, nc.hvdc_data]
+            else:
+                structs = [nc.passive_branch_data, nc.vsc_data]
+
+            # count the number of elements
+            n_elm = sum([st.nelm for st in structs])
+
+            mat2 = lil_matrix((nc.bus_data.nbus, nc.bus_data.nbus), dtype=int)
+            for struct in structs:
+                for k in range(struct.nelm):
+                    f = struct.F[k]
+                    t = struct.T[k]
+                    if struct.active[k] and nc.bus_data.active[f] and nc.bus_data.active[t]:
+                        mat2[f, f] += 1
+                        mat2[f, t] += 1
+                        mat2[t, f] += 1
+                        mat2[t, t] += 1
+
+            A2 = mat2.tocsc()
+
+            mat3 = lil_matrix((n_elm, nc.bus_data.nbus), dtype=int)
+            ii = 0
+            for struct in structs:
+                for k in range(struct.nelm):
+                    f = struct.F[k]
+                    t = struct.T[k]
+                    if struct.active[k] and nc.bus_data.active[f] and nc.bus_data.active[t]:
+                        mat3[ii, f] += 1
+                        mat3[ii, t] += 1
+                    ii += 1
+
+            A3 = (mat3.T @ mat3).tocsc()
+
+            assert np.allclose(A2.toarray(), A3.toarray())
+            # assert np.allclose(A1.toarray(), A2.toarray())
+
+            # ----------------------------------------------------------------------------------------------------------
+
+            # revert state
+            nc.passive_branch_data.active[br_idx] = 1
+
+        # revert state
+        nc.bus_data.active[b_idx] = 1
+
+
+def get_lynn_5_bus() -> MultiCircuit:
+    grid = MultiCircuit(name='lynn 5 bus')
+
+    a1 = Area('Area1')
+    z1 = Zone('Zone1')
+    s1 = Substation('S1')
+
+    grid.add_area(a1)
+    grid.add_zone(z1)
+    grid.add_substation(s1)
+
+    ####################################################################################################################
+    # Define the buses
+    ####################################################################################################################
+    # I will define this bus with all the properties so you see
+    bus1 = Bus(name='Bus1',
+               Vnom=10,  # Nominal voltage in kV
+               vmin=0.9,  # Bus minimum voltage in per unit
+               vmax=1.1,  # Bus maximum voltage in per unit
+               xpos=0,  # Bus x position in pixels
+               ypos=0,  # Bus y position in pixels
+               height=0,  # Bus height in pixels
+               width=0,  # Bus width in pixels
+               active=True,  # Is the bus active?
+               is_slack=False,  # Is this bus a slack bus?
+               area=a1,  # Area (for grouping purposes only)
+               zone=z1,  # Zone (for grouping purposes only)
+               substation=s1  # Substation (for grouping purposes only)
+               )
+
+    # the rest of the buses are defined with the default parameters
+    bus2 = Bus(name='Bus2')
+    bus3 = Bus(name='Bus3')
+    bus4 = Bus(name='Bus4')
+    bus5 = Bus(name='Bus5')
+
+    # add the bus objects to the circuit
+    grid.add_bus(bus1)
+    grid.add_bus(bus2)
+    grid.add_bus(bus3)
+    grid.add_bus(bus4)
+    grid.add_bus(bus5)
+
+    ####################################################################################################################
+    # Add the loads
+    ####################################################################################################################
+    # In GridCal, the loads, generators ect are stored within each bus object:
+
+    # we'll define the first load completely
+    l2 = Load(name='Load',
+              G=0,  # Impedance of the ZIP model in MVA at the nominal voltage
+              B=0,
+              Ir=0,
+              Ii=0,  # Current of the ZIP model in MVA at the nominal voltage
+              P=40,
+              Q=20,  # Power of the ZIP model in MVA
+              active=True,  # Is active?
+              mttf=0.0,  # Mean time to failure
+              mttr=0.0  # Mean time to recovery
+              )
+    grid.add_load(bus2, l2)
+
+    # Define the others with the default parameters
+    grid.add_load(bus3, Load(P=25, Q=15))
+    grid.add_load(bus4, Load(P=40, Q=20))
+    grid.add_load(bus5, Load(P=50, Q=20))
+
+    ####################################################################################################################
+    # Add the generators
+    ####################################################################################################################
+
+    g1 = Generator(name='gen',
+                   P=0.0,  # Active power in MW, since this generator is used to set the slack , is 0
+                   vset=1.0,  # Voltage set point to control
+                   Qmin=-9999,  # minimum reactive power in MVAr
+                   Qmax=9999,  # Maximum reactive power in MVAr
+                   Snom=9999,  # Nominal power in MVA
+                   active=True  # Is active?
+                   )
+    grid.add_generator(bus1, g1)
+
+    ####################################################################################################################
+    # Add the lines
+    ####################################################################################################################
+
+    br1 = Line(bus_from=bus1,
+               bus_to=bus2,
+               name='Line 1-2',
+               r=0.05,  # resistance of the pi model in per unit
+               x=0.11,  # reactance of the pi model in per unit
+               b=0.02,  # susceptance of the pi model in per unit
+               rate=50,  # Rate in MVA
+               active=True,  # is the branch active?
+               mttf=0,  # Mean time to failure
+               mttr=0,  # Mean time to recovery
+               length=1,  # Length in km (to be used with templates)
+               )
+    grid.add_line(br1)
+
+    grid.add_line(Line(bus1, bus3, name='Line 1-3', r=0.05, x=0.11, b=0.02, rate=50))
+    grid.add_line(Line(bus1, bus5, name='Line 1-5', r=0.03, x=0.08, b=0.02, rate=80))
+    grid.add_line(Line(bus2, bus3, name='Line 2-3', r=0.04, x=0.09, b=0.02, rate=3))
+    grid.add_line(Line(bus2, bus5, name='Line 2-5', r=0.04, x=0.09, b=0.02, rate=10))
+    grid.add_line(Line(bus3, bus4, name='Line 3-4', r=0.06, x=0.13, b=0.03, rate=30))
+    grid.add_line(Line(bus4, bus5, name='Line 4-5', r=0.04, x=0.09, b=0.02, rate=30))
+
+    return grid
+
+
+def test_lynn_Ybus():
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'lynn5node.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    adm = nc.get_admittance_matrices()
+
+    Y = np.zeros((5, 5), dtype=complex)
+    Y[0, 0] = 10.958904 - 25.997397j
+    Y[0, 1] = -3.424658 + 7.534247j
+    Y[0, 2] = -3.424658 + 7.534247j
+    Y[0, 4] = -4.109589 + 10.958904j
+
+    Y[1, 0] = -3.424658 + 7.534247j
+    Y[1, 1] = 11.672080 - 26.060948j
+    Y[1, 2] = -4.123711 + 9.278351j
+    Y[1, 4] = -4.123711 + 9.278351j
+
+    Y[2, 0] = -3.424658 + 7.534247j
+    Y[2, 1] = -4.123711 + 9.278351j
+    Y[2, 2] = 10.475198 - 23.119061j
+    Y[2, 3] = -2.926829 + 6.341463j
+
+    Y[3, 2] = -2.926829 + 6.341463j
+    Y[3, 3] = 7.05041 - 15.594814j
+    Y[3, 4] = -4.123711 + 9.278351j
+
+    Y[4, 0] = -4.109589 + 10.958904j
+    Y[4, 1] = -4.123711 + 9.278351j
+    Y[4, 3] = -4.123711 + 9.278351j
+    Y[4, 4] = 12.357012 - 29.485605j
+
+    # print("\n\nY expected:\n", Y)
+    # print("\n\n", adm.Ybus.toarray())
+
+    assert np.allclose(adm.Ybus.toarray(), Y)
+
+
+def test_lynn_Ybus2():
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'lynn5node.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    adm = nc.get_admittance_matrices()
+
+    Y = np.zeros((5, 5), dtype=complex)
+    # make by hand the matrices
+
+    for k in range(nc.passive_branch_data.nelm):
+        f = nc.passive_branch_data.F[k]
+        t = nc.passive_branch_data.T[k]
+
+        if nc.passive_branch_data.active[k]:
+            ys = 1.0 / complex(nc.passive_branch_data.R[k], nc.passive_branch_data.X[k])
+            bc2 = complex(nc.passive_branch_data.G[k], nc.passive_branch_data.B[k]) / 2.0
+
+            Y[f, f] += ys + bc2
+            Y[f, t] += - ys
+            Y[t, f] += - ys
+            Y[t, t] += ys + bc2
+
+    print("\n\nY expected:\n", Y)
+    print("\n\n", adm.Ybus.toarray())
+
+    assert np.allclose(adm.Ybus.toarray(), Y)
+
+
+def test_lynn_Ybus3() -> None:
+    """
+    This test randomly deactivates a number of branches and calculates Ybus
+    manually and then the assembles Ybus from the possible islands local Ybuses and compares both
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'lynn5node.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    m = nc.passive_branch_data.nelm
+    for _ in range(m):
+        print("-" * 200)
+        cidx = np.unique(np.random.random_integers(0, m-1, np.random.random_integers(1, m-1, 1)))
+
+        nc.passive_branch_data.active[cidx] = 0
+
+        print("c_idx: ", cidx)
+
+        # make by hand the matrices
+        Y = np.zeros((5, 5), dtype=complex)
+        for k in range(nc.passive_branch_data.nelm):
+            f = nc.passive_branch_data.F[k]
+            t = nc.passive_branch_data.T[k]
+
+            if nc.passive_branch_data.active[k]:
+                ys = 1.0 / complex(nc.passive_branch_data.R[k], nc.passive_branch_data.X[k])
+                bc2 = complex(nc.passive_branch_data.G[k], nc.passive_branch_data.B[k]) / 2.0
+
+                Y[f, f] += ys + bc2
+                Y[f, t] += - ys
+                Y[t, f] += - ys
+                Y[t, t] += ys + bc2
+
+        # Compose the matrix
+        Y2 = np.zeros((5, 5), dtype=complex)
+        islands = nc.split_into_islands()
+        print("islands:", len(islands))
+        for isl in islands:
+            bus_idx = isl.bus_data.original_idx
+            adm_i = isl.get_admittance_matrices()
+            Y2[np.ix_(bus_idx, bus_idx)] = adm_i.Ybus.toarray()
+
+        print("\n\nY expected:\n", Y)
+        print("\n\n", Y2)
+
+        assert np.allclose(Y2, Y)
+
+        # revert the state
+        nc.passive_branch_data.active[cidx] = 1
+
+
+def lst_ok(lst1, lst2):
+    """
+    Check that list 1 and 2 are equal, although ot checking the order
+    :param lst1:
+    :param lst2:
+    :return:
+    """
+    if len(lst1) != len(lst2):
+        return False
+    else:
+        for a in lst1:
+            if a not in lst2:
+                return False
+
+        return True
+
+def test_island_slicing():
+    """
+    This tests checks that things are properly sliced
+    """
+    fname = os.path.join('data', 'grids', '8_nodes_2_islands.gridcal')
+    main_circuit = FileOpen(fname).open()
+
+    # main_circuit = get_lynn_5_bus()
+    nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
+
+    islands = nc.split_into_islands()
+
+    assert len(islands) == 2
+
+    assert lst_ok(islands[0].bus_data.names, ['Bus 1', 'Bus 2', 'Bus 3', 'Bus 4'])
+    assert lst_ok(islands[0].passive_branch_data.names, ['L1', 'L2', 'L3', 'L4'])
+    assert lst_ok(islands[0].load_data.names, ['LD1', 'LD2', 'LD3'])
+    assert lst_ok(islands[0].generator_data.names, ['G1', 'G2'])
+
+    assert lst_ok(islands[1].bus_data.names, ['Bus 11', 'Bus 22', 'Bus 33', 'Bus 44'])
+    assert lst_ok(islands[1].passive_branch_data.names, ['L5', 'L6', 'L7', 'L8'])
+    assert lst_ok(islands[1].load_data.names, ['LD4', 'LD5', 'LD6', 'LD7'])
+    assert lst_ok(islands[1].generator_data.names, ['G3', 'G4'])
+
+
+def test_segmenting_by_hvdc():
+    fname = os.path.join('data', 'grids', '8_nodes_2_islands_hvdc.gridcal')
+
+    grid = open_file(fname)
+
+    nc = compile_numerical_circuit_at(
+        grid,
+        t_idx=None,
+        apply_temperature=False,
+        branch_tolerance_mode=BranchImpedanceMode.Specified,
+        opf_results=None,
+        use_stored_guess=False,
+        bus_dict=None,
+        areas_dict=None,
+        control_taps_modules=True,
+        control_taps_phase=True,
+        control_remote_voltage=True,
+    )
+
+    islands_1 = nc.split_into_islands(consider_hvdc_as_island_links=True)
+
+    assert len(islands_1) == 1
+
+    islands_1 = nc.split_into_islands(consider_hvdc_as_island_links=False)
+
+    assert len(islands_1) == 2

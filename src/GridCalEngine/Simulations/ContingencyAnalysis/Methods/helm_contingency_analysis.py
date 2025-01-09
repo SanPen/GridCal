@@ -6,7 +6,7 @@
 import numpy as np
 from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingencies import HelmVariations
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
@@ -53,10 +53,10 @@ def helm_contingency_analysis(grid: MultiCircuit,
 
     branches_dict = grid.get_branches_wo_hvdc_dict()
     calc_branches = grid.get_branches_wo_hvdc()
-    mon_idx = numerical_circuit.branch_data.get_monitor_enabled_indices()
+    mon_idx = numerical_circuit.passive_branch_data.get_monitor_enabled_indices()
 
     # keep the original states
-    original_br_active = numerical_circuit.branch_data.active.copy()
+    original_br_active = numerical_circuit.passive_branch_data.active.copy()
     original_gen_active = numerical_circuit.generator_data.active.copy()
     original_gen_p = numerical_circuit.generator_data.p.copy()
 
@@ -102,7 +102,7 @@ def helm_contingency_analysis(grid: MultiCircuit,
         results.report.analyze(t=t,
                                t_prob=t_prob,
                                mon_idx=mon_idx,
-                               numerical_circuit=numerical_circuit,
+                               nc=numerical_circuit,
                                base_flow=np.abs(pf_res_0.Sf),
                                base_loading=np.abs(pf_res_0.loading),
                                contingency_flows=np.abs(Sf),
@@ -111,7 +111,7 @@ def helm_contingency_analysis(grid: MultiCircuit,
                                contingency_group=contingency_group)
 
         # revert the states for the next run
-        numerical_circuit.branch_data.active = original_br_active.copy()
+        numerical_circuit.passive_branch_data.active = original_br_active.copy()
         numerical_circuit.generator_data.active = original_gen_active.copy()
         numerical_circuit.generator_data.p = original_gen_p.copy()
 

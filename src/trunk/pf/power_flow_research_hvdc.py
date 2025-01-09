@@ -221,8 +221,8 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     Pset_hvdc = nc.hvdc_data.Pset / nc.Sbase
     Pf_hvdc0 = -Pset_hvdc * 0
     Pt_hvdc0 = Pset_hvdc * 0
-    Cf_hvdc = nc.hvdc_data.C_hvdc_bus_f
-    Ct_hvdc = nc.hvdc_data.C_hvdc_bus_t
+    Cf_hvdc = nc.hvdc_data.Cf
+    Ct_hvdc = nc.hvdc_data.Ct
 
     x0 = var2x(Va=Va0[pvpq], Vm=Vm0[pq], Pf_hvdc=Pf_hvdc0, Pt_hvdc=Pt_hvdc0)
 

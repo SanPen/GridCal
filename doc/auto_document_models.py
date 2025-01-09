@@ -148,12 +148,12 @@ def write_dataframes_to_excel_one_sheet(data_frames: Dict[str, pd.DataFrame], fi
         df_all.to_excel(w, sheet_name='ALL_CLASSES')
 
 
-def write_dataframes_to_rst(data_frames: Dict[str, pd.DataFrame], filename, tilte):
+def write_dataframes_to_rst(data_frames: Dict[str, pd.DataFrame], filename, title):
     """
 
     :param data_frames:
     :param filename:
-    :param tilte:
+    :param title:
     :return:
     """
     m = 10
@@ -166,8 +166,8 @@ def write_dataframes_to_rst(data_frames: Dict[str, pd.DataFrame], filename, tilt
         w.write("Models\n")
         w.write("=============\n\n")
 
-        w.write(tilte + "\n")
-        w.write("-" * (len(tilte) * m) + "\n\n")
+        w.write(title + "\n")
+        w.write("-" * (len(title) * m) + "\n\n")
 
         for key in names:
             df = data_frames[key]
@@ -179,18 +179,19 @@ def write_dataframes_to_rst(data_frames: Dict[str, pd.DataFrame], filename, tilt
                 s = "No table info."
 
             w.write(key + "\n")
-            w.write("^" * (len(tilte) * m) + "\n\n")
+            w.write("^" * (len(title) * m) + "\n\n")
             w.write(s)
             w.write("\n\n")
 
 
-def write_dataframes_to_latex(data_frames: Dict[str, Dict[str, pd.DataFrame]], folder="data_model",
+def write_dataframes_to_latex(data_frames: Dict[str, Dict[str, pd.DataFrame]],
+                              folder="data_model",
                               cols_to_delete=['max_chars', 'comment', 'mandatory']):
     """
 
     :param data_frames:
-    :param filename:
-    :param tilte:
+    :param folder:
+    :param cols_to_delete:
     :return:
     """
 
@@ -198,7 +199,7 @@ def write_dataframes_to_latex(data_frames: Dict[str, Dict[str, pd.DataFrame]], f
         os.makedirs(folder)
 
     def fix(val):
-        return str(val).replace("_", "\_").replace("%", "\%")
+        return str(val).replace("_", r"\_").replace("%", r"\%")
 
     with open(os.path.join(folder, 'data_models.tex'), 'w') as wp:
 
@@ -211,7 +212,7 @@ def write_dataframes_to_latex(data_frames: Dict[str, Dict[str, pd.DataFrame]], f
 
             with open(fname, 'w') as w:
 
-                w.write("\section{" + cat_name.replace("&", "and") + "}\n")
+                w.write("\\section{" + cat_name.replace("&", "and") + "}\n")
 
                 for key, df in dataframes_dict.items():
 
@@ -245,8 +246,8 @@ def write_dataframes_to_latex(data_frames: Dict[str, Dict[str, pd.DataFrame]], f
                         # else:
                         #     text += "\n"
                     text += "\\bottomrule\n"
-                    text += "\end{longtable}\n"
-                    text += "\end{fullwidth}\n"
+                    text += "\\end{longtable}\n"
+                    text += "\\end{fullwidth}\n"
 
                     w.write(text + "\n")
                     w.write("\n\n")
@@ -312,14 +313,14 @@ if __name__ == '__main__':
     #                           'cgmes_classes_all_in_one_sheet.xlsx')
     # write_dataframes_to_excel_one_sheet(psse_info,
     #                           'psse_classes_all_in_one_sheet.xlsx')
-    write_dataframes_to_excel_one_sheet(gridcal_info,
-                              'roseta_classes_all_in_one_sheet.xlsx')
+    # write_dataframes_to_excel_one_sheet(gridcal_info,
+    #                           'roseta_classes_all_in_one_sheet.xlsx')
 
     # write_dataframes_to_rst(cgmes_info, 'cgmes_clases.rst', "CGMES")
     # write_dataframes_to_rst(psse_info, 'psse_clases.rst', "PSSE")
     # write_dataframes_to_rst(roseta_info, 'roseta_clases.rst', "Roseta")
     # write_dataframes_to_latex(gridcal_info_cat)
 
-    # write_models_to_rst(os.path.join('rst_source', 'other_data_models.rst'))
+    write_models_to_rst(os.path.join('rst_source', 'development', 'data_models.rst'))
 
     print("done")

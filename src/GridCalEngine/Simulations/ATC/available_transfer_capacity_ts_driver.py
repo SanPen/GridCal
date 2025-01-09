@@ -9,7 +9,7 @@ import numpy as np
 from typing import Union, List
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
@@ -216,7 +216,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # OPF results
         self.results = AvailableTransferCapacityTimeSeriesResults(
-            br_names=self.grid.get_branches_wo_hvdc_names(),
+            br_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
             rates=self.grid.get_branch_rates_prof_wo_hvdc(),
             contingency_rates=self.grid.get_branch_contingency_rates_prof_wo_hvdc(),
@@ -261,8 +261,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # get the branch indices to analyze
         nc = compile_numerical_circuit_at(self.grid, logger=self.logger)
-        br_idx = nc.branch_data.get_monitor_enabled_indices()
-        con_br_idx = nc.branch_data.get_contingency_enabled_indices()
+        br_idx = nc.passive_branch_data.get_monitor_enabled_indices()
+        con_br_idx = nc.passive_branch_data.get_contingency_enabled_indices()
 
         # declare the results
         self.results.clear()

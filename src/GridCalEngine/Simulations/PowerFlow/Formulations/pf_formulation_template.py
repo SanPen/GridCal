@@ -10,7 +10,7 @@ from GridCalEngine.Utils.Sparse.csc2 import CSC, spsolve_csc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
-pd.set_option('display.float_format', '{:.4f}'.format)
+pd.set_option('display.float_format', '{:.6f}'.format)
 
 
 class PfFormulationTemplate:

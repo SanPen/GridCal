@@ -1415,7 +1415,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                         'name_code': elm.code,
                         'active': elm.active,
                         'is_slack': bool(elm.is_slack),
-                        'is_internal': bool(elm.is_internal),
+                        'is_internal': bool(elm.internal),
                         'is_dc': bool(elm.is_dc),
                         'vnom': elm.Vnom,
                         'vmin': elm.Vmin,
@@ -1445,7 +1445,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                       'name': elm.name,
                                       'name_code': elm.code,
                                       'dc': elm.dc,
-                                      'default_bus': get_obj_ref(elm.default_bus)} for elm in
+                                      'default_bus': get_obj_ref(elm.bus)} for elm in
                                      circuit.get_connectivity_nodes()]
 
     # bus bars
@@ -1965,8 +1965,8 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                          'rl': 0.0,
                          'xl': 0.0,
                          'bl': 0.0,
-                         'rs': elm.Rs,
-                         'xs': elm.Xs,
+                         'rs': elm.R,
+                         'xs': elm.X,
                          'rsh': elm.Rsh,
                          'xsh': elm.Xsh,
                          'vsh': elm.Vsh,
@@ -2121,9 +2121,9 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                   'losses': driver.results.losses[i].real}
 
                     for i, elm in enumerate(circuit.hvdc_lines):
-                        branch_data[elm.idtag] = {'p': driver.results.hvdc_Pf[i].real,
+                        branch_data[elm.idtag] = {'p': driver.results.Pf_hvdc[i].real,
                                                   'q': 0,
-                                                  'losses': driver.results.hvdc_losses[i].real}
+                                                  'losses': driver.results.losses_hvdc[i].real}
 
                     results["power_flow"] = {'bus': bus_data,
                                              'branch': branch_data}
@@ -2142,9 +2142,9 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                   'losses': driver.results.losses[:, i].real.tolist()}
 
                     for i, elm in enumerate(circuit.hvdc_lines):
-                        branch_data[elm.idtag] = {'p': driver.results.hvdc_Pf[:, i].real,
+                        branch_data[elm.idtag] = {'p': driver.results.Pf_hvdc[:, i].real,
                                                   'q': 0,
-                                                  'losses': driver.results.hvdc_losses[:, i].real}
+                                                  'losses': driver.results.losses_hvdc[:, i].real}
 
                     results["time_series"] = {'bus': bus_data, 'branch': branch_data}
 

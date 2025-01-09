@@ -7,9 +7,6 @@ from __future__ import annotations
 
 import numpy as np
 from typing import Union, List
-
-from numba.cuda.cudadrv.nvvm import logger
-
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import EngineType, ContingencyMethod, SimulationTypes
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
@@ -77,8 +74,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
             nbr=self.grid.get_branch_number_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
             branch_names=self.grid.get_branch_names_wo_hvdc(),
-            bus_types=np.ones(self.grid.get_bus_number()),
-            con_names=self.grid.get_contingency_group_names()
+            bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
+            con_names=np.array(self.grid.get_contingency_group_names())
         )
 
     def get_steps(self) -> List[str]:
@@ -145,7 +142,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                 self.results = optimal_linear_contingency_analysis(
                     grid=self.grid,
                     options=self.options,
-                    opf_options=None,
+                    opf_options=None,  # TODO: finalize this
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
                     t=t,

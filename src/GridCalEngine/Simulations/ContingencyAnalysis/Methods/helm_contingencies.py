@@ -9,8 +9,9 @@ from typing import List
 from GridCalEngine.basic_structures import IntVec, CxVec
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_dY, \
-    helm_preparation_dY, HelmPreparation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import (helm_coefficients_dY,
+                                                                                  helm_preparation_dY,
+                                                                                  HelmPreparation)
 
 
 def calc_V_outage(nc: NumericalCircuit,
@@ -64,21 +65,19 @@ def calc_V_outage(nc: NumericalCircuit,
     #                                    Ysh0=Ysh0, pq=pq, pv=pv, sl=vd, pqpv=pqpv)
 
     # compute the admittance of the contingency branches
-    adm = compute_admittances(R=nc.branch_data.R[contingency_br_indices],
-                              X=nc.branch_data.X[contingency_br_indices],
-                              G=nc.branch_data.G[contingency_br_indices],
-                              B=nc.branch_data.B[contingency_br_indices],
-                              k=nc.branch_data.k[contingency_br_indices],
-                              tap_module=nc.branch_data.tap_module[contingency_br_indices],
-                              vtap_f=nc.branch_data.virtual_tap_f[contingency_br_indices],
-                              vtap_t=nc.branch_data.virtual_tap_t[contingency_br_indices],
-                              tap_angle=nc.branch_data.tap_angle[contingency_br_indices],
-                              Beq=nc.branch_data.Beq[contingency_br_indices],
-                              Cf=nc.branch_data.C_branch_bus_f[contingency_br_indices, :],
-                              Ct=nc.branch_data.C_branch_bus_t[contingency_br_indices, :],
-                              Gsw=nc.branch_data.G0sw[contingency_br_indices],
-                              Yshunt_bus=np.zeros(nc.nbus),
-                              conn=nc.branch_data.conn[contingency_br_indices],
+    adm = compute_admittances(R=nc.passive_branch_data.R[contingency_br_indices],
+                              X=nc.passive_branch_data.X[contingency_br_indices],
+                              G=nc.passive_branch_data.G[contingency_br_indices],
+                              B=nc.passive_branch_data.B[contingency_br_indices],
+                              k=nc.passive_branch_data.k[contingency_br_indices],
+                              tap_module=nc.active_branch_data.tap_module[contingency_br_indices],
+                              vtap_f=nc.passive_branch_data.virtual_tap_f[contingency_br_indices],
+                              vtap_t=nc.passive_branch_data.virtual_tap_t[contingency_br_indices],
+                              tap_angle=nc.active_branch_data.tap_angle[contingency_br_indices],
+                              Cf=nc.passive_branch_data.Cf[contingency_br_indices, :],
+                              Ct=nc.passive_branch_data.Ct[contingency_br_indices, :],
+                              Yshunt_bus=np.zeros(nc.nbus, dtype=complex),
+                              conn=nc.passive_branch_data.conn[contingency_br_indices],
                               seq=1,
                               add_windings_phase=False)
 
@@ -106,10 +105,10 @@ def calc_V_outage(nc: NumericalCircuit,
                                            max_coeff=10)
 
     # compute flows
-    Sf = (nc.Cf * V) * np.conj(nc.Yf * V) * nc.Sbase
+    Sf = (nc.passive_branch_data.Cf * V) * np.conj(adm.Yf * V) * nc.Sbase
 
     # compute contingency loading
-    loading = Sf / (nc.contingency_rates + 1e-9)
+    loading = Sf / (nc.passive_branch_data.rates + 1e-9)
 
     return V, Sf, loading, norm_f
 
@@ -118,6 +117,7 @@ class HelmVariations:
     """
     Class to quickly evaluate topological variations based on HELM coefficients
     """
+
     def __init__(self, numerical_circuit: NumericalCircuit):
         """
         Constructor
@@ -141,9 +141,11 @@ class HelmVariations:
                                                                           theta=np.zeros(self.numerical_circuit.nbus))
 
         if len(self.islands) > 0:
-            for n_island, island in enumerate(self.islands):
+            for n_island in range(len(self.islands)):
+                island = self.islands[n_island]
+                indices = island.get_simulation_indices()
 
-                if len(island.vd) == 1 and len(island.pqpv) > 0:
+                if len(indices.vd) == 1 and len(indices.no_slack) > 0:
                     # remap global branch indices to island branch indices
                     # branch_index_mapping = {i: idx for idx, i in island.original_branch_idx}
                     # contingency_br_indices_is = list()
@@ -152,16 +154,18 @@ class HelmVariations:
                     #     if ci:
                     #         contingency_br_indices_is.append(ci)
 
-                    S0 = island.Sbus + Shvdc[island.original_bus_idx]
+                    S0 = island.get_power_injections_pu() + Shvdc[island.bus_data.original_idx]
 
-                    helm_prep = helm_preparation_dY(Yseries=island.Yseries,
-                                                    V0=island.Vbus,
+                    adms = island.get_series_admittance_matrices()
+
+                    helm_prep = helm_preparation_dY(Yseries=adms.Yseries,
+                                                    V0=island.bus_data.Vbus,
                                                     S0=S0,
-                                                    Ysh0=island.Yshunt,
-                                                    pq=island.pq,
-                                                    pv=island.pv,
-                                                    sl=island.vd,
-                                                    pqpv=island.pqpv)
+                                                    Ysh0=adms.Yshunt,
+                                                    pq=indices.pq,
+                                                    pv=indices.pv,
+                                                    sl=indices.vd,
+                                                    pqpv=indices.no_slack)
 
                     self.preparations.append(helm_prep)
 
@@ -178,12 +182,13 @@ class HelmVariations:
         loading = np.zeros(n_br, dtype=complex)
 
         if len(self.islands) > 0:
-            for n_island, island in enumerate(self.islands):
-
-                if len(island.vd) == 1 and len(island.pqpv) > 0:
+            for n_island in range(len(self.islands)):
+                island = self.islands[n_island]
+                indices = island.get_simulation_indices()
+                if len(indices.vd) == 1 and len(indices.no_slack) > 0:
 
                     # remap global branch indices to island branch indices
-                    branch_index_mapping = {i: idx for idx, i in enumerate(island.original_branch_idx)}
+                    branch_index_mapping = {i: idx for idx, i in enumerate(island.passive_branch_data.original_idx)}
                     contingency_br_indices_is = list()
                     for c in contingency_br_indices:
                         ci = branch_index_mapping.get(c, None)
@@ -191,13 +196,15 @@ class HelmVariations:
                             contingency_br_indices_is.append(ci)
 
                     pre = self.preparations[n_island]
+                    adm = island.get_admittance_matrices()
+                    Sbus = island.get_power_injections_pu()
 
                     V_isl, Sf_isl, loading_isl, err = calc_V_outage(nc=island,
-                                                                    If=np.zeros(island.nbr),
-                                                                    Ybus=island.Ybus,
+                                                                    If=np.zeros(island.nbr, dtype=complex),
+                                                                    Ybus=adm.Ybus,
                                                                     sys_mat_factorization=pre.sys_mat_factorization,
-                                                                    V0=island.Vbus,
-                                                                    S0=island.Sbus,
+                                                                    V0=island.bus_data.Vbus,
+                                                                    S0=Sbus,
                                                                     Uini=pre.Uini,
                                                                     Xini=pre.Xini,
                                                                     Yslack=pre.Yslack,
@@ -213,8 +220,8 @@ class HelmVariations:
                                                                     contingency_br_indices=contingency_br_indices_is)
 
                     # assign objects to the full matrix
-                    V[island.original_bus_idx] = V_isl
-                    Sf[island.original_branch_idx] = Sf_isl
-                    loading[island.original_branch_idx] = loading_isl
+                    V[island.bus_data.original_idx] = V_isl
+                    Sf[island.passive_branch_data.original_idx] = Sf_isl
+                    loading[island.passive_branch_data.original_idx] = loading_isl
 
         return V, Sf, loading

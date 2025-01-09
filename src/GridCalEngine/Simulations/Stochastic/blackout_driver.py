@@ -13,7 +13,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDrive
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import StochasticPowerFlowResults
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import StochasticPowerFlowDriver
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 
@@ -170,7 +170,7 @@ class CascadingDriver(DriverTemplate):
         for i, idx_val in enumerate(idx):
             if prob[i] >= min_prob:
                 any_removed = True
-                numerical_circuit.branch_data.active[idx_val] = False
+                numerical_circuit.passive_branch_data.active[idx_val] = False
                 indices.append(idx_val)
                 criteria = 'Overload probability > ' + str(min_prob)
 
@@ -187,7 +187,7 @@ class CascadingDriver(DriverTemplate):
                     idx_val = int(np.where(loading == max(loading))[0][0])
                     criteria = 'Max loading, Overloads not seen'
 
-                numerical_circuit.branch_data.active[idx_val] = False
+                numerical_circuit.passive_branch_data.active[idx_val] = False
                 indices.append(idx_val)
             else:
                 indices = []

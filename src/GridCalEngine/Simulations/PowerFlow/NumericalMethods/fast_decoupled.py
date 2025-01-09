@@ -11,16 +11,19 @@ import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as 
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
                                                                                     compute_slack_distribution)
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.basic_structures import Vec, CxVec, CscMat, IntVec
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 np.set_printoptions(linewidth=320)
 
 
-def FDPF(Vbus: CxVec,
+def FDPF(nc: NumericalCircuit,
+         Vbus: CxVec,
          S0: CxVec,
          I0: CxVec,
          Y0: CxVec,
-         Ybus: CscMat,
+         Ybus: CscMat, Yf: CscMat, Yt: CscMat,
          B1: CscMat,
          B2: CscMat,
          pv_: IntVec,
@@ -37,11 +40,14 @@ def FDPF(Vbus: CxVec,
          distribute_slack: bool = False) -> NumericPowerFlowResults:
     """
     Fast decoupled power flow
+    :param nc: NumericalCircuit instance
     :param Vbus: array of initial voltages
     :param S0: array of power Injections
     :param I0: array of current Injections
     :param Y0: array of admittance Injections
     :param Ybus: Admittance matrix
+    :param Yf: Admittance from matrix
+    :param Yt: Admittance to matrix
     :param B1: B' matrix for the fast decoupled algorithm
     :param B2: B'' matrix for the fast decoupled algorithm
     :param pv_: Array with the indices of the PV buses
@@ -178,13 +184,41 @@ def FDPF(Vbus: CxVec,
     end = time.time()
     elapsed = end - start
 
+    # compute the flows
+    Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        Sbus=Scalc,
+        V=voltage,
+        F=nc.passive_branch_data.F,
+        T=nc.passive_branch_data.T,
+        pv=pv,
+        vd=vd_,
+        Ybus=Ybus,
+        Yf=Yf,
+        Yt=Yt,
+        branch_rates=nc.passive_branch_data.rates,
+        Sbase=nc.Sbase)
+
     return NumericPowerFlowResults(V=voltage,
-                                   converged=converged,
+                                   Scalc=Scalc * nc.Sbase,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Sf,
+                                   St=St,
+                                   If=If,
+                                   It=It,
+                                   loading=loading,
+                                   losses=losses,
+                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
                                    norm_f=normF,
-                                   Scalc=Scalc,
-                                   m=None,
-                                   tau=None,
-                                   Beq=None,
-                                   Ybus=None, Yf=None, Yt=None,
+                                   converged=converged,
                                    iterations=iter_,
                                    elapsed=elapsed)

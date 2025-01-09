@@ -18,11 +18,13 @@ from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.battery_data import BatteryData
 from GridCalEngine.DataStructures.load_data import LoadData
-from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.DataStructures.fluid_node_data import FluidNodeData
@@ -683,7 +685,9 @@ def add_linear_generation_formulation(t: Union[int, None],
     f_obj = 0.0
 
     if nodal_capacity_active:
-        id_gen_nonvd = [i for i in range(gen_data_t.C_bus_elm.shape[1]) if i not in vd]
+        # TODO: This looks like a bug
+        # id_gen_nonvd = [i for i in range(gen_data_t.C_bus_elm.shape[1]) if i not in vd]
+        id_gen_nonvd = [i for i in range(gen_data_t.nelm) if i not in vd]
     else:
         id_gen_nonvd = []
 
@@ -719,12 +723,10 @@ def add_linear_generation_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.add_cst(
-                            cst=gen_vars.p[t, k] >= (gen_data_t.availability[k] * gen_data_t.pmin[k] /
-                                                     Sbase * gen_vars.producing[t, k]),
+                            cst=gen_vars.p[t, k] >= (gen_data_t.pmin[k] / Sbase * gen_vars.producing[t, k]),
                             name=join("gen_geq_Pmin", [t, k], "_"))
                         prob.add_cst(
-                            cst=gen_vars.p[t, k] <= (gen_data_t.availability[k] * gen_data_t.pmax[k] /
-                                                     Sbase * gen_vars.producing[t, k]),
+                            cst=gen_vars.p[t, k] <= (gen_data_t.pmax[k] / Sbase * gen_vars.producing[t, k]),
                             name=join("gen_leq_Pmax", [t, k], "_"))
 
                     if t is not None:
@@ -752,8 +754,8 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                     if not skip_generation_limits:
                         set_var_bounds(var=gen_vars.p[t, k],
-                                       lb=gen_data_t.availability[k] * gen_data_t.pmin[k] / Sbase,
-                                       ub=gen_data_t.availability[k] * gen_data_t.pmax[k] / Sbase)
+                                       lb=gen_data_t.pmin[k] / Sbase,
+                                       ub=gen_data_t.pmax[k] / Sbase)
 
                 # add the ramp constraints
                 if ramp_constraints and t is not None:
@@ -870,13 +872,11 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.add_cst(
-                            cst=(batt_vars.p[t, k] >= (batt_data_t.availability[k] * batt_data_t.pmin[k] /
-                                                       Sbase * batt_vars.producing[t, k])),
+                            cst=(batt_vars.p[t, k] >= (batt_data_t.pmin[k] / Sbase * batt_vars.producing[t, k])),
                             name=join("batt_geq_Pmin", [t, k], "_"))
 
                         prob.add_cst(
-                            cst=(batt_vars.p[t, k] <= (batt_data_t.availability[k] * batt_data_t.pmax[k] /
-                                                       Sbase * batt_vars.producing[t, k])),
+                            cst=(batt_vars.p[t, k] <= (batt_data_t.pmax[k] / Sbase * batt_vars.producing[t, k])),
                             name=join("batt_leq_Pmax", [t, k], "_"))
 
                     if t is not None:
@@ -907,8 +907,8 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         set_var_bounds(var=batt_vars.p[t, k],
-                                       lb=batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase,
-                                       ub=batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase)
+                                       lb=batt_data_t.pmin[k] / Sbase,
+                                       ub=batt_data_t.pmax[k] / Sbase)
 
                 # compute the time increment in hours
                 dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
@@ -1064,7 +1064,8 @@ def add_linear_load_formulation(t: Union[int, None],
 
 def add_linear_branches_formulation(t: int,
                                     Sbase: float,
-                                    branch_data_t: BranchData,
+                                    branch_data_t: PassiveBranchData,
+                                    ctrl_branch_data_t: ActiveBranchData,
                                     branch_vars: BranchVars,
                                     bus_vars: BusVars,
                                     prob: LpModel,
@@ -1074,6 +1075,7 @@ def add_linear_branches_formulation(t: int,
     :param t: time index
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
+    :param ctrl_branch_data_t: ControllableBranchData
     :param branch_vars: BranchVars
     :param bus_vars: BusVars
     :param prob: OR problem
@@ -1107,11 +1109,11 @@ def add_linear_branches_formulation(t: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
+            if ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
 
                 # add angle
-                branch_vars.tap_angles[t, m] = prob.add_var(lb=branch_data_t.tap_angle_min[m],
-                                                            ub=branch_data_t.tap_angle_max[m],
+                branch_vars.tap_angles[t, m] = prob.add_var(lb=ctrl_branch_data_t.tap_angle_min[m],
+                                                            ub=ctrl_branch_data_t.tap_angle_max[m],
                                                             name=join("tap_ang_", [t, m], "_"))
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
@@ -1160,7 +1162,7 @@ def add_linear_branches_formulation(t: int,
 
 def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   Sbase: float,
-                                                  branch_data_t: BranchData,
+                                                  branch_data_t: PassiveBranchData,
                                                   branch_vars: BranchVars,
                                                   bus_vars: BusVars,
                                                   prob: LpModel,
@@ -1235,12 +1237,13 @@ def add_linear_hvdc_formulation(t: int,
 
         fr = hvdc_data_t.F[m]
         to = hvdc_data_t.T[m]
-        hvdc_vars.rates[t, m] = hvdc_data_t.rate[m]
+        hvdc_vars.rates[t, m] = hvdc_data_t.rates[m]
 
         if hvdc_data_t.active[m]:
 
             # declare the flow var
-            hvdc_vars.flows[t, m] = prob.add_var(-hvdc_data_t.rate[m] / Sbase, hvdc_data_t.rate[m] / Sbase,
+            hvdc_vars.flows[t, m] = prob.add_var(-hvdc_data_t.rates[m] / Sbase,
+                                                 hvdc_data_t.rates[m] / Sbase,
                                                  name=join("hvdc_flow_", [t, m], "_"))
 
             if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:
@@ -1265,10 +1268,10 @@ def add_linear_hvdc_formulation(t: int,
 
                 else:
 
-                    if hvdc_data_t.Pset[m] > hvdc_data_t.rate[m]:
-                        P0 = hvdc_data_t.rate[m] / Sbase
-                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rate[m]:
-                        P0 = -hvdc_data_t.rate[m] / Sbase
+                    if hvdc_data_t.Pset[m] > hvdc_data_t.rates[m]:
+                        P0 = hvdc_data_t.rates[m] / Sbase
+                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rates[m]:
+                        P0 = -hvdc_data_t.rates[m] / Sbase
                     else:
                         P0 = hvdc_data_t.Pset[m] / Sbase
 
@@ -1323,9 +1326,12 @@ def add_linear_node_balance(t_idx: int,
     B = Bbus.tocsc()
 
     P_esp = bus_vars.branch_injections[t_idx, :]
-    P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
-    P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
-    P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+    # P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
+    # P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
+    # P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+    P_esp += generator_data.get_array_per_bus_obj(gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
+    P_esp += battery_data.get_array_per_bus_obj(batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
+    P_esp += load_data.get_array_per_bus_obj(load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
 
     if len(capacity_nodes_idx) > 0:
         P_esp[capacity_nodes_idx] += nodal_capacity_vars.P[t_idx, :]
@@ -1650,6 +1656,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
             logger=logger
         )
 
+        indices = nc.get_simulation_indices()
+
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
             mip_vars.bus_vars.theta[local_t_idx, k] = lp_model.add_var(
@@ -1679,7 +1687,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
             ramp_constraints=ramp_constraints,
             skip_generation_limits=skip_generation_limits,
             all_generators_fixed=all_generators_fixed,
-            vd=nc.vd,
+            vd=indices.vd,
             nodal_capacity_active=active_nodal_capacity
         )
 
@@ -1743,7 +1751,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
             f_obj += add_linear_branches_formulation(
                 t=local_t_idx,
                 Sbase=nc.Sbase,
-                branch_data_t=nc.branch_data,
+                branch_data_t=nc.passive_branch_data,
+                ctrl_branch_data_t=nc.active_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
@@ -1751,10 +1760,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
             )
 
             # formulate nodes ------------------------------------------------------------------------------------------
+            adml = nc.get_linear_admittance_matrices(indices=indices)
             add_linear_node_balance(
                 t_idx=local_t_idx,
-                Bbus=nc.Bbus,
-                vd=nc.vd,
+                Bbus=adml.Bbus,
+                vd=indices.vd,
                 bus_data=nc.bus_data,
                 generator_data=nc.generator_data,
                 battery_data=nc.battery_data,
@@ -1795,7 +1805,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                     f_obj += add_linear_branches_contingencies_formulation(
                         t_idx=local_t_idx,
                         Sbase=nc.Sbase,
-                        branch_data_t=nc.branch_data,
+                        branch_data_t=nc.passive_branch_data,
                         branch_vars=mip_vars.branch_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,

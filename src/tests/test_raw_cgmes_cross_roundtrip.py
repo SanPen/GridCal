@@ -47,6 +47,36 @@ def create_file_open_options() -> FileOpenOptions:
     return options
 
 
+def get_power_flow_options() -> PowerFlowOptions:
+    """
+
+    :return:
+    """
+    pfo = PowerFlowOptions(
+        # solver_type=SolverType.NR,
+        # retry_with_other_methods=True,
+        # verbose=0,
+        # initialize_with_existing_solution=False,
+        # tolerance=1e-6,
+        # max_iter=25,
+        # max_outer_loop_iter=100,
+        # control_q=True,
+        control_taps_modules=False,
+        control_taps_phase=False,
+        control_remote_voltage=False,
+        # orthogonalize_controls=True,
+        # apply_temperature_correction=True,
+        # branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+        # distributed_slack=False,
+        ignore_single_node_islands=True,
+        # trust_radius=1.0,
+        # backtracking_parameter=0.05,
+        # use_stored_guess=False,
+        # generate_report=False
+    )
+    return pfo
+
+
 def run_raw_to_cgmes(import_path: str | list[str],
                      export_fname: str,
                      boundary_zip_path: str):
@@ -65,7 +95,7 @@ def run_raw_to_cgmes(import_path: str | list[str],
     # already done in raw_to_gridcal.py
 
     # run power flow
-    pf_options = PowerFlowOptions()
+    pf_options = get_power_flow_options()
     pf1_res = gce.power_flow(circuit1, pf_options)
     # pf_options = None
     # pf1_res = None
@@ -114,37 +144,59 @@ def run_raw_to_cgmes(import_path: str | list[str],
         logger_nc.print()
 
         # FOR DEBUG
+        adm1 = nc1.get_admittance_matrices()
+        adm2 = nc2.get_admittance_matrices()
+        Sbus1 = nc1.get_power_injections()
+        Sbus2 = nc2.get_power_injections()
         print('Buses')
-        print(nc1.bus_names)
-        print(nc2.bus_names)
+        print(nc1.bus_data.names)
+        print(nc2.bus_data.names)
         print('Loads')
-        print(nc1.load_names)
-        print(nc2.load_names)
+        print(nc1.load_data.names)
+        print(nc2.load_data.names)
         print('Gens')
-        print(nc1.generator_names)
-        print(nc2.generator_names)
+        print(nc1.generator_data.names)
+        print(nc2.generator_data.names)
         print('Sbus1')
-        print(nc1.Sbus)
+        print(Sbus1)
         print('Sbus2')
-        print(nc2.Sbus)
+        print(Sbus2)
         print('S_diff')
-        print(nc2.Sbus - nc1.Sbus)
+        print(Sbus1 - Sbus2)
         print('Y1')
-        print(nc1.Ybus.A)
+        print(adm1.Ybus.A)
         print('Y2')
-        print(nc2.Ybus.A)
-        Y_diff = nc2.Ybus.A - nc1.Ybus.A
+        print(adm2.Ybus.A)
+        Y_diff = adm2.Ybus.A - adm1.Ybus.A
         print('Y_diff', Y_diff)
         # mask = Y_diff != 0
-        mask = ~np.isclose(nc1.Ybus.A, nc2.Ybus.A, atol=1e-4, rtol=0)
+        mask = ~np.isclose(adm1.Ybus.A, adm2.Ybus.A, atol=1e-4, rtol=0)
         # print('mask \n', mask)
-        print("Y1_elements", nc1.Ybus.A[mask])
-        print("Y2_elements", nc2.Ybus.A[mask])
-        print("Y_diff", nc1.Ybus.A[mask] - nc2.Ybus.A[mask])
-
-    assert np.allclose(np.abs(pf1_res.voltage), np.abs(pf2_res.voltage), atol=1e-5)
+        print("Y1_elements", adm1.Ybus.A[mask])
+        print("Y2_elements", adm2.Ybus.A[mask])
+        print("Y_diff", adm1.Ybus.A[mask] - adm2.Ybus.A[mask])
 
     assert ok
+
+    pf_ok = np.allclose(np.abs(pf1_res.voltage), np.abs(pf2_res.voltage), atol=1e-5)
+    if pf_ok:
+        print("\nOK! SUCCESS for PowerFlow results!\n")
+    else:
+        print("Tap modules")
+        print(pf1_res.tap_module)
+        print(pf2_res.tap_module)
+        print("Tap phase")
+        print(pf1_res.tap_angle)
+        print(pf2_res.tap_angle)
+        # running in the GUI they are matching
+
+        print("\nVoltages")
+        print(np.abs(pf1_res.voltage))
+        print(np.abs(pf2_res.voltage))
+        print("Voltage abs diff")
+        print(np.abs(pf2_res.voltage) - np.abs(pf1_res.voltage))
+
+    assert pf_ok
 
 
 def test_raw_to_cgmes_cross_roundtrip():
@@ -159,16 +211,17 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE 14 bus'  # PASSEED
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'IEEE 30 bus'  # tap_module num error
+    # braches excessive voltage diff: PASSED if these branches are not added as trafos
+    # test_grid_name = 'IEEE 30 bus'  # num of transormer2w??!! (tap_module num error)
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
-
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'DACF_20240404_00_IGM'
+    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+
+    # test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
 
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
@@ -182,3 +235,7 @@ def test_raw_to_cgmes_cross_roundtrip():
         os.makedirs(os.path.dirname(export_name))
 
     run_raw_to_cgmes(raw_path, export_name, boundary_path)
+
+
+if __name__ == '__main__':
+    test_raw_to_cgmes_cross_roundtrip()

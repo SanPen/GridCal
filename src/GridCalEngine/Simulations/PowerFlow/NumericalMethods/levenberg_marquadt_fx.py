@@ -14,12 +14,11 @@ from GridCalEngine.basic_structures import Logger
 linear_solver = get_linear_solver()
 
 
-def levenberg_marquadt_fx(problem: PfFormulationTemplate,
-                          tol: float = 1e-6,
-                          max_iter: int = 10,
-                          trust: float = 1.0,
-                          verbose: int = 0,
-                          logger: Logger = Logger()) -> NumericPowerFlowResults:
+def levenberg_marquardt_fx(problem: PfFormulationTemplate,
+                           tol: float = 1e-6,
+                           max_iter: int = 10,
+                           verbose: int = 0,
+                           logger: Logger = Logger()) -> NumericPowerFlowResults:
     """
     Levenberg-Marquardt to solve:
 
@@ -32,7 +31,6 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
     :param problem: PfFormulationTemplate
     :param tol: Error tolerance
     :param max_iter: Maximum number of iterations
-    :param trust: trust amount in the derivative length correctness
     :param verbose:  Display console information
     :param logger: Logger instance
     :return: ConvexMethodResult
@@ -43,13 +41,12 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
     x = problem.var2x()
 
     if len(x) == 0:
-        # if the lenght of x is zero, means that there's nothing to solve
+        # if the length of x is zero, means that there's nothing to solve
         # for instance there might be a single node that is a slack node
         return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
     normF = 100000
     update_jacobian = True
-    converged = False
     iter_ = 0
     nu = 2.0
     lbmda = 0
@@ -85,6 +82,11 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
 
             if update_jacobian:
                 H = mat_to_scipy(problem.Jacobian())
+
+                if H.shape[0] != H.shape[1]:
+                    logger.add_error("Jacobian not square, check the controls!", "Levenberg-Marquadt")
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
                 # system matrix
                 # H1 = H^t
                 Ht = H.T  # .tocsr()
@@ -104,6 +106,11 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
             # H^t·dz
             rhs = Ht @ dz
 
+            if H.shape[0] != len(rhs):
+                logger.add_error("Jacobian and residuals have different sizes!", "LM",
+                                 value=len(rhs), expected_value=H.shape[0])
+                return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
             # compute update step
             try:
 
@@ -115,10 +122,9 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
                 return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
 
             if verbose > 1:
-                import pandas as pd
-                print("H:\n", pd.DataFrame(H.toarray()).to_string(index=False))
-                print("g:\n", rhs)
-                print("h:\n", dx)
+                print("H:\n", problem.get_jacobian_df(H))
+                print("F:\n", problem.get_f_df(rhs))
+                print("dx:\n", problem.get_x_df(dx))
 
             # objective function to minimize
             f = 0.5 * dz @ dz
@@ -134,7 +140,9 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
 
                 # update x
                 x -= dx
-                error, converged, x, dz = problem.update(x, update_controls=True)
+
+                update_controls = error < (tol * 100)
+                error, converged, x, dz = problem.update(x, update_controls=update_controls)
 
             else:
                 update_jacobian = False

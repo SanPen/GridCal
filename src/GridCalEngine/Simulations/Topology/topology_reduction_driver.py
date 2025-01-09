@@ -321,8 +321,6 @@ class DeleteAndReduce(DriverTemplate):
 
         self.__cancel__ = False
 
-        self._is_running = True
-
     def run(self):
         """
         Run the monte carlo simulation
@@ -354,9 +352,6 @@ class DeleteAndReduce(DriverTemplate):
         """
         self.__cancel__ = True
         self.report_done()
-
-    def isRunning(self):
-        return self._is_running
 
     def start(self):
         self.run()

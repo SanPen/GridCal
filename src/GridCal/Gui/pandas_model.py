@@ -197,12 +197,10 @@ class PandasModel(WrappableTableModel):
     def get_data(self, mode=None):
         """
 
-        Args:
-            mode: 'real', 'imag', 'abs'
-
-        Returns: index, columns, data
-
+        :param mode: 'real', 'imag', 'abs'
+        :return: index, columns, data
         """
+
         n = len(self.cols_c)
 
         if n > 0:
@@ -249,13 +247,10 @@ class PandasModel(WrappableTableModel):
 
     def save_to_excel(self, file_name, mode):
         """
-        Save the data to excel
-        Args:
-            file_name:
-            mode: 'real', 'imag', 'abs'
 
-        Returns:
-
+        :param file_name:
+        :param mode:
+        :return:
         """
         index, columns, data = self.get_data(mode=mode)
 

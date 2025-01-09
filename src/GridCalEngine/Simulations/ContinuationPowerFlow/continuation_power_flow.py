@@ -286,10 +286,10 @@ def predictor(V, lam, Ybus, Sxfr,
     dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, idx_dtheta, idx_dVm)
 
     # linear operator for computing the tangent predictor
-    '''
+    """
     J2 = [   J   dF_dlam
            dP_dV dP_dlam ]
-    '''
+    """
 
     # last_col = np.empty((nj, 1))
     # last_col[:, 0] = dF_dlam
@@ -434,10 +434,10 @@ def corrector(Ybus, Sbus: CxVec, V0: CxVec,
         dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, idx_dtheta, idx_dVm)
 
         # augment J with real/imag - Sxfr and z^T
-        '''
+        """
         J = [   J   dF_dlam 
               dP_dV dP_dlam ]
-        '''
+        """
         # J = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
         #                sp.hstack([dP_dV, dP_dlam])], format="csc")
 

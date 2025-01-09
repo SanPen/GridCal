@@ -13,7 +13,7 @@ from GridCalEngine.enumerations import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 
 PGM_RECOMMENDED_VERSION = "0.0.1"
 PGM_VERSION = ''
@@ -34,7 +34,7 @@ except ImportError:
     pgm = None
     PGM_AVAILABLE = False
 
-'''
+"""
 hierarchy
 
 base ──┬─────────────────────────────────────────────── node
@@ -58,7 +58,7 @@ base ──┬──────────────────────
                        └── generic_power_sensor ────┬── sym_power_sensor
                                                     └── asym_power_sensor
 
-'''
+"""
 
 
 def get_pgm_buses(circuit: MultiCircuit, idx0):
@@ -657,12 +657,14 @@ def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
     results = PowerFlowResults(n=nc.nbus,
                                m=nc.nbr,
                                n_hvdc=nc.nhvdc,
+                               n_vsc=nc.nvsc,
                                n_gen=nc.ngen,
                                n_batt=nc.nbatt,
                                n_sh=nc.nshunt,
                                bus_names=nc.bus_names,
                                branch_names=nc.branch_names,
                                hvdc_names=nc.hvdc_names,
+                               vsc_names=nc.vsc_data.names,
                                gen_names=nc.generator_names,
                                batt_names=nc.battery_names,
                                sh_names=nc.shunt_names,

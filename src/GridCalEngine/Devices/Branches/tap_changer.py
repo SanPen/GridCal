@@ -37,26 +37,26 @@ class TapChanger:
             neutral_position = total_positions - 1
             print(f"Neutral position exceeding the total positions {neutral_position} >= {total_positions}")
 
-        # assymetry angle (Theta)
-        self.asymmetry_angle = float(asymmetry_angle)
+        # asymmetry angle (Theta)
+        self._asymmetry_angle = float(asymmetry_angle)
 
         # total number of positions
         self._total_positions = int(total_positions)
 
         # voltage increment in p.u.
-        self.dV = float(dV)
+        self._dV = float(dV)
 
         # neutral position
-        self.neutral_position = int(neutral_position)
+        self._neutral_position = int(neutral_position)
 
         # normal position
-        self.normal_position = int(normal_position)
+        self._normal_position = int(normal_position)
 
         # index with respect to the neutral position
         self._tap_position = int(neutral_position)
 
         # tap changer mode
-        self.tc_type: TapChangerTypes = tc_type
+        self._tc_type: TapChangerTypes = tc_type
 
         # for CGMES compatibility we store if the low step is negative
         self._negative_low = False
@@ -67,6 +67,51 @@ class TapChanger:
         self._m_array = np.zeros(self._total_positions)  # tap module positions
         self._k_re_array = np.ones(self._total_positions)  # impedance correction positions (real)
         self._k_im_array = np.ones(self._total_positions)  # impedance correction positions (imag)
+        self.recalc()
+
+    @property
+    def asymmetry_angle(self) -> float:
+        return self._asymmetry_angle
+
+    @asymmetry_angle.setter
+    def asymmetry_angle(self, asymmetry_angle: float) -> None:
+        self._asymmetry_angle = float(asymmetry_angle)
+        self.recalc()
+
+    @property
+    def dV(self) -> float:
+        return self._dV
+
+    @dV.setter
+    def dV(self, dV: float) -> None:
+        self._dV = float(dV)
+        self.recalc()
+
+    @property
+    def neutral_position(self) -> int:
+        return self._neutral_position
+
+    @neutral_position.setter
+    def neutral_position(self, neutral_position: int) -> None:
+        self._neutral_position = int(neutral_position)
+        self.recalc()
+
+    @property
+    def normal_position(self) -> int:
+        return self._normal_position
+
+    @normal_position.setter
+    def normal_position(self, normal_position: int) -> None:
+        self._normal_position = int(normal_position)
+        self.recalc()
+
+    @property
+    def tc_type(self) -> TapChangerTypes:
+        return self._tc_type
+
+    @tc_type.setter
+    def tc_type(self, tc_type: TapChangerTypes) -> None:
+        self._tc_type = tc_type
         self.recalc()
 
     @property
@@ -101,6 +146,7 @@ class TapChanger:
         """
         if val < self._total_positions:
             self._tap_position = int(val)
+            self.recalc()
         else:
             print(f"Max tap changer value exceeded {val} > {self._total_positions}")
 
@@ -119,6 +165,7 @@ class TapChanger:
         :param val: neutral position value
         """
         self._neutral_position = int(val)
+        self.recalc()
 
     @property
     def tap_modules_array(self):
@@ -341,8 +388,23 @@ class TapChanger:
         :param tap_module: float value of the tap module
         """
         if self.tc_type != TapChangerTypes.NoRegulation:
-            _, val = find_closest_number(arr=self._m_array, target=tap_module)
+            pos, val = find_closest_number(arr=self._m_array, target=tap_module)
+            self.tap_position = pos
             return val
+        else:
+            return 1.0
+
+    def set_tap_phase(self, tap_phase: float) -> float:
+        """
+        Set the tap position closest to the tap phase
+        :param tap_phase: float value of the tap phase
+        """
+        if self.tc_type != TapChangerTypes.NoRegulation:
+            pos, val = find_closest_number(arr=self._tau_array, target=tap_phase)
+            self.tap_position = pos
+            return val
+        else:
+            return 0.0
 
     def get_tap_module_min(self) -> float:
         """

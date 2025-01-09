@@ -70,6 +70,7 @@ class UPFC(BranchParent):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
+                              reducible=False,
                               rate=rate,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
@@ -80,22 +81,22 @@ class UPFC(BranchParent):
                               build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              Cost=cost,
+                              cost=cost,
                               device_type=DeviceType.UpfcDevice)
 
         # total impedance and admittance in p.u.
-        self.Rs = float(rs)
-        self.Xs = float(xs)
+        self.R = float(rs)
+        self.X = float(xs)
         self.Rsh = float(rp)
         self.Xsh = float(xp)
 
-        self.Rs0 = float(rs0)
-        self.Xs0 = float(xs0)
+        self.R0 = float(rs0)
+        self.X0 = float(xs0)
         self.Rsh0 = float(rp0)
         self.Xsh0 = float(xp0)
 
-        self.Rs2 = float(rs2)
-        self.Xs2 = float(xs2)
+        self.R2 = float(rs2)
+        self.X2 = float(xs2)
         self.Rsh2 = float(rp2)
         self.Xsh2 = float(xp2)
 
@@ -103,16 +104,22 @@ class UPFC(BranchParent):
         self.Pfset = float(Pset)
         self.Qfset = float(Qset)
 
-        self.register(key='Rs', units='p.u.', tpe=float, definition='Series positive sequence resistance.')
-        self.register(key='Xs', units='p.u.', tpe=float, definition='Series positive sequence reactance.')
+        self.register(key='R', units='p.u.', tpe=float, definition='Series positive sequence resistance.',
+                      old_names=['Rs'])
+        self.register(key='X', units='p.u.', tpe=float, definition='Series positive sequence reactance.',
+                      old_names=['Xs'])
         self.register(key='Rsh', units='p.u.', tpe=float, definition='Shunt positive sequence resistance.')
         self.register(key='Xsh', units='p.u.', tpe=float, definition='Shunt positive sequence resistance.')
-        self.register(key='Rs0', units='p.u.', tpe=float, definition='Series zero sequence resistance.')
-        self.register(key='Xs0', units='p.u.', tpe=float, definition='Series zero sequence reactance.')
+        self.register(key='R0', units='p.u.', tpe=float, definition='Series zero sequence resistance.',
+                      old_names=['Rs0'])
+        self.register(key='X0', units='p.u.', tpe=float, definition='Series zero sequence reactance.',
+                      old_names=['Xs0'])
         self.register(key='Rsh0', units='p.u.', tpe=float, definition='Shunt zero sequence resistance.')
         self.register(key='Xsh0', units='p.u.', tpe=float, definition='Shunt zero sequence resistance.')
-        self.register(key='Rs2', units='p.u.', tpe=float, definition='Series negative sequence resistance.')
-        self.register(key='Xs2', units='p.u.', tpe=float, definition='Series negative sequence reactance.')
+        self.register(key='R2', units='p.u.', tpe=float, definition='Series negative sequence resistance.',
+                      old_names=['Rs2'])
+        self.register(key='X2', units='p.u.', tpe=float, definition='Series negative sequence reactance.',
+                      old_names=['Xs2'])
         self.register(key='Rsh2', units='p.u.', tpe=float, definition='Shunt negative sequence resistance.')
         self.register(key='Xsh2', units='p.u.', tpe=float, definition='Shunt negative sequence resistance.')
         self.register(key='Vsh', units='p.u.', tpe=float, definition='Shunt voltage set point.')
@@ -155,10 +162,10 @@ class UPFC(BranchParent):
         """
         b = Sbase_new / Sbase_old
 
-        self.Rs *= b
-        self.Xs *= b
+        self.R *= b
+        self.X *= b
         self.Rsh *= b
-        self.Xs *= b
+        self.X *= b
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

@@ -40,8 +40,6 @@ def check_type(dtype: PROFILE_TYPES, value: Any) -> bool:
     else:
         raise Exception("Sparse array type value Not recognized")
 
-    return True
-
 
 class SparseArray:
     """

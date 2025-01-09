@@ -62,7 +62,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             min_vcc=self.ui.transformerVccMinSpinBox.value(),
             max_vcc=self.ui.transformerVccMaxSpinBox.value(),
             branch_x_threshold=1e-4,
-            condition_number_thrshold=1e-4,
+            condition_number_threshold=1e-4,
             logger=self.log
         )
 

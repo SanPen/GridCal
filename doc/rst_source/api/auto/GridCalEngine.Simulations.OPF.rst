@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   GridCalEngine.Simulations.OPF.Formulations
    GridCalEngine.Simulations.OPF.NumericalMethods
 
 Submodules

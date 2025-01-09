@@ -12,6 +12,14 @@ GridCalEngine.Simulations.StateEstimation.state\_estimation module
    :undoc-members:
    :show-inheritance:
 
+GridCalEngine.Simulations.StateEstimation.state\_estimation\_inputs module
+--------------------------------------------------------------------------
+
+.. automodule:: GridCalEngine.Simulations.StateEstimation.state_estimation_inputs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.Simulations.StateEstimation.state\_stimation\_driver module
 -------------------------------------------------------------------------
 

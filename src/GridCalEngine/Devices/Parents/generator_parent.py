@@ -81,6 +81,8 @@ class GeneratorParent(InjectionParent):
 
         self.P = float(P)
         self._P_prof = Profile(default_value=self.P, data_type=float)
+        self._Pmax_prof = Profile(default_value=Pmax, data_type=float)
+        self._Pmin_prof = Profile(default_value=Pmin, data_type=float)
 
         self.srap_enabled = bool(srap_enabled)
         self._srap_enabled_prof = Profile(default_value=self.srap_enabled, data_type=bool)
@@ -97,9 +99,10 @@ class GeneratorParent(InjectionParent):
         self.register(key='control_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
                       definition='Control connectivity node', editable=True)
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
-        self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
-        self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')
-
+        self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.',
+                      profile_name='Pmin_prof')
+        self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.',
+                      profile_name='Pmax_prof')
         self.register(key='srap_enabled', units='', tpe=bool,
                       definition='Is the unit available for SRAP participation?',
                       editable=True, profile_name="srap_enabled_prof")
@@ -154,6 +157,40 @@ class GeneratorParent(InjectionParent):
             self._srap_enabled_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into srap_enabled_prof')
+
+    @property
+    def Pmax_prof(self) -> Profile:
+        """
+        Pmax profile
+        :return: Profile
+        """
+        return self._Pmax_prof
+
+    @Pmax_prof.setter
+    def Pmax_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Pmax_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Pmax_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Pmax_prof')
+
+    @property
+    def Pmin_prof(self) -> Profile:
+        """
+        Pmin profile
+        :return: Profile
+        """
+        return self._Pmin_prof
+
+    @Pmin_prof.setter
+    def Pmin_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Pmin_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Pmin_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Pmin_prof')
 
     def get_S(self) -> complex:
         """

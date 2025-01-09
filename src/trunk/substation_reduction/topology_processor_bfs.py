@@ -302,13 +302,13 @@ def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
     # traverse connectivity nodes
     for cn in grid.get_connectivity_nodes():
 
-        if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
+        if cn.bus is None:  # connectivity nodes can be linked to a previously existing Bus
             # create a new candidate
             candidate_bus = dev.Bus(f"Candidate from {cn.name}")
             info.add_new_candidate(candidate_bus)
         else:
             # pick the default candidate
-            candidate_bus = cn.default_bus
+            candidate_bus = cn.bus
 
         # register
         info.add_candidate(candidate_bus)
