@@ -437,6 +437,7 @@ def sum_per_bus(nbus: int, bus_indices: IntVec, magnitude: Vec) -> Vec:
         res[bus_indices[i]] += magnitude[i]
     return res
 
+
 @nb.njit(cache=True)
 def sum_per_bus_cx(nbus: int, bus_indices: IntVec, magnitude: CxVec) -> CxVec:
     """

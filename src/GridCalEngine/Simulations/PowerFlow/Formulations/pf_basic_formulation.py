@@ -160,7 +160,7 @@ class PfBasicFormulation(PfFormulationTemplate):
         ]
         # self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
 
-        # compute the rror
+        # compute the error
         self._error = compute_fx_error(self._f)
 
         # review reactive power limits
