@@ -229,10 +229,36 @@ def test_raw_to_cgmes_cross_roundtrip():
     raw_relative_path = os.path.join('data', 'grids', 'RAW', f"{test_grid_name}.raw")
     raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))
 
-    export_relative_path = os.path.join('data/output/raw_to_cgmes_export_results', f'{test_grid_name}_from_raw_GC.zip')
+    export_relative_path = os.path.join('data', 'output', 'raw_to_cgmes_export_results'
+                                        , f'{test_grid_name}_from_raw_GC.zip')
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))
+
+    # Non-public test cases
+    # raw_path = os.path.join(
+    #     "C:\\Mate",  # Mate's
+    #     #"C:\\Work",  # Bence's
+    #     "gridDigIt Kft",
+    #     "External projects - Documents",
+    #     "REE",
+    #     "test_models",
+    #     "miguel_models_2",
+    #     "DACF_20241205_00_IGM_35.raw"
+    # )
+    # export_relative_path = os.path.join('data', 'output', 'raw_to_cgmes_export_results',
+    #                                     f'DACF_20241205_00_IGM_35_from_raw_GC.zip')
+    # export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
+    # boundary_path = os.path.join(
+    #     "C:\\Mate", # Mate's
+    #     # "C:\\Work",  # Bence's
+    #     "gridDigIt Kft",
+    #     "External projects - Documents",
+    #     "REE",
+    #     "test_models",
+    #     "miguel_models_2",
+    #     "BOUNDARY SET.zip"
+    # )
 
     run_raw_to_cgmes(raw_path, export_name, boundary_path)
 
