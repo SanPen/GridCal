@@ -235,3 +235,7 @@ def test_raw_to_cgmes_cross_roundtrip():
         os.makedirs(os.path.dirname(export_name))
 
     run_raw_to_cgmes(raw_path, export_name, boundary_path)
+
+
+if __name__ == '__main__':
+    test_raw_to_cgmes_cross_roundtrip()
