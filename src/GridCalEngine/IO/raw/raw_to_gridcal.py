@@ -424,7 +424,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             rate=psse_elm.RATE1_1,
             contingency_factor=round(contingency_factor, 6),
             protection_rating_factor=round(protection_factor, 6),
-            tap_module=1.0,  # it is modified afterwards to account for PSSe not having virtual taps
+            tap_module=1.0,  # it is modified afterward to account for PSSe not having virtual taps
             tap_phase=tap_angle,
             active=bool(psse_elm.STAT),
             mttf=0,
@@ -455,6 +455,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
 
             elm.tap_module_control_mode = TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
+            elm.tap_changer.recalc()
 
         elif psse_elm.COD1 in [1, -1]:  # for voltage control
 
@@ -464,11 +465,13 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             if reg_bus_id > 0:
                 elm.regulation_bus = psse_bus_dict.get(reg_bus_id, None)
             elm.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
+            elm.tap_changer.recalc()
 
         elif psse_elm.COD1 in [2, -2]:  # for reactive power flow control
 
             elm.tap_module_control_mode = TapModuleControl.Qf if psse_elm.COD1 > 0 else TapModuleControl.fixed
             elm.tap_phase_control_mode = TapPhaseControl.fixed
+            elm.tap_changer.recalc()
 
         elif psse_elm.COD1 in [3, -3]:  # for active power flow control
 
@@ -483,11 +486,10 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
             elm.tap_changer.dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
 
-            elm.tap_changer.dV = 0.058288457
-            elm.tap_changer.tap_position = 3
-
-            elm.tap_changer.recalc()
-            elm.tap_phase = elm.tap_changer.get_tap_phase()
+            elm.tap_changer.dV = 0.058288457  # TODO replace this by the correct formula
+            # elm.tap_changer.tap_position = 3  # this value is set internally by set_tap_phase
+            corrected_phase = elm.tap_changer.set_tap_phase(elm.tap_phase)
+            elm.tap_phase = corrected_phase
 
             print("Tap module, and phase calculated:",
                   elm.tap_module, elm.tap_phase)
@@ -506,6 +508,8 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                 alpha_per_2 = math.radians(psse_elm.RMA1)
                 elm.tap_changer.dV = 0.0
                 logger.add_warning(msg='Number of tap positions == 1', value=1)
+
+            elm.tap_changer.recalc()
 
         elif psse_elm.COD1 in [4, -4]:  # for control of a dc line quantity
             # (valid only for two-windingtransformers)

@@ -61,9 +61,9 @@ def get_power_flow_options() -> PowerFlowOptions:
         # max_iter=25,
         # max_outer_loop_iter=100,
         # control_q=True,
-        control_taps_modules=True,
-        control_taps_phase=True,
-        control_remote_voltage=True,
+        control_taps_modules=False,
+        control_taps_phase=False,
+        control_remote_voltage=False,
         # orthogonalize_controls=True,
         # apply_temperature_correction=True,
         # branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
@@ -215,11 +215,11 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE 30 bus'  # num of transormer2w??!! (tap_module num error)
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
-
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+
+    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
