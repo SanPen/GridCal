@@ -189,7 +189,7 @@ def csc_add_ff(Am, An, Aindptr, Aindices, Adata,
 
     w = np.zeros(m, dtype=nb.int32)
 
-    x = xalloc(m)   # get workspace
+    x = np.zeros(m, dtype=nb.float64)   # get workspace
 
     Cm, Cn, Cp, Ci, Cx, Cnzmax = csc_spalloc_f(m, n, anz + bnz)  # allocate result
 
@@ -1034,10 +1034,10 @@ def csc_stack_2d_ff_row_major(mats_data, mats_indptr, mats_indices, mats_cols, m
     :return: Final assembled matrix
     """
 
-    '''
+    """
     Row major: A(r,c) element is at A[c + r * n_columns]; 
     Col major: A(r,c) element is at A[r + c * n_rows];    
-    '''
+    """
 
     # pass 1: compute the number of non zero
     nnz = 0
@@ -1115,9 +1115,9 @@ def csc_stack_2d_ff_col_major(mats_data, mats_indptr, mats_indices, mats_cols, m
     :return: Final assembled matrix
     """
 
-    '''
+    """
     Col major: A(r,c) element is at A[r + c * n_rows];    
-    '''
+    """
 
     # pass 1: compute the number of non zero
     nnz = 0

@@ -10,7 +10,8 @@ from matplotlib.colors import LinearSegmentedColormap
 
 from GridCal.Gui.associations_model import AssociationsModel
 from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
 import GridCal.Gui.gui_functions as gf

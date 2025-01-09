@@ -9,6 +9,8 @@ from GridCalEngine.Devices.Aggregation.modelling_authority import ModellingAutho
 from GridCalEngine.enumerations import DeviceType
 
 
+
+
 class PhysicalDevice(EditableDevice):
     """
     Parent class for Injections, Branches, Buses and other physical devices

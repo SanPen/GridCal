@@ -484,9 +484,6 @@ class BaseDiagramWidget(QSplitter):
         self.draw()
 
     def colour_results(self,
-                       buses: List[Bus],
-                       branches: List[BRANCH_TYPES],
-                       hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
                        Sf: CxVec,
@@ -502,9 +499,21 @@ class BaseDiagramWidget(QSplitter):
                        hvdc_loading: Vec = None,
                        hvdc_active: IntVec = None,
                        loading_label: str = 'loading',
+                       vsc_Pf: Vec = None,
+                       vsc_Pt: Vec = None,
+                       vsc_Qt: Vec = None,
+                       vsc_losses: Vec = None,
+                       vsc_loading: Vec = None,
+                       vsc_active: IntVec = None,
                        ma: Vec = None,
                        theta: Vec = None,
-                       Beq: Vec = None,
+                       fluid_node_p2x_flow: Vec = None,
+                       fluid_node_current_level: Vec = None,
+                       fluid_node_spillage: Vec = None,
+                       fluid_node_flow_in: Vec = None,
+                       fluid_node_flow_out: Vec = None,
+                       fluid_path_flow: Vec = None,
+                       fluid_injection_flow: Vec = None,
                        use_flow_based_width: bool = False,
                        min_branch_width: int = 5,
                        max_branch_width=5,
@@ -513,9 +522,6 @@ class BaseDiagramWidget(QSplitter):
                        cmap: palettes.Colormaps = None):
         """
 
-        :param buses:
-        :param branches:
-        :param hvdc_lines:
         :param Sbus:
         :param bus_active:
         :param Sf:
@@ -531,15 +537,28 @@ class BaseDiagramWidget(QSplitter):
         :param hvdc_loading:
         :param hvdc_active:
         :param loading_label:
+        :param vsc_Pf:
+        :param vsc_Pt:
+        :param vsc_Qt:
+        :param vsc_losses:
+        :param vsc_loading:
+        :param vsc_active:
         :param ma:
         :param theta:
-        :param Beq:
+        :param fluid_node_p2x_flow:
+        :param fluid_node_current_level:
+        :param fluid_node_spillage:
+        :param fluid_node_flow_in:
+        :param fluid_node_flow_out:
+        :param fluid_path_flow:
+        :param fluid_injection_flow:
         :param use_flow_based_width:
         :param min_branch_width:
         :param max_branch_width:
         :param min_bus_width:
         :param max_bus_width:
         :param cmap:
+        :return:
         """
         pass
 

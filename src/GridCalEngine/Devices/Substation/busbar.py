@@ -12,14 +12,17 @@ from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 class BusBar(PhysicalDevice):
 
-    def __init__(self, name='BusBar', idtag: Union[None, str] = None, code: str = '',
+    def __init__(self,
+                 name='BusBar',
+                 idtag: Union[None, str] = None,
+                 code: str = '',
                  voltage_level: Union[None, VoltageLevel] = None,
                  cn: Union[None, ConnectivityNode] = None) -> None:
         """
         Constructor
         :param name: Name of the bus bar
         :param idtag: unique identifier of the device
-        :param code: secondary identifyer
+        :param code: secondary identifier
         :param voltage_level: VoltageLevel of this bus bar (optional)
         :param cn: internal Connectivity node, if none a new one is created
         """
@@ -31,14 +34,16 @@ class BusBar(PhysicalDevice):
 
         self.voltage_level: Union[None, VoltageLevel] = voltage_level
 
-        self._cn: ConnectivityNode = cn if cn is not None else ConnectivityNode(name=name)
+        self._cn: ConnectivityNode = cn if cn is not None else ConnectivityNode(name=name,
+                                                                                voltage_level=voltage_level,
+                                                                                internal=True)
         self._cn.internal = True  # always
 
         self.register(key="voltage_level", tpe=DeviceType.VoltageLevelDevice,
                       definition="Substation voltage level (optional)")
 
         self.register(key="cn", tpe=DeviceType.ConnectivityNodeDevice,
-                      definition="Internal connectvity node")
+                      definition="Internal connectivity node")
 
     @property
     def cn(self) -> ConnectivityNode:

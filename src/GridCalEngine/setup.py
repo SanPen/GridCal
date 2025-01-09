@@ -16,7 +16,7 @@ from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-long_description = '''# GridCal
+long_description = """# GridCal
 
 This software aims to be a complete platform for power systems research and simulation.
 
@@ -32,7 +32,7 @@ pip install GridCalEngine
 For more options (including a standalone setup one), follow the
 [installation instructions]( https://gridcal.readthedocs.io/en/latest/getting_started/install.html)
 from the project's [documentation](https://gridcal.readthedocs.io)
-'''
+"""
 
 description = 'GridCal is a Power Systems simulation program intended for professional use and research'
 

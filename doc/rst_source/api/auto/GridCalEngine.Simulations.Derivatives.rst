@@ -12,14 +12,6 @@ GridCalEngine.Simulations.Derivatives.ac\_jacobian module
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.Simulations.Derivatives.acdc\_jacobian module
------------------------------------------------------------
-
-.. automodule:: GridCalEngine.Simulations.Derivatives.acdc_jacobian
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 GridCalEngine.Simulations.Derivatives.csc\_derivatives module
 -------------------------------------------------------------
 

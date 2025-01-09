@@ -12,8 +12,8 @@ from GridCalEngine.basic_structures import Logger
 
 class RawImpedanceCorrectionTable(RawObject):
 
-    def __init__(self):
-        RawObject.__init__(self, "Area")
+    def __init__(self) -> None:
+        RawObject.__init__(self, "Impedance Correction Table")
 
         self.I: int = -1
 
@@ -48,16 +48,28 @@ class RawImpedanceCorrectionTable(RawObject):
                 self.I = int(all_data.pop(0))
 
                 if len(all_data) % 3 == 0:
-                    for T, F_re, F_im in all_data:
-                        self.T.append(T)
-                        self.F_re.append(F_re)
-                        self.F_im.append(F_im)
+                    k = 0
+                    i = 0
+                    ln = len(all_data)
+                    while k < ln:
+                        if not (all_data[k] == 0 and all_data[k+1] == 0 and all_data[k+2] == 0):
+                            self.T.append(all_data[k])
+                            self.F_re.append(all_data[k + 1])
+                            self.F_im.append(all_data[k + 2])
+                        k += 3
+                        i += 1
 
                 elif len(all_data) % 2 == 0:
-                    for T, F in all_data:
-                        self.T.append(T)
-                        self.F_re.append(F)
-                        self.F_im.append(1.0)
+                    k = 0
+                    i = 0
+                    ln = len(all_data)
+                    while k < ln:
+                        if not (all_data[k] == 0 and all_data[k + 1] == 0 and all_data[k + 2] == 0):
+                            self.T.append(all_data[k])
+                            self.F_re.append(all_data[k + 1])
+                            self.F_im.append(0.0)
+                        k += 3
+                        i += 1
                 else:
                     logger.add_error('Impedance correction values not divisible by 3 nor 4, hence they are wrong :(',
                                      str(version))
@@ -71,9 +83,14 @@ class RawImpedanceCorrectionTable(RawObject):
     def get_raw_line(self, version):
 
         if version >= 29:
-            return self.format_raw_line([self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME])
+            data = [self.I]
+            for k in range(12):
+                data.append(self.T[k])
+                data.append(self.F_re[k])
+                data.append(self.F_im[k])
+            return self.format_raw_line(data)
         else:
-            raise Exception('Areas not defined for version', str(version))
+            raise Exception('Impedance correction not defined for version', str(version))
 
     def get_id(self) -> str:
         return str(self.I)

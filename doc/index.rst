@@ -42,34 +42,13 @@ Contents
     :maxdepth: 1
 
     rst_source/license
-    rst_source/getting_started
-    rst_source/tutorials/tutorials_module
-    rst_source/data_sheets
-    rst_source/theory_index
-    rst_source/gui
-    rst_source/development
-    rst_source/benchmarks
-    rst_source/troubleshooting
-    rst_source/other_data_models
-    rst_source/plugins
+    rst_source/getting_started/index
+    rst_source/theory/index
+    rst_source/development/index
     rst_source/change_log
     rst_source/api/auto/modules
 
-Example Files
-----------------
 
-Below you can find the link to some files that you can download of finished systems:
-
- - **Distribution Grid** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/Some%20distribution%20grid.gridcal>`__.
- - **Line HVDC Grid** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/LineHVDCGrid.gridcal>`__.
- - **Iwamoto's 11 Bus** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/Iwamoto's%2011%20Bus.gridcal>`__.
- - **Illinois 200 Bus** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/Illinois%20200%20Bus.gridcal>`__.
- - **IEEE 57 & IEEE &14 DC Grid** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/IEEE57%2BIEEE14%20DC%20grid.gridcal>`__.
- - **IEEE 39 Grid** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/IEEE39.gridcal>`__.
- - **IEEE 9 Grid** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/IEEE%209%20Bus.gridcal>`__.
- - **IEEE 30 Grid** can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles/grids/IEEE%2030%20Bus.gridcal>`__.
-
-More resources can be found `here <https://github.com/SanPen/GridCal/blob/master/Grids_and_profiles>`__.
 
 Disclaimer
 ----------

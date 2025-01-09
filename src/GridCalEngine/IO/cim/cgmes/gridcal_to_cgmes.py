@@ -275,7 +275,7 @@ def get_cgmes_tp_nodes(multi_circuit_model: MultiCircuit,
                                     logger=logger)
 
         else:
-            if not bus.is_internal:
+            if not bus.internal:
 
                 tn = find_object_by_uuid(
                     cgmes_model=cgmes_model,
@@ -1547,7 +1547,7 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
         new_island = tpi_template(get_new_rdfid())
         new_island.name = "TopologicalIsland" + str(i)
         new_island.TopologicalNodes = []
-        bus_names = nc_i.bus_names
+        bus_names = nc_i.bus_data.names
         mc_buses = []
         for tn_name in bus_names:
             tn = find_tn_by_name(cgmes_model, tn_name)

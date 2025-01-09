@@ -20,7 +20,9 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.gridcal.json_parser import save_json_file_v3
 from GridCalEngine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons
-from GridCalEngine.IO.matpower.matpower_parser import interpret_data_v1, parse_matpower_file
+from GridCalEngine.IO.matpower.legacy.matpower_parser import interpret_data_v1
+from GridCalEngine.IO.matpower.matpower_circuit import MatpowerCircuit
+from GridCalEngine.IO.matpower.matpower_to_gridcal import matpower_to_gridcal
 from GridCalEngine.IO.dgs.dgs_parser import dgs_to_circuit
 from GridCalEngine.IO.others.dpx_parser import load_dpx
 from GridCalEngine.IO.others.ipa_parser import load_iPA
@@ -42,7 +44,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.types import DRIVER_OBJECTS
@@ -127,7 +129,7 @@ class FileOpenOptions:
     def __init__(self,
                  cgmes_map_areas_like_raw: bool = False,
                  try_to_map_dc_to_hvdc_line: bool = True,
-                 crash_on_errors: bool = True, ):
+                 crash_on_errors: bool = True,):
         """
 
         :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
@@ -301,8 +303,10 @@ class FileOpen:
                     self.circuit = open_h5(self.file_name, text_func=text_func, prog_func=progress_func)
 
                 elif file_extension.lower() == '.m':
-                    self.circuit, log = parse_matpower_file(self.file_name)
-                    self.logger += log
+                    # self.circuit, log = parse_matpower_file(self.file_name)
+                    m_grid = MatpowerCircuit()
+                    m_grid.read_file(file_name=self.file_name)
+                    self.circuit = matpower_to_gridcal(m_grid, self.logger)
 
                 elif file_extension.lower() == '.dpx':
                     self.circuit, log = load_dpx(self.file_name)

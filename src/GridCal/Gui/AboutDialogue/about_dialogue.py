@@ -9,9 +9,9 @@ import subprocess
 from PySide6 import QtWidgets
 from typing import List
 from GridCal.Gui.AboutDialogue.gui import Ui_AboutDialog
-from GridCal.__version__ import __GridCal_VERSION__, contributors_msg, copyright_msg
+from GridCal.__version__ import __GridCal_VERSION__
 from GridCal.update import check_version, get_upgrade_command
-from GridCalEngine.__version__ import __GridCalEngine_VERSION__
+from GridCalEngine.__version__ import __GridCalEngine_VERSION__, copyright_msg, contributors_msg
 from GridCalEngine.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE,
                                                           NEWTON_PA_RECOMMENDED_VERSION,
                                                           NEWTON_PA_VERSION)

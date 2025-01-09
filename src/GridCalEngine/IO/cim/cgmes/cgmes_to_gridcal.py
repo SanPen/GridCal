@@ -2115,6 +2115,7 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
     :param cn_look_up: CnLookUp
     :param logger: DataLogger
     """
+    vl_dict = {elm.idtag: elm for elm in gcdev_model.voltage_levels}
     # convert busbars
     for device_list in [cgmes_model.cgmes_assets.BusbarSection_list]:
 
@@ -2132,24 +2133,25 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 container = cgmes_elm.EquipmentContainer
 
                 if isinstance(container, vl_type):
-                    vl = container
+                    vl_cgmes = container
+                    vl_gc = vl_dict.get(vl_cgmes.uuid, None)
                 else:
-                    vl = None
+                    vl_gc = None
 
                 cn = cn_look_up.get_busbar_cn(bb_id=cgmes_elm.uuid)
                 bus = cn_look_up.get_busbar_bus(bb_id=cgmes_elm.uuid)
 
                 if bus and cn:
-                    cn.default_bus = bus
+                    cn.bus = bus
 
                 gcdev_elm = gcdev.BusBar(
                     name=cgmes_elm.name,
                     idtag=cgmes_elm.uuid,
                     code=cgmes_elm.description,
-                    voltage_level=vl,
-                    cn=cn  # we make it explicitly None because this will be correted afterwards
+                    voltage_level=vl_gc,
+                    cn=cn  # we make it explicitly None because this will be corrected afterward
                 )
-                gcdev_model.add_bus_bar(gcdev_elm, add_cn=cn is None)
+                gcdev_model.add_bus_bar(gcdev_elm)
 
             else:
                 logger.add_error(msg='Not exactly one terminal',

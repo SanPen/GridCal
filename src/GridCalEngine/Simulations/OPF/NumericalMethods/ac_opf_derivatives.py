@@ -3,14 +3,14 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 import timeit
-
+from typing import Tuple
 import numpy as np
 from scipy import sparse as sp
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Utils.Sparse.csc import diags
-from typing import Tuple
+
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, csr_matrix, csc_matrix
 from GridCalEngine.enumerations import AcOpfMode
 
@@ -665,7 +665,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
     :param capacity_nodes_idx:
     :param pq: Index of PQ buses
     :param pv: Index of PV buses
-    :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
+    # :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
     :param alltapm: value of all the tap modules, including the non controlled ones
     :param alltapt: value of all the tap phases, including the non controlled ones
     :param F_hvdc: Index of the 'from' buses for the dispatchable DC links

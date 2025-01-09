@@ -21,15 +21,38 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 class Line(BranchParent):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None, name='Line', idtag=None, code='',
-                 r=1e-20, x=0.00001, b=1e-20, rate=1.0, active=True, tolerance=0.0, cost=100.0,
-                 mttf=0.0, mttr=0, r_fault=0.0, x_fault=0.0, fault_pos=0.5,
-                 length=1.0, temp_base=20, temp_oper=20, alpha=0.00330,
-                 template=None, contingency_factor=1.0, protection_rating_factor: float = 1.4,
-                 contingency_enabled=True, monitor_loading=True,
-                 r0=1e-20, x0=1e-20, b0=1e-20, r2=1e-20, x2=1e-20, b2=1e-20,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+    def __init__(self,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
+                 cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None,
+                 name='Line',
+                 idtag=None,
+                 code='',
+                 r=1e-20, x=0.00001, b=1e-20,
+                 rate=1.0,
+                 active=True,
+                 tolerance=0.0,
+                 cost=100.0,
+                 mttf=0.0,
+                 mttr=0,
+                 r_fault=0.0,
+                 x_fault=0.0,
+                 fault_pos=0.5,
+                 length=1.0,
+                 temp_base=20,
+                 temp_oper=20,
+                 alpha=0.00330,
+                 template=None,
+                 contingency_factor=1.0,
+                 protection_rating_factor: float = 1.4,
+                 contingency_enabled=True,
+                 monitor_loading=True,
+                 r0=1e-20, x0=1e-20, b0=1e-20,
+                 r2=1e-20, x2=1e-20, b2=1e-20,
+                 capex=0,
+                 opex=0,
+                 build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line
         :param bus_from: "From" :ref:`bus<Bus>` object
@@ -78,6 +101,7 @@ class Line(BranchParent):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
+                              reducible=False,
                               rate=rate,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
@@ -88,7 +112,7 @@ class Line(BranchParent):
                               build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              Cost=cost,
+                              cost=cost,
                               device_type=DeviceType.LineDevice)
 
         # line length in km
@@ -438,23 +462,6 @@ class Line(BranchParent):
 
         return errors
 
-    def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
-        """
-        Check if ths should be a transformer
-        :param branch_connection_voltage_tolerance:
-        :return: should it be a transformer?
-        """
-        if self.bus_to is not None and self.bus_from is not None:
-            V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
-            V2 = max(self.bus_to.Vnom, self.bus_from.Vnom)
-            if V2 > 0:
-                per = V1 / V2
-                return per < (1.0 - branch_connection_voltage_tolerance)
-            else:
-                return V1 != V2
-        else:
-            return False
-
     def get_equivalent_transformer(self) -> Transformer2W:
         """
         Convert this line into a transformer
@@ -515,70 +522,3 @@ class Line(BranchParent):
         if apply_to_profile:
             prof_old = self.rate_prof.toarray()
             self.rate_prof.set(prof_old * new_rate / old_rate)
-
-    def get_virtual_taps(self) -> Tuple[float, float]:
-        """
-        Get the branch virtual taps
-
-        The virtual taps generate when a line nominal voltage ate the two connection buses differ
-
-        Returns:
-            **tap_f** (float, 1.0): Virtual tap at the *from* side
-            **tap_t** (float, 1.0): Virtual tap at the *to* side
-        """
-        # resolve how the transformer is actually connected and set the virtual taps
-        bus_f_v = self.bus_from.Vnom
-        bus_t_v = self.bus_to.Vnom
-
-        if bus_f_v == bus_t_v:
-            return 1.0, 1.0
-        else:
-            if bus_f_v > 0.0 and bus_t_v > 0.0:
-                return 1.0, bus_f_v / bus_t_v
-            else:
-                return 1.0, 1.0
-
-    # def set_data_from(self, second_Line: "Line"):
-    #     """
-    #     Set the data from another line
-    #     :param second_Line:
-    #     :return:
-    #     """
-    #     self.copy()
-    #     self.bus_from = second_Line.bus_from
-    #     self.bus_to = second_Line.bus_to
-    #     self.cn_from = second_Line.cn_from
-    #     self.cn_to = second_Line.cn_to
-    #     self.name = second_Line.name
-    #     self.idtag = second_Line.idtag
-    #     self.code = second_Line.code
-    #     self.R = second_Line.R
-    #     self.X = second_Line.X
-    #     self.B = second_Line.B
-    #     self.rate = second_Line.rate
-    #     self.active = second_Line.active
-    #     self.tolerance = second_Line.tolerance
-    #     self.Cost = second_Line.Cost
-    #     self.mttf = second_Line.mttf
-    #     self.mttr = second_Line.mttr
-    #     self.r_fault = second_Line.r_fault
-    #     self.x_fault = second_Line.x_fault
-    #     self.fault_pos = second_Line.fault_pos
-    #     self.length = second_Line.length
-    #     self.temp_base = second_Line.temp_base
-    #     self.temp_oper = second_Line.temp_oper
-    #     self.alpha = second_Line.alpha
-    #     self.template = second_Line.template
-    #     self.contingency_factor = second_Line.contingency_factor
-    #     self.protection_rating_factor = second_Line.protection_rating_factor
-    #     self.contingency_enabled = second_Line.contingency_enabled
-    #     self.monitor_loading = second_Line.monitor_loading
-    #     self.R0 = second_Line.R0
-    #     self.X0 = second_Line.X0
-    #     self.B0 = second_Line.B0
-    #     self.R2 = second_Line.R2
-    #     self.X2 = second_Line.X2
-    #     self.B2 = second_Line.B2
-    #     self.capex = second_Line.capex
-    #     self.opex = second_Line.opex
-    #     self.build_status = second_Line.build_status

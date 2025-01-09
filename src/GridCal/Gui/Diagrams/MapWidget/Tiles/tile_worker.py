@@ -98,8 +98,8 @@ class TileWorker(QThread):
             # try to retrieve the image
             error = False
             pixmap = self.error_image
+            tile_url = self.server + self.tilepath.format(Z=level, X=x, Y=y)
             try:
-                tile_url = self.server + self.tilepath.format(Z=level, X=x, Y=y)
 
                 # Create a Request object with the desired headers
                 response = urlopen(Request(tile_url, headers={'User-Agent': 'GridCal 5'}))

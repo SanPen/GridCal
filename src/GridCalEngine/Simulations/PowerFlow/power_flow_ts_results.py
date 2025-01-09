@@ -66,7 +66,6 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
 
                                          ResultTypes.BranchTapModule,
                                          ResultTypes.BranchTapAngle,
-                                         ResultTypes.BranchBeq,
 
                                          ResultTypes.BranchLoading,
                                          ResultTypes.BranchActiveLosses,
@@ -121,7 +120,6 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         self.It: CxMat = np.zeros((nt, m), dtype=complex)
         self.tap_module: Mat = np.zeros((nt, m), dtype=float)
         self.tap_angle: Mat = np.zeros((nt, m), dtype=float)
-        self.Beq: Mat = np.zeros((nt, m), dtype=float)
         self.Vbranch = np.zeros((nt, m), dtype=complex)
         self.loading = np.zeros((nt, m), dtype=complex)
         self.losses = np.zeros((nt, m), dtype=complex)
@@ -156,7 +154,6 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='It', tpe=CxMat)
         self.register(name='tap_module', tpe=Mat)
         self.register(name='tap_angle', tpe=Mat)
-        self.register(name='Beq', tpe=Mat)
         self.register(name='Vbranch', tpe=CxMat)
         self.register(name='loading', tpe=CxMat)
         self.register(name='losses', tpe=CxMat)
@@ -497,17 +494,6 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
                                 title=result_type.value,
                                 ylabel='(deg)',
                                 units='(deg)')
-
-        elif result_type == ResultTypes.BranchBeq:
-
-            return ResultsTable(data=self.Beq,
-                                index=pd.to_datetime(self.time_array),
-                                idx_device_type=DeviceType.TimeDevice,
-                                columns=self.branch_names,
-                                cols_device_type=DeviceType.BranchDevice,
-                                title=result_type.value,
-                                ylabel='(p.u.)',
-                                units='(p.u.)')
 
         elif result_type == ResultTypes.BranchLoading:
 

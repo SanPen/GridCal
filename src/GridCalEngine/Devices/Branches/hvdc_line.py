@@ -3,8 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-
-
 import pandas as pd
 import numpy as np
 from typing import Tuple, Union
@@ -129,10 +127,19 @@ class HvdcLine(BranchParent):
     def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
                  cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None,
-                 name='HVDC Line', idtag=None, active=True, code='',
-                 rate=1.0, Pset=0.0,
-                 r=1e-20, loss_factor=0.0,
-                 Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
+                 name='HVDC Line',
+                 idtag=None,
+                 active=True,
+                 code='',
+                 rate=1.0,
+                 Pset=0.0,
+                 r=1e-20,
+                 loss_factor=0.0,
+                 Vset_f=1.0,
+                 Vset_t=1.0,
+                 length=1.0,
+                 mttf=0.0,
+                 mttr=0.0,
                  overload_cost=1000.0,
                  min_firing_angle_f=-1.0, max_firing_angle_f=1.0,
                  min_firing_angle_t=-1.0, max_firing_angle_t=1.0,
@@ -186,6 +193,7 @@ class HvdcLine(BranchParent):
                               cn_from=cn_from,
                               cn_to=cn_to,
                               active=active,
+                              reducible=False,
                               rate=rate,
                               contingency_factor=contingency_factor,
                               protection_rating_factor=protection_rating_factor,
@@ -196,7 +204,7 @@ class HvdcLine(BranchParent):
                               build_status=build_status,
                               capex=capex,
                               opex=opex,
-                              Cost=overload_cost,
+                              cost=overload_cost,
                               device_type=DeviceType.HVDCLineDevice)
 
         # line length in km
@@ -263,14 +271,11 @@ class HvdcLine(BranchParent):
         self.register(key='angle_droop', units='MW/deg', tpe=float, definition='Power/angle rate control',
                       profile_name='angle_droop_prof')
 
-        # self.register(key='n_lines', units='', tpe=int,
-        #               definition='Number of parallel lines between the converter stations. '
-        #                          'The rating will be equally divided')
-
         self.register(key='Vset_f', units='p.u.', tpe=float, definition='Set voltage at the from side',
                       profile_name='Vset_f_prof')
         self.register(key='Vset_t', units='p.u.', tpe=float, definition='Set voltage at the to side',
                       profile_name='Vset_t_prof')
+
         self.register(key='min_firing_angle_f', units='rad', tpe=float,
                       definition='minimum firing angle at the "from" side.')
         self.register(key='max_firing_angle_f', units='rad', tpe=float,

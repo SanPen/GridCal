@@ -24,7 +24,7 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Utils.NumericalMethods.numerical_stability import (sparse_instability_svd_test,
                                                                       sparse_instability_lu_test)
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 
 
 class GridErrorLog:
@@ -369,8 +369,6 @@ def analyze_lines(elements: List[Line],
 
         V1 = min(elm.bus_to.Vnom, elm.bus_from.Vnom)
         V2 = max(elm.bus_to.Vnom, elm.bus_from.Vnom)
-
-        s = '[' + str(V1) + '-' + str(V2) + ']'
 
         if elm.bus_from is None:
             logger.add(object_type=elm.device_type.value,
@@ -1140,6 +1138,7 @@ def analyze_static_gen(elements: List[StaticGenerator],
 
     :param elements:
     :param time_profile:
+    :param logger:
     :return:
     """
     Pg = 0.0
@@ -1173,6 +1172,7 @@ def analyze_load(elements: List[Load],
 
     :param elements:
     :param time_profile:
+    :param logger:
     :return:
     """
     Pl = 0.0
@@ -1212,7 +1212,7 @@ def grid_analysis(circuit: MultiCircuit,
                   max_vcc=18,
                   logger=GridErrorLog(),
                   branch_x_threshold=1e-4,
-                  condition_number_thrshold=1e4,
+                  condition_number_threshold=1e4,
                   eps_max: float = 1e20,
                   eps_min: float = 1e-20):
     """
@@ -1230,7 +1230,7 @@ def grid_analysis(circuit: MultiCircuit,
     :param min_vcc: Minimum short circuit voltage (%)
     :param logger: GridErrorLog
     :param branch_x_threshold: Value to compare branches X such that it is numerically stable
-    :param condition_number_thrshold: Condition number threshold to report unstability
+    :param condition_number_threshold: Condition number threshold to report unstability
     :param eps_max: Max epsylon value for comparison
     :param eps_min: Min epsylon value for comparison
     :return: list of fixable error objects
@@ -1396,13 +1396,16 @@ def grid_analysis(circuit: MultiCircuit,
                            propty="Reactive power out of bounds",
                            message='There is too much reactive power imbalance',
                            lower=str(Qmin),
-                           val=Ql_prof[t],
+                           val=float(Ql_prof[t]),
                            upper=str(Qmax))
 
     # analyze the numerical stability
     nc = compile_numerical_circuit_at(circuit, t_idx=None)  # compile the snapshot
 
-    rcond, unstable = sparse_instability_svd_test(nc.Bbus, condition_number_thrshold=1.0 / condition_number_thrshold)
+    Sbus = nc.get_power_injections()
+    indices = nc.get_simulation_indices(Sbus=Sbus)
+    lin_adm = nc.get_linear_admittance_matrices(indices=indices)
+    rcond, unstable = sparse_instability_svd_test(lin_adm.Bbus, condition_number_thrshold=1.0 / condition_number_threshold)
 
     if unstable:
         logger.add(object_type='matrix',
@@ -1413,9 +1416,10 @@ def grid_analysis(circuit: MultiCircuit,
                    message='B matrix is SVD-Unstable: this may make linear power flows output nonsense',
                    lower="",
                    val=str(rcond),
-                   upper=str(1.0 / condition_number_thrshold))
+                   upper=str(1.0 / condition_number_threshold))
 
-    rcond, unstable = sparse_instability_lu_test(nc.Bpqpv, condition_number_thrshold=condition_number_thrshold)
+    rcond, unstable = sparse_instability_lu_test(lin_adm.get_Bred(pqpv=indices.no_slack),
+                                                 condition_number_thrshold=condition_number_threshold)
 
     if unstable:
         logger.add(object_type='matrix',
@@ -1426,7 +1430,7 @@ def grid_analysis(circuit: MultiCircuit,
                    message='B matrix is LU-Unstable: this may make linear power flows output nonsense',
                    lower="",
                    val=str(rcond),
-                   upper=str(condition_number_thrshold))
+                   upper=str(condition_number_threshold))
 
     return fixable_errors
 
@@ -1533,7 +1537,7 @@ def object_histogram_analysis(circuit: MultiCircuit,
                     align='mid',
                     orientation='vertical')
             ax.plot(x, np.zeros(n), 'o')
-            ax.set_title(extended_prop[j])
+            ax.set_title(str(extended_prop[j]))
 
             if log_scale_extended[j]:
                 ax.set_xscale('log')

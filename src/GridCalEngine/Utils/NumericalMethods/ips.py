@@ -135,13 +135,13 @@ class IpsFunctionReturn:
     """
     f: float  # objective function value
     G: Vec  # equalities increment vector
-    H: Vec  # innequalities increment vector
+    H: Vec  # inequalities increment vector
     fx: Vec  # objective function Jacobian Vector
     Gx: csc  # equalities Jacobian Matrix
-    Hx: csc  # innequalities Jacobian Matrix
+    Hx: csc  # inequalities Jacobian Matrix
     fxx: csc  # objective function Hessian Matrix
     Gxx: csc  # equalities Hessian Matrix
-    Hxx: csc  # innequalities Hessian Matrix
+    Hxx: csc  # inequalities Hessian Matrix
 
     # extra data passed through for the results
     S: CxVec
@@ -306,7 +306,7 @@ def interior_point_solver(x0: Vec,
         mu_diag = diags(mu)
         lam = sparse.linalg.lsqr(ret.Gx.T, -ret.fx - ret.Hx.T @ mu.T)[0]
 
-    # PyPower init
+    # PyPower-like init
     else:
         ret, _ = func(x, None, None, False, False, *arg)
         z0 = 1.0

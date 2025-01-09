@@ -1,0 +1,62 @@
+% render with latexit and then export as png, default settings
+% 18.00 pt (std display)
+%  9.00 pt (retina display)
+\documentclass{article}
+\usepackage{amssymb, amsmath, bm} 
+\begin{document}
+
+
+
+% render with latexit and then export as png, default settings
+% 18.00 pt (std display)
+%  9.00 pt (retina display)
+% \usepackage{amssymb, amsmath, bm}
+\begin{align}
+%
+\mbox{\bf data:} & \nonumber \\ 
+& \bm {S^{gl}}_k, \bm {S^{gu}}_k \;\; \forall k \in G \nonumber \\
+& \bm {S^{cl}}_l, \bm {S^{cu}}_l \;\; \forall l \in C \nonumber \\
+& \bm c_{2k}, \bm c_{1k}, \bm c_{0k} \;\; \forall k \in G \nonumber \\
+& \bm a_l, \bm b_l, \bm c_l \;\; \forall l \in C \nonumber \\
+& \bm {v^l}_i, \bm {v^u}_i \;\; \forall i \in N \nonumber \\
+& \bm {v^l}_i, \bm {v^u}_i \;\; \forall i \in N_{dc} \nonumber \\
+& \bm S^d_i, \bm Y^s_{i} \;\; \forall i \in N \nonumber \\
+& \bm P^d_i, \bm Y^s_{i} \;\; \forall i \in N_{dc} \nonumber \\
+& \bm Y_{ij}, \bm {b^c}_{ij}, \bm{T}_{ij} \;\; \forall (i,j) \in E \nonumber \\
+& \bm Y_{ij} \;\; \forall (i,j) \in E_{dc} \nonumber \\
+& \bm {s^u}_{ij}, \bm {\theta^{\Delta l}}_{ij}, \bm {\theta^{\Delta u}}_{ij} \;\; \forall (i,j) \in E \nonumber \\
+& \bm {p^u}_{ij} \;\; \forall (i,j) \in E_{dc} \nonumber \\
+& \bm r \nonumber \\
+& p_{dc} \nonumber \\
+%
+\mbox{\bf variables: } & \nonumber \\
+& S^g_k \;\; \forall k\in G \nonumber \\
+& S^c_l \;\; \forall l\in C \nonumber \\
+& P^{c, dc}_l \;\; \forall l\in C \nonumber \\
+& V_i \;\; \forall i\in N \nonumber \\
+& V_i \;\; \forall i\in N_{dc} \nonumber \\
+& S_{ij} \;\; \forall (i,j) \in E \cup E^R \nonumber \\
+%
+\end{align} \\
+\begin{align}
+\mbox{\bf minimize: } & \sum_{k \in G} \bm c_{2k} (\Re(S^g_k))^2 + \bm c_{1k}\Re(S^g_k) + \bm c_{0k} \\
+%
+\mbox{\bf subject to: } & \nonumber \\
+& \angle V_{\bm r} = 0 \\
+& \bm {S^{gl}}_k \leq S^g_k \leq \bm {S^{gu}}_k \;\; \forall k \in G  \\
+& \bm {v^l}_i \leq |V_i| \leq \bm {v^u}_i \;\; \forall i \in N \\
+& \sum_{\substack{k \in G_i}} S^g_k + \sum_{\substack{l \in C_i}} S^c_l - {\bm S^d_i} - \bm Y^s_{i} |V_i|^2 = \sum_{\substack{(i,j)\in E_i \cup E_i^R}} S_{ij} \;\; \forall i\in N \\ 
+& S_{ij} = \left( \bm Y^*_{ij} - \bm i\frac{\bm {b^c}_{ij}}{2} \right) \frac{|V_i|^2}{|\bm{T}_{ij}|^2} - \bm Y^*_{ij} \frac{V_i V^*_j}{\bm{T}_{ij}} \;\; \forall (i,j)\in E \\
+& S_{ji} = \left( \bm Y^*_{ij} - \bm i\frac{\bm {b^c}_{ij}}{2} \right) |V_j|^2 - \bm Y^*_{ij} \frac{V^*_i V_j}{\bm{T}^*_{ij}} \;\; \forall (i,j)\in E \\
+& |S_{ij}| \leq \bm {s^u}_{ij} \;\; \forall (i,j) \in E \cup E^R \\
+& \bm {\theta^{\Delta l}}_{ij} \leq \angle (V_i V^*_j) \leq \bm {\theta^{\Delta u}}_{ij} \;\; \forall (i,j) \in E \\
+& \bm {S^{cl}}_l \leq S^c_l \leq \bm {S^{cu}}_l \;\; \forall l \in C  \\
+& \sum_{\substack{k \in G_i}} P^g_k + \sum_{\substack{l \in C_i}} P^{c, dc}_l - {\bm P^d_i} - \bm Y^s_{i} |V_i|^2 = \sum_{\substack{(i,j)\in E_{i, dc} \cup E_{i, dc}^R}} P_{ij} \;\; \forall i\in N_{dc} \\
+& P_{ij} =  p_{dc} \bm Y_{ij} \cdot( V_i^2 - V_i V_j) \;\; \forall (i,j)\in E_{dc} \\
+& |P_{ij}| \leq \bm {p^u}_{ij} \;\; \forall (i,j) \in E_{dc} \cup E_{dc}^R \\
+& P^c_l + P^{c, dc}_l = a + b |I^c_l| + c |I^c_l|^2  \;\; \forall l \in C \\
+& |V_i|^2 |I^c_l|^2 = (S^c_l)^2 \;\; \forall l \in C_i \;\; \forall i \in N \\
+%
+\end{align}
+
+\end{document}

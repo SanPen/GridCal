@@ -4,9 +4,8 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Tuple
-
 import numpy as np
-import scipy.sparse as sp
+from scipy.sparse import csc_matrix, coo_matrix
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 
@@ -44,7 +43,8 @@ class GeneratorData:
         self.mttf: Vec = np.zeros(nelm, dtype=float)
         self.mttr: Vec = np.zeros(nelm, dtype=float)
 
-        self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
+        self.bus_idx: IntVec = np.zeros(nelm, dtype=int)
+        self.controllable_bus_idx = np.zeros(nelm, dtype=int)
 
         # r0, r1, r2, x0, x1, x2
         self.r0: Vec = np.zeros(nelm, dtype=float)
@@ -63,20 +63,22 @@ class GeneratorData:
         self.cost_0: Vec = np.zeros(nelm, dtype=float)
         self.cost_2: Vec = np.zeros(nelm, dtype=float)
         self.startup_cost: Vec = np.zeros(nelm, dtype=float)
-        self.availability: Vec = np.zeros(nelm, dtype=float)
         self.ramp_up: Vec = np.zeros(nelm, dtype=float)
         self.ramp_down: Vec = np.zeros(nelm, dtype=float)
         self.min_time_up: Vec = np.zeros(nelm, dtype=float)
         self.min_time_down: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
-        self.bus_idx = np.zeros(nelm, dtype=int)
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec):
+        self.name_to_idx: dict = dict()
+        self.is_at_dc_bus: BoolVec = np.zeros(nelm, dtype=bool)  # purpose? why not for VSC?
+
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, bus_map: IntVec):
         """
         Slice generator data by given indices
         :param elm_idx: array of element indices
         :param bus_idx: array of bus indices
+        :param bus_map: map from bus index to element index
         :return: new GeneratorData instance
         """
 
@@ -102,7 +104,18 @@ class GeneratorData:
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
 
-        data.C_bus_elm = self.C_bus_elm[np.ix_(bus_idx, elm_idx)]
+        data.bus_idx = self.bus_idx[elm_idx]
+        data.controllable_bus_idx = self.controllable_bus_idx[elm_idx]
+
+        # Remapping of the buses
+        for k in range(data.nelm):
+            data.bus_idx[k] = bus_map[data.bus_idx[k]]
+
+            if data.bus_idx[k] == -1:
+                data.active[k] = 0
+
+            if data.controllable_bus_idx[k] > -1:
+                data.controllable_bus_idx[k] = bus_map[data.controllable_bus_idx[k]]
 
         data.r0 = self.r0[elm_idx]
         data.r1 = self.r1[elm_idx]
@@ -120,7 +133,6 @@ class GeneratorData:
         data.cost_1 = self.cost_1[elm_idx]
         data.cost_2 = self.cost_2[elm_idx]
         data.startup_cost = self.startup_cost[elm_idx]
-        data.availability = self.availability[elm_idx]
         data.ramp_up = self.ramp_up[elm_idx]
         data.ramp_down = self.ramp_down[elm_idx]
         data.min_time_up = self.min_time_up[elm_idx]
@@ -129,6 +141,16 @@ class GeneratorData:
         data.original_idx = elm_idx
 
         return data
+
+    def remap(self, bus_map_arr: IntVec):
+        """
+        Remapping of the elm buses
+        :param bus_map_arr: array of old-to-new buses
+        """
+        for k in range(self.nelm):
+            i = self.bus_idx[k]
+            new_i = bus_map_arr[i]
+            self.bus_idx[k] = new_i
 
     def size(self) -> int:
         """
@@ -165,7 +187,8 @@ class GeneratorData:
         data.mttf = self.mttf.copy()
         data.mttr = self.mttr.copy()
 
-        data.C_bus_elm = self.C_bus_elm.copy()
+        data.bus_idx = self.bus_idx.copy()
+        data.controllable_bus_idx = self.controllable_bus_idx.copy()
 
         data.r0 = self.r0.copy()
         data.r1 = self.r1.copy()
@@ -183,7 +206,6 @@ class GeneratorData:
         data.cost_1 = self.cost_1.copy()
         data.cost_2 = self.cost_2.copy()
         data.startup_cost = self.startup_cost.copy()
-        data.availability = self.availability.copy()
         data.ramp_up = self.ramp_up.copy()
         data.ramp_down = self.ramp_down.copy()
         data.min_time_up = self.min_time_up.copy()
@@ -192,17 +214,6 @@ class GeneratorData:
         data.original_idx = self.original_idx
 
         return data
-
-    def get_island(self, bus_idx: IntVec) -> IntVec:
-        """
-        Get the array of generator indices that belong to the islands given by the bus indices
-        :param bus_idx: array of bus indices
-        :return: array of generator indices of the island given by bus_idx
-        """
-        if self.nelm:
-            return tp.get_elements_of_the_island(self.C_bus_elm.T, bus_idx, active=self.active)
-        else:
-            return np.zeros(0, dtype=int)
 
     def get_injections(self) -> CxVec:
         """
@@ -231,13 +242,15 @@ class GeneratorData:
         :param seq: sequence (0, 1 or 2)
         """
         if seq == 0:
-            return self.C_bus_elm @ (1.0 / (self.r0 + 1j * self.x0))
+            y = (1.0 / (self.r0 + 1j * self.x0))
         elif seq == 1:
-            return self.C_bus_elm @ (1.0 / (self.r1 + 1j * self.x1))
+            y = (1.0 / (self.r1 + 1j * self.x1))
         elif seq == 2:
-            return self.C_bus_elm @ (1.0 / (self.r2 + 1j * self.x2))
+            y = (1.0 / (self.r2 + 1j * self.x2))
         else:
             raise Exception('Sequence must be 0, 1, 2')
+
+        return tp.sum_per_bus_cx(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=y)
 
     def get_effective_generation(self) -> Vec:
         """
@@ -253,47 +266,76 @@ class GeneratorData:
         :return:
         """
         assert len(arr) == self.nelm
-        return self.C_bus_elm @ arr
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=arr)
 
     def get_injections_per_bus(self) -> CxVec:
         """
         Get generator Injections per bus
         :return:
         """
-        return self.C_bus_elm @ (self.get_injections() * self.active)
+        return tp.sum_per_bus_cx(nbus=self.nbus, bus_indices=self.bus_idx,
+                                 magnitude=self.get_injections() * self.active)
 
-    def get_voltages_per_bus(self) -> CxVec:
+    def get_dispatchable_per_bus(self) -> BoolVec:
         """
-        Get generator voltages per bus
+        Get generator Injections per bus
         :return:
         """
-        n_per_bus = self.C_bus_elm.sum(axis=1)
-        n_per_bus[n_per_bus == 0] = 1  # replace the zeros by 1 to be able to divide
-        # the division by n_per_bus achieves the averaging of the voltage control
-        # value if more than 1 battery is present per bus
-        # return self.C_bus_gen * (self.generator_v * self.generator_active) / n_per_bus
-        return np.ndarray((self.C_bus_elm @ self.v) / n_per_bus)
+        return tp.sum_per_bus_bool(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.dispatchable)
 
     def get_installed_power_per_bus(self) -> Vec:
         """
         Get generator installed power per bus
         :return:
         """
-        return self.C_bus_elm * self.installed_p
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.installed_p)
 
     def get_qmax_per_bus(self) -> Vec:
         """
         Get generator Qmax per bus
         :return:
         """
-        return self.C_bus_elm * (self.qmax * self.active)
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.qmax * self.active)
 
     def get_qmin_per_bus(self) -> Vec:
         """
         Get generator Qmin per bus
         :return:
         """
-        return self.C_bus_elm * (self.qmin * self.active)
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.qmin * self.active)
+
+    def get_pmax_per_bus(self) -> Vec:
+        """
+        Get generator Pmax per bus
+        :return:
+        """
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.pmax * self.active)
+
+    def get_pmin_per_bus(self) -> Vec:
+        """
+        Get generator Pmin per bus
+        :return:
+        """
+        return tp.sum_per_bus(nbus=self.nbus, bus_indices=self.bus_idx, magnitude=self.pmin * self.active)
+
+    def get_array_per_bus_obj(self, arr: Vec) -> Vec:
+        """
+        Sum per bus in python mode (it can add objects)
+        :param arr: any array of size nelm
+        :return: array of size nbus
+        """
+        assert len(arr) == self.nelm
+        res = np.zeros(self.nbus, dtype=arr.dtype)
+        for i in range(self.nelm):
+            res[self.bus_idx[i]] += arr[i]
+        return res
+
+    def dev_per_bus(self) -> IntVec:
+        """
+        Get number of devices per bus
+        :return: array with the number of elements per bus
+        """
+        return tp.dev_per_bus(nbus=self.nbus, bus_indices=self.bus_idx)
 
     def __len__(self) -> int:
         """
@@ -307,7 +349,7 @@ class GeneratorData:
         Get the bus indices
         :return: array with the bus indices
         """
-        return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+        return self.bus_idx
 
     def get_dispatchable_indices(self) -> IntVec:
         """
@@ -338,3 +380,24 @@ class GeneratorData:
         :return: idx_controllable, idx_non_controllable
         """
         return np.where(self.controllable == 1)[0], np.where(self.controllable == 0)[0]
+
+    def get_gen_indices_at_buses(self, bus_indices: IntVec) -> IntVec:
+
+        res = list()
+        for i in self.bus_idx:
+            if i in bus_indices:
+                res.append(i)
+        return np.array(res)
+
+    def get_C_bus_elm(self) -> csc_matrix:
+        """
+        Get the connectivity matrix
+        :return: CSC matrix
+        """
+        # C_bus_elm = lil_matrix((self.nbus, self.nelm), dtype=int)
+        # for k, i in enumerate(self.bus_idx):
+        #     C_bus_elm[i, k] = 1
+        # return C_bus_elm.tocsc()
+        j = np.arange(self.nelm, dtype=int)
+        data = np.ones(self.nelm, dtype=int)
+        return coo_matrix((data, (self.bus_idx, j)), shape=(self.nbus, self.nelm), dtype=int).tocsc()

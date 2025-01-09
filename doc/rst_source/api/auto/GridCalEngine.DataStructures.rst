@@ -4,6 +4,14 @@ GridCalEngine.DataStructures package
 Submodules
 ----------
 
+GridCalEngine.DataStructures.active\_branch\_data module
+--------------------------------------------------------
+
+.. automodule:: GridCalEngine.DataStructures.active_branch_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GridCalEngine.DataStructures.battery\_data module
 -------------------------------------------------
 
@@ -12,10 +20,10 @@ GridCalEngine.DataStructures.battery\_data module
    :undoc-members:
    :show-inheritance:
 
-GridCalEngine.DataStructures.branch\_data module
-------------------------------------------------
+GridCalEngine.DataStructures.branch\_parent\_data module
+--------------------------------------------------------
 
-.. automodule:: GridCalEngine.DataStructures.branch_data
+.. automodule:: GridCalEngine.DataStructures.branch_parent_data
    :members:
    :undoc-members:
    :show-inheritance:
@@ -96,6 +104,14 @@ GridCalEngine.DataStructures.numerical\_circuit module
 ------------------------------------------------------
 
 .. automodule:: GridCalEngine.DataStructures.numerical_circuit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+GridCalEngine.DataStructures.passive\_branch\_data module
+---------------------------------------------------------
+
+.. automodule:: GridCalEngine.DataStructures.passive_branch_data
    :members:
    :undoc-members:
    :show-inheritance:

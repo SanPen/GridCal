@@ -21,7 +21,8 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 class InputsAnalysisResults(ResultsTemplate):
     tpe = 'Inputs Analysis'
 
-    def __init__(self, grid: MultiCircuit,
+    def __init__(self,
+                 grid: MultiCircuit,
                  opf_results: Union[None, OptimalPowerFlowResults] = None,
                  opf_time_series_results: Union[None, OptimalPowerFlowTimeSeriesResults] = None):
         """

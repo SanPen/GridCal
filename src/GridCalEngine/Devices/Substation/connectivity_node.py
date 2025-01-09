@@ -25,7 +25,7 @@ class ConnectivityNode(PhysicalDevice):
         Constructor
         :param name: Name of the connectivity node
         :param idtag: unique identifier
-        :param code: secondary identifyier
+        :param code: secondary identifier
         :param dc: is this a DC connectivity node?
         :param default_bus: Default bus to use for topology processing (optional)
         :param voltage_level: Substation of this connectivity node (optional)
@@ -40,7 +40,9 @@ class ConnectivityNode(PhysicalDevice):
 
         self.dc = bool(dc)
 
-        self.default_bus: Union[None, Bus] = default_bus
+        self._bus: Bus = default_bus if default_bus is not None else Bus(name=name,
+                                                                        Vnom=Vnom,
+                                                                        voltage_level=voltage_level, )
 
         self._voltage_level: Union[VoltageLevel, None] = voltage_level
 
@@ -54,11 +56,27 @@ class ConnectivityNode(PhysicalDevice):
 
         self.register(key="internal", tpe=bool, definition="is internal of a busbar?")
 
-        self.register(key="default_bus", tpe=DeviceType.BusDevice,
-                      definition="Default bus to use for topology processing (optional)")
+        self.register(key="bus", tpe=DeviceType.BusDevice,
+                      definition="The CN is just a bus by other means. This is the important thing.",
+                      old_names=['default_bus'])
 
         self.register(key="voltage_level", tpe=DeviceType.VoltageLevelDevice,
                       definition="Voltage level of this connectivity node (optional)")
+
+    @property
+    def bus(self) -> Bus:
+        """
+        Bus internal to the CN
+        :return: Bus
+        """
+        return self._bus
+
+    @bus.setter
+    def bus(self, val: Bus):
+        if isinstance(val, Bus):
+            self._bus = val
+        else:
+            raise Exception("You cannot set a connectivity node bus to anything other than a valid Bus object :/")
 
     @property
     def voltage_level(self) -> Union[VoltageLevel, None]:
@@ -82,3 +100,6 @@ class ConnectivityNode(PhysicalDevice):
     @internal.setter
     def internal(self, val: bool):
         self._internal = val
+
+        if self.auto_update_enabled:
+            self.bus.internal = val

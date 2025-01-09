@@ -47,14 +47,14 @@ class TimeSeriesResultsAnalysis:
 
         """
 
-        '''
+        """
         Optimal storage locations are those nodes where there
         are voltage problems and those nodes receiving the flow
         of current in case of overloads for the time series
         simulation.
 
             Returns:
-        '''
+        """
 
         nt, n = self.res.S.shape
 

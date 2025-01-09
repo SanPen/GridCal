@@ -337,10 +337,10 @@ def pack_plugin(name: str,
         "version": version,
         "gridcal_version": gridcal_version,
         "main_fcn": {
-                        "name": main_name,
-                        "alias": name,
-                        "call_gui": call_gui
-                    }
+            "name": main_name,
+            "alias": name,
+            "call_gui": call_gui
+        }
     }
 
     v2 = version.replace(".", "_")
@@ -372,8 +372,8 @@ def pack_plugin(name: str,
 
     return filename_zip
 
-def get_plugin_info(plugin_file: str) -> PluginInfo | None:
 
+def get_plugin_info(plugin_file: str) -> PluginInfo | None:
     with zipfile.ZipFile(plugin_file, 'r') as zipf:
 
         if "manifest.json" in zipf.namelist():
@@ -385,6 +385,7 @@ def get_plugin_info(plugin_file: str) -> PluginInfo | None:
                 return info
         else:
             return None
+
 
 def install_plugin(plugin_file: str):
     """
@@ -411,4 +412,3 @@ def install_plugin(plugin_file: str):
             for member in zipf.namelist():
                 if member.startswith(f"{folder_name}/"):  # Replace with the folder you want to extract
                     zipf.extract(member, plugins_pth)
-

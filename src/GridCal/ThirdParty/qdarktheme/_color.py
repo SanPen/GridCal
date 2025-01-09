@@ -169,30 +169,27 @@ class Color:
         return Color(rgba)
 
     @staticmethod
-    def from_hex(hex: str) -> Color:
-        """Convert hex string to Color object.
-
-        Args:
-            color_hex: Color hex string.
-
-        Returns:
-            Color: Color object converted from hex.
+    def from_hex(val: str) -> Color:
         """
-        Color._check_hex_format(hex)
-        hex = hex.lstrip("#")
+        Convert hex string to Color object.
+        :param val: Color hex string.
+        :return: Color object converted from hex.
+        """
+        Color._check_hex_format(val)
+        val = val.lstrip("#")
         r, g, b, a = 255, 0, 0, 1
-        if len(hex) == 3:  # #RGB format
-            r, g, b = (int(char, 16) for char in hex)
+        if len(val) == 3:  # #RGB format
+            r, g, b = (int(char, 16) for char in val)
             r, g, b = 16 * r + r, 16 * g + g, 16 * b + b
-        if len(hex) == 4:  # #RGBA format
-            r, g, b, a = (int(char, 16) for char in hex)
+        if len(val) == 4:  # #RGBA format
+            r, g, b, a = (int(char, 16) for char in val)
             r, g, b = 16 * r + r, 16 * g + g, 16 * b + b
             a = (16 * a + a) / 255
-        if len(hex) == 6:  # #RRGGBB format
-            r, g, b = bytes.fromhex(hex)
+        if len(val) == 6:  # #RRGGBB format
+            r, g, b = bytes.fromhex(val)
             a = 1
-        elif len(hex) == 8:  # #RRGGBBAA format
-            r, g, b, a = bytes.fromhex(hex)
+        elif len(val) == 8:  # #RRGGBBAA format
+            r, g, b, a = bytes.fromhex(val)
             a = a / 255
         return Color(_RGBA(r, g, b, a))
 

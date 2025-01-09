@@ -15,10 +15,12 @@ from typing import List, Union, Tuple, Callable
 from GridCalEngine.enumerations import MIPSolvers, ZonalGrouping
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.load_data import LoadData
-from GridCalEngine.DataStructures.branch_data import BranchData
+from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
+from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
@@ -151,10 +153,11 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_max = np.full(bus_data_t.nbus, inf_value)
 
         else:
-            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
-            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+            p_min = gen_data_t.get_pmin_per_bus() / Sbase
+            p_max = gen_data_t.get_pmax_per_bus() / Sbase
 
-        dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        # dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        dispatchable_bus = gen_data_t.get_dispatchable_per_bus().astype(float)
 
     elif transfer_method == AvailableTransferMode.Generation:
         p_ref = gen_per_bus
@@ -164,10 +167,11 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_max = np.full(bus_data_t.nbus, inf_value)
 
         else:
-            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
-            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+            p_min = gen_data_t.get_pmin_per_bus() / Sbase
+            p_max = gen_data_t.get_pmax_per_bus() / Sbase
 
-        dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        # dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        dispatchable_bus = gen_data_t.get_dispatchable_per_bus().astype(float)
 
     elif transfer_method == AvailableTransferMode.Load:
         p_ref = load_per_bus
@@ -175,7 +179,8 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
         p_max = inf_value
 
         # todo check
-        dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        # dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        dispatchable_bus = load_data_t.get_array_per_bus(load_data_t.S.real).astype(bool).astype(float)
 
     elif transfer_method == AvailableTransferMode.GenerationAndLoad:
         p_ref = gen_per_bus - load_per_bus
@@ -183,11 +188,12 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_min = np.full(bus_data_t.nbus, -inf_value)
             p_max = np.full(bus_data_t.nbus, inf_value)
         else:
-            p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
-            p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
+            p_min = gen_data_t.get_pmin_per_bus() / Sbase
+            p_max = gen_data_t.get_pmax_per_bus() / Sbase
 
         # todo check
-        dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        # dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        dispatchable_bus = load_data_t.get_array_per_bus(load_data_t.S.real).astype(bool).astype(float)
 
     else:
         raise Exception('Undefined available transfer mode')
@@ -651,7 +657,8 @@ def add_linear_injections_formulation(t: Union[int, None],
 
 def add_linear_branches_formulation(t_idx: int,
                                     Sbase: float,
-                                    branch_data_t: BranchData,
+                                    branch_data_t: PassiveBranchData,
+                                    ctrl_branch_data_t: ActiveBranchData,
                                     branch_vars: BranchNtcVars,
                                     bus_vars: BusNtcVars,
                                     prob: LpModel,
@@ -662,14 +669,14 @@ def add_linear_branches_formulation(t_idx: int,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
                                     inf=1e20,
-                                    add_flow_slacks: bool = True,
-                                    ):
+                                    add_flow_slacks: bool = True):
     """
     Formulate the branches
     :param t_idx: time index
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
     :param branch_vars: BranchVars
+    :param ctrl_branch_data_t:
     :param bus_vars: BusVars
     :param prob: OR problem
     :param monitor_only_ntc_load_rule_branches:
@@ -714,12 +721,12 @@ def add_linear_branches_formulation(t_idx: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
+            if ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
 
                 # add angle
                 branch_vars.tap_angles[t_idx, m] = prob.add_var(
-                    lb=branch_data_t.tap_angle_min[m],
-                    ub=branch_data_t.tap_angle_max[m],
+                    lb=ctrl_branch_data_t.tap_angle_min[m],
+                    ub=ctrl_branch_data_t.tap_angle_max[m],
                     name=join("tap_ang_", [t_idx, m], "_")
                 )
 
@@ -781,7 +788,7 @@ def add_linear_branches_formulation(t_idx: int,
 
 def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   Sbase: float,
-                                                  branch_data_t: BranchData,
+                                                  branch_data_t: PassiveBranchData,
                                                   branch_vars: BranchNtcVars,
                                                   bus_vars: BusNtcVars,
                                                   prob: LpModel,
@@ -899,14 +906,14 @@ def add_linear_hvdc_formulation(t_idx: int,
 
         fr = hvdc_data_t.F[m]
         to = hvdc_data_t.T[m]
-        hvdc_vars.rates[t_idx, m] = hvdc_data_t.rate[m]
+        hvdc_vars.rates[t_idx, m] = hvdc_data_t.rates[m]
 
         if hvdc_data_t.active[m]:
 
             # declare the flow var
             hvdc_vars.flows[t_idx, m] = prob.add_var(
-                lb=-hvdc_data_t.rate[m] / Sbase,
-                ub=hvdc_data_t.rate[m] / Sbase,
+                lb=-hvdc_data_t.rates[m] / Sbase,
+                ub=hvdc_data_t.rates[m] / Sbase,
                 name=join("hvdc_flow_", [t_idx, m], "_")
             )
 
@@ -937,11 +944,11 @@ def add_linear_hvdc_formulation(t_idx: int,
 
                 else:
 
-                    if hvdc_data_t.Pset[m] > hvdc_data_t.rate[m]:
-                        P0 = hvdc_data_t.rate[m] / Sbase
+                    if hvdc_data_t.Pset[m] > hvdc_data_t.rates[m]:
+                        P0 = hvdc_data_t.rates[m] / Sbase
 
-                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rate[m]:
-                        P0 = -hvdc_data_t.rate[m] / Sbase
+                    elif hvdc_data_t.Pset[m] < -hvdc_data_t.rates[m]:
+                        P0 = -hvdc_data_t.rates[m] / Sbase
 
                     else:
                         P0 = hvdc_data_t.Pset[m] / Sbase
@@ -1096,8 +1103,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             bus_a2_idx_set = set(bus_a2_idx)
 
             # find the inter space branches given the bus indices of each space
-            mip_vars.branch_vars.inter_space_branches = nc.branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
-                                                                                       bus_idx_to=bus_a2_idx_set)
+            mip_vars.branch_vars.inter_space_branches = nc.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
+                                                                                               bus_idx_to=bus_a2_idx_set)
             mip_vars.hvdc_vars.inter_space_hvdc = nc.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
                                                                                bus_idx_to=bus_a2_idx_set)
 
@@ -1110,11 +1117,13 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             )
 
         # formulate injections -------------------------------------------------------------------------------------
+        indices = nc.get_simulation_indices()
 
         # magic scaling: the demand must be exactly (to the solver tolerance) the same as the demand
-        Pbus = nc.Pbus.copy()
+        Pbus = nc.get_power_injections_pu().real
+        Pbus = Pbus.copy()
         Ptotal = np.sum(Pbus)
-        Pbus[nc.vd] -= Ptotal / len(nc.vd)
+        Pbus[indices.vd] -= Ptotal / len(indices.vd)
 
         f_obj += add_linear_injections_formulation(
             t=t_idx,
@@ -1155,8 +1164,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             # compute the sensitivity to the exchange
             alpha = compute_alpha(ptdf=ls.PTDF,
                                   lodf=ls.LODF,
-                                  P0=nc.Sbus.real,
-                                  Pinstalled=nc.bus_installed_power,
+                                  P0=Pbus.real,
+                                  Pinstalled=nc.bus_data.installed_power,
                                   Pgen=nc.generator_data.get_injections_per_bus().real,
                                   Pload=nc.load_data.get_injections_per_bus().real,
                                   bus_a1_idx=bus_a1_idx,
@@ -1173,7 +1182,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             f_obj += add_linear_branches_formulation(
                 t_idx=t_idx,
                 Sbase=nc.Sbase,
-                branch_data_t=nc.branch_data,
+                branch_data_t=nc.passive_branch_data,
+                ctrl_branch_data_t=nc.active_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
@@ -1188,9 +1198,11 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             )
 
             # formulate nodes ---------------------------------------------------------------------------------------
+            adml = nc.get_linear_admittance_matrices(indices=indices)
+
             add_linear_node_balance(t_idx=t_idx,
-                                    Bbus=nc.Bbus,
-                                    vd=nc.vd,
+                                    Bbus=adml.Bbus,
+                                    vd=indices.vd,
                                     bus_data=nc.bus_data,
                                     bus_vars=mip_vars.bus_vars,
                                     prob=lp_model)
@@ -1213,7 +1225,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                     f_obj += add_linear_branches_contingencies_formulation(
                         t_idx=t_idx,
                         Sbase=nc.Sbase,
-                        branch_data_t=nc.branch_data,
+                        branch_data_t=nc.passive_branch_data,
                         branch_vars=mip_vars.branch_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,
@@ -1371,6 +1383,8 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
 
     Pbus_prof = grid.get_Sbus_prof().real
 
+    indices = nc.get_simulation_indices()
+
     # declare the linear analysis
     ls = LinearAnalysis(numerical_circuit=nc,
                         distributed_slack=False,
@@ -1379,11 +1393,13 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
     # compute the PTDF and LODF
     ls.run()
 
+    Pbus = nc.get_power_injections_pu().real
+
     # compute the sensitivity to the exchange
     alpha = compute_alpha(ptdf=ls.PTDF,
                           lodf=ls.LODF,
-                          P0=nc.Sbus.real,
-                          Pinstalled=nc.bus_installed_power,
+                          P0=Pbus.real,
+                          Pinstalled=nc.bus_data.installed_power,
                           Pgen=nc.generator_data.get_injections_per_bus().real,
                           Pload=nc.load_data.get_injections_per_bus().real,
                           bus_a1_idx=bus_a1_idx,
@@ -1414,7 +1430,7 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
         # magic scaling: the demand must be exactly (to the solver tolerance) the same as the demand
         # TODO: Replace by old more detailed scaling function
         Ptotal = np.sum(Pbus)
-        Pbus[nc.vd] -= Ptotal / len(nc.vd)
+        Pbus[indices.vd] -= Ptotal / len(indices.vd)
 
         if t_idx == 0:
             # branch index, branch object, flow sense w.r.t the area exchange
@@ -1422,8 +1438,8 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
             bus_a2_idx_set = set(bus_a2_idx)
 
             # find the inter space branches given the bus indices of each space
-            mip_vars.branch_vars.inter_space_branches = nc.branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
-                                                                                       bus_idx_to=bus_a2_idx_set)
+            mip_vars.branch_vars.inter_space_branches = nc.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
+                                                                                               bus_idx_to=bus_a2_idx_set)
             mip_vars.hvdc_vars.inter_space_hvdc = nc.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
                                                                                bus_idx_to=bus_a2_idx_set)
 
@@ -1476,7 +1492,8 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
             f_obj += add_linear_branches_formulation(
                 t_idx=t_idx,
                 Sbase=nc.Sbase,
-                branch_data_t=nc.branch_data,
+                branch_data_t=nc.passive_branch_data,
+                ctrl_branch_data_t=nc.active_branch_data,
                 branch_vars=mip_vars.branch_vars,
                 bus_vars=mip_vars.bus_vars,
                 prob=lp_model,
@@ -1492,9 +1509,10 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
 
             # formulate nodes ---------------------------------------------------------------------------------------
             # TODO: review that the samples NumericalCircuit is ok to use here
+            adml = nc.get_linear_admittance_matrices(indices=indices)
             add_linear_node_balance(t_idx=t_idx,
-                                    Bbus=nc.Bbus,
-                                    vd=nc.vd,
+                                    Bbus=adml.Bbus,
+                                    vd=indices.vd,
                                     bus_data=nc.bus_data,
                                     bus_vars=mip_vars.bus_vars,
                                     prob=lp_model)
@@ -1511,7 +1529,7 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
                     f_obj += add_linear_branches_contingencies_formulation(
                         t_idx=t_idx,
                         Sbase=nc.Sbase,
-                        branch_data_t=nc.branch_data,
+                        branch_data_t=nc.passive_branch_data,
                         branch_vars=mip_vars.branch_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,
