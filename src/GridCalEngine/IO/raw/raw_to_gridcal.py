@@ -212,7 +212,8 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
 
     elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
-                                B=b_init,
+                                # B=b_init, TODO Binit
+                                # TODO adjust step
                                 vset=vset,
                                 code=busnum_id,
                                 is_nonlinear=True)
@@ -354,59 +355,142 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             HV = V2
             LV = V1
 
-        # could be nicer..
+        # GET CONTROL and TAP CHANGER DATA
+        # transformer control
+        tap_module_control_mode = TapModuleControl.fixed
+        tap_phase_control_mode = TapPhaseControl.fixed
+        regulation_bus = None
+        # tap changer
         tc_total_positions: int = 1
         tc_neutral_position: int = 0
         tc_normal_position: int = 0
-        tc_dV: float = 0.01
+        tc_dV: float = 0.05
         tc_asymmetry_angle = 90
         tc_type: TapChangerTypes = TapChangerTypes.NoRegulation
         tc_step = 0
 
-        if psse_elm.VMA1 != 0:
-            if psse_elm.NTP1 > 0:
-                tc_total_positions = psse_elm.NTP1
-                tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
-                tc_normal_position = np.floor(psse_elm.NTP1 / 2)
-                tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1) \
-                    if (psse_elm.NTP1 - 1) > 0 else 0.01
-                distance_from_low = tap_module - psse_elm.VMI1
-                tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
-        elif psse_elm.VMA2 != 0:
-            if psse_elm.NTP2 > 0:
-                tc_total_positions = psse_elm.NTP2
-                tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
-                tc_normal_position = np.floor(psse_elm.NTP2 / 2)
-                tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (psse_elm.NTP2 - 1) \
-                    if (psse_elm.NTP2 - 1) > 0 else 0.01
-                distance_from_low = tap_module - psse_elm.VMI2
-                tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+
+        if psse_elm.COD1 == 0:  # for fixed tap and fixed phase shift
+
+            tap_module_control_mode = TapModuleControl.fixed
+            tap_phase_control_mode = TapPhaseControl.fixed
+
+        elif psse_elm.COD1 in [1, -1]:  # for voltage control
+
+            tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
+            tap_phase_control_mode = TapPhaseControl.fixed
+            reg_bus_id = abs(psse_elm.CONT1)
+            if reg_bus_id > 0:
+                regulation_bus = psse_bus_dict.get(reg_bus_id, None)
+                # TODO defined only in ControllableBranchParent
+            tc_type = TapChangerTypes.VoltageRegulation
+
+            if psse_elm.VMA1 != 0:
+                if psse_elm.NTP1 > 0:
+                    tc_total_positions = psse_elm.NTP1
+                    tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
+                    tc_normal_position = np.floor(psse_elm.NTP1 / 2)
+                    tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (
+                                psse_elm.NTP1 - 1) \
+                        if (psse_elm.NTP1 - 1) > 0 else 0.01
+                    distance_from_low = tap_module - psse_elm.VMI1
+                    tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+            elif psse_elm.VMA2 != 0:
+                if psse_elm.NTP2 > 0:
+                    tc_total_positions = psse_elm.NTP2
+                    tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
+                    tc_normal_position = np.floor(psse_elm.NTP2 / 2)
+                    tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (
+                                psse_elm.NTP2 - 1) \
+                        if (psse_elm.NTP2 - 1) > 0 else 0.01
+                    distance_from_low = tap_module - psse_elm.VMI2
+                    tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+            else:
+                if psse_elm.NTP3 > 0:
+                    tc_total_positions = psse_elm.NTP3
+                    tc_neutral_position = np.floor(psse_elm.NTP3 / 2)
+                    tc_normal_position = np.floor(psse_elm.NTP3 / 2)
+                    tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (
+                                psse_elm.NTP3 - 1) \
+                        if (psse_elm.NTP3 - 1) > 0 else 0.01
+                    distance_from_low = tap_module - psse_elm.VMI3
+                    tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+
+            if round(tc_step, 2) != int(tc_step):
+                # the calculated step is not an integer
+                tc_dV = round(1 - tap_module, 6)
+                tc_total_positions = 2
+                tc_neutral_position = 0
+                tc_normal_position = -1
+                tc_step = -1
+                tc_total_positions = 2  # [0,1]
+                tc_neutral_position = 1
+                tc_normal_position = 0
+                tc_step = 0
+
+                logger.add_warning(
+                    msg='Calculated tap position is not integer',
+                    device=code,
+                    device_class='Transformer',
+                    value=42)
+
+        elif psse_elm.COD1 in [2, -2]:  # for reactive power flow control
+
+            tap_module_control_mode = TapModuleControl.Qf if psse_elm.COD1 > 0 else TapModuleControl.fixed
+            tap_phase_control_mode = TapPhaseControl.fixed
+
+        elif psse_elm.COD1 in [3, -3]:  # for active power flow control
+
+            tap_module_control_mode = TapModuleControl.fixed
+            tap_phase_control_mode = TapPhaseControl.Pf if psse_elm.COD1 > 0 else TapPhaseControl.fixed
+            tc_type = TapChangerTypes.Symmetrical
+            tc_total_positions = psse_elm.NTP1
+            tc_neutral_position = int((psse_elm.NTP1 + 1) / 2)
+            tc_normal_position = int((psse_elm.NTP1 + 1) / 2)
+
+            alpha_per_2 = math.radians(psse_elm.RMA1)
+            number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
+            tc_dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
+
+            tc_dV = 0.058288457  # TODO replace this by the correct formula
+            tc_step = 3  # this value is set internally by set_tap_phase
+            # corrected_phase = elm.tap_changer.set_tap_phase(elm.tap_phase)
+            # elm.tap_phase = corrected_phase
+            #
+            # print("Tap module, and phase calculated:",
+            #       elm.tap_module, elm.tap_phase)
+
+            # if psse_elm.NTP1 > 1:
+            #     tc_total_positions = psse_elm.NTP1
+            #     tc_neutral_position = int((psse_elm.NTP1 + 1) / 2)
+            #     tc_normal_position = int((psse_elm.NTP1 + 1) / 2)
+            #     alpha_per_2 = math.radians(psse_elm.RMA1)
+            #     number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
+            #     tc_dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
+            # else:
+            #     tc_total_positions = 1
+            #     tc_neutral_position = 0
+            #     tc_normal_position = 0
+            #     alpha_per_2 = math.radians(psse_elm.RMA1)
+            #     tc_dV = 0.0
+            #     logger.add_warning(msg='Number of tap positions == 1', value=1)
+
+        elif psse_elm.COD1 in [4, -4]:  # for control of a dc line quantity
+            # (valid only for two-windingtransformers)
+
+            logger.add_error(msg="Not implemented transformer control. (COD1)",
+                             value=psse_elm.COD1)
+
+        elif psse_elm.COD1 in [5, -5]:  # for asymmetric active power flow control
+
+            tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
+            tap_phase_control_mode = TapPhaseControl.Pf if psse_elm.COD1 > 0 else TapPhaseControl.fixed
+            tc_type = TapChangerTypes.Asymmetrical
+            tc_asymmetry_angle = psse_elm.CNXA1
+
         else:
-            if psse_elm.NTP3 > 0:
-                tc_total_positions = psse_elm.NTP3
-                tc_neutral_position = np.floor(psse_elm.NTP3 / 2)
-                tc_normal_position = np.floor(psse_elm.NTP3 / 2)
-                tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (psse_elm.NTP3 - 1) \
-                    if (psse_elm.NTP3 - 1) > 0 else 0.01
-                distance_from_low = tap_module - psse_elm.VMI3
-                tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
-
-        if round(tc_step, 2) != int(tc_step):
-            # the calculated step is not an integer
-            tc_dV = round(1 - tap_module, 6)
-            tc_total_positions = 2
-            tc_neutral_position = 0
-            tc_normal_position = -1
-            tc_step = -1
-            tc_total_positions = 2  # [0,1]
-            tc_neutral_position = 1
-            tc_normal_position = 0
-            tc_step = 0
-
-            logger.add_warning(msg='Calculated tap position is not integer',
-                               device=code,
-                               device_class='Transformer',
-                               value=42)
+            logger.add_error(msg="COD1 (transformer control mode) not recognized.",
+                             value=psse_elm.COD1)
 
         elm = dev.Transformer2W(
             bus_from=bus_from,
@@ -424,19 +508,20 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             rate=psse_elm.RATE1_1,
             contingency_factor=round(contingency_factor, 6),
             protection_rating_factor=round(protection_factor, 6),
+            # regulation_bus=regulation_bus,
             tap_module=1.0,  # it is modified afterward to account for PSSe not having virtual taps
             tap_phase=tap_angle,
             active=bool(psse_elm.STAT),
             mttf=0,
             mttr=0,
-            tap_phase_control_mode=TapPhaseControl.fixed,
-            tap_module_control_mode=TapModuleControl.fixed,
+            tap_phase_control_mode=tap_phase_control_mode,
+            tap_module_control_mode=tap_module_control_mode,
             tc_total_positions=tc_total_positions,
             tc_neutral_position=tc_neutral_position,
             tc_normal_position=tc_normal_position,
             tc_dV=tc_dV,
-            tc_asymmetry_angle=90,
-            tc_type=TapChangerTypes.NoRegulation,
+            tc_asymmetry_angle=tc_asymmetry_angle,
+            tc_type=tc_type,
         )
 
         elm.tap_changer.tap_position = tc_step
@@ -446,89 +531,16 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         #     target=tap_module)
         # elm.tap_changer.recalc()
 
+        # SET tap_module and tap_phase from its own TapChanger object
+        elm.tap_module = elm.tap_changer.get_tap_module()
+        elm.tap_phase = elm.tap_changer.get_tap_phase()
+        print("Tap module, and phase calculated:", elm.tap_module,
+              elm.tap_phase)
+
         mf, mt = elm.get_virtual_taps()
 
         # we need to discount that PSSe includes the virtual tap inside the normal tap
         elm.tap_module = tap_module / mf * mt
-
-        if psse_elm.COD1 == 0:  # for fixed tap and fixed phase shift
-
-            elm.tap_module_control_mode = TapModuleControl.fixed
-            elm.tap_phase_control_mode = TapPhaseControl.fixed
-            elm.tap_changer.recalc()
-
-        elif psse_elm.COD1 in [1, -1]:  # for voltage control
-
-            elm.tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
-            elm.tap_phase_control_mode = TapPhaseControl.fixed
-            reg_bus_id = abs(psse_elm.CONT1)
-            if reg_bus_id > 0:
-                elm.regulation_bus = psse_bus_dict.get(reg_bus_id, None)
-            elm.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
-            elm.tap_changer.recalc()
-
-        elif psse_elm.COD1 in [2, -2]:  # for reactive power flow control
-
-            elm.tap_module_control_mode = TapModuleControl.Qf if psse_elm.COD1 > 0 else TapModuleControl.fixed
-            elm.tap_phase_control_mode = TapPhaseControl.fixed
-            elm.tap_changer.recalc()
-
-        elif psse_elm.COD1 in [3, -3]:  # for active power flow control
-
-            elm.tap_module_control_mode = TapModuleControl.fixed
-            elm.tap_phase_control_mode = TapPhaseControl.Pf if psse_elm.COD1 > 0 else TapPhaseControl.fixed
-            elm.tap_changer.tc_type = TapChangerTypes.Symmetrical
-            elm.tap_changer.total_positions = psse_elm.NTP1
-            elm.tap_changer.neutral_position = int((psse_elm.NTP1 + 1) / 2)
-            elm.tap_changer.normal_position = int((psse_elm.NTP1 + 1) / 2)
-
-            alpha_per_2 = math.radians(psse_elm.RMA1)
-            number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
-            elm.tap_changer.dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
-
-            elm.tap_changer.dV = 0.058288457  # TODO replace this by the correct formula
-            # elm.tap_changer.tap_position = 3  # this value is set internally by set_tap_phase
-            corrected_phase = elm.tap_changer.set_tap_phase(elm.tap_phase)
-            elm.tap_phase = corrected_phase
-
-            print("Tap module, and phase calculated:",
-                  elm.tap_module, elm.tap_phase)
-
-            if psse_elm.NTP1 > 1:
-                elm.tap_changer.total_positions = psse_elm.NTP1
-                elm.tap_changer.neutral_position = int((psse_elm.NTP1 + 1) / 2)
-                elm.tap_changer.normal_position = int((psse_elm.NTP1 + 1) / 2)
-                alpha_per_2 = math.radians(psse_elm.RMA1)
-                number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
-                elm.tap_changer.dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
-            else:
-                elm.tap_changer.total_positions = 1
-                elm.tap_changer.neutral_position = 0
-                elm.tap_changer.normal_position = 0
-                alpha_per_2 = math.radians(psse_elm.RMA1)
-                elm.tap_changer.dV = 0.0
-                logger.add_warning(msg='Number of tap positions == 1', value=1)
-
-            elm.tap_changer.recalc()
-
-        elif psse_elm.COD1 in [4, -4]:  # for control of a dc line quantity
-            # (valid only for two-windingtransformers)
-
-            logger.add_error(msg="Not implemented transformer control. (COD1)",
-                             value=psse_elm.COD1)
-
-        elif psse_elm.COD1 in [5, -5]:  # for asymmetric active power flow control
-
-            elm.tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
-            elm.tap_phase_control_mode = TapPhaseControl.Pf if psse_elm.COD1 > 0 else TapPhaseControl.fixed
-            elm.tap_changer.tc_type = TapChangerTypes.Asymmetrical
-            elm.tap_changer.asymmetry_angle = psse_elm.CNXA1
-
-            elm.tap_changer.recalc()
-
-        else:
-            logger.add_error(msg="COD1 (transformer control mode) not recognized.",
-                             value=psse_elm.COD1)
 
         return elm, 2
 

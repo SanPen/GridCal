@@ -212,7 +212,7 @@ def test_raw_to_cgmes_cross_roundtrip():
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # braches excessive voltage diff: PASSED if these branches are not added as trafos
-    # test_grid_name = 'IEEE 30 bus'  # num of transormer2w??!! (tap_module num error)
+    # test_grid_name = 'IEEE 30 bus'  # num of transformer 2w??!! (tap_module num error)
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
