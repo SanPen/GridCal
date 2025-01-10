@@ -325,14 +325,14 @@ def test_ac_transformers3w():
     assert generated_transformers3w.V1 == 2
     assert generated_transformers3w.V2 == 2
     assert generated_transformers3w.V3 == 2
-    assert generated_transformers3w.r12 == 5.0
-    assert generated_transformers3w.r23 == 5.0
-    assert generated_transformers3w.r31 == 5.0
+    assert generated_transformers3w.r12 == 7.5
+    assert generated_transformers3w.r23 == 7.5
+    assert generated_transformers3w.r31 == 7.5
     assert generated_transformers3w.rate1 == 1
     assert generated_transformers3w.rate2 == 1
     assert generated_transformers3w.rate3 == 1
     assert generated_transformers3w.x == 0.0
-    assert generated_transformers3w.x12 == 5.0
-    assert generated_transformers3w.x23 == 5.0
-    assert generated_transformers3w.x31 == 5.0
+    assert generated_transformers3w.x12 == 7.5
+    assert generated_transformers3w.x23 == 7.5
+    assert generated_transformers3w.x31 == 7.5
     assert generated_transformers3w.y == 0.0
