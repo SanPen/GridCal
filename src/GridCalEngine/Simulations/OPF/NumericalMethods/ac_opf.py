@@ -525,7 +525,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param nc: NumericalCircuit
     :param pf_options: PowerFlowOptions
     :param opf_options: OptimalPowerFlowOptions
-    :param debug: if true, the jacobians, hessians, etc are checked against finite difeerence versions of them
+    :param debug: if true, the jacobians, hessians, etc are checked against finite diference versions of them
     :param use_autodiff: use the autodiff version of the structures
     :param pf_init: Initialize with power flow
     :param Sbus_pf: Sbus initial solution
@@ -724,6 +724,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # ignore power from Z and I of the load
 
     if pf_init:
+        # TODO: try to substitute by using nc.generator_data.get_injections_per_bus()
         gen_in_bus = np.zeros(nbus)
         for i in range(Cgen.shape[0]):
             gen_in_bus[i] = np.sum(Cgen[i])
