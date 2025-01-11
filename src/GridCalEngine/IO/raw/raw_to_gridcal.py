@@ -1005,24 +1005,23 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     branches_already_there = set()
 
     # Go through Transformers
-    for psse_transformer in psse_circuit.transformers:
+    for psse_branch in psse_circuit.transformers:
         # get the object
-        transformer, n_windings = get_gridcal_transformer(psse_transformer, psse_bus_dict, psse_circuit.SBASE, logger)
+        branch, n_windings = get_gridcal_transformer(psse_branch, psse_bus_dict, psse_circuit.SBASE, logger)
 
-        if transformer.idtag not in branches_already_there:
+        if branch.idtag not in branches_already_there:
             # Add to the circuit
             if n_windings == 2:
-                if transformer.LV != 1.0 and transformer.HV != 1.0:   # avoid adding middle bus
-                    circuit.add_transformer2w(transformer)
+                circuit.add_transformer2w(branch)
             elif n_windings == 3:
-                circuit.add_transformer3w(transformer)
+                circuit.add_transformer3w(branch)
             else:
                 raise Exception('Unsupported number of windings')
-            branches_already_there.add(transformer.idtag)
+            branches_already_there.add(branch.idtag)
 
         else:
             logger.add_warning('The RAW file has a repeated transformer and it is omitted from the model',
-                               transformer.idtag)
+                               branch.idtag)
 
     # Go through the Branches
     for psse_branch in psse_circuit.branches:
