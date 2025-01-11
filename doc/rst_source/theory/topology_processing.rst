@@ -21,10 +21,8 @@ these relationships vary over time.
 To understand topology processing, it's essential to grasp the basics of graph
 theory. In a power system graph:
 
-- **Nodes (Buses):** Represent points of calculation, such as substations,
-generation points, or load centers.
-- **Edges (Branches):** Represent the connections, such as transmission lines,
-transformers, or circuit breakers.
+- **Nodes (Buses):** Represent points of calculation, such as substations, generation points, or load centers.
+- **Edges (Branches):** Represent the connections, such as transmission lines, transformers, or circuit breakers.
 
 This abstraction simplifies the network while retaining its essential
 connectivity and operational properties.
