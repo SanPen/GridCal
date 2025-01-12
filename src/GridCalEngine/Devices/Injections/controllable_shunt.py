@@ -237,14 +237,20 @@ class ControllableShunt(ShuntParent):
 
         :return:
         """
-        return np.diff(self._g_steps)
+        if len(self._g_steps) == 1:
+            return self._g_steps
+        else:
+            return np.diff(self._g_steps)
 
     def get_linear_b_steps(self):
         """
 
         :return:
         """
-        return np.diff(self._b_steps)
+        if len(self._b_steps) == 1:
+            return self._b_steps
+        else:
+            return np.diff(self._b_steps)
 
     @step_prof.setter
     def step_prof(self, val: Union[Profile, np.ndarray]):

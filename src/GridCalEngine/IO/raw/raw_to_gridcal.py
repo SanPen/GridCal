@@ -175,12 +175,15 @@ def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logge
     return elm
 
 
-def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
-                               bus: dev.Bus,
-                               psse_bus_dict: Dict[int, dev.Bus],
-                               logger: Logger) -> dev.ControllableShunt:
+def get_gridcal_shunt_switched(
+        circuit: MultiCircuit,
+        psse_elm: RawSwitchedShunt,
+        bus: dev.Bus,
+        psse_bus_dict: Dict[int, dev.Bus],
+        logger: Logger) -> dev.ControllableShunt:
     """
 
+    :param circuit:
     :param psse_elm:
     :param bus:
     :param psse_bus_dict:
@@ -199,9 +202,22 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
     b_init = psse_elm.BINIT
     vset = 1.0
 
+    is_controlled = False
+
     if psse_elm.MODSW in [1, 2]:
+        # 1 - discrete adjustment, controlling voltage locally or at bus SWREG
+        # 2 - continuous adjustment, controlling voltage locally or at bus SWREG
         b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
         vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
+        is_controlled = True
+
+    if psse_elm.MODSW in [3, 4, 5, 6]:
+
+        logger.add_warning(
+            msg="Not supported control mode for Switched Shunt",
+            value=psse_elm.MODSW
+        )
+        is_controlled = True
 
     n_list = []
     b_list = []
@@ -214,7 +230,7 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
             n_list.append(n)
             b_list.append(getattr(psse_elm, f"B{i}"))
 
-    def simplify_lists(n_list, b_list, precision=2):
+    def aggregate_blocks(n_list, b_list, precision=2):
         if len(n_list) != len(b_list):
             raise ValueError("The two lists must have the same length.")
 
@@ -235,40 +251,53 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
 
         return simplified_n_list, simplified_b_list
 
-    n2, b2 = simplify_lists(n_list=n_list, b_list=b_list)
+    n_aggr, b_aggr = aggregate_blocks(n_list=n_list, b_list=b_list)
 
-    if len(n2) == 1:   # all block are equal, ONE controllable shunt is created
+    # if len(n_aggr) == 1:   # all block are equal, ONE controllable shunt is created
+    #
+    #     b_per_step = b_aggr[0]
+    #     step = int(b_init / b_per_step) - 1 \
+    #         if (b_init / b_per_step == int(b_init / b_per_step)) else 1
+    #
+    #     elm = dev.ControllableShunt(
+    #         name='Switched shunt ' + busnum_id,
+    #         active=bool(psse_elm.STAT),
+    #         B=b_init,
+    #         number_of_steps=n_aggr[0],
+    #         step=step,
+    #         vset=vset,
+    #         code=busnum_id,
+    #         is_nonlinear=False,
+    #         b_per_step=b_per_step,
+    #         is_controlled=is_controlled,
+    #     )
+    #
+    #     circuit.add_controllable_shunt(bus, elm)
+    #
+    # else:       # blocks are different, MORE controllable shunts are created
 
-        b_per_step = b2[0]
-        step = int(b_init / b_per_step) - 1 \
-            if (b_init / b_per_step == int(b_init / b_per_step)) else 1
+    position_aggr = find_active_steps(n_aggr, b_aggr, b_init)
+    # if 0: turned off
+
+    for i, (num, b_per_step, pos) in enumerate(zip(n_aggr, b_aggr, position_aggr)):
 
         elm = dev.ControllableShunt(
-            name='Switched shunt ' + busnum_id,
+            name='Switched_shunt_' + busnum_id + '_' + str(i),
             active=bool(psse_elm.STAT),
-            B=b_init,
-            number_of_steps=n2[0],
-            step=step,
+            number_of_steps=num,
+            # B=b_init,
+            # step=step,
             vset=vset,
             code=busnum_id,
             is_nonlinear=False,
             b_per_step=b_per_step,
+            is_controlled=is_controlled,
         )
+        # B is calculated when step is set
+        if pos != 0:               # pos 0 means, turned off
+            elm.step = pos - 1     # step 0 means, first step is active
 
-    else:       # TODO blocks are different, MORE controllable shunts are created
-        pass
-        # for n, b in zip(n2, b2):
-        #     elm = dev.ControllableShunt(
-        #         name='Switched shunt ' + busnum_id,
-        #         active=bool(psse_elm.STAT),
-        #         B=b_init,
-        #         number_of_steps=n2[0],
-        #         step=step,
-        #         vset=vset,
-        #         code=busnum_id,
-        #         is_nonlinear=False,
-        #         b_per_step=b_per_step,
-        #     )
+        circuit.add_controllable_shunt(bus, elm)
 
     if psse_elm.SWREG > 0:
         if psse_elm.SWREG != psse_elm.I:
@@ -277,6 +306,50 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
     # elm.set_blocks(n_list, b_list)
 
     return elm
+
+
+def find_active_steps(n_list, b_list, final_sum):
+    """
+    Find steps for switched shunt based on Binit.
+
+    :param n_list: Numbers of steps in a block
+    :param b_list: Sizes of steps in a block (B)
+    :param final_sum: Binit
+    :return:
+    """
+    def backtrack(block_index, current_sum, active_steps):
+        # If we've processed all blocks
+        if block_index == len(n_list):
+            # Check if the current sum matches the final sum
+            if current_sum == final_sum:
+                return active_steps
+            return None
+
+        # Current block attributes
+        num_steps = n_list[block_index]
+        step_size = b_list[block_index]
+
+        # Explore all subsets of steps for the current block
+        for active_combination in range(
+                1 << num_steps):  # 2^num_steps combinations
+            # Calculate the sum of the active steps in this combination
+            block_sum = 0
+            active_position = 0  # Default to 0 if no step is active
+            for step_index in range(num_steps):
+                if (active_combination & (1 << step_index)) != 0:
+                    block_sum += step_size
+                    active_position = step_index + 1  # 1-indexed position of the active step
+
+            # Recursive call for the next block
+            result = backtrack(block_index + 1, current_sum + block_sum,
+                               active_steps + [active_position])
+            if result is not None:
+                return result
+
+        return None
+
+    # Start backtracking from the first block with an initial sum of 0
+    return backtrack(0, 0, [])
 
 
 def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.Bus], logger: Logger) -> dev.Generator:
@@ -1043,8 +1116,8 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     for psse_shunt in psse_circuit.switched_shunts:
         if psse_shunt.I in psse_bus_dict:
             bus = psse_bus_dict[psse_shunt.I]
-            api_obj = get_gridcal_shunt_switched(psse_shunt, bus, psse_bus_dict, logger)
-            circuit.add_controllable_shunt(bus, api_obj)
+            api_obj = get_gridcal_shunt_switched(circuit, psse_shunt, bus, psse_bus_dict, logger)
+            # circuit.add_controllable_shunt(bus, api_obj)
         else:
             logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
 

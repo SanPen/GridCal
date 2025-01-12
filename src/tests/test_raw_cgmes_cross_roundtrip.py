@@ -215,11 +215,17 @@ def test_raw_to_cgmes_cross_roundtrip():
     # test_grid_name = 'IEEE 30 bus'  # num of transformer 2w??!! (tap_module num error)
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
-
+    # PST transformer disabled, COD1 = -3
     # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst'
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+
+    # Switched shunts has different size blocks
+    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst_SWS'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+
+    # PST is controlling
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')

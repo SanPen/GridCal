@@ -1802,12 +1802,11 @@ def get_gcdev_controllable_shunts(
                 b_per_step=b,
                 G0=g0,
                 B0=b0,
-                step=cgmes_elm.sections,
                 vset=v_set,
                 is_controlled=is_controlled,
                 control_bus=controlled_bus,
             )
-            # B, G is calculated when step is set
+            # B, G is calculated when step is set: only if .sections >= 1
             gcdev_elm.step = cgmes_elm.sections - 1
 
             gcdev_model.add_controllable_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
