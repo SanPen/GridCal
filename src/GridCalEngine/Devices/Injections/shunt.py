@@ -18,19 +18,19 @@ class Shunt(ShuntParent):
         """
         Fixed shunt, not controllable
 
-        :param name:
-        :param idtag:
-        :param code:
-        :param G:
-        :param B:
-        :param active:
-        :param mttf:
-        :param mttr:
-        :param G0:
-        :param B0:
-        :param capex:
-        :param opex:
-        :param build_status:
+        :param name: Name of the device
+        :param idtag: unique id of the device (if None or "" a new one is generated)
+        :param code: secondary code for compatibility
+        :param active:active state
+        :param G: positive conductance (MW @ v=1 p.u.)
+        :param B: positive conductance (MVAr @ v=1 p.u.)
+        :param G0: zero-sequence conductance (MW @ v=1 p.u.)
+        :param B0: zero-sequence conductance (MVAr @ v=1 p.u.)
+        :param mttf: mean time to failure (h)
+        :param mttr: mean time to recovery (h)
+        :param capex: capital expenditures (investment cost)
+        :param opex: operational expenditures (maintenance cost)
+        :param build_status: BuildStatus
         """
 
         ShuntParent.__init__(self,
