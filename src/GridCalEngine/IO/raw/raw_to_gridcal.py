@@ -478,7 +478,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         tc_dV: float = 0.05
         tc_asymmetry_angle = 90
         tc_type: TapChangerTypes = TapChangerTypes.NoRegulation
-        tc_step = 0
+        tc_tap_pos = 0
 
         if psse_elm.COD1 in [0, 1, -1]:  # for no-regulation(0) and voltage control (1)
 
@@ -497,7 +497,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                 psse_elm.NTP1 - 1) \
                         if (psse_elm.NTP1 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI1
-                    tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+                    tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
             elif psse_elm.VMA2 != 0:
                 if psse_elm.NTP2 > 0:
                     tc_total_positions = psse_elm.NTP2
@@ -507,7 +507,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                 psse_elm.NTP2 - 1) \
                         if (psse_elm.NTP2 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI2
-                    tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+                    tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
             else:
                 if psse_elm.NTP3 > 0:
                     tc_total_positions = psse_elm.NTP3
@@ -517,19 +517,19 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                 psse_elm.NTP3 - 1) \
                         if (psse_elm.NTP3 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI3
-                    tc_step = distance_from_low / tc_dV if tc_dV != 0 else 0.5
+                    tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
 
-            if round(tc_step, 2) != int(tc_step):
+            if round(tc_tap_pos, 2) != int(tc_tap_pos):
                 # the calculated step is not an integer
                 tc_dV = round(1 - tap_module, 6)
                 tc_total_positions = 2
                 tc_neutral_position = 0
                 tc_normal_position = -1
-                tc_step = -1
+                tc_tap_pos = -1
                 tc_total_positions = 2  # [0,1]
                 tc_neutral_position = 1
                 tc_normal_position = 0
-                tc_step = 0
+                tc_tap_pos = 0
 
                 logger.add_warning(
                     msg='Calculated tap position is not integer',
@@ -551,12 +551,24 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             tc_neutral_position = int((psse_elm.NTP1 + 1) / 2)
             tc_normal_position = int((psse_elm.NTP1 + 1) / 2)
 
-            alpha_per_2 = math.radians(psse_elm.RMA1)
+            alpha_per_2 = math.radians(psse_elm.RMA1 / 2)
+            # NTP1 should be an odd number
             number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
             tc_dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
 
-            tc_dV = 0.058288457  # TODO replace this by the correct formula
-            tc_step = 3  # this value is set internally by set_tap_phase
+            d_ang = psse_elm.RMA1 / ((psse_elm.NTP1 - 1) / 2)
+            # ?: this value is set internally by set_tap_phase
+            # tc_tap_position
+            tc_step = round(psse_elm.ANG1 / d_ang)
+            if tc_step - (psse_elm.ANG1 / d_ang) > 0.1:
+                logger.add_warning(
+                    device=psse_elm,
+                    device_class=psse_elm.class_name,
+                    msg="Tap changer is not on discrete step.",
+                    value=psse_elm.ANG1 / d_ang,
+                )
+            tc_tap_pos = tc_neutral_position + tc_step
+            # print()
             # corrected_phase = elm.tap_changer.set_tap_phase(elm.tap_phase)
             # elm.tap_phase = corrected_phase
             #
@@ -579,7 +591,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             #     logger.add_warning(msg='Number of tap positions == 1', value=1)
 
         elif psse_elm.COD1 in [4, -4]:  # for control of a dc line quantity
-            # (valid only for two-windingtransformers)
+            # (valid only for two-winding transformers)
 
             logger.add_error(msg="Not implemented transformer control. (COD1)",
                              value=psse_elm.COD1)
@@ -627,7 +639,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             tc_type=tc_type,
         )
 
-        elm.tap_changer.tap_position = tc_step
+        # elm.tap_changer.tap_position = tc_tap_pos
 
         if psse_elm.COD1 in [1, -1]:  # for voltage control (1)
             reg_bus_id = abs(psse_elm.CONT1)
@@ -635,10 +647,18 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                 elm.regulation_bus = psse_bus_dict.get(reg_bus_id, None)
                 # defined only in ControllableBranchParent
 
-        # _, elm.tap_changer.tap_position = find_closest_number(
-        #     arr=elm.tap_changer._m_array,
-        #     target=tap_module)
-        # elm.tap_changer.recalc()
+            _, elm.tap_changer.tap_position = find_closest_number(
+                arr=elm.tap_changer._m_array,
+                target=tap_module
+            )
+
+        elif psse_elm.COD1 in [3, -3]:  # for active power flow control
+            _, elm.tap_changer.tap_position = find_closest_number(
+                arr=elm.tap_changer._tau_array,
+                target=tap_angle
+            )
+
+        elm.tap_changer.recalc()
 
         # SET tap_module and tap_phase from its own TapChanger object
         elm.tap_module = elm.tap_changer.get_tap_module()
