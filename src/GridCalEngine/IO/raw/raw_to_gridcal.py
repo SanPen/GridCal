@@ -362,21 +362,13 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         tc_type: TapChangerTypes = TapChangerTypes.NoRegulation
         tc_step = 0
 
-
-        if psse_elm.COD1 == 0:  # for fixed tap and fixed phase shift
-
-            tap_module_control_mode = TapModuleControl.fixed
-            tap_phase_control_mode = TapPhaseControl.fixed
-
-        elif psse_elm.COD1 in [1, -1]:  # for voltage control
+        if psse_elm.COD1 in [0, 1, -1]:  # for no-regulation(0) and voltage control (1)
 
             tap_module_control_mode = TapModuleControl.Vm if psse_elm.COD1 > 0 else TapModuleControl.fixed
             tap_phase_control_mode = TapPhaseControl.fixed
-            reg_bus_id = abs(psse_elm.CONT1)
-            if reg_bus_id > 0:
-                regulation_bus = psse_bus_dict.get(reg_bus_id, None)
-                # TODO defined only in ControllableBranchParent
-            tc_type = TapChangerTypes.VoltageRegulation
+
+            if psse_elm.COD1 in [1, -1]:  # for voltage control (1)
+                tc_type = TapChangerTypes.VoltageRegulation
 
             if psse_elm.VMA1 != 0:
                 if psse_elm.NTP1 > 0:
@@ -519,6 +511,12 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
 
         elm.tap_changer.tap_position = tc_step
 
+        if psse_elm.COD1 in [1, -1]:  # for voltage control (1)
+            reg_bus_id = abs(psse_elm.CONT1)
+            if reg_bus_id > 0:
+                elm.regulation_bus = psse_bus_dict.get(reg_bus_id, None)
+                # defined only in ControllableBranchParent
+
         # _, elm.tap_changer.tap_position = find_closest_number(
         #     arr=elm.tap_changer._m_array,
         #     target=tap_module)
@@ -527,7 +525,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         # SET tap_module and tap_phase from its own TapChanger object
         elm.tap_module = elm.tap_changer.get_tap_module()
         elm.tap_phase = elm.tap_changer.get_tap_phase()
-        print("Tap module, and phase calculated:", elm.tap_module,
+        print("Raw import: tap module, and phase calculated:", elm.tap_module,
               elm.tap_phase)
 
         mf, mt = elm.get_virtual_taps()
