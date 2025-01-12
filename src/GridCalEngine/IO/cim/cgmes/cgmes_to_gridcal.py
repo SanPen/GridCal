@@ -1778,7 +1778,7 @@ def get_gcdev_controllable_shunts(
             cn = cns[0]
 
             # conversion
-            G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
+            g, b, g0, b0 = get_values_shunt(shunt=cgmes_elm,
                                             logger=logger,
                                             Sbase=Sbase)
 
@@ -1798,27 +1798,18 @@ def get_gcdev_controllable_shunts(
                 active=True,
                 is_nonlinear=False,                        # it is Linear!
                 number_of_steps=cgmes_elm.maximumSections,
+                g_per_step=g,
+                b_per_step=b,
+                G0=g0,
+                B0=b0,
                 step=cgmes_elm.sections,
-                g_per_step=G,
-                b_per_step=B,
-                G=G,
-                B=B,
-                G0=G0,
-                B0=B0,
                 vset=v_set,
                 is_controlled=is_controlled,
                 control_bus=controlled_bus,
             )
-            # gcdev_elm = gcdev.Shunt(
-            #     idtag=cgmes_elm.uuid,
-            #     name=cgmes_elm.name,
-            #     code=cgmes_elm.description,
-            #     G=G * cgmes_elm.sections,
-            #     B=B * cgmes_elm.sections,
-            #     G0=G0 * cgmes_elm.sections,
-            #     B0=B0 * cgmes_elm.sections,
-            #     active=True,
-            # )
+            # B, G is calculated when step is set
+            gcdev_elm.step = cgmes_elm.sections - 1
+
             gcdev_model.add_controllable_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
 
         else:

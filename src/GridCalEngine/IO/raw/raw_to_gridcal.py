@@ -196,24 +196,12 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
     if vv == 0:
         logger.add_error('Voltage equal to zero in shunt conversion', busnum_id)
 
+    b_init = psse_elm.BINIT
+    vset = 1.0
+
     if psse_elm.MODSW in [1, 2]:
         b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
-    else:
-        b_init = psse_elm.BINIT
-
-    vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
-
-    elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
-                                active=bool(psse_elm.STAT),
-                                # B=b_init, TODO Binit
-                                # TODO adjust step
-                                vset=vset,
-                                code=busnum_id,
-                                is_nonlinear=True)
-
-    if psse_elm.SWREG > 0:
-        if psse_elm.SWREG != psse_elm.I:
-            elm.control_bus = psse_bus_dict[psse_elm.SWREG]
+        vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
 
     n_list = []
     b_list = []
@@ -226,10 +214,67 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
             n_list.append(n)
             b_list.append(getattr(psse_elm, f"B{i}"))
 
-    if len(n_list) == 1:
-        elm.is_nonlinear = False
+    def simplify_lists(n_list, b_list, precision=2):
+        if len(n_list) != len(b_list):
+            raise ValueError("The two lists must have the same length.")
 
-    elm.set_blocks(n_list, b_list)
+        # Dictionary to store the sum of n_list values for each unique value in b_list
+        aggregation = {}
+
+        for n, b in zip(n_list, b_list):
+            rounded_b = round(b, precision)
+            # Round the float to avoid precision issues
+            if rounded_b in aggregation:
+                aggregation[rounded_b] += n
+            else:
+                aggregation[rounded_b] = n
+
+        # Convert the dictionary back to lists
+        simplified_b_list = list(aggregation.keys())
+        simplified_n_list = list(aggregation.values())
+
+        return simplified_n_list, simplified_b_list
+
+    n2, b2 = simplify_lists(n_list=n_list, b_list=b_list)
+
+    if len(n2) == 1:   # all block are equal, ONE controllable shunt is created
+
+        b_per_step = b2[0]
+        step = int(b_init / b_per_step) - 1 \
+            if (b_init / b_per_step == int(b_init / b_per_step)) else 1
+
+        elm = dev.ControllableShunt(
+            name='Switched shunt ' + busnum_id,
+            active=bool(psse_elm.STAT),
+            B=b_init,
+            number_of_steps=n2[0],
+            step=step,
+            vset=vset,
+            code=busnum_id,
+            is_nonlinear=False,
+            b_per_step=b_per_step,
+        )
+
+    else:       # TODO blocks are different, MORE controllable shunts are created
+        pass
+        # for n, b in zip(n2, b2):
+        #     elm = dev.ControllableShunt(
+        #         name='Switched shunt ' + busnum_id,
+        #         active=bool(psse_elm.STAT),
+        #         B=b_init,
+        #         number_of_steps=n2[0],
+        #         step=step,
+        #         vset=vset,
+        #         code=busnum_id,
+        #         is_nonlinear=False,
+        #         b_per_step=b_per_step,
+        #     )
+
+    if psse_elm.SWREG > 0:
+        if psse_elm.SWREG != psse_elm.I:
+            elm.control_bus = psse_bus_dict[psse_elm.SWREG]
+
+    # elm.set_blocks(n_list, b_list)
 
     return elm
 

@@ -1285,16 +1285,16 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                                                   target_vnom=mc_elm.bus.Vnom)
 
             if mc_elm.active:
-                lsc.sections = 1
+                lsc.sections = mc_elm.step + 1
             else:
                 lsc.sections = 0
 
             # EQ
             lsc.nomU = mc_elm.bus.Vnom
-            lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
-            lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
+            lsc.bPerSection = mc_elm.get_linear_b_steps()[0] / (lsc.nomU ** 2)
+            lsc.gPerSection = mc_elm.get_linear_g_steps()[0] / (lsc.nomU ** 2)
             lsc.normalSections = lsc.sections
-            lsc.maximumSections = 1
+            lsc.maximumSections = len(mc_elm.b_steps)
             lsc.aggregate = False
 
             lsc.Terminals = (
