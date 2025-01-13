@@ -30,11 +30,11 @@ Therefore, it needs a Python interpreter installed in your operative system.
 The GridCal project is divided in three packages:
 
 - GridCalEngine: A package with the database and calculations logic.
-- GridCalServer: A package that serves an API-rest to use GridCalEngine remotelly.
+- GridCalServer: A package that serves an API-rest to use GridCalEngine remotely.
 - GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and
   `GridCalServer` seamlessly.
 
-To install everything, you only need to install the GridCal package and the others will beinstalled as dependencies.
+To install everything, you only need to install the GridCal package and the others will be installed as dependencies.
 
 <img height="200" src="doc/rst_source/figures/Packages.png"/>
 
@@ -42,9 +42,9 @@ To install everything, you only need to install the GridCal package and the othe
 
 If you don't know what is this Python thing, we offer a windows installation:
 
-[Windows setup](https://www.advancedgridinsights.com/gridcal)
+[Windows setup](https://www.eroots.tech/software)
 
-This will install GridCal as a normal windows program and you need not to worry
+This will install GridCal as a normal windows program, and you don't need to worry
 about any of the previous instructions. Still, if you need some guidance, the
 following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
 
@@ -102,7 +102,7 @@ Again, you may need to use `pip3` if you are under Linux or MacOS.
 
 ## Features
 
-GridCal is packed with feautures:
+GridCal is packed with features:
 
 - Large collection of devices to model electricity grids
 - AC/DC multi-grid power flow
@@ -125,7 +125,7 @@ GridCal is packed with feautures:
 - Import many formats (PSSe .raw/rawx, epc, dgs, matpower, pypsa, json, cim, cgmes)
 - Export in many formats (gridcal .xlsx/.gridcal/.json, cgmes, psse .raw/.rawx)
 
-All of these are industry tested algoriths, some of which surpass most comemercially available software.
+All of these are industry tested algorithms, some of which surpass most commercially available software.
 The aim is to be a drop-in replacement for the expensive and less usable commercial
 software, so that you can work, research and learn with it.
 
@@ -141,7 +141,7 @@ We have included extra materials to work with. These are included in the standal
 
 ## Tutorials and examples
 
-- [Tutorials](https://gridcal.readthedocs.io/en/latest/rst_source/tutorials/tutorials_module.html)
+- [Getting started](https://gridcal.readthedocs.io/en/latest/rst_source/getting_started/index.html)
 
 - [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
 
@@ -162,11 +162,13 @@ And of course, GridCal solves all Matpower 8 provided grids, solving the contine
 
 [![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
 
-Find the results: [All matpower grids.xlsx](Grids_and_profiles/matpower_benchmark/All%20matpower%20grids.xlsx),
-and the benchmark code [matpower_grids.py](Grids_and_profiles/matpower_benchmark/matpower_grids.py).
+Find the results at the [benchmarks page](https://gridcal.readthedocs.io/en/latest/rst_source/development/benchmarks.html) 
+for more details.
+
 _Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
 All solved using Newton-Raphson, and only using the provided solution 
-that comes with the files when the flat start fails.
+that comes with the files when the flat start fails_. 
+
 
 Cool right?
 
