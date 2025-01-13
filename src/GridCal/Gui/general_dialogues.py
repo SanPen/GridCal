@@ -941,6 +941,9 @@ class ArrayTableModel(QAbstractTableModel):
         for i in range(len(self._data)):
             self._data[i] = np.insert(self._data[i], position, [0] * rows)
 
+        # set active to true
+        self._data[0][-1] = 1
+
         self.endInsertRows()
         return True
 

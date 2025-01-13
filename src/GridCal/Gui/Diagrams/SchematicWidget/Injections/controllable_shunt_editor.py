@@ -7,16 +7,16 @@ from typing import List
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtWidgets import QTableView, QVBoxLayout, QPushButton, QHBoxLayout, QDialog, QSpacerItem, QSizePolicy
 from GridCal.Gui.general_dialogues import ArrayTableModel
-from GridCal.Gui.messages import error_msg
 from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt
 
 
 class ControllableShuntArray(ArrayTableModel):
 
-    def __init__(self, data: List[np.ndarray], headers: List[str]):
+    def __init__(self, data: List[np.ndarray], headers: List[str], dtypes: List[np.dtype]):
         ArrayTableModel.__init__(self, data=data, headers=headers)
+        self.dtypes = dtypes
 
-    def setData(self, index: QModelIndex, value: float, role=Qt.EditRole):
+    def setData(self, index: QModelIndex, value: float, role=Qt.ItemDataRole.EditRole):
         """
 
         :param index:
@@ -27,7 +27,7 @@ class ControllableShuntArray(ArrayTableModel):
         if not index.isValid():
             return False
 
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             row = index.row()
             column = index.column()
             try:
@@ -35,19 +35,8 @@ class ControllableShuntArray(ArrayTableModel):
             except ValueError:
                 return False
 
-            if row > 0:
-                if value > self._data[column][row - 1]:  # only allow incremental data
-                    self._data[column][row] = value
-                else:
-                    error_msg(text="Only incremental data is allowed", title="Set data")
-            else:
-                if len(self._data[column]) > 1:
-                    if value < self._data[column][1]:
-                        self._data[column][row] = value
-                    else:
-                        error_msg(text="Only incremental data is allowed", title="Set data")
-                else:
-                    self._data[column][row] = value
+            tpe = self.dtypes[column]
+            self._data[column][row] = tpe(value)
 
             self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole])
             return True
@@ -66,9 +55,11 @@ class ControllableShuntEditor(QDialog):
         self.setWindowTitle("Controllable shunt editor")
 
         self.api_object = api_object
-        self.model = ControllableShuntArray(data=[self.api_object.g_steps,
+        self.model = ControllableShuntArray(data=[self.api_object.active_steps,
+                                                  self.api_object.g_steps,
                                                   self.api_object.b_steps],
-                                            headers=["G steps (MW)", "B steps (MVAr)"])
+                                            headers=["Active", "G steps (MW)", "B steps (MVAr)"],
+                                            dtypes=[bool, float, float])
 
         self.table_view = QTableView()
         self.table_view.setModel(self.model)

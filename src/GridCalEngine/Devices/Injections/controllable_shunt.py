@@ -2,13 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Union
+from typing import Union, Tuple
 import numpy as np
 
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Parents.shunt_parent import ShuntParent
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.basic_structures import Vec
 
 
 class ControllableShunt(ShuntParent):
@@ -72,14 +73,10 @@ class ControllableShunt(ShuntParent):
 
         self.is_controlled = bool(is_controlled)
         self.is_nonlinear = bool(is_nonlinear)
-        self._g_steps = np.zeros(number_of_steps)
-        self._b_steps = np.zeros(number_of_steps)
 
-        # regardless of the linear / nonlinear type, we always store
-        # the cumulative values because the query is faster
-        for i in range(number_of_steps):
-            self._g_steps[i] = g_per_step * (i + 1)
-            self._b_steps[i] = b_per_step * (i + 1)
+        self._active_steps = np.ones(number_of_steps, dtype=int)
+        self._g_steps = np.full(number_of_steps, g_per_step)
+        self._b_steps = np.full(number_of_steps, b_per_step)
 
         self._step = int(step)
         self._step_prof = Profile(default_value=self._step, data_type=int)
@@ -94,15 +91,23 @@ class ControllableShunt(ShuntParent):
         self._Vset_prof = Profile(default_value=self.Vset, data_type=float)
 
         self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
-        self.register(key='g_steps', units='', tpe=SubObjectType.Array,
-                      definition='Conductance incremental steps')
-        self.register(key='b_steps', units='', tpe=SubObjectType.Array,
-                      definition='Susceptance incremental steps')
 
-        self.register(key='step', units='', tpe=int, definition='Device tap step', profile_name='step_prof')
+        self.register(key='g_steps', units='MW@v=1p.u.', tpe=SubObjectType.Array,
+                      definition='Conductance steps', editable=False)
+
+        self.register(key='b_steps', units='MVAr@v=1p.u.', tpe=SubObjectType.Array,
+                      definition='Susceptance steps', editable=False)
+
+        self.register(key='active_steps', units='', tpe=SubObjectType.Array,
+                      definition='steps active?', editable=False)
+
+        self.register(key='step', units='', tpe=int,
+                      definition='Device step position (0~N-1)',
+                      profile_name='step_prof')
 
         self.register(key='Vset', units='p.u.', tpe=float,
-                      definition='Set voltage. This is used for controlled shunts.', profile_name='Vset_prof')
+                      definition='Set voltage. This is used for controlled shunts.',
+                      profile_name='Vset_prof')
 
     @property
     def step(self):
@@ -119,8 +124,8 @@ class ControllableShunt(ShuntParent):
             self._step = int(value)
 
             # override value on change
-            self.B = self._b_steps[self._step]
-            self.G = self._g_steps[self._step]
+            self.B = np.sum(self._b_steps[:self._step + 1])
+            self.G = np.sum(self._g_steps[:self._step + 1])
 
     @property
     def Bmin(self):
@@ -129,7 +134,7 @@ class ControllableShunt(ShuntParent):
         :return:
         """
         if len(self._b_steps):
-            return self._b_steps[0]
+            return self._b_steps[0] * self._active_steps[0]
         else:
             return -9999.0
 
@@ -140,7 +145,7 @@ class ControllableShunt(ShuntParent):
         :return:
         """
         if len(self._b_steps):
-            return self._b_steps[-1]
+            return np.sum(self._b_steps * self._active_steps)
         else:
             return 9999.0
 
@@ -157,6 +162,19 @@ class ControllableShunt(ShuntParent):
         assert isinstance(value, np.ndarray)
         self._g_steps = value
 
+    @property
+    def active_steps(self):
+        """
+        G steps
+        :return:
+        """
+        return self._active_steps
+
+    @active_steps.setter
+    def active_steps(self, value: np.ndarray):
+        assert isinstance(value, np.ndarray)
+        self._active_steps = value.astype(int)
+
     def set_blocks(self, n_list: list[int], b_list: list[float]):
         """
         Initialize the steps from block data
@@ -165,14 +183,12 @@ class ControllableShunt(ShuntParent):
         """
         assert len(n_list) == len(b_list)
         nn = len(n_list)
+        self._active_steps = np.ones(nn, dtype=int)
         self._b_steps = np.zeros(nn)
         self._g_steps = np.zeros(nn)
 
-        if nn > 0:
-            self._b_steps[0] = n_list[0] * b_list[0]
-            if nn > 1:
-                for i in range(1, nn):
-                    self._b_steps[i] = self._b_steps[i - 1] + n_list[i] * b_list[i]
+        for i in range(nn):
+            self._b_steps[i] = n_list[i] * b_list[i]
 
     def get_block_points(self):
         """
@@ -180,19 +196,21 @@ class ControllableShunt(ShuntParent):
         :return:
         :rtype:
         """
-        b_points = []
-        g_points = []
-        b_points.append(self._b_steps[0])
-        g_points.append(self._g_steps[0])
+        return self._b_steps, self._g_steps
 
-        for i in range(1, len(self._b_steps)):
-            delta_b = self._b_steps[i] - self._b_steps[i-1]
-            delta_g = self._g_steps[i] - self._g_steps[i-1]
+    def get_cumulative_b(self) -> Vec:
+        """
+        Get the cumulative B values
+        :return:
+        """
+        return np.cumsum(self._b_steps * self._active_steps).astype(float)
 
-            b_points.append(delta_b)
-            g_points.append(delta_g)
-
-        return b_points, g_points
+    def get_cumulative_g(self) -> Vec:
+        """
+        Get the cumulative G values
+        :return:
+        """
+        return np.cumsum(self._g_steps * self._active_steps).astype(float)
 
     @property
     def b_steps(self):
