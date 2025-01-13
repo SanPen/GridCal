@@ -30,11 +30,11 @@ Therefore, it needs a Python interpreter installed in your operative system.
 The GridCal project is divided in three packages:
 
 - GridCalEngine: A package with the database and calculations logic.
-- GridCalServer: A package that serves an API-rest to use GridCalEngine remotelly.
+- GridCalServer: A package that serves an API-rest to use GridCalEngine remotely.
 - GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and
   `GridCalServer` seamlessly.
 
-To install everything, you only need to install the GridCal package and the others will beinstalled as dependencies.
+To install everything, you only need to install the GridCal package and the others will be installed as dependencies.
 
 <img height="200" src="doc/rst_source/figures/Packages.png"/>
 
@@ -42,9 +42,9 @@ To install everything, you only need to install the GridCal package and the othe
 
 If you don't know what is this Python thing, we offer a windows installation:
 
-[Windows setup](https://www.advancedgridinsights.com/gridcal)
+[Windows setup](https://www.eroots.tech/software)
 
-This will install GridCal as a normal windows program and you need not to worry
+This will install GridCal as a normal windows program, and you don't need to worry
 about any of the previous instructions. Still, if you need some guidance, the
 following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
 
@@ -102,7 +102,7 @@ Again, you may need to use `pip3` if you are under Linux or MacOS.
 
 ## Features
 
-GridCal is packed with feautures:
+GridCal is packed with features:
 
 - Large collection of devices to model electricity grids
 - AC/DC multi-grid power flow
@@ -125,7 +125,7 @@ GridCal is packed with feautures:
 - Import many formats (PSSe .raw/rawx, epc, dgs, matpower, pypsa, json, cim, cgmes)
 - Export in many formats (gridcal .xlsx/.gridcal/.json, cgmes, psse .raw/.rawx)
 
-All of these are industry tested algoriths, some of which surpass most comemercially available software.
+All of these are industry tested algorithms, some of which surpass most commercially available software.
 The aim is to be a drop-in replacement for the expensive and less usable commercial
 software, so that you can work, research and learn with it.
 
@@ -141,7 +141,7 @@ We have included extra materials to work with. These are included in the standal
 
 ## Tutorials and examples
 
-- [Tutorials](https://gridcal.readthedocs.io/en/latest/rst_source/tutorials/tutorials_module.html)
+- [Getting started](https://gridcal.readthedocs.io/en/latest/rst_source/getting_started/index.html)
 
 - [Cloning the repository (video)](https://youtu.be/59W_rqimB6w)
 
@@ -162,11 +162,13 @@ And of course, GridCal solves all Matpower 8 provided grids, solving the contine
 
 [![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
 
-Find the results: [All matpower grids.xlsx](Grids_and_profiles/matpower_benchmark/All%20matpower%20grids.xlsx),
-and the benchmark code [matpower_grids.py](Grids_and_profiles/matpower_benchmark/matpower_grids.py).
+Find the results at the [benchmarks page](https://gridcal.readthedocs.io/en/latest/rst_source/development/benchmarks.html) 
+for more details.
+
 _Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
 All solved using Newton-Raphson, and only using the provided solution 
-that comes with the files when the flat start fails.
+that comes with the files when the flat start fails_. 
+
 
 Cool right?
 
@@ -192,15 +194,15 @@ Although this may seem overly complicated, it has proven to be maintainable and 
 GridCal has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
 
 - A **snapshot** is the grid for a particular moment in time.
-  This includes the infrastructure plus the variable values of that infraestructure
+  This includes the infrastructure plus the variable values of that infrastructure
   such as the load, the generation, the rating, etc.
 
-- The **time series** record the variations of the magnitudes that can vary. These are aplied along with
+- The **time series** record the variations of the magnitudes that can vary. These are applied along with
   the infrastructure definition.
 
 In GridCal, the inputs do not get modified by the simulation results. This very important concept, helps
-maintaining the independence of the inputs and outputs, allowing the replicability of the results.
-This key feature is not true for other open-source of comercial programs.
+to maintain the independence of the inputs and outputs, allowing the replicability of the results.
+This key feature is not true for other open-source of commercial programs.
 
 A snapshot or any point of the time series, may be compiled to a `NumericalCircuit`. This object holds the
 numerical arrays and matrices of a time step, ready for the numerical methods.
@@ -208,7 +210,7 @@ For those simulations that require many time steps, a collection of `NumericalCi
 
 <img height="280" src="doc/rst_source/figures/DataModel.png"/>
 
-It may seem that this extra step is redundant. However the compilation step is composed by mere copy operations,
+It may seem that this extra step is redundant. However, the compilation step is composed by mere copy operations,
 which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are
 aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented
 (despite beign packed into objects)
@@ -270,7 +272,7 @@ GridCal supports many file formats:
 - DigSilent .DGS (not fully compatible)
 - PowerWorld .EPC (not fully compatible, supports substation coordinates)
 
-Simmilarly to CGMES you may be able to use the conversion objects to explore the original formats.
+Similarly to CGMES you may be able to use the conversion objects to explore the original formats.
 
 ### Save a grid
 
@@ -474,7 +476,7 @@ IEEE118-1  174.0  1967.0  1793.0    0.0      0.0 -250000.0  250000.0 -616.0 -331
 
 ### Linear analysis
 
-We can run an PTDF equivalent of the power flow with the linear analysys drivers:
+We can run an PTDF equivalent of the power flow with the linear analysis drivers:
 
 ```python
 import os
@@ -1178,7 +1180,7 @@ files matching `test_*.py` are executed by running `pytest`.
 Files matching `*_test.py` are not executed; they were not formatted specifically for
 `pytest` but were mostly done for manual testing and documentation purposes.
 
-Additional tests should be developped for each new and existing feature. `pytest`
+Additional tests should be developed for each new and existing feature. `pytest`
 should be run before each commit to prevent easily detectable bugs.
 
 
@@ -1194,7 +1196,7 @@ All contributions to the **GridCal** repository are made through pull requests t
 `devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
-want to submit with seperate pull requests. If you only have small, one-time changes
+want to submit with separate pull requests. If you only have small, one-time changes
 to submit, you can also use the `devel` branch to submit your pull request.
 
 However, it is best to discuss your contribution before the pull request is ready to be officially
@@ -1222,7 +1224,7 @@ In practical terms this means that:
 
 - You can use GridCal for commercial work.
 - You can sell commercial services based on GridCal.
-- If you distrubute GridCal, you don't need to distribute GridCal's source code. However, with python in practice you do.
+- If you distribute GridCal, you don't need to distribute GridCal's source code. However, with python in practice you do.
 - GridCal license does not propagate, even if you use GridCal or pieces of it in your code.
   However, you must retain the individual files licensing.
 

@@ -53,7 +53,7 @@ class ShuntParent(InjectionParent):
         :param mttf: mean time to failure (h)
         :param mttr: mean time to recovery (h)
         :param capex: capital expenditures (investment cost)
-        :param opex: operational expenditures (maintainance cost)
+        :param opex: operational expenditures (maintenance cost)
         :param build_status: BuildStatus
         :param device_type: DeviceType
         """

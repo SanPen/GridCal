@@ -10,8 +10,7 @@ from collections.abc import Callable
 from datetime import datetime
 from typing import Union, List, Any, Dict, TYPE_CHECKING
 
-from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
-    create_cgmes_headers
+from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import create_cgmes_headers
 from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
@@ -39,6 +38,7 @@ from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pypsa_hdf5
+from GridCalEngine.IO.others.pandapower_parser import is_pandapower_file, Panda2GridCal
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -129,7 +129,8 @@ class FileOpenOptions:
     def __init__(self,
                  cgmes_map_areas_like_raw: bool = False,
                  try_to_map_dc_to_hvdc_line: bool = True,
-                 crash_on_errors: bool = True,):
+                 crash_on_errors: bool = True,
+                 adjust_taps_to_discrete_positions: bool = False,):
         """
 
         :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
@@ -138,13 +139,15 @@ class FileOpenOptions:
                                         Otherwise:
                                             GeographicalRegion <-> Country
                                             SubGeographicalRegion <-> Community
-        :param try_to_map_dc_to_hvdc_line: Converters and DC lines in CGMES are attemted to be converted
+        :param try_to_map_dc_to_hvdc_line: Converters and DC lines in CGMES are attempted to be converted
                                             to the simplified HvdcLine objects in GridCal
         :param crash_on_errors: Mainly debug feature to allow finding the exact crash issue when loading files
+        :param adjust_taps_to_discrete_positions: Modify the tap angle and module to the discrete positions
         """
         self.cgmes_map_areas_like_raw = cgmes_map_areas_like_raw
         self.try_to_map_dc_to_hvdc_line = try_to_map_dc_to_hvdc_line
         self.crash_on_errors = crash_on_errors
+        self.adjust_taps_to_discrete_positions = adjust_taps_to_discrete_positions
 
 
 class FileOpen:
@@ -353,11 +356,19 @@ class FileOpen:
                                         text_func=text_func,
                                         progress_func=progress_func,
                                         logger=self.logger)
-                    self.circuit = psse_to_gridcal(psse_circuit=pss_grid, logger=self.logger)
+                    self.circuit = psse_to_gridcal(
+                        psse_circuit=pss_grid,
+                        logger=self.logger,
+                        adjust_taps_to_discrete_positions=self.options.adjust_taps_to_discrete_positions
+                    )
 
                 elif file_extension.lower() == '.rawx':
                     pss_grid = parse_rawx(self.file_name, logger=self.logger)
-                    self.circuit = psse_to_gridcal(psse_circuit=pss_grid, logger=self.logger)
+                    self.circuit = psse_to_gridcal(
+                        psse_circuit=pss_grid,
+                        logger=self.logger,
+                        adjust_taps_to_discrete_positions=self.options.adjust_taps_to_discrete_positions
+                    )
 
                 elif file_extension.lower() == '.epc':
                     parser = PowerWorldParser(self.file_name)
@@ -388,6 +399,9 @@ class FileOpen:
 
                 elif file_extension.lower() == '.nc':
                     self.circuit = parse_pypsa_netcdf(self.file_name, self.logger)
+
+                elif file_extension.lower() == '.p':
+                    self.circuit = Panda2GridCal(self.file_name, self.logger).get_multicircuit()
 
             else:
                 # warn('The file does not exist.')
