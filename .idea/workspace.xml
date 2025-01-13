@@ -28,11 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="More typo fixing">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Refactoring in the new acopf">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/Formulations/ac_opf_problem.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/Formulations/ac_opf_problem.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_new.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/ac_opf_new.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/newton_raphson_ips_fx.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/newton_raphson_ips_fx.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1500,7 +1499,7 @@
       <workItem from="1736680515410" duration="6632000" />
       <workItem from="1736699494001" duration="602000" />
       <workItem from="1736717195443" duration="887000" />
-      <workItem from="1736793391559" duration="2664000" />
+      <workItem from="1736793391559" duration="3689000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1845,7 +1844,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="541" />
+    <option name="localTasksCounter" value="542" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1891,7 +1890,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed the CN children connection point" />
     <MESSAGE value="Fixed theme changing on all diagrams" />
     <MESSAGE value="The topology processing happens not without altering the default_bus property of the CN" />
     <MESSAGE value="Added logger to the numerical circuit compilation" />
@@ -1916,7 +1914,8 @@
     <MESSAGE value="Improved docs" />
     <MESSAGE value="Added pandapower parser" />
     <MESSAGE value="More typo fixing" />
-    <option name="LAST_COMMIT_MESSAGE" value="More typo fixing" />
+    <MESSAGE value="Refactoring in the new acopf" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactoring in the new acopf" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

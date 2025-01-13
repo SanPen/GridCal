@@ -506,9 +506,9 @@ class NonLinearOptimalPfProblem:
         self.Sf = self.V[self.from_idx[self.br_mon_idx]] * np.conj(self.admittances.Yf[self.br_mon_idx, :] @ self.V)
         self.St = self.V[self.to_idx[self.br_mon_idx]] * np.conj(self.admittances.Yt[self.br_mon_idx, :] @ self.V)
 
+        # TODO: Check if this computation and Sf St can be done in a single one and then slice it.
         self.Sftot = self.V[self.from_idx] * np.conj(self.admittances.Yf @ self.V)
-        self.Sttot = self.V[self.to_idx] * np.conj(
-            self.admittances.Yt @ self.V)  # TODO: Check if this computation and Sf St can be done in a single one and then slice it.
+        self.Sttot = self.V[self.to_idx] * np.conj(self.admittances.Yt @ self.V)
 
         self.Sf2 = np.conj(self.Sf) * self.Sf
         self.St2 = np.conj(self.St) * self.St

@@ -14,7 +14,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import AcOpfMode
 from GridCalEngine.Simulations.OPF.Formulations.ac_opf_problem import NonLinearOptimalPfProblem, NonlinearOPFResults
-from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver
+from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver, IpsSolution
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import remap_original_bus_indices
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
@@ -32,7 +32,7 @@ def solve(problem: NonLinearOptimalPfProblem,
     :return:
     """
     tstart = timeit.default_timer()
-    result = interior_point_solver(problem=problem,
+    result: IpsSolution = interior_point_solver(problem=problem,
                                    max_iter=problem.options.ips_iterations,
                                    tol=problem.options.ips_tolerance,
                                    pf_init=problem.options.ips_init_with_pf,
