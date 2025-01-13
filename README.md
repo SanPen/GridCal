@@ -162,11 +162,13 @@ And of course, GridCal solves all Matpower 8 provided grids, solving the contine
 
 [![GridCal](Grids_and_profiles/matpower_benchmark/n_buses_vs_time.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
 
-Find the results: [All matpower grids.xlsx](Grids_and_profiles/matpower_benchmark/All%20matpower%20grids.xlsx),
-and the benchmark code [matpower_grids.py](Grids_and_profiles/matpower_benchmark/matpower_grids.py).
+Find the results at the [benchmarks page](https://gridcal.readthedocs.io/en/latest/rst_source/development/benchmarks.html) 
+for more details.
+
 _Results simulated with AMD 9750x and 64 GB of RAM under Ubuntu 24.04.
 All solved using Newton-Raphson, and only using the provided solution 
-that comes with the files when the flat start fails.
+that comes with the files when the flat start fails_. 
+
 
 Cool right?
 
