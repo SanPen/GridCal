@@ -30,3 +30,4 @@ demo_5_node.json
 .idea/*.xml
 .idea/dictionaries/*.xml
 .DS_Store
+/src/tests/data/output/raw_to_cgmes_export_results/
