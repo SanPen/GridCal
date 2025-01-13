@@ -194,15 +194,15 @@ Although this may seem overly complicated, it has proven to be maintainable and 
 GridCal has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
 
 - A **snapshot** is the grid for a particular moment in time.
-  This includes the infrastructure plus the variable values of that infraestructure
+  This includes the infrastructure plus the variable values of that infrastructure
   such as the load, the generation, the rating, etc.
 
-- The **time series** record the variations of the magnitudes that can vary. These are aplied along with
+- The **time series** record the variations of the magnitudes that can vary. These are applied along with
   the infrastructure definition.
 
 In GridCal, the inputs do not get modified by the simulation results. This very important concept, helps
-maintaining the independence of the inputs and outputs, allowing the replicability of the results.
-This key feature is not true for other open-source of comercial programs.
+to maintain the independence of the inputs and outputs, allowing the replicability of the results.
+This key feature is not true for other open-source of commercial programs.
 
 A snapshot or any point of the time series, may be compiled to a `NumericalCircuit`. This object holds the
 numerical arrays and matrices of a time step, ready for the numerical methods.
@@ -210,7 +210,7 @@ For those simulations that require many time steps, a collection of `NumericalCi
 
 <img height="280" src="doc/rst_source/figures/DataModel.png"/>
 
-It may seem that this extra step is redundant. However the compilation step is composed by mere copy operations,
+It may seem that this extra step is redundant. However, the compilation step is composed by mere copy operations,
 which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are
 aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented
 (despite beign packed into objects)
@@ -272,7 +272,7 @@ GridCal supports many file formats:
 - DigSilent .DGS (not fully compatible)
 - PowerWorld .EPC (not fully compatible, supports substation coordinates)
 
-Simmilarly to CGMES you may be able to use the conversion objects to explore the original formats.
+Similarly to CGMES you may be able to use the conversion objects to explore the original formats.
 
 ### Save a grid
 
@@ -476,7 +476,7 @@ IEEE118-1  174.0  1967.0  1793.0    0.0      0.0 -250000.0  250000.0 -616.0 -331
 
 ### Linear analysis
 
-We can run an PTDF equivalent of the power flow with the linear analysys drivers:
+We can run an PTDF equivalent of the power flow with the linear analysis drivers:
 
 ```python
 import os
@@ -1180,7 +1180,7 @@ files matching `test_*.py` are executed by running `pytest`.
 Files matching `*_test.py` are not executed; they were not formatted specifically for
 `pytest` but were mostly done for manual testing and documentation purposes.
 
-Additional tests should be developped for each new and existing feature. `pytest`
+Additional tests should be developed for each new and existing feature. `pytest`
 should be run before each commit to prevent easily detectable bugs.
 
 
@@ -1196,7 +1196,7 @@ All contributions to the **GridCal** repository are made through pull requests t
 `devel` branch. You can either submit a pull request from the develop branch of your
 fork or create a special feature branch that you keep the changes on. A feature branch
 is the way to go if you have multiple issues that you are working on in parallel and
-want to submit with seperate pull requests. If you only have small, one-time changes
+want to submit with separate pull requests. If you only have small, one-time changes
 to submit, you can also use the `devel` branch to submit your pull request.
 
 However, it is best to discuss your contribution before the pull request is ready to be officially
@@ -1224,7 +1224,7 @@ In practical terms this means that:
 
 - You can use GridCal for commercial work.
 - You can sell commercial services based on GridCal.
-- If you distrubute GridCal, you don't need to distribute GridCal's source code. However, with python in practice you do.
+- If you distribute GridCal, you don't need to distribute GridCal's source code. However, with python in practice you do.
 - GridCal license does not propagate, even if you use GridCal or pieces of it in your code.
   However, you must retain the individual files licensing.
 
