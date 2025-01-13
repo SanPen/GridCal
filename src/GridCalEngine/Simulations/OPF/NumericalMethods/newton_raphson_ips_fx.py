@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Callable, Any, Union, List, Dict, Tuple
+from typing import Union, List, Dict
 from dataclasses import dataclass
 import numba as nb
 import numpy as np
@@ -204,7 +204,6 @@ class IpsSolution:
     mu: Vec
     z: Vec
     residuals: Vec
-    structs: IpsFunctionReturn
     converged: bool
     iterations: int
     error_evolution: Vec
@@ -221,18 +220,13 @@ class IpsSolution:
         plt.show()
 
 
-def interior_point_solver(x0: Vec,
-                          n_x: int,
-                          n_eq: int,
-                          n_ineq: int,
-                          func: Callable[[Vec, Vec, Vec, bool, bool, Any], IpsFunctionReturn],
-                          arg=(),
+def interior_point_solver(problem,
                           max_iter=100,
                           tol=1e-6,
                           pf_init=False,
                           trust=0.9,
                           verbose: int = 0,
-                          step_control=False) -> Tuple[IpsSolution, Vec]:
+                          step_control=False) -> IpsSolution:
     """
     Solve a non-linear problem of the form:
 
@@ -264,12 +258,7 @@ def interior_point_solver(x0: Vec,
          Hongye Wang, Carlos E. Murillo-Sánchez, Ray D. Zimmerman, and Robert J. Thomas
          IEEE TRANSACTIONS ON POWER SYSTEMS, VOL. 22, NO. 3, AUGUST 2007
 
-    :param x0: Initial solution
-    :param n_x: Number of variables (size of x)
-    :param n_eq: Number of equality constraints (rows of H)
-    :param n_ineq: Number of inequality constraints (rows of G)
-    :param func: A function pointer called with (x, mu, lmbda, *args) that returns (f, G, H, fx, Gx, Hx, fxx, Gxx, Hxx)
-    :param arg: Tuple of arguments to call func: func(x, mu, lmbda, *arg)
+    :param problem: Optimization problem structure
     :param max_iter: Maximum number of iterations
     :param tol: Convergence tolerance
     :param pf_init: Use the power flow solution as initial values
@@ -279,50 +268,49 @@ def interior_point_solver(x0: Vec,
     :return: IpsSolution
     """
 
-    times = np.array([np.zeros(15)])
     t_start = timeit.default_timer()
 
     # Init iteration values
     error = 1e6
     iter_counter = 0
-    x = x0.copy()
+    x = problem.x0
     gamma = 1.0
     nabla = 0.05
     rho_lower = 1.0 - nabla
     rho_upper = 1.0 + nabla
-    e = np.ones(n_ineq)
+    e = np.ones(problem.nineq)
 
     # Our init, which computes the multipliers as a solution of the KKT conditions
     if pf_init:
         z0 = 1.0
-        z = z0 * np.ones(n_ineq)
-        lam = np.ones(n_eq)
+        z = z0 * np.ones(problem.nineq)
+        lam = np.ones(problem.neq)
         mu = z.copy()
-        ret = func(x, mu, lam, True, False, *arg)
-        z = - ret.H
+        f, G, H = problem.update(x)
+        fx, Gx, Hx , _ , _ , _ = problem.get_jacobians_and_hessians(mu=mu, lam=lam, compute_hessians=False)
+        z = - H
         z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
         z_inv = diags(1.0 / z)
         mu = gamma * (z_inv @ e)
         mu_diag = diags(mu)
-        lam = sparse.linalg.lsqr(ret.Gx.T, -ret.fx - ret.Hx.T @ mu.T)[0]
+        lam = sparse.linalg.lsqr(Gx.T, - fx - Hx.T @ mu.T)[0]
 
     # PyPower-like init
     else:
-        ret, _ = func(x, None, None, False, False, *arg)
+        f, G, H = problem.update(x)
         z0 = 1.0
-        z = z0 * np.ones(n_ineq)
-        mu = z0 * np.ones(n_ineq)
-        lam = np.zeros(n_eq)
-        kk = np.flatnonzero(ret.H < -z0)
-        z[kk] = -ret.H[kk]
+        z = z0 * np.ones(problem.nineq)
+        mu = z0 * np.ones(problem.nineq)
+        lam = np.zeros(problem.neq)
+        kk = np.flatnonzero(H < -z0)
+        z[kk] = - H[kk]
         z_inv = diags(1.0 / z)
         kk = np.flatnonzero((gamma / z) > z0)
         mu[kk] = gamma / z[kk]
         mu_diag = diags(mu)
 
-    ret, _ = func(x, mu, lam, True, False, *arg)
-
-    feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)
+    fx, Gx, Hx, fxx, Gxx, Hxx = problem.get_jacobians_and_hessians(mu=mu, lam=lam, compute_hessians=True)
+    feascond = calc_feascond(g=G, h=H, x=x, z=z)
     converged = error <= gamma
     maxdispl = 0
     error_evolution = np.zeros(max_iter + 1)
@@ -331,48 +319,42 @@ def interior_point_solver(x0: Vec,
     # record initial values
     feascond_evolution[iter_counter] = feascond
     error_evolution[0] = error
-    n = np.zeros(n_x + n_eq)
+    n = np.zeros(problem.NV + problem.neq)
     dlam = None
+
     while not converged and iter_counter < max_iter:
-        ts_iter = timeit.default_timer()
         # Evaluate the functions, gradients and hessians at the current iteration.
-        if iter_counter == 0:
-            ret, new_times_0 = func(x, mu, lam, True, True, *arg)
-        else:
-            new_times_0 = 0
-        Hx_t = ret.Hx.T
-        Gx_t = ret.Gx.T
+        Hx_t = Hx.T
+        Gx_t = Gx.T
+
         # compose the Jacobian
-        lxx = ret.fxx + ret.Gxx + ret.Hxx
-        m = lxx + Hx_t @ z_inv @ mu_diag @ ret.Hx
-        jac = pack_3_by_4(m.tocsc(), Gx_t.tocsc(), ret.Gx.tocsc())
+        lxx = fxx + Gxx + Hxx
+        m = lxx + Hx_t @ z_inv @ mu_diag @ Hx
+        jac = pack_3_by_4(m.tocsc(), Gx_t.tocsc(), Gx.tocsc())
 
         # compose the residual
-        lx = ret.fx + Gx_t @ lam + Hx_t @ mu
-        n = lx + Hx_t @ z_inv @ (gamma * e + mu * ret.H)
-        r = - np.r_[n, ret.G]
+        lx = fx + Gx_t @ lam + Hx_t @ mu
+        n = lx + Hx_t @ z_inv @ (gamma * e + mu * H)
+        r = - np.r_[n, G]
 
         # Find the reduced problem residuals and split them
-        ts_nrstep = timeit.default_timer()
-        dx, dlam = split(linear_solver(jac, r), n_x)
-        te_nrstep = timeit.default_timer()
-        # Calculate the inequalities residuals using the reduced problem residuals
+        dx, dlam = split(linear_solver(jac, r), problem.NV)
 
-        ts_mult = timeit.default_timer()
-        dz = - ret.H - z - ret.Hx @ dx
+        # Calculate the inequalities residuals using the reduced problem residuals
+        dz = - H - z - Hx @ dx
         dmu = - mu + z_inv @ (gamma * e - mu * dz)
-        te_mult = timeit.default_timer()
+
         # Step control as in PyPower
         if step_control:
-            l0 = ret.f + np.dot(lam, ret.G) + np.dot(mu, ret.H + z) - gamma * np.sum(np.log(z))
+            l0 = f + np.dot(lam, G) + np.dot(mu, H + z) - gamma * np.sum(np.log(z))
             alpha = trust
             for j in range(20):
                 dx1 = alpha * dx
                 x1 = x + dx1
 
-                ret1 = func(x1, mu, lam, False, False, *arg)
+                f, G, H = problem.update(x1)
 
-                l1 = ret1.f + lam.T @ ret1.G + mu.T @ (ret1.H + z) - gamma * np.sum(np.log(z))
+                l1 = f + lam.T @ G + mu.T @ (H + z) - gamma * np.sum(np.log(z))
                 rho = (l1 - l0) / (lx @ dx1 + 0.5 * dx1.T @ lxx @ dx1)
 
                 if rho_lower < rho < rho_upper:
@@ -387,36 +369,33 @@ def interior_point_solver(x0: Vec,
             dmu = alpha * dmu
 
         # Compute the maximum step allowed
-        ts_steps = timeit.default_timer()
         alpha_p = step_calculation(z, dz)
         alpha_d = step_calculation(mu, dmu)
-        te_steps = timeit.default_timer()
         # Update the values of the variables and multipliers
         x += dx * alpha_p
         z += dz * alpha_p
         lam += dlam * alpha_d
         mu += dmu * alpha_d
-        gamma = 0.1 * mu @ z / n_ineq
+        gamma = 0.1 * mu @ z / problem.nineq
 
         # Update fobj, g, h, calculate next step.
-        ret, new_times_i = func(x, mu, lam, True, True, *arg)
+        f, G, H = problem.update(x)
+        fx, Gx, Hx, fxx, Gxx, Hxx = problem.get_jacobians_and_hessians(mu=mu, lam=lam, compute_hessians=True)
 
-        ts_conds = timeit.default_timer()
-        Hx_t = ret.Hx.T
-        Gx_t = ret.Gx.T
-        g_norm = np.linalg.norm(ret.G, np.inf)
+        Hx_t = Hx.T
+        Gx_t = Gx.T
+        g_norm = np.linalg.norm(G, np.inf)
         lam_norm = np.linalg.norm(lam, np.inf)
         mu_norm = np.linalg.norm(mu, np.inf)
         z_norm = np.linalg.norm(z, np.inf)
 
-        lx = ret.fx + Hx_t @ mu + Gx_t @ lam
-        feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.inf), z_norm]))
+        lx = fx + Hx_t @ mu + Gx_t @ lam
+        feascond = max([g_norm, max(H)]) / (1 + max([np.linalg.norm(x, np.inf), z_norm]))
         gradcond = np.linalg.norm(lx, np.inf) / (1 + max([lam_norm, mu_norm]))
         error = np.max([feascond, gradcond, gamma])
         maxdispl = np.max(np.r_[dx, dlam, dz, dmu])
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
-        te_conds = timeit.default_timer()
         converged = feascond < tol and gradcond < tol and gamma < tol
 
         if verbose > 1:
@@ -440,23 +419,18 @@ def interior_point_solver(x0: Vec,
         feascond_evolution[iter_counter] = feascond
         error_evolution[iter_counter] = error
 
-        te_iter = timeit.default_timer()
-        new_times = np.r_[new_times_i+new_times_0, te_nrstep - ts_nrstep, te_mult - ts_mult, te_steps - ts_steps, te_conds - ts_conds, te_iter - ts_iter]
-        times_i = times.copy()
-        times = np.r_[times_i, [new_times]]
-
     t_end = timeit.default_timer()
 
     if verbose > 0:
         print(f'SOLUTION', "-" * 80)
         print(f"\tx:", x)
         print(f"\tλ:", lam)
-        print(f"\tF.obj: {ret.f * 1e4}")
+        print(f"\tF.obj: {f * 1e4}")
         print(f"\tErr: {error}")
         print(f'\tIterations: {iter_counter}')
         print(f'\tMax Displacement: {maxdispl}' )
         print(f'\tTime elapsed (s): {t_end - t_start}')
         print(f'\tFeas cond: ', feascond)
 
-    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, dlam=dlam, mu=mu, z=z, residuals=n, structs=ret,
-                       converged=converged, iterations=iter_counter, error_evolution=error_evolution), times
+    return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, dlam=dlam, mu=mu, z=z, residuals=n,
+                       converged=converged, iterations=iter_counter, error_evolution=error_evolution)
