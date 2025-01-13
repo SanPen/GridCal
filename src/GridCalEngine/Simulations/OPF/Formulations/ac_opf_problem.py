@@ -2,11 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-import timeit
 import numpy as np
 import timeit
 import pandas as pd
-from scipy import sparse as sp
 from dataclasses import dataclass
 from typing import Tuple, Union
 from scipy import sparse as sp
@@ -14,17 +12,11 @@ from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Utils.Sparse.csc import diags
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, csr_matrix, csc_matrix, Vec
-import GridCalEngine.Utils.NumericalMethods.autodiff as ad
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
-                                                                                   compute_fx, polar_to_rect)
+from GridCalEngine.Compilers.circuit_to_data import NumericalCircuit
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_power, polar_to_rect)
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import AcOpfMode
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, csr_matrix, csc_matrix
 from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver
 
 
@@ -478,7 +470,7 @@ class NonLinearOptimalPfProblem:
 
         self.Pfdc = x[a: b]
 
-    def update(self, x: Vec):
+    def update(self, x: Vec) -> Tuple[Vec, Vec, Vec]:
 
         # Set the new values for the variables.
         self.x2var(x)
@@ -577,14 +569,9 @@ class NonLinearOptimalPfProblem:
 
         return self.fval, self.gval, self.hval
 
-    def get_jacobians_and_hessians(self, mu: Vec, lam: Vec, compute_hessians: bool):
-
-        fx = None
-        Gx = None
-        Hx = None
-        fxx = None
-        Gxx = None
-        Hxx = None
+    def get_jacobians_and_hessians(self, mu: Vec, lam: Vec, compute_hessians: bool) -> Tuple[
+        Vec, csc_matrix, csc_matrix,
+        csc_matrix, csc_matrix, csc_matrix]:
 
         npfvar = 2 * self.nbus + 2 * self.ngen  # Number of variables of the typical power flow (V, th, P, Q). Used to ease readability
         if self.options.ips_control_q_limits:  # if reactive power control...
@@ -762,11 +749,6 @@ class NonLinearOptimalPfProblem:
 
         IfCJmat = np.conj(diags(self.admittances.Yf[self.br_mon_idx, :] @ self.V))
         ItCJmat = np.conj(diags(self.admittances.Yt[self.br_mon_idx, :] @ self.V))
-        # Sf = Vfmat @ np.conj(self.admittances.Yf[self.br_mon_idx, :] @ self.V)
-        # St = Vtmat @ np.conj(self.admittances.Yt[self.br_mon_idx, :] @ self.V)
-
-        # allSf = diags(self.admittances.Cf @ self.V) @ np.conj(self.admittances.Yf @ self.V)
-        # allSt = diags(self.admittances.Ct @ self.V) @ np.conj(self.admittances.Yt @ self.V)
 
         Sfmat = diags(self.Sf)
         Stmat = diags(self.St)
@@ -1466,7 +1448,7 @@ class NonLinearOptimalPfProblem:
     def solve(self,
               verbose: int = 0,
               step_control: bool = False,
-              plot_error: bool = False):
+              plot_error: bool = False) -> NonlinearOPFResults:
         tstart = timeit.default_timer()
         result = interior_point_solver(problem=self, max_iter=self.options.ips_iterations,
                                        tol=self.options.ips_tolerance, pf_init=self.options.ips_init_with_pf,
