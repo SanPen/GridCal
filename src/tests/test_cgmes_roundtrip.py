@@ -107,18 +107,24 @@ def run_import_export_test(import_path: str | list[str],
         print('Gens')
         print(nc_1.generator_data.names)
         print(nc_2.generator_data.names)
+
+        Sbus1 = nc_1.get_power_injections_pu()
+        Sbus2 = nc_2.get_power_injections_pu()
+        adm1 = nc_1.get_admittance_matrices()
+        adm2 = nc_2.get_admittance_matrices()
+
         print('Sbus1')
-        print(nc_1.Sbus)
+        print(Sbus1)
         print('Sbus2')
-        print(nc_2.Sbus)
+        print(Sbus2)
         print('S_diff')
-        print(nc_2.Sbus - nc_1.Sbus)
+        print(Sbus2 - Sbus1)
         print('Y1')
-        print(nc_1.Ybus.A)
+        print(adm1.Ybus.A)
         print('Y2')
-        print(nc_2.Ybus.A)
+        print(adm2.Ybus.A)
         print('Y_diff')
-        print(nc_2.Ybus.A - nc_1.Ybus.A)
+        print(adm2.Ybus.A - adm1.Ybus.A)
 
     assert ok
 

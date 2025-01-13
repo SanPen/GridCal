@@ -176,14 +176,12 @@ def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logge
 
 
 def get_gridcal_shunt_switched(
-        circuit: MultiCircuit,
         psse_elm: RawSwitchedShunt,
         bus: dev.Bus,
         psse_bus_dict: Dict[int, dev.Bus],
         logger: Logger) -> dev.ControllableShunt:
     """
 
-    :param circuit:
     :param psse_elm:
     :param bus:
     :param psse_bus_dict:
@@ -199,7 +197,6 @@ def get_gridcal_shunt_switched(
     if vv == 0:
         logger.add_error('Voltage equal to zero in shunt conversion', busnum_id)
 
-    b_init = psse_elm.BINIT
     vset = 1.0
 
     is_controlled = False
@@ -211,13 +208,28 @@ def get_gridcal_shunt_switched(
         vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
         is_controlled = True
 
-    if psse_elm.MODSW in [3, 4, 5, 6]:
-
+    elif psse_elm.MODSW in [3, 4, 5, 6]:
         logger.add_warning(
             msg="Not supported control mode for Switched Shunt",
             value=psse_elm.MODSW
         )
         is_controlled = True
+        b_init = psse_elm.BINIT
+    else:
+        b_init = psse_elm.BINIT
+
+    vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
+
+    elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
+                                active=bool(psse_elm.STAT),
+                                B=b_init,
+                                vset=vset,
+                                code=busnum_id,
+                                is_nonlinear=True)
+
+    if psse_elm.SWREG > 0:
+        if psse_elm.SWREG != psse_elm.I:
+            elm.control_bus = psse_bus_dict[psse_elm.SWREG]
 
     n_list = []
     b_list = []
@@ -230,80 +242,86 @@ def get_gridcal_shunt_switched(
             n_list.append(n)
             b_list.append(getattr(psse_elm, f"B{i}"))
 
-    def aggregate_blocks(n_list, b_list, precision=2):
-        if len(n_list) != len(b_list):
-            raise ValueError("The two lists must have the same length.")
+    if len(n_list) == 1:
+        elm.is_nonlinear = False
 
-        # Dictionary to store the sum of n_list values for each unique value in b_list
-        aggregation = {}
+    elm.set_blocks(n_list, b_list)
 
-        for n, b in zip(n_list, b_list):
-            rounded_b = round(b, precision)
-            # Round the float to avoid precision issues
-            if rounded_b in aggregation:
-                aggregation[rounded_b] += n
-            else:
-                aggregation[rounded_b] = n
 
-        # Convert the dictionary back to lists
-        simplified_b_list = list(aggregation.keys())
-        simplified_n_list = list(aggregation.values())
-
-        return simplified_n_list, simplified_b_list
-
-    n_aggr, b_aggr = aggregate_blocks(n_list=n_list, b_list=b_list)
-
-    # if len(n_aggr) == 1:   # all block are equal, ONE controllable shunt is created
+    # def aggregate_blocks(n_list, b_list, precision=2):
+    #     if len(n_list) != len(b_list):
+    #         raise ValueError("The two lists must have the same length.")
     #
-    #     b_per_step = b_aggr[0]
-    #     step = int(b_init / b_per_step) - 1 \
-    #         if (b_init / b_per_step == int(b_init / b_per_step)) else 1
+    #     # Dictionary to store the sum of n_list values for each unique value in b_list
+    #     aggregation = {}
+    #
+    #     for n, b in zip(n_list, b_list):
+    #         rounded_b = round(b, precision)
+    #         # Round the float to avoid precision issues
+    #         if rounded_b in aggregation:
+    #             aggregation[rounded_b] += n
+    #         else:
+    #             aggregation[rounded_b] = n
+    #
+    #     # Convert the dictionary back to lists
+    #     simplified_b_list = list(aggregation.keys())
+    #     simplified_n_list = list(aggregation.values())
+    #
+    #     return simplified_n_list, simplified_b_list
+    #
+    # n_aggr, b_aggr = aggregate_blocks(n_list=n_list, b_list=b_list)
+    #
+    # # if len(n_aggr) == 1:   # all block are equal, ONE controllable shunt is created
+    # #
+    # #     b_per_step = b_aggr[0]
+    # #     step = int(b_init / b_per_step) - 1 \
+    # #         if (b_init / b_per_step == int(b_init / b_per_step)) else 1
+    # #
+    # #     elm = dev.ControllableShunt(
+    # #         name='Switched shunt ' + busnum_id,
+    # #         active=bool(psse_elm.STAT),
+    # #         B=b_init,
+    # #         number_of_steps=n_aggr[0],
+    # #         step=step,
+    # #         vset=vset,
+    # #         code=busnum_id,
+    # #         is_nonlinear=False,
+    # #         b_per_step=b_per_step,
+    # #         is_controlled=is_controlled,
+    # #     )
+    # #
+    # #     circuit.add_controllable_shunt(bus, elm)
+    # #
+    # # else:       # blocks are different, MORE controllable shunts are created
+    #
+    # position_aggr = find_active_steps(n_aggr, b_aggr, b_init)
+    # # if 0: turned off
+    #
+    # for i, (num, b_per_step, pos) in enumerate(zip(n_aggr, b_aggr, position_aggr)):
     #
     #     elm = dev.ControllableShunt(
-    #         name='Switched shunt ' + busnum_id,
+    #         name='Switched_shunt_' + busnum_id + '_' + str(i),
     #         active=bool(psse_elm.STAT),
-    #         B=b_init,
-    #         number_of_steps=n_aggr[0],
-    #         step=step,
+    #         number_of_steps=num,
+    #         # B=b_init,
+    #         # step=step,
     #         vset=vset,
     #         code=busnum_id,
     #         is_nonlinear=False,
     #         b_per_step=b_per_step,
     #         is_controlled=is_controlled,
     #     )
+    #     # B is calculated when step is set
+    #     if pos != 0:  # pos 0 means, turned off
+    #         elm.step = pos - 1  # step 0 means, first step is active
     #
     #     circuit.add_controllable_shunt(bus, elm)
     #
-    # else:       # blocks are different, MORE controllable shunts are created
-
-    position_aggr = find_active_steps(n_aggr, b_aggr, b_init)
-    # if 0: turned off
-
-    for i, (num, b_per_step, pos) in enumerate(zip(n_aggr, b_aggr, position_aggr)):
-
-        elm = dev.ControllableShunt(
-            name='Switched_shunt_' + busnum_id + '_' + str(i),
-            active=bool(psse_elm.STAT),
-            number_of_steps=num,
-            # B=b_init,
-            # step=step,
-            vset=vset,
-            code=busnum_id,
-            is_nonlinear=False,
-            b_per_step=b_per_step,
-            is_controlled=is_controlled,
-        )
-        # B is calculated when step is set
-        if pos != 0:               # pos 0 means, turned off
-            elm.step = pos - 1     # step 0 means, first step is active
-
-        circuit.add_controllable_shunt(bus, elm)
-
-    if psse_elm.SWREG > 0:
-        if psse_elm.SWREG != psse_elm.I:
-            elm.control_bus = psse_bus_dict[psse_elm.SWREG]
-
-    # elm.set_blocks(n_list, b_list)
+    # if psse_elm.SWREG > 0:
+    #     if psse_elm.SWREG != psse_elm.I:
+    #         elm.control_bus = psse_bus_dict[psse_elm.SWREG]
+    #
+    # # elm.set_blocks(n_list, b_list)
 
     return elm
 
@@ -317,6 +335,7 @@ def find_active_steps(n_list, b_list, final_sum):
     :param final_sum: Binit
     :return:
     """
+
     def backtrack(block_index, current_sum, active_steps):
         # If we've processed all blocks
         if block_index == len(n_list):
@@ -382,16 +401,19 @@ def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.B
     return elm
 
 
-def get_gridcal_transformer(psse_elm: RawTransformer,
-                            psse_bus_dict: Dict[int, dev.Bus],
-                            Sbase: float,
-                            logger: Logger) -> Tuple[Union[dev.Transformer2W, dev.Transformer3W], int]:
+def get_gridcal_transformer(
+        psse_elm: RawTransformer,
+        psse_bus_dict: Dict[int, dev.Bus],
+        Sbase: float,
+        logger: Logger,
+        adjust_taps_to_discrete_positions: bool = False) -> Tuple[Union[dev.Transformer2W, dev.Transformer3W], int]:
     """
 
     :param psse_elm:
     :param psse_bus_dict:
     :param Sbase:
     :param logger:
+    :param adjust_taps_to_discrete_positions: Modify the tap angle and module to the discrete positions
     :return:
     """
 
@@ -494,7 +516,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                     tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
                     tc_normal_position = np.floor(psse_elm.NTP1 / 2)
                     tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (
-                                psse_elm.NTP1 - 1) \
+                            psse_elm.NTP1 - 1) \
                         if (psse_elm.NTP1 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI1
                     tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
@@ -504,7 +526,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                     tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
                     tc_normal_position = np.floor(psse_elm.NTP2 / 2)
                     tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (
-                                psse_elm.NTP2 - 1) \
+                            psse_elm.NTP2 - 1) \
                         if (psse_elm.NTP2 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI2
                     tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
@@ -514,7 +536,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                     tc_neutral_position = np.floor(psse_elm.NTP3 / 2)
                     tc_normal_position = np.floor(psse_elm.NTP3 / 2)
                     tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (
-                                psse_elm.NTP3 - 1) \
+                            psse_elm.NTP3 - 1) \
                         if (psse_elm.NTP3 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI3
                     tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
@@ -624,7 +646,7 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             contingency_factor=round(contingency_factor, 6),
             protection_rating_factor=round(protection_factor, 6),
             # regulation_bus=regulation_bus,
-            tap_module=1.0,  # it is modified afterward to account for PSSe not having virtual taps
+            tap_module=tap_module,
             tap_phase=tap_angle,
             active=bool(psse_elm.STAT),
             mttf=0,
@@ -639,32 +661,27 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             tc_type=tc_type,
         )
 
-        # elm.tap_changer.tap_position = tc_tap_pos
+        if adjust_taps_to_discrete_positions:
 
-        if psse_elm.COD1 in [1, -1]:  # for voltage control (1)
-            reg_bus_id = abs(psse_elm.CONT1)
-            if reg_bus_id > 0:
-                elm.regulation_bus = psse_bus_dict.get(reg_bus_id, None)
-                # defined only in ControllableBranchParent
+            if psse_elm.COD1 in [1, -1]:  # for voltage control (1)
+                reg_bus_id = abs(psse_elm.CONT1)
+                if reg_bus_id > 0:
+                    elm.regulation_bus = psse_bus_dict.get(reg_bus_id, None)
+                    # defined only in ControllableBranchParent
 
-            _, elm.tap_changer.tap_position = find_closest_number(
-                arr=elm.tap_changer._m_array,
-                target=tap_module
-            )
+                elm.tap_module = elm.tap_changer.set_tap_module(tap_module=tap_module)
 
-        elif psse_elm.COD1 in [3, -3]:  # for active power flow control
-            _, elm.tap_changer.tap_position = find_closest_number(
-                arr=elm.tap_changer._tau_array,
-                target=tap_angle
-            )
+                logger.add_info("Raw import: tap module calculated:",
+                                device=code,
+                                value=elm.tap_module)
 
-        elm.tap_changer.recalc()
+            elif psse_elm.COD1 in [3, -3]:  # for active power flow control
 
-        # SET tap_module and tap_phase from its own TapChanger object
-        elm.tap_module = elm.tap_changer.get_tap_module()
-        elm.tap_phase = elm.tap_changer.get_tap_phase()
-        print("Raw import: tap module, and phase calculated:", elm.tap_module,
-              elm.tap_phase)
+                elm.tap_phase = elm.tap_changer.set_tap_phase(tap_phase=tap_angle)
+
+                logger.add_info("Raw import: tap phase calculated:",
+                                device=code,
+                                value=elm.tap_phase)
 
         mf, mt = elm.get_virtual_taps()
 
@@ -1052,12 +1069,14 @@ def get_upfc_from_facts(psse_elm: RawFACTS,
 
 def psse_to_gridcal(psse_circuit: PsseCircuit,
                     logger: Logger,
-                    branch_connection_voltage_tolerance: float = 0.1) -> MultiCircuit:
+                    branch_connection_voltage_tolerance: float = 0.1,
+                    adjust_taps_to_discrete_positions: bool = False) -> MultiCircuit:
     """
 
     :param psse_circuit: PsseCircuit instance
     :param logger: Logger
     :param branch_connection_voltage_tolerance: tolerance in p.u. of a branch voltage to be considered a transformer
+    :param adjust_taps_to_discrete_positions: Modify the tap angle and module to the discrete positions
     :return: MultiCircuit instance
     """
 
@@ -1136,8 +1155,8 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     for psse_shunt in psse_circuit.switched_shunts:
         if psse_shunt.I in psse_bus_dict:
             bus = psse_bus_dict[psse_shunt.I]
-            api_obj = get_gridcal_shunt_switched(circuit, psse_shunt, bus, psse_bus_dict, logger)
-            # circuit.add_controllable_shunt(bus, api_obj)
+            api_obj = get_gridcal_shunt_switched(psse_shunt, bus, psse_bus_dict, logger)
+            circuit.add_controllable_shunt(bus, api_obj)
         else:
             logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
 
@@ -1155,13 +1174,18 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     # Go through Transformers
     for psse_transformer in psse_circuit.transformers:
         # get the object
-        transformer, n_windings = get_gridcal_transformer(psse_transformer, psse_bus_dict, psse_circuit.SBASE, logger)
+        transformer, n_windings = get_gridcal_transformer(
+            psse_elm=psse_transformer,
+            psse_bus_dict=psse_bus_dict,
+            Sbase=psse_circuit.SBASE,
+            logger=logger,
+            adjust_taps_to_discrete_positions=adjust_taps_to_discrete_positions
+        )
 
         if transformer.idtag not in branches_already_there:
             # Add to the circuit
             if n_windings == 2:
-                if transformer.LV != 1.0 and transformer.HV != 1.0:   # avoid adding middle bus
-                    circuit.add_transformer2w(transformer)
+                circuit.add_transformer2w(transformer)
             elif n_windings == 3:
                 circuit.add_transformer3w(transformer)
             else:
