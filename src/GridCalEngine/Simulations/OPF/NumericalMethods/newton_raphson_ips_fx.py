@@ -16,8 +16,6 @@ from GridCalEngine.Utils.Sparse.csc import pack_3_by_4, diags
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.enumerations import SparseSolver
 
-linear_solver = get_linear_solver(SparseSolver.Pardiso)
-
 
 def step_calculation(v: Vec, dv: Vec, tau: float = 0.99995):
     """
@@ -49,14 +47,14 @@ def split(sol: Vec, n: int):
 
 
 @nb.njit(cache=True)
-def calc_error(dx, dz, dmu, dlmbda):
+def calc_error(dx: Vec, dz: Vec, dmu: Vec, dlmbda: Vec) -> float:
     """
     Calculate the error of the process
     :param dx: x increments array
     :param dz: z increments array
     :param dmu: mu increments array
     :param dlmbda: lambda increments array
-    :return: max abs value of all of the increments
+    :return: max abs value of all the increments
     """
     err = 0.0
 
@@ -70,7 +68,7 @@ def calc_error(dx, dz, dmu, dlmbda):
 
 
 @nb.njit(cache=True)
-def max_abs(x: Vec):
+def max_abs(x: Vec) -> float:
     """
     Compute max abs efficiently
     :param x: State vector
@@ -85,7 +83,7 @@ def max_abs(x: Vec):
     return max_val
 
 
-def calc_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
+def calc_feas_cond(g: Vec, h: Vec, x: Vec, z: Vec) -> float:
     """
     Calculate the feasible conditions
     :param g: Equality values
@@ -97,7 +95,7 @@ def calc_feascond(g: Vec, h: Vec, x: Vec, z: Vec):
     return max(max_abs(g), np.max(h)) / (1.0 + max(max_abs(x), max_abs(z)))
 
 
-def calc_gradcond(lx: Vec, lam: Vec, mu: Vec):
+def calc_grad_cond(lx: Vec, lam: Vec, mu: Vec) -> float:
     """
     calculate the gradient conditions
     :param lx: Gradient of the lagrangian
@@ -108,17 +106,17 @@ def calc_gradcond(lx: Vec, lam: Vec, mu: Vec):
     return max_abs(lx) / (1 + max(max_abs(lam), max_abs(mu)))
 
 
-def calc_ccond(mu: Vec, z: Vec, x: Vec):
+def calc_c_cond(mu: Vec, z: Vec, x: Vec) -> float:
     """
     :param mu: Vector of mu multipliers
     :param z: Vector of z slack variables
     :param x: State vector
-    :return: Vector of ccond
+    :return: Vector of c-cond
     """
-    return (mu @ z) / (1.0 + max_abs(x))
+    return float(mu @ z) / (1.0 + max_abs(x))
 
 
-def calc_ocond(f: float, f_prev: float):
+def calc_o_cond(f: float, f_prev: float) -> float:
     """
 
     :param f: Value of objective function
@@ -171,16 +169,16 @@ class IpsFunctionReturn:
         :return: Dictionary with the structure name and the difference
         """
         errors = dict()
-        for i, (analytic_struct, finit_struct, name) in enumerate(zip(self.get_data(),
-                                                                      other.get_data(),
-                                                                      self.get_headers())):
+        for i, (analytic_struct, f_init_struct, name) in enumerate(zip(self.get_data(),
+                                                                       other.get_data(),
+                                                                       self.get_headers())):
             # if isinstance(analytic_struct, np.ndarray):
             if sparse.isspmatrix(analytic_struct):
                 a = analytic_struct.toarray()
-                b = finit_struct.toarray()
+                b = f_init_struct.toarray()
             else:
                 a = analytic_struct
-                b = finit_struct
+                b = f_init_struct
 
             ok = np.allclose(a, b, atol=h * 10)
 
@@ -268,6 +266,8 @@ def interior_point_solver(problem,
     :return: IpsSolution
     """
 
+    linear_solver = get_linear_solver(SparseSolver.Pardiso)
+
     t_start = timeit.default_timer()
 
     # Init iteration values
@@ -287,7 +287,7 @@ def interior_point_solver(problem,
         lam = np.ones(problem.neq)
         mu = z.copy()
         f, G, H = problem.update(x)
-        fx, Gx, Hx , _ , _ , _ = problem.get_jacobians_and_hessians(mu=mu, lam=lam, compute_hessians=False)
+        fx, Gx, Hx, _, _, _ = problem.get_jacobians_and_hessians(mu=mu, lam=lam, compute_hessians=False)
         z = - H
         z = np.array([1e-2 if zz < 1e-2 else zz for zz in z])
         z_inv = diags(1.0 / z)
@@ -310,14 +310,14 @@ def interior_point_solver(problem,
         mu_diag = diags(mu)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = problem.get_jacobians_and_hessians(mu=mu, lam=lam, compute_hessians=True)
-    feascond = calc_feascond(g=G, h=H, x=x, z=z)
+    feas_cond = calc_feas_cond(g=G, h=H, x=x, z=z)
     converged = error <= gamma
-    maxdispl = 0
+    max_displ = 0
     error_evolution = np.zeros(max_iter + 1)
-    feascond_evolution = np.zeros(max_iter + 1)
+    feas_cond_evolution = np.zeros(max_iter + 1)
 
     # record initial values
-    feascond_evolution[iter_counter] = feascond
+    feas_cond_evolution[iter_counter] = feas_cond
     error_evolution[0] = error
     n = np.zeros(problem.NV + problem.neq)
     dlam = None
@@ -390,13 +390,13 @@ def interior_point_solver(problem,
         z_norm = np.linalg.norm(z, np.inf)
 
         lx = fx + Hx_t @ mu + Gx_t @ lam
-        feascond = max([g_norm, max(H)]) / (1 + max([np.linalg.norm(x, np.inf), z_norm]))
+        feas_cond = max([g_norm, max(H)]) / (1 + max([np.linalg.norm(x, np.inf), z_norm]))
         gradcond = np.linalg.norm(lx, np.inf) / (1 + max([lam_norm, mu_norm]))
-        error = np.max([feascond, gradcond, gamma])
-        maxdispl = np.max(np.r_[dx, dlam, dz, dmu])
+        error = np.max([feas_cond, gradcond, gamma])
+        max_displ = np.max(np.r_[dx, dlam, dz, dmu])
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
-        converged = feascond < tol and gradcond < tol and gamma < tol
+        converged = feas_cond < tol and gradcond < tol and gamma < tol
 
         if verbose > 1:
             print(f'Iteration: {iter_counter}', "-" * 80)
@@ -410,13 +410,13 @@ def interior_point_solver(problem,
                 print("INEQ:\n", ineq_df)
             print("\tGamma:", gamma)
             print("\tErr:", error)
-            print("\tMax Displacement:", maxdispl)
+            print("\tMax Displacement:", max_displ)
 
         # Add an iteration step
         iter_counter += 1
 
         # record evolution
-        feascond_evolution[iter_counter] = feascond
+        feas_cond_evolution[iter_counter] = feas_cond
         error_evolution[iter_counter] = error
 
     t_end = timeit.default_timer()
@@ -428,9 +428,9 @@ def interior_point_solver(problem,
         print(f"\tF.obj: {f * 1e4}")
         print(f"\tErr: {error}")
         print(f'\tIterations: {iter_counter}')
-        print(f'\tMax Displacement: {maxdispl}' )
+        print(f'\tMax Displacement: {max_displ}')
         print(f'\tTime elapsed (s): {t_end - t_start}')
-        print(f'\tFeas cond: ', feascond)
+        print(f'\tFeas cond: ', feas_cond)
 
     return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, dlam=dlam, mu=mu, z=z, residuals=n,
                        converged=converged, iterations=iter_counter, error_evolution=error_evolution)

@@ -5,23 +5,244 @@
 import numpy as np
 import timeit
 import pandas as pd
-from scipy import sparse as sp
-from typing import Tuple
-from dataclasses import dataclass
-from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
-import GridCalEngine.Utils.NumericalMethods.autodiff as ad
+from typing import Union
+from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import AcOpfMode
-from typing import Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
-
 from GridCalEngine.Simulations.OPF.Formulations.ac_opf_problem import NonLinearOptimalPfProblem, NonlinearOPFResults
 from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import interior_point_solver
-from Simulations.OPF.NumericalMethods.ac_opf import remap_original_bus_indices
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import remap_original_bus_indices
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
+
+
+def solve(problem: NonLinearOptimalPfProblem,
+          verbose: int = 0,
+          step_control: bool = False,
+          plot_error: bool = False) -> NonlinearOPFResults:
+    """
+
+    :param problem:
+    :param verbose:
+    :param step_control:
+    :param plot_error:
+    :return:
+    """
+    tstart = timeit.default_timer()
+    result = interior_point_solver(problem=problem,
+                                   max_iter=problem.options.ips_iterations,
+                                   tol=problem.options.ips_tolerance,
+                                   pf_init=problem.options.ips_init_with_pf,
+                                   trust=problem.options.ips_trust_radius,
+                                   verbose=verbose,
+                                   step_control=step_control)
+
+    problem.x2var(result.x)
+
+    # Save Results DataFrame for tests
+    # pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
+    # pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
+    # pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
+    # pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
+
+    Pg = np.zeros(problem.n_gen_disp)
+    Qg = np.zeros(problem.n_gen_disp)
+
+    Pg[problem.gen_disp_idx] = problem.Pg
+    Qg[problem.gen_disp_idx] = problem.Qg
+    Pg[problem.gen_nondisp_idx] = np.real(problem.Sg_undis)
+    Qg[problem.gen_nondisp_idx] = np.imag(problem.Sg_undis)
+
+    # convert the lagrange multipliers to significant ones
+    lam_p, lam_q = result.lam[:problem.nbus], result.lam[problem.nbus: 2 * problem.nbus]
+
+    loading = np.abs(problem.Sftot) / (problem.rates + 1e-9)
+
+    if problem.options.acopf_mode == AcOpfMode.ACOPFslacks:
+        overloads_sf = (np.power(np.power(problem.rates[problem.br_mon_idx], 2) + problem.sl_sf, 0.5)
+                        - problem.rates[problem.br_mon_idx]) * problem.Sbase
+        overloads_st = (np.power(np.power(problem.rates[problem.br_mon_idx], 2) + problem.sl_st, 0.5)
+                        - problem.rates[problem.br_mon_idx]) * problem.Sbase
+
+    else:
+        overloads_sf = np.zeros_like(problem.rates)
+        overloads_st = np.zeros_like(problem.rates)
+
+    hvdc_power = problem.nc.hvdc_data.Pset.copy()
+    hvdc_power[problem.hvdc_disp_idx] = problem.Pfdc
+    hvdc_loading = hvdc_power / (problem.nc.hvdc_data.rates + 1e-9)
+    tap_module = np.zeros(problem.nc.nbr)
+    tap_phase = np.zeros(problem.nc.nbr)
+    tap_module[problem.k_m] = problem.tapm
+    tap_phase[problem.k_tau] = problem.tapt
+    Pcost = np.zeros(problem.ngen + problem.nsh)
+    Pcost[problem.gen_disp_idx] = problem.c0 + problem.c1 * Pg[problem.gen_disp_idx] + problem.c2 * np.power(Pg[problem.gen_disp_idx],
+                                                                                                             2.0)
+    Pcost[problem.gen_nondisp_idx] = (problem.c0n + problem.c1n * np.real(problem.Sg_undis)
+                                      + problem.c2n * np.power(np.real(problem.Sg_undis), 2.0))
+    nodal_capacity = problem.slcap * problem.Sbase
+
+    tend = timeit.default_timer()
+
+    if problem.options.verbose > 0:
+        df_bus = pd.DataFrame(data={'Va (rad)': problem.Va, 'Vm (p.u.)': problem.Vm,
+                                    'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
+        df_gen = pd.DataFrame(data={'P (MW)': Pg * problem.Sbase, 'Q (MVAr)': Qg * problem.Sbase})
+        df_linkdc = pd.DataFrame(data={'P_dc (MW)': problem.Pfdc * problem.Sbase})
+
+        df_slsf = pd.DataFrame(data={'Slacks Sf': problem.sl_sf})
+        df_slst = pd.DataFrame(data={'Slacks St': problem.sl_st})
+        df_slvmax = pd.DataFrame(data={'Slacks Vmax': problem.sl_vmax})
+        df_slvmin = pd.DataFrame(data={'Slacks Vmin': problem.sl_vmin})
+        df_trafo_m = pd.DataFrame(data={'V (p.u.)': problem.tapm}, index=problem.k_m)
+        df_trafo_tau = pd.DataFrame(data={'Tau (rad)': problem.tapt}, index=problem.k_tau)
+        # df_times = pd.DataFrame(data=times[1:], index=list(range(result.iterations)),
+        #                         columns=['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+        #                                  't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+        #                                  't_mult', 't_steps', 't_cond', 't_iter'])
+
+        print("Time elapsed (s):\n", tend - tstart)
+
+        print("Bus:\n", df_bus)
+        print("V-Trafos:\n", df_trafo_m)
+        print("Tau-Trafos:\n", df_trafo_tau)
+        print("Gen:\n", df_gen)
+        print("Link DC:\n", df_linkdc)
+
+        print('Qshunt min: ' + str(problem.Qsh_min))
+
+        if problem.options.acopf_mode == AcOpfMode.ACOPFslacks:
+            print("Slacks:\n", df_slsf)
+            print("Slacks:\n", df_slst)
+            print("Slacks:\n", df_slvmax)
+            print("Slacks:\n", df_slvmin)
+
+        if problem.optimize_nodal_capacity:
+            df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': problem.slcap * problem.Sbase},
+                                        index=problem.capacity_nodes_idx)
+            print("Nodal Capacity:\n", df_nodal_cap)
+        print("Error", result.error)
+        print("Gamma", result.gamma)
+        print("Sf", problem.Sf)
+
+        # if self.options.verbose > 1:
+        #     print('Times:\n', df_times)
+        #     print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+        #                                                't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+        #                                                't_mult', 't_steps', 't_cond', 't_iter']].div(
+        #         df_times['t_iter'],
+        #         axis=0))
+
+    if plot_error:
+        result.plot_error()
+
+    if not result.converged or result.converged:
+
+        for i in range(problem.nbus):
+            if abs(result.dlam[i]) >= 1e-3:
+                problem.logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                           device_property="dlam",
+                                           device=str(i),
+                                           value=str(result.dlam[i]),
+                                           expected_value='< 1e-3')
+
+            if abs(result.dlam[problem.nbus + i]) >= 1e-3:  # TODO: What is the difference with the previous?
+                problem.logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                           device_property="dlam",
+                                           device=str(i),
+                                           value=str(result.dlam[i + problem.nbus]),
+                                           expected_value='< 1e-3')
+
+        for pvbus in range(problem.npv):
+            if abs(result.dlam[2 * problem.nbus + 1 + pvbus]) >= 1e-3:
+                problem.logger.add_warning('PV voltage module convergence tolerance not achieved',
+                                           device_property="dlam",
+                                           device=str(problem.pv[pvbus]),
+                                           value=str((result.dlam[2 * problem.nbus + 1 + pvbus])),
+                                           expected_value='< 1e-3')
+
+        for k in range(problem.n_br_mon):
+            muz_f = abs(result.z[k] * result.mu[k])
+            muz_t = abs(result.z[k + problem.n_br_mon] * result.mu[k + problem.n_br_mon])
+            if muz_f >= 1e-3:
+                problem.logger.add_warning('Branch rating "from" multipliers did not reach the tolerance',
+                                           device_property="mu · z",
+                                           device=str(problem.br_mon_idx[k]),
+                                           value=str(muz_f),
+                                           expected_value='< 1e-3')
+            if muz_t >= 1e-3:
+                problem.logger.add_warning('Branch rating "to" multipliers did not reach the tolerance',
+                                           device_property="mu · z",
+                                           device=str(problem.br_mon_idx[k]),
+                                           value=str(muz_t),
+                                           expected_value='< 1e-3')
+
+        for link in range(problem.n_disp_hvdc):
+            muz_f = abs(result.z[problem.nineq - 2 * problem.n_disp_hvdc + link] * result.mu[
+                problem.nineq - 2 * problem.n_disp_hvdc + link])
+            muz_t = abs(
+                result.z[problem.nineq - problem.n_disp_hvdc + link] * result.mu[problem.nineq - problem.n_disp_hvdc + link])
+            if muz_f >= 1e-3:
+                problem.logger.add_warning('HVDC rating "from" multipliers did not reach the tolerance',
+                                           device_property="mu · z",
+                                           device=str(link),
+                                           value=str(muz_f),
+                                           expected_value='< 1e-3')
+            if muz_t >= 1e-3:
+                problem.logger.add_warning('HVDC rating "to" multipliers did not reach the tolerance',
+                                           device_property="mu · z",
+                                           device=str(link),
+                                           value=str(muz_t),
+                                           expected_value='< 1e-3')
+
+        if problem.options.acopf_mode == AcOpfMode.ACOPFslacks:
+            for k in range(problem.n_br_mon):
+                if overloads_sf[k] > problem.options.ips_tolerance * problem.Sbase:
+                    problem.logger.add_warning('Branch overload in the from sense (MVA)',
+                                               device=str(problem.br_mon_idx[k]),
+                                               device_property="Slack",
+                                               value=str(overloads_sf[k]),
+                                               expected_value=f'< {problem.options.ips_tolerance * problem.Sbase}')
+
+                if overloads_st[k] > problem.options.ips_tolerance * problem.Sbase:
+                    problem.logger.add_warning('Branch overload in the to sense (MVA)',
+                                               device=str(problem.br_mon_idx[k]),
+                                               device_property="Slack",
+                                               value=str(overloads_st[k]),
+                                               expected_value=f'< {problem.options.ips_tolerance * problem.Sbase}')
+
+            for i in range(problem.npq):
+                if problem.sl_vmax[i] > problem.options.ips_tolerance:
+                    problem.logger.add_warning('Overvoltage',
+                                               device_property="Slack",
+                                               device=str(problem.pq[i]),
+                                               value=str(problem.sl_vmax[i]),
+                                               expected_value=f'>{problem.options.ips_tolerance}')
+                if problem.sl_vmin[i] > problem.options.ips_tolerance:
+                    problem.logger.add_warning('Undervoltage',
+                                               device_property="Slack",
+                                               device=str(problem.pq[i]),
+                                               value=str(problem.sl_vmin[i]),
+                                               expected_value=f'> {problem.options.ips_tolerance}')
+
+    if verbose > 0:
+        if len(problem.logger):
+            problem.logger.print()
+
+    return NonlinearOPFResults(Va=problem.Va, Vm=problem.Vm, S=problem.Scalc,
+                               Sf=problem.Sftot, St=problem.Sttot, loading=loading,
+                               Pg=Pg[:problem.ngen], Qg=Qg[:problem.ngen], Qsh=Qg[problem.ngen:], Pcost=Pcost[:problem.ngen],
+                               tap_module=tap_module, tap_phase=tap_phase,
+                               hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
+                               lam_p=lam_p, lam_q=lam_q,
+                               sl_sf=problem.sl_sf, sl_st=problem.sl_st, sl_vmax=problem.sl_vmax, sl_vmin=problem.sl_vmin,
+                               nodal_capacity=nodal_capacity,
+                               error=result.error,
+                               converged=result.converged,
+                               iterations=result.iterations)
 
 
 def run_nonlinear_opf(grid: MultiCircuit,
@@ -120,7 +341,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                             logger=logger
                                             )
 
-        island_res = problem.solve()
+        island_res = solve(problem)
 
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
