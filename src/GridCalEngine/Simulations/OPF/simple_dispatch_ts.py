@@ -10,7 +10,7 @@ That means that solves the OPF problem for a complete time series at once
 import numpy as np
 from typing import Tuple
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Vec
+from GridCalEngine.basic_structures import Vec, IntVec, Logger
 
 
 def run_simple_dispatch(grid: MultiCircuit,
@@ -56,13 +56,15 @@ def run_simple_dispatch(grid: MultiCircuit,
 
 
 def run_simple_dispatch_ts(grid: MultiCircuit,
-                           time_indices: np.ndarray,
+                           time_indices: IntVec,
+                           logger: Logger,
                            text_prog=None,
                            prog_func=None) -> Tuple[Vec, Vec]:
     """
     Simple generation dispatch for the time series
     :param grid: MultiCircuit instance
     :param time_indices: grid time indices where to simulate
+    :param logger: logger
     :param text_prog: text report function
     :param prog_func: progress report function
     :return Pl, Pg
@@ -83,17 +85,36 @@ def run_simple_dispatch_ts(grid: MultiCircuit,
     # gather generation info
     for i, gen in enumerate(grid.get_generators()):
 
-        Pg[:, i] = gen.P_prof[time_indices] * gen.active_prof[time_indices]  # copy at first ...
+        # Gather the profiles as arrays
+        elm_p = gen.P_prof.toarray()
+
+        elm_active = gen.active_prof.toarray()
+
+        Pg[:, i] = elm_p[time_indices] * elm_active[time_indices]  # copy at first ...
 
         if gen.enabled_dispatch:
-            P_avail[:, i] = gen.Pmax * gen.active_prof[time_indices]
+            elm_p_max = gen.Pmax_prof.toarray()
+            bad_p_max_idx = np.where(elm_p_max<=0)[0]
+            if len(bad_p_max_idx) > 0:
+
+                for tt in bad_p_max_idx:
+                    logger.add_error("Generator Pmax <= 0", device=gen.name,
+                                     value=elm_p_max[tt], expected_value=">0")
+
+                elm_p_max[bad_p_max_idx] = 9999.0
+
+
+            P_avail[:, i] = elm_p_max * elm_active[time_indices]
             dispatchable_indices.append(i)
         else:
             Pg_sta[:, i] = Pg[:, i].copy()
 
     # gather load info
     for i, load in enumerate(grid.get_loads()):
-        Pl[:, i] = load.P_prof[time_indices] * load.active_prof[time_indices]
+        elm_p = load.P_prof.toarray()
+        elm_active = load.active_prof.toarray()
+
+        Pl[:, i] = elm_p[time_indices] * elm_active[time_indices]
 
     # for every time step...
     for t_idx, t in enumerate(time_indices):
