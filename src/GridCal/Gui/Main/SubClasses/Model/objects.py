@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-from typing import Union, List
+from typing import Union, List, Set
 from PySide6 import QtGui, QtCore, QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -26,9 +26,10 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.general_dialogues import LogsDialogue
-from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
+                                                                   make_diagram_from_buses)
 
 
 class ObjectsTableMain(DiagramsMain):
@@ -377,6 +378,74 @@ class ObjectsTableMain(DiagramsMain):
         else:
             return list()
 
+    def get_selected_table_buses(self) -> Set[dev.Bus]:
+        """
+        Get the list of selected buses, regardless of the object table type
+        If the object has buses, this one takes them
+        :return:
+        """
+        model = self.ui.dataStructureTableView.model()
+        buses = set()
+
+        if model is not None:
+
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
+
+            if len(objects) > 0:
+
+                if len(sel_idx) > 0:
+
+                    unique = {idx.row() for idx in sel_idx}
+
+                    for idx in unique:
+
+                        sel_obj: ALL_DEV_TYPES = model.objects[idx]
+
+                        if isinstance(sel_obj, dev.Bus):
+                            root_bus = sel_obj
+
+                        elif isinstance(sel_obj, dev.Generator):
+                            root_bus = sel_obj.bus
+
+                        elif isinstance(sel_obj, dev.Battery):
+                            root_bus = sel_obj.bus
+
+                        elif isinstance(sel_obj, dev.Load):
+                            root_bus = sel_obj.bus
+
+                        elif isinstance(sel_obj, dev.Shunt):
+                            root_bus = sel_obj.bus
+
+                        elif isinstance(sel_obj, dev.Line):
+                            root_bus = sel_obj.bus_from
+
+                        elif isinstance(sel_obj, dev.Transformer2W):
+                            root_bus = sel_obj.bus_from
+
+                        elif isinstance(sel_obj, dev.DcLine):
+                            root_bus = sel_obj.bus_from
+
+                        elif isinstance(sel_obj, dev.HvdcLine):
+                            root_bus = sel_obj.bus_from
+
+                        elif isinstance(sel_obj, dev.VSC):
+                            root_bus = sel_obj.bus_from
+
+                        elif isinstance(sel_obj, dev.UPFC):
+                            root_bus = sel_obj.bus_from
+
+                        elif isinstance(sel_obj, dev.Switch):
+                            root_bus = sel_obj.bus_from
+
+                        else:
+                            root_bus = None
+
+                        if root_bus is not None:
+                            buses.add(root_bus)
+
+        return buses
+
     def delete_selected_objects(self):
         """
         Delete selection
@@ -493,6 +562,45 @@ class ObjectsTableMain(DiagramsMain):
                 dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=logger)
                 dlg.setModal(True)
                 dlg.exec()
+
+    def add_new_bus_diagram_from_selection(self):
+        """
+        Create a New diagram from a buses selection
+        """
+        selected_objects = self.get_selected_table_buses()
+
+        if len(selected_objects):
+            diagram = make_diagram_from_buses(circuit=self.circuit, buses=selected_objects)
+
+            diagram_widget = SchematicWidget(gui=self,
+                                             circuit=self.circuit,
+                                             diagram=diagram,
+                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                             time_index=self.get_diagram_slider_index(),
+                                             call_delete_db_element_func=self.call_delete_db_element)
+
+            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                diagram=diagram)
+            self.set_diagrams_list_view()
+
+    def crop_model_to_buses_selection(self):
+        """
+        Crop model to buses selection
+        :return:
+        """
+        selected_objects = self.get_selected_table_buses()
+
+        if len(selected_objects):
+
+            ok = yes_no_question(text="This will delete all buses and their connected elements that were not selected."
+                                      "This cannot be undone and it is dangerous if you don't know"
+                                      "what you are doing. \nAre you sure?",
+                                 title="Crop model to buses selection?")
+
+            if ok:
+                for bus in self.circuit.buses:
+                    if bus not in selected_objects:
+                        self.circuit.delete_bus(obj=bus, delete_associated=True)
 
     def add_objects(self):
         """
@@ -1104,9 +1212,14 @@ class ObjectsTableMain(DiagramsMain):
         context_menu.addSeparator()
 
         gf.add_menu_entry(menu=context_menu,
-                          text="New vecinity diagram",
+                          text="New vicinity diagram",
                           icon_path=":/Icons/icons/grid_icon.svg",
-                          function_ptr=self.add_bus_vecinity_diagram_from_model)
+                          function_ptr=self.add_bus_vicinity_diagram_from_model)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New diagram from selection",
+                          icon_path=":/Icons/icons/schematicadd_to.svg",
+                          function_ptr=self.add_new_bus_diagram_from_selection)
 
         gf.add_menu_entry(menu=context_menu,
                           text="Add to current diagram",
@@ -1122,6 +1235,11 @@ class ObjectsTableMain(DiagramsMain):
                           text="Highlight based on property",
                           icon_path=":/Icons/icons/highlight2.svg",
                           function_ptr=self.highlight_based_on_property)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Crop model to buses selection",
+                          icon_path=":/Icons/icons/schematic.svg",
+                          function_ptr=self.crop_model_to_buses_selection)
 
         gf.add_menu_entry(menu=context_menu,
                           text="Copy table",
