@@ -28,11 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Some comments on the ACOPF new implementation">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed crop_model_to_buses_selection">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/TopologyRoundtrip.dia" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/TopologyRoundtrip.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/development/data_models.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/development/data_models.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/topology_processing.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/topology_processing.rst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -208,11 +209,11 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Schema" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/doc/rst_source/figures" />
       <recent name="$PROJECT_DIR$/doc/rst_source/development" />
       <recent name="$PROJECT_DIR$/doc/rst_source/theory" />
       <recent name="$PROJECT_DIR$/doc/rst_source/getting _started" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/legacy" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/Formulations" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -1503,7 +1504,7 @@
       <workItem from="1736793391559" duration="8098000" />
       <workItem from="1736806234266" duration="1702000" />
       <workItem from="1736845726585" duration="6952000" />
-      <workItem from="1736876227425" duration="3595000" />
+      <workItem from="1736876227425" duration="5030000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1848,7 +1849,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="545" />
+    <option name="localTasksCounter" value="546" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1894,7 +1895,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added logger to the numerical circuit compilation" />
     <MESSAGE value="worked on test_cgmes_ieeee.py" />
     <MESSAGE value="added generator availability as a profile&#10;added the effects into the acopf too" />
     <MESSAGE value="small bug fixes&#10;stated the migration of the acopf to a problem-like class" />
@@ -1919,7 +1919,8 @@
     <MESSAGE value="Refactoring in the new acopf" />
     <MESSAGE value="Modified the controllable shunt to store steps instead of incremental steps" />
     <MESSAGE value="Some comments on the ACOPF new implementation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some comments on the ACOPF new implementation" />
+    <MESSAGE value="Fixed crop_model_to_buses_selection" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed crop_model_to_buses_selection" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
