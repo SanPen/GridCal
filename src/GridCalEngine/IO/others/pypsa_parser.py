@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 from collections.abc import Mapping
 from typing import Dict
-
+import pyproj
 from GridCalEngine.Devices.Injections.battery import Battery
 from GridCalEngine.Devices.Injections.shunt import Shunt
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
@@ -48,6 +48,12 @@ class PyPSAParser:
         self.nt = len(pypsa_grid.snapshots)
         start_time = self._parse_date(pypsa_grid.meta['snapshots']['start'])
         self.grid.create_profiles(self.nt, 1, 'h', start_time)  # todo: don't assume hourly intervals
+
+        self.srid = self.pypsa_grid.srid  # EPSG number
+        if self.srid != 4326:
+            self.coordinate_converter = pyproj.Transformer.from_crs(self.srid, 4326, always_xy=False)
+        else:
+            self.coordinate_converter = None
 
         self.countries = self._parse_countries()
         self.buses = self._parse_buses()
@@ -94,12 +100,24 @@ class PyPSAParser:
             is_slack = data['control'] == 'Slack'  # otherwise 'PQ' or 'PV'
             is_dc = data['carrier'] == 'DC'
             country = self.countries[data['country']]
+
+            # the longitude and latitude come stored in x, y depending on the projection (self.srid)
+            x = data['x']
+            y = data['y']
+            if self.coordinate_converter is not None:
+                lon, lat = self.coordinate_converter.transform(xx=x, yy=y)
+            else:
+                lon = x
+                lat = y
+
             bus = Bus(name=ix,
                       Vnom=data['v_nom'],
                       vmin=data['v_mag_pu_min'],
                       vmax=data['v_mag_pu_max'],
-                      xpos=data['x'] * x_scale,
-                      ypos=data['y'] * y_scale,
+                      xpos=x * x_scale,
+                      ypos=y * y_scale,
+                      longitude=lon,
+                      latitude=lat,
                       active=active,
                       is_slack=is_slack,
                       is_dc=is_dc,
@@ -305,13 +323,26 @@ class PyPSAParser:
             by_name[ix] = kind
         return by_name
 
-    def _apply_template(self, types, ix, data, proto):
-        kind = types[data['type']]
-        proto.apply_template(kind, self.grid.Sbase)
-        expected_rate = proto.rate * int(data['num_parallel'])
+    def _apply_template(self, types: Dict[str, SequenceLineType], ix: str, data, proto: Line):
+        """
+
+        :param types:
+        :param ix:
+        :param data:
+        :param proto:
+        :return:
+        """
+        line_template = types[data['type']]
+
+        R, X, B, R0, X0, B0, rate = line_template.get_values(Sbase=100, length=proto.length)
+
+        expected_rate = rate * int(data['num_parallel'])
+
         if not math.isclose(expected_rate, data['s_nom'], abs_tol=1e-6):
-            self.logger.add_warning(f'Incorrect rate', device=ix,
+            self.logger.add_warning(f'Line Snom value differs from the template rating', device=ix,
                                     value=data['s_nom'], expected_value=expected_rate)
+        else:
+            proto.apply_template(line_template, self.grid.Sbase)
 
     def _parse_lines(self):
         """
@@ -352,23 +383,25 @@ class PyPSAParser:
                 if group is not None:
                     elm.group = group
 
-                if row['type']:
-                    self._apply_template(types=self.line_types,
-                                         ix=ix, data=row, proto=elm)
-                else:
-                    elm.R = row['r']
-                    elm.X = row['x']
-                    elm.B = row['b']
-                    elm.fill_design_properties(
-                        r_ohm=row['r'],
-                        x_ohm=row['x'],
-                        c_nf=row['b'] / w * 1e9,
-                        freq=self.grid.fBase,
-                        length=length,
-                        Imax=0,
-                        Sbase=self.grid.Sbase,
-                    )
-                    elm.rate = rate
+                # if row['type']:
+                #     self._apply_template(types=self.line_types,
+                #                          ix=ix, data=row, proto=elm)
+                # else:
+                elm.template = self.line_types.get(row['type'], None)
+
+                elm.R = row['r']
+                elm.X = row['x']
+                elm.B = row['b']
+                elm.fill_design_properties(
+                    r_ohm=row['r'],
+                    x_ohm=row['x'],
+                    c_nf=row['b'] / w * 1e9,
+                    freq=self.grid.fBase,
+                    length=length,
+                    Imax=0,
+                    Sbase=self.grid.Sbase,
+                )
+                elm.rate = rate
 
                 self.grid.add_line(elm)
 
