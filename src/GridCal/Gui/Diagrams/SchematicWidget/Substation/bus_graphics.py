@@ -91,7 +91,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  w: int = 80,
                  x: float = 0,
                  y: float = 0,
-                 draw_labels: bool = True):
+                 draw_labels: bool = True,
+                 r: float = 0):
         """
 
         :param parent:
@@ -111,6 +112,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.offset = 20
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
+        self.r = r
 
         # loads, shunts, generators, etc...
         self.shunt_children: List[SHUNT_GRAPHICS] = list()
@@ -442,6 +444,11 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/automatic_layout.svg",
                        function_ptr=self.arrange_children)
 
+        # add_menu_entry(menu,
+        #                text='Rotate',
+        #                # icon_path=":/Icons/icons/automatic_layout.svg",
+        #                function_ptr=self.rotate)
+
         add_menu_entry(menu,
                        text='Assign active state to profile',
                        icon_path=":/Icons/icons/assign_to_profile.svg",
@@ -463,7 +470,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.expand_diagram_from_bus)
 
-        add_menu_entry(menu, text='Vecinity diagram from here',
+        add_menu_entry(menu, text='Vicinity diagram from here',
                        icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.new_vecinity_diagram_from_here)
 
@@ -657,6 +664,22 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.api_object.is_dc = False
         else:
             self.api_object.is_dc = True
+
+    def rotate(self):
+        """
+
+        :return:
+        """
+        self.r += 90
+        self.setRotation(self.r)
+        self.editor.update_diagram_element(device=self.api_object,
+                                           x=self.pos().x(),
+                                           y=self.pos().y(),
+                                           w=self.w,
+                                           h=self.h,
+                                           r=self.r,
+                                           draw_labels=self.draw_labels,
+                                           graphic_object=self)
 
     def plot_profiles(self) -> None:
         """

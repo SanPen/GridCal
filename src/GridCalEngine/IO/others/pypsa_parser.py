@@ -6,13 +6,7 @@ import math
 import numpy as np
 from datetime import datetime
 from collections.abc import Mapping
-
-try:
-    import pypsa
-    PYPSA_AVAILABLE = True
-except ImportError:
-    PYPSA_AVAILABLE = False
-
+from typing import Dict
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Branches.transformer import TransformerType, Transformer2W
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
@@ -24,14 +18,19 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.country import Country
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
-BUS_X_SCALE_FACTOR = 720
-BUS_Y_SCALE_FACTOR = -900
+try:
+    import pypsa
+
+    PYPSA_AVAILABLE = True
+except ImportError:
+    PYPSA_AVAILABLE = False
 
 
 class PyPSAParser:
     """
     PyPSAParser
     """
+
     def __init__(self, src: 'pypsa.Network', logger: Logger):
         """
 
@@ -79,22 +78,31 @@ class PyPSAParser:
             by_name[name] = country
         return by_name
 
-    def _parse_buses(self) -> "Mapping[str, Bus]":
+    def _parse_buses(self, x_scale=720, y_scale=-900) -> Dict[str, Bus]:
         """
         Parses the bus data from the PyPSA network.
         :return: a mapping from bus name to GridCal `Bus` objects.
         """
-        by_name = {}
+
+        by_name: Dict[str, Bus] = dict()
         for ix, data in self.src.buses.iterrows():
             active = self._is_active(data)
             is_slack = data['control'] == 'Slack'  # otherwise 'PQ' or 'PV'
             is_dc = data['carrier'] == 'DC'
             country = self.countries[data['country']]
-            bus = Bus(ix, Vnom=data['v_nom'], vmin=data['v_mag_pu_min'], vmax=data['v_mag_pu_max'],
-                      xpos=data['x'] * BUS_X_SCALE_FACTOR, ypos=data['y'] * BUS_Y_SCALE_FACTOR,
-                      active=active, is_slack=is_slack, is_dc=is_dc, country=country)
+            bus = Bus(name=ix,
+                      Vnom=data['v_nom'],
+                      vmin=data['v_mag_pu_min'],
+                      vmax=data['v_mag_pu_max'],
+                      xpos=data['x'] * x_scale,
+                      ypos=data['y'] * y_scale,
+                      active=active,
+                      is_slack=is_slack,
+                      is_dc=is_dc,
+                      country=country)
             self.dest.add_bus(bus)
             by_name[ix] = bus
+
         return by_name
 
     def _parse_generators(self):
@@ -103,9 +111,14 @@ class PyPSAParser:
         """
         for ix, data in self.src.generators.iterrows():
             bus = self.buses[data['bus']]
-            power_factor = data['p_set'] / math.sqrt(data['q_set'] ** 2 + data['p_set'] ** 2)
+            if data['q_set'] > 0 or data['p_set'] > 0:
+                power_factor = data['p_set'] / math.sqrt(data['q_set'] ** 2 + data['p_set'] ** 2)
+            else:
+                power_factor = 0.8
+
             is_controlled = data['control'] == 'PV'
-            generator = Generator(ix, P=data['p_set'] * data['sign'],
+            generator = Generator(name=ix,
+                                  P=data['p_set'] * data['sign'],
                                   power_factor=power_factor,
                                   is_controlled=is_controlled,
                                   Pmin=data['p_nom_min'],
@@ -151,12 +164,12 @@ class PyPSAParser:
             except KeyError:
                 pass
 
-    def _parse_line_types(self) -> "Mapping[str, SequenceLineType]":
+    def _parse_line_types(self) -> Dict[str, SequenceLineType]:
         """
         Parses the line type data from the PyPSA network.
         :return: a mapping from type name to GridCal `SequenceLineType` objects.
         """
-        by_name = {}
+        by_name: Dict[str, SequenceLineType] = dict()
         for ix, data in self.src.line_types.iterrows():
             # Compute shunt susceptance in S/km from shunt capacitance in nF/km.
             omega = 2 * math.pi * data['f_nom']  # Hz
@@ -171,8 +184,8 @@ class PyPSAParser:
         proto.apply_template(kind, self.dest.Sbase)
         expected_rate = proto.rate * int(data['num_parallel'])
         if not math.isclose(expected_rate, data['s_nom'], abs_tol=1e-6):
-            self.logger.add_warning(f'Components {ix}-* have incorrect rate', value=data['s_nom'],
-                                    expected_value=expected_rate)
+            self.logger.add_warning(f'Incorrect rate', device=ix,
+                                    value=data['s_nom'], expected_value=expected_rate)
 
     def _parse_lines(self):
         """
@@ -185,8 +198,13 @@ class PyPSAParser:
             length = data['length']
             is_active = self._is_active(data)
             status = BuildStatus.Commissioned if is_active else BuildStatus.Planned
-            proto = Line(from_bus, to_bus, name=f'{ix}-proto', active=is_active, length=length,
-                         opex=data['capital_cost'], build_status=status)
+            proto = Line(bus_from=from_bus,
+                         bus_to=to_bus,
+                         name=f'{ix}-proto',
+                         active=is_active,
+                         length=length,
+                         opex=data['capital_cost'],
+                         build_status=status)
 
             copy_count = int(data['num_parallel'])
             if data['type']:
@@ -212,18 +230,29 @@ class PyPSAParser:
             to_bus = self.buses[data['bus1']]
             active = self._is_active(data)
             self.dest.add_hvdc(
-                HvdcLine(from_bus, to_bus, name=ix, active=active, rate=data['p_nom'] * data['p_max_pu'],
-                         Pset=data['p_set'], opex=data['capital_cost'], length=data['length']))
+                HvdcLine(bus_from=from_bus,
+                         bus_to=to_bus,
+                         name=ix,
+                         active=active,
+                         rate=data['p_nom'] * data['p_max_pu'],
+                         Pset=data['p_set'],
+                         opex=data['capital_cost'],
+                         length=data['length'])
+            )
 
-    def _parse_transformer_types(self) -> "Mapping[str, TransformerType]":
+    def _parse_transformer_types(self) -> Dict[str, TransformerType]:
         """
         Parses the transformer type data from the PyPSA network.
         :return: a mapping from type name to GridCal `TransformerType` objects.
         """
-        by_name = {}
+        by_name: Dict[str, TransformerType] = dict()
         for ix, data in self.src.transformer_types.iterrows():
-            kind = TransformerType(name=ix, hv_nominal_voltage=data['v_nom_0'], lv_nominal_voltage=data['v_nom_1'],
-                                   nominal_power=data['s_nom'], iron_losses=data['pfe'], no_load_current=data['i0'],
+            kind = TransformerType(name=str(ix),
+                                   hv_nominal_voltage=data['v_nom_0'],
+                                   lv_nominal_voltage=data['v_nom_1'],
+                                   nominal_power=data['s_nom'],
+                                   iron_losses=data['pfe'],
+                                   no_load_current=data['i0'],
                                    short_circuit_voltage=data['vsc'])
             self.dest.add_transformer_type(kind)
             by_name[ix] = kind
@@ -236,7 +265,10 @@ class PyPSAParser:
         for ix, data in self.src.transformers.iterrows():
             from_bus = self.buses[data['bus0']]
             to_bus = self.buses[data['bus1']]
-            proto = Transformer2W(from_bus, to_bus, name=f'{ix}-proto', tap_module=data['tap_ratio'],
+            proto = Transformer2W(bus_from=from_bus,
+                                  bus_to=to_bus,
+                                  name=f'{ix}-proto',
+                                  tap_module=data['tap_ratio'],
                                   tap_phase=data['phase_shift'])
 
             copy_count = int(data['num_parallel'])
@@ -279,10 +311,6 @@ class PyPSAParser:
         return self.dest
 
 
-def _log_pypsa_unavailable(logger: Logger, file_format: str):
-    logger.add_error(f'{file_format} not supported since the PyPSA library could not be found')
-
-
 def pypsa2gridcal(network: 'pypsa.Network', logger: Logger) -> MultiCircuit:
     """
 
@@ -302,12 +330,12 @@ def parse_pypsa_netcdf(file_path: str, logger: Logger) -> MultiCircuit:
     :return: the GridCal circuit object
     """
     if not PYPSA_AVAILABLE:
-        _log_pypsa_unavailable(logger, 'NetCDF')
+        logger.add_error(f'PyPSA not installed, try pip install pypsa')
         return MultiCircuit('')
-
-    network = pypsa.Network()
-    network.import_from_netcdf(file_path)
-    return pypsa2gridcal(network, logger)
+    else:
+        network = pypsa.Network()
+        network.import_from_netcdf(file_path)
+        return pypsa2gridcal(network, logger)
 
 
 def parse_pypsa_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
@@ -318,9 +346,9 @@ def parse_pypsa_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
     :return: the GridCal circuit object
     """
     if not PYPSA_AVAILABLE:
-        _log_pypsa_unavailable(logger, 'HDF5 store')
+        logger.add_error(f'PyPSA not installed, try pip install pypsa')
         return MultiCircuit('')
-
-    network = pypsa.Network()
-    network.import_from_hdf5(file_path)
-    return pypsa2gridcal(network, logger)
+    else:
+        network = pypsa.Network()
+        network.import_from_hdf5(file_path)
+        return pypsa2gridcal(network, logger)

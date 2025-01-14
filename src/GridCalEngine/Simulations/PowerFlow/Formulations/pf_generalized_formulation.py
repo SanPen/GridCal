@@ -383,7 +383,7 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     return Ybus.tocsc()
 
 
-# @njit(cache=True)
+@njit(cache=True)
 def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """

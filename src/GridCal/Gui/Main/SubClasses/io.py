@@ -52,7 +52,7 @@ class IoMain(ConfigurationMain):
 
         self.accepted_extensions = ['.gridcal', '.dgridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
-                                    '.ejson2', '.ejson3',
+                                    '.ejson2', '.ejson3', '.p', '.nc', '.hdf5',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC',
                                     '.gcplugin']
 
@@ -262,7 +262,7 @@ class IoMain(ConfigurationMain):
 
         files_types += "*.gch5 *.xlsx *.xls *.sqlite *.dgs "
         files_types += "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml "
-        files_types += "*.zip *.dpx *.epc *.EPC *.nc *.hdf5"
+        files_types += "*.zip *.dpx *.epc *.EPC *.nc *.hdf5 *.p"
 
         dialogue = QtWidgets.QFileDialog(None,
                                          caption=title,
