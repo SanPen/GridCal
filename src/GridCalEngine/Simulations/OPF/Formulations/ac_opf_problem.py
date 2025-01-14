@@ -17,7 +17,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import AcOpfMode
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, csr_matrix, csc_matrix
-
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import get_Sf, get_St
 
 @dataclass
 class NonlinearOPFResults:
@@ -391,8 +391,6 @@ class NonLinearOptimalPfProblem:
         self.x0 = self.var2x()
         self.NV = len(self.x0)
 
-
-
     def var2x(self) -> Vec:
         return np.r_[
             self.Va,
@@ -503,8 +501,19 @@ class NonLinearOptimalPfProblem:
             dS[self.f_nd_hvdc[nd_link]] += self.Pf_nondisp[nd_link]  # Fixed DC links
             dS[self.t_nd_hvdc[nd_link]] -= self.Pf_nondisp[nd_link]
 
-        self.Sf = self.V[self.from_idx[self.br_mon_idx]] * np.conj(self.admittances.Yf[self.br_mon_idx, :] @ self.V)
-        self.St = self.V[self.to_idx[self.br_mon_idx]] * np.conj(self.admittances.Yt[self.br_mon_idx, :] @ self.V)
+        # self.Sf = self.V[self.from_idx[self.br_mon_idx]] * np.conj(self.admittances.Yf[self.br_mon_idx, :] @ self.V)
+        # self.St = self.V[self.to_idx[self.br_mon_idx]] * np.conj(self.admittances.Yt[self.br_mon_idx, :] @ self.V)
+
+        # get_Sf(k: IntVec, Vm: Vec, V: CxVec, yff: CxVec, yft: CxVec, F: IntVec, T: IntVec)
+        # get_St(k: IntVec, Vm: Vec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec)
+
+        self.Sf = get_Sf(k=self.br_mon_idx, Vm=self.Vm, V=self.V,
+                         yff=self.admittances.yff, yft=self.admittances.yft,
+                         F=self.from_idx, T=self.to_idx, )
+
+        self.St = get_St(k=self.br_mon_idx, Vm=self.Vm, V=self.V,
+                         ytf=self.admittances.ytf, ytt=self.admittances.ytt,
+                         F=self.from_idx, T=self.to_idx, )
 
         # TODO: Check if this computation and Sf St can be done in a single one and then slice it.
         self.Sftot = self.V[self.from_idx] * np.conj(self.admittances.Yf @ self.V)
@@ -745,6 +754,9 @@ class NonLinearOptimalPfProblem:
 
         Vfmat = diags(self.admittances.Cf[self.br_mon_idx, :] @ self.V)
         Vtmat = diags(self.admittances.Ct[self.br_mon_idx, :] @ self.V)
+
+        # Vfmat = diags(self.V[self.nc.passive_branch_data.F[self.br_mon_idx]])
+        # Vtmat = diags(self.V[self.nc.passive_branch_data.T[self.br_mon_idx]])
 
         IfCJmat = np.conj(diags(self.admittances.Yf[self.br_mon_idx, :] @ self.V))
         ItCJmat = np.conj(diags(self.admittances.Yt[self.br_mon_idx, :] @ self.V))
@@ -1443,5 +1455,3 @@ class NonLinearOptimalPfProblem:
                 dSbusdtdt, dSfdtdt, dStdtdt,
                 dSbusdtdvm, dSfdtdvm, dStdtdvm,
                 dSbusdtdva, dSfdtdva, dStdtdva)
-
-

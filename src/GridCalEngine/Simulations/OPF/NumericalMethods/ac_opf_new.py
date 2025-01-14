@@ -343,6 +343,12 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
         island_res = solve(problem)
 
+        # the solver changes the internal state of the problem
+        # interior_point_solver(problem=problem,...)
+
+        # once solved, we just gather the internal state
+        # results = problem.get_results()
+
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
                       br_idx=island.passive_branch_data.original_idx,
