@@ -518,7 +518,7 @@ class SchematicWidget(BaseDiagramWidget):
         self.editor_graphics_view.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
     def create_bus_graphics(self, bus: Bus, x: int, y: int, h: int, w: int,
-                            draw_labels: bool = True) -> BusGraphicItem:
+                            draw_labels: bool = True, r: float = 0.0) -> BusGraphicItem:
         """
         create the Bus graphics
         :param bus: GridCal Bus object
@@ -536,7 +536,8 @@ class SchematicWidget(BaseDiagramWidget):
                                         y=y,
                                         h=h,
                                         w=w,
-                                        draw_labels=draw_labels)
+                                        draw_labels=draw_labels,
+                                        r=r)
         return graphic_object
 
     def create_transformer_3w_graphics(self, elm: Transformer3W, x: float, y: float) -> Transformer3WGraphicItem:
@@ -635,7 +636,8 @@ class SchematicWidget(BaseDiagramWidget):
                                                                   y=location.y,
                                                                   h=location.h,
                                                                   w=location.w,
-                                                                  draw_labels=location.draw_labels)
+                                                                  draw_labels=location.draw_labels,
+                                                                  r=location.r)
                         self.add_to_scene(graphic_object=graphic_object)
 
                         # create the bus children
@@ -2003,7 +2005,7 @@ class SchematicWidget(BaseDiagramWidget):
         y = int(bus.y * explode_factor) if y0 is None else y0
 
         # add the graphic object to the diagram view
-        graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
+        graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h, r=0.0)
 
         # create the bus children
         if len(injections_by_tpe) > 0:
@@ -2014,7 +2016,7 @@ class SchematicWidget(BaseDiagramWidget):
                                     y=y,
                                     w=bus.w,
                                     h=bus.h,
-                                    r=0,
+                                    r=graphic_object.r,
                                     draw_labels=graphic_object.draw_labels,
                                     graphic_object=graphic_object)
 

@@ -82,10 +82,10 @@ def enable_hi_dpi() -> None:
     from GridCal.ThirdParty.qdarktheme.qtpy.QtCore import Qt
     from GridCal.ThirdParty.qdarktheme.qtpy.QtGui import QGuiApplication
 
-    if hasattr(Qt.ApplicationAttribute, "AA_UseHighDpiPixmaps"):
-        QGuiApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)  # type: ignore
-    if hasattr(Qt.ApplicationAttribute, "AA_EnableHighDpiScaling"):
-        QGuiApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling)  # type: ignore
+    # if hasattr(Qt.ApplicationAttribute, "AA_UseHighDpiPixmaps"):
+    #     QGuiApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)  # type: ignore
+    # if hasattr(Qt.ApplicationAttribute, "AA_EnableHighDpiScaling"):
+    #     QGuiApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling)  # type: ignore
     if hasattr(Qt, "HighDpiScaleFactorRoundingPolicy"):
         os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
         QGuiApplication.setHighDpiScaleFactorRoundingPolicy(

@@ -10,8 +10,7 @@ from collections.abc import Callable
 from datetime import datetime
 from typing import Union, List, Any, Dict, TYPE_CHECKING
 
-from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
-    create_cgmes_headers
+from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import create_cgmes_headers
 from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
@@ -39,6 +38,7 @@ from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pypsa_hdf5
+from GridCalEngine.IO.others.pandapower_parser import is_pandapower_file, Panda2GridCal
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -399,6 +399,9 @@ class FileOpen:
 
                 elif file_extension.lower() == '.nc':
                     self.circuit = parse_pypsa_netcdf(self.file_name, self.logger)
+
+                elif file_extension.lower() == '.p':
+                    self.circuit = Panda2GridCal(self.file_name, self.logger).get_multicircuit()
 
             else:
                 # warn('The file does not exist.')
