@@ -93,7 +93,7 @@ def run_raw_to_cgmes(import_path: str | list[str],
     file_open_options = create_file_open_options()
 
     # RAW model import to MultiCircuit
-    file_open_1 = FileOpen(file_name=[export_fname, boundary_zip_path],
+    file_open_1 = FileOpen(file_name=import_path,
                            options=file_open_options)
     circuit1 = file_open_1.open()
 

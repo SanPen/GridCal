@@ -30,7 +30,7 @@ def test_iee14_cgmes() -> None:
                           "TestConfigurations_packageCASv2.0", 'MicroGrid', 'BaseCase_BC',
                           'CGMES_v2.4.15_MicroGridTestConfiguration_BD_v2.zip')
 
-    output_cgmes_path = os.path.join("data", "output", "IEEE14.zip")
+    output_cgmes_path = os.path.join("data", "output", "IEEE14_test_ieee_export.zip")
 
     gce.save_cgmes_file(grid=grid1,
                         filename=output_cgmes_path,
@@ -48,10 +48,11 @@ def test_iee14_cgmes() -> None:
     ok_nc, logger_nc = nc1.compare(nc2)
 
     if not ok_nc:
+        print("\n\tTUC 17.1 is NOT OK\n")
         logger_nc.print("CGMES roundtrip comparison with the original")
-        logger_nc.to_xlsx(os.path.join("output", "tuc_17_1_ieee14.xlsx"))
+        logger_nc.to_xlsx(os.path.join("data", "output", "tuc_17_1_ieee14.xlsx"))
     else:
-        print("TUC 17.1 ok")
+        print("TUC 17.1 is OK")
 
     # load a CGMES grid made with CImConverter -------------------------------------------------------------------------
     grid3 = gce.open_file(filename=[os.path.join("data", "grids", "CGMES_2_4_15", "IEEE 14 bus.zip"),
@@ -68,7 +69,7 @@ def test_iee14_cgmes() -> None:
 
     if not ok_nc3:
         logger_nc3.print("CGMES cim-converter comparison with the original")
-        logger_nc3.to_xlsx(os.path.join("output", "tuc_17_1_ieee14_cim_converter.xlsx"))
+        logger_nc3.to_xlsx(os.path.join("data", "output", "tuc_17_1_ieee14_cim_converter.xlsx"))
     else:
         print("TUC Cimconverter 17.1 ok")
 
