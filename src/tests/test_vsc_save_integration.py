@@ -54,37 +54,45 @@ def test_vsc_save_integration():
     gce.save_file(grid, "test_vsc_save_integration_temp.gridcal")
     grid_reload = gce.open_file("test_vsc_save_integration_temp.gridcal")
 
-    assert control1_vsc0 == grid_reload.vsc_devices[0].control1
-    assert control1_vsc1 == grid_reload.vsc_devices[1].control1
-    assert control1_vsc2 == grid_reload.vsc_devices[2].control1
-    assert control1_vsc3 == grid_reload.vsc_devices[3].control1
-    assert control1_vsc4 == grid_reload.vsc_devices[4].control1
-    assert control1_vsc5 == grid_reload.vsc_devices[5].control1
-    assert control1_vsc6 == grid_reload.vsc_devices[6].control1
+    try:
+        assert control1_vsc0 == grid_reload.vsc_devices[0].control1
+        assert control1_vsc1 == grid_reload.vsc_devices[1].control1
+        assert control1_vsc2 == grid_reload.vsc_devices[2].control1
+        assert control1_vsc3 == grid_reload.vsc_devices[3].control1
+        assert control1_vsc4 == grid_reload.vsc_devices[4].control1
+        assert control1_vsc5 == grid_reload.vsc_devices[5].control1
+        assert control1_vsc6 == grid_reload.vsc_devices[6].control1
 
-    assert control1_val_vsc0 == grid_reload.vsc_devices[0].control1_val
-    assert control1_val_vsc1 == grid_reload.vsc_devices[1].control1_val
-    assert control1_val_vsc2 == grid_reload.vsc_devices[2].control1_val
-    assert control1_val_vsc3 == grid_reload.vsc_devices[3].control1_val
-    assert control1_val_vsc4 == grid_reload.vsc_devices[4].control1_val
-    assert control1_val_vsc5 == grid_reload.vsc_devices[5].control1_val
-    assert control1_val_vsc6 == grid_reload.vsc_devices[6].control1_val
+        assert control1_val_vsc0 == grid_reload.vsc_devices[0].control1_val
+        assert control1_val_vsc1 == grid_reload.vsc_devices[1].control1_val
+        assert control1_val_vsc2 == grid_reload.vsc_devices[2].control1_val
+        assert control1_val_vsc3 == grid_reload.vsc_devices[3].control1_val
+        assert control1_val_vsc4 == grid_reload.vsc_devices[4].control1_val
+        assert control1_val_vsc5 == grid_reload.vsc_devices[5].control1_val
+        assert control1_val_vsc6 == grid_reload.vsc_devices[6].control1_val
 
-    assert control2_vsc0 == grid_reload.vsc_devices[0].control2
-    assert control2_vsc1 == grid_reload.vsc_devices[1].control2
-    assert control2_vsc2 == grid_reload.vsc_devices[2].control2
-    assert control2_vsc3 == grid_reload.vsc_devices[3].control2
-    assert control2_vsc4 == grid_reload.vsc_devices[4].control2
-    assert control2_vsc5 == grid_reload.vsc_devices[5].control2
-    assert control2_vsc6 == grid_reload.vsc_devices[6].control2
+        assert control2_vsc0 == grid_reload.vsc_devices[0].control2
+        assert control2_vsc1 == grid_reload.vsc_devices[1].control2
+        assert control2_vsc2 == grid_reload.vsc_devices[2].control2
+        assert control2_vsc3 == grid_reload.vsc_devices[3].control2
+        assert control2_vsc4 == grid_reload.vsc_devices[4].control2
+        assert control2_vsc5 == grid_reload.vsc_devices[5].control2
+        assert control2_vsc6 == grid_reload.vsc_devices[6].control2
 
-    assert control2_val_vsc0 == grid_reload.vsc_devices[0].control2_val
-    assert control2_val_vsc1 == grid_reload.vsc_devices[1].control2_val
-    assert control2_val_vsc2 == grid_reload.vsc_devices[2].control2_val
-    assert control2_val_vsc3 == grid_reload.vsc_devices[3].control2_val
-    assert control2_val_vsc4 == grid_reload.vsc_devices[4].control2_val
-    assert control2_val_vsc5 == grid_reload.vsc_devices[5].control2_val
-    assert control2_val_vsc6 == grid_reload.vsc_devices[6].control2_val
+        assert control2_val_vsc0 == grid_reload.vsc_devices[0].control2_val
+        assert control2_val_vsc1 == grid_reload.vsc_devices[1].control2_val
+        assert control2_val_vsc2 == grid_reload.vsc_devices[2].control2_val
+        assert control2_val_vsc3 == grid_reload.vsc_devices[3].control2_val
+        assert control2_val_vsc4 == grid_reload.vsc_devices[4].control2_val
+        assert control2_val_vsc5 == grid_reload.vsc_devices[5].control2_val
+        assert control2_val_vsc6 == grid_reload.vsc_devices[6].control2_val
+
+        #remove the temp file
+        os.remove("test_vsc_save_integration_temp.gridcal")
+
+    except Exception as e:
+        os.remove("test_vsc_save_integration_temp.gridcal")
+        raise e
 
 
 if __name__ == '__main__':
