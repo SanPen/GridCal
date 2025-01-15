@@ -378,7 +378,8 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
 
     # Add the shunt power V^2 x Y^*
-    Sbus += V * V * np.conj(Yshunt_bus)
+    Vm = np.abs(V)
+    Sbus += Vm * Vm * np.conj(Yshunt_bus)
 
     # Branches current, loading, etc
     Vf = V[F]
