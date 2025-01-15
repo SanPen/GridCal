@@ -190,7 +190,6 @@ def run_raw_to_cgmes(import_path: str | list[str],
         print("Tap phase")
         print(pf1_res.tap_angle)
         print(pf2_res.tap_angle)
-        # running in the GUI they are matching
 
         print("\nVoltages")
         print(np.abs(pf1_res.voltage))
