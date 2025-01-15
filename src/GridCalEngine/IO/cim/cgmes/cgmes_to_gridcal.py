@@ -309,6 +309,13 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                              device=cgmes_elm.rdfid,
                              device_class=cgmes_elm.tpe,
                              device_property="nominalVoltage")
+        elif nominal_voltage is None:
+            logger.add_error(msg='Nominal voltage is None. :(',
+                             device=cgmes_elm.rdfid,
+                             device_class=cgmes_elm.tpe,
+                             device_property="nominalVoltage")
+            raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
+
 
         if voltage is not None and nominal_voltage is not None:
             vm = voltage[0] / nominal_voltage
@@ -822,7 +829,8 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                 default_bus = bus
                 used_buses.add(bus)
             else:
-                default_bus = None
+                default_bus = bus
+                # for the new TP processor, a CN always has to have a TP(/Bus)
             vnom = bus.Vnom
             vl = bus.voltage_level
 
@@ -1534,12 +1542,16 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
 
 def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
+                                 calc_node_dict: Dict[str, gcdev.Bus],
+                                 cn_dict: Dict[str, gcdev.ConnectivityNode],
                                  logger: DataLogger) -> None:
     """
     Process Tap Changer Classes from CGMES and put them into GridCal transformers.
 
-    :param cgmes_model:
-    :param gcdev_model:
+    :param cgmes_model: CgmesModel
+    :param gcdev_model: MultiCircuit
+    :param calc_node_dict: Dict[str, gcdev.Bus]
+    :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param logger:
     :return:
     """
@@ -1560,6 +1572,8 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
             # TapChanger attributes
             asymmetry_angle = 90
             tc_type = TapChangerTypes.NoRegulation
+            reg_bus = None
+            reg_cn = None
 
             if isinstance(tap_changer, ratio_tc_class):
                 # Control from Control object
@@ -1567,6 +1581,13 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                     if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage
                             and tap_changer.TapChangerControl.enabled):
                         tc_type = TapChangerTypes.VoltageRegulation
+                        tap_module_control_mode = TapModuleControl.Vm
+
+                        reg_bus, reg_cn = find_terms_connections(
+                            cgmes_terminal=tap_changer.TapChangerControl.Terminal,
+                            calc_node_dict=calc_node_dict,
+                            cn_dict=cn_dict
+                        )
                 else:
                     logger.add_warning(msg="No TapChangerControl found for RatioTapChanger",
                                        device=tap_changer.rdfid,
@@ -1631,6 +1652,9 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 gcdev_trafo.tap_module_control_mode = tap_module_control_mode
                 gcdev_trafo.tap_phase_control_mode = tap_phase_control_mode
 
+                # gcdev_trafo.regulation_bus = reg_bus
+                # gcdev_trafo.regulation_cn = reg_cn
+
                 gcdev_trafo.tap_changer.init_from_cgmes(
                     low=tap_changer.lowStep,
                     high=tap_changer.highStep,
@@ -1643,14 +1667,52 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 )
 
                 if gcdev_trafo.tap_changer.tc_type == TapChangerTypes.NoRegulation:
-                    # SET tap_module and tap_phase from dV
-                    gcdev_trafo.tap_module = 1 - gcdev_trafo.tap_changer.dV
-                    gcdev_trafo.tap_phase = 0
-                else:
-                    # SET tap_module and tap_phase from its own TapChanger object
                     gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                    # print(f"Tap module: {gcdev_trafo.tap_module} <--- before recalc")
+                    # SET tap_module asif it was VoltageRegulation
+                    gcdev_trafo.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
+                    gcdev_trafo.tap_changer.recalc()
+                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                    # print(f"Tap module: {gcdev_trafo.tap_module} <--- after recalc")
+                    # Set it back to NoRegulation
+                    gcdev_trafo.tap_changer.tc_type = TapChangerTypes.NoRegulation
+                    # # SET tap_module from dV
+                    # print(f"Tap module: {1 - gcdev_trafo.tap_changer.dV} <-- from dV")
+                    # gcdev_trafo.tap_module = 1 - gcdev_trafo.tap_changer.dV
+                    # gcdev_trafo.tap_phase = 0
+
+                elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.VoltageRegulation:
+                    # SET tap_module from its own TapChanger object
+                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                    logger.add_info(msg="CGMES import: tap module calculated",
+                                    device=gcdev_trafo.device_type,
+                                    value=gcdev_trafo.tap_module)
+                    # print("Tap module calculated:", gcdev_trafo.tap_module)
+
+                elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.Symmetrical:
                     gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
-                    print("Tap module, and phase calculated:", gcdev_trafo.tap_module, gcdev_trafo.tap_phase)
+                    logger.add_info(msg="CGMES import: tap module calculated",
+                                    device=gcdev_trafo.device_type,
+                                    value=gcdev_trafo.tap_module)
+                    # print("Tap phase calculated:", gcdev_trafo.tap_phase)
+
+                elif gcdev_trafo.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
+                    # SET tap_module from its own TapChanger object
+                    gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                    logger.add_info(msg="CGMES import: tap module calculated",
+                                    device=gcdev_trafo.device_type,
+                                    value=gcdev_trafo.tap_module)
+                    # print("Tap module calculated:", gcdev_trafo.tap_module)
+                    gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                    logger.add_info(msg="CGMES import: tap module calculated",
+                                    device=gcdev_trafo.device_type,
+                                    value=gcdev_trafo.tap_module)
+                    # print("Tap phase calculated:", gcdev_trafo.tap_phase)
+
+                else:
+                    logger.add_error(msg="CGMES import: TapChanger has no Type",
+                                     device=gcdev_trafo.device_type,
+                                     value=gcdev_trafo.tap_changer.tc_type)
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
                 winding_id = tap_changer.TransformerEnd.uuid
@@ -1698,7 +1760,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
     simple shunts without control
 
     :param cgmes_model: CgmesCircuit
-    :param gcdev_model: gcdevCircuit
+    :param gcdev_model: GcdevCircuit
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
@@ -2352,8 +2414,11 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                               device_to_terminal_dict=device_to_terminal_dict,
                               logger=logger,
                               Sbase=Sbase)
+
     get_transformer_tap_changers(cgmes_model=cgmes_model,
                                  gcdev_model=gc_model,
+                                 calc_node_dict=calc_node_dict,
+                                 cn_dict=cn_dict,
                                  logger=logger)
 
     get_gcdev_shunts(cgmes_model=cgmes_model,
