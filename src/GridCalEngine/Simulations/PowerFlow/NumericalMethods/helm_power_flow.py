@@ -673,7 +673,7 @@ def helm_coefficients_dY(dY, sys_mat_factorization, Uini, Xini,
 
 
 def helm_josep(nc: NumericalCircuit,
-               Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+               Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
                Yseries: CscMat, V0: CxVec, S0: CxVec, Ysh0: CxVec,
                pq: IntVec, pv: IntVec, vd: IntVec, no_slack: IntVec,
                tolerance: float = 1e-6, max_coefficients: int = 30, use_pade: bool = True,
@@ -776,6 +776,7 @@ def helm_josep(nc: NumericalCircuit,
         Ybus=Ybus,
         Yf=Yf,
         Yt=Yt,
+        Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase
     )

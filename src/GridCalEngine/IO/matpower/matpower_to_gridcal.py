@@ -5,6 +5,7 @@
 
 from typing import Dict, Tuple
 import numpy as np
+import math
 from GridCalEngine.IO.matpower.matpower_circuit import MatpowerCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl, ConverterControlType
@@ -602,6 +603,44 @@ def convert_converters(circuit: MultiCircuit,
         else:
             monitor_loading = True
 
+        if br.type_dc == 1 and br.type_ac == 1:
+            control1 = ConverterControlType.Pac
+            control1_val = -1 * br.p_g
+            control2 = ConverterControlType.Qac
+            control2_val = -1 * br.q_g
+
+        elif br.type_dc == 1 and br.type_ac == 2:
+            control1 = ConverterControlType.Pac
+            control1_val = -1 * br.p_g
+            control2 = ConverterControlType.Vm_ac
+            control2_val = br.vtar
+
+        elif br.type_dc == 2 and br.type_ac == 1:
+            control1 = ConverterControlType.Vm_dc
+            control1_val = br.vtar
+            control2 = ConverterControlType.Qac
+            control2_val = -1 * br.q_g
+
+        else:
+            control1 = ConverterControlType.Pac
+            control1_val = -1 * br.p_g
+            control2 = ConverterControlType.Qac
+            control2_val = -1 * br.q_g
+
+        """
+        convmode    =   sign(Pc);       %% converter operation mode
+        rectifier   =   convmode>0;
+        inverter    =   convmode<0;
+        """
+        Ibase = m_grid.Sbase/ (math.sqrt(3) * br.base_kvac)
+        if br.p_g > 0:
+            alpha3 = br.loss_crec*Ibase**2/m_grid.Sbase
+        else:
+            alpha3 = br.loss_cinv*Ibase**2/m_grid.Sbase
+
+        alpha2 = br.loss_b*Ibase/m_grid.Sbase
+        alpha1 = br.loss_a/m_grid.Sbase
+
         branch = dev.VSC(
             bus_from=bus_f,
             bus_to=bus_t,
@@ -610,23 +649,15 @@ def convert_converters(circuit: MultiCircuit,
             rate=rate,
             monitor_loading=monitor_loading,
             active=bool(br.status),
-            alpha3=br.loss_a,
-            alpha2=br.loss_b,
-            alpha1=br.loss_crec + br.loss_cinv,  # TODO: check how to handle this
+            alpha3=alpha3,
+            alpha2=alpha2,
+            alpha1=alpha1,
             kdp=br.droop,
+            control1=control1,
+            control1_val=control1_val,
+            control2=control2,
+            control2_val=control2_val
         )
-
-        if br.p_g != 0:
-            branch.control1 = ConverterControlType.Pac
-            branch.control1_val = br.p_g
-
-        if br.q_g != 0:
-            branch.control1 = ConverterControlType.Qac
-            branch.control1_val = br.q_g
-
-        elif br.vtar != 0.0:
-            branch.control2 = ConverterControlType.Vm_ac
-            branch.control2_val = br.vtar
 
         circuit.add_vsc(obj=branch)
         logger.add_info('Branch as 2w transformer', f'Branch {code}')

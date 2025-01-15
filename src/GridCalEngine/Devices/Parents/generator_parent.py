@@ -81,17 +81,19 @@ class GeneratorParent(InjectionParent):
 
         self.P = float(P)
         self._P_prof = Profile(default_value=self.P, data_type=float)
-        self._Pmax_prof = Profile(default_value=Pmax, data_type=float)
-        self._Pmin_prof = Profile(default_value=Pmin, data_type=float)
+
+        # Maximum dispatched power in MW
+        self.Pmax = float(Pmax)
+        self._Pmax_prof = Profile(default_value=self.Pmax, data_type=float)
+
+        # Minimum dispatched power in MW
+        self.Pmin = float(Pmin)
+        self._Pmin_prof = Profile(default_value=self.Pmin, data_type=float)
 
         self.srap_enabled = bool(srap_enabled)
         self._srap_enabled_prof = Profile(default_value=self.srap_enabled, data_type=bool)
 
-        # Minimum dispatched power in MW
-        self.Pmin = float(Pmin)
 
-        # Maximum dispatched power in MW
-        self.Pmax = float(Pmax)
 
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
                       editable=True, profile_name="control_bus_prof")

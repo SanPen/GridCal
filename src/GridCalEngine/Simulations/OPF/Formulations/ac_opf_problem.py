@@ -3,8 +3,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-import timeit
 import pandas as pd
+import timeit
 from dataclasses import dataclass
 from typing import Tuple, Union
 from scipy import sparse as sp
@@ -18,6 +18,8 @@ from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import AcOpfMode
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, csr_matrix, csc_matrix
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import get_Sf, get_St
+from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import IpsSolution
+
 
 @dataclass
 class NonlinearOPFResults:
@@ -164,8 +166,7 @@ class NonLinearOptimalPfProblem:
         self.optimize_nodal_capacity = optimize_nodal_capacity
         self.capacity_nodes_idx = capacity_nodes_idx
         self.nodal_capacity_sign = nodal_capacity_sign
-
-        # self.results = NonlinearOPFResults()
+        self.results = NonlinearOPFResults()
 
         # Parameters
 
@@ -196,7 +197,7 @@ class NonLinearOptimalPfProblem:
         # Shunt elements are treated as generators with fixed P.
         # As such, their limits are added in the generator limits array.
 
-        self.id_sh = np.where(nc.shunt_data.controllable == True)[0]
+        self.id_sh = np.where(nc.shunt_data.controllable is True)[0]
         self.nsh = len(self.id_sh)
 
         # Since controllable shunts will be treated as generators, we deactivate them to avoid its computation in the
@@ -245,6 +246,8 @@ class NonLinearOptimalPfProblem:
         self.pq = np.flatnonzero(self.Vm_max != self.Vm_min)
 
         # Check the active elements and their operational limits.
+        self.nbr = nc.passive_branch_data.nelm
+        self.br_idx = np.arange(self.nbr)
         self.br_mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
         self.gen_disp_idx = np.r_[
             nc.generator_data.get_dispatchable_active_indices(), np.array([*range(self.ngen, self.ngen + self.nsh)],
@@ -391,6 +394,25 @@ class NonLinearOptimalPfProblem:
         self.x0 = self.var2x()
         self.NV = len(self.x0)
 
+        # Predefine some global electrical variable
+        self.V = polar_to_rect(self.Vm, self.Va)
+        self.Scalc = compute_power(self.admittances.Ybus, self.V)
+
+        self.allSf = get_Sf(k=self.br_idx, Vm=self.Vm, V=self.V,
+                            yff=self.admittances.yff, yft=self.admittances.yft,
+                            F=self.from_idx, T=self.to_idx, )
+        self.allSt = get_St(k=self.br_idx, Vm=self.Vm, V=self.V,
+                            ytf=self.admittances.ytf, ytt=self.admittances.ytt,
+                            F=self.from_idx, T=self.to_idx, )
+
+        self.Sf = self.allSf[self.br_mon_idx]
+        self.St = self.allSt[self.br_mon_idx]
+
+        self.Sf2 = np.conj(self.Sf) * self.Sf
+        self.St2 = np.conj(self.St) * self.St
+
+        # Predefine the objective function
+
     def var2x(self) -> Vec:
         return np.r_[
             self.Va,
@@ -501,81 +523,76 @@ class NonLinearOptimalPfProblem:
             dS[self.f_nd_hvdc[nd_link]] += self.Pf_nondisp[nd_link]  # Fixed DC links
             dS[self.t_nd_hvdc[nd_link]] -= self.Pf_nondisp[nd_link]
 
-        # self.Sf = self.V[self.from_idx[self.br_mon_idx]] * np.conj(self.admittances.Yf[self.br_mon_idx, :] @ self.V)
-        # self.St = self.V[self.to_idx[self.br_mon_idx]] * np.conj(self.admittances.Yt[self.br_mon_idx, :] @ self.V)
+        self.allSf = get_Sf(k=self.br_idx, Vm=self.Vm, V=self.V,
+                            yff=self.admittances.yff, yft=self.admittances.yft,
+                            F=self.from_idx, T=self.to_idx, )
+        self.allSt = get_St(k=self.br_idx, Vm=self.Vm, V=self.V,
+                            ytf=self.admittances.ytf, ytt=self.admittances.ytt,
+                            F=self.from_idx, T=self.to_idx, )
 
-        # get_Sf(k: IntVec, Vm: Vec, V: CxVec, yff: CxVec, yft: CxVec, F: IntVec, T: IntVec)
-        # get_St(k: IntVec, Vm: Vec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec)
-
-        self.Sf = get_Sf(k=self.br_mon_idx, Vm=self.Vm, V=self.V,
-                         yff=self.admittances.yff, yft=self.admittances.yft,
-                         F=self.from_idx, T=self.to_idx, )
-
-        self.St = get_St(k=self.br_mon_idx, Vm=self.Vm, V=self.V,
-                         ytf=self.admittances.ytf, ytt=self.admittances.ytt,
-                         F=self.from_idx, T=self.to_idx, )
-
-        # TODO: Check if this computation and Sf St can be done in a single one and then slice it.
-        self.Sftot = self.V[self.from_idx] * np.conj(self.admittances.Yf @ self.V)
-        self.Sttot = self.V[self.to_idx] * np.conj(self.admittances.Yt @ self.V)
+        self.Sf = self.allSf[self.br_mon_idx]
+        self.St = self.allSt[self.br_mon_idx]
 
         self.Sf2 = np.conj(self.Sf) * self.Sf
         self.St2 = np.conj(self.St) * self.St
 
-        self.fval = 1e-4 * (
+        fval = 1e-4 * (
                 np.sum((self.c0 + self.c1 * self.Pg * self.Sbase + self.c2 * np.power(self.Pg * self.Sbase, 2)))
                 + np.sum(self.c_s * (self.sl_sf + self.sl_st)) + np.sum(self.c_v * (self.sl_vmax + self.sl_vmin))
                 + np.sum(self.nodal_capacity_sign * self.slcap))
 
-        self.gval = np.r_[dS.real, dS.imag, self.Va[self.slack], self.Vm[self.pv] - self.Vm_max[self.pv]]
+        gval = np.r_[dS.real, dS.imag, self.Va[self.slack], self.Vm[self.pv] - self.Vm_max[self.pv]]
 
         if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
-            self.hval = np.r_[
-                self.Sf2.real - self.rates2 - self.sl_sf,  # rates "lower limit"
-                self.St2.real - self.rates2 - self.sl_st,  # rates "upper limit"
-                self.Vm[self.pq] - self.Vm_max[self.pq] - self.sl_vmax,  # voltage module upper limit
-                self.Pg - self.Pg_max[self.gen_disp_idx],  # generator P upper limits
-                self.Qg - self.Qg_max[self.gen_disp_idx],  # generator Q upper limits
-                self.Vm_min[self.pq] - self.Vm[self.pq] - self.sl_vmin,  # voltage module lower limit
-                self.Pg_min[self.gen_disp_idx] - self.Pg,  # generator P lower limits
-                self.Qg_min[self.gen_disp_idx] - self.Qg,  # generation Q lower limits
-                - self.sl_sf,  # Slack variable for Sf >0
-                - self.sl_st,  # Slack variable for St >0
-                - self.sl_vmax,  # Slack variable for Vmax >0
-                - self.sl_vmin,  # Slack variable for Vmin >0
-                self.tapm - self.tapm_max,  # Tap module upper bound
-                self.tapm_min - self.tapm,  # Tap module lower bound
-                self.tapt - self.tapt_max,  # Tap module lower bound
-                self.tapt_min - self.tapt  # Tap phase lower bound
-            ]
-        else:
 
-            self.hval = np.r_[
-                self.Sf2.real - self.rates2,  # rates "lower limit"
-                self.St2.real - self.rates2,  # rates "upper limit"
-                self.Vm[self.pq] - self.Vm_max[self.pq],  # voltage module upper limit
-                self.Pg - self.Pg_max[self.gen_disp_idx],  # generator P upper limits
-                self.Qg - self.Qg_max[self.gen_disp_idx],  # generator Q upper limits
-                self.Vm_min[self.pq] - self.Vm[self.pq],  # voltage module lower limit
-                self.Pg_min[self.gen_disp_idx] - self.Pg,  # generator P lower limits
-                self.Qg_min[self.gen_disp_idx] - self.Qg,  # generation Q lower limits
-                self.tapm - self.tapm_max,  # Tap module upper bound
-                self.tapm_min - self.tapm,  # Tap module lower bound
-                self.tapt - self.tapt_max,  # Tap module lower bound
-                self.tapt_min - self.tapt  # Tap phase lower bound
-            ]
+            sl_sf = self.sl_sf
+            sl_st = self.sl_st
+            sl_vmax = self.sl_vmax
+            sl_vmin = self.sl_vmin
+        else:
+            sl_sf = np.zeros(self.n_br_mon)
+            sl_st = np.zeros(self.n_br_mon)
+            sl_vmax = np.zeros(self.nbus)
+            sl_vmin = np.zeros(self.nbus)
 
         if self.options.ips_control_q_limits:  # if reactive power control...
-            self.Ng_nosh = len(self.Inom)
-            v_g = self.Cg[:, self.gen_disp_idx[:self.Ng_nosh]].T @ self.Vm
-            self.hval = np.r_[
-                self.hval, np.power(self.Qg[:self.Ng_nosh], 2.0) + np.power(self.Pg[:self.Ng_nosh], 2.0) - np.power(
-                    v_g * self.Inom, 2.0)]
+            v_g = self.Cg[:, self.gen_disp_idx[:self.ngen]].T @ self.Vm
+            ctrlq_ineq = (np.power(self.Qg[:self.ngen], 2.0)
+                          + np.power(self.Pg[:self.ngen], 2.0)
+                          - np.power(v_g * self.Inom, 2.0))
+        else:
+            ctrlq_ineq = np.array([])
 
         if self.n_disp_hvdc != 0:
-            self.hval = np.r_[self.hval, self.Pfdc - self.P_hvdc_max, - self.P_hvdc_max - self.Pfdc]
+            hvdc_ineq1 = self.Pfdc - self.P_hvdc_max
+            hvdc_ineq2 = - self.P_hvdc_max - self.Pfdc
+        else:
+            hvdc_ineq1 = np.array([])
+            hvdc_ineq2 = np.array([])
 
-        return self.fval, self.gval, self.hval
+        hval = np.r_[
+            self.Sf2.real - self.rates2 - sl_sf,  # rates "lower limit"
+            self.St2.real - self.rates2 - sl_st,  # rates "upper limit"
+            self.Vm[self.pq] - self.Vm_max[self.pq] - sl_vmax,  # voltage module upper limit
+            self.Pg - self.Pg_max[self.gen_disp_idx],  # generator P upper limits
+            self.Qg - self.Qg_max[self.gen_disp_idx],  # generator Q upper limits
+            self.Vm_min[self.pq] - self.Vm[self.pq] - sl_vmin,  # voltage module lower limit
+            self.Pg_min[self.gen_disp_idx] - self.Pg,  # generator P lower limits
+            self.Qg_min[self.gen_disp_idx] - self.Qg,  # generation Q lower limits
+            - self.sl_sf,  # Slack variable for Sf >0
+            - self.sl_st,  # Slack variable for St >0
+            - self.sl_vmax,  # Slack variable for Vmax >0
+            - self.sl_vmin,  # Slack variable for Vmin >0
+            self.tapm - self.tapm_max,  # Tap module upper bound
+            self.tapm_min - self.tapm,  # Tap module lower bound
+            self.tapt - self.tapt_max,  # Tap module lower bound
+            self.tapt_min - self.tapt,  # Tap phase lower bound
+            ctrlq_ineq,
+            hvdc_ineq1,
+            hvdc_ineq2
+        ]
+
+        return fval, gval, hval
 
     def get_jacobians_and_hessians(self, mu: Vec, lam: Vec, compute_hessians: bool) -> Tuple[
         Vec, csc_matrix, csc_matrix,
@@ -583,7 +600,7 @@ class NonLinearOptimalPfProblem:
 
         npfvar = 2 * self.nbus + 2 * self.ngen  # Number of variables of the typical power flow (V, th, P, Q). Used to ease readability
         if self.options.ips_control_q_limits:  # if reactive power control...
-            nqct = self.Ng_nosh
+            nqct = self.ngen
         else:
             nqct = 0
 
@@ -808,7 +825,8 @@ class NonLinearOptimalPfProblem:
 
             Hslvmax = sp.hstack([lil_matrix((self.npq, npfvar + 2 * self.n_br_mon)), diags(- np.ones(self.npq)),
                                  lil_matrix(
-                                     (self.npq, self.npq + self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
+                                     (self.npq,
+                                      self.npq + self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
 
             Hslvmin = sp.hstack(
                 [lil_matrix((self.npq, npfvar + 2 * self.n_br_mon + self.npq)), diags(- np.ones(self.npq)),
@@ -832,10 +850,12 @@ class NonLinearOptimalPfProblem:
             Sttapt = dStdt[self.br_mon_idx, :].copy()
 
             SfX = sp.hstack(
-                [Sfva, Sfvm, lil_matrix((self.n_br_mon, 2 * self.n_gen_disp + self.nsl + self.nslcap)), Sftapm, Sftapt,
+                [Sfva, Sfvm, lil_matrix((self.n_br_mon, 2 * self.n_gen_disp + self.nsl + self.nslcap)), Sftapm,
+                 Sftapt,
                  lil_matrix((self.n_br_mon, self.n_disp_hvdc))])
             StX = sp.hstack(
-                [Stva, Stvm, lil_matrix((self.n_br_mon, 2 * self.n_gen_disp + self.nsl + self.nslcap)), Sttapm, Sttapt,
+                [Stva, Stvm, lil_matrix((self.n_br_mon, 2 * self.n_gen_disp + self.nsl + self.nslcap)), Sttapm,
+                 Sttapt,
                  lil_matrix((self.n_br_mon, self.n_disp_hvdc))])
 
             if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
@@ -860,7 +880,8 @@ class NonLinearOptimalPfProblem:
 
             if self.ntapt != 0:
                 Htaptu = sp.hstack(
-                    [lil_matrix((self.ntapt, npfvar + self.nsl + self.nslcap + self.ntapm)), diags(np.ones(self.ntapt)),
+                    [lil_matrix((self.ntapt, npfvar + self.nsl + self.nslcap + self.ntapm)),
+                     diags(np.ones(self.ntapt)),
                      lil_matrix((self.ntapt, self.n_disp_hvdc))])
                 Htaptl = sp.hstack([lil_matrix((self.ntapt, npfvar + self.nsl + self.nslcap + self.ntapm)),
                                     diags(- np.ones(self.ntapt)),
@@ -896,9 +917,9 @@ class NonLinearOptimalPfProblem:
 
         if self.options.ips_control_q_limits:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
-            Hqmaxp = 2 * self.Pg[:self.Ng_nosh]
-            Hqmaxq = 2 * self.Qg[:self.Ng_nosh]
-            Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.Ng_nosh]].T @ diags(
+            Hqmaxp = 2 * self.Pg[:self.ngen]
+            Hqmaxq = 2 * self.Qg[:self.ngen]
+            Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.ngen]].T @ diags(
                 self.Vm)
             Hqmax = sp.hstack(
                 [lil_matrix((nqct, self.nbus)), Hqmaxv, diags(Hqmaxp), lil_matrix((nqct, self.nsh)), diags(Hqmaxq),
@@ -908,7 +929,8 @@ class NonLinearOptimalPfProblem:
             Hqmax = lil_matrix((nqct, self.NV))
             Hqmaxv = lil_matrix((nqct, self.nbus))
 
-        Hdcu = sp.hstack([lil_matrix((self.n_disp_hvdc, self.NV - self.n_disp_hvdc)), diags(np.ones(self.n_disp_hvdc))])
+        Hdcu = sp.hstack(
+            [lil_matrix((self.n_disp_hvdc, self.NV - self.n_disp_hvdc)), diags(np.ones(self.n_disp_hvdc))])
         Hdcl = sp.hstack(
             [lil_matrix((self.n_disp_hvdc, self.NV - self.n_disp_hvdc)), diags(- np.ones(self.n_disp_hvdc))])
 
@@ -1006,10 +1028,12 @@ class NonLinearOptimalPfProblem:
 
             if self.ntapm + self.ntapt != 0:
                 G1 = sp.hstack(
-                    [Gaa, Gav, lil_matrix((self.nbus, 2 * self.n_gen_disp + self.nsl + self.nslcap)), GSdmdva, GSdtdva,
+                    [Gaa, Gav, lil_matrix((self.nbus, 2 * self.n_gen_disp + self.nsl + self.nslcap)), GSdmdva,
+                     GSdtdva,
                      lil_matrix((self.nbus, self.n_disp_hvdc))])
                 G2 = sp.hstack(
-                    [Gva, Gvv, lil_matrix((self.nbus, 2 * self.n_gen_disp + self.nsl + self.nslcap)), GSdmdvm, GSdtdvm,
+                    [Gva, Gvv, lil_matrix((self.nbus, 2 * self.n_gen_disp + self.nsl + self.nslcap)), GSdmdvm,
+                     GSdtdvm,
                      lil_matrix((self.nbus, self.n_disp_hvdc))])
                 G3 = sp.hstack(
                     [GSdmdva.T, GSdmdvm.T, lil_matrix((self.ntapm, 2 * self.n_gen_disp + self.nsl + self.nslcap)),
@@ -1068,7 +1092,8 @@ class NonLinearOptimalPfProblem:
             Smuf_mat = diags(Sfmat.conj() @ muf)
             Smut_mat = diags(Stmat.conj() @ mut)
 
-            Af = np.conj(self.admittances.Yf[self.br_mon_idx, :]).T @ Smuf_mat @ self.admittances.Cf[self.br_mon_idx, :]
+            Af = np.conj(self.admittances.Yf[self.br_mon_idx, :]).T @ Smuf_mat @ self.admittances.Cf[
+                                                                                 self.br_mon_idx, :]
             Bf = np.conj(Vmat) @ Af @ Vmat
             Df = diags(Af @ self.V) @ np.conj(Vmat)
             Ef = diags(Af.T @ np.conj(self.V)) @ Vmat
@@ -1079,10 +1104,10 @@ class NonLinearOptimalPfProblem:
             Sfvmvm = vm_inv @ Ff @ vm_inv
 
             if self.options.ips_control_q_limits:  # using reactive power control
-                Hqpgpg = diags(np.r_[np.array([2] * self.Ng_nosh) * mu[- self.Ng_nosh:], np.zeros(self.nsh)])
-                Hqqgqg = diags(np.r_[np.array([2] * self.Ng_nosh) * mu[- self.Ng_nosh:], np.zeros(self.nsh)])
-                Hqvmvm = (self.Cg[:, self.gen_disp_idx[:self.Ng_nosh]] @ diags(mu[-self.Ng_nosh:])
-                          @ (- 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.Ng_nosh]].T))
+                Hqpgpg = diags(np.r_[np.array([2] * self.ngen) * mu[- self.ngen:], np.zeros(self.nsh)])
+                Hqqgqg = diags(np.r_[np.array([2] * self.ngen) * mu[- self.ngen:], np.zeros(self.nsh)])
+                Hqvmvm = (self.Cg[:, self.gen_disp_idx[:self.ngen]] @ diags(mu[-self.ngen:])
+                          @ (- 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.ngen]].T))
             else:
                 Hqpgpg = lil_matrix((self.n_gen_disp, self.n_gen_disp))
                 Hqqgqg = lil_matrix((self.n_gen_disp, self.n_gen_disp))
@@ -1093,7 +1118,8 @@ class NonLinearOptimalPfProblem:
             Hfvavm = 2 * (Sfvavm + Sfva.T @ muf_mat @ np.conj(Sfvm)).real
             Hfvmvm = 2 * (Sfvmvm + Sfvm.T @ muf_mat @ np.conj(Sfvm)).real
 
-            At = np.conj(self.admittances.Yt[self.br_mon_idx, :]).T @ Smut_mat @ self.admittances.Ct[self.br_mon_idx, :]
+            At = np.conj(self.admittances.Yt[self.br_mon_idx, :]).T @ Smut_mat @ self.admittances.Ct[
+                                                                                 self.br_mon_idx, :]
             Bt = np.conj(Vmat) @ At @ Vmat
             Dt = diags(At @ self.V) @ np.conj(Vmat)
             Et = diags(At.T @ np.conj(self.V)) @ Vmat
@@ -1174,7 +1200,9 @@ class NonLinearOptimalPfProblem:
                      lil_matrix((self.nbus, 2 * self.n_gen_disp + self.nsl + self.nslcap + self.n_disp_hvdc))])
                 H3 = sp.hstack([lil_matrix((self.n_gen_disp, 2 * self.nbus)), Hqpgpg,
                                 lil_matrix(
-                                    (self.n_gen_disp, self.n_gen_disp + self.nsl + self.nslcap + self.n_disp_hvdc))])
+                                    (
+                                        self.n_gen_disp,
+                                        self.n_gen_disp + self.nsl + self.nslcap + self.n_disp_hvdc))])
                 H4 = sp.hstack([lil_matrix((self.n_gen_disp, 2 * self.nbus + self.n_gen_disp)), Hqqgqg,
                                 lil_matrix((self.n_gen_disp, self.nsl + self.nslcap + self.n_disp_hvdc))])
 
@@ -1207,17 +1235,6 @@ class NonLinearOptimalPfProblem:
         csr_matrix, lil_matrix, lil_matrix, csr_matrix, lil_matrix, lil_matrix]:
         """
 
-        :param all_tap_m: Vector with all the tap module, including the non-controlled ones
-        :param all_tap_tau: Vector with all the tap phases, including the non-controlled ones
-        :param V: Complex voltages
-        :param k_m: List with the index of the module controlled transformers
-        :param k_tau: List with the index of the phase controlled transformers
-        :param Cf: From connectivity matrix
-        :param Ct: To connectivity matrix
-        :param F: Array of "from" buses of each branch
-        :param T: Array of "to" buses of each branch
-        :param R: Line resistances
-        :param X: Line inductances
         :return: First power derivatives with respect to the tap variables
                 [dSbusdm, dSfdm, dStdm, dSbusdt, dSfdtau, dStdtau]
         """
@@ -1269,23 +1286,13 @@ class NonLinearOptimalPfProblem:
         lil_matrix, lil_matrix, lil_matrix,
         lil_matrix, lil_matrix, lil_matrix,
         lil_matrix, lil_matrix, lil_matrix]:
+
         """
-        :param all_tap_m: Vector with all the tap module, including the non-controlled ones
-        :param all_tap_tau: Vector with all the tap phase, including the non-controlled ones
-        :param vm: Voltage modules
-        :param va: Voltage angles
-        :param k_m: List with the index of the module controlled transformers
-        :param k_tau: List with the index of the phase controlled transformers
-        :param mon_idx: List with the index of the monitored lines
-        :param R: Line resistances
-        :param X: Line inductances
-        :param F: Indexes of the 'from' buses
-        :param T: Indexes of the 'to' buses
+
         :param lam: Lambda multiplier
         :param mu: Mu multiplier
-        :param Sf: From powers
-        :param St: To powers
         :return: Power second derivatives with respect to tap variables
+
         """
         ys = 1.0 / (self.R + 1.0j * self.X + 1e-20)
 
@@ -1342,7 +1349,8 @@ class NonLinearOptimalPfProblem:
             dStdmdva_f = - Vt * 1j * np.conj(yk * Vf) / (mp2 * tap_unit_c)
             dStdmdva_t = Vt * 1j * np.conj(yk * Vf) / (mp2 * tap_unit_c)
 
-            dSfdmdvm_f = Vf * (1 / self.Vm[f]) * ((-4 * np.conj(yk * Vf) / mp3) + np.conj(yk * Vt) / (mp2 * tap_unit))
+            dSfdmdvm_f = Vf * (1 / self.Vm[f]) * (
+                    (-4 * np.conj(yk * Vf) / mp3) + np.conj(yk * Vt) / (mp2 * tap_unit))
             dSfdmdvm_t = Vf * (1 / self.Vm[t]) * np.conj(yk * Vt) / (mp2 * tap_unit)
 
             dStdmdvm_f = Vt * (1 / self.Vm[f]) * np.conj(yk * Vf) / (mp2 * tap_unit_c)
@@ -1455,3 +1463,213 @@ class NonLinearOptimalPfProblem:
                 dSbusdtdt, dSfdtdt, dStdtdt,
                 dSbusdtdvm, dSfdtdvm, dStdtdvm,
                 dSbusdtdva, dSfdtdva, dStdtdva)
+
+    def get_solution(self, ips_results: IpsSolution, verbose: int = 0, plot_error: bool = False):
+
+        self.x2var(ips_results.x)
+
+        # Save Results DataFrame for tests
+        # pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
+        # pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
+        # pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
+        # pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
+
+        Pg = np.zeros(self.n_gen_disp)
+        Qg = np.zeros(self.n_gen_disp)
+
+        Pg[self.gen_disp_idx] = self.Pg
+        Qg[self.gen_disp_idx] = self.Qg
+        Pg[self.gen_nondisp_idx] = np.real(self.Sg_undis)
+        Qg[self.gen_nondisp_idx] = np.imag(self.Sg_undis)
+
+        # convert the lagrange multipliers to significant ones
+        lam_p, lam_q = ips_results.lam[:self.nbus], ips_results.lam[self.nbus: 2 * self.nbus]
+
+        loading = np.abs(self.allSf) / (self.rates + 1e-9)
+
+        if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
+            overloads_sf = (np.power(np.power(self.rates[self.br_mon_idx], 2) + self.sl_sf, 0.5)
+                            - self.rates[self.br_mon_idx]) * self.Sbase
+            overloads_st = (np.power(np.power(self.rates[self.br_mon_idx], 2) + self.sl_st, 0.5)
+                            - self.rates[self.br_mon_idx]) * self.Sbase
+
+        else:
+            overloads_sf = np.zeros_like(self.rates)
+            overloads_st = np.zeros_like(self.rates)
+
+        hvdc_power = self.nc.hvdc_data.Pset.copy()
+        hvdc_power[self.hvdc_disp_idx] = self.Pfdc
+        hvdc_loading = hvdc_power / (self.nc.hvdc_data.rates + 1e-9)
+        tap_module = np.zeros(self.nc.nbr)
+        tap_phase = np.zeros(self.nc.nbr)
+        tap_module[self.k_m] = self.tapm
+        tap_phase[self.k_tau] = self.tapt
+        Pcost = np.zeros(self.ngen + self.nsh)
+        Pcost[self.gen_disp_idx] = self.c0 + self.c1 * Pg[self.gen_disp_idx] + self.c2 * np.power(
+            Pg[self.gen_disp_idx],
+            2.0)
+        Pcost[self.gen_nondisp_idx] = (self.c0n + self.c1n * np.real(self.Sg_undis)
+                                       + self.c2n * np.power(np.real(self.Sg_undis), 2.0))
+        nodal_capacity = self.slcap * self.Sbase
+
+        tend = timeit.default_timer()
+
+        if self.options.verbose > 0:
+            df_bus = pd.DataFrame(data={'Va (rad)': self.Va, 'Vm (p.u.)': self.Vm,
+                                        'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
+            df_gen = pd.DataFrame(data={'P (MW)': Pg * self.Sbase, 'Q (MVAr)': Qg * self.Sbase})
+            df_linkdc = pd.DataFrame(data={'P_dc (MW)': self.Pfdc * self.Sbase})
+
+            df_slsf = pd.DataFrame(data={'Slacks Sf': self.sl_sf})
+            df_slst = pd.DataFrame(data={'Slacks St': self.sl_st})
+            df_slvmax = pd.DataFrame(data={'Slacks Vmax': self.sl_vmax})
+            df_slvmin = pd.DataFrame(data={'Slacks Vmin': self.sl_vmin})
+            df_trafo_m = pd.DataFrame(data={'V (p.u.)': self.tapm}, index=self.k_m)
+            df_trafo_tau = pd.DataFrame(data={'Tau (rad)': self.tapt}, index=self.k_tau)
+            # df_times = pd.DataFrame(data=times[1:], index=list(range(result.iterations)),
+            #                         columns=['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+            #                                  't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+            #                                  't_mult', 't_steps', 't_cond', 't_iter'])
+
+            print("Bus:\n", df_bus)
+            print("V-Trafos:\n", df_trafo_m)
+            print("Tau-Trafos:\n", df_trafo_tau)
+            print("Gen:\n", df_gen)
+            print("Link DC:\n", df_linkdc)
+
+            print('Qshunt min: ' + str(self.Qsh_min))
+
+            if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
+                print("Slacks:\n", df_slsf)
+                print("Slacks:\n", df_slst)
+                print("Slacks:\n", df_slvmax)
+                print("Slacks:\n", df_slvmin)
+
+            if self.optimize_nodal_capacity:
+                df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': self.slcap * self.Sbase},
+                                            index=self.capacity_nodes_idx)
+                print("Nodal Capacity:\n", df_nodal_cap)
+            print("Error", ips_results.error)
+            print("Gamma", ips_results.gamma)
+            print("Sf", self.Sf)
+
+            # if self.options.verbose > 1:
+            #     print('Times:\n', df_times)
+            #     print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+            #                                                't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+            #                                                't_mult', 't_steps', 't_cond', 't_iter']].div(
+            #         df_times['t_iter'],
+            #         axis=0))
+
+        if plot_error:
+            ips_results.plot_error()
+
+        if not ips_results.converged or ips_results.converged:
+
+            for i in range(self.nbus):
+                if abs(ips_results.dlam[i]) >= 1e-3:
+                    self.logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                            device_property="dlam",
+                                            device=str(i),
+                                            value=str(ips_results.dlam[i]),
+                                            expected_value='< 1e-3')
+
+                if abs(ips_results.dlam[self.nbus + i]) >= 1e-3:  # TODO: What is the difference with the previous?
+                    self.logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
+                                            device_property="dlam",
+                                            device=str(i),
+                                            value=str(ips_results.dlam[i + self.nbus]),
+                                            expected_value='< 1e-3')
+
+            for pvbus in range(self.npv):
+                if abs(ips_results.dlam[2 * self.nbus + 1 + pvbus]) >= 1e-3:
+                    self.logger.add_warning('PV voltage module convergence tolerance not achieved',
+                                            device_property="dlam",
+                                            device=str(self.pv[pvbus]),
+                                            value=str((ips_results.dlam[2 * self.nbus + 1 + pvbus])),
+                                            expected_value='< 1e-3')
+
+            for k in range(self.n_br_mon):
+                muz_f = abs(ips_results.z[k] * ips_results.mu[k])
+                muz_t = abs(ips_results.z[k + self.n_br_mon] * ips_results.mu[k + self.n_br_mon])
+                if muz_f >= 1e-3:
+                    self.logger.add_warning('Branch rating "from" multipliers did not reach the tolerance',
+                                            device_property="mu · z",
+                                            device=str(self.br_mon_idx[k]),
+                                            value=str(muz_f),
+                                            expected_value='< 1e-3')
+                if muz_t >= 1e-3:
+                    self.logger.add_warning('Branch rating "to" multipliers did not reach the tolerance',
+                                            device_property="mu · z",
+                                            device=str(self.br_mon_idx[k]),
+                                            value=str(muz_t),
+                                            expected_value='< 1e-3')
+
+            for link in range(self.n_disp_hvdc):
+                muz_f = abs(ips_results.z[self.nineq - 2 * self.n_disp_hvdc + link] * ips_results.mu[
+                    self.nineq - 2 * self.n_disp_hvdc + link])
+                muz_t = abs(
+                    ips_results.z[self.nineq - self.n_disp_hvdc + link] * ips_results.mu[
+                        self.nineq - self.n_disp_hvdc + link])
+                if muz_f >= 1e-3:
+                    self.logger.add_warning('HVDC rating "from" multipliers did not reach the tolerance',
+                                            device_property="mu · z",
+                                            device=str(link),
+                                            value=str(muz_f),
+                                            expected_value='< 1e-3')
+                if muz_t >= 1e-3:
+                    self.logger.add_warning('HVDC rating "to" multipliers did not reach the tolerance',
+                                            device_property="mu · z",
+                                            device=str(link),
+                                            value=str(muz_t),
+                                            expected_value='< 1e-3')
+
+            if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
+                for k in range(self.n_br_mon):
+                    if overloads_sf[k] > self.options.ips_tolerance * self.Sbase:
+                        self.logger.add_warning('Branch overload in the from sense (MVA)',
+                                                device=str(self.br_mon_idx[k]),
+                                                device_property="Slack",
+                                                value=str(overloads_sf[k]),
+                                                expected_value=f'< {self.options.ips_tolerance * self.Sbase}')
+
+                    if overloads_st[k] > self.options.ips_tolerance * self.Sbase:
+                        self.logger.add_warning('Branch overload in the to sense (MVA)',
+                                                device=str(self.br_mon_idx[k]),
+                                                device_property="Slack",
+                                                value=str(overloads_st[k]),
+                                                expected_value=f'< {self.options.ips_tolerance * self.Sbase}')
+
+                for i in range(self.npq):
+                    if self.sl_vmax[i] > self.options.ips_tolerance:
+                        self.logger.add_warning('Overvoltage',
+                                                device_property="Slack",
+                                                device=str(self.pq[i]),
+                                                value=str(self.sl_vmax[i]),
+                                                expected_value=f'>{self.options.ips_tolerance}')
+                    if self.sl_vmin[i] > self.options.ips_tolerance:
+                        self.logger.add_warning('Undervoltage',
+                                                device_property="Slack",
+                                                device=str(self.pq[i]),
+                                                value=str(self.sl_vmin[i]),
+                                                expected_value=f'> {self.options.ips_tolerance}')
+
+        if verbose > 0:
+            if len(self.logger):
+                self.logger.print()
+
+        self.results = NonlinearOPFResults(Va=self.Va, Vm=self.Vm, S=self.Scalc,
+                                           Sf=self.allSf, St=self.allSt, loading=loading,
+                                           Pg=Pg[:self.ngen], Qg=Qg[:self.ngen], Qsh=Qg[self.ngen:],
+                                           Pcost=Pcost[:self.ngen],
+                                           tap_module=tap_module, tap_phase=tap_phase,
+                                           hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
+                                           lam_p=lam_p, lam_q=lam_q,
+                                           sl_sf=self.sl_sf, sl_st=self.sl_st, sl_vmax=self.sl_vmax,
+                                           sl_vmin=self.sl_vmin,
+                                           nodal_capacity=nodal_capacity,
+                                           error=ips_results.error,
+                                           converged=ips_results.converged,
+                                           iterations=ips_results.iterations)
+
+        return self.results

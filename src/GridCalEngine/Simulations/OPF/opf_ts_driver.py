@@ -185,7 +185,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                         pf_options=self.pf_options,
                                         t_idx=t,
                                         # for the first power flow, use the given strategy
-                                        # for the succesive ones, use the previous solution
+                                        # for the successive ones, use the previous solution
                                         pf_init=self.options.ips_init_with_pf if it == 0 else True,
                                         Sbus_pf0=self.results.Sbus[it-1, :] if it > 0 else None,
                                         voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
@@ -227,7 +227,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             Pl, Pg = run_simple_dispatch_ts(grid=self.grid,
                                             time_indices=self.time_indices,
                                             text_prog=self.report_text,
-                                            prog_func=self.report_progress)
+                                            prog_func=self.report_progress,
+                                            logger=self.logger)
 
             self.results.generator_power[self.time_indices, :] = Pg  # already in MW
 

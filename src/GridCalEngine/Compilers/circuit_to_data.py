@@ -369,6 +369,16 @@ def get_load_data(data: LoadData,
             # bus_data.bus_types[i] = BusMode.Slack_tpe.value  # set as Slack
             bus_data.set_bus_mode(i, BusMode.Slack_tpe)
 
+            set_bus_control_voltage(i=i,
+                                    j=-1,
+                                    remote_control=False,
+                                    bus_name=elm.bus.name,
+                                    bus_data=bus_data,
+                                    bus_voltage_used=bus_voltage_used,
+                                    candidate_Vm=elm.Vm_prof[t_idx] if time_series else elm.Vm,
+                                    use_stored_guess=use_stored_guess,
+                                    logger=logger)
+
         elif elm.mode == ExternalGridMode.PV:
 
             set_bus_control_voltage(i=i,

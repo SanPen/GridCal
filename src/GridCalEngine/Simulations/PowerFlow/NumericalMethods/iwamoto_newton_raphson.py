@@ -59,7 +59,7 @@ def mu(Ybus: CscMat, J: CSC, incS: Vec, dV: CxVec, dx: Vec, block1_idx: IntVec, 
 
 
 def IwamotoNR(nc: NumericalCircuit,
-              Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+              Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
               S0: CxVec, V0: CxVec, I0: CxVec, Y0: CxVec,
               pv_: IntVec, pq_: IntVec, pqv_: IntVec, p_: IntVec, vd_: IntVec,
               Qmin: Vec, Qmax: Vec, tol: float, max_it: int = 15,
@@ -269,6 +269,7 @@ def IwamotoNR(nc: NumericalCircuit,
         Ybus=Ybus,
         Yf=Yf,
         Yt=Yt,
+        Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
 

@@ -7,6 +7,10 @@ import numpy as np
 from datetime import datetime
 from collections.abc import Mapping
 from typing import Dict
+import pyproj
+from GridCalEngine.Devices.Injections.battery import Battery
+from GridCalEngine.Devices.Injections.shunt import Shunt
+from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Branches.transformer import TransformerType, Transformer2W
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
@@ -31,19 +35,25 @@ class PyPSAParser:
     PyPSAParser
     """
 
-    def __init__(self, src: 'pypsa.Network', logger: Logger):
+    def __init__(self, pypsa_grid: 'pypsa.Network', logger: Logger):
         """
 
-        :param src:
+        :param pypsa_grid:
         :param logger:
         """
-        self.src = src
-        self.dest = MultiCircuit(src.name)  # todo: PyPSA doesn't provide f_base
+        self.pypsa_grid = pypsa_grid
+        self.grid = MultiCircuit(pypsa_grid.name)  # todo: PyPSA doesn't provide f_base
         self.logger = logger
 
-        self.nt = len(src.snapshots)
-        start_time = self._parse_date(src.meta['snapshots']['start'])
-        self.dest.create_profiles(self.nt, 1, 'h', start_time)  # todo: don't assume hourly intervals
+        self.nt = len(pypsa_grid.snapshots)
+        start_time = self._parse_date(pypsa_grid.meta['snapshots']['start'])
+        self.grid.create_profiles(self.nt, 1, 'h', start_time)  # todo: don't assume hourly intervals
+
+        self.srid = self.pypsa_grid.srid  # EPSG number
+        if self.srid != 4326:
+            self.coordinate_converter = pyproj.Transformer.from_crs(self.srid, 4326, always_xy=False)
+        else:
+            self.coordinate_converter = None
 
         self.countries = self._parse_countries()
         self.buses = self._parse_buses()
@@ -72,9 +82,9 @@ class PyPSAParser:
         :return: a mapping from country name to GridCal `Country` objects.
         """
         by_name = {}
-        for name in self.src.meta['countries']:
+        for name in self.pypsa_grid.meta['countries']:
             country = Country(name)
-            self.dest.add_country(country)
+            self.grid.add_country(country)
             by_name[name] = country
         return by_name
 
@@ -85,80 +95,214 @@ class PyPSAParser:
         """
 
         by_name: Dict[str, Bus] = dict()
-        for ix, data in self.src.buses.iterrows():
+        for ix, data in self.pypsa_grid.buses.iterrows():
             active = self._is_active(data)
             is_slack = data['control'] == 'Slack'  # otherwise 'PQ' or 'PV'
             is_dc = data['carrier'] == 'DC'
             country = self.countries[data['country']]
+
+            # the longitude and latitude come stored in x, y depending on the projection (self.srid)
+            x = data['x']
+            y = data['y']
+            if self.coordinate_converter is not None:
+                lon, lat = self.coordinate_converter.transform(xx=x, yy=y)
+            else:
+                lon = x
+                lat = y
+
             bus = Bus(name=ix,
                       Vnom=data['v_nom'],
                       vmin=data['v_mag_pu_min'],
                       vmax=data['v_mag_pu_max'],
-                      xpos=data['x'] * x_scale,
-                      ypos=data['y'] * y_scale,
+                      xpos=x * x_scale,
+                      ypos=y * y_scale,
+                      longitude=lon,
+                      latitude=lat,
                       active=active,
                       is_slack=is_slack,
                       is_dc=is_dc,
                       country=country)
-            self.dest.add_bus(bus)
+            self.grid.add_bus(bus)
             by_name[ix] = bus
 
         return by_name
 
     def _parse_generators(self):
         """
-        Parses the generator data from the PyPSA network.
+        Parses the generator row from the PyPSA network.
         """
-        for ix, data in self.src.generators.iterrows():
-            bus = self.buses[data['bus']]
-            if data['q_set'] > 0 or data['p_set'] > 0:
-                power_factor = data['p_set'] / math.sqrt(data['q_set'] ** 2 + data['p_set'] ** 2)
+
+        """
+        'bus'
+        'control'
+        'type'
+        'p_nom'
+        'p_nom_mod'
+        'p_nom_extendable'
+        'p_nom_min'
+        'p_nom_max'
+        'p_min_pu'
+        'p_max_pu'
+        'p_set'
+        'e_sum_min'
+        'e_sum_max'
+        'q_set'
+        'sign'
+        'carrier'
+        'marginal_cost'
+        'marginal_cost_quadratic'
+        'active'
+        'build_year'
+        'lifetime'
+        'capital_cost'
+        'efficiency'
+        'committable'
+        'start_up_cost'
+        'shut_down_cost'
+        'stand_by_cost'
+        'min_up_time'
+        'min_down_time'
+        'up_time_before'
+        'down_time_before'
+        'ramp_limit_up'
+        'ramp_limit_down'
+        'ramp_limit_start_up'
+        'ramp_limit_shut_down'
+        'weight'
+        'p_nom_opt'        
+        """
+
+        for name, row in self.pypsa_grid.generators.iterrows():
+
+            bus = self.buses[row['bus']]
+
+            if row['q_set'] > 0 or row['p_set'] > 0:
+                power_factor = row['p_set'] / math.sqrt(row['q_set'] ** 2 + row['p_set'] ** 2)
             else:
                 power_factor = 0.8
 
-            is_controlled = data['control'] == 'PV'
-            generator = Generator(name=ix,
-                                  P=data['p_set'] * data['sign'],
-                                  power_factor=power_factor,
-                                  is_controlled=is_controlled,
-                                  Pmin=data['p_nom_min'],
-                                  Pmax=data['p_nom_max'],
-                                  opex=data['marginal_cost'],
-                                  Cost=data['marginal_cost'],
-                                  capex=data['capital_cost'] * data['p_nom'])
-            self.dest.add_generator(bus, generator)
+            is_controlled = row['control'] == 'PV'
+
+            Pmin = row['p_nom_min']
+            if Pmin == -np.inf:
+                Pmin = -1e20
+
+            Pmax = row['p_nom_max']
+            if Pmax == np.inf:
+                Pmax = 1e20
+
+            elm = Generator(
+                name=name,
+                P=row['p_set'] * row['sign'],
+                power_factor=power_factor,
+                is_controlled=is_controlled,
+                active=row['active'],
+                Snom=row['p_nom'],
+                Pmin=Pmin,
+                Pmax=Pmax,
+                opex=row['marginal_cost'],
+                Cost=row['marginal_cost'],
+                Cost2=row['marginal_cost_quadratic'],
+                capex=row['capital_cost'] * row['p_nom'],
+                enabled_dispatch=bool(row['committable']),
+            )
+
+            elm.Cost2 = row.get('marginal_cost_quadratic', 0.0)
+            elm.StartupCost = row.get('start_up_cost', 0.0)
+            elm.ShutdownCost = row.get('shut_down_cost', 0.0)
+            elm.MinTimeUp = row.get('min_up_time', 0.0)
+            elm.MinTimeDown = row.get('min_down_time', 0.0)
+            elm.RampUp = row.get('ramp_limit_up', 1e20)
+            elm.RampDown = row.get('ramp_limit_down', 1e20)
+
+            self.grid.add_generator(bus=bus, api_obj=elm)
+
             try:
-                P_prof = self.src.generators_t.p_max_pu[ix].to_numpy()
-                generator.active_prof = np.ones(self.nt, dtype=bool)
-                generator.P_prof = P_prof
+                P_prof = self.pypsa_grid.generators_t.p_max_pu[name].to_numpy()
+                elm.active_prof.set(np.ones(self.nt, dtype=bool))
+                elm.Pmax_prof.set(P_prof * elm.Snom)
+
             except KeyError:  # missing p_max_pu[ix]
-                pass
+                self.logger.add_warning(msg="No Generator P profile",
+                                        device=name)
 
     def _parse_storage_units(self):
         """
         Parses the storage units data from the PyPSA network.
         """
-        if len(self.src.storage_units) > 0:
-            self.logger.add_warning('Storage units not currently supported')
+
+        for name, row in self.pypsa_grid.storage_units.iterrows():
+
+            bus = self.buses[row['bus']]
+
+            if row['q_set'] > 0 or row['p_set'] > 0:
+                power_factor = row['p_set'] / math.sqrt(row['q_set'] ** 2 + row['p_set'] ** 2)
+            else:
+                power_factor = 0.8
+
+            is_controlled = row['control'] == 'PV'
+
+            Pmin = row['p_nom_min']
+            if Pmin == -np.inf:
+                Pmin = -1e20
+
+            Pmax = row['p_nom_max']
+            if Pmax == np.inf:
+                Pmax = 1e20
+
+            elm = Battery(
+                name=name,
+                P=row['p_set'] * row['sign'],
+                power_factor=power_factor,
+                is_controlled=is_controlled,
+                Snom=row['p_nom'],
+                active=row['active'],
+                Pmin=Pmin,
+                Pmax=Pmax,
+                opex=row['marginal_cost'],
+                Cost=row['marginal_cost'],
+                capex=row['capital_cost'] * row['p_nom'],
+                enabled_dispatch=bool(row.get('p_dispatch', True)),
+            )
+
+            elm.Enom = row.get('e_nom', 9999.0)
+            elm.Cost2 = row.get('marginal_cost_quadratic', 0.0)
+            elm.StartupCost = row.get('start_up_cost', 0.0)
+            elm.ShutdownCost = row.get('shut_down_cost', 0.0)
+            elm.MinTimeUp = row.get('min_up_time', 0.0)
+            elm.MinTimeDown = row.get('min_down_time', 0.0)
+            elm.RampUp = row.get('ramp_limit_up', 1e20)
+            elm.RampDown = row.get('ramp_limit_down', 1e20)
+
+            self.grid.add_battery(bus=bus, api_obj=elm)
+
+            try:
+                P_prof = self.pypsa_grid.generators_t.p_max_pu[name].to_numpy()
+                elm.active_prof.set(np.ones(self.nt, dtype=bool))
+                elm.Pmax_prof.set(P_prof * elm.Snom)
+
+            except KeyError:  # missing p_max_pu[ix]
+                self.logger.add_warning(msg="No Generator P profile",
+                                        device=name)
 
     def _parse_stores(self):
         """
         Parses the stores data from the PyPSA network.
         """
-        if len(self.src.stores) > 0:
+        if len(self.pypsa_grid.stores) > 0:
             self.logger.add_warning('Shunt impedances not currently supported')
 
     def _parse_loads(self):
         """
         Parses the load data from the PyPSA network.
         """
-        for ix, data in self.src.loads.iterrows():
+        for ix, data in self.pypsa_grid.loads.iterrows():
             bus = self.buses[data['bus']]
             active = self._is_active(data)
             load = Load(name=ix, P=data['p_set'], Q=data['q_set'], active=active)
-            self.dest.add_load(bus, load)
+            self.grid.add_load(bus, load)
             try:
-                P_prof = self.src.loads_t.p_set[ix].to_numpy()
+                P_prof = self.pypsa_grid.loads_t.p_set[ix].to_numpy()
                 load.active_prof = np.ones(self.nt, dtype=bool)
                 load.P_prof = P_prof
             except KeyError:
@@ -170,66 +314,106 @@ class PyPSAParser:
         :return: a mapping from type name to GridCal `SequenceLineType` objects.
         """
         by_name: Dict[str, SequenceLineType] = dict()
-        for ix, data in self.src.line_types.iterrows():
+        for ix, data in self.pypsa_grid.line_types.iterrows():
             # Compute shunt susceptance in S/km from shunt capacitance in nF/km.
             omega = 2 * math.pi * data['f_nom']  # Hz
             b = data['c_per_length'] * omega * 1e-9
             kind = SequenceLineType(name=ix, Imax=data['i_nom'], R=data['r_per_length'], X=data['x_per_length'], B=b)
-            self.dest.add_sequence_line(kind)
+            self.grid.add_sequence_line(kind)
             by_name[ix] = kind
         return by_name
 
-    def _apply_template(self, types, ix, data, proto):
-        kind = types[data['type']]
-        proto.apply_template(kind, self.dest.Sbase)
-        expected_rate = proto.rate * int(data['num_parallel'])
+    def _apply_template(self, types: Dict[str, SequenceLineType], ix: str, data, proto: Line):
+        """
+
+        :param types:
+        :param ix:
+        :param data:
+        :param proto:
+        :return:
+        """
+        line_template = types[data['type']]
+
+        R, X, B, R0, X0, B0, rate = line_template.get_values(Sbase=100, length=proto.length)
+
+        expected_rate = rate * int(data['num_parallel'])
+
         if not math.isclose(expected_rate, data['s_nom'], abs_tol=1e-6):
-            self.logger.add_warning(f'Incorrect rate', device=ix,
+            self.logger.add_warning(f'Line Snom value differs from the template rating', device=ix,
                                     value=data['s_nom'], expected_value=expected_rate)
+        else:
+            proto.apply_template(line_template, self.grid.Sbase)
 
     def _parse_lines(self):
         """
         Parses the line data from the PyPSA network.
         """
-        for ix, data in self.src.lines.iterrows():
-            from_bus = self.buses[data['bus0']]
-            to_bus = self.buses[data['bus1']]
+        w = 2.0 * np.pi * self.grid.fBase
+        for ix, row in self.pypsa_grid.lines.iterrows():
+            from_bus = self.buses[row['bus0']]
+            to_bus = self.buses[row['bus1']]
+            copy_count = int(row['num_parallel'])
+            length = row['length']
+            status = BuildStatus.Commissioned
+            name = row.get('name', ix)
 
-            length = data['length']
-            is_active = self._is_active(data)
-            status = BuildStatus.Commissioned if is_active else BuildStatus.Planned
-            proto = Line(bus_from=from_bus,
-                         bus_to=to_bus,
-                         name=f'{ix}-proto',
-                         active=is_active,
-                         length=length,
-                         opex=data['capital_cost'],
-                         build_status=status)
+            if copy_count > 1:
+                # More than onle line, make a group for later...
+                group = BranchGroup(name=name)
+                self.grid.add_branch_group(group)
 
-            copy_count = int(data['num_parallel'])
-            if data['type']:
-                self._apply_template(self.line_types, ix, data, proto)
+                rate = row['s_nom'] / copy_count
             else:
-                proto.R = data['r']
-                proto.X = data['x']
-                proto.B = data['b']
-                if copy_count:
-                    proto.rate = data['s_nom'] / copy_count
+                group = None
+                rate = row['s_nom']
 
-            for i in range(copy_count):
-                line = proto.copy()
-                line.name = f'{ix}-{i}'
-                self.dest.add_line(line)
+            for i in range(copy_count if copy_count > 1 else 1):
+                elm = Line(
+                    bus_from=from_bus,
+                    bus_to=to_bus,
+                    name=name,
+                    code=name,
+                    active=bool(row['active']),
+                    length=length,
+                    rate=rate,
+                    opex=row['capital_cost'],
+                    build_status=status
+                )
+
+                if group is not None:
+                    elm.group = group
+
+                # if row['type']:
+                #     self._apply_template(types=self.line_types,
+                #                          ix=ix, data=row, proto=elm)
+                # else:
+                elm.template = self.line_types.get(row['type'], None)
+
+                elm.R = row['r']
+                elm.X = row['x']
+                elm.B = row['b']
+                elm.fill_design_properties(
+                    r_ohm=row['r'],
+                    x_ohm=row['x'],
+                    c_nf=row['b'] / w * 1e9,
+                    freq=self.grid.fBase,
+                    length=length,
+                    Imax=0,
+                    Sbase=self.grid.Sbase,
+                )
+                elm.rate = rate
+
+                self.grid.add_line(elm)
 
     def _parse_hvdc(self):
         """
         Parses the HVDC data from the PyPSA network.
         """
-        for ix, data in self.src.links.iterrows():
+        for ix, data in self.pypsa_grid.links.iterrows():
             from_bus = self.buses[data['bus0']]
             to_bus = self.buses[data['bus1']]
             active = self._is_active(data)
-            self.dest.add_hvdc(
+            self.grid.add_hvdc(
                 HvdcLine(bus_from=from_bus,
                          bus_to=to_bus,
                          name=ix,
@@ -246,7 +430,7 @@ class PyPSAParser:
         :return: a mapping from type name to GridCal `TransformerType` objects.
         """
         by_name: Dict[str, TransformerType] = dict()
-        for ix, data in self.src.transformer_types.iterrows():
+        for ix, data in self.pypsa_grid.transformer_types.iterrows():
             kind = TransformerType(name=str(ix),
                                    hv_nominal_voltage=data['v_nom_0'],
                                    lv_nominal_voltage=data['v_nom_1'],
@@ -254,7 +438,7 @@ class PyPSAParser:
                                    iron_losses=data['pfe'],
                                    no_load_current=data['i0'],
                                    short_circuit_voltage=data['vsc'])
-            self.dest.add_transformer_type(kind)
+            self.grid.add_transformer_type(kind)
             by_name[ix] = kind
         return by_name
 
@@ -262,7 +446,7 @@ class PyPSAParser:
         """
         Parses the transformer data from the PyPSA network.
         """
-        for ix, data in self.src.transformers.iterrows():
+        for ix, data in self.pypsa_grid.transformers.iterrows():
             from_bus = self.buses[data['bus0']]
             to_bus = self.buses[data['bus1']]
             proto = Transformer2W(bus_from=from_bus,
@@ -286,14 +470,27 @@ class PyPSAParser:
             for i in range(copy_count):
                 transformer = proto.copy()
                 transformer.name = f'{ix}-{i}'
-                self.dest.add_transformer2w(transformer)
+                self.grid.add_transformer2w(transformer)
 
     def _parse_shunts(self):
         """
-        Parses the shunt impedances data from the PyPSA network.
+        Parses the shunt impedances row from the PyPSA network.
         """
-        if len(self.src.shunt_impedances) > 0:
-            self.logger.add_warning('Shunt impedances not currently supported')
+        for name, row in self.pypsa_grid.shunt_impedances.iterrows():
+            bus = self.buses[row['bus']]
+            V2 = (bus.Vnom * 1e3) ** 2
+            g = row['g']  # in Siemens
+            b = row['b']  # in Siemens
+            G = V2 * g * 1e-6  # in MW
+            B = V2 * b * 1e-6  # in MVAr
+
+            elm = Shunt(
+                name=row['name'],
+                G=G,
+                B=B,
+                active=bool(row["active"])
+            )
+            self.grid.add_shunt(bus=bus, api_obj=elm)
 
     def parse(self) -> MultiCircuit:
         """
@@ -308,7 +505,7 @@ class PyPSAParser:
         self._parse_hvdc()
         self._parse_transformers()
         self._parse_shunts()
-        return self.dest
+        return self.grid
 
 
 def pypsa2gridcal(network: 'pypsa.Network', logger: Logger) -> MultiCircuit:

@@ -114,7 +114,7 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
 def detect_facilities(grid: MultiCircuit) -> None:
     """
     Create facilities automatically
-    In essence is packing all the injections connected to he same bus into a facility object
+    In essence is packing all the injections connected to the same bus into a facility object
     :param grid: MultiCircuit
     """
     dict_bus_inj = grid.get_injection_devices_grouped_by_bus()
