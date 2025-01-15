@@ -1247,7 +1247,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                        progress_func: Union[Callable, None] = None,
                        logger: Logger = Logger()) -> MultiCircuit:
     """
-    Interpret data dictionary
+    Interpret data
     :param data: dictionary of data frames and other information
     :param previous_circuit: Optional previous gridcal circuit. This is relevant in case of loading grid increments
     :param text_func: text callback function
@@ -1362,7 +1362,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
         item_count += 1
 
     # ------------------------------------------------------------------------------------------------------------------
-    # New way of parsing information from .model files.
+    # New way of parsing information from .model files (Json files)
     # These files are just .json stored in the model_data inside the zip file
     model_data = data.get('model_data', None)
     if model_data is not None:

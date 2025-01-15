@@ -4660,7 +4660,6 @@ def make_diagram_from_buses(circuit: MultiCircuit,
     Create a vicinity diagram
     :param circuit: MultiCircuit
     :param buses: List of Bus
-    :param max_level: max expansion level
     :param prog_func:
     :param text_func:
     :return:

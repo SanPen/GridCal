@@ -526,6 +526,10 @@ sets of objects for the same thing; Representing a node in a graph.
 By doing this, we also put an end to the node-breaker vs. bus-branch feud,
 allowing for compatibility with the so-called legacy models.
 
+.. figure:: ./../figures/TopologyRoundtrip.png
+    :alt: Topology processing steps
+
+
 Takeaways
 ^^^^^^^^^^
 

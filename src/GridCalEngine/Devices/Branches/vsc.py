@@ -179,10 +179,10 @@ class VSC(BranchParent):
                                  'MVAr for Q')
 
         self.register(key='control1_dev', units="", tpe=DeviceType.BusOrBranch, profile_name="control1_dev_prof",
-                      definition='Controlled device, None to aply to this converter', editable=False)
+                      definition='Controlled device, None to apply to this converter', editable=False)
 
         self.register(key='control2_dev', units="", tpe=DeviceType.BusOrBranch, profile_name="control2_dev_prof",
-                      definition='Controlled device, None to aply to this converter', editable=False)
+                      definition='Controlled device, None to apply to this converter', editable=False)
 
     @property
     def control1(self):
@@ -194,13 +194,16 @@ class VSC(BranchParent):
 
     @control1.setter
     def control1(self, value: ConverterControlType):
-        if value != self.control2:
-            self._control1 = value
+        if self.auto_update_enabled:
+            if value != self.control2:
+                self._control1 = value
 
-            # Revert the control in range
-            if (value in (ConverterControlType.Vm_dc, ConverterControlType.Vm_ac) and
-                    not (0.9 < self.control1_val <= 1.1)):
-                self.control1_val = 1.0
+                # Revert the control in range
+                if (value in (ConverterControlType.Vm_dc, ConverterControlType.Vm_ac) and
+                        not (0.9 < self.control1_val <= 1.1)):
+                    self.control1_val = 1.0
+        else:
+            self._control1 = value
 
     @property
     def control1_prof(self) -> Profile:
@@ -229,13 +232,16 @@ class VSC(BranchParent):
 
     @control2.setter
     def control2(self, value: ConverterControlType):
-        if value != self.control1:
-            self._control2 = value
+        if self.auto_update_enabled:
+            if value != self.control1:
+                self._control2 = value
 
-            # Revert the control in range
-            if (value in (ConverterControlType.Vm_dc, ConverterControlType.Vm_ac) and
-                    not (0.9 < self.control2_val <= 1.1)):
-                self.control2_val = 1.0
+                # Revert the control in range
+                if (value in (ConverterControlType.Vm_dc, ConverterControlType.Vm_ac) and
+                        not (0.9 < self.control2_val <= 1.1)):
+                    self.control2_val = 1.0
+        else:
+            self._control2 = value
 
     @property
     def control2_prof(self) -> Profile:

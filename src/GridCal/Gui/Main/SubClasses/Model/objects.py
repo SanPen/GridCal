@@ -598,9 +598,13 @@ class ObjectsTableMain(DiagramsMain):
                                  title="Crop model to buses selection?")
 
             if ok:
+                to_be_deleted = list()
                 for bus in self.circuit.buses:
                     if bus not in selected_objects:
-                        self.circuit.delete_bus(obj=bus, delete_associated=True)
+                        to_be_deleted.append(bus)
+
+                for bus in to_be_deleted:
+                    self.circuit.delete_bus(obj=bus, delete_associated=True)
 
     def add_objects(self):
         """
