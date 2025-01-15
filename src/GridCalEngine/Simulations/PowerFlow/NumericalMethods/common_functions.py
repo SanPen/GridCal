@@ -438,7 +438,7 @@ def compute_acdc_fx(Vm: Vec,
 
 
 def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVec,
-                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+                                      pv: IntVec, vd: IntVec, Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
                                       branch_rates: Vec, Sbase: float):
     """
 
@@ -451,6 +451,7 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     :param Ybus:
     :param Yf:
     :param Yt:
+    :param Yshunt_bus:
     :param branch_rates:
     :param Sbase:
     :return:
@@ -463,6 +464,9 @@ def power_flow_post_process_nonlinear(Sbus: CxVec, V: CxVec, F: IntVec, T: IntVe
     P_pv = Sbus[pv].real
     Q_pv = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
     Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
+
+    # Add the shunt power
+    Sbus += V * V * np.conj(Yshunt_bus)
 
     # Branches current, loading, etc
     Vf = V[F]

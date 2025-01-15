@@ -269,21 +269,57 @@ class PfBasicFormulation(PfFormulationTemplate):
         :return: NumericPowerFlowResults
         """
         # Compute the Branches power and the slack buses power
-        Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
-            Sbus=self.Scalc,
-            V=self.V,
-            F=self.nc.passive_branch_data.F,
-            T=self.nc.passive_branch_data.T,
-            pv=self.pv,
-            vd=self.vd,
-            Ybus=self.adm.Ybus,
-            Yf=self.adm.Yf,
-            Yt=self.adm.Yt,
-            branch_rates=self.nc.passive_branch_data.rates,
-            Sbase=self.nc.Sbase)
+        # Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
+        #     Sbus=self.Scalc,
+        #     V=self.V,
+        #     F=self.nc.passive_branch_data.F,
+        #     T=self.nc.passive_branch_data.T,
+        #     pv=self.pv,
+        #     vd=self.vd,
+        #     Ybus=self.adm.Ybus,
+        #     Yf=self.adm.Yf,
+        #     Yt=self.adm.Yt,
+        #     Yshunt_bus=self.adm.Yshunt_bus,
+        #     branch_rates=self.nc.passive_branch_data.rates,
+        #     Sbase=self.nc.Sbase)
+
+        Sbus = self.Scalc.copy()
+
+        # power at the slack nodes
+        Sbus[self.vd] = self.V[self.vd] * np.conj(self.adm.Ybus[self.vd, :] @ self.V)
+
+        # Reactive power at the pv nodes
+        P_pv = Sbus[self.pv].real
+        Q_pv = (self.V[self.pv] * np.conj(self.adm.Ybus[self.pv, :] @ self.V)).imag
+        Sbus[self.pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
+
+        # Add the shunt power
+        Sbus += self.V * self.V * np.conj(self.adm.Yshunt_bus)
+
+        # Branches current, loading, etc
+        Vf = self.V[self.nc.passive_branch_data.F]
+        Vt = self.V[self.nc.passive_branch_data.T]
+        If = self.adm.Yf @ self.V
+        It = self.adm.Yt @ self.V
+        Sf = Vf * np.conj(If)
+        St = Vt * np.conj(It)
+
+        # Branch losses in MVA
+        losses = (Sf + St) * self.nc.Sbase
+
+        # branch voltage increment
+        # Vbranch = Vf - Vt
+
+        # Branch power in MVA
+        Sfb = Sf * self.nc.Sbase
+        # Stb = St * self.nc.Sbase
+
+        # Branch loading in p.u.
+        loading = Sfb / (self.nc.passive_branch_data.rates + 1e-9)
+
 
         return NumericPowerFlowResults(V=self.V,
-                                       Scalc=self.Scalc * self.nc.Sbase,
+                                       Scalc=Sbus * self.nc.Sbase,
                                        m=np.ones(self.nc.nbr, dtype=float),
                                        tau=np.zeros(self.nc.nbr, dtype=float),
                                        Sf=Sf,
