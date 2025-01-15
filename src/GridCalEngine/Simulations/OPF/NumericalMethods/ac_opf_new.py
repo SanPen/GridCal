@@ -94,7 +94,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                             voltage_pf=voltage_pf[island.bus_data.original_idx],
                                             optimize_nodal_capacity=optimize_nodal_capacity,
                                             nodal_capacity_sign=nodal_capacity_sign,
-                                            capacity_nodes_idx=capacity_nodes_idx,
+                                            capacity_nodes_idx=capacity_nodes_idx_isl,
                                             logger=logger
                                             )
 

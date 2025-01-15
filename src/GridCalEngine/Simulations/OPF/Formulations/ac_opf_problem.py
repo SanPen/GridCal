@@ -176,7 +176,7 @@ class NonLinearOptimalPfProblem:
         self.indices = nc.get_simulation_indices(Sbus=Sbus_pf)
         self.Cgen = nc.generator_data.get_C_bus_elm()  # TODO: Should we ever use Cgen?
         self.slack = self.indices.vd
-        self.slackgens = np.where(self.Cgen[self.slack, :].toarray() == 1)[1]  # TODO: Redo without Cgen
+        self.slackgens = np.where(self.nc.generator_data.get_bus_indices() == self.slack)[0]  # TODO: Redo without Cgen
 
         self.Sd = - nc.load_data.get_injections_per_bus() / self.Sbase
 
@@ -197,7 +197,8 @@ class NonLinearOptimalPfProblem:
         # Shunt elements are treated as generators with fixed P.
         # As such, their limits are added in the generator limits array.
 
-        self.id_sh = np.where(nc.shunt_data.controllable is True)[0]
+        self.id_sh = np.where(nc.shunt_data.controllable == True)[0]
+        self.sh_bus_idx = nc.shunt_data.get_bus_indices()[self.id_sh]
         self.nsh = len(self.id_sh)
 
         # Since controllable shunts will be treated as generators, we deactivate them to avoid its computation in the
@@ -217,8 +218,6 @@ class NonLinearOptimalPfProblem:
 
         self.Qg_max = np.r_[self.Qg_max, self.Qsh_max]
         self.Qg_min = np.r_[self.Qg_min, self.Qsh_min]
-
-        self.Inom = nc.generator_data.snom / self.Sbase
 
         self.Vm_max = nc.bus_data.Vmax
         self.Vm_min = nc.bus_data.Vmin
@@ -249,16 +248,8 @@ class NonLinearOptimalPfProblem:
         self.nbr = nc.passive_branch_data.nelm
         self.br_idx = np.arange(self.nbr)
         self.br_mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
-        self.gen_disp_idx = np.r_[
-            nc.generator_data.get_dispatchable_active_indices(), np.array([*range(self.ngen, self.ngen + self.nsh)],
-                                                                          dtype=int)]
-        self.ind_gens = np.arange(len(self.Pg_max))
-        self.gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
-        self.Sg_undis = (nc.generator_data.get_injections() / self.Sbase)[self.gen_nondisp_idx]
-        self.rates = nc.passive_branch_data.rates / self.Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
-        self.rates2 = np.power(self.rates[self.br_mon_idx], 2.0)
-        self.Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
-        self.Va_min = nc.bus_data.angle_min
+        self.gen_disp_idx = np.r_[nc.generator_data.get_dispatchable_active_indices(), np.arange(self.ngen,
+                                                                                                  self.ngen + self.nsh)]
 
         self.k_m = self.indices.k_m
         self.k_tau = self.indices.k_tau
@@ -266,9 +257,30 @@ class NonLinearOptimalPfProblem:
         self.R = nc.passive_branch_data.R
         self.X = nc.passive_branch_data.X
 
-        self.c0 = np.r_[nc.generator_data.cost_0[self.gen_disp_idx[:self.ngen]], np.zeros(self.nsh)]
-        self.c1 = np.r_[nc.generator_data.cost_1[self.gen_disp_idx[:self.ngen]], np.zeros(self.nsh)]
-        self.c2 = np.r_[nc.generator_data.cost_2[self.gen_disp_idx[:self.ngen]], np.zeros(self.nsh)]
+        # Sizing of the problem
+        self.nbus = nc.bus_data.nbus
+        self.n_slack = len(self.slack)
+        self.ntapm = len(self.k_m)
+        self.ntapt = len(self.k_tau)
+        self.npv = len(self.pv)
+        self.npq = len(self.pq)
+        self.n_br_mon = len(self.br_mon_idx)
+        self.n_gen_disp = len(self.gen_disp_idx)
+
+        self.ind_gens = np.arange(len(self.Pg_max))
+        self.gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
+        self.gen_bus_idx = np.r_[self.nc.generator_data.get_bus_indices(), self.sh_bus_idx]
+        self.Sg_undis = (nc.generator_data.get_injections() / self.Sbase)[self.gen_nondisp_idx]
+        self.rates = nc.passive_branch_data.rates / self.Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
+        self.rates2 = np.power(self.rates[self.br_mon_idx], 2.0)
+        self.Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
+        self.Va_min = nc.bus_data.angle_min
+
+        self.Inom = nc.generator_data.snom[self.gen_disp_idx] / self.Sbase
+
+        self.c0 = np.r_[nc.generator_data.cost_0[self.gen_disp_idx[:self.n_gen_disp]], np.zeros(self.nsh)]
+        self.c1 = np.r_[nc.generator_data.cost_1[self.gen_disp_idx[:self.n_gen_disp]], np.zeros(self.nsh)]
+        self.c2 = np.r_[nc.generator_data.cost_2[self.gen_disp_idx[:self.n_gen_disp]], np.zeros(self.nsh)]
 
         self.c0n = nc.generator_data.cost_0[self.gen_nondisp_idx]
         self.c1n = nc.generator_data.cost_1[self.gen_nondisp_idx]
@@ -286,16 +298,6 @@ class NonLinearOptimalPfProblem:
         # We grab all tapt even when uncontrolled since the indexing is needed if
         self.alltapt = nc.active_branch_data.tap_angle
         # the tapm of the same trafo is variable.
-
-        # Sizing of the problem
-        self.nbus = nc.bus_data.nbus
-        self.n_slack = len(self.slack)
-        self.ntapm = len(self.k_m)
-        self.ntapt = len(self.k_tau)
-        self.npv = len(self.pv)
-        self.npq = len(self.pq)
-        self.n_br_mon = len(self.br_mon_idx)
-        self.n_gen_disp = len(self.gen_disp_idx)
 
         self.hvdc_nondisp_idx = np.where(nc.hvdc_data.dispatchable == 0)[
             0]  # TODO: Simplify this using a method in the hvdc_data class
@@ -333,7 +335,7 @@ class NonLinearOptimalPfProblem:
         self.neq = 2 * self.nbus + self.n_slack + self.npv
 
         if options.ips_control_q_limits:
-            self.nineq = (2 * self.n_br_mon + 2 * self.npq + self.ngen + 4 * self.n_gen_disp + 2 * self.ntapm
+            self.nineq = (2 * self.n_br_mon + 2 * self.npq + 5 * self.n_gen_disp + 2 * self.ntapm
                           + 2 * self.ntapt + 2 * self.n_disp_hvdc + self.nsl)
         else:
             # No Reactive constraint (power curve)
@@ -344,17 +346,13 @@ class NonLinearOptimalPfProblem:
 
         if pf_init:
 
-            # TODO: Determine the call to the PF when pf_init = True
-            # TODO: try to substitute by using nc.generator_data.get_injections_per_bus()
-            gen_in_bus = np.zeros(self.nbus)
-            for i in range(self.Cgen.shape[0]):
-                gen_in_bus[i] = np.sum(self.Cgen[i])
-            ngenforgen = self.Cgen.T @ gen_in_bus
-            allPgen = self.Cgen.T @ np.real(Sbus_pf / self.Sbase) / ngenforgen
-            allQgen = self.Cgen.T @ np.imag(Sbus_pf / self.Sbase) / ngenforgen
+            # TODO: try to substitute by using nc.generator_data.get_injections_per_bus() @Carlos: get_injections does not account for the powerflow results
+            ngenforgen = np.bincount(self.gen_bus_idx[:self.ngen])[self.gen_bus_idx[:self.ngen]] # This array has the number of total generators connected to the same bus of each generator, counting itself
+            allPgen = (Sbus_pf.real / self.Sbase + self.Sd.real)[self.gen_bus_idx[:self.ngen]] / ngenforgen  # If there are multiple generators connected to the same bus, they share in equal parts the injection.
+            allQgen = (Sbus_pf.imag / self.Sbase + self.Sd.imag)[self.gen_bus_idx[:self.ngen]] / ngenforgen  # Same for Q
             self.Sg_undis = allPgen[self.gen_nondisp_idx] + 1j * allQgen[self.gen_nondisp_idx]
-            self.Pg = np.r_[allPgen[self.gen_disp_idx[:self.ngen]], np.zeros(self.nsh)]
-            self.Qg = np.r_[allQgen[self.gen_disp_idx[:self.ngen]], np.zeros(self.nsh)]
+            self.Pg = np.r_[allPgen[self.gen_disp_idx[:self.n_gen_disp]], np.zeros(self.nsh)]
+            self.Qg = np.r_[allQgen[self.gen_disp_idx[:self.n_gen_disp]], np.zeros(self.nsh)]
             self.Vm = np.abs(voltage_pf)
             self.Va = np.angle(voltage_pf)
             self.tapm = nc.active_branch_data.tap_module[self.k_m]
@@ -363,11 +361,11 @@ class NonLinearOptimalPfProblem:
 
         else:
 
-            self.Pg = np.r_[(nc.generator_data.pmax[self.gen_disp_idx[:self.ngen]] +
-                             nc.generator_data.pmin[self.gen_disp_idx[:self.ngen]])
+            self.Pg = np.r_[(self.Pmax[self.gen_disp_idx[:self.n_gen_disp]] +
+                             self.Pmin[self.gen_disp_idx[:self.n_gen_disp]])
                             / (2 * self.Sbase), np.zeros(self.nsh)]
-            self.Qg = np.r_[(nc.generator_data.qmax[self.gen_disp_idx[:self.ngen]] +
-                             nc.generator_data.qmin[self.gen_disp_idx[:self.ngen]])
+            self.Qg = np.r_[(self.Qg_max[self.gen_disp_idx[:self.n_gen_disp]] +
+                             self.Qg_min[self.gen_disp_idx[:self.n_gen_disp]])
                             / (2 * self.Sbase), np.zeros(self.nsh)]
             self.Va = np.angle(nc.bus_data.Vbus)
             self.Vm = (self.Vm_max + self.Vm_min) / 2
@@ -510,9 +508,16 @@ class NonLinearOptimalPfProblem:
         # Compute the electrical balance
         self.V = polar_to_rect(self.Vm, self.Va)
         self.Scalc = compute_power(self.admittances.Ybus, self.V)
-        S_dispatch = self.Cg[:, self.gen_disp_idx] @ (self.Pg + 1j * self.Qg)  # Variable generation
-        S_undispatch = self.Cg[:, self.gen_nondisp_idx] @ self.Sg_undis  # Fixed generation
-        dS = self.Scalc + self.Sd - S_dispatch - S_undispatch  # Nodal power balance
+
+        Pgen = np.zeros(self.nbus)
+        Qgen = np.zeros(self.nbus)
+        np.add.at(Pgen, self.gen_bus_idx[self.gen_disp_idx], self.Pg)  # Variable generation
+        np.add.at(Pgen, self.gen_bus_idx[self.gen_nondisp_idx], self.Sg_undis.real)  # Variable generation
+        np.add.at(Qgen, self.gen_bus_idx[self.gen_disp_idx], self.Qg)  # Fixed generation
+        np.add.at(Qgen, self.gen_bus_idx[self.gen_nondisp_idx], self.Sg_undis.imag)  # Fixed generation
+
+        dS = self.Scalc + self.Sd - Pgen - 1j * Qgen# Nodal power balance
+
         if self.nslcap != 0:
             dS[self.capacity_nodes_idx] -= self.slcap  # Nodal capacity slack generator addition
 
@@ -556,7 +561,7 @@ class NonLinearOptimalPfProblem:
             sl_vmin = np.zeros(self.nbus)
 
         if self.options.ips_control_q_limits:  # if reactive power control...
-            v_g = self.Cg[:, self.gen_disp_idx[:self.ngen]].T @ self.Vm
+            v_g = self.Vm[self.gen_bus_idx[self.gen_disp_idx[:self.n_gen_disp]]]
             ctrlq_ineq = (np.power(self.Qg[:self.ngen], 2.0)
                           + np.power(self.Pg[:self.ngen], 2.0)
                           - np.power(v_g * self.Inom, 2.0))
@@ -598,9 +603,9 @@ class NonLinearOptimalPfProblem:
         Vec, csc_matrix, csc_matrix,
         csc_matrix, csc_matrix, csc_matrix]:
 
-        npfvar = 2 * self.nbus + 2 * self.ngen  # Number of variables of the typical power flow (V, th, P, Q). Used to ease readability
+        npfvar = 2 * self.nbus + 2 * self.n_gen_disp  # Number of variables of the typical power flow (V, th, P, Q). Used to ease readability
         if self.options.ips_control_q_limits:  # if reactive power control...
-            nqct = self.ngen
+            nqct = self.n_gen_disp
         else:
             nqct = 0
 
@@ -919,7 +924,7 @@ class NonLinearOptimalPfProblem:
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = 2 * self.Pg[:self.ngen]
             Hqmaxq = 2 * self.Qg[:self.ngen]
-            Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.ngen]].T @ diags(
+            Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.n_gen_disp]].T @ diags(
                 self.Vm)
             Hqmax = sp.hstack(
                 [lil_matrix((nqct, self.nbus)), Hqmaxv, diags(Hqmaxp), lil_matrix((nqct, self.nsh)), diags(Hqmaxq),
@@ -1104,10 +1109,10 @@ class NonLinearOptimalPfProblem:
             Sfvmvm = vm_inv @ Ff @ vm_inv
 
             if self.options.ips_control_q_limits:  # using reactive power control
-                Hqpgpg = diags(np.r_[np.array([2] * self.ngen) * mu[- self.ngen:], np.zeros(self.nsh)])
-                Hqqgqg = diags(np.r_[np.array([2] * self.ngen) * mu[- self.ngen:], np.zeros(self.nsh)])
-                Hqvmvm = (self.Cg[:, self.gen_disp_idx[:self.ngen]] @ diags(mu[-self.ngen:])
-                          @ (- 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.ngen]].T))
+                Hqpgpg = diags(np.r_[np.array([2] * self.n_gen_disp) * mu[- self.n_gen_disp:], np.zeros(self.nsh)])
+                Hqqgqg = diags(np.r_[np.array([2] * self.n_gen_disp) * mu[- self.n_gen_disp:], np.zeros(self.nsh)])
+                Hqvmvm = (self.Cg[:, self.gen_disp_idx[:self.n_gen_disp]] @ diags(mu[-self.n_gen_disp:])
+                          @ (- 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.n_gen_disp]].T))
             else:
                 Hqpgpg = lil_matrix((self.n_gen_disp, self.n_gen_disp))
                 Hqqgqg = lil_matrix((self.n_gen_disp, self.n_gen_disp))
@@ -1474,8 +1479,8 @@ class NonLinearOptimalPfProblem:
         # pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
         # pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
 
-        Pg = np.zeros(self.n_gen_disp)
-        Qg = np.zeros(self.n_gen_disp)
+        Pg = np.zeros(self.ngen)
+        Qg = np.zeros(self.ngen)
 
         Pg[self.gen_disp_idx] = self.Pg
         Qg[self.gen_disp_idx] = self.Qg
