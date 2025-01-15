@@ -10,10 +10,10 @@ import os
 import numpy as np
 from GridCalEngine.IO import FileSave
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
-from GridCalEngine.IO.file_handler import FileSavingOptions
+from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions
 from GridCalEngine.Simulations import PowerFlowOptions
 from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
+from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.api as gc
 
@@ -37,6 +37,50 @@ def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
     return options
 
 
+def create_file_open_options() -> FileOpenOptions:
+    """
+    :return:
+    """
+    options = FileOpenOptions(
+        cgmes_map_areas_like_raw=True,
+        try_to_map_dc_to_hvdc_line=True,
+        # crash_on_errors=True,
+        adjust_taps_to_discrete_positions=True,
+    )
+
+    return options
+
+
+def get_power_flow_options() -> PowerFlowOptions:
+    """
+
+    :return:
+    """
+    pfo = PowerFlowOptions(
+        # solver_type=SolverType.NR,
+        # retry_with_other_methods=True,
+        # verbose=0,
+        # initialize_with_existing_solution=False,
+        # tolerance=1e-6,
+        # max_iter=25,
+        # max_outer_loop_iter=100,
+        # control_q=True,
+        control_taps_modules=False,
+        control_taps_phase=False,
+        control_remote_voltage=False,
+        # orthogonalize_controls=True,
+        # apply_temperature_correction=True,
+        # branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
+        # distributed_slack=False,
+        ignore_single_node_islands=True,
+        # trust_radius=1.0,
+        # backtracking_parameter=0.05,
+        # use_stored_guess=False,
+        # generate_report=False
+    )
+    return pfo
+
+
 def run_import_export_test(import_path: str | list[str],
                            export_fname: str,
                            boundary_zip_path: str):
@@ -55,7 +99,7 @@ def run_import_export_test(import_path: str | list[str],
     # circuit_1.buses.sort(key=lambda obj: obj.idtag)     # SORTING by idtag
     nc_1 = gc.compile_numerical_circuit_at(circuit_1)
     # run power flow
-    pf_options = PowerFlowOptions()
+    pf_options = get_power_flow_options()
     pf_results = gc.power_flow(circuit_1, pf_options)
 
     pf_session_data = DriverToSave(name="powerflow results",
@@ -163,15 +207,3 @@ def test_cgmes_roundtrip():
         os.makedirs(os.path.dirname(export_name))
 
     run_import_export_test(cgmes_path, export_name, boundary_path)
-
-    # nc_o = gc.compile_numerical_circuit_at(circuit_o)
-
-    # export to CGMES
-    # crate FileSave
-
-    # boundary: micro grid Boundary
-    # gc.save_file() from FileHandler
-
-    # import the exported CGMES
-
-    # Compare with the original
