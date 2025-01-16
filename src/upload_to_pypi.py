@@ -10,6 +10,7 @@ twine upload dist/GridCal-2.30.tar.gz
 
 """
 import os
+import fnmatch
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 from GridCal.__version__ import __GridCal_VERSION__
 from GridCalServer.__version__ import __GridCalServer_VERSION__
@@ -42,6 +43,54 @@ def update_gui_to_make_sure():
         convert_ui_file(source=os.path.join(path, f), uic_cmd=uic_cmd)
 
 
+
+
+def search_text_in_python_files(directory, search_terms):
+    """
+    Search for a list of text strings in all Python files within a directory and its subdirectories.
+
+    Parameters:
+        directory (str): The directory to search in.
+        search_terms (list): A list of text strings to search for.
+
+    Returns:
+        dict: A dictionary where keys are filenames and values are lists of lines containing the search terms.
+    """
+    results = {}
+
+    # Walk through the directory and subdirectories
+    for root, _, files in os.walk(directory):
+        for filename in files:
+            if fnmatch.fnmatch(filename, "*.py"):
+                filepath = os.path.join(root, filename)
+
+                # Open and read the file
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as file:
+                        lines = file.readlines()
+
+                    # Search each line for the terms
+                    matched_lines = []
+                    for line_num, line in enumerate(lines, start=1):
+                        for term in search_terms:
+                            if term in line:
+                                matched_lines.append(f"Line {line_num}: {line.strip()}")
+                                break
+
+                    if matched_lines:
+                        results[filepath] = matched_lines
+
+                except (UnicodeDecodeError, IOError) as e:
+                    print(f"Error reading file {filepath}: {e}")
+
+    if len(results) > 0:
+
+        for file,matches in results.items():
+            print(file, matches)
+
+        raise Exception("Forbidden text found")
+
+
 def check_versions() -> bool:
     """
 
@@ -59,6 +108,17 @@ def check_versions() -> bool:
 
 
 if __name__ == "__main__":
+
+    forbidden_text = [
+        'from trunk',
+        'import trunk',
+        'from tests',
+        'import tests'
+    ]
+
+    search_text_in_python_files(directory="GridCal", search_terms=forbidden_text)
+    search_text_in_python_files(directory="GridCalEngine", search_terms=forbidden_text)
+    search_text_in_python_files(directory="GridCalServer", search_terms=forbidden_text)
 
     update_gui_to_make_sure()
 

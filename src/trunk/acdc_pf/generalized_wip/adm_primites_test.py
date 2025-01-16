@@ -65,7 +65,7 @@ def calc_var(r, x, g, b, tau, tau_set, m, m_set, mf, mt, Vf, Vt):
 Sf1, St1 = calc1(r=0.01, x=0.05, g=0.0, b=0.002, tau=0.1, m=0.98, mf=1.0, mt=1.0,
                  Vf=complex(1, 0), Vt=complex(0.98, 0.1))
 
-print(f"Base Sf:{Sf1}, St:{St1}")
+# print(f"Base Sf:{Sf1}, St:{St1}")
 
 Sfc2, Stc2 = calc_cost(r=0.01, x=0.05, g=0.0, b=0.002, tau_set=0.1, m_set=1.0, mf=1.0, mt=1.0,
                        Vf=complex(1, 0), Vt=complex(0.98, 0.1))
@@ -76,6 +76,6 @@ Sfv2, Stv2 = calc_var(r=0.01, x=0.05, g=0.0, b=0.002, tau=0.1, tau_set=0.1, m=0.
 Sf2 = Sfc2 + Sfv2
 St2 = Stc2 + Stv2
 
-print(f"Split Sf:{Sf2}, St:{St2}")
+# print(f"Split Sf:{Sf2}, St:{St2}")
 
-print(f"diff Sf:{Sf1 - Sf2}, St:{St1 - St2}")
+# print(f"diff Sf:{Sf1 - Sf2}, St:{St1 - St2}")

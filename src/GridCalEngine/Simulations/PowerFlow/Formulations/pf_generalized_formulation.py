@@ -23,7 +23,6 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    polar_to_rect)
 from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, HvdcControlType, ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
-from trunk.acdc_pf.generalized_wip.adm_primites_test import calc1
 
 
 @njit()
