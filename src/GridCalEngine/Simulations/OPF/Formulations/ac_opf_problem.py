@@ -174,9 +174,8 @@ class NonLinearOptimalPfProblem:
         self.from_idx = nc.passive_branch_data.F
         self.to_idx = nc.passive_branch_data.T
         self.indices = nc.get_simulation_indices(Sbus=Sbus_pf)
-        self.Cgen = nc.generator_data.get_C_bus_elm()  # TODO: Should we ever use Cgen?
         self.slack = self.indices.vd
-        self.slackgens = np.where(self.nc.generator_data.get_bus_indices() == self.slack)[0]  # TODO: Redo without Cgen
+        self.slackgens = np.where(self.nc.generator_data.get_bus_indices() == self.slack)[0]
 
         self.Sd = - nc.load_data.get_injections_per_bus() / self.Sbase
 
@@ -206,9 +205,6 @@ class NonLinearOptimalPfProblem:
 
         nc.shunt_data.Y[self.id_sh] = 0 + 0j
         self.admittances = nc.get_admittance_matrices()
-
-        self.Csh = nc.shunt_data.get_C_bus_elm()[:, self.id_sh]  # TODO: Change this completely
-        self.Cg = sp.hstack([self.Cgen, self.Csh])
 
         self.Qsh_max = nc.shunt_data.qmax[self.id_sh] / self.Sbase
         self.Qsh_min = nc.shunt_data.qmin[self.id_sh] / self.Sbase
@@ -276,6 +272,11 @@ class NonLinearOptimalPfProblem:
         self.rates2 = np.power(self.rates[self.br_mon_idx], 2.0)
         self.Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
         self.Va_min = nc.bus_data.angle_min
+
+        self.Cdispgen = csc_matrix((np.ones(self.n_gen_disp_sh), (self.gen_bus_idx[self.gen_disp_idx],
+                                                                  np.arange(self.n_gen_disp_sh))),
+                                   shape=(self.nbus, self.n_gen_disp_sh))
+        self.Cdispgen_t = self.Cdispgen.T
 
         self.Inom = nc.generator_data.snom[self.gen_disp_idx] / self.Sbase
 
@@ -687,8 +688,8 @@ class NonLinearOptimalPfProblem:
 
         GSvm = Vmat @ (IbusCJmat + np.conj(self.admittances.Ybus @ Vmat)) @ vm_inv  # N x N matrix
         GSva = Vva @ (IbusCJmat - np.conj(self.admittances.Ybus @ Vmat))
-        GSpg = - self.Cg[:, self.gen_disp_idx]  # TODO: Try to construct it with the GridCal CSC builder
-        GSqg = -1j * self.Cg[:, self.gen_disp_idx]
+        GSpg = - self.Cdispgen  # TODO: Try to construct it with the GridCal CSC builder
+        GSqg = -1j * self.Cdispgen
 
         GTH = lil_matrix((len(self.slack), self.NV))
         for i, ss in enumerate(self.slack):
@@ -929,7 +930,7 @@ class NonLinearOptimalPfProblem:
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = 2 * self.Pg[:self.ngen]
             Hqmaxq = 2 * self.Qg[:self.ngen]
-            Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.n_gen_disp]].T @ diags(
+            Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cdispgen_t @ diags(
                 self.Vm)
             Hqmax = sp.hstack(
                 [lil_matrix((nqct, self.nbus)), Hqmaxv, diags(Hqmaxp), lil_matrix((nqct, self.nsh)), diags(Hqmaxq),
@@ -1122,9 +1123,8 @@ class NonLinearOptimalPfProblem:
                                                                           b], np.zeros(self.nsh)])
                 Hqqgqg = diags(np.r_[np.array([2] * self.n_gen_disp) * mu[- self.n_gen_disp - 2 * self.n_disp_hvdc:
                                                                           b], np.zeros(self.nsh)])
-                Hqvmvm = (self.Cg[:, self.gen_disp_idx[:self.n_gen_disp]]
-                          @ diags(mu[- self.n_gen_disp - 2 * self.n_disp_hvdc: b])
-                          @ (- 2 * diags(np.power(self.Inom, 2.0)) * self.Cg[:, self.gen_disp_idx[:self.n_gen_disp]].T))
+                Hqvmvm = (self.Cdispgen @ diags(mu[- self.n_gen_disp - 2 * self.n_disp_hvdc: b])
+                          @ (- 2 * diags(np.power(self.Inom, 2.0)) * self.Cdispgen_t))
             else:
                 Hqpgpg = lil_matrix((self.n_gen_disp, self.n_gen_disp))
                 Hqqgqg = lil_matrix((self.n_gen_disp, self.n_gen_disp))

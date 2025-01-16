@@ -33,6 +33,9 @@ def test_csc_speeds():
     gen_bus_idx = np.r_[nc.generator_data.get_bus_indices(), sh_bus_idx]
     gen_disp_idx = np.r_[nc.generator_data.get_dispatchable_active_indices(), np.arange(ngen, ngen + nsh)]
 
+    n_gen_disp_sh = len(gen_disp_idx)
+    n_gen_disp = n_gen_disp_sh - nsh
+
     t_1s = timeit.default_timer()
 
     Csh = nc.shunt_data.get_C_bus_elm()[:, id_sh]
@@ -43,16 +46,16 @@ def test_csc_speeds():
     t_1e = timeit.default_timer()
 
     nbus = nc.nbus
-    ngendisp = len(gen_disp_idx)
 
     t_2s = timeit.default_timer()
 
-    b = csc_matrix((np.ones(ngendisp), (gen_bus_idx, np.arange(ngendisp))), shape = (nbus, ngendisp))
+    b = csc_matrix((np.ones(n_gen_disp_sh), (gen_bus_idx[gen_disp_idx], np.arange(n_gen_disp_sh))), shape = (nbus, n_gen_disp_sh))
 
     t_2e = timeit.default_timer()
 
     print(f'{t_1e - t_1s}\n')
     print(f'{t_2e - t_2s}\n ')
+    print(f'{t_1e - t_1s - t_2e + t_2s}\n ')
 
 if __name__ == '__main__':
     test_csc_speeds()
