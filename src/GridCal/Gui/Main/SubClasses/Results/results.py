@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from typing import Union
 from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
 import GridCal.Gui.gui_functions as gf
-from GridCal.Gui.messages import error_msg, warning_msg
+from GridCal.Gui.messages import error_msg, warning_msg, yes_no_question
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
 from GridCal.Gui.results_model import ResultsModel
 from GridCal.Gui.general_dialogues import fill_tree_from_logs
@@ -155,38 +155,49 @@ class ResultsMain(SimulationsMain):
 
             # get the selected element
             obj_idx = self.ui.resultsTableView.selectedIndexes()
+            n_cols = mdl.table.c
 
-            # create figure to plot
-            fig = plt.figure(figsize=(12, 8))
-            ax = fig.add_subplot(111)
-
-            if len(obj_idx):
-
-                # get the unique columns in the selected cells
-                cols = np.zeros(len(obj_idx), dtype=int)
-                rows = np.zeros(len(obj_idx), dtype=int)
-
-                for i in range(len(obj_idx)):
-                    cols[i] = obj_idx[i].column()
-                    rows[i] = obj_idx[i].row()
-
-                cols = np.unique(cols)
-                rows = np.unique(rows)
-
+            if n_cols > 50:
+                ok = yes_no_question(text=f"There are {n_cols} columns, the plot might take a lot to render.\n"
+                                          "Are you ok with potentially waiting a lot?", title="Plot")
             else:
-                # plot all
-                cols = None
-                rows = None
+                ok = True
 
-            # none selected, plot all
-            mdl.plot(
-                ax=ax,
-                selected_col_idx=cols,
-                selected_rows=rows,
-                stacked=self.ui.stacked_plot_checkBox.isChecked()
-            )
+            if ok:
+                # create figure to plot
+                fig = plt.figure(figsize=(12, 8))
+                ax = fig.add_subplot(111)
 
-            plt.show()
+                if len(obj_idx):
+
+                    # get the unique columns in the selected cells
+                    cols = np.zeros(len(obj_idx), dtype=int)
+                    rows = np.zeros(len(obj_idx), dtype=int)
+
+                    for i in range(len(obj_idx)):
+                        cols[i] = obj_idx[i].column()
+                        rows[i] = obj_idx[i].row()
+
+                    cols = np.unique(cols)
+                    rows = np.unique(rows)
+
+                else:
+                    # plot all
+                    cols = None
+                    rows = None
+
+
+                # none selected, plot all
+                mdl.plot(
+                    ax=ax,
+                    selected_col_idx=cols,
+                    selected_rows=rows,
+                    stacked=self.ui.stacked_plot_checkBox.isChecked()
+                )
+
+                plt.show()
+            else:
+                pass
 
     def save_results_df(self):
         """

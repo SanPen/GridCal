@@ -387,7 +387,7 @@ class ArrowHead(QGraphicsPolygonItem):
         :param visibility_filter_value: threshold to determine if to show this widget
         :param draw_label: Draw label
         """
-        self.setVisible(abs(value) > visibility_filter_value)
+        self.setVisible(bool(abs(value) > visibility_filter_value))
         self.backwards = backwards
 
         self.label.setVisible(draw_label)

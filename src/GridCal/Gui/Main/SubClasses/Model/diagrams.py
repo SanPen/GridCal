@@ -32,7 +32,7 @@ from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
                                                                    generate_schematic_diagram,
-                                                                   make_vecinity_diagram)
+                                                                   make_vicinity_diagram)
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
 from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
@@ -1614,9 +1614,9 @@ class DiagramsMain(CompiledArraysMain):
                 self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
                 self.set_diagrams_list_view()
 
-    def add_bus_vecinity_diagram_from_model(self):
+    def add_bus_vicinity_diagram_from_model(self):
         """
-        Add a bus vecinity diagram
+        Add a bus vicinity diagram
         :return:
         """
         model = self.ui.dataStructureTableView.model()
@@ -1676,11 +1676,11 @@ class DiagramsMain(CompiledArraysMain):
 
                         dlg = InputNumberDialogue(min_value=1, max_value=99,
                                                   default_value=1, is_int=True,
-                                                  title='Vecinity diagram',
+                                                  title='Vicinity diagram',
                                                   text='Select the expansion level')
 
                         if dlg.exec():
-                            diagram = make_vecinity_diagram(circuit=self.circuit,
+                            diagram = make_vicinity_diagram(circuit=self.circuit,
                                                             root_bus=root_bus,
                                                             max_level=dlg.value)
 
@@ -1701,11 +1701,11 @@ class DiagramsMain(CompiledArraysMain):
         """
         dlg = InputNumberDialogue(min_value=1, max_value=99,
                                   default_value=1, is_int=True,
-                                  title='Vecinity diagram',
-                                  text='Select the expansion level')
+                                  title='Vicinity diagram',
+                                  text=f'Set the expansion level from {root_bus.name}')
 
         if dlg.exec():
-            diagram = make_vecinity_diagram(circuit=self.circuit,
+            diagram = make_vicinity_diagram(circuit=self.circuit,
                                             root_bus=root_bus,
                                             max_level=dlg.value)
 
@@ -1727,7 +1727,7 @@ class DiagramsMain(CompiledArraysMain):
         buses = self.circuit.get_substation_buses(substation=substation)
 
         if len(buses):
-            diagram = make_vecinity_diagram(circuit=self.circuit,
+            diagram = make_vicinity_diagram(circuit=self.circuit,
                                             root_bus=buses[0],
                                             max_level=2,
                                             prog_func=None,

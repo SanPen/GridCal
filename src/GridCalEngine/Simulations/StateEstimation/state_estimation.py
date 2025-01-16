@@ -13,7 +13,7 @@ from GridCalEngine.Simulations.StateEstimation.state_estimation_inputs import St
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import power_flow_post_process_nonlinear
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.basic_structures import CscMat, IntVec
+from GridCalEngine.basic_structures import CscMat, IntVec, CxVec
 
 
 def dSbus_dV(Ybus, V):
@@ -296,7 +296,7 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
 
 
 def solve_se_lm(nc: NumericalCircuit,
-                Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+                Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
                 F: IntVec, T: IntVec, se_input: StateEstimationInput,
                 vd: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
@@ -415,6 +415,7 @@ def solve_se_lm(nc: NumericalCircuit,
         Ybus=Ybus,
         Yf=Yf,
         Yt=Yt,
+        Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
 

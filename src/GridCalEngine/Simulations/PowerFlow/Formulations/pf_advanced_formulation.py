@@ -197,6 +197,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.tap_module_control_mode = self.nc.active_branch_data.tap_module_control_mode.copy()
         self.tap_phase_control_mode = self.nc.active_branch_data.tap_phase_control_mode.copy()
 
+        self.Cf = self.nc.passive_branch_data.Cf.tocsc()
+        self.Ct = self.nc.passive_branch_data.Ct.tocsc()
+
         self.pq = np.array(0, dtype=int)
         self.pv = np.array(0, dtype=int)
         self.pqv = np.array(0, dtype=int)
@@ -240,8 +243,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-            Cf=self.nc.passive_branch_data.Cf.tocsc(),
-            Ct=self.nc.passive_branch_data.Ct.tocsc(),
+            Cf=self.Cf,
+            Ct=self.Ct,
             Yshunt_bus=self.nc.get_Yshunt_bus(),
             conn=self.nc.passive_branch_data.conn,
             seq=1,
@@ -435,8 +438,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, tau, self.idx_dtau, 0.0),
-            Cf=self.nc.passive_branch_data.Cf.tocsc(),
-            Ct=self.nc.passive_branch_data.Ct.tocsc(),
+            Cf=self.Cf,
+            Ct=self.Ct,
             Yshunt_bus=self.nc.get_Yshunt_bus(),
             conn=self.nc.passive_branch_data.conn,
             seq=1,
@@ -511,8 +514,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
-            Cf=self.nc.passive_branch_data.Cf.tocsc(),
-            Ct=self.nc.passive_branch_data.Ct.tocsc(),
+            Cf=self.Cf,
+            Ct=self.Ct,
             Yshunt_bus=self.nc.get_Yshunt_bus(),
             conn=self.nc.passive_branch_data.conn,
             seq=1,
@@ -755,8 +758,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
             vtap_t=self.nc.passive_branch_data.virtual_tap_t,
             tap_angle=tau,
-            Cf=self.nc.passive_branch_data.Cf.tocsc(),
-            Ct=self.nc.passive_branch_data.Ct.tocsc(),
+            Cf=self.Cf,
+            Ct=self.Ct,
             Yshunt_bus=self.nc.get_Yshunt_bus(),
             conn=self.nc.passive_branch_data.conn,
             seq=1,
@@ -892,6 +895,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Ybus=self.adm.Ybus,
             Yf=self.adm.Yf,
             Yt=self.adm.Yt,
+            Yshunt_bus=self.adm.Yshunt_bus,
             branch_rates=self.nc.passive_branch_data.rates,
             Sbase=self.nc.Sbase
         )

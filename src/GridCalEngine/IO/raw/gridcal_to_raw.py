@@ -152,6 +152,9 @@ def get_psse_switched_shunt(shunt: dev.ControllableShunt, bus_dict: Dict[dev.Bus
 
     psse_switched_shunt.STATUS = 1 if shunt.active else 0
 
+    psse_switched_shunt.BINIT = shunt.B
+    psse_switched_shunt.STAT = int(shunt.active)
+
     if shunt.control_bus is not None and shunt.control_bus != shunt.bus:
         psse_switched_shunt.SWREG = bus_dict.get(shunt.control_bus, 0)
 
@@ -247,6 +250,8 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
     psse_transformer.VMA1 = transformer.tap_changer.get_tap_module_max()
     psse_transformer.VMI1 = transformer.tap_changer.get_tap_module_min()
 
+    psse_transformer.ANG1 = np.rad2deg(transformer.tap_phase)
+
     return psse_transformer
 
 
@@ -259,6 +264,10 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     """
     psse_transformer = RawTransformer()
     psse_transformer.windings = 3
+
+    psse_transformer.NOMV1 = transformer.V1
+    psse_transformer.NOMV2 = transformer.V2
+    psse_transformer.NOMV3 = transformer.V3
 
     psse_transformer.idtag = transformer.idtag
     psse_transformer.STAT = 1 if transformer.active else 0
@@ -286,6 +295,13 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.J = bus_dict[transformer.bus2]
     psse_transformer.K = bus_dict[transformer.bus3]
     psse_transformer.CKT = ckt
+
+    psse_transformer.R1_2 = transformer.r12
+    psse_transformer.X1_2 = transformer.x12
+    psse_transformer.R2_3 = transformer.r23
+    psse_transformer.X2_3 = transformer.x23
+    psse_transformer.R3_1 = transformer.r31
+    psse_transformer.X3_1 = transformer.x31
 
     return psse_transformer
 
@@ -332,6 +348,12 @@ def get_vsc_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> Ra
     psse_vsc_dc_line.NAME = hvdc_line.name
     psse_vsc_dc_line.ACSET1 = hvdc_line.Vset_f
     psse_vsc_dc_line.ACSET2 = hvdc_line.Vset_t
+
+    V1 = hvdc_line.bus_from.Vnom * psse_vsc_dc_line.ACSET1
+    V2 = hvdc_line.bus_to.Vnom * psse_vsc_dc_line.ACSET2
+    dV = (V1 - V2) * 1000.0
+    P = hvdc_line.Pset / 1e-6
+    psse_vsc_dc_line.RDC = dV * dV / P if P != 0 else 0
 
     return psse_vsc_dc_line
 
@@ -510,6 +532,8 @@ def gridcal_to_raw(grid: MultiCircuit, logger: Logger) -> PsseCircuit:
         zones_dict[zone] = i + 1
 
     for i, bus in enumerate(grid.buses):
+        if bus.internal:
+            continue
         psse_bus = get_psse_bus(bus=bus,
                                 area_dict=area_dict,
                                 zones_dict=zones_dict,
