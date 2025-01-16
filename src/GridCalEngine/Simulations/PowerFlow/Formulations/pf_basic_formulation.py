@@ -160,7 +160,7 @@ class PfBasicFormulation(PfFormulationTemplate):
         ]
         # self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
 
-        # compute the rror
+        # compute the error
         self._error = compute_fx_error(self._f)
 
         # review reactive power limits
@@ -279,11 +279,13 @@ class PfBasicFormulation(PfFormulationTemplate):
             Ybus=self.adm.Ybus,
             Yf=self.adm.Yf,
             Yt=self.adm.Yt,
+            Yshunt_bus=self.adm.Yshunt_bus,
             branch_rates=self.nc.passive_branch_data.rates,
-            Sbase=self.nc.Sbase)
+            Sbase=self.nc.Sbase
+        )
 
         return NumericPowerFlowResults(V=self.V,
-                                       Scalc=self.Scalc * self.nc.Sbase,
+                                       Scalc=Sbus * self.nc.Sbase,
                                        m=np.ones(self.nc.nbr, dtype=float),
                                        tau=np.zeros(self.nc.nbr, dtype=float),
                                        Sf=Sf,

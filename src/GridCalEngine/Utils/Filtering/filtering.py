@@ -234,6 +234,8 @@ class Filter:
             return True
         except ValueError:
             return False
+        except TypeError:
+            return False
 
     def apply_filter_op(self, obj_val: Union[float, str], val: Union[float, str]) -> bool:
         """

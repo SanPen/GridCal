@@ -1245,7 +1245,7 @@ class Assets:
         """
         Delete a :ref:`Bus<bus>` object from the grid.
         :param obj: :ref:`Bus<bus>` object
-        :param delete_associated:
+        :param delete_associated: Delete the associated branches and injections
         """
 
         # remove associated Branches in reverse order
@@ -1287,7 +1287,7 @@ class Assets:
         try:
             self._buses.remove(obj)
         except ValueError:
-            pass
+            print(f"Could not remove {obj.name}")
 
     def get_buses_by(self, filter_elements: List[Union[dev.Area, dev.Country, dev.Zone]]) -> List[dev.Bus]:
         """

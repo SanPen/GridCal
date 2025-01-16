@@ -132,6 +132,7 @@ class StateEstimation(DriverTemplate):
                                    Ybus=adm.Ybus,
                                    Yf=adm.Yf,
                                    Yt=adm.Yt,
+                                   Yshunt_bus=adm.Yshunt_bus,
                                    F=island.passive_branch_data.F,
                                    T=island.passive_branch_data.T,
                                    se_input=se_input,

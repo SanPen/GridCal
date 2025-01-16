@@ -5,6 +5,7 @@
 import numpy as np
 from typing import Dict, List, Tuple, Union
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
+from GridCalEngine import ConverterControlType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -299,15 +300,14 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
 
     # dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
     calc_node_dict: Dict[str, gcdev.Bus] = dict()
-    for cgmes_elm in cgmes_model.cgmes_assets.TopologicalNode_list:
+    for tp_node in cgmes_model.cgmes_assets.TopologicalNode_list:
 
-        voltage = v_dict.get(cgmes_elm.uuid, None)
-        nominal_voltage = get_nominal_voltage(topological_node=cgmes_elm,
-                                              logger=logger)
+        voltage = v_dict.get(tp_node.uuid, None)
+        nominal_voltage = get_nominal_voltage(topological_node=tp_node, logger=logger)
         if nominal_voltage == 0:
             logger.add_error(msg='Nominal voltage is 0. :(',
-                             device=cgmes_elm.rdfid,
-                             device_class=cgmes_elm.tpe,
+                             device=tp_node.rdfid,
+                             device_class=tp_node.tpe,
                              device_property="nominalVoltage")
 
         if voltage is not None and nominal_voltage is not None:
@@ -318,25 +318,25 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
             va = 0.0
 
         is_slack = False
-        if slack_id == cgmes_elm.rdfid:
+        if slack_id == tp_node.rdfid:
             is_slack = True
 
         volt_lev, substat, country, area, zone = None, None, None, None, None
         longitude, latitude = 0.0, 0.0
-        if cgmes_elm.ConnectivityNodeContainer:
-            volt_lev = find_object_by_idtag(
+        if tp_node.ConnectivityNodeContainer:
+            volt_lev: gcdev.VoltageLevel | None = find_object_by_idtag(
                 object_list=gc_model.voltage_levels,
-                target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
+                target_idtag=tp_node.ConnectivityNodeContainer.uuid
             )
             if volt_lev is None:
                 line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
-                if not isinstance(cgmes_elm.ConnectivityNodeContainer, line_tpe):
+                if not isinstance(tp_node.ConnectivityNodeContainer, line_tpe):
                     logger.add_warning(msg='No voltage level found for the bus',
-                                       device=cgmes_elm.rdfid,
-                                       device_class=cgmes_elm.tpe,
+                                       device=tp_node.rdfid,
+                                       device_class=tp_node.tpe,
                                        device_property="ConnectivityNodeContainer")
             else:
-                substat = find_object_by_idtag(
+                substat: gcdev.Substation | None = find_object_by_idtag(
                     object_list=gc_model.substations,
                     target_idtag=volt_lev.substation.idtag
                 )
@@ -345,7 +345,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                                        device=volt_lev.rdfid,
                                        device_class=volt_lev.tpe,
                                        device_property="substation")
-                    print(f'No substation found for BUS {cgmes_elm.name}')
+                    print(f'No substation found for BUS {tp_node.name}')
                 else:
                     if cgmes_model.cgmes_map_areas_like_raw:
                         area = substat.area
@@ -356,13 +356,14 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                     latitude = substat.latitude
         else:
             logger.add_warning(msg='Missing voltage level.',
-                               device=cgmes_elm.rdfid,
-                               device_class=cgmes_elm.tpe,
+                               device=tp_node.rdfid,
+                               device_class=tp_node.tpe,
                                device_property="ConnectivityNodeContainer")
-            # else form here get SubRegion and Region for Country..
-        gcdev_elm = gcdev.Bus(name=cgmes_elm.name,
-                              idtag=cgmes_elm.uuid,
-                              code=cgmes_elm.description,
+            # else form here get SubRegion and Region for Country...
+
+        gcdev_elm = gcdev.Bus(name=tp_node.name,
+                              idtag=tp_node.uuid,
+                              code=tp_node.description,
                               Vnom=nominal_voltage,
                               vmin=0.9,
                               vmax=1.1,
@@ -617,40 +618,13 @@ def get_gcdev_vsc_converters(cgmes_model: CgmesCircuit,
                 idtag=cgmes_elm.uuid,
                 code=cgmes_elm.description,
                 active=True,
-                # r = 0.0001,
-                # x = 0.05,
-                # tap_module = 1.0,
-                # tap_module_max = 1.1,
-                # tap_module_min = 0.8,
-                # tap_phase = 0.1,
-                # tap_phase_max = 6.28,
-                # tap_phase_min = -6.28,
-                # Beq = 0.001,
-                # Beq_min = -0.1,
-                # Beq_max = 0.1,
-                # G0sw = 1e-5,
-                # rate = 1e-9,
-                # kdp = -0.05,
-                # k = 1.0,
                 # alpha1 = 0.0001,
                 # alpha2 = 0.015,
                 # alpha3 = 0.2,
-                # mttf = 0.0,
-                # mttr = 0.0,
-                # tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
-                # tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
-                # vset: float = 1.0,
-                Pset=cgmes_elm.p,
-                # Qset: float = 0.0,
-                # cost = 100,
-                # contingency_factor = 1.0,
-                # protection_rating_factor: float = 1.4,
-                # contingency_enabled = True,
-                # monitor_loading = True,
-                # r0 = 0.0001,
-                # x0 = 0.05,
-                # r2 = 0.0001,
-                # x2 = 0.05,
+                control1=ConverterControlType.Pdc,
+                control1_val=cgmes_elm.p,
+                control2=ConverterControlType.Vm_dc,
+                control2_val=1.0,
             )
 
             gcdev_model.add_vsc(gcdev_elm)
@@ -1408,7 +1382,6 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                         protection_rating_factor=prot_factor,
                     )
 
-
                     # # get Tap data from CGMES
                     # tap_m, total_pos, neutral_pos, normal_pos, dV, tc_type, tap_pos = get_tap_changer_values(windings)
 
@@ -1650,6 +1623,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                     # SET tap_module and tap_phase from its own TapChanger object
                     gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
                     gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                    print("Tap module, and phase calculated:", gcdev_trafo.tap_module, gcdev_trafo.tap_phase)
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
                 winding_id = tap_changer.TransformerEnd.uuid
@@ -1777,7 +1751,7 @@ def get_gcdev_controllable_shunts(
             cn = cns[0]
 
             # conversion
-            G, B, G0, B0 = get_values_shunt(shunt=cgmes_elm,
+            g, b, g0, b0 = get_values_shunt(shunt=cgmes_elm,
                                             logger=logger,
                                             Sbase=Sbase)
 
@@ -1795,29 +1769,19 @@ def get_gcdev_controllable_shunts(
                 name=cgmes_elm.name,
                 code=cgmes_elm.description,
                 active=True,
-                is_nonlinear=False,                        # it is Linear!
+                is_nonlinear=False,  # it is Linear!
                 number_of_steps=cgmes_elm.maximumSections,
-                step=cgmes_elm.sections,
-                g_per_step=G,
-                b_per_step=B,
-                G=G,
-                B=B,
-                G0=G0,
-                B0=B0,
+                g_per_step=g,
+                b_per_step=b,
+                G0=g0,
+                B0=b0,
                 vset=v_set,
                 is_controlled=is_controlled,
                 control_bus=controlled_bus,
             )
-            # gcdev_elm = gcdev.Shunt(
-            #     idtag=cgmes_elm.uuid,
-            #     name=cgmes_elm.name,
-            #     code=cgmes_elm.description,
-            #     G=G * cgmes_elm.sections,
-            #     B=B * cgmes_elm.sections,
-            #     G0=G0 * cgmes_elm.sections,
-            #     B0=B0 * cgmes_elm.sections,
-            #     active=True,
-            # )
+            # B, G is calculated when step is set: only if .sections >= 1
+            gcdev_elm.step = cgmes_elm.sections - 1
+
             gcdev_model.add_controllable_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
 
         else:
@@ -1860,7 +1824,7 @@ def get_gcdev_controllable_shunts(
                 name=cgmes_elm.name,
                 code=cgmes_elm.description,
                 active=True,
-                is_nonlinear=True,                  # it is NonLinear!
+                is_nonlinear=True,  # it is NonLinear!
                 number_of_steps=cgmes_elm.maximumSections,
                 step=cgmes_elm.sections,
                 # g_per_step=G,
@@ -2303,11 +2267,11 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model=cgmes_model,
                                                                 logger=logger)
 
-    calc_node_dict = get_gcdev_buses(cgmes_model=cgmes_model,
-                                     gc_model=gc_model,
-                                     v_dict=sv_volt_dict,
-                                     cn_look_up=cn_look_up,
-                                     logger=logger)
+    calc_node_dict: Dict[str, gcdev.Bus] = get_gcdev_buses(cgmes_model=cgmes_model,
+                                                           gc_model=gc_model,
+                                                           v_dict=sv_volt_dict,
+                                                           cn_look_up=cn_look_up,
+                                                           logger=logger)
 
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,

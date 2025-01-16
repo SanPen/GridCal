@@ -454,7 +454,10 @@ class PowerFlowResults(ResultsTemplate):
                                   'Qf': self.Sf.imag,
                                   'Pt': self.St.real,
                                   'Qt': self.St.imag,
-                                  'loading': self.loading.real * 100.0},
+                                  'loading': self.loading.real * 100.0,
+                                  "Ploss": self.losses.real,
+                                  "Qloss": self.losses.imag,
+                                  },
                             index=self.branch_names)
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:

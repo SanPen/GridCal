@@ -124,7 +124,7 @@ def dcpf(nc: NumericalCircuit,
 
 
 def lacpf(nc: NumericalCircuit,
-          Ybus: CscMat, Yf: CscMat, Yt: CscMat, Ys: CscMat,
+          Ybus: CscMat, Yf: CscMat, Yt: CscMat, Ys: CscMat, Yshunt_bus: CxVec,
           S0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec, vd: IntVec) -> NumericPowerFlowResults:
     """
     Linearized AC Load Flow
@@ -245,6 +245,7 @@ def lacpf(nc: NumericalCircuit,
         Ybus=Ybus,
         Yf=Yf,
         Yt=Yt,
+        Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase
     )

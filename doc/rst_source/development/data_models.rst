@@ -4776,37 +4776,38 @@ Controllable shunt
 
 .. table::
 
-    ===================  ===================  =====  =========  =========  =====================================================================  ===========  =======
-           name              class_type       unit   mandatory  max_chars                              descriptions                               has_profile  comment
-    ===================  ===================  =====  =========  =========  =====================================================================  ===========  =======
-    idtag                str                         False                 Unique ID                                                              False               
-    name                 str                         False                 Name of the device.                                                    False               
-    code                 str                         False                 Secondary ID                                                           False               
-    action               enum ActionType             False                 Object action to perform. Only used for model merging.                 False               
-    comment              str                         False                 User comment                                                           False               
-    modelling_authority  Modelling Authority         False                 Modelling authority of this asset                                      False               
-    bus                  Bus                         False                 Connection bus                                                         False               
-    cn                   Connectivity Node           False                 Connection connectivity node                                           False               
-    active               bool                        False                 Is the load active?                                                    True                
-    mttf                 float                h      False                 Mean time to failure                                                   False               
-    mttr                 float                h      False                 Mean time to recovery                                                  False               
-    capex                float                e/MW   False                 Cost of investment. Used in expansion planning.                        False               
-    opex                 float                e/MWh  False                 Cost of operation. Used in expansion planning.                         False               
-    build_status         enum BuildStatus            False                 Branch build status. Used in expansion planning.                       False               
-    Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                                True                
-    facility             Facility                    False                 Facility where this is located                                         False               
-    technologies         AssociationsList     p.u.   False                 List of technologies                                                   False               
-    scalable             bool                        False                 Is the load scalable?                                                  False               
-    G                    float                MW     False                 Active power                                                           True                
-    B                    float                MVAr   False                 Reactive power                                                         True                
-    G0                   float                MW     False                 Zero sequence active power of the impedance component at V=1.0 p.u.    True                
-    B0                   float                MVAr   False                 Zero sequence reactive power of the impedance component at V=1.0 p.u.  True                
-    is_nonlinear         bool                        False                 Is non-linear?                                                         False               
-    g_steps              Array                       False                 Conductance incremental steps                                          False               
-    b_steps              Array                       False                 Susceptance incremental steps                                          False               
-    step                 int                         False                 Device tap step                                                        True                
-    Vset                 float                p.u.   False                 Set voltage. This is used for controlled shunts.                       True                
-    ===================  ===================  =====  =========  =========  =====================================================================  ===========  =======
+    ===================  ===================  ============  =========  =========  =====================================================================  ===========  =======
+           name              class_type           unit      mandatory  max_chars                              descriptions                               has_profile  comment
+    ===================  ===================  ============  =========  =========  =====================================================================  ===========  =======
+    idtag                str                                False                 Unique ID                                                              False               
+    name                 str                                False                 Name of the device.                                                    False               
+    code                 str                                False                 Secondary ID                                                           False               
+    action               enum ActionType                    False                 Object action to perform. Only used for model merging.                 False               
+    comment              str                                False                 User comment                                                           False               
+    modelling_authority  Modelling Authority                False                 Modelling authority of this asset                                      False               
+    bus                  Bus                                False                 Connection bus                                                         False               
+    cn                   Connectivity Node                  False                 Connection connectivity node                                           False               
+    active               bool                               False                 Is the load active?                                                    True                
+    mttf                 float                h             False                 Mean time to failure                                                   False               
+    mttr                 float                h             False                 Mean time to recovery                                                  False               
+    capex                float                e/MW          False                 Cost of investment. Used in expansion planning.                        False               
+    opex                 float                e/MWh         False                 Cost of operation. Used in expansion planning.                         False               
+    build_status         enum BuildStatus                   False                 Branch build status. Used in expansion planning.                       False               
+    Cost                 float                e/MWh         False                 Cost of not served energy. Used in OPF.                                True                
+    facility             Facility                           False                 Facility where this is located                                         False               
+    technologies         AssociationsList     p.u.          False                 List of technologies                                                   False               
+    scalable             bool                               False                 Is the load scalable?                                                  False               
+    G                    float                MW            False                 Active power                                                           True                
+    B                    float                MVAr          False                 Reactive power                                                         True                
+    G0                   float                MW            False                 Zero sequence active power of the impedance component at V=1.0 p.u.    True                
+    B0                   float                MVAr          False                 Zero sequence reactive power of the impedance component at V=1.0 p.u.  True                
+    is_nonlinear         bool                               False                 Is non-linear?                                                         False               
+    g_steps              Array                MW@v=1p.u.    False                 Conductance steps                                                      False               
+    b_steps              Array                MVAr@v=1p.u.  False                 Susceptance steps                                                      False               
+    active_steps         Array                              False                 steps active?                                                          False               
+    step                 int                                False                 Device step position (0~N-1)                                           True                
+    Vset                 float                p.u.          False                 Set voltage. This is used for controlled shunts.                       True                
+    ===================  ===================  ============  =========  =========  =====================================================================  ===========  =======
 
 
 Country

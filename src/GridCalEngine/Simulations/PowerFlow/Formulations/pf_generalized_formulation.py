@@ -23,6 +23,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    polar_to_rect)
 from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, HvdcControlType, ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
+from trunk.acdc_pf.generalized_wip.adm_primites_test import calc1
 
 
 @njit()
@@ -383,7 +384,7 @@ def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
     return Ybus.tocsc()
 
 
-# @njit(cache=True)
+@njit(cache=True)
 def calcSf(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
            R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec):
     """
@@ -451,6 +452,49 @@ def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
     # St_cbr = (np.power(Vt, 2.0) * np.conj(ytt) + Vt * Vf * np.conj(ytf))
 
     return St_cbr
+
+
+@njit(cache=True)
+def calc_flows_summation_per_bus(nbus: int,
+                                 F_br: IntVec, T_br: IntVec, Sf_br: CxVec, St_br: CxVec,
+                                 F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
+                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
+    """
+    Summation of magnitudes per bus (complex)
+    :param nbus:
+    :param F_br:
+    :param T_br:
+    :param Sf_br:
+    :param St_br:
+    :param F_hvdc:
+    :param T_hvdc:
+    :param Sf_hvdc:
+    :param St_hvdc:
+    :param F_vsc:
+    :param T_vsc:
+    :param Pf_vsc:
+    :param St_vsc:
+    :return:
+    """
+
+    res = np.zeros(nbus, dtype=np.complex128)
+
+    # Add branches
+    for i in range(len(F_br)):
+        res[F_br[i]] += Sf_br[i]
+        res[T_br[i]] += St_br[i]
+
+    # Add HVDC
+    for i in range(len(F_hvdc)):
+        res[F_hvdc[i]] += Sf_hvdc[i]
+        res[T_hvdc[i]] += St_hvdc[i]
+
+    # Add VSC
+    for i in range(len(F_vsc)):
+        res[F_vsc[i]] += Pf_vsc[i]
+        res[T_vsc[i]] += St_vsc[i]
+
+    return res
 
 
 def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
@@ -664,7 +708,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         cbr_qf_set = list()
         cbr_qt_set = list()
 
+        dic_old_to_new_bus = {val: idx for idx, val in enumerate(self.nc.bus_data.original_idx)}
+
         # CONTROLLABLE BRANCH LOOP
+        count_overl = 0
         for k in range(self.nc.passive_branch_data.nelm):
 
             ctrl_m = self.nc.active_branch_data.tap_module_control_mode[k]
@@ -675,11 +722,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                 # Every bus controlled by m has to become a PQV bus
                 bus_idx = self.nc.active_branch_data.tap_controlled_buses[k]
+                new_bus_idx = dic_old_to_new_bus[bus_idx]
                 # self.is_p_controlled[bus_idx] = True
                 # self.is_q_controlled[bus_idx] = True
-                self.is_vm_controlled[bus_idx] = True
-                # self.is_va_controlled[bus_idx] = True
-                u_cbr_m.append(k)
+                if not self.is_vm_controlled[new_bus_idx]:
+                    self.is_vm_controlled[new_bus_idx] = True
+                    u_cbr_m.append(k)
 
             elif ctrl_m == TapModuleControl.Qf:
                 u_cbr_m.append(k)
@@ -724,6 +772,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             else:
                 raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
 
+        print('count_overl', count_overl)
         self.u_cbr_m = np.array(u_cbr_m, dtype=int)
         self.u_cbr_tau = np.array(u_cbr_tau, dtype=int)
         self.cbr = np.array(cbr, dtype=int)
@@ -2408,9 +2457,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
 
         # difference between the actual power and the power calculated with the passive term (initial admittance)
-        AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
-        AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
+        # AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        # AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
+        # AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2474,8 +2523,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
         St_vsc = make_complex(Pt_vsc, Qt_vsc)
-
-        Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+        # Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
@@ -2492,12 +2540,27 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
         St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
-        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
-        self.Scalc = Scalc  # needed for the Q control check to use
-        dS = Scalc - Sbus
+        # Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
+        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
+            nbus=self.nc.bus_data.nbus,
+            F_br=self.F_cbr[self.cbr],
+            T_br=self.T_cbr[self.cbr],
+            Sf_br=Sf_cbr,
+            St_br=St_cbr,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=Pf_vsc,
+            St_vsc=St_vsc
+        )
+
+        dS = self.Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
         _f = np.r_[
@@ -2511,18 +2574,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qf_cbr - self.cbr_qf_set,
             Qt_cbr - self.cbr_qt_set
         ]
-
-        # Print index blocks of f
-        # print('Lengths: ')
-        # print(len(self.i_k_p), len(self.i_k_q), len(loss_vsc), len(loss_hvdc), len(inj_hvdc),
-        #       len(Pf_cbr), len(Pt_cbr), len(Qf_cbr), len(Qt_cbr))
-        #
-        # print('Pf set: ', self.cbr_pf_set)
-        # print('f errors: ')
-        # # Get indices of troublesome values
-        # for i, ff in enumerate(_f):
-        #     if abs(ff) > 0.5:
-        #         print(i, ff)
 
         return _f
 
@@ -2747,9 +2798,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
 
         # difference between the actual power and the power calculated with the passive term (initial admittance)
-        AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
-        AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
+        # AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        # AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
+        # AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2814,7 +2865,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
-        Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+        # Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = self.Vm[self.nc.hvdc_data.F]
@@ -2831,12 +2882,29 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc)
         St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc)
-        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
-        self.Scalc = Scalc  # needed for the Q control check to use
-        dS = Scalc - Sbus
+        # Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
+        # self.Scalc = Scalc  # needed for the Q control check to use
+
+        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
+            nbus=self.nc.bus_data.nbus,
+            F_br=self.F_cbr[self.cbr],
+            T_br=self.T_cbr[self.cbr],
+            Sf_br=Sf_cbr,
+            St_br=St_cbr,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=self.Pf_vsc,
+            St_vsc=St_vsc
+        )
+
+        dS = self.Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
         self._f = np.r_[
@@ -3065,11 +3133,30 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Basic bus powers
         # Sbus_const = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        Sbus_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
-        Sbus_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
-        Sbus_br = Sf @ self.nc.passive_branch_data.Cf + St @ self.nc.passive_branch_data.Ct
-        # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
-        Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
+        # Sbus_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+        # Sbus_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        # Sbus_br = Sf @ self.nc.passive_branch_data.Cf + St @ self.nc.passive_branch_data.Ct
+        #
+        # # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
+        # Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
+
+        # the trick here is that the mismatch of the branch flow summations is what we actually want;
+        # that'd be the injections per bus in the end, including the voltage dependent values
+        Sbus = calc_flows_summation_per_bus(
+            nbus=self.nc.bus_data.nbus,
+            F_br=self.nc.passive_branch_data.F,
+            T_br=self.nc.passive_branch_data.T,
+            Sf_br=Sf,
+            St_br=St,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=Pf_vsc,
+            St_vsc=St_vsc
+        )
 
         return NumericPowerFlowResults(
             V=self.V,

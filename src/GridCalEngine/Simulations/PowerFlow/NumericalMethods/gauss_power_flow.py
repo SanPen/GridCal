@@ -16,7 +16,7 @@ from GridCalEngine.basic_structures import Logger, CxVec, IntVec, Vec, CscMat
 
 
 def gausspf(nc: NumericalCircuit,
-            Ybus: CscMat, Yf: CscMat, Yt: CscMat,
+            Ybus: CscMat, Yf: CscMat, Yt: CscMat, Yshunt_bus: CxVec,
             S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec,
             pv: IntVec, pq: IntVec, p: IntVec, pqv: IntVec, vd: IntVec,
             bus_installed_power: Vec, Qmin: Vec, Qmax: Vec, tol=1e-3, max_it=50,
@@ -27,6 +27,7 @@ def gausspf(nc: NumericalCircuit,
     :param Ybus: Admittance matrix
     :param Yf: Admittance from matrix
     :param Yt: Admittance to matrix
+    :param Yshunt_bus: Vector of admittance due to devices
     :param S0: Power Injections array
     :param I0: Current Injections array
     :param Y0: Admittance Injections array
@@ -180,6 +181,7 @@ def gausspf(nc: NumericalCircuit,
         Ybus=Ybus,
         Yf=Yf,
         Yt=Yt,
+        Yshunt_bus=Yshunt_bus,
         branch_rates=nc.passive_branch_data.rates,
         Sbase=nc.Sbase)
 

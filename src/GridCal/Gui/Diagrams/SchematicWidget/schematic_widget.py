@@ -8,7 +8,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Union, Tuple, TYPE_CHECKING
+from typing import List, Set, Dict, Union, Tuple, TYPE_CHECKING
 from collections.abc import Callable
 from warnings import warn
 import networkx as nx
@@ -518,7 +518,7 @@ class SchematicWidget(BaseDiagramWidget):
         self.editor_graphics_view.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
     def create_bus_graphics(self, bus: Bus, x: int, y: int, h: int, w: int,
-                            draw_labels: bool = True) -> BusGraphicItem:
+                            draw_labels: bool = True, r: float = 0.0) -> BusGraphicItem:
         """
         create the Bus graphics
         :param bus: GridCal Bus object
@@ -536,7 +536,8 @@ class SchematicWidget(BaseDiagramWidget):
                                         y=y,
                                         h=h,
                                         w=w,
-                                        draw_labels=draw_labels)
+                                        draw_labels=draw_labels,
+                                        r=r)
         return graphic_object
 
     def create_transformer_3w_graphics(self, elm: Transformer3W, x: float, y: float) -> Transformer3WGraphicItem:
@@ -635,7 +636,8 @@ class SchematicWidget(BaseDiagramWidget):
                                                                   y=location.y,
                                                                   h=location.h,
                                                                   w=location.w,
-                                                                  draw_labels=location.draw_labels)
+                                                                  draw_labels=location.draw_labels,
+                                                                  r=location.r)
                         self.add_to_scene(graphic_object=graphic_object)
 
                         # create the bus children
@@ -912,7 +914,7 @@ class SchematicWidget(BaseDiagramWidget):
         Expand the diagram from one bus
         :param root_bus: Root bus to expand from
         """
-        extra_diagram = make_vecinity_diagram(circuit=self.circuit,
+        extra_diagram = make_vicinity_diagram(circuit=self.circuit,
                                               root_bus=root_bus,
                                               max_level=1)
 
@@ -2003,7 +2005,7 @@ class SchematicWidget(BaseDiagramWidget):
         y = int(bus.y * explode_factor) if y0 is None else y0
 
         # add the graphic object to the diagram view
-        graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h)
+        graphic_object = self.create_bus_graphics(bus=bus, x=x, y=y, w=bus.w, h=bus.h, r=0.0)
 
         # create the bus children
         if len(injections_by_tpe) > 0:
@@ -2014,7 +2016,7 @@ class SchematicWidget(BaseDiagramWidget):
                                     y=y,
                                     w=bus.w,
                                     h=bus.h,
-                                    r=0,
+                                    r=graphic_object.r,
                                     draw_labels=graphic_object.draw_labels,
                                     graphic_object=graphic_object)
 
@@ -3520,8 +3522,8 @@ class SchematicWidget(BaseDiagramWidget):
                                 #     if theta is not None:
                                 #         tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
-                                    # if Beq is not None:
-                                    #     tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
+                                # if Beq is not None:
+                                #     tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
 
                                 graphic_object.setToolTipText(tooltip)
                                 graphic_object.set_colour(color, w, style)
@@ -3602,9 +3604,11 @@ class SchematicWidget(BaseDiagramWidget):
                                 tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
                                 tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
                                 tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
-                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0, St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                                                                     St=vsc_Pt[i] + 1j * vsc_Qt[i])
                             else:
-                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0, St=-vsc_Pf[i] + 1j * vsc_Qt[i])
+                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                                                                     St=-vsc_Pf[i] + 1j * vsc_Qt[i])
 
                             graphic_object.setToolTipText(tooltip)
                             graphic_object.set_colour(color, w, style)
@@ -4481,7 +4485,7 @@ def generate_schematic_diagram(buses: List[Bus],
     return diagram
 
 
-def get_devices_to_expand(circuit: MultiCircuit, root_bus: Bus, max_level: int = 1) -> Tuple[List[Bus],
+def get_devices_to_expand(circuit: MultiCircuit, buses: List[Bus], max_level: int = 1) -> Tuple[List[Bus],
 List[BusBar],
 List[ConnectivityNode],
 List[Line],
@@ -4499,7 +4503,7 @@ List[FluidPath]]:
     """
     get lists of devices to expand given a root bus
     :param circuit: MultiCircuit
-    :param root_bus: Bus
+    :param buses: List of Bus
     :param max_level: max expansion level
     :return:
     """
@@ -4514,7 +4518,7 @@ List[FluidPath]]:
     branch_dict = {b: i for i, b in enumerate(all_branches)}
 
     # create a pool of buses
-    bus_pool = [(root_bus, 0)]  # store the bus objects and their level from the root
+    bus_pool = [(b, 0) for b in buses]  # store the bus objects and their level from the root
 
     buses = set()
     busbars = set()
@@ -4602,13 +4606,13 @@ List[FluidPath]]:
             list(fluid_nodes), fluid_paths)
 
 
-def make_vecinity_diagram(circuit: MultiCircuit,
+def make_vicinity_diagram(circuit: MultiCircuit,
                           root_bus: Bus,
                           max_level: int = 1,
                           prog_func: Union[Callable, None] = None,
                           text_func: Union[Callable, None] = None):
     """
-    Create a vecinity diagram
+    Create a vicinity diagram
     :param circuit: MultiCircuit
     :param root_bus: Bus
     :param max_level: max expansion level
@@ -4622,7 +4626,7 @@ def make_vecinity_diagram(circuit: MultiCircuit,
      transformers3w, windings, hvdc_lines,
      vsc_converters, upfc_devices,
      series_reactances, switches,
-     fluid_nodes, fluid_paths) = get_devices_to_expand(circuit=circuit, root_bus=root_bus, max_level=max_level)
+     fluid_nodes, fluid_paths) = get_devices_to_expand(circuit=circuit, buses=[root_bus], max_level=max_level)
 
     # Draw schematic subset
     diagram = generate_schematic_diagram(buses=list(buses),
@@ -4643,6 +4647,50 @@ def make_vecinity_diagram(circuit: MultiCircuit,
                                          explode_factor=1.0,
                                          prog_func=prog_func,
                                          text_func=text_func,
-                                         name=root_bus.name + 'vecinity')
+                                         name=root_bus.name + 'vicinity')
+
+    return diagram
+
+
+def make_diagram_from_buses(circuit: MultiCircuit,
+                            buses: List[Bus] | Set[Bus],
+                            prog_func: Union[Callable, None] = None,
+                            text_func: Union[Callable, None] = None):
+    """
+    Create a vicinity diagram
+    :param circuit: MultiCircuit
+    :param buses: List of Bus
+    :param prog_func:
+    :param text_func:
+    :return:
+    """
+
+    (buses, busbars, cns,
+     lines, dc_lines, transformers2w,
+     transformers3w, windings, hvdc_lines,
+     vsc_converters, upfc_devices,
+     series_reactances, switches,
+     fluid_nodes, fluid_paths) = get_devices_to_expand(circuit=circuit, buses=buses, max_level=1)
+
+    # Draw schematic subset
+    diagram = generate_schematic_diagram(buses=list(buses),
+                                         busbars=busbars,
+                                         connecivity_nodes=cns,
+                                         lines=lines,
+                                         dc_lines=dc_lines,
+                                         transformers2w=transformers2w,
+                                         transformers3w=transformers3w,
+                                         windings=windings,
+                                         hvdc_lines=hvdc_lines,
+                                         vsc_devices=vsc_converters,
+                                         upfc_devices=upfc_devices,
+                                         series_reactances=series_reactances,
+                                         switches=switches,
+                                         fluid_nodes=list(fluid_nodes),
+                                         fluid_paths=fluid_paths,
+                                         explode_factor=1.0,
+                                         prog_func=prog_func,
+                                         text_func=text_func,
+                                         name='Diagram from selection')
 
     return diagram
