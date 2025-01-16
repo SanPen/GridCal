@@ -3140,6 +3140,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
         # Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
 
+        # the trick here is that the mismatch of the branch flow summations is what we actually want;
+        # that'd be the injections per bus in the end, including the voltage dependent values
         Sbus = calc_flows_summation_per_bus(
             nbus=self.nc.bus_data.nbus,
             F_br=self.nc.passive_branch_data.F,
