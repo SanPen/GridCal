@@ -422,7 +422,7 @@ def get_gridcal_transformer(
 
             if round(tc_tap_pos, 2) != int(tc_tap_pos):
                 # the calculated step is not an integer
-                tc_dV = round(1 - tap_module, 6)
+                tc_dV = round((1 - tap_module) / tap_module, 6)
                 tc_total_positions = 2
                 tc_neutral_position = 0
                 tc_normal_position = -1
@@ -541,6 +541,17 @@ def get_gridcal_transformer(
         )
 
         if adjust_taps_to_discrete_positions:
+
+            if psse_elm.COD1 == 0:  # for no control
+
+                elm.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
+                elm.tap_changer.recalc()
+                elm.tap_module = elm.tap_changer.set_tap_module(tap_module=tap_module)
+                elm.tap_changer.tc_type = TapChangerTypes.NoRegulation
+
+                logger.add_info("Raw import: tap module recalculated, but the transformer is not regulating",
+                                device=code,
+                                value=elm.tap_module)
 
             if psse_elm.COD1 in [1, -1]:  # for voltage control (1)
                 reg_bus_id = abs(psse_elm.CONT1)
