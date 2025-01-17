@@ -853,7 +853,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             # PhaseTapChangerSymmetrical or PhaseTapChangerAsymmetrical
             tap_changer.voltageStepIncrement = voltageIncr
             tap_changer.xMin = mc_elm.X
-            # TODO tap_changer.xMax =
+            # TODO tap_changer.xMax from Impedance corr table
+            tap_changer.xMax = mc_elm.X     # just to have it in the export
         else:
             logger.add_error(
                 msg='stepVoltageIncrement cannot be filled for TapChanger',
