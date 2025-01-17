@@ -92,7 +92,8 @@ class RawVscDCLine(RawObject):
                                class_type=int,
                                description='Converter bus number, ',
                                min_value=0,
-                               max_value=999999)
+                               max_value=999999,
+                               max_chars=6)
 
         self.register_property(property_name='TYPE1',
                                rawx_key='type1',
@@ -212,7 +213,8 @@ class RawVscDCLine(RawObject):
                                class_type=int,
                                description='Converter bus number',
                                min_value=0,
-                               max_value=999999)
+                               max_value=999999,
+                               max_chars=6)
 
         self.register_property(property_name='TYPE2',
                                rawx_key='type2',
@@ -396,7 +398,7 @@ class RawVscDCLine(RawObject):
 
     def get_raw_line(self, version):
 
-        var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
+        var = ["O1", "F1", "O2", "F2", "O3", "F3", "O4", "F4"]
 
         if version >= 35:
             '''
@@ -404,15 +406,15 @@ class RawVscDCLine(RawObject):
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
 
-            l0 = self.format_raw_line([self.NAME, self.MDC, self.RDC] + var)
+            l0 = self.format_raw_line(["NAME", "MDC", "RDC"] + var)
 
-            l1 = self.format_raw_line([self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1,
-                                       self.BLOSS1, self.MINLOSS1, self.SMAX1, self.IMAX1, self.PWF1,
-                                       self.MAXQ1, self.MINQ1, self.VSREG1, self.NREG1, self.RMPCT1])
+            l1 = self.format_raw_line(["IBUS1", "TYPE1", "MODE1", "DCSET1", "ACSET1", "ALOSS1",
+                                       "BLOSS1", "MINLOSS1", "SMAX1", "IMAX1", "PWF1",
+                                       "MAXQ1", "MINQ1", "VSREG1", "NREG1", "RMPCT1"])
 
-            l2 = self.format_raw_line([self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2, self.ALOSS2,
-                                       self.BLOSS2, self.MINLOSS2, self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2,
-                                       self.MINQ2, self.VSREG2, self.NREG2, self.RMPCT2])
+            l2 = self.format_raw_line(["IBUS2", "TYPE2", "MODE2", "DCSET2", "ACSET2", "ALOSS2",
+                                       "BLOSS2", "MINLOSS2", "SMAX2", "IMAX2", "PWF2", "MAXQ2",
+                                       "MINQ2", "VSREG2", "NREG2", "RMPCT2"])
 
             return l0 + '\n' + l1 + '\n' + l2
 
@@ -423,15 +425,15 @@ class RawVscDCLine(RawObject):
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
 
-            l0 = self.format_raw_line([self.NAME, self.MDC, self.RDC] + var)
+            l0 = self.format_raw_line(["NAME", "MDC", "RDC"] + var)
 
-            l1 = self.format_raw_line([self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1, self.ALOSS1,
-                                       self.BLOSS1, self.MINLOSS1, self.SMAX1, self.IMAX1, self.PWF1, self.MAXQ1,
-                                       self.MINQ1, self.REMOT1, self.RMPCT1])
+            l1 = self.format_raw_line(["IBUS1", "TYPE1", "MODE1", "DCSET1", "ACSET1", "ALOSS1",
+                                       "BLOSS1", "MINLOSS1", "SMAX1", "IMAX1", "PWF1", "MAXQ1",
+                                       "MINQ1", "REMOT1", "RMPCT1"])
 
-            l2 = self.format_raw_line([self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2, self.ALOSS2,
-                                       self.BLOSS2, self.MINLOSS2, self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2,
-                                       self.MINQ2, self.REMOT2, self.RMPCT2])
+            l2 = self.format_raw_line(["IBUS2", "TYPE2", "MODE2", "DCSET2", "ACSET2", "ALOSS2",
+                                       "BLOSS2", "MINLOSS2", "SMAX2", "IMAX2", "PWF2", "MAXQ2",
+                                       "MINQ2", "REMOT2", "RMPCT2"])
 
             return l0 + '\n' + l1 + '\n' + l2
 
@@ -443,15 +445,15 @@ class RawVscDCLine(RawObject):
             IBUS,TYPE,MODE,DCSET,ACSET,ALOSS,BLOSS,MINLOSS,SMAX,IMAX,PWF,MAXQ,MINQ,REMOT,RMPCT
             '''
 
-            l0 = self.format_raw_line([self.NAME, self.MDC, self.RDC] + var)
+            l0 = self.format_raw_line(["NAME", "MDC", "RDC"] + var)
 
-            l1 = self.format_raw_line([self.IBUS1, self.TYPE1, self.MODE1, self.DCSET1, self.ACSET1,
-                                       self.ALOSS1, self.BLOSS1, self.MINLOSS1, self.SMAX1, self.IMAX1,
-                                       self.PWF1, self.MAXQ1, self.MINQ1, self.REMOT1, self.RMPCT1])
+            l1 = self.format_raw_line(["IBUS1", "TYPE1", "MODE1", "DCSET1", "ACSET1",
+                                       "ALOSS1", "BLOSS1", "MINLOSS1", "SMAX1", "IMAX1",
+                                       "PWF1", "MAXQ1", "MINQ1", "REMOT1", "RMPCT1"])
 
-            l2 = self.format_raw_line([self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2,
-                                       self.ALOSS2, self.BLOSS2, self.MINLOSS2, self.SMAX2, self.IMAX2,
-                                       self.PWF2, self.MAXQ2, self.MINQ2, self.REMOT2, self.RMPCT2])
+            l2 = self.format_raw_line(["IBUS2", "TYPE2", "MODE2", "DCSET2", "ACSET2",
+                                       "ALOSS2", "BLOSS2", "MINLOSS2", "SMAX2", "IMAX2",
+                                       "PWF2", "MAXQ2", "MINQ2", "REMOT2", "RMPCT2"])
 
             return l0 + '\n' + l1 + '\n' + l2
 

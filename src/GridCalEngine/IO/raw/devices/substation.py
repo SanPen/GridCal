@@ -86,7 +86,7 @@ class RawSubstation(RawObject):
     def get_raw_line(self, version):
 
         if version >= 35:
-            return self.format_raw_line([self.IS, self.NAME, self.LATI, self.LONG, self.SGR])
+            return self.format_raw_line(["IS", "NAME", "LATI", "LONG", "SGR"])
         else:
             raise Exception('Substation not defined for version', str(version))
 

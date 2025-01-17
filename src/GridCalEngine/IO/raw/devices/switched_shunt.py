@@ -68,7 +68,8 @@ class RawSwitchedShunt(RawObject):
                                class_type=int,
                                description="Bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="ID",
                                rawx_key="shntid",
@@ -233,31 +234,31 @@ class RawSwitchedShunt(RawObject):
 
         if version >= 35:
 
-            var = [self.N1, self.B1,
-                   self.N2, self.B2,
-                   self.N3, self.B3,
-                   self.N4, self.B4,
-                   self.N5, self.B5,
-                   self.N6, self.B6,
-                   self.N7, self.B7,
-                   self.N8, self.B8, ]
+            var = ["N1", "B1",
+                   "N2", "B2",
+                   "N3", "B3",
+                   "N4", "B4",
+                   "N5", "B5",
+                   "N6", "B6",
+                   "N7", "B7",
+                   "N8", "B8"]
 
-            return self.format_raw_line([self.I, self.ID, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO,
-                                         self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT] + var)
+            return self.format_raw_line(["I", "ID", "MODSW", "ADJM", "STAT", "VSWHI", "VSWLO",
+                                         "SWREG", "NREG", "RMPCT", "RMIDNT", "BINIT"] + var)
 
         elif version >= 29 <= 34:
 
-            var = [self.N1, self.B1,
-                   self.N2, self.B2,
-                   self.N3, self.B3,
-                   self.N4, self.B4,
-                   self.N5, self.B5,
-                   self.N6, self.B6,
-                   self.N7, self.B7,
-                   self.N8, self.B8, ]
+            var = ["N1", "B1",
+                   "N2", "B2",
+                   "N3", "B3",
+                   "N4", "B4",
+                   "N5", "B5",
+                   "N6", "B6",
+                   "N7", "B7",
+                   "N8", "B8"]
 
-            return self.format_raw_line([self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO,
-                                         self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT] + var)
+            return self.format_raw_line(["I", "MODSW", "ADJM", "STAT", "VSWHI", "VSWLO",
+                                         "SWREM", "RMPCT", "RMIDNT", "BINIT"] + var)
         else:
             raise Exception('Shunt not implemented for the version ' + str(version))
 

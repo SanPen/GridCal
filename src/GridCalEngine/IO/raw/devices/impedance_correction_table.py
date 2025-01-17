@@ -88,7 +88,7 @@ class RawImpedanceCorrectionTable(RawObject):
                 data.append(self.T[k])
                 data.append(self.F_re[k])
                 data.append(self.F_im[k])
-            return self.format_raw_line(data)
+            return ", ".join(data)
         else:
             raise Exception('Impedance correction not defined for version', str(version))
 

@@ -337,12 +337,14 @@ class RawInductionMachine(RawObject):
             PCODE,PSET,H,A,B,D,E,RA,XA,XM,R1,X1,R2,X2,X3,E1,SE1,E2,SE2,IA1,IA2,
             XAMULT
             '''
-            return self.format_raw_line([self.I, self.ID, self.STATUS, self.SCODE, self.DCODE, self.AREA, self.ZONE,
-                                         self.OWNER, self.TCODE, self.BCODE, self.MBASE, self.RATEKV]) + "\n" + \
-                self.format_raw_line([self.PCODE, self.PSET, self.H, self.A, self.B, self.D, self.E, self.RA,
-                                      self.XA, self.XM, self.R1, self.X1, self.R2, self.X2, self.X3, self.E1,
-                                      self.SE1, self.E2, self.SE2, self.IA1, self.IA2]) + "\n" + \
-                self.format_raw_line([self.XAMULT])
+            return (
+                    self.format_raw_line(["I", "ID", "STATUS", "SCODE", "DCODE", "AREA", "ZONE",
+                                          "OWNER", "TCODE", "BCODE", "MBASE", "RATEKV"]) + "\n" +
+                    self.format_raw_line(["PCODE", "PSET", "H", "A", "B", "D", "E", "RA",
+                                          "XA", "XM", "R1", "X1", "R2", "X2", "X3", "E1",
+                                          "SE1", "E2", "SE2", "IA1", "IA2"]) + "\n" +
+                    self.format_raw_line(["XAMULT"])
+            )
         else:
             raise Exception('Induction machine not implemented for version ' + str(version))
 

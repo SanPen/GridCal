@@ -47,7 +47,7 @@ class RawZone(RawObject):
     def get_raw_line(self, version):
 
         if version >= 29:
-            return self.format_raw_line([self.I, self.ZONAME])
+            return self.format_raw_line(["I", "ZONAME"])
         else:
             raise Exception('Zone not defined for version', str(version))
 

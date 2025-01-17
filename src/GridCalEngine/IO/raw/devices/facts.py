@@ -230,20 +230,20 @@ class RawFACTS(RawObject):
             RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
-            return self.format_raw_line([self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET,
-                                         self.SHMX, self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX,
-                                         self.RMPCT, self.OWNER, self.SET1, self.SET2, self.VSREF, self.FCREG,
-                                         self.NREG, self.MNAME])
+            return self.format_raw_line(["NAME", "I", "J", "MODE", "PDES", "QDES", "VSET",
+                                         "SHMX", "TRMX", "VTMN", "VTMX", "VSMX", "IMX", "LINX",
+                                         "RMPCT", "OWNER", "SET1", "SET2", "VSREF", "FCREG",
+                                         "NREG", "MNAME"])
 
         elif 30 <= version <= 34:
             '''
             'NAME',I,J,MODE,PDES,QDES,VSET,SHMX,TRMX,VTMN,VTMX,VSMX,IMX,LINX,
             RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
-            return self.format_raw_line([self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET,
-                                         self.SHMX, self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX,
-                                         self.RMPCT, self.OWNER, self.SET1, self.SET2, self.VSREF, self.REMOT,
-                                         self.MNAME])
+            return self.format_raw_line(["NAME", "I", "J", "MODE", "PDES", "QDES", "VSET",
+                                         "SHMX", "TRMX", "VTMN", "VTMX", "VSMX", "IMX", "LINX",
+                                         "RMPCT", "OWNER", "SET1", "SET2", "VSREF", "REMOT",
+                                         "MNAME"])
 
         elif version == 29:
             '''
@@ -251,10 +251,10 @@ class RawFACTS(RawObject):
                 RMPCT,OWNER,SET1,SET2,VSREF,REMOT,'MNAME'
             '''
 
-            return self.format_raw_line([self.NAME, self.I, self.J, self.MODE, self.PDES, self.QDES, self.VSET,
-                                         self.SHMX, self.TRMX, self.VTMN, self.VTMX, self.VSMX, self.IMX, self.LINX,
-                                         self.RMPCT, self.OWNER, self.SET1, self.SET2, self.VSREF, self.REMOT,
-                                         self.MNAME])
+            return self.format_raw_line(["NAME", "I", "J", "MODE", "PDES", "QDES", "VSET",
+                                         "SHMX", "TRMX", "VTMN", "VTMX", "VSMX", "IMX", "LINX",
+                                         "RMPCT", "OWNER", "SET1", "SET2", "VSREF", "REMOT",
+                                         "MNAME"])
         else:
             raise Exception('Version not implemented for FACTS ' + str(version))
 

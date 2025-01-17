@@ -90,7 +90,7 @@ class RawNode(RawObject):
     def get_raw_line(self, version):
 
         if version >= 29:
-            return self.format_raw_line([self.ISUB, self.NI, self.NAME, self.I, self.STATUS, self.VM, self.VA])
+            return self.format_raw_line(["ISUB", "NI", "NAME", "I", "STATUS", "VM", "VA"])
         else:
             raise Exception('Node not defined for version', str(version))
 

@@ -28,18 +28,18 @@ class RawGenerator(RawObject):
         self.XT = 0
         self.GTAP = 0
         self.STAT = 0
-        self.RMPCT = 0
+        self.RMPCT = 100.0
         self.PT = 0
         self.PB = 0
         self.BASLOD = 0
-        self.O1 = 0
-        self.F1 = 0
+        self.O1 = 1
+        self.F1 = 1.0
         self.O2 = 0
-        self.F2 = 0
+        self.F2 = 1.0
         self.O3 = 0
-        self.F3 = 0
+        self.F3 = 1.0
         self.O4 = 0
-        self.F4 = 0
+        self.F4 = 1.0
         self.WMOD = 0
         self.WPF = 0
 
@@ -48,7 +48,8 @@ class RawGenerator(RawObject):
                                class_type=int,
                                description="Bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="ID",
                                rawx_key="machid",
@@ -244,29 +245,29 @@ class RawGenerator(RawObject):
 
     def get_raw_line(self, version):
 
-        var = [self.O1, self.F1,
-               self.O2, self.F2,
-               self.O3, self.F3,
-               self.O4, self.F4]
+        var = ["O1", "F1",
+               "O2", "F2",
+               "O3", "F3",
+               "O4", "F4"]
 
         if version >= 35:
             # I,'ID',      PG,        QG,        QB,     VS,    IREG,     MBASE,
             # ZR,         ZX,         RT,         XT,     GTAP,STAT, RMPCT,      PT,        PB,
             # O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4,
             # WMOD,  WPF
-            return self.format_raw_line([self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG,
-                                         self.NREG, self.MBASE, self.ZR, self.ZX, self.RT, self.XT, self.GTAP,
-                                         self.STAT, self.RMPCT, self.PT, self.PB, self.BASLOD] + var +
-                                        [self.WMOD, self.WPF])
+            return self.format_raw_line(["I", "ID", "PG", "QG", "QT", "QB", "VS", "IREG",
+                                         "NREG", "MBASE", "ZR", "ZX", "RT", "XT", "GTAP",
+                                         "STAT", "RMPCT", "PT", "PB", "BASLOD"] + var +
+                                        ["WMOD", "WPF"])
 
         elif 30 <= version <= 34:
             # I,'ID',      PG,        QG,        QB,     VS,    IREG,     MBASE,
             # ZR,         ZX,         RT,         XT,     GTAP,STAT, RMPCT,      PT,        PB,
             # O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4,
             # WMOD,  WPF
-            return self.format_raw_line([self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG,
-                                         self.MBASE, self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT,
-                                         self.RMPCT, self.PT, self.PB] + var + [self.WMOD, self.WPF])
+            return self.format_raw_line(["I", "ID", "PG", "QG", "QT", "QB", "VS", "IREG",
+                                         "MBASE", "ZR", "ZX", "RT", "XT", "GTAP", "STAT",
+                                         "RMPCT", "PT", "PB"] + var + ["WMOD", "WPF"])
 
         elif version in [29]:
             """
@@ -275,9 +276,9 @@ class RawGenerator(RawObject):
             O1,F1,...,O4,F4
             """
 
-            return self.format_raw_line([self.I, self.ID, self.PG, self.QG, self.QT, self.QB, self.VS, self.IREG,
-                                         self.MBASE, self.ZR, self.ZX, self.RT, self.XT, self.GTAP, self.STAT,
-                                         self.RMPCT, self.PT, self.PB] + var)
+            return self.format_raw_line(["I", "ID", "PG", "QG", "QT", "QB", "VS", "IREG",
+                                         "MBASE", "ZR", "ZX", "RT", "XT", "GTAP", "STAT",
+                                         "RMPCT", "PT", "PB"] + var)
 
         else:
             raise Exception('Generator not implemented for version ' + str(version))
