@@ -246,6 +246,10 @@ class NonLinearOptimalPfProblem:
         self.br_mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
         self.gen_disp_idx = np.r_[nc.generator_data.get_dispatchable_active_indices(), np.arange(self.ngen,
                                                                                                  self.ngen + self.nsh)]
+        self.Cfmon = nc.passive_branch_data.monitored_Cf(self.br_mon_idx)
+        self.Cfmon_t = self.Cfmon.T
+        self.Ctmon = nc.passive_branch_data.monitored_Ct(self.br_mon_idx)
+        self.Ctmon_t = self.Ctmon.T
 
         self.k_m = self.indices.k_m
         self.k_tau = self.indices.k_tau
@@ -272,6 +276,11 @@ class NonLinearOptimalPfProblem:
         self.rates2 = np.power(self.rates[self.br_mon_idx], 2.0)
         self.Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
         self.Va_min = nc.bus_data.angle_min
+
+        # Relevant ids
+        self.Ybus_indptr = self.admittances.Ybus.indptr
+        self.Ybus_cols, self.Ybus_indices = self.admittances.Ybus.nonzero()
+        self.Ybus_diagids = np.where(self.Ybus_indices == self.Ybus_cols)[0]
 
         self.Cdispgen = csc_matrix((np.ones(self.n_gen_disp_sh), (self.gen_bus_idx[self.gen_disp_idx],
                                                                   np.arange(self.n_gen_disp_sh))),
@@ -619,11 +628,13 @@ class NonLinearOptimalPfProblem:
         vm_inv = diags(1 / self.Vm)
         E = Vmat @ vm_inv
         Ibus = self.admittances.Ybus @ self.V
-        IbusCJmat = diags(np.conj(Ibus))
-        self.alltapm[
-            self.k_m] = self.tapm  # Update vector of all tap modules with the new modules for controlled transformers
-        self.alltapt[
-            self.k_tau] = self.tapt  # Update vector of all tap phases with the new phases for controlled transformers
+
+        # Useful preconstructed matrices:
+        diags_gensh_disp_ones = diags(np.ones(self.n_gen_disp_sh))
+        diags_bus_ones = diags(np.ones(self.nbus))
+        diags_pq_ones = diags(np.ones(self.npq))
+        diags_disp_hvdc_ones = diags(np.ones(self.n_disp_hvdc))
+        diags_br_mon_ones = diags(np.ones(self.n_br_mon))
 
         # OBJECTIVE FUNCTION GRAD --------------------------------------------------------------------------------------
         ts_fx = timeit.default_timer()
@@ -684,11 +695,23 @@ class NonLinearOptimalPfProblem:
 
         ts_gx = timeit.default_timer()
 
-        Vva = 1j * Vmat
 
-        GSvm = Vmat @ (IbusCJmat + np.conj(self.admittances.Ybus @ Vmat)) @ vm_inv  # N x N matrix
-        GSva = Vva @ (IbusCJmat - np.conj(self.admittances.Ybus @ Vmat))
-        GSpg = - self.Cdispgen  # TODO: Try to construct it with the GridCal CSC builder
+        dataYbus_Vmat = self.admittances.Ybus.data * self.V[self.Ybus_cols]
+
+        # GSvm = Vmat @ (np.conj(diags(Ibus)) + np.conj(self.admittances.Ybus @ Vmat)) @ vm_inv  # N x N matrix
+        data = dataYbus_Vmat.copy()
+        np.add.at(data, self.Ybus_diagids, Ibus)
+        GSvm = csc_matrix((np.conj(data) * (1 / self.Vm)[self.Ybus_cols]
+                           * self.V[self.Ybus_indices], self.Ybus_indices, self.Ybus_indptr),
+                          shape=(self.nbus, self.nbus))
+
+        # GSva = 1j * Vmat @ (np.conj(diags(Ibus)) - np.conj(self.admittances.Ybus @ Vmat))
+        data = - dataYbus_Vmat.copy()
+        np.add.at(data, self.Ybus_diagids, Ibus)
+        GSva = csc_matrix((np.conj(data) * 1j * self.V[self.Ybus_indices], self.Ybus_indices, self.Ybus_indptr),
+                          shape=(self.nbus, self.nbus))
+
+        GSpg = - self.Cdispgen
         GSqg = -1j * self.Cdispgen
 
         GTH = lil_matrix((len(self.slack), self.NV))
@@ -780,11 +803,8 @@ class NonLinearOptimalPfProblem:
         """
         ts_hx = timeit.default_timer()
 
-        Vfmat = diags(self.admittances.Cf[self.br_mon_idx, :] @ self.V)
-        Vtmat = diags(self.admittances.Ct[self.br_mon_idx, :] @ self.V)
-
-        # Vfmat = diags(self.V[self.nc.passive_branch_data.F[self.br_mon_idx]])
-        # Vtmat = diags(self.V[self.nc.passive_branch_data.T[self.br_mon_idx]])
+        Vfmat = diags(self.V[self.nc.passive_branch_data.F[self.br_mon_idx]])
+        Vtmat = diags(self.V[self.nc.passive_branch_data.T[self.br_mon_idx]])
 
         IfCJmat = np.conj(diags(self.admittances.Yf[self.br_mon_idx, :] @ self.V))
         ItCJmat = np.conj(diags(self.admittances.Yt[self.br_mon_idx, :] @ self.V))
@@ -792,61 +812,63 @@ class NonLinearOptimalPfProblem:
         Sfmat = diags(self.Sf)
         Stmat = diags(self.St)
 
-        Sfvm = (IfCJmat @ self.admittances.Cf[self.br_mon_idx, :] @ E
+        # thisfitswell_Cf@E = csc(((self.V / self.Vm)[self.from_idx[self.br_mon_idx]], (self.br_idx[self.br_mon_idx],self.from_idx[self.br_mon_idx])), shape = (self.n_br_mon, self.nbus))
+
+        Sfvm = (IfCJmat @ self.Cfmon @ E
                 + Vfmat @ np.conj(self.admittances.Yf[self.br_mon_idx, :] @ E))
-        Stvm = (ItCJmat @ self.admittances.Ct[self.br_mon_idx, :] @ E
+        Stvm = (ItCJmat @ self.Ctmon @ E
                 + Vtmat @ np.conj(self.admittances.Yt[self.br_mon_idx, :] @ E))
 
-        Sfva = (1j * (IfCJmat @ self.admittances.Cf[self.br_mon_idx, :] @ Vmat
+        Sfva = (1j * (IfCJmat @ self.Cfmon @ Vmat
                       - Vfmat @ np.conj(self.admittances.Yf[self.br_mon_idx, :] @ Vmat)))
-        Stva = (1j * (ItCJmat @ self.admittances.Ct[self.br_mon_idx, :] @ Vmat
+        Stva = (1j * (ItCJmat @ self.Ctmon @ Vmat
                       - Vtmat @ np.conj(self.admittances.Yt[self.br_mon_idx, :] @ Vmat)))
 
-        Hpu = sp.hstack([lil_matrix((self.n_gen_disp_sh, 2 * self.nbus)), diags(np.ones(self.n_gen_disp_sh)),
+        Hpu = sp.hstack([lil_matrix((self.n_gen_disp_sh, 2 * self.nbus)), diags_gensh_disp_ones,
                          lil_matrix((self.n_gen_disp_sh, self.NV - 2 * self.nbus - self.n_gen_disp_sh))])
-        Hpl = sp.hstack([lil_matrix((self.n_gen_disp_sh, 2 * self.nbus)), diags(- np.ones(self.n_gen_disp_sh)),
+        Hpl = sp.hstack([lil_matrix((self.n_gen_disp_sh, 2 * self.nbus)), - diags_gensh_disp_ones,
                          lil_matrix((self.n_gen_disp_sh, self.NV - 2 * self.nbus - self.n_gen_disp_sh))])
         Hqu = sp.hstack(
-            [lil_matrix((self.n_gen_disp_sh, 2 * self.nbus + self.n_gen_disp_sh)), diags(np.ones(self.n_gen_disp_sh)),
+            [lil_matrix((self.n_gen_disp_sh, 2 * self.nbus + self.n_gen_disp_sh)), diags_gensh_disp_ones,
              lil_matrix((self.n_gen_disp_sh, self.NV - 2 * self.nbus - 2 * self.n_gen_disp_sh))])
         Hql = sp.hstack(
-            [lil_matrix((self.n_gen_disp_sh, 2 * self.nbus + self.n_gen_disp_sh)), diags(- np.ones(self.n_gen_disp_sh)),
+            [lil_matrix((self.n_gen_disp_sh, 2 * self.nbus + self.n_gen_disp_sh)), - diags_gensh_disp_ones,
              lil_matrix((self.n_gen_disp_sh, self.NV - 2 * self.nbus - 2 * self.n_gen_disp_sh))])
 
         if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
 
-            Hvu = sp.hstack([lil_matrix((self.npq, self.nbus)), diags(np.ones(self.nbus))[self.pq, :],
+            Hvu = sp.hstack([lil_matrix((self.npq, self.nbus)), diags_bus_ones[self.pq, :],
                              lil_matrix((self.npq, 2 * self.n_gen_disp_sh + 2 * self.n_br_mon)),
-                             diags(- np.ones(self.npq)), lil_matrix(
+                             - diags_pq_ones, lil_matrix(
                     (self.npq, self.npq + self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
 
             Hvl = sp.hstack(
-                [lil_matrix((self.npq, self.nbus)), diags(- np.ones(self.nbus))[self.pq, :],
+                [lil_matrix((self.npq, self.nbus)), -diags_bus_ones[self.pq, :],
                  lil_matrix((self.npq, 2 * self.n_gen_disp_sh + 2 * self.n_br_mon + self.npq)),
-                 diags(- np.ones(self.npq)),
+                 - diags_pq_ones,
                  lil_matrix((self.npq, self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
 
-            Hslsf = sp.hstack([lil_matrix((self.n_br_mon, npfvar)), diags(- np.ones(self.n_br_mon)),
+            Hslsf = sp.hstack([lil_matrix((self.n_br_mon, npfvar)), - diags_br_mon_ones,
                                lil_matrix((self.n_br_mon,
                                            self.n_br_mon + 2 * self.npq + self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
 
-            Hslst = sp.hstack([lil_matrix((self.n_br_mon, npfvar + self.n_br_mon)), diags(- np.ones(self.n_br_mon)),
+            Hslst = sp.hstack([lil_matrix((self.n_br_mon, npfvar + self.n_br_mon)), - diags_br_mon_ones,
                                lil_matrix((self.n_br_mon,
                                            2 * self.npq + self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
 
-            Hslvmax = sp.hstack([lil_matrix((self.npq, npfvar + 2 * self.n_br_mon)), diags(- np.ones(self.npq)),
+            Hslvmax = sp.hstack([lil_matrix((self.npq, npfvar + 2 * self.n_br_mon)), - diags_pq_ones,
                                  lil_matrix(
                                      (self.npq,
                                       self.npq + self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
 
             Hslvmin = sp.hstack(
-                [lil_matrix((self.npq, npfvar + 2 * self.n_br_mon + self.npq)), diags(- np.ones(self.npq)),
+                [lil_matrix((self.npq, npfvar + 2 * self.n_br_mon + self.npq)), - diags_pq_ones,
                  lil_matrix((self.npq, self.nslcap + self.ntapm + self.ntapt + self.n_disp_hvdc))])
 
         else:
-            Hvu = sp.hstack([lil_matrix((self.npq, self.nbus)), diags(np.ones(self.npq)),
+            Hvu = sp.hstack([lil_matrix((self.npq, self.nbus)), diags_pq_ones,
                              lil_matrix((self.npq, self.NV - self.nbus - self.npq))])
-            Hvl = sp.hstack([lil_matrix((self.npq, self.nbus)), diags(- np.ones(self.npq)),
+            Hvl = sp.hstack([lil_matrix((self.npq, self.nbus)), - diags_pq_ones,
                              lil_matrix((self.npq, self.NV - self.nbus - self.npq))])
             Hslsf = lil_matrix((0, self.NV))
             Hslst = lil_matrix((0, self.NV))
@@ -870,11 +892,24 @@ class NonLinearOptimalPfProblem:
                  lil_matrix((self.n_br_mon, self.n_disp_hvdc))])
 
             if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
-                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
-                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
+
+                # Equivalent to HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+
+                HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
+                HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV)) + Hslsf
+
+                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV)) + Hslst
+
             else:
-                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
-                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
+                # Equivalent to HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+
+                HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
+                HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
+
+                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
 
             if self.ntapm != 0:
                 Htapmu = sp.hstack(
@@ -920,18 +955,38 @@ class NonLinearOptimalPfProblem:
                  lil_matrix((self.n_br_mon, 2 * self.n_gen_disp_sh + self.nsl + self.nslcap + self.n_disp_hvdc))])
 
             if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
-                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
-                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag) + Hslst
+
+                # HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+                # HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
+                HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
+                HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV)) + Hslsf
+
+                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV)) + Hslst
+
             else:
-                HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
-                HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
+                # HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+                # HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
+
+                HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
+                HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
+
+                HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
+                HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
 
         if self.options.ips_control_q_limits:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
-            Hqmaxp = 2 * self.Pg[:self.ngen]
-            Hqmaxq = 2 * self.Qg[:self.ngen]
-            Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cdispgen_t @ diags(
-                self.Vm)
+            Hqmaxp = 2 * self.Pg[:self.n_gen_disp_sh]
+            Hqmaxq = 2 * self.Qg[:self.n_gen_disp_sh]
+            # Hqmaxv = - 2 * diags(np.power(self.Inom, 2.0)) * self.Cdispgen_t @ diags(
+            #     self.Vm)
+            Hqmaxv_data = np.power(self.Inom, 2) * self.Vm[self.gen_bus_idx[self.gen_disp_idx]]
+            Hqmaxv = - 2 * csc((Hqmaxv_data, (np.arange(self.n_gen_disp), self.gen_bus_idx[self.gen_disp_idx])),
+                               shape=(self.n_gen_disp, self.nbus))
+
             Hqmax = sp.hstack(
                 [lil_matrix((nqct, self.nbus)), Hqmaxv, diags(Hqmaxp), lil_matrix((nqct, self.nsh)), diags(Hqmaxq),
                  lil_matrix((nqct, self.nsh)),
@@ -941,9 +996,9 @@ class NonLinearOptimalPfProblem:
             Hqmaxv = lil_matrix((nqct, self.nbus))
 
         Hdcu = sp.hstack(
-            [lil_matrix((self.n_disp_hvdc, self.NV - self.n_disp_hvdc)), diags(np.ones(self.n_disp_hvdc))])
+            [lil_matrix((self.n_disp_hvdc, self.NV - self.n_disp_hvdc)), diags_disp_hvdc_ones])
         Hdcl = sp.hstack(
-            [lil_matrix((self.n_disp_hvdc, self.NV - self.n_disp_hvdc)), diags(- np.ones(self.n_disp_hvdc))])
+            [lil_matrix((self.n_disp_hvdc, self.NV - self.n_disp_hvdc)), - diags_disp_hvdc_ones])
 
         Hx = sp.vstack([HSf, HSt, Hvu, Hpu, Hqu, Hvl, Hpl, Hql, Hslsf, Hslst, Hslvmax,
                         Hslvmin, Htapmu, Htapml, Htaptu, Htaptl, Hqmax, Hdcu, Hdcl])
@@ -990,18 +1045,25 @@ class NonLinearOptimalPfProblem:
                ndc  | Gpdcva  | Gpdcvm  | Gpdcpg  | Gpdcqg  | Gpdcsl  | Gpdctapm  | Gpdctapt  | Gpdcpdc  |
                     +---------+---------+---------+---------+---------+-----------+-----------+----------+
 
-
+            
             '''
             ts_gxx = timeit.default_timer()
             # P
             lam_p = lam[0: self.nbus]
             lam_diag_p = diags(lam_p)
 
-            B_p = np.conj(self.admittances.Ybus @ Vmat)
-            D_p = np.conj(self.admittances.Ybus).T @ Vmat
-            Ibus_p = self.admittances.Ybus @ self.V
+            # B_p = np.conj(self.admittances.Ybus @ Vmat)
+            data = self.admittances.Ybus.data * self.V[self.Ybus_indices]
+            B_p = csc_matrix((np.conj(data), self.Ybus_indices, self.Ybus_indptr),
+                             shape=(self.nbus, self.nbus)).transpose()
+
+            # D_p = np.conj(self.admittances.Ybus).T @ Vmat
+            data = np.conj(self.admittances.Ybus.data) * self.V[self.Ybus_cols]
+            D_p = csc_matrix((data, (self.Ybus_cols, self.Ybus_indices)),
+                             shape=(self.nbus, self.nbus)).transpose()
+
             I_p = np.conj(Vmat) @ (D_p @ lam_diag_p - diags(D_p @ lam_p))
-            F_p = lam_diag_p @ Vmat @ (B_p - diags(np.conj(Ibus_p)))
+            F_p = lam_diag_p @ Vmat @ (B_p - diags(np.conj(Ibus)))
             C_p = lam_diag_p @ Vmat @ B_p
 
             Gaa_p = I_p + F_p
@@ -1014,9 +1076,8 @@ class NonLinearOptimalPfProblem:
 
             B_q = np.conj(self.admittances.Ybus @ Vmat)
             D_q = np.conj(self.admittances.Ybus).T @ Vmat
-            Ibus_q = self.admittances.Ybus @ self.V
             I_q = np.conj(Vmat) @ (D_q @ lam_diag_q - diags(D_q @ lam_q))
-            F_q = lam_diag_q @ Vmat @ (B_q - diags(np.conj(Ibus_q)))
+            F_q = lam_diag_q @ Vmat @ (B_q - diags(np.conj(Ibus)))
             C_q = lam_diag_q @ Vmat @ B_q
 
             Gaa_q = I_q + F_q
@@ -1103,8 +1164,7 @@ class NonLinearOptimalPfProblem:
             Smuf_mat = diags(Sfmat.conj() @ muf)
             Smut_mat = diags(Stmat.conj() @ mut)
 
-            Af = np.conj(self.admittances.Yf[self.br_mon_idx, :]).T @ Smuf_mat @ self.admittances.Cf[
-                                                                                 self.br_mon_idx, :]
+            Af = np.conj(self.admittances.Yf[self.br_mon_idx, :]).T @ Smuf_mat @ self.Cfmon
             Bf = np.conj(Vmat) @ Af @ Vmat
             Df = diags(Af @ self.V) @ np.conj(Vmat)
             Ef = diags(Af.T @ np.conj(self.V)) @ Vmat
@@ -1135,8 +1195,7 @@ class NonLinearOptimalPfProblem:
             Hfvavm = 2 * (Sfvavm + Sfva.T @ muf_mat @ np.conj(Sfvm)).real
             Hfvmvm = 2 * (Sfvmvm + Sfvm.T @ muf_mat @ np.conj(Sfvm)).real
 
-            At = np.conj(self.admittances.Yt[self.br_mon_idx, :]).T @ Smut_mat @ self.admittances.Ct[
-                                                                                 self.br_mon_idx, :]
+            At = np.conj(self.admittances.Yt[self.br_mon_idx, :]).T @ Smut_mat @ self.Ctmon
             Bt = np.conj(Vmat) @ At @ Vmat
             Dt = diags(At @ self.V) @ np.conj(Vmat)
             Et = diags(At.T @ np.conj(self.V)) @ Vmat
@@ -1239,12 +1298,17 @@ class NonLinearOptimalPfProblem:
             ts_hxx = 0
             te_hxx = 0
 
-        der_times = np.array([te_fx - ts_fx,
+        print(1000 * np.array([te_fx - ts_fx,
                               te_gx - ts_gx,
                               te_hx - ts_hx,
                               te_fxx - ts_fxx,
                               te_gxx - ts_gxx,
-                              te_hxx - ts_hxx])
+                              te_hxx - ts_hxx]),100 * np.array([te_fx - ts_fx,
+                              te_gx - ts_gx,
+                              te_hx - ts_hx,
+                              te_fxx - ts_fxx,
+                              te_gxx - ts_gxx,
+                              te_hxx - ts_hxx]) / (te_hxx - ts_fx) )
 
         return fx, Gx, Hx, fxx, Gxx, Hxx
 
