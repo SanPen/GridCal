@@ -310,8 +310,8 @@ class NonLinearOptimalPfProblem:
         self.alltapt = nc.active_branch_data.tap_angle
         # the tapm of the same trafo is variable.
 
-        self.hvdc_nondisp_idx = np.where(nc.hvdc_data.dispatchable == 0)[
-            0]  # TODO: Simplify this using a method in the hvdc_data class
+        # TODO: Simplify this using a method in the hvdc_data class
+        self.hvdc_nondisp_idx = np.where(nc.hvdc_data.dispatchable == 0)[0]
         self.hvdc_disp_idx = np.where(nc.hvdc_data.dispatchable == 1)[0]
 
         self.f_nd_hvdc = nc.hvdc_data.F[self.hvdc_nondisp_idx]
@@ -326,14 +326,15 @@ class NonLinearOptimalPfProblem:
         if options.acopf_mode == AcOpfMode.ACOPFslacks:
             self.nsl = 2 * self.npq + 2 * self.n_br_mon
             # Slack relaxations for constraints
-            self.c_s = np.power(nc.passive_branch_data.overload_cost[self.br_mon_idx] + 0.1,
-                                1.0)  # Cost squared since the slack is also squared
+
+            # Cost squared since the slack is also squared
+            self.c_s = np.power(nc.passive_branch_data.overload_cost[self.br_mon_idx] + 0.1, 1.0)  # TODO power of 1???
             self.c_v = nc.bus_data.cost_v[self.pq] + 0.1
 
         else:
             self.nsl = 0
-            self.c_s = np.array([])
-            self.c_v = np.array([])
+            self.c_s = np.zeros(0)
+            self.c_v = np.zeros(0)
 
         if optimize_nodal_capacity:
             self.nslcap = len(capacity_nodes_idx)
@@ -341,7 +342,7 @@ class NonLinearOptimalPfProblem:
 
         else:
             self.nslcap = 0
-            self.slcap0 = np.array([])
+            self.slcap0 = np.zeros(0)
 
         self.neq = 2 * self.nbus + self.n_slack + self.npv
 
@@ -358,12 +359,16 @@ class NonLinearOptimalPfProblem:
         if pf_init:
 
             # TODO: try to substitute by using nc.generator_data.get_injections_per_bus() @Carlos: get_injections does not account for the powerflow results
-            ngenforgen = np.bincount(self.gen_bus_idx[:self.ngen])[self.gen_bus_idx[
-                                                                   :self.ngen]]  # This array has the number of total generators connected to the same bus of each generator, counting itself
-            allPgen = (Sbus_pf.real / self.Sbase + self.Sd.real)[self.gen_bus_idx[
-                                                                 :self.ngen]] / ngenforgen  # If there are multiple generators connected to the same bus, they share in equal parts the injection.
-            allQgen = (Sbus_pf.imag / self.Sbase + self.Sd.imag)[
-                          self.gen_bus_idx[:self.ngen]] / ngenforgen  # Same for Q
+
+            # This array has the number of total generators connected to the same bus of each generator, counting itself
+            ngenforgen = np.bincount(self.gen_bus_idx[:self.ngen])[self.gen_bus_idx[:self.ngen]]
+
+            # If there are multiple generators connected to the same bus, they share in equal parts the injection.
+            allPgen = (Sbus_pf.real / self.Sbase + self.Sd.real)[self.gen_bus_idx[:self.ngen]] / ngenforgen
+
+            # Same for Q
+            allQgen = (Sbus_pf.imag / self.Sbase + self.Sd.imag)[self.gen_bus_idx[:self.ngen]] / ngenforgen
+            
             self.Sg_undis = allPgen[self.gen_nondisp_idx] + 1j * allQgen[self.gen_nondisp_idx]
             self.Pg = np.r_[allPgen[self.gen_disp_idx[:self.n_gen_disp]], np.zeros(self.nsh)]
             self.Qg = np.r_[allQgen[self.gen_disp_idx[:self.n_gen_disp]], np.zeros(self.nsh)]
@@ -374,7 +379,8 @@ class NonLinearOptimalPfProblem:
             self.Pfdc = nc.hvdc_data.Pset[self.hvdc_disp_idx]
 
         else:
-
+            
+            # TODO: Unresolved Pmax, ie Pmax and Pmin must be in __init__
             self.Pg = np.r_[(self.Pmax[self.gen_disp_idx[:self.n_gen_disp]] +
                              self.Pmin[self.gen_disp_idx[:self.n_gen_disp]])
                             / (2 * self.Sbase), np.zeros(self.nsh)]
@@ -393,15 +399,15 @@ class NonLinearOptimalPfProblem:
             self.sl_vmax = np.ones(self.npq)
             self.sl_vmin = np.ones(self.npq)
         else:
-            self.sl_sf = np.array([])
-            self.sl_st = np.array([])
-            self.sl_vmax = np.array([])
-            self.sl_vmin = np.array([])
+            self.sl_sf = np.zeros(0)
+            self.sl_st = np.zeros(0)
+            self.sl_vmax = np.zeros(0)
+            self.sl_vmin = np.zeros(0)
 
         if optimize_nodal_capacity:
             self.slcap = np.zeros(self.nslcap)
         else:
-            self.slcap = np.array([])
+            self.slcap = np.zeros(0)
 
         self.x0 = self.var2x()
         self.NV = len(self.x0)
@@ -580,14 +586,14 @@ class NonLinearOptimalPfProblem:
                           + np.power(self.Pg[:self.ngen], 2.0)
                           - np.power(v_g * self.Inom, 2.0))
         else:
-            ctrlq_ineq = np.array([])
+            ctrlq_ineq = np.zeros(0)
 
         if self.n_disp_hvdc != 0:
             hvdc_ineq1 = self.Pfdc - self.P_hvdc_max
             hvdc_ineq2 = - self.P_hvdc_max - self.Pfdc
         else:
-            hvdc_ineq1 = np.array([])
-            hvdc_ineq2 = np.array([])
+            hvdc_ineq1 = np.zeros(0)
+            hvdc_ineq2 = np.zeros(0)
 
         hval = np.r_[
             self.Sf2.real - self.rates2 - sl_sf,  # rates "lower limit"

@@ -319,6 +319,34 @@ def csc_mat_vec_ff(m, n, Ap, Ai, Ax, x):
     return y
 
 
+@nb.njit(cache=True)
+def diag_positions(n, Ap, Ai):
+    """
+    get the positions of the diagonal in the CSC data scheme
+    :param n: number of rows and columns (must be square)
+    :param Ap: pointers
+    :param Ai: indices
+    :return: vector pos (n)
+    """
+
+    pos = np.empty(n, dtype=nb.int32)
+    k = 0
+    for j in range(n):
+        pos[j] = -1 # to make evident that there is o diagonal position
+
+        p = Ap[j]
+        found = False
+        while p < Ap[j+1] and not found:
+
+            if Ai[p] == j:
+                pos[j] = k
+                found = True
+
+            p += 1
+            k += 1
+    return pos
+
+
 # @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8)")
 @nb.njit(cache=True)
 def coo_to_csc(m, n, Ti, Tj, Tx, nnz):
