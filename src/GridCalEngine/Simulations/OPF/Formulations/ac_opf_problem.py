@@ -628,7 +628,6 @@ class NonLinearOptimalPfProblem:
         vm_inv = diags(1 / self.Vm)
         E = Vmat @ vm_inv
         Ibus = self.admittances.Ybus @ self.V
-        # IbusCJmat = diags(np.conj(Ibus))
 
         # Useful preconstructed matrices:
         diags_gensh_disp_ones = diags(np.ones(self.n_gen_disp_sh))
@@ -696,22 +695,21 @@ class NonLinearOptimalPfProblem:
 
         ts_gx = timeit.default_timer()
 
-        # Vva = 1j * Vmat
 
-        dataYbus_Vmat = self.admittances.Ybus.data * self.V[self.Ybus_indices]
+        dataYbus_Vmat = self.admittances.Ybus.data * self.V[self.Ybus_cols]
 
-        # GSvm = Vmat @ (IbusCJmat + np.conj(self.admittances.Ybus @ Vmat)) @ vm_inv  # N x N matrix
+        # GSvm = Vmat @ (np.conj(diags(Ibus)) + np.conj(self.admittances.Ybus @ Vmat)) @ vm_inv  # N x N matrix
         data = dataYbus_Vmat.copy()
         np.add.at(data, self.Ybus_diagids, Ibus)
-        GSvm = csc_matrix((np.conj(data) * (1 / self.Vm)[self.Ybus_indices]
-                           * self.V[self.Ybus_cols], self.Ybus_indices, self.Ybus_indptr),
-                          shape=(self.nbus, self.nbus)).transpose()
+        GSvm = csc_matrix((np.conj(data) * (1 / self.Vm)[self.Ybus_cols]
+                           * self.V[self.Ybus_indices], self.Ybus_indices, self.Ybus_indptr),
+                          shape=(self.nbus, self.nbus))
 
-        # GSva = Vva @ (IbusCJmat - np.conj(self.admittances.Ybus @ Vmat))
+        # GSva = 1j * Vmat @ (np.conj(diags(Ibus)) - np.conj(self.admittances.Ybus @ Vmat))
         data = - dataYbus_Vmat.copy()
         np.add.at(data, self.Ybus_diagids, Ibus)
-        GSva = csc_matrix((np.conj(data) * 1j * self.V[self.Ybus_cols], self.Ybus_indices, self.Ybus_indptr),
-                          shape=(self.nbus, self.nbus)).transpose()
+        GSva = csc_matrix((np.conj(data) * 1j * self.V[self.Ybus_indices], self.Ybus_indices, self.Ybus_indptr),
+                          shape=(self.nbus, self.nbus))
 
         GSpg = - self.Cdispgen
         GSqg = -1j * self.Cdispgen
@@ -958,7 +956,8 @@ class NonLinearOptimalPfProblem:
 
             if self.options.acopf_mode == AcOpfMode.ACOPFslacks:
 
-                # Equivalent to HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+                # HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag) + Hslsf
+                # HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
                 HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV)) + Hslsf
@@ -968,13 +967,15 @@ class NonLinearOptimalPfProblem:
 
             else:
 
-                # Equivalent to HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+                # HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
+                # HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
+
 
                 HSfdata = self.Sf.real[SfX.row] * SfX.data.real + self.Sf.imag[SfX.row] * SfX.data.imag
-                HSf = csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
+                HSf = 2 * csc((HSfdata, (SfX.row, SfX.col)), shape=(self.n_br_mon, self.NV))
 
                 HStdata = self.St.real[SfX.row] * StX.data.real + self.St.imag[StX.row] * StX.data.imag
-                HSt = csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
+                HSt = 2 * csc((HStdata, (StX.row, StX.col)), shape=(self.n_br_mon, self.NV))
 
         if self.options.ips_control_q_limits:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
@@ -1052,12 +1053,13 @@ class NonLinearOptimalPfProblem:
             lam_diag_p = diags(lam_p)
 
             # B_p = np.conj(self.admittances.Ybus @ Vmat)
-            B_p = csc_matrix((np.conj(dataYbus_Vmat), self.Ybus_indices, self.Ybus_indptr),
+            data = self.admittances.Ybus.data * self.V[self.Ybus_indices]
+            B_p = csc_matrix((np.conj(data), self.Ybus_indices, self.Ybus_indptr),
                              shape=(self.nbus, self.nbus)).transpose()
 
             # D_p = np.conj(self.admittances.Ybus).T @ Vmat
             data = np.conj(self.admittances.Ybus.data) * self.V[self.Ybus_cols]
-            D_p = csc_matrix((data, (self.Ybus_cols, self.admittances.Ybus.indices)),
+            D_p = csc_matrix((data, (self.Ybus_cols, self.Ybus_indices)),
                              shape=(self.nbus, self.nbus)).transpose()
 
             I_p = np.conj(Vmat) @ (D_p @ lam_diag_p - diags(D_p @ lam_p))
@@ -1296,12 +1298,17 @@ class NonLinearOptimalPfProblem:
             ts_hxx = 0
             te_hxx = 0
 
-        der_times = np.array([te_fx - ts_fx,
+        print(1000 * np.array([te_fx - ts_fx,
                               te_gx - ts_gx,
                               te_hx - ts_hx,
                               te_fxx - ts_fxx,
                               te_gxx - ts_gxx,
-                              te_hxx - ts_hxx])
+                              te_hxx - ts_hxx]),100 * np.array([te_fx - ts_fx,
+                              te_gx - ts_gx,
+                              te_hx - ts_hx,
+                              te_fxx - ts_fxx,
+                              te_gxx - ts_gxx,
+                              te_hxx - ts_hxx]) / (te_hxx - ts_fx) )
 
         return fx, Gx, Hx, fxx, Gxx, Hxx
 
