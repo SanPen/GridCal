@@ -532,13 +532,15 @@ def gridcal_to_raw(grid: MultiCircuit, logger: Logger) -> PsseCircuit:
         zones_dict[zone] = i + 1
 
     for i, bus in enumerate(grid.buses):
-        if bus.internal:
-            continue
-        psse_bus = get_psse_bus(bus=bus,
-                                area_dict=area_dict,
-                                zones_dict=zones_dict,
-                                suggested_psse_number=counter.get_suggested_psse_number(bus=bus, logger=logger))
-        psse_circuit.buses.append(psse_bus)
+        if not bus.internal:
+            psse_bus = get_psse_bus(bus=bus,
+                                    area_dict=area_dict,
+                                    zones_dict=zones_dict,
+                                    suggested_psse_number=counter.get_suggested_psse_number(bus=bus, logger=logger))
+            psse_circuit.buses.append(psse_bus)
+        else:
+            logger.add_info(msg="Internal bus skipped at RAW export",
+                            device=bus.name)
 
     for load in grid.loads:
         psse_circuit.loads.append(get_psse_load(load=load,
