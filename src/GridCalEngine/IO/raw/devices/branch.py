@@ -43,8 +43,8 @@ class RawBranch(RawObject):
         self._MET: int = 1
         self._LEN: float = 0.0
 
-        self._O1: int = 0
-        self._F1: float = 0.0
+        self._O1: int = 1
+        self._F1: float = 1.0
         self._O2: int = 0
         self._F2: float = 0.0
         self._O3: int = 0
@@ -57,14 +57,16 @@ class RawBranch(RawObject):
                                class_type=int,
                                description="Branch from bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="J",
                                rawx_key="jbus",
                                class_type=int,
                                description="Branch to bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="CKT",
                                rawx_key="ckt",
@@ -146,7 +148,8 @@ class RawBranch(RawObject):
                                    class_type=int,
                                    description="Owner number",
                                    min_value=1,
-                                   max_value=9999)
+                                   max_value=9999,
+                                   max_chars=4)
         for i in range(4):
             self.register_property(property_name="F{}".format(i + 1),
                                    rawx_key="f{}".format(i + 1),
@@ -233,7 +236,8 @@ class RawBranch(RawObject):
 
     def get_raw_line(self, version):
 
-        var = [self.O1, self.F1, self.O2, self.F2, self.O3, self.F3, self.O4, self.F4]
+        var = ["O1", "F1", "O2", "F2", "O3", "F3", "O4", "F4"]
+
         if version >= 34:
 
             """
@@ -242,10 +246,10 @@ class RawBranch(RawObject):
             GI,       BI,       GJ,       BJ,STAT,MET,  LEN,  O1,  F1,    O2,  F2,    O3,  F3,    O4,  F4
             """
 
-            return self.format_raw_line([self.I, self.J, self.CKT, self.R, self.X, self.B, self.NAME,
-                                         self.RATE1, self.RATE2, self.RATE3, self.RATE4, self.RATE5, self.RATE6,
-                                         self.RATE7, self.RATE8, self.RATE9, self.RATE10, self.RATE11, self.RATE12,
-                                         self.GI, self.BI, self.GJ, self.BJ, self.ST, self.MET, self.LEN] + var)
+            return self.format_raw_line(["I", "J", "CKT", "R", "X", "B", "NAME",
+                                         "RATE1", "RATE2", "RATE3", "RATE4", "RATE5", "RATE6",
+                                         "RATE7", "RATE8", "RATE9", "RATE10", "RATE11", "RATE12",
+                                         "GI", "BI", "GJ", "BJ", "ST", "MET", "LEN"] + var)
 
         elif version in [32, 33]:
 
@@ -253,9 +257,9 @@ class RawBranch(RawObject):
             I,J,CKT,R,X,B,RATE1,RATE2,RATE3,GI,BI,GJ,BJ,ST,MET,LEN,O1,F1,...,O4,F4
             '''
 
-            return self.format_raw_line([self.I, self.J, self.CKT, self.R, self.X, self.B,
-                                         self.RATE1, self.RATE2, self.RATE3, self.GI, self.BI, self.GJ, self.BJ,
-                                         self.ST, self.MET, self.LEN] + var)
+            return self.format_raw_line(["I", "J", "CKT", "R", "X", "B",
+                                         "RATE1", "RATE2", "RATE3", "GI", "BI", "GJ", "BJ",
+                                         "ST", "MET", "LEN"] + var)
 
         elif version in [29, 30]:
             """
@@ -263,9 +267,9 @@ class RawBranch(RawObject):
             I,J,CKT,R,X,B,RATE1,RATE2,RATE3,GI,BI,GJ,BJ,ST,LEN,01,F1,...,04,F4
             """
 
-            return self.format_raw_line([self.I, self.J, self.CKT, self.R, self.X, self.B,
-                                         self.RATE1, self.RATE2, self.RATE3, self.GI, self.BI, self.GJ, self.BJ,
-                                         self.ST, self.LEN] + var)
+            return self.format_raw_line(["I", "J", "CKT", "R", "X", "B",
+                                         "RATE1", "RATE2", "RATE3", "GI", "BI", "GJ", "BJ",
+                                         "ST", "LEN"] + var)
 
         else:
 

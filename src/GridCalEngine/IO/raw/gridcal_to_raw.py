@@ -517,7 +517,7 @@ def gridcal_to_raw(grid: MultiCircuit, logger: Logger) -> PsseCircuit:
     """
     psse_circuit = PsseCircuit()
 
-    # create dictionaires
+    # create dictionaries
     area_dict: Dict[dev.Area, int] = dict()
     zones_dict: Dict[dev.Zone, int] = dict()
 

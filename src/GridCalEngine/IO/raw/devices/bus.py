@@ -19,20 +19,21 @@ class RawBus(RawObject):
         self.IDE = 1
         self.AREA = 0
         self.ZONE = 0
-        self.OWNER = 0
+        self.OWNER = 1
         self.VM = 1.0
         self.VA = 0.0
-        self.NVHI = 0
-        self.NVLO = 0
-        self.EVHI = 0
-        self.EVLO = 0
+        self.NVHI = 1.05
+        self.NVLO = 0.95
+        self.EVHI = 1.1
+        self.EVLO = 0.9
 
         self.register_property(property_name="I",
                                rawx_key="ibus",
                                class_type=int,
                                description="Bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="NAME",
                                rawx_key="name",
@@ -52,7 +53,8 @@ class RawBus(RawObject):
                                class_type=int,
                                description="Bus type (0:Disconnected, 1:PQ, 2:PV, 3:Slack)",
                                min_value=1,
-                               max_value=4)
+                               max_value=4,
+                               max_chars=1)
 
         self.register_property(property_name="AREA",
                                rawx_key="area",
@@ -171,17 +173,17 @@ class RawBus(RawObject):
         #     raise Exception('Bus not implemented for version', str(version))
 
         if version >= 33:
-            return self.format_raw_line([self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
-                                         self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO])
+            return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "AREA", "ZONE",
+                                         "OWNER", "VM", "VA", "NVHI", "NVLO", "EVHI", "EVLO"])
 
         elif version == 32:
 
-            return self.format_raw_line([self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
-                                         self.OWNER, self.VM, self.VA])
+            return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "AREA", "ZONE",
+                                         "OWNER", "VM", "VA"])
 
         elif version in [29, 30]:
-            return self.format_raw_line([self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL,
-                                         self.AREA, self.ZONE, self.VM, self.VA, self.OWNER])
+            return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "GL", "BL",
+                                         "AREA", "ZONE", "VM", "VA", "OWNER"])
 
         else:
             raise Exception('Bus not implemented for version', str(version))

@@ -19,7 +19,8 @@ class RawOwner(RawObject):
                                class_type=int,
                                description="Zone number",
                                min_value=1,
-                               max_value=9999)
+                               max_value=9999,
+                               max_chars=4)
 
         self.register_property(property_name="OWNAME",
                                rawx_key='owname',
@@ -46,7 +47,7 @@ class RawOwner(RawObject):
     def get_raw_line(self, version):
 
         if version >= 29:
-            return self.format_raw_line([self.I, self.OWNAME])
+            return self.format_raw_line(["I", "OWNAME"])
         else:
             raise Exception('Areas not defined for version', str(version))
 

@@ -38,7 +38,8 @@ class RawLoad(RawObject):
                                class_type=int,
                                description="Bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="ID",
                                rawx_key="loadid",
@@ -214,24 +215,24 @@ class RawLoad(RawObject):
         """
         if version >= 35:
 
-            return self.format_raw_line([self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
-                                         self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT,
-                                         self.DGENP, self.DGENQ, self.DGENM, self.LOADTYPE])
+            return self.format_raw_line(["I", "ID", "STATUS", "AREA", "ZONE", "PL", "QL",
+                                         "IP", "IQ", "YP", "YQ", "OWNER", "SCALE", "INTRPT",
+                                         "DGENP", "DGENQ", "DGENM", "LOADTYPE"])
 
         elif version in [33, 34]:
 
-            return self.format_raw_line([self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
-                                         self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE, self.INTRPT])
+            return self.format_raw_line(["I", "ID", "STATUS", "AREA", "ZONE", "PL", "QL",
+                                         "IP", "IQ", "YP", "YQ", "OWNER", "SCALE", "INTRPT"])
 
         elif version == 32:
 
-            return self.format_raw_line([self.I, self.ID, self.STATUS, self.AREA, self.ZONE, self.PL, self.QL,
-                                         self.IP, self.IQ, self.YP, self.YQ, self.OWNER, self.SCALE])
+            return self.format_raw_line(["I", "ID", "STATUS", "AREA", "ZONE", "PL", "QL",
+                                         "IP", "IQ", "YP", "YQ", "OWNER", "SCALE"])
 
         elif version in [29, 30]:
             # I, ID, STATUS, AREA, ZONE, PL, QL, IP, IQ, YP, YQ, OWNER
-            return self.format_raw_line([self.I, self.ID, self.STATUS, self.AREA, self.ZONE,
-                                         self.PL, self.QL, self.IP, self.IQ, self.YP, self.YQ, self.OWNER])
+            return self.format_raw_line(["I", "ID", "STATUS", "AREA", "ZONE",
+                                         "PL", "QL", "IP", "IQ", "YP", "YQ", "OWNER"])
 
         else:
             raise Exception('Load not implemented for version ' + str(version))

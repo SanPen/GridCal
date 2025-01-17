@@ -415,6 +415,13 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
     :param psse_model: PsseCircuit instance
     :param version: RAW version
     """
+
+    if len(psse_model.owners) == 0:
+        ow = RawOwner()
+        ow.I = 1
+        ow.OWNAME = "default"
+        psse_model.owners.append(ow)
+
     logger = Logger()
     with open(file_name, "w", encoding="utf-8") as w:
 
@@ -427,7 +434,7 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
         w.write("" + now.ctime() + "\n")
 
         # comment 2
-        w.write("Created with Roseta converter\n")
+        w.write("Created with GridCal\n")
 
         if version >= 35:
             w.write("0 / END OF SYSTEM-WIDE DATA, BEGIN BUS DATA\n")

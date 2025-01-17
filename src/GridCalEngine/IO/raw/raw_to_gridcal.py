@@ -42,7 +42,11 @@ def get_gridcal_bus(psse_bus: RawBus,
         # create bus
         name = psse_bus.NAME.replace("'", "")
         bus = dev.Bus(name=name,
-                      Vnom=psse_bus.BASKV, code=str(psse_bus.I), vmin=psse_bus.EVLO, vmax=psse_bus.EVHI, xpos=0, ypos=0,
+                      Vnom=psse_bus.BASKV,
+                      code=str(psse_bus.I),
+                      vmin=psse_bus.EVLO,
+                      vmax=psse_bus.EVHI,
+                      xpos=0, ypos=0,
                       active=True,
                       area=area_dict[psse_bus.AREA],
                       zone=zone_dict[psse_bus.ZONE],
@@ -52,7 +56,9 @@ def get_gridcal_bus(psse_bus: RawBus,
     elif psse_bus.version == 32:
         # create bus
         name = psse_bus.NAME
-        bus = dev.Bus(name=name, code=str(psse_bus.I), Vnom=psse_bus.BASKV, vmin=psse_bus.NVLO, vmax=psse_bus.NVHI,
+        bus = dev.Bus(name=name, code=str(psse_bus.I),
+                      Vnom=psse_bus.BASKV,
+                      vmin=psse_bus.NVLO, vmax=psse_bus.NVHI,
                       xpos=0,
                       ypos=0,
                       active=True,
@@ -64,7 +70,9 @@ def get_gridcal_bus(psse_bus: RawBus,
     elif psse_bus.version in [29, 30]:
         # create bus
         name = psse_bus.NAME
-        bus = dev.Bus(name=name, code=str(psse_bus.I), Vnom=psse_bus.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+        bus = dev.Bus(name=name, code=str(psse_bus.I),
+                      Vnom=psse_bus.BASKV,
+                      vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                       active=True,
                       area=area_dict[psse_bus.AREA],
                       zone=zone_dict[psse_bus.ZONE],
@@ -81,7 +89,11 @@ def get_gridcal_bus(psse_bus: RawBus,
         # create bus (try v33)
         name = psse_bus.NAME.replace("'", "")
         bus = dev.Bus(name=name,
-                      Vnom=psse_bus.BASKV, code=str(psse_bus.I), vmin=psse_bus.EVLO, vmax=psse_bus.EVHI, xpos=0, ypos=0,
+                      Vnom=psse_bus.BASKV,
+                      code=str(psse_bus.I),
+                      vmin=psse_bus.EVLO,
+                      vmax=psse_bus.EVHI,
+                      xpos=0, ypos=0,
                       active=True,
                       area=area_dict[psse_bus.AREA],
                       zone=zone_dict[psse_bus.ZONE],
