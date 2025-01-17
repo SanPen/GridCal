@@ -94,7 +94,7 @@ def run_import_export_test(import_path: str | list[str],
     logger = Logger()
     # Import 1 ----------------------------------------------------
     # CGMES model import to MultiCircuit
-    circuit_1 = gc.open_file(import_path)
+    circuit_1 = gc.FileOpen(file_name=import_path, options=FileOpenOptions()).open()
     circuit_1.buses.sort(key=lambda obj: obj.name, reverse=False)      # SORTING
     # circuit_1.buses.sort(key=lambda obj: obj.idtag)     # SORTING by idtag
     nc_1 = gc.compile_numerical_circuit_at(circuit_1)
@@ -119,7 +119,7 @@ def run_import_export_test(import_path: str | list[str],
     cgmes_export.save_cgmes()
 
     # Import 2 ---------------------------------------------
-    circuit_2 = gc.open_file([export_fname, boundary_zip_path])
+    circuit_2 = gc.FileOpen(file_name=[export_fname, boundary_zip_path], options=FileOpenOptions()).open()
     circuit_2.buses.sort(key=lambda obj: obj.name, reverse=False)      # SORTING
     # Move the first element to the last position, if sorting doesn't work
     if not circuit_1.buses[0].name == circuit_2.buses[0].name:

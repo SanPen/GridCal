@@ -55,7 +55,7 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
 
     raw_export.save_raw()
 
-    circuit_2 = gce.open_file(export_fname)
+    circuit_2 = gce.FileOpen(file_name=export_fname, options=FileOpenOptions()).open()
     nc_2 = gce.compile_numerical_circuit_at(circuit_2)
 
     ok, logger = circuit.compare_circuits(circuit_2)

@@ -8,7 +8,7 @@ from GridCalEngine.IO import FileSave
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.IO.file_handler import FileSavingOptions
+from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions
 import GridCalEngine.api as gc
 
 
@@ -22,7 +22,7 @@ def run_import_export_test(import_path: str, export_fname: str):
     logger = Logger()
 
     # RAW model import to MultiCircuit
-    circuit_1 = gc.open_file(import_path)
+    circuit_1 = gc.FileOpen(file_name=import_path, options=FileOpenOptions()).open()
     nc_1 = gc.compile_numerical_circuit_at(circuit_1)
 
     # pf_options = PowerFlowOptions()
@@ -48,7 +48,7 @@ def run_import_export_test(import_path: str, export_fname: str):
     else:
         raise NotImplementedError(f"Not supported file extension: {file_extension}")
 
-    circuit_2 = gc.open_file(export_fname)
+    circuit_2 = gc.FileOpen(file_name=import_path, options=FileOpenOptions()).open()
     nc_2 = gc.compile_numerical_circuit_at(circuit_2)
 
     ok, logger = circuit_1.compare_circuits(circuit_2)
