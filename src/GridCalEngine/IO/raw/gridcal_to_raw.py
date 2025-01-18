@@ -6,6 +6,7 @@ import numpy as np
 from typing import Dict
 from itertools import groupby
 from scipy.sparse import lil_matrix
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices import (RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator,
                                           RawSwitchedShunt, RawTransformer, RawBranch, RawVscDCLine,
@@ -14,6 +15,9 @@ from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import (TapChangerTypes,
+                                        TapPhaseControl,
+                                        TapModuleControl)
 
 
 def get_area(area: dev.Area, i: int) -> RawArea:
@@ -139,7 +143,8 @@ def get_psse_fixed_shunt(shunt: dev.Shunt, bus_dict: Dict[dev.Bus, int], id_numb
     return psse_shunt
 
 
-def get_psse_switched_shunt(shunt: dev.ControllableShunt, bus_dict: Dict[dev.Bus, int]) -> RawSwitchedShunt:
+def get_psse_switched_shunt(shunt: dev.ControllableShunt,
+                            bus_dict: Dict[dev.Bus, int]) -> RawSwitchedShunt:
     """
 
     :param shunt:
@@ -158,8 +163,8 @@ def get_psse_switched_shunt(shunt: dev.ControllableShunt, bus_dict: Dict[dev.Bus
     if shunt.control_bus is not None and shunt.control_bus != shunt.bus:
         psse_switched_shunt.SWREG = bus_dict.get(shunt.control_bus, 0)
 
-    if len(shunt.g_steps) > 0:
-        diff_list = np.insert(np.diff(shunt.g_steps), 0, shunt.g_steps[0])
+    if len(shunt.b_steps) > 0:
+        diff_list = np.insert(np.diff(shunt.b_steps), 0, shunt.b_steps[0])
         aggregated_steps = [(sum(1 for _ in group), key) for key, group in groupby(diff_list)]
 
         for index, aggregated_step in enumerate(aggregated_steps):
@@ -200,7 +205,9 @@ def get_psse_generator(generator: dev.Generator, bus_dict: Dict[dev.Bus, int], i
     return psse_generator
 
 
-def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bus, int], ckt: int) -> RawTransformer:
+def get_psse_transformer2w(transformer: dev.Transformer2W,
+                           bus_dict: Dict[dev.Bus, int],
+                           ckt: int) -> RawTransformer:
     """
 
     :param transformer:
@@ -252,10 +259,44 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
 
     psse_transformer.ANG1 = np.rad2deg(transformer.tap_phase)
 
+    # Control types
+    if transformer.tap_changer.tc_type == TapChangerTypes.NoRegulation:
+
+        psse_transformer.COD1 = 0
+
+    elif transformer.tap_changer.tc_type == TapChangerTypes.VoltageRegulation:
+
+        if transformer.tap_module_control_mode == TapModuleControl.fixed:
+            psse_transformer.COD1 = -1
+        else:
+            psse_transformer.COD1 = 1
+
+    elif transformer.tap_changer.tc_type == TapChangerTypes.Symmetrical:
+
+        if transformer.tap_phase_control_mode == TapPhaseControl.fixed:
+            psse_transformer.COD1 = -3
+        else:
+            psse_transformer.COD1 = 3
+
+    elif transformer.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
+
+        if (transformer.tap_module_control_mode == TapModuleControl.fixed or
+                transformer.tap_phase_control_mode == TapPhaseControl.fixed):
+            psse_transformer.COD1 = -5
+        else:
+            psse_transformer.COD1 = 5
+        psse_transformer.CNXA1 = transformer.tap_changer.asymmetry_angle
+
+    else:
+        pass
+
+    # TODO RMA1
+
     return psse_transformer
 
 
-def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bus, int]) -> RawTransformer:
+def get_psse_transformer3w(transformer: dev.Transformer3W,
+                           bus_dict: Dict[dev.Bus, int]) -> RawTransformer:
     """
 
     :param transformer:
