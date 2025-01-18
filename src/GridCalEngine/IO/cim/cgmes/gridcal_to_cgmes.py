@@ -1240,13 +1240,11 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
             else:
                 non_lin_sc.controlEnabled = False
 
-            # SSH
-            #    sections: Shunt compensator sections in use.
-            non_lin_sc.sections = 1
-            # if mc_elm.active:
-            #     non_lin_sc.sections = 1
-            # else:
-            #     non_lin_sc.sections = 0
+            # SSH: sections: Shunt compensator sections in use.
+            if mc_elm.active:
+                non_lin_sc.sections = mc_elm.step + 1
+            else:
+                non_lin_sc.sections = 0
 
             # EQ
             non_lin_sc.nomU = mc_elm.bus.Vnom

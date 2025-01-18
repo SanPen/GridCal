@@ -211,33 +211,43 @@ def get_gridcal_shunt_switched(
 
     vset = 1.0
 
-    is_controlled = False
+    if psse_elm.MODSW == 0:  # locked
+        is_controlled = False
+        b_init = psse_elm.BINIT
 
-    if psse_elm.MODSW in [1, 2]:
+    elif psse_elm.MODSW in [1, 2]:
         # 1 - discrete adjustment, controlling voltage locally or at bus SWREG
         # 2 - continuous adjustment, controlling voltage locally or at bus SWREG
+        is_controlled = True
         b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
         vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
-        is_controlled = True
 
     elif psse_elm.MODSW in [3, 4, 5, 6]:
+        is_controlled = True
+        b_init = psse_elm.BINIT
         logger.add_warning(
             msg="Not supported control mode for Switched Shunt",
             value=psse_elm.MODSW
         )
-        is_controlled = True
-        b_init = psse_elm.BINIT
-    else:
-        b_init = psse_elm.BINIT
 
-    vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
+    else:
+        is_controlled = False
+        b_init = psse_elm.BINIT
+        logger.add_warning(
+            msg="Invalid control mode for Switched Shunt.",
+            device=psse_elm,
+            expected_value="0-6",
+            value=psse_elm.MODSW,
+        )
 
     elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
                                 B=b_init,
+                                step=1,     # for testing
                                 vset=vset,
                                 code=busnum_id,
-                                is_nonlinear=True)
+                                is_nonlinear=True,
+                                is_controlled=is_controlled,)
 
     if psse_elm.SWREG > 0:
         if psse_elm.SWREG != psse_elm.I:

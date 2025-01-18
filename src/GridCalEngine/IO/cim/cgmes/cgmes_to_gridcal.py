@@ -1914,6 +1914,10 @@ def get_gcdev_controllable_shunts(
             # gcdev_elm.B = b_list[0]     # how to consider Binit?
             # gcdev_elm.G
 
+            # B, G is calculated when step is set: only if .sections >= 1
+            gcdev_elm.step = cgmes_elm.sections - 1
+            gcdev_elm.B = 50    # np.sum(gcdev_elm.b_steps[:gcdev_elm.step])
+            
             gcdev_model.add_controllable_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
 
         else:
