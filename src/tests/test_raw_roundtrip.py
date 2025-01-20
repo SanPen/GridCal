@@ -12,7 +12,7 @@ from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions
 import GridCalEngine.api as gc
 
 
-def run_import_export_test(import_path: str, export_fname: str):
+def run_import_export_test(import_path: str, export_fname: str, version=33):
     """
 
     :param import_path:
@@ -33,6 +33,7 @@ def run_import_export_test(import_path: str, export_fname: str):
                                    results=pf_results,
                                    logger=logger)
     options = FileSavingOptions()
+    options.raw_version = version
     options.sessions_data.append(pf_session_data)
 
     raw_export = FileSave(circuit=circuit_1,
@@ -87,7 +88,7 @@ def test_raw_ieee_14_roundtrip():
     script_path = os.path.abspath(__file__)
     test_grid_name = 'IEEE 14 bus.raw'
     raw_path, export_name = get_path(script_path, test_grid_name)
-    run_import_export_test(import_path=raw_path, export_fname=export_name)
+    run_import_export_test(import_path=raw_path, export_fname=export_name, version=33)
 
 
 def test_raw_ieee_30_roundtrip():
@@ -98,7 +99,7 @@ def test_raw_ieee_30_roundtrip():
     script_path = os.path.abspath(__file__)
     test_grid_name = 'IEEE 30 bus.raw'
     raw_path, export_name = get_path(script_path, test_grid_name)
-    run_import_export_test(import_path=raw_path, export_fname=export_name)
+    run_import_export_test(import_path=raw_path, export_fname=export_name, version=33)
 
 
 def test_raw_ieee_14_fs_ss_roundtrip():
@@ -109,7 +110,7 @@ def test_raw_ieee_14_fs_ss_roundtrip():
     script_path = os.path.abspath(__file__)
     test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss.raw'
     raw_path, export_name = get_path(script_path, test_grid_name)
-    run_import_export_test(import_path=raw_path, export_fname=export_name)
+    run_import_export_test(import_path=raw_path, export_fname=export_name, version=35)
 
 
 # def test_raw_ieee_14_fs_ss_wo_pst_roundtrip():
@@ -120,7 +121,7 @@ def test_raw_ieee_14_fs_ss_roundtrip():
 #     script_path = os.path.abspath(__file__)
 #     test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst.raw'
 #     raw_path, export_name = get_path(script_path, test_grid_name)
-#     run_import_export_test(import_path=raw_path, export_fname=export_name)
+#     run_import_export_test(import_path=raw_path, export_fname=export_name, version=35)
 #
 #
 # def test_raw_ieee_14_fs_ss_wo_pst_sws_roundtrip():
@@ -131,7 +132,7 @@ def test_raw_ieee_14_fs_ss_roundtrip():
 #     script_path = os.path.abspath(__file__)
 #     test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst_SWS.raw'
 #     raw_path, export_name = get_path(script_path, test_grid_name)
-#     run_import_export_test(import_path=raw_path, export_fname=export_name)
+#     run_import_export_test(import_path=raw_path, export_fname=export_name, version=35)
 
 
 def test_rawx_roundtrip():

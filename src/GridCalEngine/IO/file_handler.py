@@ -655,7 +655,7 @@ class FileSave:
         """
         logger = Logger()
         raw_circuit = gridcal_to_raw(self.circuit, logger=logger)
-        logger += write_raw(self.file_name, raw_circuit)
+        logger += write_raw(self.file_name, raw_circuit, version=self.options.raw_version)
         return logger
 
     def save_rawx(self) -> Logger:
