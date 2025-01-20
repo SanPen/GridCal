@@ -149,15 +149,15 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
                              value="None")
 
         else:
-            ols = cl.OperationalLimitSet
+            op_lim_set = cl.OperationalLimitSet
             op_lim_type = cl.OperationalLimitType
 
-            volt = get_voltage_terminal(ols.Terminal, logger)
+            volt = get_voltage_terminal(op_lim_set.Terminal, logger)
             rate_mva = np.round(cl.value * volt * sqrt_3 / 1e3, 4)
 
-            if isinstance(ols.Terminal.ConductingEquipment,
+            if isinstance(op_lim_set.Terminal.ConductingEquipment,
                           device_type):
-                branch_id = ols.Terminal.ConductingEquipment.uuid
+                branch_id = op_lim_set.Terminal.ConductingEquipment.uuid
 
                 if op_lim_type.limitType == LimitTypeKind.patl:
 
@@ -204,10 +204,10 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
 
             else:
                 logger.add_info(msg='ConductingEquipment is missing for terminal.',
-                                device=ols.Terminal.rdfid,
-                                device_class=ols.Terminal.tpe,
+                                device=op_lim_set.Terminal.rdfid,
+                                device_class=op_lim_set.Terminal.tpe,
                                 device_property="ConductingEquipment",
-                                value=ols.Terminal)
+                                value=op_lim_set.Terminal)
 
     # later development
     for al in cgmes_model.cgmes_assets.ActivePowerLimit_list:
