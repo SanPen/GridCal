@@ -6,6 +6,9 @@ from __future__ import annotations
 from typing import Dict
 import sqlite3
 import json
+
+import pandas as pd
+
 import GridCalEngine.Devices as dev
 from GridCalEngine.basic_structures import Logger
 
@@ -34,6 +37,7 @@ def is_pandapower_pickle(file_path):
     else:
         return False
 
+
 def is_pandapower_json(file_path):
     """
     Check if a file is pandapower JSON
@@ -49,6 +53,7 @@ def is_pandapower_json(file_path):
             return False
     else:
         return False
+
 
 def is_pandapower_sqlite(file_path):
     """
@@ -69,7 +74,6 @@ def is_pandapower_sqlite(file_path):
         return False
 
 
-
 def is_pandapower_file(file_path: str):
     """
     Check if this is a pandapower file
@@ -88,14 +92,12 @@ def is_pandapower_file(file_path: str):
 
 class Panda2GridCal:
 
-    def __init__(self, file_or_net: str | "pandapowerNet", logger: Logger, Sbase=100):
+    def __init__(self, file_or_net: str | "pandapowerNet", logger: Logger | None = None):
         """
         Initialize
         :param file_or_net: PandaPower file name or pandapowerNet
-        :param Sbase:
         """
-        self.logger = logger
-
+        self.logger = logger if logger is not None else Logger()
 
         if PANDAPOWER_AVAILABLE:
             if isinstance(file_or_net, str):
@@ -117,13 +119,14 @@ class Panda2GridCal:
 
             self.logger.add_info("This seems to be a pandapower file")
             self.fBase = self.pandanet.f_hz
-            self.Sbase = Sbase
+            self.Sbase = self.pandanet.sn_mva if self.pandanet.sn_mva > 0.0 else 100.0
+            self.load_scale = 100.0 / self.Sbase
         else:
             self.pandanet = None
             self.fBase = 50.0
             self.Sbase = 100.0
+            self.load_scale = 1.0
             self.logger.add_info("Pandapower not available :/, try pip install pandapower")
-
 
     def parse_buses(self, grid: dev.MultiCircuit) -> Dict[str, dev.Bus]:
         """
@@ -168,7 +171,11 @@ class Panda2GridCal:
 
         for _, row in self.pandanet.load.iterrows():
             bus = bus_dictionary[row['bus']]
-            elm = dev.Load(name=row['name'], P=row['p_mw'], Q=row['q_mvar'])
+            elm = dev.Load(
+                name=row['name'],
+                P=row['p_mw'] * self.load_scale,
+                Q=row['q_mvar'] * self.load_scale
+            )
             grid.add_load(bus=bus, api_obj=elm)
 
     def parse_shunts(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
@@ -179,7 +186,11 @@ class Panda2GridCal:
         """
         for _, row in self.pandanet.shunt.iterrows():
             bus = bus_dictionary[row['bus']]
-            elm = dev.Shunt(name=row['name'], G=row["p_mw"], B=row["q_mvar"])
+            elm = dev.Shunt(
+                name=row['name'],
+                G=row["p_mw"] * self.load_scale,
+                B=row["q_mvar"] * self.load_scale
+            )
             grid.add_shunt(bus=bus, api_obj=elm)
 
     def parse_lines(self, grid: dev.MultiCircuit, bus_dictionary: Dict[str, dev.Bus]):
@@ -207,7 +218,7 @@ class Panda2GridCal:
                 length=row['length_km'],
                 Imax=row['max_i_ka'],
                 freq=self.fBase,
-                Sbase=self.Sbase
+                Sbase=self.Sbase,
             )
 
             # Uncomment the following lines if line activation status is needed
@@ -280,7 +291,7 @@ class Panda2GridCal:
             bus = bus_dictionary[row['bus']]
             elm = dev.Generator(
                 name=row['name'],
-                P=row['p_mw'],
+                P=row['p_mw'] * self.load_scale,
                 active=row['in_service'],
                 is_controlled=True
             )
@@ -387,6 +398,63 @@ class Panda2GridCal:
             )
             grid.add_switch(switch_branch)
 
+    def parse_measurements(self, grid: dev.MultiCircuit):
+        """
+
+        :param grid:
+        :return:
+        """
+        df: pd.DataFrame | None = self.pandanet.get("measurement", None)
+
+        if df is not None:
+            for i, row in df.iterrows():
+                name = row['name']
+                m_tpe = row['measurement_type']  # v, p, q
+                elm_tpe = row['element_type']  # bus, line
+                idx = row['element']  # index
+                val = row['value']
+                std = row['std_dev']
+                side = row['side']
+
+                if elm_tpe == 'bus':
+
+                    if m_tpe == 'v':
+                        grid.add_vm_measurement(
+                            dev.VmMeasurement(value=val, uncertainty=std, api_obj=grid.buses[idx], name=name)
+                        )
+                    else:
+                        self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
+
+                elif elm_tpe == 'line':
+                    if m_tpe == 'p':
+                        if side == 1:
+                            grid.add_pf_measurement(
+                                dev.PfMeasurement(
+                                    value=val * self.load_scale,
+                                    uncertainty=std,
+                                    api_obj=grid.lines[idx],
+                                    name=name
+                                )
+                            )
+                        else:
+                            self.logger.add_warning("To side not implemented for P measurements")
+                    elif m_tpe == 'q':
+                        if side == 1:
+                            grid.add_qf_measurement(
+                                dev.QfMeasurement(
+                                    value=val * self.load_scale,
+                                    uncertainty=std,
+                                    api_obj=grid.lines[idx],
+                                    name=name
+                                )
+                            )
+                        else:
+                            self.logger.add_warning("To side not implemented for Q measurements")
+                    else:
+                        self.logger.add_warning(f"PandaPower {m_tpe} measurement not implemented")
+                else:
+                    self.logger.add_warning(f"PandaPower {elm_tpe} measurement not implemented")
+
     def get_multicircuit(self) -> dev.MultiCircuit:
         """
         Get a GridCal Multi-circuit from a PandaPower grid
@@ -395,7 +463,7 @@ class Panda2GridCal:
         grid = dev.MultiCircuit()
 
         if self.pandanet is not None:
-            grid.Sbase = self.Sbase
+            grid.Sbase = 100.0  # always, the pandapower scaling is handled in the conversions
             grid.fBase = self.pandanet.f_hz
 
             bus_dict = self.parse_buses(grid=grid)
@@ -408,5 +476,6 @@ class Panda2GridCal:
             self.parse_generators(grid=grid, bus_dictionary=bus_dict)
             self.parse_transformers(grid=grid, bus_dictionary=bus_dict)
             self.parse_switches(grid=grid, bus_dictionary=bus_dict)
+            self.parse_measurements(grid=grid)
 
         return grid

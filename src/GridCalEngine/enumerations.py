@@ -797,12 +797,15 @@ class DeviceType(Enum):
     BranchGroupDevice = 'Branch group'
     LambdaDevice = r"Loading from the base situation ($\lambda$)"
 
-    PiMeasurementDevice = 'Pi Measurement'
-    QiMeasurementDevice = 'Qi Measurement'
+    PMeasurementDevice = 'Pi Measurement'
+    QMeasurementDevice = 'Qi Measurement'
     PfMeasurementDevice = 'Pf Measurement'
     QfMeasurementDevice = 'Qf Measurement'
+    PtMeasurementDevice = 'Pt Measurement'
+    QtMeasurementDevice = 'Qt Measurement'
     VmMeasurementDevice = 'Vm Measurement'
     IfMeasurementDevice = 'If Measurement'
+    ItMeasurementDevice = 'It Measurement'
 
     WireDevice = 'Wire'
     SequenceLineDevice = 'Sequence line'

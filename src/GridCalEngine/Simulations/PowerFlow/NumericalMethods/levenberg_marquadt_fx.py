@@ -89,7 +89,7 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
 
                 # system matrix
                 # H1 = H^t
-                Ht = H.T  # .tocsr()
+                Ht = H.T
 
                 # H2 = H1·H
                 HtH = Ht @ H
