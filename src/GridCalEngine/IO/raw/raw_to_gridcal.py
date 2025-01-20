@@ -20,10 +20,7 @@ from GridCalEngine.IO.raw.devices.transformer import RawTransformer
 from GridCalEngine.IO.raw.devices.two_terminal_dc_line import RawTwoTerminalDCLine
 from GridCalEngine.IO.raw.devices.vsc_dc_line import RawVscDCLine
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
-from GridCalEngine.enumerations import (TapChangerTypes,
-                                        TapPhaseControl,
-                                        TapModuleControl)
-from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
+from GridCalEngine.enumerations import TapChangerTypes, TapPhaseControl, TapModuleControl
 
 
 def get_gridcal_bus(psse_bus: RawBus,

@@ -103,8 +103,8 @@ class Assets:
         self._controllable_shunts: List[dev.ControllableShunt] = list()
 
         # Lists of measurements
-        self._pi_measurements: List[dev.PiMeasurement] = list()
-        self._qi_measurements: List[dev.QiMeasurement] = list()
+        self._pi_measurements: List[dev.PMeasurement] = list()
+        self._qi_measurements: List[dev.QMeasurement] = list()
         self._vm_measurements: List[dev.VmMeasurement] = list()
         self._pf_measurements: List[dev.PfMeasurement] = list()
         self._qf_measurements: List[dev.QfMeasurement] = list()
@@ -2136,7 +2136,7 @@ class Assets:
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
-    def pi_measurements(self) -> List[dev.PiMeasurement]:
+    def pi_measurements(self) -> List[dev.PMeasurement]:
         """
         Get list of PiMeasurements
         :return:
@@ -2144,10 +2144,10 @@ class Assets:
         return self._pi_measurements
 
     @pi_measurements.setter
-    def pi_measurements(self, value: List[dev.PiMeasurement]):
+    def pi_measurements(self, value: List[dev.PMeasurement]):
         self._pi_measurements = value
 
-    def get_pi_measurements(self) -> List[dev.PiMeasurement]:
+    def get_p_measurements(self) -> List[dev.PMeasurement]:
         """
         List of pi_measurements
         :return: List[dev.PiMeasurement]
@@ -2161,7 +2161,7 @@ class Assets:
         """
         return len(self._pi_measurements)
 
-    def get_pi_measurement_at(self, i: int) -> dev.PiMeasurement:
+    def get_pi_measurement_at(self, i: int) -> dev.PMeasurement:
         """
         Get pi_measurement at i
         :param i: index
@@ -2176,7 +2176,7 @@ class Assets:
         """
         return np.array([e.name for e in self._pi_measurements])
 
-    def add_pi_measurement(self, obj: dev.PiMeasurement):
+    def add_pi_measurement(self, obj: dev.PMeasurement):
         """
         Add a PiMeasurement object
         :param obj: PiMeasurement instance
@@ -2186,7 +2186,7 @@ class Assets:
             obj.ensure_profiles_exist(self.time_profile)
         self._pi_measurements.append(obj)
 
-    def delete_pi_measurement(self, obj: dev.PiMeasurement) -> None:
+    def delete_pi_measurement(self, obj: dev.PMeasurement) -> None:
         """
         Add a PiMeasurement object
         :param obj: PiMeasurement instance
@@ -2200,7 +2200,7 @@ class Assets:
     # Q_i measurement
     # ------------------------------------------------------------------------------------------------------------------
     @property
-    def qi_measurements(self) -> List[dev.QiMeasurement]:
+    def qi_measurements(self) -> List[dev.QMeasurement]:
         """
         Get list of QiMeasurements
         :return:
@@ -2208,10 +2208,10 @@ class Assets:
         return self._qi_measurements
 
     @qi_measurements.setter
-    def qi_measurements(self, value: List[dev.QiMeasurement]):
+    def qi_measurements(self, value: List[dev.QMeasurement]):
         self._qi_measurements = value
 
-    def get_qi_measurements(self) -> List[dev.QiMeasurement]:
+    def get_q_measurements(self) -> List[dev.QMeasurement]:
         """
         List of qi_measurements
         :return: List[dev.QiMeasurement]
@@ -2225,7 +2225,7 @@ class Assets:
         """
         return len(self._qi_measurements)
 
-    def get_qi_measurement_at(self, i: int) -> dev.QiMeasurement:
+    def get_qi_measurement_at(self, i: int) -> dev.QMeasurement:
         """
         Get qi_measurement at i
         :param i: index
@@ -2240,7 +2240,7 @@ class Assets:
         """
         return np.array([e.name for e in self._qi_measurements])
 
-    def add_qi_measurement(self, obj: dev.QiMeasurement):
+    def add_qi_measurement(self, obj: dev.QMeasurement):
         """
         Add a QiMeasurement object
         :param obj: QiMeasurement instance
@@ -2250,7 +2250,7 @@ class Assets:
             obj.ensure_profiles_exist(self.time_profile)
         self._qi_measurements.append(obj)
 
-    def delete_qi_measurement(self, obj: dev.QiMeasurement) -> None:
+    def delete_qi_measurement(self, obj: dev.QMeasurement) -> None:
         """
         Add a QiMeasurement object
         :param obj: QiMeasurement instance
@@ -5253,11 +5253,11 @@ class Assets:
         elif device_type == DeviceType.FluidP2XDevice:
             return self._p2xs
 
-        elif device_type == DeviceType.PiMeasurementDevice:
-            return self.get_pi_measurements()
+        elif device_type == DeviceType.PMeasurementDevice:
+            return self.get_p_measurements()
 
-        elif device_type == DeviceType.QiMeasurementDevice:
-            return self.get_qi_measurements()
+        elif device_type == DeviceType.QMeasurementDevice:
+            return self.get_q_measurements()
 
         elif device_type == DeviceType.PfMeasurementDevice:
             return self.get_pf_measurements()
@@ -5465,10 +5465,10 @@ class Assets:
             for d in devices:
                 self.add_branch(d)  # each branch needs to be converted accordingly
 
-        elif device_type == DeviceType.PiMeasurementDevice:
+        elif device_type == DeviceType.PMeasurementDevice:
             self._pi_measurements = devices
 
-        elif device_type == DeviceType.QiMeasurementDevice:
+        elif device_type == DeviceType.QMeasurementDevice:
             self._qi_measurements = devices
 
         elif device_type == DeviceType.PfMeasurementDevice:
@@ -5643,10 +5643,10 @@ class Assets:
         elif obj.device_type == DeviceType.FluidPathDevice:
             self.add_fluid_path(obj=obj)
 
-        elif obj.device_type == DeviceType.PiMeasurementDevice:
+        elif obj.device_type == DeviceType.PMeasurementDevice:
             self.add_pi_measurement(obj=obj)
 
-        elif obj.device_type == DeviceType.QiMeasurementDevice:
+        elif obj.device_type == DeviceType.QMeasurementDevice:
             self.add_qi_measurement(obj=obj)
 
         elif obj.device_type == DeviceType.PfMeasurementDevice:
@@ -5821,10 +5821,10 @@ class Assets:
         elif obj.device_type == DeviceType.FluidPathDevice:
             self.delete_fluid_path(obj)
 
-        elif obj.device_type == DeviceType.PiMeasurementDevice:
+        elif obj.device_type == DeviceType.PMeasurementDevice:
             self.delete_pi_measurement(obj)
 
-        elif obj.device_type == DeviceType.QiMeasurementDevice:
+        elif obj.device_type == DeviceType.QMeasurementDevice:
             self.delete_qi_measurement(obj)
 
         elif obj.device_type == DeviceType.PfMeasurementDevice:

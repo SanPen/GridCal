@@ -43,7 +43,7 @@ class MeasurementTemplate(EditableDevice):
         self.register("api_object", tpe=EditableDevice, definition="Value of the measurement")
 
 
-class PiMeasurement(MeasurementTemplate):
+class PMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
@@ -56,10 +56,10 @@ class PiMeasurement(MeasurementTemplate):
                                      api_obj=api_obj,
                                      name=name,
                                      idtag=idtag,
-                                     device_type=DeviceType.PiMeasurementDevice)
+                                     device_type=DeviceType.PMeasurementDevice)
 
 
-class QiMeasurement(MeasurementTemplate):
+class QMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
@@ -72,7 +72,7 @@ class QiMeasurement(MeasurementTemplate):
                                      api_obj=api_obj,
                                      name=name,
                                      idtag=idtag,
-                                     device_type=DeviceType.QiMeasurementDevice)
+                                     device_type=DeviceType.QMeasurementDevice)
 
 
 class VmMeasurement(MeasurementTemplate):
@@ -108,6 +108,36 @@ class PfMeasurement(MeasurementTemplate):
 
 
 class QfMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.QfMeasurementDevice)
+
+class PtMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.PfMeasurementDevice)
+
+class QtMeasurement(MeasurementTemplate):
     """
     Measurement class
     """

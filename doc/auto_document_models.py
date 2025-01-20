@@ -73,7 +73,7 @@ def get_gridcal_data_frames():
     categories = {elm.device_type.value: cat for cat, elms in d.items() for elm in elms}
     for obj_type_name, obj in obj_dict.items():
 
-        class_name = obj.device_type.value
+        class_name = obj.__class__.__name__
 
         data = list()
         for prop_name, prop in obj.registered_properties.items():
