@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import math
+
 import numpy as np
 from typing import Dict
 from itertools import groupby
@@ -278,6 +280,12 @@ def get_psse_transformer2w(transformer: dev.Transformer2W,
         else:
             psse_transformer.COD1 = 3
 
+        # RMA - Phase shift angle in degrees when |COD1| is 3 or 5. No default is allowed
+        number_of_symmetrical_step = (transformer.tap_changer.total_positions - 1) / 2
+        psse_transformer.RMA1 = 2 * math.degrees(math.atan(
+             number_of_symmetrical_step * transformer.tap_changer.dV / 2
+        ))
+
     elif transformer.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
 
         if (transformer.tap_module_control_mode == TapModuleControl.fixed or
@@ -290,7 +298,6 @@ def get_psse_transformer2w(transformer: dev.Transformer2W,
     else:
         pass
 
-    # TODO RMA1
 
     return psse_transformer
 

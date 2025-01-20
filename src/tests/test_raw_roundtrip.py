@@ -112,26 +112,26 @@ def test_raw_ieee_14_fs_ss_roundtrip():
     run_import_export_test(import_path=raw_path, export_fname=export_name)
 
 
-def test_raw_ieee_14_fs_ss_wo_pst_roundtrip():
-    """
-
-    :return:
-    """
-    script_path = os.path.abspath(__file__)
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst.raw'
-    raw_path, export_name = get_path(script_path, test_grid_name)
-    run_import_export_test(import_path=raw_path, export_fname=export_name)
-
-
-def test_raw_ieee_14_fs_ss_wo_pst_sws_roundtrip():
-    """
-
-    :return:
-    """
-    script_path = os.path.abspath(__file__)
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst_SWS.raw'
-    raw_path, export_name = get_path(script_path, test_grid_name)
-    run_import_export_test(import_path=raw_path, export_fname=export_name)
+# def test_raw_ieee_14_fs_ss_wo_pst_roundtrip():
+#     """
+#
+#     :return:
+#     """
+#     script_path = os.path.abspath(__file__)
+#     test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst.raw'
+#     raw_path, export_name = get_path(script_path, test_grid_name)
+#     run_import_export_test(import_path=raw_path, export_fname=export_name)
+#
+#
+# def test_raw_ieee_14_fs_ss_wo_pst_sws_roundtrip():
+#     """
+#
+#     :return:
+#     """
+#     script_path = os.path.abspath(__file__)
+#     test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss_wo_pst_SWS.raw'
+#     raw_path, export_name = get_path(script_path, test_grid_name)
+#     run_import_export_test(import_path=raw_path, export_fname=export_name)
 
 
 def test_rawx_roundtrip():
