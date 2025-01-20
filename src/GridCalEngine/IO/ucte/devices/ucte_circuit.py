@@ -3,17 +3,17 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import List
-from GridCalEngine.IO.ucte.devices.node import Node
-from GridCalEngine.IO.ucte.devices.comment import Comment
-from GridCalEngine.IO.ucte.devices.line import Line
-from GridCalEngine.IO.ucte.devices.transformer import Transformer
-from GridCalEngine.IO.ucte.devices.transformer_regulation import TransformerRegulation
-from GridCalEngine.IO.ucte.devices.transformer_special import TransformerSpecial
-from GridCalEngine.IO.ucte.devices.exchange_power import ExchangePower
+from GridCalEngine.IO.ucte.devices.ucte_node import UcteNode
+from GridCalEngine.IO.ucte.devices.ucte_comment import UcteComment
+from GridCalEngine.IO.ucte.devices.ucte_line import UcteLine
+from GridCalEngine.IO.ucte.devices.ucte_transformer import UcteTransformer
+from GridCalEngine.IO.ucte.devices.ucte_transformer_regulation import UcteTransformerRegulation
+from GridCalEngine.IO.ucte.devices.ucte_transformer_special import UcteTransformerSpecial
+from GridCalEngine.IO.ucte.devices.ucte_exchange_power import UcteExchangePower
 from GridCalEngine.basic_structures import Logger
 
 
-class UCTECircuit:
+class UcteCircuit:
     """
     UCTE circuit class
     """
@@ -23,13 +23,13 @@ class UCTECircuit:
         """
 
         """
-        self.comments: List[Comment] = list()
-        self.nodes: List[Node] = list()
-        self.lines: List[Line] = list()
-        self.transformers: List[Transformer] = list()
-        self.regulations: List[TransformerRegulation] = list()
-        self.special_transformers: List[TransformerSpecial] = list()
-        self.exchange_powers: List[ExchangePower] = list()
+        self.comments: List[UcteComment] = list()
+        self.nodes: List[UcteNode] = list()
+        self.lines: List[UcteLine] = list()
+        self.transformers: List[UcteTransformer] = list()
+        self.regulations: List[UcteTransformerRegulation] = list()
+        self.special_transformers: List[UcteTransformerSpecial] = list()
+        self.exchange_powers: List[UcteExchangePower] = list()
 
     def parse_file(self, files: List[str], logger: Logger = None):
         """
@@ -68,31 +68,31 @@ class UCTECircuit:
                                 pass
                         else:
                             if current_block == "comments":
-                                comment = Comment()
+                                comment = UcteComment()
                                 comment.parse(line)
                                 self.comments.append(comment)
                             elif current_block == "nodes":
-                                node = Node()
+                                node = UcteNode()
                                 node.parse(line)
                                 self.nodes.append(node)
                             elif current_block == "lines":
-                                line_obj = Line()
+                                line_obj = UcteLine()
                                 line_obj.parse(line)
                                 self.lines.append(line_obj)
                             elif current_block == "transformers":
-                                transformer = Transformer()
+                                transformer = UcteTransformer()
                                 transformer.parse(line)
                                 self.transformers.append(transformer)
                             elif current_block == "regulations":
-                                regulation = TransformerRegulation()
+                                regulation = UcteTransformerRegulation()
                                 regulation.parse(line)
                                 self.regulations.append(regulation)
                             elif current_block == "special_transformers":
-                                special_transformer = TransformerSpecial()
+                                special_transformer = UcteTransformerSpecial()
                                 special_transformer.parse(line)
                                 self.special_transformers.append(special_transformer)
                             elif current_block == "exchange_powers":
-                                exchange = ExchangePower()
+                                exchange = UcteExchangePower()
                                 exchange.parse(line)
                                 self.exchange_powers.append(exchange)
             else:

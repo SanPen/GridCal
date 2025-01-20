@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: MPL-2.0
 from typing import Dict
 import numpy as np
-from GridCalEngine.IO.ucte.devices.circuit import UCTECircuit
+from GridCalEngine.IO.ucte.devices.ucte_circuit import UcteCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 
 
-def parse_nodes(ucte_grid: UCTECircuit, grid: MultiCircuit) -> Dict[str, dev.Bus]:
+def parse_nodes(ucte_grid: UcteCircuit, grid: MultiCircuit) -> Dict[str, dev.Bus]:
     """
 
     :param ucte_grid:
@@ -83,7 +83,7 @@ def parse_nodes(ucte_grid: UCTECircuit, grid: MultiCircuit) -> Dict[str, dev.Bus
     return bus_dict
 
 
-def parse_lines(ucte_grid: UCTECircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
+def parse_lines(ucte_grid: UcteCircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
     """
     Parse UCTE lines
     :param ucte_grid:
@@ -127,7 +127,7 @@ def parse_lines(ucte_grid: UCTECircuit, grid: MultiCircuit, bus_dict: Dict[str, 
             logger.add_error("Disconnected line", value=ucte_elm.name)
 
 
-def parse_transformer(ucte_grid: UCTECircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
+def parse_transformer(ucte_grid: UcteCircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
     """
 
     :param ucte_grid:
@@ -170,19 +170,19 @@ def parse_transformer(ucte_grid: UCTECircuit, grid: MultiCircuit, bus_dict: Dict
             logger.add_error("Disconnected line", value=ucte_elm.name)
 
 
-def parse_transformer_regulation(ucte_grid: UCTECircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
+def parse_transformer_regulation(ucte_grid: UcteCircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
     pass
 
 
-def parse_transformers_special(ucte_grid: UCTECircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
+def parse_transformers_special(ucte_grid: UcteCircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
     pass
 
 
-def parse_exchange_power(ucte_grid: UCTECircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
+def parse_exchange_power(ucte_grid: UcteCircuit, grid: MultiCircuit, bus_dict: Dict[str, dev.Bus], logger: Logger):
     pass
 
 
-def convert_ucte_to_gridcal(ucte_grid: UCTECircuit, logger: Logger) -> MultiCircuit:
+def convert_ucte_to_gridcal(ucte_grid: UcteCircuit, logger: Logger) -> MultiCircuit:
     """
     Convert UCTE grid to GridCal
     :param ucte_grid: UCTECircuit

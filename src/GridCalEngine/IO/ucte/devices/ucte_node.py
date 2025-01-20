@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-class Node:
+class UcteNode:
     def __init__(self):
         self.node_code = ""  # 0-7: Node (code)
         self.geo_name = ""  # 9-20: Geographical name

@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-class Comment:
+class UcteComment:
     def __init__(self):
         self.content = ""
 

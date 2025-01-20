@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-class TransformerRegulation:
+class UcteTransformerRegulation:
     def __init__(self):
         self.node1 = ""  # 0-7: Node 1 (non-regulated winding) To bus for GridCal
         self.node2 = ""  # 9-16: Node 2 (regulated winding) From bus for GridCal

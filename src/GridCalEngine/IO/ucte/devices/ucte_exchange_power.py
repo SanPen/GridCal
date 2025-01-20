@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-class ExchangePower:
+class UcteExchangePower:
     def __init__(self):
         self.country1 = ""  # 0-1: Country 1 (ISO code)
         self.country2 = ""  # 3-4: Country 2 (ISO code)

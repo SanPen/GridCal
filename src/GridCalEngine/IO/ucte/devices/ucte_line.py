@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-class Line:
+class UcteLine:
     def __init__(self):
         self.node1 = ""  # 0-7: Node 1 code
         self.node2 = ""  # 9-16: Node 2 code
