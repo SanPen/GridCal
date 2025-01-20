@@ -258,7 +258,7 @@ class RawSwitchedShunt(RawObject):
                    "N8", "B8"]
 
             return self.format_raw_line(["I", "MODSW", "ADJM", "STAT", "VSWHI", "VSWLO",
-                                         "SWREM", "RMPCT", "RMIDNT", "BINIT"] + var)
+                                         "SWREG", "RMPCT", "RMIDNT", "BINIT"] + var)
         else:
             raise Exception('Shunt not implemented for the version ' + str(version))
 
