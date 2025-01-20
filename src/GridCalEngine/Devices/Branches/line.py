@@ -363,9 +363,9 @@ class Line(BranchParent):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
-    def change_base(self, Sbase_old, Sbase_new):
+    def change_base(self, Sbase_old: float, Sbase_new: float):
         """
-        Change the inpedance base
+        Change the impedance base
         :param Sbase_old: old base (MVA)
         :param Sbase_new: new base (MVA)
         """
@@ -377,8 +377,8 @@ class Line(BranchParent):
 
     def get_weight(self) -> float:
         """
-        Get a weight of this line for graph porpuses
-        the weight is the impedance moudule (sqrt(r^2 + x^2))
+        Get a weight of this line for graph purposes
+        the weight is the impedance module (sqrt(r^2 + x^2))
         :return: weight value
         """
         return np.sqrt(self.R * self.R + self.X * self.X)

@@ -103,6 +103,8 @@ class InjectionParent(PhysicalDevice):
 
         self.scalable: bool = True
 
+        self.in_kw: bool = False
+
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus', editable=False)
 
         self.register(key='cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
@@ -129,8 +131,10 @@ class InjectionParent(PhysicalDevice):
         self.register(key='technologies', units='p.u.', tpe=SubObjectType.Associations,
                       definition='List of technologies', display=False)
 
-        self.register(key='scalable', units='', tpe=bool, definition='Is the load scalable?', editable=False,
+        self.register(key='scalable', units='', tpe=bool, definition='Is the injection scalable?', editable=False,
                       display=False)
+
+        self.register(key='in_kw', units='', tpe=bool, definition='Are the injections in kW and kVAr?')
 
     @property
     def bus(self) -> Bus:
