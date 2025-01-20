@@ -6,7 +6,7 @@ from typing import Tuple, List
 import numpy as np
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Devices.measurement import (PfMeasurement, QfMeasurement,
-                                               PMeasurement, QMeasurement,
+                                               PiMeasurement, QiMeasurement,
                                                VmMeasurement, IfMeasurement)
 
 
@@ -19,10 +19,10 @@ class StateEstimationInput:
         """
         State estimation inputs constructor
         """
-        self.p_inj: List[PMeasurement] = list()  # Node active power measurements vector of pointers
+        self.p_inj: List[PiMeasurement] = list()  # Node active power measurements vector of pointers
         self.p_idx: List[int] = list()  # nodes with power injection measurements
 
-        self.q_inj: List[QMeasurement] = list()  # Node  reactive power measurements vector of pointers
+        self.q_inj: List[QiMeasurement] = list()  # Node  reactive power measurements vector of pointers
         self.q_idx: List[int] = list()  # nodes with reactive power injection measurements
 
         self.pf_value: List[PfMeasurement] = list()  # Branch active power measurements vector of pointers
