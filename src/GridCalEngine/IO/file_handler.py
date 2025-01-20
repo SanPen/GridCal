@@ -239,7 +239,7 @@ class FileOpen:
 
                 ucte_grid = UCTECircuit()
                 ucte_grid.parse_file(files=self.file_name)
-                self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid)
+                self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
 
             else:
                 for f in self.file_name:
@@ -431,10 +431,10 @@ class FileOpen:
                 elif file_extension.lower() == '.p':
                     self.circuit = Panda2GridCal(self.file_name, self.logger).get_multicircuit()
 
-                elif file_extension.lower() == '.ucte':
+                elif file_extension.lower() == '.uct':
                     ucte_grid = UCTECircuit()
                     ucte_grid.parse_file(files=[self.file_name])
-                    self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid)
+                    self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
 
             else:
                 # warn('The file does not exist.')

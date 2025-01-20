@@ -19,6 +19,34 @@ class Transformer:
         self.current_limit = 0  # 70-75: Current limit (A)
         self.name = ""
 
+    def is_active_and_reducible(self) -> tuple[bool, bool]:
+        """
+        Returns if this line is active and/or reducible
+        :return: active, reducible
+        """
+
+        """
+        Status
+        0:real element in operation (R, X only positive values permitted)
+        8: real element out of operation (R, X only positive values permitted)
+        1:equivalent element in operation
+        9:equivalent element out of operation        
+        2:busbar coupler in operation (definition: R=0, X=0, B=0)
+        7:busbar coupler out of operation (definition: R=0, X=0, B=0)
+        """
+        if self.status == 0:
+            return True, False
+        elif self.status == 8:
+            return False, False
+        elif self.status == 1:
+            return True, False
+        elif self.status == 9:
+            return False, False
+        elif self.status == 2:
+            return True, True
+        elif self.status == 7:
+            return False, True
+
     def parse(self, line):
         self.node1 = line[0:8].strip()
         self.node2 = line[9:17].strip()
