@@ -103,8 +103,8 @@ class Assets:
         self._controllable_shunts: List[dev.ControllableShunt] = list()
 
         # Lists of measurements
-        self._pi_measurements: List[dev.PMeasurement] = list()
-        self._qi_measurements: List[dev.QMeasurement] = list()
+        self._pi_measurements: List[dev.PiMeasurement] = list()
+        self._qi_measurements: List[dev.QiMeasurement] = list()
         self._vm_measurements: List[dev.VmMeasurement] = list()
         self._pf_measurements: List[dev.PfMeasurement] = list()
         self._qf_measurements: List[dev.QfMeasurement] = list()
@@ -2136,7 +2136,7 @@ class Assets:
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
-    def pi_measurements(self) -> List[dev.PMeasurement]:
+    def pi_measurements(self) -> List[dev.PiMeasurement]:
         """
         Get list of PiMeasurements
         :return:
@@ -2144,10 +2144,10 @@ class Assets:
         return self._pi_measurements
 
     @pi_measurements.setter
-    def pi_measurements(self, value: List[dev.PMeasurement]):
+    def pi_measurements(self, value: List[dev.PiMeasurement]):
         self._pi_measurements = value
 
-    def get_p_measurements(self) -> List[dev.PMeasurement]:
+    def get_p_measurements(self) -> List[dev.PiMeasurement]:
         """
         List of pi_measurements
         :return: List[dev.PiMeasurement]
@@ -2161,7 +2161,7 @@ class Assets:
         """
         return len(self._pi_measurements)
 
-    def get_pi_measurement_at(self, i: int) -> dev.PMeasurement:
+    def get_pi_measurement_at(self, i: int) -> dev.PiMeasurement:
         """
         Get pi_measurement at i
         :param i: index
@@ -2176,7 +2176,7 @@ class Assets:
         """
         return np.array([e.name for e in self._pi_measurements])
 
-    def add_pi_measurement(self, obj: dev.PMeasurement):
+    def add_pi_measurement(self, obj: dev.PiMeasurement):
         """
         Add a PiMeasurement object
         :param obj: PiMeasurement instance
@@ -2186,7 +2186,7 @@ class Assets:
             obj.ensure_profiles_exist(self.time_profile)
         self._pi_measurements.append(obj)
 
-    def delete_pi_measurement(self, obj: dev.PMeasurement) -> None:
+    def delete_pi_measurement(self, obj: dev.PiMeasurement) -> None:
         """
         Add a PiMeasurement object
         :param obj: PiMeasurement instance
@@ -2200,7 +2200,7 @@ class Assets:
     # Q_i measurement
     # ------------------------------------------------------------------------------------------------------------------
     @property
-    def qi_measurements(self) -> List[dev.QMeasurement]:
+    def qi_measurements(self) -> List[dev.QiMeasurement]:
         """
         Get list of QiMeasurements
         :return:
@@ -2208,10 +2208,10 @@ class Assets:
         return self._qi_measurements
 
     @qi_measurements.setter
-    def qi_measurements(self, value: List[dev.QMeasurement]):
+    def qi_measurements(self, value: List[dev.QiMeasurement]):
         self._qi_measurements = value
 
-    def get_q_measurements(self) -> List[dev.QMeasurement]:
+    def get_q_measurements(self) -> List[dev.QiMeasurement]:
         """
         List of qi_measurements
         :return: List[dev.QiMeasurement]
@@ -2225,7 +2225,7 @@ class Assets:
         """
         return len(self._qi_measurements)
 
-    def get_qi_measurement_at(self, i: int) -> dev.QMeasurement:
+    def get_qi_measurement_at(self, i: int) -> dev.QiMeasurement:
         """
         Get qi_measurement at i
         :param i: index
@@ -2240,7 +2240,7 @@ class Assets:
         """
         return np.array([e.name for e in self._qi_measurements])
 
-    def add_qi_measurement(self, obj: dev.QMeasurement):
+    def add_qi_measurement(self, obj: dev.QiMeasurement):
         """
         Add a QiMeasurement object
         :param obj: QiMeasurement instance
@@ -2250,7 +2250,7 @@ class Assets:
             obj.ensure_profiles_exist(self.time_profile)
         self._qi_measurements.append(obj)
 
-    def delete_qi_measurement(self, obj: dev.QMeasurement) -> None:
+    def delete_qi_measurement(self, obj: dev.QiMeasurement) -> None:
         """
         Add a QiMeasurement object
         :param obj: QiMeasurement instance
