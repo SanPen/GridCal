@@ -1,0 +1,19 @@
+##C 2007.05.01
+Test case for UCTE import issue in iPST entso-e package
+contact : sebastien.murgey@rte-france.com
+##N
+##ZFR
+ISSUE241              0 0 122.66 3.96708       0       0       0       0       0       0       0                                  
+ISSUE 21              0 0 217.41       0       0       0       0       0       0       0       0                                 
+ISSUE 22              0 0 217.42       0       0       0       0       0       0       0       0                                 
+ISSUE 41              0 2 122.28       0       0 -10.200 12.2000 -1.0000 -49.000 20.0000 -30.000                                 
+ISSUE 42              0 0 122.30 132.896 65.7544       0       0       0       0       0       0 
+##L            
+ISSUE 41 ISSUE 42 1 1      0 0.2000        0   5051                  
+ISSUE 42 ISSUE241 1 0 0.5500 1.6800 13.25000    548               
+##T
+ISSUE 42 ISSUE 21 1 0 126.0 220.0 160.0 0.2700 9.7300 -20.1200      0    733              
+ISSUE 42 ISSUE 22 2 0 126.0 220.0 160.0 0.2840 9.8300 -20.1200      0    733      
+##R          
+ISSUE 42 ISSUE 21 1 1.090 11   0                                     
+ISSUE 42 ISSUE 22 2 1.090 11   0               

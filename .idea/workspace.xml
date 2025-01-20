@@ -28,22 +28,60 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Pandapower parser experimentation and SE refactoring&#10;Added the in_kw flag in injections parent">
-      <change afterPath="$PROJECT_DIR$/src/trunk/pp_check/GC_StateEstimation.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/pp_check/PP_StateEstimation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/state_estimation_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/state_estimation_run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections/generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/injection_parent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/injection_parent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/measurement.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/types.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/types.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/StateEstimation/state_estimation_inputs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_state_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_state_estimation.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added use_kw to the injection devices so that you can model using kilo-values instead of mega-values.">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/circuit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/comment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/exchange_power.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/line.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/node.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/transformer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/transformer_regulation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/devices/transformer_special.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/ucte/ucte_to_gridcal.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/beForMergeProperties.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/beTestGridForMerging.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/combineRtcAndPtc.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/countryIssue.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/couplerToXnodeExample.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/differentLinesVoltage.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/elementName.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/elementNameImportReport.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/emptyElementName.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/expectedExport.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/expectedExport2.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/expectedExport3.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/expectedExport4.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/expectedExport5.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/expectedExport_withoutPermanentLimit.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/frForMergeProperties.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/frTestGridForMerging.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/frVoltageRegulatingXnode.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/germanTsos.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/id_duplication_test.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/ignoreCoupler.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/importIssue.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/invalidRegulationNetwork.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/invalidVoltageReference.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/lastCharacterIssue.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/lineBetweenTwoXnodes.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/mergedXnodeIssue.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/multipleStatusTests.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/network.xiidm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/parallelUcteImportReport.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/phaseShifterActivePowerOn.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/sameId.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/substationName.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/tapPositionsRange.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/testGridNoScientificNotation.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/uxForMergeProperties.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/uxTestGridForMerging.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/xNodeTransformer.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/xnodeOneClosedLine.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/xnodeThreeClosedLine.uct" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/ucte/xnodeTwoClosedLine.uct" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -179,7 +217,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "199__finalize__cgmes__import",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/trunk/pp_check",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids/ucte",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -198,11 +236,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/tests/data/grids/ucte" />
       <recent name="$PROJECT_DIR$/src/trunk/pp_check" />
       <recent name="C:\Work\git_local\GridCal\src\tests\data\grids\RAW" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget2" />
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Schema" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/BusBranchEditorWidget/Injections" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/trunk/pp_check" />
@@ -212,7 +250,7 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.GC_StateEstimation">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -739,8 +777,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.GC_StateEstimation" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.GC_StateEstimation" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.state_estimation.mod" />
         <item itemvalue="Python.auto_document_models" />
@@ -1508,7 +1546,7 @@
       <workItem from="1737290499722" duration="644000" />
       <workItem from="1737292042048" duration="614000" />
       <workItem from="1737321418978" duration="7832000" />
-      <workItem from="1737360659177" duration="8372000" />
+      <workItem from="1737360659177" duration="16613000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1853,7 +1891,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="537" />
+    <option name="localTasksCounter" value="538" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1899,7 +1937,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added functions to insert nodes from substations" />
     <MESSAGE value="Added functions to divide segments and to divide lines when there is no node, only substations" />
     <MESSAGE value="Bug fix for segment subdivision" />
     <MESSAGE value="Stopgap solution for zoom problem with maps" />
@@ -1924,7 +1961,8 @@
     <MESSAGE value="Added some comments&#10;Added diag_positions" />
     <MESSAGE value="Added some comments&#10;SOme refactorings" />
     <MESSAGE value="Pandapower parser experimentation and SE refactoring&#10;Added the in_kw flag in injections parent" />
-    <option name="LAST_COMMIT_MESSAGE" value="Pandapower parser experimentation and SE refactoring&#10;Added the in_kw flag in injections parent" />
+    <MESSAGE value="Added use_kw to the injection devices so that you can model using kilo-values instead of mega-values." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added use_kw to the injection devices so that you can model using kilo-values instead of mega-values." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2580,7 +2618,7 @@
     <SUITE FILE_PATH="coverage/GridCal$generate_property_gatters_and_setters.coverage" NAME="generate_property_gatters_and_setters Coverage Results" MODIFIED="1711104335326" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/code_generation" />
     <SUITE FILE_PATH="coverage/GridCal$jacobian_based_acdc_power_flow__1_.coverage" NAME="jacobian_based_acdc_power_flow (1) Coverage Results" MODIFIED="1609455735388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1737369194444" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1737391190910" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_power_flow_test_fubm.coverage" NAME="pytest for test_power_flow.test_fubm Coverage Results" MODIFIED="1735813170755" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power.coverage" NAME="branch_power Coverage Results" MODIFIED="1659016478801" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives" />
