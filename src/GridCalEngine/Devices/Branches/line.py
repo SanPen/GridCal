@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from typing import Union, Tuple, List
+from typing import Union, List
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -175,7 +175,7 @@ class Line(BranchParent):
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
                       profile_name='temp_oper_prof')
         self.register(key='alpha', units='1/ºC', tpe=float,
-                      definition='Thermal coefficient to modify R,around a reference temperatureusing a '
+                      definition='Thermal coefficient to modify R,around a reference temperature using a '
                                  'linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
         self.register(key='r_fault', units='p.u.', tpe=float,
@@ -293,9 +293,8 @@ class Line(BranchParent):
 
     def set_length(self, val: float):
         """
-
-        :param val:
-        :return:
+        Set the line length and change the electric parameters of the line as a consequence.
+        :param val: value in km
         """
         if isinstance(val, float):
             if val > 0.0:
@@ -486,17 +485,19 @@ class Line(BranchParent):
         elm.temperature_prof = self.temp_oper_prof
         return elm
 
-    def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase, apply_to_profile: bool = True, ):
+    def fill_design_properties(self, r_ohm: float, x_ohm: float, c_nf: float, length: float,
+                               Imax: float, freq: float, Sbase: float, apply_to_profile: bool = True, ):
         """
         Fill R, X, B from not-in-per-unit parameters
         :param r_ohm: Resistance per km in OHM/km
         :param x_ohm: Reactance per km in OHM/km
         :param c_nf: Capacitance per km in nF/km
-        :param length: lenght in kn
+        :param length: length in kn
         :param Imax: Maximum current in kA
         :param freq: System frequency in Hz
         :param Sbase: Base power in MVA (take always 100 MVA)
         :param apply_to_profile: modify the profile is checked
+        :return self pointer
         """
         r_ohm_total = r_ohm * length
         x_ohm_total = x_ohm * length
@@ -522,3 +523,5 @@ class Line(BranchParent):
         if apply_to_profile:
             prof_old = self.rate_prof.toarray()
             self.rate_prof.set(prof_old * new_rate / old_rate)
+
+        return self

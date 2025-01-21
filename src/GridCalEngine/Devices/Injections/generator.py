@@ -224,7 +224,7 @@ class Generator(GeneratorParent):
         self.register(key='X0', units='p.u.', tpe=float, definition='Total zero sequence reactance.')
         self.register(key='R2', units='p.u.', tpe=float, definition='Total negative sequence resistance.')
         self.register(key='X2', units='p.u.', tpe=float, definition='Total negative sequence reactance.')
-        self.register(key='Cost2', units='e/MWh²', tpe=float, definition='Generation quadratic cost. Used in OPF.',
+        self.register(key='Cost2', units='e/MW²/h', tpe=float, definition='Generation quadratic cost. Used in OPF.',
                       profile_name='Cost2_prof')
 
         self.register(key='Cost0', units='e/h', tpe=float, definition='Generation constant cost. Used in OPF.',

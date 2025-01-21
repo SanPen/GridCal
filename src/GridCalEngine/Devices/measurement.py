@@ -9,6 +9,8 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.enumerations import DeviceType
 
+MEASURABLE_OBJECT = Union[Bus, BranchParent]
+
 
 class MeasurementTemplate(EditableDevice):
     """
@@ -17,7 +19,7 @@ class MeasurementTemplate(EditableDevice):
 
     def __init__(self, value: float,
                  uncertainty: float,
-                 api_obj: EditableDevice,
+                 api_obj: MEASURABLE_OBJECT,
                  name: str,
                  idtag: Union[str, None],
                  device_type: DeviceType):
@@ -36,14 +38,14 @@ class MeasurementTemplate(EditableDevice):
                                 device_type=device_type)
         self.value = float(value)
         self.sigma = float(uncertainty)
-        self.api_object: EditableDevice = api_obj
+        self.api_object: MEASURABLE_OBJECT = api_obj
 
         self.register("value", tpe=float, definition="Value of the measurement")
         self.register("sigma", tpe=float, definition="Uncertainty of the measurement")
         self.register("api_object", tpe=EditableDevice, definition="Value of the measurement")
 
 
-class PMeasurement(MeasurementTemplate):
+class PiMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
@@ -59,7 +61,7 @@ class PMeasurement(MeasurementTemplate):
                                      device_type=DeviceType.PMeasurementDevice)
 
 
-class QMeasurement(MeasurementTemplate):
+class QiMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
@@ -135,7 +137,7 @@ class PtMeasurement(MeasurementTemplate):
                                      api_obj=api_obj,
                                      name=name,
                                      idtag=idtag,
-                                     device_type=DeviceType.PfMeasurementDevice)
+                                     device_type=DeviceType.PtMeasurementDevice)
 
 class QtMeasurement(MeasurementTemplate):
     """
@@ -150,7 +152,7 @@ class QtMeasurement(MeasurementTemplate):
                                      api_obj=api_obj,
                                      name=name,
                                      idtag=idtag,
-                                     device_type=DeviceType.QfMeasurementDevice)
+                                     device_type=DeviceType.QtMeasurementDevice)
 
 
 class IfMeasurement(MeasurementTemplate):
