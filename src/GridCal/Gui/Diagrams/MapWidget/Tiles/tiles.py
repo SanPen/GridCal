@@ -36,9 +36,6 @@ from urllib import request
 from urllib.error import HTTPError
 import queue
 from PySide6.QtGui import QPixmap, QPainter, QPen, QColor
-from PySide6.QtCore import Qt
-import osmium as osm
-from pyproj import Proj, transform
 
 from typing import List, Union
 from collections.abc import Callable
