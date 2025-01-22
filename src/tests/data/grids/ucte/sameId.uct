@@ -1,0 +1,13 @@
+##C 2007.05.01
+Test case to check the import of a file with a line and a transformer with identical
+node-node-order "identifier".
+##N
+##ZFR
+ISSUE 21              0 0 217.41       0       0       0       0       0       0       0       0
+ISSUE 22              0 0 217.42       0       0       0       0       0       0       0       0                                 
+##L
+ISSUE 21 ISSUE 22 1 7      0 0.0000        0   5051
+##T
+ISSUE 21 ISSUE 22 1 0 126.0 220.0 160.0 0.2700 9.7300 -20.1200      0    733
+##R
+ISSUE 21 ISSUE 22 1 1.090 11   0

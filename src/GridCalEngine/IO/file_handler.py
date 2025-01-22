@@ -40,6 +40,9 @@ from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pypsa_hdf5
 from GridCalEngine.IO.others.pandapower_parser import is_pandapower_file, Panda2GridCal
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.ucte.devices.ucte_circuit import UcteCircuit
+from GridCalEngine.IO.ucte.ucte_to_gridcal import convert_ucte_to_gridcal
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -204,20 +207,45 @@ class FileOpen:
 
         if isinstance(self.file_name, list):
 
+            looks_like_cgmes = False
+            looks_like_ucte = False
+
             for f in self.file_name:
                 _, file_extension = os.path.splitext(f)
-                if file_extension.lower() not in ['.xml', '.zip']:
-                    raise ValueError('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
+                if file_extension.lower() in ['.xml', '.zip']:
+                    looks_like_cgmes = True
+                    looks_like_ucte = False
 
-            data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
-            data_parser.load_files(files=self.file_name)
-            self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
-                                              cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
-                                              progress_func=progress_func, logger=self.cgmes_logger)
-            self.cgmes_circuit.parse_files(data_parser=data_parser)
-            self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit,
-                                            map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
-                                            logger=self.cgmes_logger)
+                elif file_extension.lower() in ['.ucte']:
+                    looks_like_cgmes = False
+                    looks_like_ucte = True
+
+                else:
+                    looks_like_cgmes = False
+                    looks_like_ucte = False
+
+            if looks_like_cgmes:
+                data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
+                data_parser.load_files(files=self.file_name)
+                self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                  cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
+                                                  progress_func=progress_func, logger=self.cgmes_logger)
+                self.cgmes_circuit.parse_files(data_parser=data_parser)
+                self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit,
+                                                map_dc_to_hvdc_line=self.options.try_to_map_dc_to_hvdc_line,
+                                                logger=self.cgmes_logger)
+
+            elif looks_like_ucte:
+
+                ucte_grid = UcteCircuit()
+                ucte_grid.parse_file(files=self.file_name)
+                self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
+
+            else:
+                for f in self.file_name:
+                    self.logger.add_error("The list of files could not be identified as CGMES or UCTE",
+                                          value=f)
+
         else:
 
             if os.path.exists(self.file_name):
@@ -402,6 +430,11 @@ class FileOpen:
 
                 elif file_extension.lower() == '.p':
                     self.circuit = Panda2GridCal(self.file_name, self.logger).get_multicircuit()
+
+                elif file_extension.lower() == '.uct':
+                    ucte_grid = UcteCircuit()
+                    ucte_grid.parse_file(files=[self.file_name])
+                    self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
 
             else:
                 # warn('The file does not exist.')
