@@ -149,6 +149,8 @@ class BaseMainGui(QMainWindow):
         self.find_node_groups_driver: Union[sim.NodeGroupsDriver, None] = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
 
+        self.task_pool = QtCore.QThreadPool()
+
         # simulation start end
         self.simulation_start_index: int = -1
         self.simulation_end_index: int = -1
@@ -229,7 +231,7 @@ class BaseMainGui(QMainWindow):
 
         self.ui.grid_name_line_edit.textChanged.connect(self.change_circuit_name)
 
-        # comboboxes
+        # combo-boxes
         self.ui.fromComboBox.currentTextChanged.connect(self.update_from_to_list_views)
         self.ui.toComboBox.currentTextChanged.connect(self.update_from_to_list_views)
 

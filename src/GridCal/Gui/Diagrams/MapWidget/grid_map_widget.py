@@ -937,19 +937,27 @@ class GridMapWidget(BaseDiagramWidget):
         scale = self.diagram.min_bus_width + (zoom - min_zoom) / (max_zoom - min_zoom)
         return scale
 
-    def update_device_sizes(self) -> None:
+    def update_device_sizes(self, asynchronously: bool = True) -> None:
         """
         Caller to the asynchronous device update sizes
         :return:
         """
-        loop = asyncio.get_event_loop()
-        self.wheel_move_task = loop.create_task(self.__update_device_sizes())
+        if asynchronously:
+            try:
+                loop = asyncio.get_event_loop()
+                self.wheel_move_task = loop.create_task(self.__update_device_sizes())
+            except RuntimeError:
+                pass
+        else:
+            # do it now
+            asyncio.run(self.__update_device_sizes())
 
     async def __update_device_sizes(self) -> None:
         """
         Update the devices' sizes
         :return:
         """
+        print('Updating device sizes!')
         br_scale = self.get_branch_width()
         arrow_scale = self.get_arrow_scale()
         se_scale = self.get_substation_scale()

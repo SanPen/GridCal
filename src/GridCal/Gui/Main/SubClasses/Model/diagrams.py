@@ -1532,7 +1532,7 @@ class DiagramsMain(CompiledArraysMain):
                 diagram_widget.set_data(circuit=self.circuit, diagram=diagram)
 
             elif isinstance(diagram_widget, GridMapWidget):
-                diagram_widget.update_device_sizes()
+                diagram_widget.update_device_sizes(asynchronously=False)
 
     def set_selected_diagram_on_click(self):
         """
@@ -1800,6 +1800,10 @@ class DiagramsMain(CompiledArraysMain):
                 raise Exception("Unknown diagram type")
 
         self.set_diagrams_list_view()
+
+        if len(self.diagram_widgets_list) > 0:
+            diagram = self.diagram_widgets_list[0]
+            self.set_diagram_widget(diagram)
 
     def add_map_diagram(self, ask: bool = True) -> None:
         """

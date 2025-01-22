@@ -1001,3 +1001,13 @@ def create_int_spinbox(value: int, minimum: int, maximum: int) -> QtWidgets.QSpi
     sn_spinner.setMaximum(maximum)
     sn_spinner.setValue(value)
     return sn_spinner
+
+
+class AsyncTask(QtCore.QRunnable):
+    def __init__(self, task):
+        super().__init__()
+        self.task = task
+
+    @QtCore.Slot()
+    def run(self):
+        self.task()
