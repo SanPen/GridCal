@@ -156,7 +156,7 @@ def dSbr_dV(Yf, Yt, V, f, t):
     diagIf = csr_matrix((If, (il, il)))
     diagVt = csr_matrix((V[t], (il, il)))
     diagIt = csr_matrix((It, (il, il)))
-    diagV  = csr_matrix((V, (ib, ib)))
+    diagV = csr_matrix((V, (ib, ib)))
     diagVnorm = csr_matrix((Vnorm, (ib, ib)))
 
     shape = (nl, nb)
@@ -253,44 +253,43 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
     dIf_dVa, dIf_dVm, dIt_dVa, dIt_dVm, If, It = dIbr_dV(Yf, Yt, V)
 
     # for the sub-jacobians
-    H11 = dSf_dVa[np.ix_(inputs.p_flow_idx, pvpq)].real
-    H12 = dSf_dVm[inputs.p_flow_idx, :].real
+    dPf_dVa = dSf_dVa[np.ix_(inputs.pf_idx, pvpq)].real
+    dPf_dVm = dSf_dVm[inputs.pf_idx, :].real
 
-    H21 = dS_dVa[np.ix_(inputs.p_inj_idx, pvpq)].real
-    H22 = dS_dVm[inputs.p_inj_idx, :].real
+    dP_dVa = dS_dVa[np.ix_(inputs.p_idx, pvpq)].real
+    dP_dVm = dS_dVm[inputs.p_idx, :].real
 
-    H31 = dSf_dVa[np.ix_(inputs.q_flow_idx, pvpq)].imag
-    H32 = dSf_dVm[inputs.q_flow_idx, :].imag
+    dQf_dVa = dSf_dVa[np.ix_(inputs.qf_idx, pvpq)].imag
+    dQf_dVm = dSf_dVm[inputs.qf_idx, :].imag
 
-    H41 = dS_dVa[np.ix_(inputs.q_inj_idx, pvpq)].imag
-    H42 = dS_dVm[inputs.q_inj_idx, :].imag
+    dQ_dVa = dS_dVa[np.ix_(inputs.q_idx, pvpq)].imag
+    dQ_dVm = dS_dVm[inputs.q_idx, :].imag
 
-    H51 = np.abs(dIf_dVa[np.ix_(inputs.i_flow_idx, pvpq)])
-    H52 = np.abs(dIf_dVm[inputs.i_flow_idx, :])
+    dIf_dVa = np.abs(dIf_dVa[np.ix_(inputs.i_flow_idx, pvpq)])
+    dIf_dVm = np.abs(dIf_dVm[inputs.i_flow_idx, :])
 
-    H61 = csc_matrix(np.zeros((len(inputs.vm_m_idx), len(pvpq))))
-    H62 = csc_matrix(np.diag(np.ones(n))[inputs.vm_m_idx, :])
+    dVm_dVa = csc_matrix(np.zeros((len(inputs.vm_m_idx), len(pvpq))))
+    dVm_dVm = csc_matrix(np.diag(np.ones(n))[inputs.vm_m_idx, :])
 
     # pack the Jacobian
-    H = spvs([sphs([H11, H12]),
-              sphs([H21, H22]),
-              sphs([H31, H32]),
-              sphs([H41, H42]),
-              sphs([H51, H52]),
-              sphs([H61, H62])])
+    H = spvs([sphs([dPf_dVa, dPf_dVm]),
+              sphs([dP_dVa, dP_dVm]),
+              sphs([dQf_dVa, dQf_dVm]),
+              sphs([dQ_dVa, dQ_dVm]),
+              sphs([dIf_dVa, dIf_dVm]),
+              sphs([dVm_dVa, dVm_dVm])])
 
     # form the sub-mismatch vectors
-    h1 = Sf[inputs.p_flow_idx].real
-    h2 = S[inputs.p_inj_idx].real
-
-    h3 = Sf[inputs.q_flow_idx].imag
-    h4 = S[inputs.q_inj_idx].imag
-
-    h5 = np.abs(If[inputs.i_flow_idx])
-    h6 = np.abs(V[inputs.vm_m_idx])
 
     # pack the mismatch vector
-    h = np.r_[h1, h2, h3, h4, h5, h6]
+    h = np.r_[
+        Sf[inputs.pf_idx].real,
+        S[inputs.p_idx].real,
+        Sf[inputs.qf_idx].imag,
+        S[inputs.q_idx].imag,
+        np.abs(If[inputs.i_flow_idx]),
+        np.abs(V[inputs.vm_m_idx])
+    ]
 
     return H, h, S
 
@@ -322,7 +321,7 @@ def solve_se_lm(nc: NumericalCircuit,
     V = np.ones(n, dtype=complex)
 
     # pick the measurements and uncertainties
-    z, sigma = se_input.consolidate()
+    z, sigma = se_input.get_measurements_and_deviations()
 
     # compute the weights matrix
     W = csc_matrix(np.diag(1.0 / np.power(sigma, 2.0)))

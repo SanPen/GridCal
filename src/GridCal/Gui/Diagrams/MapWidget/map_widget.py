@@ -49,7 +49,7 @@ ygeo: latitude
 from __future__ import annotations
 from typing import List, Union, Tuple, Callable, TYPE_CHECKING
 from enum import Enum
-from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
+from PySide6.QtCore import Qt, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
@@ -510,13 +510,13 @@ class MapWidget(QWidget):
         self.setCursor(self.standard_cursor)
 
         # do a "resize" after this function
-        QTimer.singleShot(10, self.resizeEvent)
+        # QTimer.singleShot(10, self.resizeEvent)
 
         self.GotoLevelAndPosition(level=6,
                                   longitude=0,
                                   latitude=40)
 
-        # add the widgets in a leyered manner
+        # add the widgets in a layered manner
         # self.layout.addWidget(self.notice_widget)
         self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
 

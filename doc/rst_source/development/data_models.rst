@@ -4233,8 +4233,8 @@ RawTransformer
     CW             int                Winding input mode                                                 
     CZ             int                Series Impedance input mode                                        
     CM             int                Magnetizing impedance input mode                                   
-    MAG1           int                Magnetizing admittance 1                                           
-    MAG2           int                Magnetizing admittance 2                                           
+    MAG1           float              Magnetizing admittance 1                                           
+    MAG2           float              Magnetizing admittance 2                                           
     NMETR          int                Non-metered end code                                               
     NAME           str                Name                                                               
     STAT           int                Status of the several windings                                     
@@ -4613,7 +4613,7 @@ Branch
     ========================  ===================  =====  =========  =========  ========================================================================================================================================================================================================================================  ===========  =======
 
 
-Branch group
+BranchGroup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4712,7 +4712,7 @@ Community
     =========  ===============  ====  =========  =========  =========================================================================  ===========  =======
 
 
-Connectivity Node
+ConnectivityNode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4754,7 +4754,7 @@ Contingency
     ============  ==============================  ====  =========  =========  ======================================================  ===========  =======
 
 
-Contingency Group
+ContingencyGroup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4771,7 +4771,7 @@ Contingency Group
     ========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
-Controllable shunt
+ControllableShunt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4829,7 +4829,7 @@ Country
     =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
-Current injection
+CurrentInjection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4860,7 +4860,7 @@ Current injection
     ===================  ===================  =====  =========  =========  ======================================================  ===========  =======
 
 
-DC line
+DcLine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4900,7 +4900,7 @@ DC line
     ========================  ===================  =====  =========  =========  ===========================================================================================================================  ===========  =======
 
 
-Emission
+EmissionGas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4918,7 +4918,7 @@ Emission
     =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
-External grid
+ExternalGrid
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -4972,79 +4972,7 @@ Facility
     =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
-Fluid P2X
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-           name              class_type        unit   mandatory  max_chars                       descriptions                       has_profile  comment
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-    idtag                str                          False                 Unique ID                                               False               
-    name                 str                          False                 Name of the device.                                     False               
-    code                 str                          False                 Secondary ID                                            False               
-    action               enum ActionType              False                 Object action to perform. Only used for model merging.  False               
-    comment              str                          False                 User comment                                            False               
-    modelling_authority  Modelling Authority          False                 Modelling authority of this asset                       False               
-    active               bool                         False                 Is the load active?                                     True                
-    efficiency           float                MWh/m3  False                 Power plant energy production per fluid unit            False               
-    max_flow_rate        float                m3/s    False                 maximum fluid flow                                      False               
-    plant                Fluid node                   False                 Connection reservoir/node                               False               
-    generator            Generator                    False                 Electrical machine                                      False               
-    build_status         enum BuildStatus             False                 Branch build status. Used in expansion planning.        False               
-    facility             Facility                     False                 Facility where this is located                          False               
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-
-
-Fluid Pump
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-           name              class_type        unit   mandatory  max_chars                       descriptions                       has_profile  comment
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-    idtag                str                          False                 Unique ID                                               False               
-    name                 str                          False                 Name of the device.                                     False               
-    code                 str                          False                 Secondary ID                                            False               
-    action               enum ActionType              False                 Object action to perform. Only used for model merging.  False               
-    comment              str                          False                 User comment                                            False               
-    modelling_authority  Modelling Authority          False                 Modelling authority of this asset                       False               
-    active               bool                         False                 Is the load active?                                     True                
-    efficiency           float                MWh/m3  False                 Power plant energy production per fluid unit            False               
-    max_flow_rate        float                m3/s    False                 maximum fluid flow                                      False               
-    plant                Fluid node                   False                 Connection reservoir/node                               False               
-    generator            Generator                    False                 Electrical machine                                      False               
-    build_status         enum BuildStatus             False                 Branch build status. Used in expansion planning.        False               
-    facility             Facility                     False                 Facility where this is located                          False               
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-
-
-Fluid Turbine
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-           name              class_type        unit   mandatory  max_chars                       descriptions                       has_profile  comment
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-    idtag                str                          False                 Unique ID                                               False               
-    name                 str                          False                 Name of the device.                                     False               
-    code                 str                          False                 Secondary ID                                            False               
-    action               enum ActionType              False                 Object action to perform. Only used for model merging.  False               
-    comment              str                          False                 User comment                                            False               
-    modelling_authority  Modelling Authority          False                 Modelling authority of this asset                       False               
-    active               bool                         False                 Is the load active?                                     True                
-    efficiency           float                MWh/m3  False                 Power plant energy production per fluid unit            False               
-    max_flow_rate        float                m3/s    False                 maximum fluid flow                                      False               
-    plant                Fluid node                   False                 Connection reservoir/node                               False               
-    generator            Generator                    False                 Electrical machine                                      False               
-    build_status         enum BuildStatus             False                 Branch build status. Used in expansion planning.        False               
-    facility             Facility                     False                 Facility where this is located                          False               
-    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
-
-
-Fluid node
+FluidNode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5071,7 +4999,31 @@ Fluid node
     ===================  ===================  ========  =========  =========  ======================================================  ===========  =======
 
 
-Fluid path
+FluidP2x
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+           name              class_type        unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+    idtag                str                          False                 Unique ID                                               False               
+    name                 str                          False                 Name of the device.                                     False               
+    code                 str                          False                 Secondary ID                                            False               
+    action               enum ActionType              False                 Object action to perform. Only used for model merging.  False               
+    comment              str                          False                 User comment                                            False               
+    modelling_authority  Modelling Authority          False                 Modelling authority of this asset                       False               
+    active               bool                         False                 Is the load active?                                     True                
+    efficiency           float                MWh/m3  False                 Power plant energy production per fluid unit            False               
+    max_flow_rate        float                m3/s    False                 maximum fluid flow                                      False               
+    plant                Fluid node                   False                 Connection reservoir/node                               False               
+    generator            Generator                    False                 Electrical machine                                      False               
+    build_status         enum BuildStatus             False                 Branch build status. Used in expansion planning.        False               
+    facility             Facility                     False                 Facility where this is located                          False               
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+
+
+FluidPath
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5092,6 +5044,54 @@ Fluid path
     locations            Line locations             False                 Locations                                               False               
     color                str                        False                 Color to paint the device in the map diagram            False               
     ===================  ===================  ====  =========  =========  ======================================================  ===========  =======
+
+
+FluidPump
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+           name              class_type        unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+    idtag                str                          False                 Unique ID                                               False               
+    name                 str                          False                 Name of the device.                                     False               
+    code                 str                          False                 Secondary ID                                            False               
+    action               enum ActionType              False                 Object action to perform. Only used for model merging.  False               
+    comment              str                          False                 User comment                                            False               
+    modelling_authority  Modelling Authority          False                 Modelling authority of this asset                       False               
+    active               bool                         False                 Is the load active?                                     True                
+    efficiency           float                MWh/m3  False                 Power plant energy production per fluid unit            False               
+    max_flow_rate        float                m3/s    False                 maximum fluid flow                                      False               
+    plant                Fluid node                   False                 Connection reservoir/node                               False               
+    generator            Generator                    False                 Electrical machine                                      False               
+    build_status         enum BuildStatus             False                 Branch build status. Used in expansion planning.        False               
+    facility             Facility                     False                 Facility where this is located                          False               
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+
+
+FluidTurbine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+           name              class_type        unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
+    idtag                str                          False                 Unique ID                                               False               
+    name                 str                          False                 Name of the device.                                     False               
+    code                 str                          False                 Secondary ID                                            False               
+    action               enum ActionType              False                 Object action to perform. Only used for model merging.  False               
+    comment              str                          False                 User comment                                            False               
+    modelling_authority  Modelling Authority          False                 Modelling authority of this asset                       False               
+    active               bool                         False                 Is the load active?                                     True                
+    efficiency           float                MWh/m3  False                 Power plant energy production per fluid unit            False               
+    max_flow_rate        float                m3/s    False                 maximum fluid flow                                      False               
+    plant                Fluid node                   False                 Connection reservoir/node                               False               
+    generator            Generator                    False                 Electrical machine                                      False               
+    build_status         enum BuildStatus             False                 Branch build status. Used in expansion planning.        False               
+    facility             Facility                     False                 Facility where this is located                          False               
+    ===================  ===================  ======  =========  =========  ======================================================  ===========  =======
 
 
 Fuel
@@ -5172,7 +5172,7 @@ Generator
     ========================  ===================  ======  =========  =========  ==========================================================================  ===========  =======
 
 
-HVDC Line
+HvdcLine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5241,7 +5241,7 @@ Investment
     ============  =================  ====  =========  =========  ========================================================================  ===========  =======
 
 
-Investments Group
+InvestmentsGroup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5349,7 +5349,7 @@ Load
     ===================  ===================  =====  =========  =========  =======================================================  ===========  =======
 
 
-Modelling Authority
+ModellingAuthority
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5385,6 +5385,32 @@ Municipality
     =========  ===============  ====  =========  =========  ===========================================================================  ===========  =======
 
 
+OverheadLineType
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
+          name           class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
+    idtag              str                      False                 Unique ID                                               False               
+    name               str                      False                 Name of the device.                                     False               
+    code               str                      False                 Secondary ID                                            False               
+    action             enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment            str                      False                 User comment                                            False               
+    earth_resistivity  float            Ohm/m3  False                 Earth resistivity                                       False               
+    frequency          float            Hz      False                 Frequency                                               False               
+    R1                 float            Ohm/Km  False                 Positive sequence resistance                            False               
+    X1                 float            Ohm/Km  False                 Positive sequence reactance                             False               
+    Bsh1               float            uS/Km   False                 Positive sequence shunt susceptance                     False               
+    R0                 float            Ohm/Km  False                 Zero-sequence resistance                                False               
+    X0                 float            Ohm/Km  False                 Zero sequence reactance                                 False               
+    Bsh0               float            uS/Km   False                 Zero sequence shunt susceptance                         False               
+    Imax               float            kA      False                 Current rating of the tower                             False               
+    Vnom               float            kV      False                 Voltage rating of the line                              False               
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
+
+
 Region
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -5405,7 +5431,7 @@ Region
     =========  ===============  ====  =========  =========  ========================================================================  ===========  =======
 
 
-Remedial action
+RemedialAction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5425,7 +5451,7 @@ Remedial action
     ============  ==============================  ====  =========  =========  ======================================================  ===========  =======
 
 
-Remedial action Group
+RemedialActionGroup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5443,7 +5469,7 @@ Remedial action Group
     ==========  =================  ====  =========  =========  ======================================================  ===========  =======
 
 
-Sequence line
+SequenceLineType
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5467,7 +5493,7 @@ Sequence line
     =======  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
-Series reactance
+SeriesReactance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5547,7 +5573,7 @@ Shunt
     ===================  ===================  =====  =========  =========  =====================================================================  ===========  =======
 
 
-Static Generator
+StaticGenerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5667,33 +5693,7 @@ Technology
     =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
-Tower
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
-          name           class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
-    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
-    idtag              str                      False                 Unique ID                                               False               
-    name               str                      False                 Name of the device.                                     False               
-    code               str                      False                 Secondary ID                                            False               
-    action             enum ActionType          False                 Object action to perform. Only used for model merging.  False               
-    comment            str                      False                 User comment                                            False               
-    earth_resistivity  float            Ohm/m3  False                 Earth resistivity                                       False               
-    frequency          float            Hz      False                 Frequency                                               False               
-    R1                 float            Ohm/Km  False                 Positive sequence resistance                            False               
-    X1                 float            Ohm/Km  False                 Positive sequence reactance                             False               
-    Bsh1               float            uS/Km   False                 Positive sequence shunt susceptance                     False               
-    R0                 float            Ohm/Km  False                 Zero-sequence resistance                                False               
-    X0                 float            Ohm/Km  False                 Zero sequence reactance                                 False               
-    Bsh0               float            uS/Km   False                 Zero sequence shunt susceptance                         False               
-    Imax               float            kA      False                 Current rating of the tower                             False               
-    Vnom               float            kV      False                 Voltage rating of the line                              False               
-    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
-
-
-Transformer
+Transformer2W
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5767,38 +5767,6 @@ Transformer
     ==========================  =======================  =====  =========  =========  =========================================================================================================================================================================================================================================  ===========  =======
 
 
-Transformer type
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. table::
-
-    ================  ====================  ====  =========  =========  ======================================================  ===========  =======
-          name             class_type       unit  mandatory  max_chars                       descriptions                       has_profile  comment
-    ================  ====================  ====  =========  =========  ======================================================  ===========  =======
-    idtag             str                         False                 Unique ID                                               False               
-    name              str                         False                 Name of the device.                                     False               
-    code              str                         False                 Secondary ID                                            False               
-    action            enum ActionType             False                 Object action to perform. Only used for model merging.  False               
-    comment           str                         False                 User comment                                            False               
-    HV                float                 kV    False                 Nominal voltage al the high voltage side                False               
-    LV                float                 kV    False                 Nominal voltage al the low voltage side                 False               
-    Sn                float                 MVA   False                 Nominal power                                           False               
-    Pcu               float                 kW    False                 Copper losses                                           False               
-    Pfe               float                 kW    False                 Iron losses                                             False               
-    I0                float                 %     False                 No-load current                                         False               
-    Vsc               float                 %     False                 Short-circuit voltage                                   False               
-    tc_type           enum TapChangerTypes        False                 Regulation type                                         False               
-    total_positions   int                         False                 Number of tap positions                                 False               
-    dV                float                 p.u.  False                 Voltage increment per step                              False               
-    neutral_position  int                         False                 neutral poition couting from zero                       False               
-    asymmetry_angle   float                 deg   False                 Asymmetry_angle                                         False               
-    tap_module_min    float                 p.u.  False                 Min tap module                                          False               
-    tap_module_max    float                 p.u.  False                 Max tap module                                          False               
-    tap_phase_min     float                 rad   False                 Min tap phase                                           False               
-    tap_phase_max     float                 rad   False                 Max tap phase                                           False               
-    ================  ====================  ====  =========  =========  ======================================================  ===========  =======
-
-
 Transformer3W
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -5850,6 +5818,38 @@ Transformer3W
     ===================  ===================  ====  =========  =========  ======================================================  ===========  =======
 
 
+TransformerType
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. table::
+
+    ================  ====================  ====  =========  =========  ======================================================  ===========  =======
+          name             class_type       unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    ================  ====================  ====  =========  =========  ======================================================  ===========  =======
+    idtag             str                         False                 Unique ID                                               False               
+    name              str                         False                 Name of the device.                                     False               
+    code              str                         False                 Secondary ID                                            False               
+    action            enum ActionType             False                 Object action to perform. Only used for model merging.  False               
+    comment           str                         False                 User comment                                            False               
+    HV                float                 kV    False                 Nominal voltage al the high voltage side                False               
+    LV                float                 kV    False                 Nominal voltage al the low voltage side                 False               
+    Sn                float                 MVA   False                 Nominal power                                           False               
+    Pcu               float                 kW    False                 Copper losses                                           False               
+    Pfe               float                 kW    False                 Iron losses                                             False               
+    I0                float                 %     False                 No-load current                                         False               
+    Vsc               float                 %     False                 Short-circuit voltage                                   False               
+    tc_type           enum TapChangerTypes        False                 Regulation type                                         False               
+    total_positions   int                         False                 Number of tap positions                                 False               
+    dV                float                 p.u.  False                 Voltage increment per step                              False               
+    neutral_position  int                         False                 neutral poition couting from zero                       False               
+    asymmetry_angle   float                 deg   False                 Asymmetry_angle                                         False               
+    tap_module_min    float                 p.u.  False                 Min tap module                                          False               
+    tap_module_max    float                 p.u.  False                 Max tap module                                          False               
+    tap_phase_min     float                 rad   False                 Min tap phase                                           False               
+    tap_phase_max     float                 rad   False                 Max tap phase                                           False               
+    ================  ====================  ====  =========  =========  ======================================================  ===========  =======
+
+
 UPFC
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -5899,7 +5899,7 @@ UPFC
     ========================  ===================  =====  =========  =========  =================================================================================  ===========  =======
 
 
-Underground line
+UndergroundLineType
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
@@ -5962,12 +5962,12 @@ VSC
     control2                  enum ConverterControlType             False                 Control mode 2.                                                                    True                
     control1_val              float                                 False                 Control value 1.p.u. for voltage rad for angles MW for P MVAr for Q                True                
     control2_val              float                                 False                 Control value 2.p.u. for voltage rad for angles MW for P MVAr for Q                True                
-    control1_dev              BusOrBranch                           False                 Controlled device, None to aply to this converter                                  True                
-    control2_dev              BusOrBranch                           False                 Controlled device, None to aply to this converter                                  True                
+    control1_dev              BusOrBranch                           False                 Controlled device, None to apply to this converter                                 True                
+    control2_dev              BusOrBranch                           False                 Controlled device, None to apply to this converter                                 True                
     ========================  =========================  =========  =========  =========  =================================================================================  ===========  =======
 
 
-Voltage level
+VoltageLevel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::

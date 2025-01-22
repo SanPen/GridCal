@@ -4,17 +4,19 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import os
-from typing import Union, List, Tuple, Dict, TYPE_CHECKING
+from typing import Union, List, Tuple, Dict, TYPE_CHECKING, Any
 import json
 import numpy as np
 import math
 import pandas as pd
+import asyncio
 from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
-from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
+from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex,
+                            QRunnable, QThreadPool, Slot)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor,
                            QDropEvent, QWheelEvent)
 
@@ -257,6 +259,10 @@ class GridMapWidget(BaseDiagramWidget):
         self.startHe = self.map.view.height()
         self.startWi = self.map.view.width()
         self.constantLineWidth = True
+
+        # pool of runnable tasks that work best done asynch with a runnable
+        self.thread_pool = QThreadPool()
+        self.wheel_move_task: QRunnable | None = None
 
         # draw
         self.draw()
@@ -897,6 +903,7 @@ class GridMapWidget(BaseDiagramWidget):
         # SANTIAGO: DO NOT TOUCH, THIS IS THE DESIRED BEHAVIOUR
         self.update_device_sizes()
 
+
     def get_branch_width(self) -> float:
         """
         Get the desired branch width
@@ -930,12 +937,27 @@ class GridMapWidget(BaseDiagramWidget):
         scale = self.diagram.min_bus_width + (zoom - min_zoom) / (max_zoom - min_zoom)
         return scale
 
-    def update_device_sizes(self) -> None:
+    def update_device_sizes(self, asynchronously: bool = True) -> None:
         """
-        Updat ethe devices' sizes
+        Caller to the asynchronous device update sizes
         :return:
         """
+        if asynchronously:
+            try:
+                loop = asyncio.get_event_loop()
+                self.wheel_move_task = loop.create_task(self.__update_device_sizes())
+            except RuntimeError:
+                pass
+        else:
+            # do it now
+            asyncio.run(self.__update_device_sizes())
 
+    async def __update_device_sizes(self) -> None:
+        """
+        Update the devices' sizes
+        :return:
+        """
+        print('Updating device sizes!')
         br_scale = self.get_branch_width()
         arrow_scale = self.get_arrow_scale()
         se_scale = self.get_substation_scale()

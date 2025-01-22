@@ -211,6 +211,9 @@ class MapLineContainer(GenericDiagramWidget):
                 connection_elements.append(substation_to_graphics)
                 substation_to_graphics.line_container = self
 
+        br_scale = self.editor.get_branch_width()
+        arrow_scale = self.editor.get_arrow_scale()
+
         # second pass: create the segments
         for i in range(1, len(connection_elements)):
             elm1 = connection_elements[i - 1]
@@ -223,15 +226,19 @@ class MapLineContainer(GenericDiagramWidget):
             elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
 
+            segment_graphic_object.set_width(br_scale * segment_graphic_object.width)  # Assign the pen to the line item
+            segment_graphic_object.set_arrow_scale(arrow_scale)
+
             # register the segment in the line
             self.add_segment(segment=segment_graphic_object)
 
             # draw the segment in the scene
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
+
         self.update_connectors()
 
-        self.editor.update_device_sizes()
+        # self.editor.update_device_sizes()
 
     def substation_to(self):
         """

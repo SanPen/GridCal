@@ -51,6 +51,7 @@ def get_cables_catalogue_df(grid: MultiCircuit):
             'Rated current [kA]': elm.Imax,
             'Rated voltage [kV]': elm.Vnom,
             'R [Ohm/km AC@20°C]': elm.R,
+            'B [uS/km]': elm.B,
             'X [Ohm/km]': elm.X,
             'R0 (AC) [Ohm/km]': elm.R0,
             'X0  [Ohm/km]': elm.X0
@@ -112,16 +113,16 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
     """
     lst = list()
     for i, item in df.iterrows():
-        tpe = TransformerType(hv_nominal_voltage=item['HV (kV)'],
-                              lv_nominal_voltage=item['LV (kV)'],
-                              nominal_power=item['Rate (MVA)'],
-                              copper_losses=item['Copper losses (kW)'],
-                              iron_losses=item['No load losses (kW)'],
-                              no_load_current=item['No load current (%)'],
-                              short_circuit_voltage=item['V short circuit (%)'],
-                              gr_hv1=0.5,
-                              gx_hv1=0.5,
-                              name=item['Name'])
+        tpe = TransformerType(hv_nominal_voltage=item.get('HV (kV)',0.0),
+                              lv_nominal_voltage=item.get('LV (kV)',0.0),
+                              nominal_power=item.get('Rate (MVA)',0.001),
+                              copper_losses=item.get('Copper losses (kW)',0.0),
+                              iron_losses=item.get('No load losses (kW)',0.0),
+                              no_load_current=item.get('No load current (%)',0.0),
+                              short_circuit_voltage=item.get('V short circuit (%)',0.0),
+                              gr_hv1=item.get("gr_hv1",0.5),
+                              gx_hv1=item.get("gx_hv1",0.5),
+                              name=item.get('Name',"TransformerType_{}".format(i)))
         lst.append(tpe)
 
     return lst
@@ -135,15 +136,15 @@ def parse_cable_types(df: pd.DataFrame) -> List[UndergroundLineType]:
     """
     lst = list()
     for i, item in df.iterrows():
-        tpe = UndergroundLineType(name=item['Name'],
-                                  Imax=item['Rated current [kA]'],
-                                  Vnom=item['Rated voltage [kV]'],
-                                  R=item['R [Ohm/km AC@20°C]'],
-                                  X=item['X [Ohm/km]'],
-                                  B=0.0,
-                                  R0=item['R0 (AC) [Ohm/km]'],
-                                  X0=item['X0  [Ohm/km]'],
-                                  B0=0.0)
+        tpe = UndergroundLineType(name=item.get('Name',"UndergroundLine_{}".format(i)),
+                                  Imax=item.get('Rated current [kA]',1.0),
+                                  Vnom=item.get('Rated voltage [kV]',1.0),
+                                  R=item.get('R [Ohm/km AC@20°C]',0.0),
+                                  X=item.get('X [Ohm/km]',0.0),
+                                  B=item.get('B [uS/km]', 0.0),
+                                  R0=item.get('R0 (AC) [Ohm/km]',0.0),
+                                  X0=item.get('X0  [Ohm/km]',0.0),
+                                  B0=item.get('B0 [uS/km]',0.0))
         lst.append(tpe)
 
     return lst
@@ -158,13 +159,13 @@ def parse_wire_types(df: pd.DataFrame) -> List[Wire]:
     lst = list()
     for i, item in df.iterrows():
         tpe = Wire(name=str(item['Stranding']) + '_' + str(item['Material']) + '_' + str(item['Diameter [cm]']),
-                   stranding=item['Stranding'],
-                   material=item['Material'],
-                   diameter=item['Diameter [cm]'],
-                   gmr=item['GMR [m]'],
-                   r=item['R [Ohm/km]'],
-                   x=0.0,
-                   max_current=item['Rating [kA]'])
+                   stranding=item.get('Stranding',""),
+                   material=item.get('Material',""),
+                   diameter=item.get('Diameter [cm]',0.0),
+                   gmr=item.get('GMR [m]',0.01),
+                   r=item.get('R [Ohm/km]',0.01),
+                   x=item.get("X [Ohm/km]",0.0),
+                   max_current=item.get('Rating [kA]',1.0))
         lst.append(tpe)
 
     return lst
@@ -178,15 +179,15 @@ def parse_sequence_line_types(df: pd.DataFrame) -> List[SequenceLineType]:
     """
     lst = list()
     for i, item in df.iterrows():
-        tpe = SequenceLineType(name=item['Name'],
-                               Vnom=item['Vnom (kV)'],
-                               Imax=item['Imax (kA)'],
-                               R=item['r (ohm/km)'],
-                               X=item['x (ohm/km)'],
-                               B=item['b (uS/km)'],
-                               R0=item['r0 (ohm/km)'],
-                               X0=item['x0 (ohm/km)'],
-                               B0=item['b0 (uS/km)'])
+        tpe = SequenceLineType(name=item.get('Name','SequenceLine_{}'.format(i)),
+                               Vnom=item.get('Vnom (kV)',1),
+                               Imax=item.get('Imax (kA)',1),
+                               R=item.get('r (ohm/km)',0),
+                               X=item.get('x (ohm/km)',0),
+                               B=item.get('b (uS/km)',0),
+                               R0=item.get('r0 (ohm/km)',0),
+                               X0=item.get('x0 (ohm/km)',0),
+                               B0=item.get('b0 (uS/km)',0))
         lst.append(tpe)
 
     return lst

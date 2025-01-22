@@ -40,9 +40,12 @@ def create_file_open_options() -> FileOpenOptions:
     """
     :return:
     """
-    options = FileOpenOptions()
-    options.cgmes_map_areas_like_raw = True
-    options.try_to_map_dc_to_hvdc_line = True
+    options = FileOpenOptions(
+        cgmes_map_areas_like_raw=True,
+        try_to_map_dc_to_hvdc_line=True,
+        # crash_on_errors=True,
+        adjust_taps_to_discrete_positions=True,
+    )
 
     return options
 
@@ -87,12 +90,12 @@ def run_raw_to_cgmes(import_path: str | list[str],
     :param boundary_zip_path:
     :return:
     """
-    # RAW model import to MultiCircuit
-    circuit1 = gce.open_file(import_path)
+    file_open_options = create_file_open_options()
 
-    # # detect substation from the raw file
-    # gce.detect_substations(grid=circuit1)
-    # already done in raw_to_gridcal.py
+    # RAW model import to MultiCircuit
+    file_open_1 = FileOpen(file_name=import_path,
+                           options=file_open_options)
+    circuit1 = file_open_1.open()
 
     # run power flow
     pf_options = get_power_flow_options()
@@ -117,11 +120,10 @@ def run_raw_to_cgmes(import_path: str | list[str],
     cgmes_export.save_cgmes()
     logger_saving.print()
 
-    open_options = create_file_open_options()
-    file_open = FileOpen(file_name=[export_fname, boundary_zip_path],
-                         options=open_options)
-
-    circuit2 = file_open.open()
+    # OPEN CGMES model
+    file_open_2 = FileOpen(file_name=[export_fname, boundary_zip_path],
+                           options=file_open_options)
+    circuit2 = file_open_2.open()
 
     # run power flow
     pf2_res = gce.power_flow(circuit2, pf_options)
@@ -188,7 +190,6 @@ def run_raw_to_cgmes(import_path: str | list[str],
         print("Tap phase")
         print(pf1_res.tap_angle)
         print(pf2_res.tap_angle)
-        # running in the GUI they are matching
 
         print("\nVoltages")
         print(np.abs(pf1_res.voltage))
@@ -208,8 +209,8 @@ def test_raw_to_cgmes_cross_roundtrip():
     """
     script_path = os.path.abspath(__file__)
 
-    # test_grid_name = 'IEEE 14 bus'  # PASSEED
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    test_grid_name = 'IEEE 14 bus'  # PASSEED
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # braches excessive voltage diff: PASSED if these branches are not added as trafos
     # test_grid_name = 'IEEE 30 bus'  # num of transformer 2w??!! (tap_module num error)
@@ -224,8 +225,8 @@ def test_raw_to_cgmes_cross_roundtrip():
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # PST is controlling
-    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
@@ -235,8 +236,10 @@ def test_raw_to_cgmes_cross_roundtrip():
     raw_relative_path = os.path.join('data', 'grids', 'RAW', f"{test_grid_name}.raw")
     raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))
 
-    export_relative_path = os.path.join('data', 'output', 'raw_to_cgmes_export_results'
-                                        , f'{test_grid_name}_from_raw_GC.zip')
+    export_relative_path = os.path.join(
+        'data', 'output', 'raw_to_cgmes_export_results',
+        f'{test_grid_name}_from_raw_GC.zip'
+    )
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))

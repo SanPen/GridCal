@@ -2147,7 +2147,7 @@ class Assets:
     def pi_measurements(self, value: List[dev.PiMeasurement]):
         self._pi_measurements = value
 
-    def get_pi_measurements(self) -> List[dev.PiMeasurement]:
+    def get_p_measurements(self) -> List[dev.PiMeasurement]:
         """
         List of pi_measurements
         :return: List[dev.PiMeasurement]
@@ -2211,7 +2211,7 @@ class Assets:
     def qi_measurements(self, value: List[dev.QiMeasurement]):
         self._qi_measurements = value
 
-    def get_qi_measurements(self) -> List[dev.QiMeasurement]:
+    def get_q_measurements(self) -> List[dev.QiMeasurement]:
         """
         List of qi_measurements
         :return: List[dev.QiMeasurement]
@@ -5253,11 +5253,11 @@ class Assets:
         elif device_type == DeviceType.FluidP2XDevice:
             return self._p2xs
 
-        elif device_type == DeviceType.PiMeasurementDevice:
-            return self.get_pi_measurements()
+        elif device_type == DeviceType.PMeasurementDevice:
+            return self.get_p_measurements()
 
-        elif device_type == DeviceType.QiMeasurementDevice:
-            return self.get_qi_measurements()
+        elif device_type == DeviceType.QMeasurementDevice:
+            return self.get_q_measurements()
 
         elif device_type == DeviceType.PfMeasurementDevice:
             return self.get_pf_measurements()
@@ -5465,10 +5465,10 @@ class Assets:
             for d in devices:
                 self.add_branch(d)  # each branch needs to be converted accordingly
 
-        elif device_type == DeviceType.PiMeasurementDevice:
+        elif device_type == DeviceType.PMeasurementDevice:
             self._pi_measurements = devices
 
-        elif device_type == DeviceType.QiMeasurementDevice:
+        elif device_type == DeviceType.QMeasurementDevice:
             self._qi_measurements = devices
 
         elif device_type == DeviceType.PfMeasurementDevice:
@@ -5643,10 +5643,10 @@ class Assets:
         elif obj.device_type == DeviceType.FluidPathDevice:
             self.add_fluid_path(obj=obj)
 
-        elif obj.device_type == DeviceType.PiMeasurementDevice:
+        elif obj.device_type == DeviceType.PMeasurementDevice:
             self.add_pi_measurement(obj=obj)
 
-        elif obj.device_type == DeviceType.QiMeasurementDevice:
+        elif obj.device_type == DeviceType.QMeasurementDevice:
             self.add_qi_measurement(obj=obj)
 
         elif obj.device_type == DeviceType.PfMeasurementDevice:
@@ -5821,10 +5821,10 @@ class Assets:
         elif obj.device_type == DeviceType.FluidPathDevice:
             self.delete_fluid_path(obj)
 
-        elif obj.device_type == DeviceType.PiMeasurementDevice:
+        elif obj.device_type == DeviceType.PMeasurementDevice:
             self.delete_pi_measurement(obj)
 
-        elif obj.device_type == DeviceType.QiMeasurementDevice:
+        elif obj.device_type == DeviceType.QMeasurementDevice:
             self.delete_qi_measurement(obj)
 
         elif obj.device_type == DeviceType.PfMeasurementDevice:

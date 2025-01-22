@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import os
+import asyncio
 from typing import Union, List, Callable
 import pandas as pd
 from PySide6 import QtWidgets
@@ -51,7 +52,7 @@ class IoMain(ConfigurationMain):
         self.rosetta_gui: Union[RosetaExplorerGUI, None] = None
 
         self.accepted_extensions = ['.gridcal', '.dgridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
-                                    '.dgs', '.m', '.raw', '.RAW', '.json',
+                                    '.dgs', '.m', '.raw', '.RAW', '.json', '.uct',
                                     '.ejson2', '.ejson3', '.p', '.nc', '.hdf5',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC',
                                     '.gcplugin']
@@ -261,7 +262,7 @@ class IoMain(ConfigurationMain):
             files_types += "*.dgridcal "
 
         files_types += "*.gch5 *.xlsx *.xls *.sqlite *.dgs "
-        files_types += "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml "
+        files_types += "*.m *.raw *.RAW *.rawx *.uct *.json *.ejson2 *.ejson3 *.xml "
         files_types += "*.zip *.dpx *.epc *.EPC *.nc *.hdf5 *.p"
 
         dialogue = QtWidgets.QFileDialog(None,
@@ -343,11 +344,9 @@ class IoMain(ConfigurationMain):
 
                 if self.circuit.has_diagrams():
                     # create the diagrams that came with the file
+                    # task = gf.AsyncTask(self.create_circuit_stored_diagrams)
+                    # self.task_pool.start(task)
                     self.create_circuit_stored_diagrams()
-
-                    if len(self.diagram_widgets_list) > 0:
-                        diagram = self.diagram_widgets_list[0]
-                        self.set_diagram_widget(diagram)
 
                 else:
                     if self.circuit.get_bus_number() > 300:

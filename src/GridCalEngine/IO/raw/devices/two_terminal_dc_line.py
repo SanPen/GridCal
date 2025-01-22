@@ -141,7 +141,8 @@ class RawTwoTerminalDCLine(RawObject):
                                class_type=int,
                                description='Rectifier converter bus number',
                                min_value=0,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name='NBR',
                                rawx_key='nbr',
@@ -214,7 +215,8 @@ class RawTwoTerminalDCLine(RawObject):
                                class_type=int,
                                description='Bus number of the rectifier commutating bus',
                                min_value=0,
-                               max_value=999999)
+                               max_value=999999,
+                               max_chars=6)
 
         self.register_property(property_name='NDR',
                                rawx_key='ndr',
@@ -226,12 +228,14 @@ class RawTwoTerminalDCLine(RawObject):
         self.register_property(property_name='IFR',
                                rawx_key='ifr',
                                class_type=int,
-                               description='Winding 1 side from bus number')
+                               description='Winding 1 side from bus number',
+                               max_chars=6)
 
         self.register_property(property_name='ITR',
                                rawx_key='itr',
                                class_type=int,
-                               description='Winding 2 side to bus number')
+                               description='Winding 2 side to bus number',
+                               max_chars=6)
 
         self.register_property(property_name='IDR',
                                rawx_key='idr',
@@ -250,7 +254,8 @@ class RawTwoTerminalDCLine(RawObject):
                                class_type=int,
                                description='Inverter converter bus number',
                                min_value=0,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name='NBI',
                                rawx_key='nbi',
@@ -340,7 +345,8 @@ class RawTwoTerminalDCLine(RawObject):
         self.register_property(property_name='ITI',
                                rawx_key='iti',
                                class_type=int,
-                               description='Winding 2 side to bus number')
+                               description='Winding 2 side to bus number',
+                               max_chars=6)
 
         self.register_property(property_name='IDI',
                                rawx_key='idi',
@@ -423,17 +429,17 @@ class RawTwoTerminalDCLine(RawObject):
             IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
-            l0 = self.format_raw_line([self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP,
-                                       self.DELTI, self.METER, self.DCVMIN, self.CCCITMX, self.CCCACC])
+            l0 = self.format_raw_line(["NAME", "MDC", "RDC", "SETVL", "VSCHD", "VCMOD", "RCOMP",
+                                       "DELTI", "METER", "DCVMIN", "CCCITMX", "CCCACC"])
 
-            l1 = self.format_raw_line([self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR,
-                                       self.TRR, self.TAPR, self.TMXR, self.TMNR, self.STPR, self.ICR, self.NDR,
-                                       self.IFR, self.ITR, self.IDR, self.XCAPR])
+            l1 = self.format_raw_line(["IPR", "NBR", "ANMXR", "ANMNR", "RCR", "XCR", "EBASR",
+                                       "TRR", "TAPR", "TMXR", "TMNR", "STPR", "ICR", "NDR",
+                                       "IFR", "ITR", "IDR", "XCAPR"])
 
-            l2 = self.format_raw_line([self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI,
-                                       self.TRI, self.TAPI, self.TMXI, self.TMNI, self.STPI, self.ICI, self.NDI,
-                                       self.IFI,
-                                       self.ITI, self.IDI, self.XCAPI])
+            l2 = self.format_raw_line(["IPI", "NBI", "ANMXI", "ANMNI", "RCI", "XCI", "EBASI",
+                                       "TRI", "TAPI", "TMXI", "TMNI", "STPI", "ICI", "NDI",
+                                       "IFI",
+                                       "ITI", "IDI", "XCAPI"])
 
             return l0 + '\n' + l1 + '\n' + l2
 
@@ -444,16 +450,16 @@ class RawTwoTerminalDCLine(RawObject):
             IPI,NBI,ANMXI,ANMNI,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
-            l0 = self.format_raw_line([self.NAME, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP,
-                                       self.DELTI, self.METER, self.DCVMIN, self.CCCITMX, self.CCCACC])
+            l0 = self.format_raw_line(["NAME", "MDC", "RDC", "SETVL", "VSCHD", "VCMOD", "RCOMP",
+                                       "DELTI", "METER", "DCVMIN", "CCCITMX", "CCCACC"])
 
-            l1 = self.format_raw_line([self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR,
-                                       self.TRR, self.TAPR, self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR,
-                                       self.ITR, self.IDR, self.XCAPR])
+            l1 = self.format_raw_line(["IPR", "NBR", "ANMXR", "ANMNR", "RCR", "XCR", "EBASR",
+                                       "TRR", "TAPR", "TMXR", "TMNR", "STPR", "ICR", "IFR",
+                                       "ITR", "IDR", "XCAPR"])
 
-            l2 = self.format_raw_line([self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI,
-                                       self.TRI, self.TAPI, self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI,
-                                       self.ITI, self.IDI, self.XCAPI])
+            l2 = self.format_raw_line(["IPI", "NBI", "ANMXI", "ANMNI", "RCI", "XCI", "EBASI",
+                                       "TRI", "TAPI", "TMXI", "TMNI", "STPI", "ICI", "IFI",
+                                       "ITI", "IDI", "XCAPI"])
 
             return l0 + '\n' + l1 + '\n' + l2
 
@@ -464,16 +470,16 @@ class RawTwoTerminalDCLine(RawObject):
             IPI,NBI,GAMMX,GAMMN,RCI,XCI,EBASI,TRI,TAPI,TMXI,TMNI,STPI,ICI,IFI,ITI,IDI,XCAPI
             '''
 
-            l0 = self.format_raw_line([self.I, self.MDC, self.RDC, self.SETVL, self.VSCHD, self.VCMOD, self.RCOMP,
-                                       self.DELTI, self.METER, self.DCVMIN, self.CCCITMX, self.CCCACC])
+            l0 = self.format_raw_line(["I", "MDC", "RDC", "SETVL", "VSCHD", "VCMOD", "RCOMP",
+                                       "DELTI", "METER", "DCVMIN", "CCCITMX", "CCCACC"])
 
-            l1 = self.format_raw_line([self.IPR, self.NBR, self.ANMXR, self.ANMNR, self.RCR, self.XCR, self.EBASR,
-                                       self.TRR, self.TAPR, self.TMXR, self.TMNR, self.STPR, self.ICR, self.IFR,
-                                       self.ITR, self.IDR, self.XCAPR])
+            l1 = self.format_raw_line(["IPR", "NBR", "ANMXR", "ANMNR", "RCR", "XCR", "EBASR",
+                                       "TRR", "TAPR", "TMXR", "TMNR", "STPR", "ICR", "IFR",
+                                       "ITR", "IDR", "XCAPR"])
 
-            l2 = self.format_raw_line([self.IPI, self.NBI, self.ANMXI, self.ANMNI, self.RCI, self.XCI, self.EBASI,
-                                       self.TRI, self.TAPI, self.TMXI, self.TMNI, self.STPI, self.ICI, self.IFI,
-                                       self.ITI, self.IDI, self.XCAPI])
+            l2 = self.format_raw_line(["IPI", "NBI", "ANMXI", "ANMNI", "RCI", "XCI", "EBASI",
+                                       "TRI", "TAPI", "TMXI", "TMNI", "STPI", "ICI", "IFI",
+                                       "ITI", "IDI", "XCAPI"])
 
             return l0 + '\n' + l1 + '\n' + l2
         else:

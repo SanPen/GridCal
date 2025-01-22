@@ -103,6 +103,8 @@ class InjectionParent(PhysicalDevice):
 
         self.scalable: bool = True
 
+        self._use_kw: bool = False
+
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus', editable=False)
 
         self.register(key='cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
@@ -129,8 +131,10 @@ class InjectionParent(PhysicalDevice):
         self.register(key='technologies', units='p.u.', tpe=SubObjectType.Associations,
                       definition='List of technologies', display=False)
 
-        self.register(key='scalable', units='', tpe=bool, definition='Is the load scalable?', editable=False,
+        self.register(key='scalable', units='', tpe=bool, definition='Is the injection scalable?', editable=False,
                       display=False)
+
+        self.register(key='use_kw', units='', tpe=bool, definition='Consider the injections in kW and kVAr?')
 
     @property
     def bus(self) -> Bus:
@@ -204,6 +208,35 @@ class InjectionParent(PhysicalDevice):
             self._Cost_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
+
+    @property
+    def use_kw(self):
+        return self._use_kw
+
+    @use_kw.setter
+    def use_kw(self, val: bool):
+        """
+        Setter
+        :param val: bool
+        """
+        if self.auto_update_enabled:
+            if val != self._use_kw:
+                self._use_kw = val
+
+                if val:
+                    # is in kW, replace MW by kW
+                    for key, prp in self.registered_properties.items():
+                        prp.units = (prp.units.replace("MW", "kW")
+                                     .replace("MVAr", "kVAr")
+                                     .replace("MVA", "kVA"))
+                else:
+                    # is in MW, replace kW by MW
+                    for key, prp in self.registered_properties.items():
+                        prp.units = (prp.units.replace( "kW", "MW")
+                                     .replace( "kVAr", "MVAr")
+                                     .replace( "kVA", "MVA"))
+        else:
+            self._use_kw = val
 
     def get_S(self) -> complex:
         """

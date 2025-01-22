@@ -17,7 +17,7 @@ class BaseProperty:
                  unit: Unit,
                  denominator_unit: Unit = None,
                  description: str = '',
-                 max_chars=65000,
+                 max_chars=None,
                  min_value=-1e20,
                  max_value=1e20):
         """

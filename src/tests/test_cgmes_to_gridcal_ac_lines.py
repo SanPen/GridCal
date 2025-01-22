@@ -13,11 +13,11 @@ from GridCalEngine.DataStructures import BusData
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import get_gcdev_ac_lines
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.acdc_terminal import ACDCTerminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.connectivity_node import ConnectivityNode
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.current_limit import CurrentLimit
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_set import OperationalLimitSet
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_type import OperationalLimitType
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.data_logger import DataLogger
@@ -32,8 +32,10 @@ def cgmes_object():
     cl = CurrentLimit()
     cl.OperationalLimitSet = OperationalLimitSet()
     cl.OperationalLimitSet.Terminal = Terminal()
+    cl.OperationalLimitSet.Terminal.TopologicalNode = tn_test
     cl.OperationalLimitSet.Terminal.ConductingEquipment = ACLineSegment()
     cl.OperationalLimitSet.Terminal.ConductingEquipment.uuid = "branch_id"
+    cl.OperationalLimitType = OperationalLimitType()    # empty
     cl.value = 10
     circuit.add(cl)
 
@@ -80,17 +82,26 @@ def device_to_terminal_dict_object() -> Dict[str, List[Terminal]]:
     return d
 
 
-generators_test_params = [(cgmes_object(), calc_node_dict_object(), cn_dict_object(),
-                           device_to_terminal_dict_object(), 10, 1000.0, 1000.0, 1e-20, 100.0, 10.0, 10.0, 1e-20, 10.0, 10,
-                           10, 10.0, 10.0, 1e-20, 1e-20, 20, 20)]
+ac_line_test_params = [
+    (cgmes_object(), calc_node_dict_object(), cn_dict_object(), device_to_terminal_dict_object(),
+     10, 1000.0, 1000.0, 1e-20, 100.0,
+     10.0, 10.0, 1e-20, 10.0,
+     10, 10, 10.0, 10.0, 1e-20,
+     9999.0, 20, 20)
+]
 
 
 @pytest.mark.parametrize(
-    "cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,s_base,expected_b,expected_b0,expected_b2,expected_cost,expected_r,expected_r0,expected_r2,expected_r_corrected,expected_vf,expected_vt,expected_x,expected_x0,expected_x2,expected_rate,expected_temp_base,expected_temp_oper",
-    generators_test_params)
-def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict, s_base, expected_b, expected_b0,
-                  expected_b2, expected_cost, expected_r, expected_r0,
-                  expected_r2, expected_r_corrected, expected_vf, expected_vt, expected_x, expected_x0, expected_x2,
+    "cgmes_model,calc_node_dict,cn_dict,device_to_terminal_dict,"
+    "s_base,expected_b,expected_b0,expected_b2,expected_cost,"
+    "expected_r,expected_r0,expected_r2,expected_r_corrected,"
+    "expected_vf,expected_vt,expected_x,expected_x0,expected_x2,"
+    "expected_rate,expected_temp_base,expected_temp_oper",
+    ac_line_test_params)
+def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict,
+                  s_base, expected_b, expected_b0, expected_b2, expected_cost,
+                  expected_r, expected_r0, expected_r2, expected_r_corrected,
+                  expected_vf, expected_vt, expected_x, expected_x0, expected_x2,
                   expected_rate, expected_temp_base, expected_temp_oper):
 
     logger = DataLogger()

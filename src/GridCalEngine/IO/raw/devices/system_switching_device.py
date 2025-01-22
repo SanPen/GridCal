@@ -129,10 +129,10 @@ class RawSystemSwitchingDevice(RawObject):
     def get_raw_line(self, version):
 
         if version >= 35:
-            return self.format_raw_line([self.I, self.J, self.CKT, self.X, self.RATE1, self.RATE2, self.RATE3,
-                                         self.RATE4, self.RATE5, self.RATE6, self.RATE7, self.RATE8, self.RATE9,
-                                         self.RATE10, self.RATE11, self.RATE12, self.STAT, self.NSTAT, self.MET,
-                                         self.STYPE, self.NAME])
+            return self.format_raw_line(["I", "J", "CKT", "X", "RATE1", "RATE2", "RATE3",
+                                         "RATE4", "RATE5", "RATE6", "RATE7", "RATE8", "RATE9",
+                                         "RATE10", "RATE11", "RATE12", "STAT", "NSTAT", "MET",
+                                         "STYPE", "NAME"])
         else:
             raise Exception('System switching not defined for version', str(version))
 

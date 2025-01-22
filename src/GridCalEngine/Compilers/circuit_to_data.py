@@ -320,6 +320,13 @@ def get_load_data(data: LoadData,
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
+        if elm.use_kw:
+            # pass kW to MW
+            data.S[ii] /= 1000.0
+            data.I[ii] /= 1000.0
+            data.Y[ii] /= 1000.0
+            data.cost[ii] /= 1000.0
+
         # reactive power sharing data
         if data.active[ii]:
             bus_data.q_fixed[i] -= data.S[ii].imag
@@ -346,6 +353,11 @@ def get_load_data(data: LoadData,
             data.S[ii] -= complex(elm.P, elm.Q)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
+
+        if elm.use_kw:
+            # pass kW to MW
+            data.S[ii] /= 1000.0
+            data.cost[ii] /= 1000.0
 
         # reactive power sharing data
         if data.active[ii]:
@@ -399,6 +411,11 @@ def get_load_data(data: LoadData,
             data.S[ii] += complex(elm.P, elm.Q)
             data.active[ii] = elm.active
 
+        if elm.use_kw:
+            # pass kW to MW
+            data.S[ii] /= 1000.0
+            data.cost[ii] /= 1000.0
+
         # reactive power sharing data
         if data.active[ii]:
             bus_data.q_fixed[i] += data.S[ii].imag
@@ -428,7 +445,12 @@ def get_load_data(data: LoadData,
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
-        # reactive power sharing data
+        if elm.use_kw:
+            # pass kW to MW
+            data.I[ii] /= 1000.0
+            data.cost[ii] /= 1000.0
+
+            # reactive power sharing data
         if data.active[ii]:
             bus_data.q_fixed[i] += data.S[ii].imag
             bus_data.ii_fixed[i] += data.I[ii].imag
@@ -484,6 +506,10 @@ def get_shunt_data(
         else:
             data.active[k] = elm.active
             data.Y[k] = complex(elm.G, elm.B)
+
+        if elm.use_kw:
+            # pass kW to MW
+            data.Y[ii] /= 1000.0
 
         # reactive power sharing data
         if data.active[ii]:
@@ -557,6 +583,10 @@ def get_shunt_data(
                                         candidate_Vm=elm.Vset,
                                         use_stored_guess=use_stored_guess,
                                         logger=logger)
+
+        if elm.use_kw:
+            # pass kW to MW
+            data.Y[ii] /= 1000.0
 
         # reactive power sharing data
         if data.active[ii]:
@@ -716,6 +746,18 @@ def fill_generator_parent(
                                         candidate_Vm=elm.Vset,
                                         use_stored_guess=use_stored_guess,
                                         logger=logger)
+
+    if elm.use_kw:
+        # pass kW to MW
+        data.p[k] /= 1000.0
+        data.pmax[k] /= 1000.0
+        data.pmin[k] /= 1000.0
+        data.qmax[k] /= 1000.0
+        data.qmin[k] /= 1000.0
+        data.snom[k] /= 1000.0
+        # data.cost_0[k] /= 1000.0
+        data.cost_1[k] /= 1000.0
+        data.cost_2[k] /= 1e6  # this is because of MW^2
 
     # reactive power-sharing data
     if data.active[k]:

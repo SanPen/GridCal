@@ -120,12 +120,17 @@ class ControllableShunt(ShuntParent):
     @step.setter
     def step(self, value: int):
 
-        if 0 <= value < len(self._b_steps):
-            self._step = int(value)
+        if self.auto_update_enabled:
 
-            # override value on change
-            self.B = np.sum(self._b_steps[:self._step + 1])
-            self.G = np.sum(self._g_steps[:self._step + 1])
+            if 0 <= value < len(self._b_steps):
+                self._step = int(value)
+
+                # override value on change
+                self.B = np.sum(self._b_steps[:self._step + 1] * self._active_steps[:self._step + 1])
+                self.G = np.sum(self._g_steps[:self._step + 1] * self._active_steps[:self._step + 1])
+        else:
+
+            self._step = int(value)
 
     @property
     def Bmin(self):
