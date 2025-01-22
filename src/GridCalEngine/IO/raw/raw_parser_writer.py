@@ -450,112 +450,112 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
         for p_elm in psse_model.buses:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF BUS DATA, BEGIN LOAD DATA   \n")
+        w.write("0 / END OF BUS DATA, BEGIN LOAD DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("LOAD DATA"))
         for p_elm in psse_model.loads:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF LOAD DATA, BEGIN FIXED BUS SHUNT DATA  \n")
+        w.write("0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("FIXED BUS SHUNT DATA"))
         for p_elm in psse_model.fixed_shunts:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF FIXED BUS SHUNT DATA, BEGIN GENERATOR DATA\n")
+        w.write("0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("GENERATOR DATA"))
         for p_elm in psse_model.generators:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF GENERATOR DATA, BEGIN NONTRANSFORMER BRANCH DATA  \n")
+        w.write("0 / END OF GENERATOR DATA, BEGIN BRANCH DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("NONTRANSFORMER BRANCH DATA"))
         for p_elm in psse_model.branches:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF NONTRANSFORMER BRANCH DATA, BEGIN SYSTEM SWITCHING DEVICE DATA\n")
-        if comment_map is not None:
-            w.write(comment_map.get("SYSTEM SWITCHING DEVICE DATA"))
-        for p_elm in psse_model.switches:
-            w.write(" " + p_elm.get_raw_line(version=version) + "\n")
+        # w.write(" 0 / END OF NONTRANSFORMER BRANCH DATA, BEGIN SYSTEM SWITCHING DEVICE DATA\n")
+        # if comment_map is not None:
+        #     w.write(comment_map.get("SYSTEM SWITCHING DEVICE DATA"))
+        # for p_elm in psse_model.switches:
+        #     w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF SYSTEM SWITCHING DEVICE DATA, BEGIN TRANSFORMER DATA\n")
+        w.write("0 / END OF BRANCH DATA, BEGIN TRANSFORMER DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("TRANSFORMER DATA"))
         for p_elm in psse_model.transformers:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF TRANSFORMER DATA, BEGIN AREA INTERCHANGE DATA \n")
+        w.write("0 / END OF TRANSFORMER DATA, BEGIN AREA INTERCHANGE DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("AREA INTERCHANGE DATA"))
         for p_elm in psse_model.areas:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF AREA INTERCHANGE DATA, BEGIN TWO-TERMINAL DC LINE DATA \n")
+        w.write("0 / END OF AREA INTERCHANGE DATA, BEGIN TWO-TERMINAL DC LINE DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("TWO-TERMINAL DC LINE DATA"))
         for p_elm in psse_model.two_terminal_dc_lines:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF TWO-TERMINAL DC LINE DATA, BEGIN VSC DC LINE DATA \n")
+        w.write("0 / END OF TWO-TERMINAL DC LINE DATA, BEGIN VSC DC LINE DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("VSC DC LINE DATA"))
         for p_elm in psse_model.vsc_dc_lines:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF VSC DC LINE DATA, BEGIN TRANSFORMER IMPEDANCE CORRECTION DATA \n")
+        w.write("0 / END OF VSC DC LINE DATA, BEGIN TRANSFORMER IMPEDANCE CORRECTION DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("TRANSFORMER IMPEDANCE CORRECTION DATA"))
         # TODO implement impedance correction data
 
-        w.write(" 0 / END OF TRANSFORMER IMPEDANCE CORRECTION DATA, BEGIN MULTI-TERMINAL DC LINE DATA \n")
+        w.write("0 / END OF TRANSFORMER IMPEDANCE CORRECTION DATA, BEGIN MULTI-TERMINAL DC LINE DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("MULTI-TERMINAL DC LINE DATA"))
         # todo: implement multi terminal dc line data
 
-        w.write(" 0 / END OF MULTI-TERMINAL DC LINE DATA, BEGIN MULTI-SECTION LINE GROUP DATA \n")
+        w.write("0 / END OF MULTI-TERMINAL DC LINE DATA, BEGIN MULTI-SECTION LINE GROUP DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("MULTI-SECTION LINE GROUP DATA"))
         # todo: implement multi-section line group data
 
-        w.write(" 0 / END OF MULTI-SECTION LINE GROUP DATA, BEGIN ZONE DATA\n")
+        w.write("0 / END OF MULTI-SECTION LINE GROUP DATA, BEGIN ZONE DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("ZONE DATA"))
         for p_elm in psse_model.zones:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF ZONE DATA, BEGIN INTER-AREA TRANSFER DATA \n")
+        w.write("0 / END OF ZONE DATA, BEGIN INTER-AREA TRANSFER DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("INTER-AREA TRANSFER DATA"))
         for p_elm in psse_model.inter_areas:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF INTER-AREA TRANSFER DATA, BEGIN OWNER DATA \n")
+        w.write("0 / END OF INTER-AREA TRANSFER DATA, BEGIN OWNER DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("OWNER DATA"))
         for p_elm in psse_model.owners:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF OWNER DATA, BEGIN FACTS CONTROL DEVICE DATA \n")
+        w.write("0 / END OF OWNER DATA, BEGIN FACTS CONTROL DEVICE DATA \n")
         if comment_map is not None:
             w.write(comment_map.get("FACTS CONTROL DEVICE DATA"))
         for p_elm in psse_model.facts:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF FACTS CONTROL DEVICE DATA, BEGIN SWITCHED SHUNT DATA\n")
+        w.write("0 / END OF FACTS CONTROL DEVICE DATA, BEGIN SWITCHED SHUNT DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("SWITCHED SHUNT DATA"))
         for p_elm in psse_model.switched_shunts:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF SWITCHED SHUNT DATA, BEGIN GNE DATA\n")
+        w.write("0 / END OF SWITCHED SHUNT DATA, BEGIN GNE DATA\n")
         if comment_map is not None:
             w.write(comment_map.get("GNE DATA"))
         for p_elm in psse_model.gne:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
-        w.write(" 0 / END OF GNE DATA, BEGIN SUBSTATION DATA\n")
+        w.write("0 / END OF GNE DATA, BEGIN SUBSTATION DATA\n")
         for p_elm in psse_model.substations:
             w.write(" " + p_elm.get_raw_line(version=version) + "\n")
 
