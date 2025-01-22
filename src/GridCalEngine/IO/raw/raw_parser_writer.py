@@ -314,7 +314,7 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
     meta_data['zone'] = [grid.zones, RawZone, 1]
     meta_data['owner'] = [grid.owners, RawOwner, 1]
     meta_data['gne'] = [grid.gne, RawGneDevice, 5]
-    meta_data['impedance correction'] = [grid.indiction_tables, RawImpedanceCorrectionTable, 2]
+    meta_data['impedance correction'] = [grid.indiction_tables, RawImpedanceCorrectionTable, 1]
     meta_data['multi-section line'] = [grid.multi_line_sections, RawMultiLineSection, 1]
     bus_set = {lne[0] for lne in sections_dict["bus"]}
 
@@ -363,7 +363,7 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
                                 data.append(lines[l_count])
                                 l_count += 1
 
-                    elif key == 'impedance correction':
+                    elif key == 'impedance correction' and version >= 35:
                         # since PSSe is nothing but a very questionable set of legacy sofwtare,
                         # when we're dealing with impedance tables, the number of lines is unkown
                         # and determined by the termination criteria 0.0, 0.0, 0.0
