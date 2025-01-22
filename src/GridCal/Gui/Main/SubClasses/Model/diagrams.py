@@ -41,6 +41,7 @@ from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import OsmTiles
+from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_infra_map import OimTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -160,23 +161,28 @@ class DiagramsMain(CompiledArraysMain):
             CartoDbTiles(
                 name='Carto voyager',
                 tiles_dir=os.path.join(tiles_path(), 'carto_db_voyager'),
-                tile_servers=["http://basemaps.cartocdn.com/rastertiles/voyager/"]
+                tile_servers=["https://basemaps.cartocdn.com/rastertiles/voyager/"]
             ),
             CartoDbTiles(
                 name='Carto positron',
                 tiles_dir=os.path.join(tiles_path(), 'carto_db_positron'),
-                tile_servers=['http://basemaps.cartocdn.com/light_all/']
+                tile_servers=['https://basemaps.cartocdn.com/light_all/']
             ),
             CartoDbTiles(
                 name='Carto dark matter',
                 tiles_dir=os.path.join(tiles_path(), 'carto_db_dark_matter'),
-                tile_servers=["http://basemaps.cartocdn.com/dark_all/"]
+                tile_servers=["https://basemaps.cartocdn.com/dark_all/"]
             ),
             OsmTiles(
                 name='Open Street Map',
                 tiles_dir=os.path.join(tiles_path(), 'osm'),
                 tile_servers=["https://tile.openstreetmap.org"]
-            )
+            ),
+            # OimTiles(
+            #     name='Open infra Map',
+            #     tiles_dir=os.path.join(tiles_path(), 'osm'),
+            #     tile_servers=["https://openinframap.org/tiles"]
+            # )
         ]
         tile_names = [tile.TilesetName for tile in self.tile_sources]
         self.tile_index_dict = {tile.TilesetName: i for i, tile in enumerate(self.tile_sources)}
