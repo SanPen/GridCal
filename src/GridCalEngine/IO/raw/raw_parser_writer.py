@@ -527,7 +527,11 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
             else:
                 w.write("0 / END OF " + prev_section + " DATA, BEGIN " + section_name + " DATA\n")
             if comment_map is not None:
-                w.write(comment_map.get(section_name))
+                content = comment_map.get(section_name)
+                if content is not None:
+                    w.write(content)
+                else:
+                    print()
             if objects_list is not None:
                 for obj in objects_list:
                     w.write(" " + obj.get_raw_line(version=version) + "\n")
