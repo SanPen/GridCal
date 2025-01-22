@@ -464,7 +464,6 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
                     'RATING,11, "RATE11", "RATING SET 11                   "\n'
                     'RATING,12, "RATE12", "RATING SET 12                   "\n')  # Using fake values
 
-        if version == 35:
             sections = [
                 ("BUS", psse_model.buses),
                 ("LOAD", psse_model.loads),
@@ -530,8 +529,7 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
                 content = comment_map.get(section_name)
                 if content is not None:
                     w.write(content)
-                else:
-                    print()
+
             if objects_list is not None:
                 for obj in objects_list:
                     w.write(" " + obj.get_raw_line(version=version) + "\n")
