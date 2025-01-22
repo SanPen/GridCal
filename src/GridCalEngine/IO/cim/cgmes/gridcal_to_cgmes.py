@@ -1546,15 +1546,22 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
         new_island = tpi_template(get_new_rdfid())
         new_island.name = "TopologicalIsland" + str(i)
         new_island.TopologicalNodes = []
-        bus_names = nc_i.bus_data.names
+        bus_idtags = nc_i.bus_data.idtag
         mc_buses = []
-        for tn_name in bus_names:
-            tn = find_tn_by_name(cgmes_model, tn_name)
+        for tn_idtag in bus_idtags:
+            tn = find_object_by_uuid(cgmes_model=cgmes_model,
+                                     object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+                                     target_uuid=tn_idtag)
             if tn:
                 new_island.TopologicalNodes.append(tn)
                 mc_bus = find_object_by_attribute(multicircuit_model.buses,
-                                                  "name", tn_name)
+                                                  "idtag", tn_idtag)
                 mc_buses.append(mc_bus)
+            else:
+                logger.add_warning(
+                    msg="TopologicalNode missing from TopologicalIsland!",
+                    device=new_island.name,
+                    device_property="TopologicalNode")
         if mc_buses:
             slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
             if slack_bus:
@@ -1569,6 +1576,11 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
                     msg="AngleRefTopologicalNode missing from TopologicalIsland!",
                     device=new_island.name,
                     device_property="AngleRefTopologicalNode")
+        else:
+            logger.add_error(
+                msg="All TopologicalNodes are missing from TopologicalIsland!",
+                device=new_island.name,
+                device_property="TopologicalNode")
         cgmes_model.add(new_island)
 
 
