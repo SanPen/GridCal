@@ -16,9 +16,8 @@ from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
 from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex,
-                            QRunnable, QThreadPool, Slot)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor,
-                           QDropEvent, QWheelEvent)
+                            QRunnable, QThreadPool)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
@@ -585,8 +584,6 @@ class GridMapWidget(BaseDiagramWidget):
         """
         line_container = MapAcLine(editor=self, api_object=api_object)
 
-        line_container.original = original
-
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
         # create the nodes
@@ -603,8 +600,6 @@ class GridMapWidget(BaseDiagramWidget):
         :return: MapTemplateLine
         """
         line_container = MapDcLine(editor=self, api_object=api_object)
-
-        line_container.original = original
 
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
@@ -624,8 +619,6 @@ class GridMapWidget(BaseDiagramWidget):
         """
         line_container = MapHvdcLine(editor=self, api_object=api_object)
 
-        line_container.original = original
-
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
         # create the nodes
@@ -643,8 +636,6 @@ class GridMapWidget(BaseDiagramWidget):
         :return: MapTemplateLine
         """
         line_container = MapFluidPathLine(editor=self, api_object=api_object)
-
-        line_container.original = original
 
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
@@ -893,17 +884,6 @@ class GridMapWidget(BaseDiagramWidget):
             # sort voltage levels
             substation_graphics.sort_voltage_levels()
 
-    def wheelEvent(self, event: QWheelEvent):
-        """
-
-        :param event:
-        :return:
-        """
-
-        # SANTIAGO: DO NOT TOUCH, THIS IS THE DESIRED BEHAVIOUR
-        self.update_device_sizes()
-
-
     def get_branch_width(self) -> float:
         """
         Get the desired branch width
@@ -958,6 +938,9 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
         print('Updating device sizes!')
+        # self.map.diagram_scene.blockSignals(True)
+        self.map.diagram_scene.invalidate(self.map.diagram_scene.sceneRect())
+
         br_scale = self.get_branch_width()
         arrow_scale = self.get_arrow_scale()
         se_scale = self.get_substation_scale()
@@ -969,15 +952,18 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
 
+            # this is super-slow
             for key, elm_graphics in graphics_dict.items():
                 elm_graphics.set_width_scale(branch_scale=br_scale, arrow_scale=arrow_scale)
 
-        # rescale substations
+        # rescale substations (this is super-fast)
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
-
         for se_key, elm_graphics in data.items():
             elm_graphics.set_api_object_color()
             elm_graphics.re_scale(r=se_scale)
+
+        # self.map.diagram_scene.blockSignals(False)
+        self.map.diagram_scene.update(self.map.diagram_scene.sceneRect())
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """

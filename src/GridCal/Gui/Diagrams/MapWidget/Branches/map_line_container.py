@@ -47,7 +47,6 @@ class MapLineContainer(GenericDiagramWidget):
         self.nodes_list: List[LineLocationGraphicItem] = list()
         self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
-        self.original = True  # TODO: Que es esto?
 
     def set_width_scale(self, branch_scale: float, arrow_scale: float):
         """

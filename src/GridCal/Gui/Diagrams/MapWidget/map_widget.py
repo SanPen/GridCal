@@ -55,7 +55,7 @@ from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout,
                                QGraphicsSceneMouseEvent, QGraphicsItem, QLabel, QGraphicsProxyWidget)
-
+# from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 if TYPE_CHECKING:
@@ -450,6 +450,17 @@ class MapWidget(QWidget):
         # the view is the transparent layer used to draw stuff
         self.view = MapView(scene=self.diagram_scene, map_widget=self)
         self.view.setBackgroundBrush(Qt.GlobalColor.transparent)
+
+        # self.opengl_widget = QOpenGLWidget()
+        # self.opengl_widget.update()
+        # # opengl_widget = TransparentOpenGLWidget()
+        # self.opengl_widget.setUpdateBehavior(QOpenGLWidget.UpdateBehavior.NoPartialUpdate)
+        # self.view.setViewport(self.opengl_widget)
+        # self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+        # self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        # self.view.setRenderHint(QPainter.RenderHint.TextAntialiasing)
+        # # self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
+        # self.view.setBackgroundBrush(Qt.GlobalColor.transparent)
 
         # -------------------------------------------------------------------------
         # Internal vars
