@@ -29,9 +29,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/area.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/area.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_cgmes_load_and_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_cgmes_load_and_power_flow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_cgmes_raw_cross_roundtrip.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_cgmes_raw_cross_roundtrip.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tests/test_cgmes_roundtrip.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_cgmes_roundtrip.py" afterDir="false" />
@@ -1435,7 +1432,7 @@
       <workItem from="1737456489579" duration="2603000" />
       <workItem from="1737475464832" duration="1783000" />
       <workItem from="1737536328809" duration="14140000" />
-      <workItem from="1737621432378" duration="14548000" />
+      <workItem from="1737621432378" duration="15244000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1780,7 +1777,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="547" />
+    <option name="localTasksCounter" value="548" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1826,7 +1823,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Bug fix for nodes having the same idTag, now new nodes have a new uuid in idtag" />
     <MESSAGE value="Bug fix - change map style" />
     <MESSAGE value="Handling power flow diversity" />
     <MESSAGE value="transformer import fix (COD1 == 0)" />
@@ -1851,7 +1847,8 @@
     <MESSAGE value="format corrections at raw export" />
     <MESSAGE value="enhance ac line test with rate parameters, op lim tpye" />
     <MESSAGE value="NOMV2 exception" />
-    <option name="LAST_COMMIT_MESSAGE" value="NOMV2 exception" />
+    <MESSAGE value="latitude and longitude as float" />
+    <option name="LAST_COMMIT_MESSAGE" value="latitude and longitude as float" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
