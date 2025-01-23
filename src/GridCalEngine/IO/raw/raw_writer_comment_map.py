@@ -72,7 +72,7 @@ comment_version_map = {
                                   "DCPF,  MARG,CNVCOD\n"
                                   "@!IDC, IB,AREA,ZONE,   'DCNAME',  IDC2, RGRND,OWNER\n"
                                   "@!IDC,JDC,'DCCKT',MET,  RDC,      LDC\n",
-        "MULTI-SECTION LINE GROUP": "@!   I,     J,'ID',MET,DUM1,  DUM2,  DUM3,  DUM4,"
+        "MULTI-SECTION LINE GROUPING": "@!   I,     J,'ID',MET,DUM1,  DUM2,  DUM3,  DUM4,"
                                     "  DUM5,  DUM6,  DUM7,  DUM8,  DUM9\n",
         "ZONE": "@! I,   'ZONAME'\n",
         "INTER-AREA TRANSFER": "@!ARFROM,ARTO,'TRID',PTRAN\n",
