@@ -316,32 +316,11 @@ class PyPSAParser:
         for ix, data in self.pypsa_grid.line_types.iterrows():
             # Compute shunt susceptance in S/km from shunt capacitance in nF/km.
             omega = 2 * math.pi * data['f_nom']  # Hz
-            b = data['c_per_length'] * omega * 1e-9
+            b = data['c_per_length'] * omega * 1e-3  # in uS
             kind = SequenceLineType(name=ix, Imax=data['i_nom'], R=data['r_per_length'], X=data['x_per_length'], B=b)
             self.grid.add_sequence_line(kind)
             by_name[ix] = kind
         return by_name
-
-    def _apply_template(self, types: Dict[str, SequenceLineType], ix: str, data, proto: Line):
-        """
-
-        :param types:
-        :param ix:
-        :param data:
-        :param proto:
-        :return:
-        """
-        line_template = types[data['type']]
-
-        R, X, B, R0, X0, B0, rate = line_template.get_values(Sbase=100, length=proto.length)
-
-        expected_rate = rate * int(data['num_parallel'])
-
-        if not math.isclose(expected_rate, data['s_nom'], abs_tol=1e-6):
-            self.logger.add_warning(f'Line Snom value differs from the template rating', device=ix,
-                                    value=data['s_nom'], expected_value=expected_rate)
-        else:
-            proto.apply_template(line_template, self.grid.Sbase)
 
     def _parse_lines(self):
         """
@@ -382,25 +361,23 @@ class PyPSAParser:
                 if group is not None:
                     elm.group = group
 
-                # if row['type']:
-                #     self._apply_template(types=self.line_types,
-                #                          ix=ix, data=row, proto=elm)
-                # else:
-                elm.template = self.line_types.get(row['type'], None)
-
-                elm.R = row['r']
-                elm.X = row['x']
-                elm.B = row['b']
-                elm.fill_design_properties(
-                    r_ohm=row['r'],
-                    x_ohm=row['x'],
-                    c_nf=row['b'] / w * 1e9,
-                    freq=self.grid.fBase,
-                    length=length,
-                    Imax=0,
-                    Sbase=self.grid.Sbase,
-                )
-                elm.rate = rate
+                template = self.line_types.get(row['type'], None)
+                if template is None:
+                    elm.R = row['r']
+                    elm.X = row['x']
+                    elm.B = row['b']
+                    elm.fill_design_properties(
+                        r_ohm=row['r'],
+                        x_ohm=row['x'],
+                        c_nf=row['b'] / w * 1e9,
+                        freq=self.grid.fBase,
+                        length=length,
+                        Imax=0,
+                        Sbase=self.grid.Sbase,
+                    )
+                    elm.rate = rate
+                else:
+                    elm.apply_template(obj=template, Sbase=self.grid.Sbase, freq=self.grid.fBase)
 
                 self.grid.add_line(elm)
 
@@ -455,8 +432,11 @@ class PyPSAParser:
                                   tap_phase=data['phase_shift'])
 
             copy_count = int(data['num_parallel'])
-            if data['type']:
-                self._apply_template(self.transformer_types, ix, data, proto)
+
+            template = self.transformer_types.get(data['type'], None)
+
+            if template is not None:
+                proto.apply_template(obj=template, Sbase=self.grid.Sbase, logger=self.logger)
             else:
                 proto.R = data['r']
                 proto.X = data['x']

@@ -124,7 +124,8 @@ class MixedVariableProblem(ElementwiseProblem):
                 template = self.data[device.idtag][xi]
 
                 if isinstance(device, Line):
-                    device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
+                    device.apply_template(obj=template, Sbase=self.grid.Sbase,
+                                          freq=self.grid.fBase, logger=self.logger)
 
                 elif isinstance(device, Transformer2W):
                     device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
@@ -132,7 +133,8 @@ class MixedVariableProblem(ElementwiseProblem):
                 else:
                     raise Exception('Device not recognized')
             else:
-                device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
+                device.apply_template(obj=self.default_template[i], Sbase=self.grid.Sbase,
+                                      freq=self.grid.fBase, logger=self.logger)
 
         out["F"] = self.obj_func(x)
         print("Completed eval")

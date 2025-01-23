@@ -12,7 +12,7 @@ from GridCalEngine.enumerations import BuildStatus, SubObjectType, DeviceType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
-from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
+from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType, get_line_impedances_with_c
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Associations.association import Associations
@@ -382,19 +382,25 @@ class Line(BranchParent):
         """
         return np.sqrt(self.R * self.R + self.X * self.X)
 
-    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType], Sbase: float,
+    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType],
+                       Sbase: float, freq: float,
                        logger=Logger()):
         """
         Apply a line template to this object
         :param obj: OverheadLineType, UndergroundLineType, SequenceLineType
         :param Sbase: Nominal power in MVA
+        :param freq: Frequency in Hz
         :param logger: Logger
         """
 
         if type(obj) in [OverheadLineType, UndergroundLineType, SequenceLineType]:
 
-            self.R, self.X, self.B, self.R0, self.X0, self.B0, self.rate = obj.get_values(Sbase=Sbase,
-                                                                                          length=self.length)
+            (self.R, self.X, self.B,
+             self.R0, self.X0, self.B0,
+             self.rate) = obj.get_values(Sbase=Sbase,
+                                         freq=freq,
+                                         length=self.length,
+                                         line_Vnom=self.get_max_bus_nominal_voltage())
 
             if self.template is not None:
                 if obj != self.template:
@@ -499,23 +505,16 @@ class Line(BranchParent):
         :param apply_to_profile: modify the profile is checked
         :return self pointer
         """
-        r_ohm_total = r_ohm * length
-        x_ohm_total = x_ohm * length
-        # impedance = 1 / (2 * pi * f * c),
-        # susceptance = (2 * pi * f * c)
-        b_siemens_total = (2 * np.pi * freq * c_nf * 1e-9) * length
-
-        Vf = self.get_max_bus_nominal_voltage()
-
-        Zbase = (Vf * Vf) / Sbase
-        Ybase = 1.0 / Zbase
-
-        self.R = np.round(r_ohm_total / Zbase, 6)
-        self.X = np.round(x_ohm_total / Zbase, 6)
-        self.B = np.round(b_siemens_total / Ybase, 6)
+        self.R, self.X, self.B, new_rate = get_line_impedances_with_c(r_ohm=r_ohm,
+                                                                      x_ohm=x_ohm,
+                                                                      c_nf=c_nf,
+                                                                      length=length,
+                                                                      Imax=Imax,
+                                                                      freq=freq,
+                                                                      Sbase=Sbase,
+                                                                      Vnom=self.get_max_bus_nominal_voltage())
 
         old_rate = float(self.rate)
-        new_rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
 
         self.rate = new_rate
         self._length = length

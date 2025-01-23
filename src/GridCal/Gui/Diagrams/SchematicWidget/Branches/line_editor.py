@@ -212,7 +212,7 @@ class LineEditor(QDialog):
             if self.selected_template is not None:
                 self.line.disable_auto_updates()
                 self.line.set_length(val=length)
-                self.line.apply_template(obj=self.selected_template, Sbase=self.Sbase)
+                self.line.apply_template(obj=self.selected_template, Sbase=self.Sbase, freq=self.frequency)
                 self.line.enable_auto_updates()
             else:
                 wf = 2 * np.pi * self.frequency
