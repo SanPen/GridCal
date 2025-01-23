@@ -63,7 +63,7 @@ class MapLineSegment(QGraphicsLineItem):
         self.first.add_position_change_callback(self.set_from_side_coordinates)
         self.second.add_position_change_callback(self.set_to_side_coordinates)
 
-        self.set_colour(self.color, self.style)
+        self._pen = self.set_colour(self.color, self.style)
         self.update_endings()
         self.needsUpdate = True
         self.setZValue(0)
@@ -93,9 +93,9 @@ class MapLineSegment(QGraphicsLineItem):
         :param width:
         :return:
         """
-        pen = self.pen()
-        pen.setWidthF(width)
-        self.setPen(pen)
+        if self._pen.widthF() != width:  # Only update if width changes
+            self._pen.setWidthF(width)
+            self.setPen(self._pen)
 
     def set_arrow_scale(self, width: float):
         """
@@ -123,6 +123,8 @@ class MapLineSegment(QGraphicsLineItem):
         self.arrow_q_from.set_colour(color, self.arrow_q_from.w, style)
         self.arrow_p_to.set_colour(color, self.arrow_p_to.w, style)
         self.arrow_q_to.set_colour(color, self.arrow_q_to.w, style)
+
+        return pen
 
     def set_from_side_coordinates(self, x: float, y: float):
         """

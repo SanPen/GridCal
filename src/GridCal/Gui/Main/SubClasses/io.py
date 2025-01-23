@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import os
+import asyncio
 from typing import Union, List, Callable
 import pandas as pd
 from PySide6 import QtWidgets
@@ -343,11 +344,9 @@ class IoMain(ConfigurationMain):
 
                 if self.circuit.has_diagrams():
                     # create the diagrams that came with the file
+                    # task = gf.AsyncTask(self.create_circuit_stored_diagrams)
+                    # self.task_pool.start(task)
                     self.create_circuit_stored_diagrams()
-
-                    if len(self.diagram_widgets_list) > 0:
-                        diagram = self.diagram_widgets_list[0]
-                        self.set_diagram_widget(diagram)
 
                 else:
                     if self.circuit.get_bus_number() > 300:

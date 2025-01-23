@@ -50,10 +50,12 @@ class PyPSAParser:
         self.grid.create_profiles(self.nt, 1, 'h', start_time)  # todo: don't assume hourly intervals
 
         self.srid = self.pypsa_grid.srid  # EPSG number
-        if self.srid != 4326:
-            self.coordinate_converter = pyproj.Transformer.from_crs(self.srid, 4326, always_xy=False)
-        else:
-            self.coordinate_converter = None
+
+        # geo_crs: EPSG:4326  # general geographic projection, not used for metric measures. "EPSG:4326" is the standard used by OSM and google maps
+        # distance_crs: EPSG:3857  # projection for distance measurements only. Possible recommended values are "EPSG:3857" (used by OSM and Google Maps)
+        # area_crs: ESRI:54009  # projection for area measurements only. Possible recommended values are Global Mollweide "ESRI:54009"
+        self.to_latlon_converter = pyproj.Transformer.from_crs(self.srid, 4326, always_xy=False)
+        self.to_xy_converter = pyproj.Transformer.from_crs(self.srid, 3857, always_xy=False)
 
         self.countries = self._parse_countries()
         self.buses = self._parse_buses()
@@ -88,7 +90,7 @@ class PyPSAParser:
             by_name[name] = country
         return by_name
 
-    def _parse_buses(self, x_scale=720, y_scale=-900) -> Dict[str, Bus]:
+    def _parse_buses(self) -> Dict[str, Bus]:
         """
         Parses the bus data from the PyPSA network.
         :return: a mapping from bus name to GridCal `Bus` objects.
@@ -104,18 +106,15 @@ class PyPSAParser:
             # the longitude and latitude come stored in x, y depending on the projection (self.srid)
             x = data['x']
             y = data['y']
-            if self.coordinate_converter is not None:
-                lon, lat = self.coordinate_converter.transform(xx=x, yy=y)
-            else:
-                lon = x
-                lat = y
+            lon, lat = self.to_latlon_converter.transform(xx=x, yy=y)
+            x2, y2 = self.to_xy_converter.transform(xx=x, yy=y)
 
             bus = Bus(name=ix,
                       Vnom=data['v_nom'],
                       vmin=data['v_mag_pu_min'],
                       vmax=data['v_mag_pu_max'],
-                      xpos=x * x_scale,
-                      ypos=y * y_scale,
+                      xpos=x2,
+                      ypos=y2,
                       longitude=lon,
                       latitude=lat,
                       active=active,

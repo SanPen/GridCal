@@ -4,19 +4,20 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import os
-from typing import Union, List, Tuple, Dict, TYPE_CHECKING
+from typing import Union, List, Tuple, Dict, TYPE_CHECKING, Any
 import json
 import numpy as np
 import math
 import pandas as pd
+import asyncio
 from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
-from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor,
-                           QDropEvent, QWheelEvent)
+from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex,
+                            QRunnable, QThreadPool)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
@@ -257,6 +258,10 @@ class GridMapWidget(BaseDiagramWidget):
         self.startHe = self.map.view.height()
         self.startWi = self.map.view.width()
         self.constantLineWidth = True
+
+        # pool of runnable tasks that work best done asynch with a runnable
+        self.thread_pool = QThreadPool()
+        self.wheel_move_task: QRunnable | None = None
 
         # draw
         self.draw()
@@ -579,8 +584,6 @@ class GridMapWidget(BaseDiagramWidget):
         """
         line_container = MapAcLine(editor=self, api_object=api_object)
 
-        line_container.original = original
-
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
         # create the nodes
@@ -597,8 +600,6 @@ class GridMapWidget(BaseDiagramWidget):
         :return: MapTemplateLine
         """
         line_container = MapDcLine(editor=self, api_object=api_object)
-
-        line_container.original = original
 
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
@@ -618,8 +619,6 @@ class GridMapWidget(BaseDiagramWidget):
         """
         line_container = MapHvdcLine(editor=self, api_object=api_object)
 
-        line_container.original = original
-
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
         # create the nodes
@@ -637,8 +636,6 @@ class GridMapWidget(BaseDiagramWidget):
         :return: MapTemplateLine
         """
         line_container = MapFluidPathLine(editor=self, api_object=api_object)
-
-        line_container.original = original
 
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
@@ -887,16 +884,6 @@ class GridMapWidget(BaseDiagramWidget):
             # sort voltage levels
             substation_graphics.sort_voltage_levels()
 
-    def wheelEvent(self, event: QWheelEvent):
-        """
-
-        :param event:
-        :return:
-        """
-
-        # SANTIAGO: DO NOT TOUCH, THIS IS THE DESIRED BEHAVIOUR
-        self.update_device_sizes()
-
     def get_branch_width(self) -> float:
         """
         Get the desired branch width
@@ -930,11 +917,29 @@ class GridMapWidget(BaseDiagramWidget):
         scale = self.diagram.min_bus_width + (zoom - min_zoom) / (max_zoom - min_zoom)
         return scale
 
-    def update_device_sizes(self) -> None:
+    def update_device_sizes(self, asynchronously: bool = True) -> None:
         """
-        Updat ethe devices' sizes
+        Caller to the asynchronous device update sizes
         :return:
         """
+        if asynchronously:
+            try:
+                loop = asyncio.get_event_loop()
+                self.wheel_move_task = loop.create_task(self.__update_device_sizes())
+            except RuntimeError:
+                pass
+        else:
+            # do it now
+            asyncio.run(self.__update_device_sizes())
+
+    async def __update_device_sizes(self) -> None:
+        """
+        Update the devices' sizes
+        :return:
+        """
+        print('Updating device sizes!')
+        # self.map.diagram_scene.blockSignals(True)
+        self.map.diagram_scene.invalidate(self.map.diagram_scene.sceneRect())
 
         br_scale = self.get_branch_width()
         arrow_scale = self.get_arrow_scale()
@@ -947,15 +952,18 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
 
+            # this is super-slow
             for key, elm_graphics in graphics_dict.items():
                 elm_graphics.set_width_scale(branch_scale=br_scale, arrow_scale=arrow_scale)
 
-        # rescale substations
+        # rescale substations (this is super-fast)
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
-
         for se_key, elm_graphics in data.items():
             elm_graphics.set_api_object_color()
             elm_graphics.re_scale(r=se_scale)
+
+        # self.map.diagram_scene.blockSignals(False)
+        self.map.diagram_scene.update(self.map.diagram_scene.sceneRect())
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """

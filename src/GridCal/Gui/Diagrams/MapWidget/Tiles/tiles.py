@@ -35,7 +35,8 @@ import urllib
 from urllib import request
 from urllib.error import HTTPError
 import queue
-from PySide6.QtGui import QPixmap, QColor
+from PySide6.QtGui import QPixmap, QPainter, QPen, QColor
+
 from typing import List, Union
 from collections.abc import Callable
 from GridCal.Gui.Diagrams.MapWidget.Tiles.base_tiles import BaseTiles
@@ -57,13 +58,19 @@ StatusError = {401: 'Looks like you need to be authorised for this server.',
                429: 'You are asking for too many tiles.', }
 
 
+
+
+
+
+
+
 class Tiles(BaseTiles):
     """
     A tile object to source server tiles for the widget.
     """
 
     # allowed file types and associated values
-    AllowedFileTypes = {'png': 'PNG', 'jpg': 'JPG'}
+    AllowedFileTypes = {'png': 'PNG', 'jpg': 'JPG', 'pbf': 'PBF'}
 
     # the number of seconds in a day
     SecondsInADay = 60 * 60 * 24
@@ -149,10 +156,9 @@ class Tiles(BaseTiles):
 
         # compose the expected 'Content-Type' string on request result
         # if we get here we know the extension is in self.AllowedFileTypes
-        if tile_extension_lower == 'jpg':
-            self.content_type = 'image/jpeg'
-        elif tile_extension_lower == 'png':
-            self.content_type = 'image/png'
+        # if tile_extension_lower in ['png', 'jpg']:
+
+        self.content_type = 'image/png'
 
         # set the list of queued unsatisfied requests to 'empty'
         self.queued_requests = {}
@@ -165,6 +171,11 @@ class Tiles(BaseTiles):
         self.error_tile = QPixmap(256, 256)
         self.error_tile.fill(QColor.fromRgb(255, 0, 0, 255))
         # self.error_tile.loadFromData(std.getErrorImage())
+
+        # Usage
+        # pbf_file = "your_file.pbf"
+        # pixmap = render_pbf_to_pixmap(pbf_file)
+        # pixmap.save("output_map.png")
 
         # test for firewall - use proxy (if supplied)
         test_url = self.servers[0] + self.url_path.format(Z=0, X=0, Y=0)
@@ -209,12 +220,12 @@ class Tiles(BaseTiles):
             for num_thread in range(self.max_requests):
                 worker = TileWorker(id_num=num_thread,
                                     server=server,
-                                    tilepath=self.url_path,
+                                    tile_path=self.url_path,
                                     requests_cue=self.request_queue,
                                     callback=self.tile_is_available,
                                     error_tile=self.error_tile,
                                     content_type=self.content_type,
-                                    rerequest_age=self.rerequest_age,
+                                    re_request_age=self.rerequest_age,
                                     error_image=self.error_tile,
                                     refresh_tiles_after_days=60)
                 self.workers.append(worker)

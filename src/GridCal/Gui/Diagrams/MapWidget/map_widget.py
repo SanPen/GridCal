@@ -49,13 +49,13 @@ ygeo: latitude
 from __future__ import annotations
 from typing import List, Union, Tuple, Callable, TYPE_CHECKING
 from enum import Enum
-from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
+from PySide6.QtCore import Qt, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout,
                                QGraphicsSceneMouseEvent, QGraphicsItem, QLabel, QGraphicsProxyWidget)
-
+# from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 if TYPE_CHECKING:
@@ -451,6 +451,17 @@ class MapWidget(QWidget):
         self.view = MapView(scene=self.diagram_scene, map_widget=self)
         self.view.setBackgroundBrush(Qt.GlobalColor.transparent)
 
+        # self.opengl_widget = QOpenGLWidget()
+        # self.opengl_widget.update()
+        # # opengl_widget = TransparentOpenGLWidget()
+        # self.opengl_widget.setUpdateBehavior(QOpenGLWidget.UpdateBehavior.NoPartialUpdate)
+        # self.view.setViewport(self.opengl_widget)
+        # self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+        # self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        # self.view.setRenderHint(QPainter.RenderHint.TextAntialiasing)
+        # # self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
+        # self.view.setBackgroundBrush(Qt.GlobalColor.transparent)
+
         # -------------------------------------------------------------------------
         # Internal vars
         # -------------------------------------------------------------------------
@@ -510,13 +521,13 @@ class MapWidget(QWidget):
         self.setCursor(self.standard_cursor)
 
         # do a "resize" after this function
-        QTimer.singleShot(10, self.resizeEvent)
+        # QTimer.singleShot(10, self.resizeEvent)
 
         self.GotoLevelAndPosition(level=6,
                                   longitude=0,
                                   latitude=40)
 
-        # add the widgets in a leyered manner
+        # add the widgets in a layered manner
         # self.layout.addWidget(self.notice_widget)
         self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
 
