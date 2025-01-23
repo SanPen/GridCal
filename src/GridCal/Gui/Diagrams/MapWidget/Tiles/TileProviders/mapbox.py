@@ -71,7 +71,7 @@ class MapboxTiles(Tiles):
 
         return xtile, ytile
 
-    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
+    def Tile2Geo(self, x_tile: float, y_tile: float) -> Tuple[float, float]:
         """
         Convert tile fractional coordinates to geo for level in use.
 
@@ -83,8 +83,8 @@ class MapboxTiles(Tiles):
         """
 
         n = 2.0 ** self.level
-        xgeo = xtile / n * 360.0 - 180.0
-        yrad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
+        xgeo = x_tile / n * 360.0 - 180.0
+        yrad = math.atan(math.sinh(math.pi * (1 - 2 * y_tile / n)))
         ygeo = math.degrees(yrad)
 
         return xgeo, ygeo

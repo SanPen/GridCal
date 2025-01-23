@@ -35,33 +35,19 @@ import urllib
 from urllib import request
 from urllib.error import HTTPError
 import queue
-from PySide6.QtGui import QPixmap, QColor
-
 from typing import List, Union
 from collections.abc import Callable
+from warnings import warn
+from PySide6.QtGui import QPixmap, QColor
+
 from GridCal.Gui.Diagrams.MapWidget.Tiles.base_tiles import BaseTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tile_worker import TileWorker
-
-
-def log(val: str):
-    print(val)
 
 
 # # set how old disk-cache tiles can be before we re-request them from the
 # # server.  this is the number of days old a tile is before we re-request.
 # # if 'None', never re-request tiles after first satisfied request.
 # RefreshTilesAfterDays = 60
-
-# define the error messages for various failures
-StatusError = {401: 'Looks like you need to be authorised for this server.',
-               404: 'You might need to check the tile addressing for this server.',
-               429: 'You are asking for too many tiles.', }
-
-
-
-
-
-
 
 
 class Tiles(BaseTiles):
@@ -173,6 +159,11 @@ class Tiles(BaseTiles):
         self.error_tile = QPixmap(256, 256)
         self.error_tile.fill(QColor.fromRgb(255, 0, 0, 255))
 
+        # define the error messages for various failures
+        StatusError = {401: 'Looks like you need to be authorised for this server.',
+                       404: 'You might need to check the tile addressing for this server.',
+                       429: 'You are asking for too many tiles.', }
+
         # test for firewall - use proxy (if supplied)
         test_url = self.servers[0] + self.url_path.format(Z=0, X=0, Y=0)
         try:
@@ -182,15 +173,15 @@ class Tiles(BaseTiles):
         except HTTPError as e:
             # if it's fatal, log it and die, otherwise try a proxy
             status_code = e.code
-            log('Error: test_url=%s, status_code=%s' % (test_url, str(status_code)))
+            warn('Error: test_url=%s, status_code=%s' % (test_url, str(status_code)))
             error_msg = StatusError.get(status_code, None)
             if status_code:
                 msg = "\nYou got a " + str(status_code) + " (" + str(error_msg) + ") error from: " + str(test_url)
                 print(msg)
                 # raise RuntimeError(msg) from None
 
-            log('%s exception doing simple connection to: %s' % (type(e).__name__, test_url))
-            log(''.join(traceback.format_exc()))
+            warn('%s exception doing simple connection to: %s' % (type(e).__name__, test_url))
+            warn(''.join(traceback.format_exc()))
 
             if http_proxy:
                 proxy = request.ProxyHandler({'http': http_proxy})

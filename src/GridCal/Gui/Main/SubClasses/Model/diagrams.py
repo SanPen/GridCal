@@ -40,8 +40,6 @@ from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
-from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import OsmTiles
-from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_infra_map import OimTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -173,7 +171,7 @@ class DiagramsMain(CompiledArraysMain):
                 tiles_dir=os.path.join(tiles_path(), 'carto_db_dark_matter'),
                 tile_servers=["https://basemaps.cartocdn.com/dark_all/"]
             ),
-            OsmTiles(
+            CartoDbTiles(
                 name='Open Street Map',
                 tiles_dir=os.path.join(tiles_path(), 'osm'),
                 tile_servers=["https://tile.openstreetmap.org"]
@@ -1793,7 +1791,7 @@ class DiagramsMain(CompiledArraysMain):
                     call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation
                 )
 
-                # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+                # map_widget.go_to_level_and_position(5, -15.41, 40.11)
                 self.diagram_widgets_list.append(map_widget)
 
             else:

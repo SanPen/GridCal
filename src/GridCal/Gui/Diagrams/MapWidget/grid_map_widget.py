@@ -215,7 +215,7 @@ class GridMapWidget(BaseDiagramWidget):
                              position_callback=self.position_callback)
 
         # Any representation on the map must be done after this Goto Function
-        self.map.GotoLevelAndPosition(level=6, longitude=longitude, latitude=latitude)
+        self.map.go_to_level_and_position(level=6, longitude=longitude, latitude=latitude)
 
         # self.map.startLev = 6
         # self.map.startLat = 0

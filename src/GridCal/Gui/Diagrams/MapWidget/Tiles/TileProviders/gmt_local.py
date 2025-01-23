@@ -117,7 +117,7 @@ class GmtLocalTiles(BaseTiles):
 
         return tiles_x, tiles_y
 
-    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
+    def Tile2Geo(self, x_tile: float, y_tile: float) -> Tuple[float, float]:
         """Convert tile fractional coordinates to geo for level in use.
 
         tile  a tuple (xtile,ytile) of tile fractional coordinates
@@ -136,8 +136,8 @@ class GmtLocalTiles(BaseTiles):
         tdeg_y = self.tile_size_y / self.ppd_y
 
         # calculate the geo coordinates
-        xgeo = xtile * tdeg_x + min_xgeo
-        ygeo = max_ygeo - ytile * tdeg_y
+        xgeo = x_tile * tdeg_x + min_xgeo
+        ygeo = max_ygeo - y_tile * tdeg_y
 
         #        if self.wrap_x:
         #            while xgeo < min_xgeo:

@@ -72,8 +72,8 @@ class BaseTiles(object):
         self.ppd_y = 0
 
         # TODO: implement map wrap-around
-        #        self.wrap_x = False
-        #        self.wrap_y = False
+        self.wrap_x = False
+        self.wrap_y = False
 
         # setup the tile cache
         self.cache = TilesCache(tiles_dir=tiles_dir, max_lru=max_lru)
@@ -207,13 +207,13 @@ class BaseTiles(object):
         Tile coordinates are measured from map top-left.
         """
 
-        #        # if we are wrapping X or Y, get wrapped tile coords
-        #        if self.wrap_x:
-        #            x = (x + self.num_tiles_x*self.tile_size_x) % self.num_tiles_x
-        #        if self.wrap_y:
-        #            y = (y + self.num_tiles_y*self.tile_size_y) % self.num_tiles_y
+        # if we are wrapping X or Y, get wrapped tile coords
+        if self.wrap_x:
+            x = (x + self.num_tiles_x * self.tile_size_x) % self.num_tiles_x
+        if self.wrap_y:
+            y = (y + self.num_tiles_y * self.tile_size_y) % self.num_tiles_y
 
-        # retrieve the tile
+            # retrieve the tile
         try:
             # get tile from cache
             return self.cache[(self.level, x, y)]
@@ -254,7 +254,6 @@ class BaseTiles(object):
         """
         Return True if tile at (level, x, y) is on-disk.
         """
-
         raise Exception('You must override BaseTiles.tile_on_disk(level, x, y))')
 
     def setCallback(self, callback: Callable[[int, float, float, QPixmap, bool], None]):
@@ -262,9 +261,7 @@ class BaseTiles(object):
         Set the "tile available" callback function.
         Only used with internet tiles.  See "tiles_net.py".
         """
-
-        pass
-        # raise Exception('You must override BaseTiles.setCallback(callback))')
+        raise Exception('You must override BaseTiles.setCallback(callback))')
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[int, int]:
         """
@@ -277,12 +274,12 @@ class BaseTiles(object):
 
         raise Exception('You must override BaseTiles.Geo2Tile(xgeo, ygeo)')
 
-    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
+    def Tile2Geo(self, x_tile: float, y_tile: float) -> Tuple[float, float]:
         """
         Convert tile fractional coordinates to geo for level in use.
 
-        xtile  tile fractional X coordinate
-        ytile  tile fractional Y coordinate
+        :param x_tile:  tile fractional X coordinate
+        :param y_tile:  tile fractional Y coordinate
 
         Note that we assume the point *is* on the map!
         """
