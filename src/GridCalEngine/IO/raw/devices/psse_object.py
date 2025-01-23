@@ -26,10 +26,10 @@ def format_raw_float(value: float) -> str:
     Ensure the formatted string doesn't exceed 8 characters when possible.
     """
     # Attempt engineering format with 5 decimals
-    formatted = f"{value:.5e}"
+    formatted = f"{value:.5E}"
 
     # Split into mantissa and exponent
-    mantissa, exponent = formatted.split("e")
+    mantissa, exponent = formatted.split("E")
     exponent = int(exponent)
 
     # Adjust the exponent to a multiple of 3
@@ -37,10 +37,10 @@ def format_raw_float(value: float) -> str:
     eng_mantissa = float(mantissa) * (10 ** (exponent - eng_exponent))
 
     # Format the result
-    result = f"{eng_mantissa:.5f}e{eng_exponent:+03}"
+    result = f"{eng_mantissa:.5f}E{eng_exponent:+03}"
 
     # Ensure it fits within 8 characters
-    if len(result) <= 8:
+    if len(result) <= 11:
         return result
     else:
         # Fall back to a shorter general format if too long
@@ -114,7 +114,8 @@ class RawObject:
                           description: str = '',
                           max_chars=None,
                           min_value=-1e20,
-                          max_value=1e20):
+                          max_value=1e20,
+                          format_rule=None):
         """
         Register property of this object
         :param property_name:
@@ -136,7 +137,8 @@ class RawObject:
                                                                        description=description,
                                                                        max_chars=max_chars,
                                                                        min_value=min_value,
-                                                                       max_value=max_value)
+                                                                       max_value=max_value,
+                                                                       format_rule=format_rule)
         else:
             raise Exception('Property not found when trying to declare it :(')
 
@@ -180,7 +182,10 @@ class RawObject:
                     else:
                         lst.append(f"'{str_val}'")
                 elif prop.class_type == float:
-                    str_val = format_raw_float(value=val)
+                    if prop.format_rule is None:
+                        str_val = format_raw_float(value=val)
+                    else:
+                        str_val = f"{val:{prop.format_rule}}"
                     if prop.max_chars is not None:
                         lst.append(f"{str_val.rjust(prop.max_chars)}")
                     else:

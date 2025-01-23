@@ -534,7 +534,7 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
                                     value=section_name)
             if objects_list is not None:
                 for obj in objects_list:
-                    w.write(" " + obj.get_raw_line(version=version) + "\n")
+                    w.write(obj.get_raw_line(version=version) + "\n")
 
             prev_section = section_name
             s_count += 1
