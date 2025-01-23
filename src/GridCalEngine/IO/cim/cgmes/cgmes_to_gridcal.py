@@ -311,8 +311,8 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                              device_property="nominalVoltage")
         elif nominal_voltage is None:
             logger.add_error(msg='Nominal voltage is None. :(',
-                             device=cgmes_elm.rdfid,
-                             device_class=cgmes_elm.tpe,
+                             device=tp_node.rdfid,
+                             device_class=tp_node.tpe,
                              device_property="nominalVoltage")
             raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
 
@@ -2031,7 +2031,8 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
 
 
 def get_gcdev_substations(cgmes_model: CgmesCircuit,
-                          gcdev_model: MultiCircuit) -> None:
+                          gcdev_model: MultiCircuit,
+                          logger: DataLogger) -> None:
     """
     Convert the CGMES substations to gcdev substations
 
@@ -2060,8 +2061,13 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
                 )
 
             if cgmes_elm.Location:
-                longitude = cgmes_elm.Location.PositionPoints.xPosition
-                latitude = cgmes_elm.Location.PositionPoints.yPosition
+                try:
+                    longitude = float(cgmes_elm.Location.PositionPoints.xPosition)
+                    latitude = float(cgmes_elm.Location.PositionPoints.yPosition)
+                except ValueError:
+                    longitude = 0.0
+                    latitude = 0.0
+                    logger.add_error(msg="Cannot extract longitude or latitude value.")
             else:
                 latitude = 0.0
                 longitude = 0.0
@@ -2319,7 +2325,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     get_gcdev_community(cgmes_model, gc_model)
 
-    get_gcdev_substations(cgmes_model, gc_model)
+    get_gcdev_substations(cgmes_model, gc_model, logger)
 
     vl_dict = get_gcdev_voltage_levels(cgmes_model=cgmes_model,
                                        gcdev_model=gc_model,
