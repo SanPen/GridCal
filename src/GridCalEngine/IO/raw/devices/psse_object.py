@@ -46,6 +46,7 @@ def format_raw_float(value: float) -> str:
         # Fall back to a shorter general format if too long
         return f"{value:.5g}"
 
+
 class RawObject:
     """
     PSSeObject
