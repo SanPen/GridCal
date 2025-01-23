@@ -231,6 +231,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
             self.update_position_at_the_diagram()  # always update
 
+        # QGraphicsRectItem.mouseMoveEvent(self, event)
+        # pos = self.mapToParent(event.pos())
+        # x = pos.x() + self.rect().width() / 2
+        # y = pos.y() + self.rect().height() / 2
+        # self.set_callbacks(x, y)
+        # self.update_position_at_the_diagram()  # always update
+
+
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.

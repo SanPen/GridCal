@@ -78,13 +78,13 @@ class Place(Enum):
     CenterWest = "cw"
 
 
-class MapScene(QGraphicsScene):
+class MapDiagramScene(QGraphicsScene):
     """
     CustomScene
     """
 
     def __init__(self, parent: "MapWidget" = None) -> None:
-        super(MapScene, self).__init__(parent)
+        super(MapDiagramScene, self).__init__(parent)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.BspTreeIndex)  # For efficient item indexing
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -129,7 +129,7 @@ class MapView(QGraphicsView):
         """
         QGraphicsView.__init__(self, scene)
 
-        self._scene = scene
+        self._scene: QGraphicsScene = scene
 
         self.map_widget = map_widget
         self.setStyleSheet("QGraphicsView { border: none; }")
@@ -167,7 +167,12 @@ class MapView(QGraphicsView):
         initial_zoom_factor = 1.0
         self.schema_zoom = 1.0
 
+        self.drag_mode = QGraphicsView.DragMode.ScrollHandDrag
+        self.setDragMode(self.drag_mode)
+
         self.scale(initial_zoom_factor, initial_zoom_factor)
+
+        self.setRubberBandSelectionMode(Qt.ItemSelectionMode.IntersectsItemShape)
 
         self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.SmoothPixmapTransform)
 
@@ -195,6 +200,16 @@ class MapView(QGraphicsView):
         self.map_widget.mousePressEvent(event)
         self.pressed = True
         self.disable_move = False
+
+        # By pressing ctrl while dragging, we can move the grid
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.drag_mode = QGraphicsView.DragMode.RubberBandDrag
+            self.map_widget.block_movement = True
+        else:
+            self.drag_mode = QGraphicsView.DragMode.ScrollHandDrag
+            self.map_widget.block_movement = False
+
+        self.setDragMode(self.drag_mode)
 
         super().mousePressEvent(event)
 
@@ -428,15 +443,13 @@ class MapWidget(QWidget):
         :param tile_src: a Tiles object, source of tiles
         :param start_level: level to initially display
         :param zoom_callback: zoom change callback function
-        :param position_callback: position change change callback function
+        :param position_callback: position change callback function
         """
 
         QWidget.__init__(self, parent)  # inherit all parent object setup
 
-        # -------------------------------------------------------------------------
-        # Add the drawing layer
-        # -------------------------------------------------------------------------
-        self.diagram_scene = MapScene(self)
+        # this is where you draw
+        self.diagram_scene = MapDiagramScene(self)
 
         # pointer to the editor
         self.editor: GridMapWidget = editor
@@ -488,9 +501,10 @@ class MapWidget(QWidget):
         self.mouse_y: int = 0
 
         # state variables holding mouse buttons state
-        self.left_mbutton_down: bool = False
-        self.mid_mbutton_down: bool = False
-        self.right_mbutton_down: bool = False
+        self.left_button_down: bool = False
+        self.mid_button_down: bool = False
+        self.right_button_down: bool = False
+        self._block_movement: bool = False
 
         # keyboard state variables
         self.shift_down = False
@@ -532,6 +546,14 @@ class MapWidget(QWidget):
         self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
 
         self.setLayout(self.layout)  # Set the layout for the MapWidget
+
+    @property
+    def block_movement(self):
+        return self._block_movement
+
+    @block_movement.setter
+    def block_movement(self, value: bool):
+        self._block_movement = bool(value)
 
     @property
     def tile_src(self) -> Tiles:
@@ -666,30 +688,23 @@ class MapWidget(QWidget):
         :return:
         """
         super().mousePressEvent(event)
-        # click_x = event.x()
-        # click_y = event.y()
-
-        # assume we aren't dragging
-        # self.start_drag_x = None
-        # self.start_drag_y = None
 
         b = event.button()
         if b == Qt.MouseButton.NoButton:
             pass
 
         elif b == Qt.MouseButton.LeftButton:
-            self.left_mbutton_down = True
+            self.left_button_down = True
             self.editor.object_editor_table.setModel(None)
 
         elif b == Qt.MouseButton.MiddleButton:
-            self.mid_mbutton_down = True
+            self.mid_button_down = True
 
         elif b == Qt.MouseButton.RightButton:
-            self.right_mbutton_down = True
+            self.right_button_down = True
 
         else:
             pass
-            # print('mousePressEvent: unknown button')
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         """
@@ -711,7 +726,7 @@ class MapWidget(QWidget):
         if b == Qt.MouseButton.NoButton:
             pass
         elif b == Qt.MouseButton.LeftButton:
-            self.left_mbutton_down = False
+            self.left_button_down = False
 
             if self.start_drag_x is None:
                 # not dragging, possible point selection
@@ -725,10 +740,10 @@ class MapWidget(QWidget):
             self.position_callback(latitude, longitude, x, y)
 
         elif b == Qt.MouseButton.MiddleButton:
-            self.mid_mbutton_down = False
+            self.mid_button_down = False
 
         elif b == Qt.MouseButton.RightButton:
-            self.right_mbutton_down = False
+            self.right_button_down = False
 
         else:
             pass
@@ -760,59 +775,59 @@ class MapWidget(QWidget):
         If left mouse down, either drag the map or start a box selection.
         If we are off the map, ensure self.mouse_x, etc, are None.
         """
+        if not self.block_movement:
+            x = event.x()
+            y = event.y()
 
-        x = event.x()
-        y = event.y()
+            mouse_geo = self.view_to_geo(x, y)
 
-        mouse_geo = self.view_to_geo(x, y)
+            # update remembered mouse position in case of zoom
+            self.mouse_x = self.mouse_y = None
+            if mouse_geo:
+                self.mouse_x = x
+                self.mouse_y = y
 
-        # update remembered mouse position in case of zoom
-        self.mouse_x = self.mouse_y = None
-        if mouse_geo:
-            self.mouse_x = x
-            self.mouse_y = y
+            if self.left_button_down:
 
-        if self.left_mbutton_down:
+                # we are dragging
+                if self.start_drag_x is None:
+                    # start of drag, set drag state
+                    self.start_drag_x = x
+                    self.start_drag_y = y
 
-            # we are dragging
-            if self.start_drag_x is None:
-                # start of drag, set drag state
+                # we don't move much - less than a tile width/height
+                # drag the key tile in the X direction
+                delta_x = self.start_drag_x - x
+                self.key_tile_x_offset -= delta_x
+
+                if self.key_tile_x_offset < -self.tile_width:  # too far left
+                    self.key_tile_x_offset += self.tile_width
+                    self.key_tile_left += 1
+
+                if self.key_tile_x_offset > 0:  # too far right
+                    self.key_tile_x_offset -= self.tile_width
+                    self.key_tile_left -= 1
+
+                # drag the key tile in the Y direction
+                delta_y = self.start_drag_y - y
+                self.key_tile_y_offset -= delta_y
+
+                if self.key_tile_y_offset < -self.tile_height:  # too far up
+                    self.key_tile_y_offset += self.tile_height
+                    self.key_tile_top += 1
+
+                if self.key_tile_y_offset > 0:  # too far down
+                    self.key_tile_y_offset -= self.tile_height
+                    self.key_tile_top -= 1
+
+                # set key tile stuff so update() shows drag
+                self.rectify_key_tile()
+
+                # get ready for more drag
                 self.start_drag_x = x
                 self.start_drag_y = y
 
-            # we don't move much - less than a tile width/height
-            # drag the key tile in the X direction
-            delta_x = self.start_drag_x - x
-            self.key_tile_x_offset -= delta_x
-
-            if self.key_tile_x_offset < -self.tile_width:  # too far left
-                self.key_tile_x_offset += self.tile_width
-                self.key_tile_left += 1
-
-            if self.key_tile_x_offset > 0:  # too far right
-                self.key_tile_x_offset -= self.tile_width
-                self.key_tile_left -= 1
-
-            # drag the key tile in the Y direction
-            delta_y = self.start_drag_y - y
-            self.key_tile_y_offset -= delta_y
-
-            if self.key_tile_y_offset < -self.tile_height:  # too far up
-                self.key_tile_y_offset += self.tile_height
-                self.key_tile_top += 1
-
-            if self.key_tile_y_offset > 0:  # too far down
-                self.key_tile_y_offset -= self.tile_height
-                self.key_tile_top -= 1
-
-            # set key tile stuff so update() shows drag
-            self.rectify_key_tile()
-
-            # get ready for more drag
-            self.start_drag_x = x
-            self.start_drag_y = y
-
-            self.update()  # force a repaint
+                self.update()  # force a repaint
 
     def keyPressEvent(self, event: QKeyEvent):
         """Capture a key press."""

@@ -272,7 +272,7 @@ class CustomGraphicsView(QGraphicsView):
         super().__init__(scene)
         self._parent = parent
         self.drag_mode = QGraphicsView.DragMode.RubberBandDrag
-        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.setDragMode(self.drag_mode)
         self.setRubberBandSelectionMode(Qt.ItemSelectionMode.IntersectsItemShape)
         self.setMouseTracking(True)
         self.setInteractive(True)
@@ -372,7 +372,7 @@ class SchematicWidget(BaseDiagramWidget):
         # default_bus_voltage (KV)
         self.default_bus_voltage = default_bus_voltage
 
-        # Preffer the node breaker representation?
+        # Prefer the node breaker representation?
         self.prefer_node_breaker: bool = prefer_node_breaker
 
         # nodes distance "explosion" factor
