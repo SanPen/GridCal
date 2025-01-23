@@ -26,8 +26,8 @@ class GenericAreaGroup(EditableDevice):
                                 idtag=idtag,
                                 device_type=device_type)
 
-        self.latitude = latitude
-        self.longitude = longitude
+        self.latitude = float(latitude)
+        self.longitude = float(longitude)
 
         self.color = color if color is not None else self.rnd_color()
 

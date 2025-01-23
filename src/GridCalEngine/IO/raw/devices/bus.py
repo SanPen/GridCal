@@ -46,7 +46,8 @@ class RawBus(RawObject):
                                class_type=float,
                                description="Bus base voltage",
                                unit=Unit.get_kv(),
-                               min_value=0.0)
+                               min_value=0.0,
+                               format_rule=".4f")
 
         self.register_property(property_name="IDE",
                                rawx_key="ide",
@@ -83,7 +84,8 @@ class RawBus(RawObject):
                                description="Bus voltage magnitude",
                                unit=Unit.get_pu(),
                                min_value=0.0,
-                               max_value=2.0)
+                               max_value=2.0,
+                               format_rule=".5f")
 
         self.register_property(property_name="VA",
                                rawx_key="va",
@@ -91,31 +93,36 @@ class RawBus(RawObject):
                                description="Bus voltage angle",
                                unit=Unit.get_deg(),
                                min_value=0.0,
-                               max_value=360.0)
+                               max_value=360.0,
+                               format_rule=".4f")
 
         self.register_property(property_name="NVHI",
                                rawx_key="nvhi",
                                class_type=float,
                                description="Normal voltage magnitude high limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name="NVLO",
                                rawx_key="nvlo",
                                class_type=float,
                                description="Normal voltage magnitude low limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name="EVHI",
                                rawx_key="evhi",
                                class_type=float,
                                description="Emergency voltage magnitude high limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name="EVLO",
                                rawx_key="evlo",
                                class_type=float,
                                description="Emergency voltage magnitude low limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
     def parse(self, data, version, logger: Logger):
         """

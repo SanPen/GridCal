@@ -241,7 +241,7 @@ def get_psse_transformer2w(transformer: dev.Transformer2W,
 
     V1, V2 = transformer.get_from_to_nominal_voltages()
     psse_transformer.NOMV1 = V1
-    psse_transformer.NOMV2 = V2
+    psse_transformer.NOMV2 = V2 if V2 != V1 else 0.0
 
     psse_transformer.CZ = 1
     # 1 for resistance and reactance in pu on system MVA base and winding voltage base
@@ -297,7 +297,6 @@ def get_psse_transformer2w(transformer: dev.Transformer2W,
 
     else:
         pass
-
 
     return psse_transformer
 

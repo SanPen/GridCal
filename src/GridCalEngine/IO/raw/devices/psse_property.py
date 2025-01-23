@@ -21,7 +21,8 @@ class PsseProperty(BaseProperty):
                  description: str = '',
                  max_chars=None,
                  min_value=-1e20,
-                 max_value=1e20):
+                 max_value=1e20,
+                 format_rule=None):
 
         BaseProperty.__init__(self,
                               property_name=property_name,
@@ -34,6 +35,7 @@ class PsseProperty(BaseProperty):
                               max_value=max_value)
 
         self.rawx_key = rawx_key
+        self.format_rule = format_rule
 
     def __str__(self):
 

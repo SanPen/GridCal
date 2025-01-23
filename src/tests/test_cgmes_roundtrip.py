@@ -13,7 +13,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions
 from GridCalEngine.Simulations import PowerFlowOptions
 from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.enumerations import CGMESVersions, SimulationTypes, \
+    SolverType
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.api as gc
 
@@ -57,8 +58,8 @@ def get_power_flow_options() -> PowerFlowOptions:
     :return:
     """
     pfo = PowerFlowOptions(
-        # solver_type=SolverType.NR,
-        # retry_with_other_methods=True,
+        solver_type=SolverType.NR,
+        retry_with_other_methods=False,     # default: True
         # verbose=0,
         # initialize_with_existing_solution=False,
         # tolerance=1e-6,
@@ -102,6 +103,8 @@ def run_import_export_test(import_path: str | list[str],
     pf_options = get_power_flow_options()
     pf_results = gc.power_flow(circuit_1, pf_options)
 
+    assert pf_results.converged
+
     pf_session_data = DriverToSave(name="powerflow results",
                                    tpe=SimulationTypes.PowerFlow_run,
                                    results=pf_results,
@@ -129,7 +132,7 @@ def run_import_export_test(import_path: str | list[str],
     # COMPARING Multi Circuits ------------------------------------------------
     ok, logger = circuit_1.compare_circuits(circuit_2)
     if ok:
-        print("\nOK! SUCCESS for Multi Circuit!\n")
+        print("/nOK! SUCCESS for Multi Circuit!/n")
     else:
         logger.print()
 
@@ -178,13 +181,19 @@ def test_cgmes_roundtrip():
 
     :return:
     """
-    # test_grid_name = 'micro_grid_NL_T1.zip'
-    # boundary_set_name = 'micro_grid_BD.zip'
-
-    test_grid_name = 'micro_grid_assmb_base.zip'
+    test_grid_name = 'micro_grid_NL_T1.zip'
     boundary_set_name = 'micro_grid_BD.zip'
 
+    # PASSED
+    # test_grid_name = 'micro_grid_assmb_base.zip'
+    # boundary_set_name = 'micro_grid_BD.zip'
+
+    # Not PASSED ?
     # test_grid_name = 'TestConfigurations_packageCASv2.0/MicroGrid/Type2_T2/CGMES_v2.4.15_MicroGridTestConfiguration_T2_Assembled_Complete_v2.zip'
+    # boundary_set_name = 'micro_grid_BD.zip'
+
+    # PASSED
+    # test_grid_name = 'TestConfigurations_packageCASv2.0/MicroGrid/BaseCase_BC/CGMES_v2.4.15_MicroGridTestConfiguration_BC_Assembled_v2.zip'
     # boundary_set_name = 'micro_grid_BD.zip'
 
     # test_grid_name = 'IEEE 14 bus.zip'
