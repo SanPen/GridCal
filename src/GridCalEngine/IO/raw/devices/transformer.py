@@ -249,86 +249,100 @@ class RawTransformer(RawObject):
                                rawx_key='r1_2',
                                class_type=float,
                                description='1->2 resistance or other stuff',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5E")
 
         self.register_property(property_name='X1_2',
                                rawx_key='x1_2',
                                class_type=float,
                                description='1->2 reactance or other stuff',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5E")
 
         self.register_property(property_name='R2_3',
                                rawx_key='r2_3',
                                class_type=float,
                                description='2->3 resistance or other stuff',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5E")
 
         self.register_property(property_name='X2_3',
                                rawx_key='x2_3',
                                class_type=float,
                                description='2->3 reactance or other stuff',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5E")
 
         self.register_property(property_name='R3_1',
                                rawx_key='r3_1',
                                class_type=float,
                                description='3->1 resistance or other stuff',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5E")
 
         self.register_property(property_name='X3_1',
                                rawx_key='x3_1',
                                class_type=float,
                                description='3->1 reactance or other stuff',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5E")
 
         self.register_property(property_name='SBASE1_2',
                                rawx_key='sbase1_2',
                                class_type=float,
                                description='1->2 base power',
-                               unit=Unit.get_mvar())
+                               unit=Unit.get_mvar(),
+                               format_rule=".2f")
 
         self.register_property(property_name='SBASE2_3',
                                rawx_key='sbase2_3',
                                class_type=float,
                                description='2->3 base power',
-                               unit=Unit.get_mvar())
+                               unit=Unit.get_mvar(),
+                               format_rule=".2f")
 
         self.register_property(property_name='SBASE3_1',
                                rawx_key='sbase3_1',
                                class_type=float,
                                description='3->1 base power',
-                               unit=Unit.get_mvar())
+                               unit=Unit.get_mvar(),
+                               format_rule=".2f")
 
         self.register_property(property_name='VMSTAR',
                                rawx_key='vmstar',
                                class_type=float,
                                description='The voltage magnitude at the center star point',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name='ANSTAR',
                                rawx_key='anstar',
                                class_type=float,
                                description='The bus voltage phase angle at the center star point.',
-                               unit=Unit.get_deg())
+                               unit=Unit.get_deg(),
+                               format_rule=".4f")
 
         # --------------------------------------------------------------------------------------------------------------
 
         self.register_property(property_name='WINDV1',
                                rawx_key='windv1',
                                class_type=float,
-                               description='Winding 1 off-nominal turns ratio or other stuff')
+                               description='Winding 1 off-nominal turns ratio or other stuff',
+                               format_rule=".5f")
 
         self.register_property(property_name='NOMV1',
                                rawx_key='nomv1',
                                class_type=float,
                                description='Winding 1 voltage base in kV or other stuff',
-                               unit=Unit.get_kv())
+                               unit=Unit.get_kv(),
+                               format_rule=".3f")
 
         self.register_property(property_name='ANG1',
                                rawx_key='ang1',
-                               class_type=int,
+                               class_type=float,
                                description='Winding 1 phase shift angle in degrees.',
-                               unit=Unit.get_deg())
+                               unit=Unit.get_deg(),
+                               format_rule=".3f")
 
         self.register_property(property_name='COD1',
                                rawx_key='cod1',
@@ -352,22 +366,26 @@ class RawTransformer(RawObject):
         self.register_property(property_name='RMA1',
                                rawx_key='rma1',
                                class_type=float,
-                               description='Winding 1 upper limit depending of COD1 and CW')
+                               description='Winding 1 upper limit depending of COD1 and CW',
+                               format_rule=".5f")
 
         self.register_property(property_name='RMI1',
                                rawx_key='rmi1',
                                class_type=float,
-                               description='Winding 1 lower limit depending of COD1 and CW')
+                               description='Winding 1 lower limit depending of COD1 and CW',
+                               format_rule=".5f")
 
         self.register_property(property_name='VMA1',
                                rawx_key='vma1',
                                class_type=float,
-                               description='Winding 1 upper voltage limit depending of COD1.')
+                               description='Winding 1 upper voltage limit depending of COD1.',
+                               format_rule=".5f")
 
         self.register_property(property_name='VMI1',
                                rawx_key='vmi1',
                                class_type=float,
-                               description='Winding 1 lower voltage limit depending of COD1.')
+                               description='Winding 1 lower voltage limit depending of COD1.',
+                               format_rule=".5f")
 
         self.register_property(property_name='NTP1',
                                rawx_key='ntp1',
@@ -387,46 +405,53 @@ class RawTransformer(RawObject):
                                rawx_key='cr1',
                                class_type=float,
                                description='Winding 1 load drop compensation resistance',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name='CX1',
                                rawx_key='cx1',
                                class_type=float,
                                description='Winding 1 load drop compensation reactance',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name='CNXA1',
                                rawx_key='cnxa1',
-                               class_type=int,
+                               class_type=float,
                                description='',
                                min_value=0,
-                               max_value=999999)
+                               max_value=999999,
+                               format_rule=".3f")
 
         for i in range(1, 13):
             self.register_property(property_name='RATE1_{}'.format(i),
                                    rawx_key='wdg1rate{}'.format(i),
                                    class_type=float,
                                    description='Winding rating {}'.format(i),
-                                   unit=Unit.get_mva())
+                                   unit=Unit.get_mva(),
+                                   format_rule=".2f")
 
         # --------------------------------------------------------------------------------------------------------------
 
         self.register_property(property_name='WINDV2',
                                rawx_key='windv2',
                                class_type=float,
-                               description='Winding 2 off-nominal turns ratio or other stuff')
+                               description='Winding 2 off-nominal turns ratio or other stuff',
+                               format_rule=".5f")
 
         self.register_property(property_name='NOMV2',
                                rawx_key='nomv2',
                                class_type=float,
                                description='Winding 2 voltage base in kV or other stuff',
-                               unit=Unit.get_kv())
+                               unit=Unit.get_kv(),
+                               format_rule=".3f")
 
         self.register_property(property_name='ANG2',
                                rawx_key='ang2',
-                               class_type=int,
+                               class_type=float,
                                description='Winding 2 phase shift angle in degrees.',
-                               unit=Unit.get_deg())
+                               unit=Unit.get_deg(),
+                               format_rule=".3f")
 
         self.register_property(property_name='COD2',
                                rawx_key='cod2',
@@ -449,21 +474,25 @@ class RawTransformer(RawObject):
         self.register_property(property_name='RMA2',
                                rawx_key='rma2',
                                class_type=float,
-                               description='Winding 2 upper limit depending of COD1 and CW')
+                               description='Winding 2 upper limit depending of COD1 and CW',
+                               format_rule=".5f")
         self.register_property(property_name='RMI2',
                                rawx_key='rmi2',
                                class_type=float,
-                               description='Winding 2 lower limit depending of COD1 and CW')
+                               description='Winding 2 lower limit depending of COD1 and CW',
+                               format_rule=".5f")
 
         self.register_property(property_name='VMA2',
                                rawx_key='vma2',
                                class_type=float,
-                               description='Winding 2 upper voltage limit depending of COD1.')
+                               description='Winding 2 upper voltage limit depending of COD1.',
+                               format_rule=".5f")
 
         self.register_property(property_name='VMI2',
                                rawx_key='vmi2',
                                class_type=float,
-                               description='Winding 2 lower voltage limit depending of COD1.')
+                               description='Winding 2 lower voltage limit depending of COD1.',
+                               format_rule=".5f")
 
         self.register_property(property_name='NTP2',
                                rawx_key='ntp2',
@@ -481,44 +510,51 @@ class RawTransformer(RawObject):
                                rawx_key='cr2',
                                class_type=float,
                                description='Winding 2 load drop compensation resistance',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
         self.register_property(property_name='CX2',
                                rawx_key='cx2',
                                class_type=float,
                                description='Winding 1 load drop compensation reactance',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
         self.register_property(property_name='CNXA2',
                                rawx_key='cnxa2',
-                               class_type=int,
+                               class_type=float,
                                description='',
                                min_value=0,
-                               max_value=999999)
+                               max_value=999999,
+                               format_rule=".3f")
 
         for i in range(1, 13):
             self.register_property(property_name='RATE2_{}'.format(i),
                                    rawx_key='wdg2rate{}'.format(i),
                                    class_type=float,
                                    description='Winding rating',
-                                   unit=Unit.get_mva())
+                                   unit=Unit.get_mva(),
+                                   format_rule=".2f")
 
         # --------------------------------------------------------------------------------------------------------------
 
         self.register_property(property_name='WINDV3',
                                rawx_key='windv3',
                                class_type=float,
-                               description='Winding 3 off-nominal turns ratio or other stuff')
+                               description='Winding 3 off-nominal turns ratio or other stuff',
+                               format_rule=".5f")
 
         self.register_property(property_name='NOMV3',
                                rawx_key='nomv3',
                                class_type=float,
                                description='Winding 3 voltage base in kV or other stuff',
-                               unit=Unit.get_kv())
+                               unit=Unit.get_kv(),
+                               format_rule=".3f")
 
         self.register_property(property_name='ANG3',
                                rawx_key='ang3',
-                               class_type=int,
+                               class_type=float,
                                description='Winding 3 phase shift angle in degrees.',
-                               unit=Unit.get_deg())
+                               unit=Unit.get_deg(),
+                               format_rule=".3f")
 
         self.register_property(property_name='COD3',
                                rawx_key='cod3',
@@ -542,22 +578,26 @@ class RawTransformer(RawObject):
         self.register_property(property_name='RMA3',
                                rawx_key='rma3',
                                class_type=float,
-                               description='Winding 3 upper limit depending of COD1 and CW')
+                               description='Winding 3 upper limit depending of COD1 and CW',
+                               format_rule=".5f")
 
         self.register_property(property_name='RMI3',
                                rawx_key='rmi3',
                                class_type=float,
-                               description='Winding 3 lower limit depending of COD1 and CW')
+                               description='Winding 3 lower limit depending of COD1 and CW',
+                               format_rule=".5f")
 
         self.register_property(property_name='VMA3',
                                rawx_key='vma3',
                                class_type=float,
-                               description='Winding 3 upper voltage limit depending of COD1.')
+                               description='Winding 3 upper voltage limit depending of COD1.',
+                               format_rule=".5f")
 
         self.register_property(property_name='VMI3',
                                rawx_key='vmi3',
                                class_type=float,
-                               description='Winding 3 lower voltage limit depending of COD1.')
+                               description='Winding 3 lower voltage limit depending of COD1.',
+                               format_rule=".5f")
 
         self.register_property(property_name='NTP3',
                                rawx_key='ntp3',
@@ -577,27 +617,31 @@ class RawTransformer(RawObject):
                                rawx_key='cr3',
                                class_type=float,
                                description='Winding 3 load drop compensation resistance',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name='CX3',
                                rawx_key='cx3',
                                class_type=float,
                                description='Winding 3 load drop compensation reactance',
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name='CNXA3',
                                rawx_key='cnxa3',
-                               class_type=int,
+                               class_type=float,
                                description='',
                                min_value=0,
-                               max_value=999999)
+                               max_value=999999,
+                               format_rule=".3f")
 
         for i in range(1, 13):
             self.register_property(property_name='RATE3_{}'.format(i),
                                    rawx_key='wdg3rate{}'.format(i),
                                    class_type=float,
                                    description='Winding 3 rating {}'.format(i),
-                                   unit=Unit.get_mva())
+                                   unit=Unit.get_mva(),
+                                   format_rule=".2f")
 
         # --------------------------------------------------------------------------------------------------------------
         for i in range(4):
@@ -614,7 +658,8 @@ class RawTransformer(RawObject):
                                    class_type=float,
                                    description="Ownership fraction {}".format(i + 1),
                                    min_value=0.0,
-                                   max_value=1.0)
+                                   max_value=1.0,
+                                   format_rule=".4f")
 
     def parse(self, data, version, logger: Logger):
         """
