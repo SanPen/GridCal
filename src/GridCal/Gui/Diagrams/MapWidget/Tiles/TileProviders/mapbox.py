@@ -39,9 +39,9 @@ class MapboxTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='ModestMaps Tiles',
-                         TilesetShortName='MM Tiles',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name='ModestMaps Tiles',
+                         tile_set_short_name='MM Tiles',
+                         tile_set_version='1.0',
                          levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,

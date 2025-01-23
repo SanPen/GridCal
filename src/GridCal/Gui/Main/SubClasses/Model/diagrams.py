@@ -184,9 +184,9 @@ class DiagramsMain(CompiledArraysMain):
             #     tile_servers=["https://openinframap.org/tiles"]
             # )
         ]
-        tile_names = [tile.TilesetName for tile in self.tile_sources]
-        self.tile_index_dict = {tile.TilesetName: i for i, tile in enumerate(self.tile_sources)}
-        self.tile_name_dict = {tile.TilesetName: tile for tile in self.tile_sources}
+        tile_names = [tile.tile_set_name for tile in self.tile_sources]
+        self.tile_index_dict = {tile.tile_set_name: i for i, tile in enumerate(self.tile_sources)}
+        self.tile_name_dict = {tile.tile_set_name: tile for tile in self.tile_sources}
         self.ui.tile_provider_comboBox.setModel(gf.get_list_model(tile_names))
         self.ui.tile_provider_comboBox.setCurrentIndex(0)
 
@@ -1959,7 +1959,7 @@ class DiagramsMain(CompiledArraysMain):
 
         if isinstance(widget, GridMapWidget):
             self.ui.tile_provider_comboBox.setEnabled(True)
-            self.ui.tile_provider_comboBox.setCurrentIndex(self.tile_index_dict[widget.map.tile_src.TilesetName])
+            self.ui.tile_provider_comboBox.setCurrentIndex(self.tile_index_dict[widget.map.tile_src.tile_set_name])
         else:
             self.ui.tile_provider_comboBox.setEnabled(False)
 

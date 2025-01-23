@@ -550,7 +550,7 @@ class MapWidget(QWidget):
 
         level, longitude, latitude = self.get_level_and_position()
 
-        if tile_src.TilesetName != self._tile_src.TilesetName:  # avoid changing tilesets to themselves
+        if tile_src.tile_set_name != self._tile_src.tile_set_name:  # avoid changing tilesets to themselves
             self._tile_src: Tiles = tile_src
             self._tile_src.setCallback(self.on_tile_available)
             self.view.set_notice(val=self._tile_src.attribution_string)
@@ -703,7 +703,6 @@ class MapWidget(QWidget):
 
         x = event.x()
         y = event.y()
-        clickpt_v = (x, y)
 
         # cursor back to normal in case it was a box select
         self.setCursor(self.default_cursor)
@@ -717,7 +716,7 @@ class MapWidget(QWidget):
             if self.start_drag_x is None:
                 # not dragging, possible point selection
                 # get click point in view & global coords
-                clickpt_g = self.view_to_geo(x, y)
+                self.view_to_geo(x, y)
 
             # turn off dragging, if we were
             self.start_drag_x = self.start_drag_y = None
@@ -1489,7 +1488,7 @@ class MapWidget(QWidget):
 
         return x, y
 
-    def zoom_level(self, level: int, view_x: int = None, view_y: int = None):
+    def zoom_level(self, level: int, view_x: float | None = None, view_y: float | None = None):
         """Zoom to a map level.
 
         level  map level to zoom to
@@ -1523,11 +1522,6 @@ class MapWidget(QWidget):
 
             # move to new level
             self.tile_src.GetInfo(level)
-
-            # self.num_tiles_x, self.num_tiles_y, _, _ = self.tile_src.GetInfo(level)
-            # self.map_width = self.num_tiles_x * self.tile_width
-            # self.map_height = self.num_tiles_y * self.tile_height
-            # self.map_llon, self.map_rlon, self.map_blat, self.map_tlat = self.tile_src.extent
 
             # finally, pan to original map centre (updates widget)
             self.pan_position(longitude, latitude, view_x, view_y)

@@ -48,9 +48,9 @@ class OimTiles(Tiles):
         """
         # https://openinframap.org/tiles/{z}/{x}/{y}.pbf
         super().__init__(
-            TilesetName=name,
-            TilesetShortName='OSM Tiles',
-            TilesetVersion='1.0',
+            tile_set_name=name,
+            tile_set_short_name='OSM Tiles',
+            tile_set_version='1.0',
             levels=list(range(20)),
             tile_width=256,
             tile_height=256,

@@ -45,9 +45,9 @@ class BlueMarbleTiles(Tiles):
         """
 
         Tiles.__init__(self,
-                       TilesetName=name,
-                       TilesetShortName='BM Tiles',
-                       TilesetVersion='1.0',
+                       tile_set_name=name,
+                       tile_set_short_name='BM Tiles',
+                       tile_set_version='1.0',
                        levels=list(range(10)),
                        tile_width=256,
                        tile_height=256,

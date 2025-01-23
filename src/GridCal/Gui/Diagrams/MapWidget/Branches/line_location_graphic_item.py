@@ -232,13 +232,7 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         # Implement the functionality for Action 1 here
         self.editor.remove_line_location_graphic(self)
 
-    def MergeFunction(self):
-        """
 
-        :return:
-        """
-        self.editor.merge_lines()
-        pass
 
     def setNodeColor(self, inner_color: QColor, border_color: QColor = None) -> None:
         """

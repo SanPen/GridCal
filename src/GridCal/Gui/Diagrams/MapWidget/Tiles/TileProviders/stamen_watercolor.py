@@ -41,9 +41,9 @@ class StamenWatercolorTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='Stamen Watercolor Tiles',
-                         TilesetShortName='STMW Tiles',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name='Stamen Watercolor Tiles',
+                         tile_set_short_name='STMW Tiles',
+                         tile_set_version='1.0',
                          levels=list(range(16)),
                          tile_width=256,
                          tile_height=256,

@@ -474,6 +474,14 @@ class NumericalCircuit:
         """
         return self.__topology_performed
 
+
+    def get_reduction_bus_mapping(self) -> IntVec:
+        """
+        Get array is used to keep track of the bus topological reduction
+        :return: IntVec
+        """
+        return self.__bus_map_arr
+
     def get_power_injections(self) -> CxVec:
         """
         Compute the power

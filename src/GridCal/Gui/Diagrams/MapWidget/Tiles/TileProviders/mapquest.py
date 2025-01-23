@@ -39,9 +39,9 @@ class MapquestTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='MapQuest Tiles',
-                         TilesetShortName='MQ Tiles',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name='MapQuest Tiles',
+                         tile_set_short_name='MQ Tiles',
+                         tile_set_version='1.0',
                          levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,

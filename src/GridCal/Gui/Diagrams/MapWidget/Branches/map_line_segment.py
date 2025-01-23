@@ -385,7 +385,7 @@ class MapLineSegment(QGraphicsLineItem):
             self.editor.circuit.delete_branch(obj=self.api_object)
             self.editor.delete_diagram_element(device=self.api_object)
 
-    def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
+    def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """
         Set the arrow directions
         :param Sf: Complex power from

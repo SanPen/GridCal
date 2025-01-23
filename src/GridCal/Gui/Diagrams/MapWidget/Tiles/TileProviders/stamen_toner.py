@@ -41,9 +41,9 @@ class StamenTonerTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='Stamen Toner Tiles',
-                         TilesetShortName='STMT Tiles',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name='Stamen Toner Tiles',
+                         tile_set_short_name='STMT Tiles',
+                         tile_set_version='1.0',
                          levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,

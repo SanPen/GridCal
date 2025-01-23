@@ -468,7 +468,7 @@ class MapLineContainer(GenericDiagramWidget):
         for line in self.segments_list:
             line.set_enable(val=False)
 
-    def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
+    def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """
 
         :param Sf:

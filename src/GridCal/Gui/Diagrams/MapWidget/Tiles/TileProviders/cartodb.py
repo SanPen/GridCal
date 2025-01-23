@@ -46,9 +46,9 @@ class CartoDbTiles(Tiles):
         :param tile_servers:
         """
 
-        super().__init__(TilesetName=name,
-                         TilesetShortName='CartoDb Dark Matter',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name=name,
+                         tile_set_short_name='CartoDb Dark Matter',
+                         tile_set_version='1.0',
                          levels=list(range(22)),
                          tile_width=256,
                          tile_height=256,

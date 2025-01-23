@@ -46,19 +46,15 @@ class OsmTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName=name,
-                         TilesetShortName='OSM Tiles',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name=name,
+                         tile_set_short_name='OSM Tiles',
+                         tile_set_version='1.0',
                          levels=list(range(20)),
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,
                          servers=[
-                             # 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all',
                              'https://tile.openstreetmap.org',
-                             # 'https://a.tile.openstreetmap.org',
-                             # 'https://b.tile.openstreetmap.org',
-                             # 'https://c.tile.openstreetmap.org',
                          ] if tile_servers is None else tile_servers,
                          url_path='/{Z}/{X}/{Y}.png',
                          max_server_requests=2,
@@ -66,8 +62,8 @@ class OsmTiles(Tiles):
                          http_proxy=http_proxy,
                          attribution="© OpenStreetMap contributors")
         # TODO: implement map wrap-around
-        #        self.wrap_x = True
-        #        self.wrap_y = False
+        self.wrap_x = True
+        self.wrap_y = False
 
         # get tile information into instance
         self.level = min(self.levels)
