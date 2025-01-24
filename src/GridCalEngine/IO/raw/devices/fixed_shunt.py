@@ -24,7 +24,8 @@ class RawFixedShunt(RawObject):
                                class_type=int,
                                description="Bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="ID",
                                rawx_key="shntid",
@@ -66,7 +67,7 @@ class RawFixedShunt(RawObject):
     def get_raw_line(self, version):
 
         if version >= 29:
-            return self.format_raw_line([self.I, self.ID, self.STATUS, self.GL, self.BL])
+            return self.format_raw_line(["I", "ID", "STATUS", "GL", "BL"])
         else:
             raise Exception('Shunt not implemented for the version ' + str(version))
 

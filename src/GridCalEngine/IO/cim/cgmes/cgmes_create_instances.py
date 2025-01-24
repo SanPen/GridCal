@@ -122,7 +122,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
     fm_list[2].profile = profile_uris.get("TP")
     fm_list[3].profile = profile_uris.get("SV")
     fm_list[4].profile = profile_uris.get("GL")
-    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:  # if 2.4 than no need in SV in 3.0 we need all
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15 and len(mas_names) > 1:
+        # if 2.4 than no need in SV in 3.0 we need all
         fm_list[3].modelingAuthoritySet = None
 
     # DependentOn

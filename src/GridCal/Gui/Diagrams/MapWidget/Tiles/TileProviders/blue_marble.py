@@ -45,9 +45,9 @@ class BlueMarbleTiles(Tiles):
         """
 
         Tiles.__init__(self,
-                       TilesetName=name,
-                       TilesetShortName='BM Tiles',
-                       TilesetVersion='1.0',
+                       tile_set_name=name,
+                       tile_set_short_name='BM Tiles',
+                       tile_set_version='1.0',
                        levels=list(range(10)),
                        tile_width=256,
                        tile_height=256,
@@ -76,7 +76,7 @@ class BlueMarbleTiles(Tiles):
 
         return xtile, ytile
 
-    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
+    def Tile2Geo(self, x_tile: float, y_tile: float) -> Tuple[float, float]:
         """Convert tile fractional coordinates to geo for level in use.
 
         tile  a tupl;e (xtile,ytile) of tile fractional coordinates
@@ -86,8 +86,8 @@ class BlueMarbleTiles(Tiles):
         Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
         n = 2.0 ** self.level
-        xgeo = xtile / n * 360.0 - 180.0
-        yrad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
+        xgeo = x_tile / n * 360.0 - 180.0
+        yrad = math.atan(math.sinh(math.pi * (1 - 2 * y_tile / n)))
         ygeo = math.degrees(yrad)
 
         return xgeo, ygeo

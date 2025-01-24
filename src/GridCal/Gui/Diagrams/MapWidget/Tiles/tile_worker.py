@@ -28,11 +28,10 @@ For example, see osm_tiles.py.
 """
 import queue
 import ssl
-# from urllib import request
 from urllib.request import Request, urlopen
 from collections.abc import Callable
-from PySide6.QtGui import QPixmap
 from PySide6.QtCore import QThread
+from PySide6.QtGui import QPixmap
 
 # SSL magic to solve the certificates hell
 # https://stackoverflow.com/questions/68275857/urllib-error-urlerror-urlopen-error-ssl-certificate-verify-failed-certifica
@@ -43,18 +42,86 @@ def log(val: str):
     print(val)
 
 
+
+
+# class OsmHandler(osm.SimpleHandler):
+#     def __init__(self):
+#         super().__init__()
+#         self.nodes = []
+#         self.ways = []
+#
+#     def node(self, n):
+#         self.nodes.append((n.location.lat, n.location.lon))
+#
+#     def way(self, w):
+#         self.ways.append([node.ref for node in w.nodes])
+#
+#
+# def render_pbf_to_pixmap(pbf_file: str, width=800, height=800) -> QPixmap:
+#     """
+#
+#     :param pbf_file:
+#     :param width:
+#     :param height:
+#     :return:
+#     """
+#     # Parse the .pbf file
+#     handler = OsmHandler()
+#     handler.apply_file(pbf_file)
+#
+#     # Setup Mercator projection
+#     mercator_proj = Proj("epsg:3857")
+#
+#     # Create a QPixmap and painter
+#     pixmap = QPixmap(width, height)
+#     pixmap.fill(Qt.GlobalColor.white)
+#     painter = QPainter(pixmap)
+#     painter.setPen(QPen(Qt.GlobalColor.black, 1))
+#
+#     # Scale coordinates to fit the pixmap
+#     bounds = {
+#         'min_x': float('inf'), 'max_x': float('-inf'),
+#         'min_y': float('inf'), 'max_y': float('-inf')
+#     }
+#     transformed_nodes = []
+#
+#     for lat, lon in handler.nodes:
+#         x, y = mercator_proj(lon, lat)
+#         transformed_nodes.append((x, y))
+#         bounds['min_x'] = min(bounds['min_x'], x)
+#         bounds['max_x'] = max(bounds['max_x'], x)
+#         bounds['min_y'] = min(bounds['min_y'], y)
+#         bounds['max_y'] = max(bounds['max_y'], y)
+#
+#     x_range = bounds['max_x'] - bounds['min_x']
+#     y_range = bounds['max_y'] - bounds['min_y']
+#     scale_x = width / x_range if x_range else 1
+#     scale_y = height / y_range if y_range else 1
+#     scale = min(scale_x, scale_y)
+#
+#     # Render nodes as points
+#     for x, y in transformed_nodes:
+#         scaled_x = int((x - bounds['min_x']) * scale)
+#         scaled_y = int((y - bounds['min_y']) * scale)
+#         painter.drawPoint(scaled_x, height - scaled_y)  # Flip y-axis for Qt's coordinate system
+#
+#     # Close the painter
+#     painter.end()
+#     return pixmap
+
+
 class TileWorker(QThread):
     """Thread class that gets request from queue, loads tile, calls callback."""
 
     def __init__(self,
                  id_num: int,
                  server: str,
-                 tilepath: str,
+                 tile_path: str,
                  requests_cue: queue.Queue,
                  callback: Callable[[int, float, float, QPixmap, bool], None],  # level, x, y, pixmap, error
                  error_tile: QPixmap,
                  content_type: str,
-                 rerequest_age: float,
+                 re_request_age: float,
                  error_image: QPixmap,
                  refresh_tiles_after_days=60):
         """
@@ -62,12 +129,12 @@ class TileWorker(QThread):
         Results are returned in the callback() params.
         :param id_num: a unique numer identifying the worker instance
         :param server: server URL
-        :param tilepath: path to tile on server
+        :param tile_path: path to tile on server
         :param requests_cue: the request queue
         :param callback: function to call after tile available
         :param error_tile: image of error tile
         :param content_type: expected Content-Type string
-        :param rerequest_age: number of days in tile age before re-requesting (0 means don't update tiles)
+        :param re_request_age: number of days in tile age before re-requesting (0 means don't update tiles)
         :param error_image: the image to return on some error
         :param refresh_tiles_after_days:
         """
@@ -76,12 +143,12 @@ class TileWorker(QThread):
 
         self.id_num = id_num
         self.server = server
-        self.tilepath = tilepath
+        self.tile_path = tile_path
         self.requests_cue = requests_cue
         self.callback: Callable[[int, float, float, QPixmap, bool], None] = callback
         self.error_tile_image = error_tile
         self.content_type = content_type
-        self.rerequest_age = rerequest_age
+        self.re_request_age = re_request_age
         self.error_image = error_image
         self.daemon = True
         self.refresh_tiles_after_days = refresh_tiles_after_days
@@ -98,7 +165,7 @@ class TileWorker(QThread):
             # try to retrieve the image
             error = False
             pixmap = self.error_image
-            tile_url = self.server + self.tilepath.format(Z=level, X=x, Y=y)
+            tile_url = self.server + self.tile_path.format(Z=level, X=x, Y=y)
             try:
 
                 # Create a Request object with the desired headers

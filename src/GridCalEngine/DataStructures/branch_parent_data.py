@@ -79,6 +79,38 @@ class BranchParentData:
         data = np.ones(self.nelm, dtype=int)
         return sp.coo_matrix((data, (i, self.T)), shape=(self.nelm, self.nbus), dtype=int).tocsc()
 
+
+    def monitored_Cf(self, idx) -> sp.csc_matrix: # TODO: @Carlos: Ganancia marginal al coger solo los monitorizados. Por ver si es relevante.
+        """
+        Bras-bus from connectivity for monitored branches
+        :param idx: Monitored branches ids
+        :return:
+        """
+        # mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        # for k in range(self.nelm):
+        #     mat[k, self.F[k]] = 1
+        # return mat.tocsc()
+        nelm = len(idx)
+        i = np.arange(nelm, dtype=int)
+        data = np.ones(nelm, dtype=int)
+        return sp.coo_matrix((data, (i, self.F[idx])), shape=(nelm, self.nbus), dtype=int).tocsc()
+
+    def monitored_Ct(self, idx) -> sp.csc_matrix:
+        """
+        Bras-bus to connectivity for monitored branches
+        :param idx: Monitored branches ids
+        :return:
+        """
+        # mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
+        # for k in range(self.nelm):
+        #     mat[k, self.T[k]] = 1
+        # return mat.tocsc()
+        nelm = len(idx)
+        i = np.arange(nelm, dtype=int)
+        data = np.ones(nelm, dtype=int)
+        return sp.coo_matrix((data, (i, self.T[idx])), shape=(nelm, self.nbus), dtype=int).tocsc()
+
+
     @property
     def C(self) -> sp.csc_matrix:
         """

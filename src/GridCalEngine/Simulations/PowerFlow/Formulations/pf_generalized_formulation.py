@@ -453,6 +453,49 @@ def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
     return St_cbr
 
 
+@njit(cache=True)
+def calc_flows_summation_per_bus(nbus: int,
+                                 F_br: IntVec, T_br: IntVec, Sf_br: CxVec, St_br: CxVec,
+                                 F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
+                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
+    """
+    Summation of magnitudes per bus (complex)
+    :param nbus:
+    :param F_br:
+    :param T_br:
+    :param Sf_br:
+    :param St_br:
+    :param F_hvdc:
+    :param T_hvdc:
+    :param Sf_hvdc:
+    :param St_hvdc:
+    :param F_vsc:
+    :param T_vsc:
+    :param Pf_vsc:
+    :param St_vsc:
+    :return:
+    """
+
+    res = np.zeros(nbus, dtype=np.complex128)
+
+    # Add branches
+    for i in range(len(F_br)):
+        res[F_br[i]] += Sf_br[i]
+        res[T_br[i]] += St_br[i]
+
+    # Add HVDC
+    for i in range(len(F_hvdc)):
+        res[F_hvdc[i]] += Sf_hvdc[i]
+        res[T_hvdc[i]] += St_hvdc[i]
+
+    # Add VSC
+    for i in range(len(F_vsc)):
+        res[F_vsc[i]] += Pf_vsc[i]
+        res[T_vsc[i]] += St_vsc[i]
+
+    return res
+
+
 def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
     """
     Compute the Jacobian matrix of `func` at `x` using finite differences.
@@ -790,151 +833,76 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             elif control1 == ConverterControlType.Vm_dc and control2 == ConverterControlType.Vm_ac:
                 if control1_bus_device > -1:
-                    # self.is_p_controlled[control1_bus_device] = True
-                    # self.is_q_controlled[control1_bus_device] = True
                     self.is_vm_controlled[control1_bus_device] = True
-                    # self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
-                    # self.is_p_controlled[control2_bus_device] = True
-                    # self.is_q_controlled[control2_bus_device] = True
                     self.is_vm_controlled[control2_bus_device] = True
-                    # self.is_va_controlled[control2_bus_device] = True
+                u_vsc_pf.append(k)
+                u_vsc_pt.append(k)
+                u_vsc_qt.append(k)
 
             elif control1 == ConverterControlType.Vm_dc and control2 == ConverterControlType.Va_ac:
                 if control1_bus_device > -1:
-                    # self.is_p_controlled[control1_bus_device] = True
-                    # self.is_q_controlled[control1_bus_device] = True
                     self.is_vm_controlled[control1_bus_device] = True
-                    # self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
-                    # self.is_p_controlled[control2_bus_device] = True
-                    # self.is_q_controlled[control2_bus_device] = True
-                    # self.is_vm_controlled[control2_bus_device] = True
                     self.is_va_controlled[control2_bus_device] = True
+                u_vsc_pf.append(k)
+                u_vsc_pt.append(k)
+                u_vsc_qt.append(k)
+
 
             elif control1 == ConverterControlType.Vm_dc and control2 == ConverterControlType.Qac:
                 if control1_bus_device > -1:
-                    # self.is_p_controlled[control1_bus_device] = True
-                    # self.is_q_controlled[control1_bus_device] = True
                     self.is_vm_controlled[control1_bus_device] = True
-                    # self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
-                    # self.is_p_controlled[control2_bus_device] = True
-                    # self.is_q_controlled[control2_bus_device] = True
-                    # self.is_vm_controlled[control2_bus_device] = True
-                    # self.is_va_controlled[control2_bus_device] = True
                     pass
                 if control1_branch_device > -1:
-                    # self.u_vsc_pf.append(control1_branch_device)
-                    # self.u_vsc_pt.append(control1_branch_device)
-                    # self.u_vsc_qt.append(control1_branch_device)
-
-                    # self.k_vsc_pf.append(control1_branch_device)
-                    # self.k_vsc_pt.append(control1_branch_device)
-                    # self.k_vsc_qt.append(control1_branch_device)
-
-                    # self.vsc_pf_set.append(control1_magnitude)
-                    # self.vsc_pt_set.append(control1_magnitude)
-                    # self.vsc_qt_set.append(control1_magnitude)
                     pass
                 if control2_branch_device > -1:
                     u_vsc_pf.append(control2_branch_device)
                     u_vsc_pt.append(control2_branch_device)
-                    # self.u_vsc_qt.append(control2_branch_device)
 
-                    # self.k_vsc_pf.append(control2_branch_device)
-                    # self.k_vsc_pt.append(control2_branch_device)
                     k_vsc_qt.append(control2_branch_device)
 
-                    # self.vsc_pf_set.append(control2_magnitude)
-                    # self.vsc_pt_set.append(control2_magnitude)
                     vsc_qt_set.append(control2_magnitude)
 
             elif control1 == ConverterControlType.Vm_dc and control2 == ConverterControlType.Pdc:
                 if control1_bus_device > -1:
-                    # self.is_p_controlled[control1_bus_device] = True
-                    # self.is_q_controlled[control1_bus_device] = True
                     self.is_vm_controlled[control1_bus_device] = True
-                    # self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
-                    # self.is_p_controlled[control2_bus_device] = True
-                    # self.is_q_controlled[control2_bus_device] = True
-                    # self.is_vm_controlled[control2_bus_device] = True
-                    # self.is_va_controlled[control2_bus_device] = True
                     pass
                 if control1_branch_device > -1:
-                    # self.u_vsc_pf.append(control1_branch_device)
-                    # self.u_vsc_pt.append(control1_branch_device)
-                    # self.u_vsc_qt.append(control1_branch_device)
-
-                    # self.k_vsc_pf.append(control1_branch_device)
-                    # self.k_vsc_pt.append(control1_branch_device)
-                    # self.k_vsc_qt.append(control1_branch_device)
-
-                    # self.vsc_pf_set.append(control1_magnitude)
-                    # self.vsc_pt_set.append(control1_magnitude)
-                    # self.vsc_qt_set.append(control1_magnitude)
                     pass
                 if control2_branch_device > -1:
-                    # self.u_vsc_pf.append(control2_branch_device)
                     u_vsc_pt.append(control2_branch_device)
                     u_vsc_qt.append(control2_branch_device)
 
                     k_vsc_pf.append(control2_branch_device)
-                    # self.k_vsc_pt.append(control2_branch_device)
-                    # self.k_vsc_qt.append(control2_branch_device)
 
                     vsc_pf_set.append(control2_magnitude)
-                    # self.vsc_pt_set.append(control2_magnitude)
-                    # self.vsc_qt_set.append(control2_magnitude)
 
             elif control1 == ConverterControlType.Vm_dc and control2 == ConverterControlType.Pac:
                 if control1_bus_device > -1:
-                    # self.is_p_controlled[control1_bus_device] = True
-                    # self.is_q_controlled[control1_bus_device] = True
                     self.is_vm_controlled[control1_bus_device] = True
-                    # self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
-                    # self.is_p_controlled[control2_bus_device] = True
-                    # self.is_q_controlled[control2_bus_device] = True
-                    # self.is_vm_controlled[control2_bus_device] = True
-                    # self.is_va_controlled[control2_bus_device] = True
                     pass
                 if control1_branch_device > -1:
-                    # self.u_vsc_pf.append(control1_branch_device)
-                    # self.u_vsc_pt.append(control1_branch_device)
-                    # self.u_vsc_qt.append(control1_branch_device)
-                    # self.k_vsc_pf.append(control1_branch_device)
-                    # self.k_vsc_pt.append(control1_branch_device)
-                    # self.k_vsc_qt.append(control1_branch_device)
-                    # self.vsc_pf_set.append(control1_magnitude)
-                    # self.vsc_pt_set.append(control1_magnitude)
-                    # self.vsc_qt_set.append(control1_magnitude)
                     pass
                 if control2_branch_device > -1:
                     u_vsc_pf.append(control2_branch_device)
-                    # self.u_vsc_pt.append(control2_branch_device)
                     u_vsc_qt.append(control2_branch_device)
 
-                    # self.k_vsc_pf.append(control2_branch_device)
                     k_vsc_pt.append(control2_branch_device)
-                    # self.k_vsc_qt.append(control2_branch_device)
 
-                    # self.vsc_pf_set.append(control2_magnitude)
                     vsc_pt_set.append(control2_magnitude)
-                    # self.vsc_qt_set.append(control2_magnitude)
 
             elif control1 == ConverterControlType.Vm_ac and control2 == ConverterControlType.Vm_dc:
                 if control1_bus_device > -1:
-                    # self.is_p_controlled[control1_bus_device] = True
-                    # self.is_q_controlled[control1_bus_device] = True
                     self.is_vm_controlled[control1_bus_device] = True
-                    # self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
-                    # self.is_p_controlled[control2_bus_device] = True
-                    # self.is_q_controlled[control2_bus_device] = True
                     self.is_vm_controlled[control2_bus_device] = True
-                    # self.is_va_controlled[control2_bus_device] = True
+                u_vsc_pf.append(k)
+                u_vsc_pt.append(k)
+                u_vsc_qt.append(k)
 
             elif control1 == ConverterControlType.Vm_ac and control2 == ConverterControlType.Vm_ac:
                 self.logger.add_error(
@@ -943,15 +911,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             elif control1 == ConverterControlType.Vm_ac and control2 == ConverterControlType.Va_ac:
                 if control1_bus_device > -1:
-                    # self.is_p_controlled[control1_bus_device] = True
-                    # self.is_q_controlled[control1_bus_device] = True
                     self.is_vm_controlled[control1_bus_device] = True
-                    # self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
-                    # self.is_p_controlled[control2_bus_device] = True
-                    # self.is_q_controlled[control2_bus_device] = True
-                    # self.is_vm_controlled[control2_bus_device] = True
                     self.is_va_controlled[control2_bus_device] = True
+                u_vsc_pf.append(k)
+                u_vsc_pt.append(k)
+                u_vsc_qt.append(k)
+
 
             elif control1 == ConverterControlType.Vm_ac and control2 == ConverterControlType.Qac:
                 if control1_bus_device > -1:
@@ -997,12 +963,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
                     self.is_vm_controlled[control2_bus_device] = True
+                u_vsc_pf.append(k)
+                u_vsc_pt.append(k)
+                u_vsc_qt.append(k)
 
             elif control1 == ConverterControlType.Va_ac and control2 == ConverterControlType.Vm_ac:
                 if control1_bus_device > -1:
                     self.is_va_controlled[control1_bus_device] = True
                 if control2_bus_device > -1:
                     self.is_vm_controlled[control2_bus_device] = True
+                u_vsc_pf.append(k)
+                u_vsc_pt.append(k)
+                u_vsc_qt.append(k)
+
 
             elif control1 == ConverterControlType.Va_ac and control2 == ConverterControlType.Va_ac:
                 self.logger.add_error(
@@ -1082,17 +1055,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             elif control1 == ConverterControlType.Qac and control2 == ConverterControlType.Pdc:
                 if control1_branch_device > -1:
-                    u_vsc_pf.append(control1_branch_device)
                     u_vsc_pt.append(control1_branch_device)
                     k_vsc_qt.append(control1_branch_device)
                     vsc_qt_set.append(control1_magnitude)
+                    k_vsc_pf.append(control2_branch_device)
+                    vsc_pf_set.append(control2_magnitude)
 
             elif control1 == ConverterControlType.Qac and control2 == ConverterControlType.Pac:
                 if control1_branch_device > -1:
                     u_vsc_pf.append(control1_branch_device)
-                    u_vsc_pt.append(control1_branch_device)
+                    k_vsc_pt.append(control2_branch_device)
                     k_vsc_qt.append(control1_branch_device)
                     vsc_qt_set.append(control1_magnitude)
+                    vsc_pt_set.append(control2_magnitude)
 
 
             elif control1 == ConverterControlType.Pdc and control2 == ConverterControlType.Vm_dc:
@@ -1172,9 +1147,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             elif control1 == ConverterControlType.Pac and control2 == ConverterControlType.Qac:
                 if control1_branch_device > -1:
                     u_vsc_pf.append(control1_branch_device)
-                    u_vsc_qt.append(control1_branch_device)
+                    k_vsc_pt.append(control1_branch_device)
                     k_vsc_qt.append(control1_branch_device)
                     vsc_qt_set.append(control1_magnitude)
+                    vsc_pt_set.append(control1_magnitude)
 
             elif control1 == ConverterControlType.Pac and control2 == ConverterControlType.Pdc:
                 if control1_branch_device > -1:
@@ -1198,6 +1174,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.vsc_pf_set = np.array(vsc_pf_set, dtype=float)
         self.vsc_pt_set = np.array(vsc_pt_set, dtype=float)
         self.vsc_qt_set = np.array(vsc_qt_set, dtype=float)
+
 
     def _analyze_vsc_controls_old(self) -> None:
         """
@@ -2413,9 +2390,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
 
         # difference between the actual power and the power calculated with the passive term (initial admittance)
-        AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
-        AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
+        # AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        # AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
+        # AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2479,8 +2456,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
         St_vsc = make_complex(Pt_vsc, Qt_vsc)
-
-        Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+        # Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
@@ -2497,12 +2473,27 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
         St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
-        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
-        self.Scalc = Scalc  # needed for the Q control check to use
-        dS = Scalc - Sbus
+        # Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
+        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
+            nbus=self.nc.bus_data.nbus,
+            F_br=self.F_cbr[self.cbr],
+            T_br=self.T_cbr[self.cbr],
+            Sf_br=Sf_cbr,
+            St_br=St_cbr,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=Pf_vsc,
+            St_vsc=St_vsc
+        )
+
+        dS = self.Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
         _f = np.r_[
@@ -2516,7 +2507,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qf_cbr - self.cbr_qf_set,
             Qt_cbr - self.cbr_qt_set
         ]
-
 
         return _f
 
@@ -2741,9 +2731,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
 
         # difference between the actual power and the power calculated with the passive term (initial admittance)
-        AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
-        AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
+        # AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
+        # AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
+        # AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2808,7 +2798,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
-        Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+        # Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = self.Vm[self.nc.hvdc_data.F]
@@ -2825,12 +2815,29 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc)
         St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc)
-        Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
-        self.Scalc = Scalc  # needed for the Q control check to use
-        dS = Scalc - Sbus
+        # Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
+        # self.Scalc = Scalc  # needed for the Q control check to use
+
+        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
+            nbus=self.nc.bus_data.nbus,
+            F_br=self.F_cbr[self.cbr],
+            T_br=self.T_cbr[self.cbr],
+            Sf_br=Sf_cbr,
+            St_br=St_cbr,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=self.Pf_vsc,
+            St_vsc=St_vsc
+        )
+
+        dS = self.Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
         self._f = np.r_[
@@ -3059,11 +3066,30 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Basic bus powers
         # Sbus_const = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        Sbus_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
-        Sbus_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
-        Sbus_br = Sf @ self.nc.passive_branch_data.Cf + St @ self.nc.passive_branch_data.Ct
-        # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
-        Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
+        # Sbus_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
+        # Sbus_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
+        # Sbus_br = Sf @ self.nc.passive_branch_data.Cf + St @ self.nc.passive_branch_data.Ct
+        #
+        # # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
+        # Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
+
+        # the trick here is that the mismatch of the branch flow summations is what we actually want;
+        # that'd be the injections per bus in the end, including the voltage dependent values
+        Sbus = calc_flows_summation_per_bus(
+            nbus=self.nc.bus_data.nbus,
+            F_br=self.nc.passive_branch_data.F,
+            T_br=self.nc.passive_branch_data.T,
+            Sf_br=Sf,
+            St_br=St,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=Pf_vsc,
+            St_vsc=St_vsc
+        )
 
         return NumericPowerFlowResults(
             V=self.V,

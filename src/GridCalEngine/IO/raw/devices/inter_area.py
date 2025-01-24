@@ -72,7 +72,7 @@ class RawInterArea(RawObject):
     def get_raw_line(self, version):
 
         if version >= 29:
-            return self.format_raw_line([self.I, self.ISW, self.PDES, self.PTOL, self.ARNAME])
+            return self.format_raw_line(["I", "ISW", "PDES", "PTOL", "ARNAME"])
         else:
             raise Exception('Inter-Areas not defined for version', str(version))
 

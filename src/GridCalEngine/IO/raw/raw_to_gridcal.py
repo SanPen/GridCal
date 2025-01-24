@@ -20,10 +20,7 @@ from GridCalEngine.IO.raw.devices.transformer import RawTransformer
 from GridCalEngine.IO.raw.devices.two_terminal_dc_line import RawTwoTerminalDCLine
 from GridCalEngine.IO.raw.devices.vsc_dc_line import RawVscDCLine
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
-from GridCalEngine.enumerations import (TapChangerTypes,
-                                        TapPhaseControl,
-                                        TapModuleControl)
-from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
+from GridCalEngine.enumerations import TapChangerTypes, TapPhaseControl, TapModuleControl
 
 
 def get_gridcal_bus(psse_bus: RawBus,
@@ -42,7 +39,11 @@ def get_gridcal_bus(psse_bus: RawBus,
         # create bus
         name = psse_bus.NAME.replace("'", "")
         bus = dev.Bus(name=name,
-                      Vnom=psse_bus.BASKV, code=str(psse_bus.I), vmin=psse_bus.EVLO, vmax=psse_bus.EVHI, xpos=0, ypos=0,
+                      Vnom=psse_bus.BASKV,
+                      code=str(psse_bus.I),
+                      vmin=psse_bus.EVLO,
+                      vmax=psse_bus.EVHI,
+                      xpos=0, ypos=0,
                       active=True,
                       area=area_dict[psse_bus.AREA],
                       zone=zone_dict[psse_bus.ZONE],
@@ -52,7 +53,9 @@ def get_gridcal_bus(psse_bus: RawBus,
     elif psse_bus.version == 32:
         # create bus
         name = psse_bus.NAME
-        bus = dev.Bus(name=name, code=str(psse_bus.I), Vnom=psse_bus.BASKV, vmin=psse_bus.NVLO, vmax=psse_bus.NVHI,
+        bus = dev.Bus(name=name, code=str(psse_bus.I),
+                      Vnom=psse_bus.BASKV,
+                      vmin=psse_bus.NVLO, vmax=psse_bus.NVHI,
                       xpos=0,
                       ypos=0,
                       active=True,
@@ -64,7 +67,9 @@ def get_gridcal_bus(psse_bus: RawBus,
     elif psse_bus.version in [29, 30]:
         # create bus
         name = psse_bus.NAME
-        bus = dev.Bus(name=name, code=str(psse_bus.I), Vnom=psse_bus.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+        bus = dev.Bus(name=name, code=str(psse_bus.I),
+                      Vnom=psse_bus.BASKV,
+                      vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                       active=True,
                       area=area_dict[psse_bus.AREA],
                       zone=zone_dict[psse_bus.ZONE],
@@ -81,7 +86,11 @@ def get_gridcal_bus(psse_bus: RawBus,
         # create bus (try v33)
         name = psse_bus.NAME.replace("'", "")
         bus = dev.Bus(name=name,
-                      Vnom=psse_bus.BASKV, code=str(psse_bus.I), vmin=psse_bus.EVLO, vmax=psse_bus.EVHI, xpos=0, ypos=0,
+                      Vnom=psse_bus.BASKV,
+                      code=str(psse_bus.I),
+                      vmin=psse_bus.EVLO,
+                      vmax=psse_bus.EVHI,
+                      xpos=0, ypos=0,
                       active=True,
                       area=area_dict[psse_bus.AREA],
                       zone=zone_dict[psse_bus.ZONE],
@@ -199,33 +208,43 @@ def get_gridcal_shunt_switched(
 
     vset = 1.0
 
-    is_controlled = False
+    if psse_elm.MODSW == 0:  # locked
+        is_controlled = False
+        b_init = psse_elm.BINIT
 
-    if psse_elm.MODSW in [1, 2]:
+    elif psse_elm.MODSW in [1, 2]:
         # 1 - discrete adjustment, controlling voltage locally or at bus SWREG
         # 2 - continuous adjustment, controlling voltage locally or at bus SWREG
+        is_controlled = True
         b_init = psse_elm.BINIT * psse_elm.RMPCT / 100.0
         vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
-        is_controlled = True
 
     elif psse_elm.MODSW in [3, 4, 5, 6]:
+        is_controlled = True
+        b_init = psse_elm.BINIT
         logger.add_warning(
             msg="Not supported control mode for Switched Shunt",
             value=psse_elm.MODSW
         )
-        is_controlled = True
-        b_init = psse_elm.BINIT
-    else:
-        b_init = psse_elm.BINIT
 
-    vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
+    else:
+        is_controlled = False
+        b_init = psse_elm.BINIT
+        logger.add_warning(
+            msg="Invalid control mode for Switched Shunt.",
+            device=psse_elm,
+            expected_value="0-6",
+            value=psse_elm.MODSW,
+        )
 
     elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
                                 B=b_init,
+                                step=1,     # for testing
                                 vset=vset,
                                 code=busnum_id,
-                                is_nonlinear=True)
+                                is_nonlinear=True,
+                                is_controlled=is_controlled,)
 
     if psse_elm.SWREG > 0:
         if psse_elm.SWREG != psse_elm.I:
@@ -422,7 +441,7 @@ def get_gridcal_transformer(
 
             if round(tc_tap_pos, 2) != int(tc_tap_pos):
                 # the calculated step is not an integer
-                tc_dV = round(1 - tap_module, 6)
+                tc_dV = round((1 - tap_module) / tap_module, 6)
                 tc_total_positions = 2
                 tc_neutral_position = 0
                 tc_normal_position = -1
@@ -541,6 +560,17 @@ def get_gridcal_transformer(
         )
 
         if adjust_taps_to_discrete_positions:
+
+            if psse_elm.COD1 == 0:  # for no control
+
+                elm.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
+                elm.tap_changer.recalc()
+                elm.tap_module = elm.tap_changer.set_tap_module(tap_module=tap_module)
+                elm.tap_changer.tc_type = TapChangerTypes.NoRegulation
+
+                logger.add_info("Raw import: tap module recalculated, but the transformer is not regulating",
+                                device=code,
+                                value=elm.tap_module)
 
             if psse_elm.COD1 in [1, -1]:  # for voltage control (1)
                 reg_bus_id = abs(psse_elm.CONT1)

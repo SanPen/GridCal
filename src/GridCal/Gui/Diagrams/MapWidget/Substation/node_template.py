@@ -5,7 +5,7 @@
 from __future__ import annotations
 from typing import Union, TYPE_CHECKING, List, Callable
 from PySide6.QtCore import QPointF
-from PySide6.QtGui import QBrush, QColor
+from PySide6.QtGui import QBrush
 
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
@@ -24,10 +24,15 @@ class NodeTemplate(GenericDiagramWidget):
                  api_object: ALL_DEV_TYPES = None,
                  editor: Union[GridMapWidget, None] = None,
                  draw_labels: bool = True,
-                 needsUpdate: bool = True,
                  lat: float = 0.0,
                  lon: float = 0.0):
         """
+
+        :param api_object: any GridCal device object
+        :param editor: GridMapWidget
+        :param draw_labels:
+        :param lat:
+        :param lon:
         """
         GenericDiagramWidget.__init__(self,
                                       parent=None,
@@ -35,7 +40,6 @@ class NodeTemplate(GenericDiagramWidget):
                                       editor=editor,
                                       draw_labels=draw_labels)
 
-        self.needs_update: bool = needsUpdate
         self.lat = lat
         self.lon = lon
 
@@ -52,7 +56,7 @@ class NodeTemplate(GenericDiagramWidget):
         """
         self._callbacks.append(fcn)
 
-    def set_callabacks(self, x: float, y: float) -> None:
+    def set_callbacks(self, x: float, y: float) -> None:
         """
         Call all callback functions with x, y
         :param x: x position

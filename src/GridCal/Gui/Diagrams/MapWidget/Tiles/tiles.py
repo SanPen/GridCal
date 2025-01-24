@@ -35,26 +35,19 @@ import urllib
 from urllib import request
 from urllib.error import HTTPError
 import queue
-from PySide6.QtGui import QPixmap, QColor
 from typing import List, Union
 from collections.abc import Callable
+from warnings import warn
+from PySide6.QtGui import QPixmap, QColor
+
 from GridCal.Gui.Diagrams.MapWidget.Tiles.base_tiles import BaseTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tile_worker import TileWorker
-
-
-def log(val: str):
-    print(val)
 
 
 # # set how old disk-cache tiles can be before we re-request them from the
 # # server.  this is the number of days old a tile is before we re-request.
 # # if 'None', never re-request tiles after first satisfied request.
 # RefreshTilesAfterDays = 60
-
-# define the error messages for various failures
-StatusError = {401: 'Looks like you need to be authorised for this server.',
-               404: 'You might need to check the tile addressing for this server.',
-               429: 'You are asking for too many tiles.', }
 
 
 class Tiles(BaseTiles):
@@ -69,9 +62,9 @@ class Tiles(BaseTiles):
     SecondsInADay = 60 * 60 * 24
 
     def __init__(self,
-                 TilesetName: str,
-                 TilesetShortName: str,
-                 TilesetVersion: str,
+                 tile_set_name: str,
+                 tile_set_short_name: str,
+                 tile_set_version: str,
                  levels: List[int],
                  tile_width: int,
                  tile_height: int,
@@ -81,10 +74,13 @@ class Tiles(BaseTiles):
                  url_path: str,
                  max_server_requests: int,
                  http_proxy,
-                 refetch_days: int = 60,
+                 re_fetch_days: int = 60,
                  attribution: str = ""):
         """
         Initialise a Tiles instance.
+        :param tile_set_name: Name of the tile set.
+        :param tile_set_short_name: Short name of the tile set.
+        :param tile_set_version: Version of the tile set.
         :param levels: a list of level numbers that are to be served
         :param tile_width: width of each tile in pixels
         :param tile_height: height of each tile in pixels
@@ -94,11 +90,11 @@ class Tiles(BaseTiles):
         :param url_path: path on server to each tile
         :param max_server_requests: maximum number of requests per server
         :param http_proxy: proxy to use if required
-        :param refetch_days: fetch new server tile if older than this in days (0 means don't ever update tiles)
+        :param re_fetch_days: fetch new server tile if older than this in days (0 means don't ever update tiles)
         """
-        self.TilesetName = TilesetName
-        self.TilesetShortName = TilesetShortName
-        self.TilesetVersion = TilesetVersion
+        self.tile_set_name = tile_set_name
+        self.tile_set_short_name = tile_set_short_name
+        self.tile_set_version = tile_set_version
 
         self.attribution_string = attribution
 
@@ -117,13 +113,13 @@ class Tiles(BaseTiles):
         self.url_path = url_path
         self.max_requests = max_server_requests
         self.http_proxy = http_proxy
-        self.refresh_tiles_after_days = refetch_days
+        self.refresh_tiles_after_days = re_fetch_days
 
-        # callback must be set by higher-level copde
+        # callback must be set by higher-level code
         self.callback: Union[None, Callable[[int, float, float, QPixmap, bool], None]] = None
 
         # calculate a re-request age, if specified
-        self.rerequest_age = (time.time() - self.refresh_tiles_after_days * self.SecondsInADay)
+        self.re_request_age = (time.time() - self.refresh_tiles_after_days * self.SecondsInADay)
 
         # tiles extent for tile data (left, right, top, bottom)
         self.extent = (-180.0, 180.0, -85.0511, 85.0511)
@@ -141,7 +137,7 @@ class Tiles(BaseTiles):
         # determine the file bitmap type
         try:
             self.filetype = self.AllowedFileTypes[tile_extension_lower]
-        except KeyError as e:
+        except KeyError:
             raise TypeError("Bad tile_extension value, got '%s', "
                             "expected one of %s"
                             % (str(tile_extension),
@@ -149,10 +145,9 @@ class Tiles(BaseTiles):
 
         # compose the expected 'Content-Type' string on request result
         # if we get here we know the extension is in self.AllowedFileTypes
-        if tile_extension_lower == 'jpg':
-            self.content_type = 'image/jpeg'
-        elif tile_extension_lower == 'png':
-            self.content_type = 'image/png'
+        # if tile_extension_lower in ['png', 'jpg']:
+
+        self.content_type = 'image/png'
 
         # set the list of queued unsatisfied requests to 'empty'
         self.queued_requests = {}
@@ -160,30 +155,33 @@ class Tiles(BaseTiles):
         # prepare the "pending" and "error" images
         self.pending_tile = QPixmap(256, 256)
         self.pending_tile.fill(QColor.fromRgb(50, 50, 50, 255))
-        # self.pending_tile.loadFromData(std.getPendingImage())
 
         self.error_tile = QPixmap(256, 256)
         self.error_tile.fill(QColor.fromRgb(255, 0, 0, 255))
-        # self.error_tile.loadFromData(std.getErrorImage())
+
+        # define the error messages for various failures
+        StatusError = {401: 'Looks like you need to be authorised for this server.',
+                       404: 'You might need to check the tile addressing for this server.',
+                       429: 'You are asking for too many tiles.', }
 
         # test for firewall - use proxy (if supplied)
         test_url = self.servers[0] + self.url_path.format(Z=0, X=0, Y=0)
         try:
             r = request.Request(test_url, headers={'User-Agent': 'GridCal 5'})
             response = request.urlopen(r).read()
-            # request.urlopen(test_url)
+
         except HTTPError as e:
             # if it's fatal, log it and die, otherwise try a proxy
             status_code = e.code
-            log('Error: test_url=%s, status_code=%s' % (test_url, str(status_code)))
+            warn('Error: test_url=%s, status_code=%s' % (test_url, str(status_code)))
             error_msg = StatusError.get(status_code, None)
             if status_code:
                 msg = "\nYou got a " + str(status_code) + " (" + str(error_msg) + ") error from: " + str(test_url)
                 print(msg)
                 # raise RuntimeError(msg) from None
 
-            log('%s exception doing simple connection to: %s' % (type(e).__name__, test_url))
-            log(''.join(traceback.format_exc()))
+            warn('%s exception doing simple connection to: %s' % (type(e).__name__, test_url))
+            warn(''.join(traceback.format_exc()))
 
             if http_proxy:
                 proxy = request.ProxyHandler({'http': http_proxy})
@@ -209,12 +207,12 @@ class Tiles(BaseTiles):
             for num_thread in range(self.max_requests):
                 worker = TileWorker(id_num=num_thread,
                                     server=server,
-                                    tilepath=self.url_path,
+                                    tile_path=self.url_path,
                                     requests_cue=self.request_queue,
                                     callback=self.tile_is_available,
                                     error_tile=self.error_tile,
                                     content_type=self.content_type,
-                                    rerequest_age=self.rerequest_age,
+                                    re_request_age=self.re_request_age,
                                     error_image=self.error_tile,
                                     refresh_tiles_after_days=60)
                 self.workers.append(worker)
@@ -271,9 +269,9 @@ class Tiles(BaseTiles):
             tile = self.cache[(self.level, x, y)]
             if self.tile_on_disk(self.level, x, y):
                 tile_date = self.cache.tile_date((self.level, x, y))
-                if self.rerequest_age and (tile_date < self.rerequest_age):
+                if self.re_request_age and (tile_date < self.re_request_age):
                     self.get_server_tile(self.level, x, y)
-        except KeyError as e:
+        except KeyError:
             # not cached, start process of getting tile from 'net, return 'pending' image
             self.get_server_tile(self.level, x, y)
             tile = self.pending_tile
@@ -391,4 +389,4 @@ class Tiles(BaseTiles):
         self.refresh_tiles_after_days = num_days
 
         # recalculate this instance's age threshold in UNIX time
-        self.rerequest_age = time.time() - self.refresh_tiles_after_days * self.SecondsInADay
+        self.re_request_age = time.time() - self.refresh_tiles_after_days * self.SecondsInADay

@@ -113,7 +113,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             r3 = r / 2
             xc = new_x + r3
             yc = new_y + r3
-            self.set_callabacks(xc, yc)
+            self.set_callbacks(xc, yc)
 
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
@@ -224,7 +224,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             x = pos.x() - self.rect().width() / 2
             y = pos.y() - self.rect().height() / 2
             self.setRect(x, y, self.rect().width(), self.rect().height())
-            self.set_callabacks(pos.x(), pos.y())
+            self.set_callbacks(pos.x(), pos.y())
 
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
@@ -369,7 +369,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         if ok:
             x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
-            self.set_callabacks(x, y)
+            self.set_callbacks(x, y)
 
     def new_substation_diagram(self):
         """

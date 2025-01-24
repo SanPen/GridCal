@@ -390,7 +390,7 @@ class MultiCircuit(Assets):
         logger = Logger()
         for branch in self._lines:
             if branch.template is not None:
-                branch.apply_template(branch.template, self.Sbase, logger=logger)
+                branch.apply_template(branch.template, self.Sbase, freq=self.fBase, logger=logger)
 
         for branch in self._transformers2w:
             if branch.template is not None:

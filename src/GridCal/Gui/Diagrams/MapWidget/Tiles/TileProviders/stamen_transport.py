@@ -42,9 +42,9 @@ class StamenTransportTiles(Tiles):
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='Stamen Transport Tiles',
-                         TilesetShortName='STMTR Tiles',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name='Stamen Transport Tiles',
+                         tile_set_short_name='STMTR Tiles',
+                         tile_set_version='1.0',
                          levels=list(range(16)),
                          tile_width=256,
                          tile_height=256,
@@ -76,7 +76,7 @@ class StamenTransportTiles(Tiles):
 
         return (xtile, ytile)
 
-    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
+    def Tile2Geo(self, x_tile: float, y_tile: float) -> Tuple[float, float]:
         """Convert tile fractional coordinates to geo for level in use.
 
         tile  a tupl;e (xtile,ytile) of tile fractional coordinates
@@ -87,8 +87,8 @@ class StamenTransportTiles(Tiles):
         """
 
         n = 2.0 ** self.level
-        xgeo = xtile / n * 360.0 - 180.0
-        yrad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
+        xgeo = x_tile / n * 360.0 - 180.0
+        yrad = math.atan(math.sinh(math.pi * (1 - 2 * y_tile / n)))
         ygeo = math.degrees(yrad)
 
         return (xgeo, ygeo)

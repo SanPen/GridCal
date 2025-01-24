@@ -49,13 +49,13 @@ ygeo: latitude
 from __future__ import annotations
 from typing import List, Union, Tuple, Callable, TYPE_CHECKING
 from enum import Enum
-from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
+from PySide6.QtCore import Qt, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout,
                                QGraphicsSceneMouseEvent, QGraphicsItem, QLabel, QGraphicsProxyWidget)
-
+# from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 if TYPE_CHECKING:
@@ -451,6 +451,17 @@ class MapWidget(QWidget):
         self.view = MapView(scene=self.diagram_scene, map_widget=self)
         self.view.setBackgroundBrush(Qt.GlobalColor.transparent)
 
+        # self.opengl_widget = QOpenGLWidget()
+        # self.opengl_widget.update()
+        # # opengl_widget = TransparentOpenGLWidget()
+        # self.opengl_widget.setUpdateBehavior(QOpenGLWidget.UpdateBehavior.NoPartialUpdate)
+        # self.view.setViewport(self.opengl_widget)
+        # self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+        # self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        # self.view.setRenderHint(QPainter.RenderHint.TextAntialiasing)
+        # # self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
+        # self.view.setBackgroundBrush(Qt.GlobalColor.transparent)
+
         # -------------------------------------------------------------------------
         # Internal vars
         # -------------------------------------------------------------------------
@@ -469,8 +480,8 @@ class MapWidget(QWidget):
         # define position and tile coords of the "key" tile
         self.key_tile_left = 0  # tile coordinates of key tile
         self.key_tile_top = 0
-        self.key_tile_xoffset = 0  # view coordinates of key tile wrt view
-        self.key_tile_yoffset = 0
+        self.key_tile_x_offset = 0  # view coordinates of key tile wrt view
+        self.key_tile_y_offset = 0
 
         # we keep track of the cursor coordinates if cursor on map
         self.mouse_x: int = 0
@@ -510,13 +521,13 @@ class MapWidget(QWidget):
         self.setCursor(self.standard_cursor)
 
         # do a "resize" after this function
-        QTimer.singleShot(10, self.resizeEvent)
+        # QTimer.singleShot(10, self.resizeEvent)
 
-        self.GotoLevelAndPosition(level=6,
-                                  longitude=0,
-                                  latitude=40)
+        self.go_to_level_and_position(level=6,
+                                      longitude=0,
+                                      latitude=40)
 
-        # add the widgets in a leyered manner
+        # add the widgets in a layered manner
         # self.layout.addWidget(self.notice_widget)
         self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
 
@@ -539,19 +550,19 @@ class MapWidget(QWidget):
 
         level, longitude, latitude = self.get_level_and_position()
 
-        if tile_src.TilesetName != self._tile_src.TilesetName:  # avoid changing tilesets to themselves
+        if tile_src.tile_set_name != self._tile_src.tile_set_name:  # avoid changing tile sets to themselves
             self._tile_src: Tiles = tile_src
             self._tile_src.setCallback(self.on_tile_available)
             self.view.set_notice(val=self._tile_src.attribution_string)
 
             if self.GotoLevel(level):
-                self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+                self.go_to_level_and_position(level=level, longitude=longitude, latitude=latitude)
                 self.view.center_schema()
             else:
                 while abs(self.view.schema_zoom - 0.015625) > 0.00001:
                     self.view.schema_zoom = self.view.schema_zoom / self.view.map_widget.zoom_factor
                     self.view.scale(1.0 / self.view.map_widget.zoom_factor, 1.0 / self.view.map_widget.zoom_factor)
-                self.GotoLevelAndPosition(level=0, longitude=0, latitude=0)
+                self.go_to_level_and_position(level=0, longitude=0, latitude=0)
 
     @property
     def max_level(self):
@@ -692,7 +703,6 @@ class MapWidget(QWidget):
 
         x = event.x()
         y = event.y()
-        clickpt_v = (x, y)
 
         # cursor back to normal in case it was a box select
         self.setCursor(self.default_cursor)
@@ -706,7 +716,7 @@ class MapWidget(QWidget):
             if self.start_drag_x is None:
                 # not dragging, possible point selection
                 # get click point in view & global coords
-                clickpt_g = self.view_to_geo(x, y)
+                self.view_to_geo(x, y)
 
             # turn off dragging, if we were
             self.start_drag_x = self.start_drag_y = None
@@ -773,26 +783,26 @@ class MapWidget(QWidget):
             # we don't move much - less than a tile width/height
             # drag the key tile in the X direction
             delta_x = self.start_drag_x - x
-            self.key_tile_xoffset -= delta_x
+            self.key_tile_x_offset -= delta_x
 
-            if self.key_tile_xoffset < -self.tile_width:  # too far left
-                self.key_tile_xoffset += self.tile_width
+            if self.key_tile_x_offset < -self.tile_width:  # too far left
+                self.key_tile_x_offset += self.tile_width
                 self.key_tile_left += 1
 
-            if self.key_tile_xoffset > 0:  # too far right
-                self.key_tile_xoffset -= self.tile_width
+            if self.key_tile_x_offset > 0:  # too far right
+                self.key_tile_x_offset -= self.tile_width
                 self.key_tile_left -= 1
 
             # drag the key tile in the Y direction
             delta_y = self.start_drag_y - y
-            self.key_tile_yoffset -= delta_y
+            self.key_tile_y_offset -= delta_y
 
-            if self.key_tile_yoffset < -self.tile_height:  # too far up
-                self.key_tile_yoffset += self.tile_height
+            if self.key_tile_y_offset < -self.tile_height:  # too far up
+                self.key_tile_y_offset += self.tile_height
                 self.key_tile_top += 1
 
-            if self.key_tile_yoffset > 0:  # too far down
-                self.key_tile_yoffset -= self.tile_height
+            if self.key_tile_y_offset > 0:  # too far down
+                self.key_tile_y_offset -= self.tile_height
                 self.key_tile_top -= 1
 
             # set key tile stuff so update() shows drag
@@ -881,7 +891,7 @@ class MapWidget(QWidget):
 
         col_list = []
         x_coord = self.key_tile_left
-        x_pix_start = self.key_tile_xoffset
+        x_pix_start = self.key_tile_x_offset
         while x_pix_start < self.view_width:
             col_list.append(x_coord)
             if x_coord >= self.num_tiles_x - 1:
@@ -891,7 +901,7 @@ class MapWidget(QWidget):
 
         row_list = []
         y_coord = self.key_tile_top
-        y_pix_start = self.key_tile_yoffset
+        y_pix_start = self.key_tile_y_offset
         while y_pix_start < self.view_height:
             row_list.append(y_coord)
             if y_coord >= self.num_tiles_y - 1:
@@ -905,9 +915,9 @@ class MapWidget(QWidget):
         painter.begin(self)
 
         # paste all background tiles onto the view
-        x_pix = self.key_tile_xoffset
+        x_pix = self.key_tile_x_offset
         for x in col_list:
-            y_pix = self.key_tile_yoffset
+            y_pix = self.key_tile_y_offset
             for y in row_list:
                 painter.drawPixmap(x_pix, y_pix, self.tile_src.GetTile(x, y))
                 y_pix += self.tile_height
@@ -933,8 +943,8 @@ class MapWidget(QWidget):
             tx, ty = self.tile_src.Geo2Tile(longitude=longitude, latitude=latitude)
 
             # using the key_tile_* variables to convert to view coordinates
-            xview = (tx - self.key_tile_left) * self.tile_width + self.key_tile_xoffset
-            yview = (ty - self.key_tile_top) * self.tile_height + self.key_tile_yoffset
+            xview = (tx - self.key_tile_left) * self.tile_width + self.key_tile_x_offset
+            yview = (ty - self.key_tile_top) * self.tile_height + self.key_tile_y_offset
 
             return xview, yview
         else:
@@ -967,8 +977,8 @@ class MapWidget(QWidget):
         """
         min_lon, max_lon, min_lat, max_lat = self.tile_src.GetExtent()
 
-        x_from_key = xview - self.key_tile_xoffset
-        y_from_key = yview - self.key_tile_yoffset
+        x_from_key = xview - self.key_tile_x_offset
+        y_from_key = yview - self.key_tile_y_offset
 
         # get view point as tile coordinates
         xtile: float = self.key_tile_left + x_from_key / self.tile_width
@@ -996,8 +1006,8 @@ class MapWidget(QWidget):
         """
         min_lon, max_lon, min_lat, max_lat = self.tile_src.GetExtent()
 
-        x_from_key = xview - self.key_tile_xoffset
-        y_from_key = yview - self.key_tile_yoffset
+        x_from_key = xview - self.key_tile_x_offset
+        y_from_key = yview - self.key_tile_y_offset
 
         # get view point as tile coordinates
         xtile: int = int(self.key_tile_left + x_from_key / self.tile_width)
@@ -1478,7 +1488,7 @@ class MapWidget(QWidget):
 
         return x, y
 
-    def zoom_level(self, level: int, view_x: int = None, view_y: int = None):
+    def zoom_level(self, level: int, view_x: float | None = None, view_y: float | None = None):
         """Zoom to a map level.
 
         level  map level to zoom to
@@ -1512,11 +1522,6 @@ class MapWidget(QWidget):
 
             # move to new level
             self.tile_src.GetInfo(level)
-
-            # self.num_tiles_x, self.num_tiles_y, _, _ = self.tile_src.GetInfo(level)
-            # self.map_width = self.num_tiles_x * self.tile_width
-            # self.map_height = self.num_tiles_y * self.tile_height
-            # self.map_llon, self.map_rlon, self.map_blat, self.map_tlat = self.tile_src.extent
 
             # finally, pan to original map centre (updates widget)
             self.pan_position(longitude, latitude, view_x, view_y)
@@ -1571,11 +1576,11 @@ class MapWidget(QWidget):
 
         (key_tile_left, x_offset) = divmod(key_tx, 1)
         self.key_tile_left = int(key_tile_left)
-        self.key_tile_xoffset = -int(x_offset * self.tile_width)
+        self.key_tile_x_offset = -int(x_offset * self.tile_width)
 
         (key_tile_top, y_offset) = divmod(key_ty, 1)
         self.key_tile_top = int(key_tile_top)
-        self.key_tile_yoffset = -int(y_offset * self.tile_height)
+        self.key_tile_y_offset = -int(y_offset * self.tile_height)
 
         # adjust key tile, if necessary
         self.rectify_key_tile()
@@ -1596,41 +1601,41 @@ class MapWidget(QWidget):
         if self.map_width < self.view_width:
             # map < view, fits totally in view, centre in X
             self.key_tile_left = 0
-            self.key_tile_xoffset = (self.view_width - self.map_width) // 2
+            self.key_tile_x_offset = (self.view_width - self.map_width) // 2
         else:
             # if key tile out of map in X direction, rectify
             if self.key_tile_left < 0:
                 self.key_tile_left = 0
-                self.key_tile_xoffset = 0
+                self.key_tile_x_offset = 0
             else:
                 # if map left/right edges showing, cover them
-                show_len = (self.num_tiles_x - self.key_tile_left) * self.tile_width + self.key_tile_xoffset
+                show_len = (self.num_tiles_x - self.key_tile_left) * self.tile_width + self.key_tile_x_offset
                 if show_len < self.view_width:
                     # figure out key tile X to have right edge of map and view equal
                     tiles_showing = self.view_width / self.tile_width
                     int_tiles = int(tiles_showing)
                     self.key_tile_left = self.num_tiles_x - int_tiles - 1
-                    self.key_tile_xoffset = -int((1.0 - (tiles_showing - int_tiles)) * self.tile_width)
+                    self.key_tile_x_offset = -int((1.0 - (tiles_showing - int_tiles)) * self.tile_width)
 
         # now check map in Y direction
         if self.map_height < self.view_height:
             # map < view, fits totally in view, centre in Y
             self.key_tile_top = 0
-            self.key_tile_yoffset = (self.view_height - self.map_height) // 2
+            self.key_tile_y_offset = (self.view_height - self.map_height) // 2
         else:
             if self.key_tile_top < 0:
                 # map top edge showing, cover
                 self.key_tile_top = 0
-                self.key_tile_yoffset = 0
+                self.key_tile_y_offset = 0
             else:
                 # if map bottom edge showing, cover
-                show_len = (self.num_tiles_y - self.key_tile_top) * self.tile_height + self.key_tile_yoffset
+                show_len = (self.num_tiles_y - self.key_tile_top) * self.tile_height + self.key_tile_y_offset
                 if show_len < self.view_height:
                     # figure out key tile Y to have bottom edge of map and view equal
                     tiles_showing = self.view_height / self.tile_height
                     int_tiles = int(tiles_showing)
                     self.key_tile_top = self.num_tiles_y - int_tiles - 1
-                    self.key_tile_yoffset = -int((1.0 - (tiles_showing - int_tiles)) * self.tile_height)
+                    self.key_tile_y_offset = -int((1.0 - (tiles_showing - int_tiles)) * self.tile_height)
 
     def zoom_level_position(self, level: int, longitude: float, latitude: float):
         """Zoom to a map level and pan to the given position in the map.
@@ -1689,17 +1694,17 @@ class MapWidget(QWidget):
         # update the 'key' tile state variables
         self.key_tile_left = int_ctile_tx - num_whole_x - 1
         self.key_tile_top = int_ctile_ty - num_whole_y - 1
-        self.key_tile_xoffset = self.tile_width - xmargin
-        self.key_tile_yoffset = self.tile_height - ymargin
+        self.key_tile_x_offset = self.tile_width - xmargin
+        self.key_tile_y_offset = self.tile_height - ymargin
 
         # centre map in view if map < view
         if self.key_tile_left < 0:
             self.key_tile_left = 0
-            self.key_tile_xoffset = (self.view_width - self.map_width) // 2
+            self.key_tile_x_offset = (self.view_width - self.map_width) // 2
 
         if self.key_tile_top < 0:
             self.key_tile_top = 0
-            self.key_tile_yoffset = (self.view_height - self.map_height) // 2
+            self.key_tile_y_offset = (self.view_height - self.map_height) // 2
 
     ######
     #
@@ -1790,23 +1795,12 @@ class MapWidget(QWidget):
 
         self.tile_src.GetInfo(level)
 
-        # (self.num_tiles_x, self.num_tiles_y, _, _) = self.tile_src.GetInfo(level)
-        #
-        # self.map_width = self.num_tiles_x * self.tile_width
-        #
-        # self.map_height = self.num_tiles_y * self.tile_height
-
-        # self.map_llon, self.map_rlon, self.map_blat, self.map_tlat = self.tile_src.extent
-
         # to set some state variables
         self.resizeEvent(updateDiagram=False)
 
-        # raise level change event
-        # LevelEvent(level=level).emit_event()
-
         return True
 
-    def GotoPosition(self, longitude: float, latitude: float):
+    def go_to_position(self, longitude: float, latitude: float):
         """Set view to centre on a geo position in the current level.
 
         geo  a tuple (xgeo,ygeo) to centre view on
@@ -1817,93 +1811,89 @@ class MapWidget(QWidget):
             return
 
         # get fractional tile coords of required centre of view
-        xtile, ytile = self.tile_src.Geo2Tile(longitude=longitude, latitude=latitude)
+        x_tile, y_tile = self.tile_src.Geo2Tile(longitude=longitude, latitude=latitude)
 
         # get view size in half widths and height
         w2 = self.view_width / 2
         h2 = self.view_height / 2
 
         # get tile coords of view left and top edges
-        view_tile_x = xtile - (w2 / self.tile_width)
-        view_tile_y = ytile - (h2 / self.tile_height)
+        view_tile_x = x_tile - (w2 / self.tile_width)
+        view_tile_y = y_tile - (h2 / self.tile_height)
 
         # calculate the key tile coords and offsets
-        keytile_x = int(view_tile_x)
-        keytile_y = int(view_tile_y)
+        key_tile_x = int(view_tile_x)
+        key_tile_y = int(view_tile_y)
 
-        keyoffset_x = - int((view_tile_x - keytile_x) * self.tile_width)
-        keyoffset_y = - int((view_tile_y - keytile_y) * self.tile_height)
+        key_offset_x = - int((view_tile_x - key_tile_x) * self.tile_width)
+        key_offset_y = - int((view_tile_y - key_tile_y) * self.tile_height)
 
         # update the key tile info
-        self.key_tile_left = keytile_x
-        self.key_tile_top = keytile_y
-        self.key_tile_xoffset = keyoffset_x
-        self.key_tile_yoffset = keyoffset_y
+        self.key_tile_left = key_tile_x
+        self.key_tile_top = key_tile_y
+        self.key_tile_x_offset = key_offset_x
+        self.key_tile_y_offset = key_offset_y
 
         # centre map in view if map < view
-        if self.key_tile_left < 0 or self.key_tile_xoffset > 0:
+        if self.key_tile_left < 0 or self.key_tile_x_offset > 0:
             self.key_tile_left = 0
-            self.key_tile_xoffset = (self.view_width - self.map_width) // 2
+            self.key_tile_x_offset = (self.view_width - self.map_width) // 2
 
-        if self.key_tile_top < 0 or self.key_tile_yoffset > 0:
+        if self.key_tile_top < 0 or self.key_tile_y_offset > 0:
             self.key_tile_top = 0
-            self.key_tile_yoffset = (self.view_height - self.map_height) // 2
+            self.key_tile_y_offset = (self.view_height - self.map_height) // 2
 
         # redraw the display
         self.update()
 
-        self.position_callback(latitude, longitude, xtile, ytile)
+        self.position_callback(latitude, longitude, x_tile, y_tile)
 
-    def GotoLevelAndPosition(self, level: int, longitude: float, latitude: float):
+    def go_to_level_and_position(self, level: int, longitude: float, latitude: float):
         """
         Goto a map level and set view to centre on a position.
 
-        level  the map level to use
-        geo    a tuple (xgeo,ygeo) to centre view on
-
-        Does nothing if we can't use desired level.
+        :param level: zoom level (int value)
+        :param longitude: longitude (deg)
+        :param latitude: latitude (deg)
         """
 
         if self.GotoLevel(level):
-            self.GotoPosition(longitude=longitude, latitude=latitude)
+            self.go_to_position(longitude=longitude, latitude=latitude)
 
-        # self.view.capture_map_position()
-
-    def ChangeTileSet(self, tile_src: Tiles):
+    def change_tile_set(self, tile_src: Tiles) -> Tiles:
         """
         Change the source of tiles.
 
-        tile_src  the new tileset object to use
+        :param tile_src:  the new Tiles object to use
 
-        Returns the previous tileset object, None if none.
+        Returns the previous Tiles object, None if none.
 
         Refreshes the display and tries to maintain the same position
         and zoom level.  May change the zoom level if the current level doesn't
-        exist in the new tileset.
+        exist in the new Tiles.
         """
-
-        # print('ChangeTileSet: tile_src=%s' % str(tile_src))
 
         # get level and geo position of view centre
         level, longitude, latitude = self.get_level_and_position()
         # print('level=%s, geo=(%s, %s)' % (str(level), str(longitude), str(latitude)))
 
-        # remember old tileset
-        old_tileset = self.tile_src
+        # remember old Tiles object
+        old_tile_set = self.tile_src
 
-        # get levels in new tileset and see if we can display at the current level
+        # get levels in new tile set and see if we can display at the current level
         new_levels = tile_src.levels
         new_max_level = tile_src.max_level
         new_min_level = tile_src.min_level
+
         if level > new_max_level:
             level = new_max_level
+
         if level < new_min_level:
             level = new_min_level
 
         # set new tile source and set some state
         self.tile_src = tile_src
-        # self.tile_size_x = tile_src.tile_size_x
-        # self.tile_size_y = tile_src.tile_size_y
+
         self.level = level
 
         # set callback from Tile source object when tile(s) available
@@ -1929,10 +1919,9 @@ class MapWidget(QWidget):
         self.set_key_from_centre(longitude, latitude)
 
         # back to old level+centre, and refresh the display
-        #        self.GotoLevelAndPosition(level, geo)
         self.zoom_level_position(level, longitude, latitude)
 
-        return old_tileset
+        return old_tile_set
 
     def get_selected(self) -> List[QGraphicsItem]:
         """

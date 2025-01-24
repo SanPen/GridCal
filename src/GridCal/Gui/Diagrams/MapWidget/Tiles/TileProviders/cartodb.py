@@ -46,16 +46,15 @@ class CartoDbTiles(Tiles):
         :param tile_servers:
         """
 
-        super().__init__(TilesetName=name,
-                         TilesetShortName='CartoDb Dark Matter',
-                         TilesetVersion='1.0',
+        super().__init__(tile_set_name=name,
+                         tile_set_short_name='CartoDb Dark Matter',
+                         tile_set_version='1.0',
                          levels=list(range(22)),
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,
                          servers=[
-                             "http://basemaps.cartocdn.com/dark_all/"
-                             # http://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png
+                             "https://basemaps.cartocdn.com/dark_all/"
                          ] if tile_servers is None else tile_servers,
                          url_path='/{Z}/{X}/{Y}.png',
                          max_server_requests=2,
@@ -84,7 +83,7 @@ class CartoDbTiles(Tiles):
 
         return xtile, ytile
 
-    def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
+    def Tile2Geo(self, x_tile: float, y_tile: float) -> Tuple[float, float]:
         """
         Convert tile fractional coordinates to geo for level in use.
         tile  a tuple (xtile,ytile) of tile fractional coordinates
@@ -93,8 +92,8 @@ class CartoDbTiles(Tiles):
         """
 
         n = 2.0 ** self.level
-        longitude = xtile / n * 360.0 - 180.0
-        yrad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
+        longitude = x_tile / n * 360.0 - 180.0
+        yrad = math.atan(math.sinh(math.pi * (1 - 2 * y_tile / n)))
         latitude = math.degrees(yrad)
 
         return longitude, latitude

@@ -73,7 +73,7 @@ Steps in Topology Processing
 
 Broadly, topology processing involves the following steps:
 
-1. **Reduce problematic branches:** Address switches and jumpers that cause issues.
+1. **Reduce problematic branches:** Address switches and jumpers that cause singularities.
 2. **Find the simulatable islands:** Identify isolated groups of interconnected elements.
 3. **Segment the circuit into sub-circuits:** Divide the system into smaller, manageable parts.
 4. **Simulate each circuit independently:** Perform separate analyses for each sub-circuit.*
@@ -85,21 +85,21 @@ Broadly, topology processing involves the following steps:
     such as power flow. Simulations involving overdetermined linear systems, such as
     optimizations, do not require separate handling of islands.
 
-Special Function: Island Search
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Performing topology processing requires one critical function: the island search. This function identifies
-interconnected segments of the network, ensuring accurate representation of the system's operational state.
+Performing topology processing requires one critical function: the island search.
+This function identifies interconnected segments of the network, ensuring accurate
+representation of the system's operational state.
 
 
 
 1 Reducing problematic branches
 ------------------------------------------------
 
-In the context of power systems, certain branches can cause computational issues due to their characteristics,
-such as zero impedance or inactive status. These branches, referred to as "problematic branches," must be
-effectively reduced to ensure accurate simulations and analyses. To better understand this, let’s examine the
-following example circuit:
+In the context of power systems, certain branches can cause computational issues due
+to their characteristics, such as zero impedance or inactive status. These branches,
+referred to as *problematic branches*, must be effectively reduced to ensure accurate
+simulations and analyses. To better understand this, let’s examine the following
+example circuit:
 
 +----------+--------+-----------+-----------+--------+
 | Bus from | Bus to | Reducible | impedance | active |
@@ -113,10 +113,17 @@ following example circuit:
 | 2        |  3     | yes       | 0         | no     |
 +----------+--------+-----------+-----------+--------+
 
-This circuit consists of 4 buses and 4 branches. Two of these branches are marked as "reducible," meaning their
-removal is needed to not impact the network's functional properties for simulation purposes.
-These zero-impedance branches do not contribute to the network’s overall impedance matrix, but would make
-it singular if added. To identify reducible branches, we construct an adjacency matrix representing
+.. note::
+
+    It is important to understand the meaning of zero when talking about physical magnitudes
+    such as the impedance. Zero is the *absence of*, therefore zero impedance means that
+    the branch is not there. Hence, we must remove it and join the buses it connects.
+
+This circuit consists of 4 buses and 4 branches. Two of these branches are marked
+as "reducible," meaning their removal is needed to not impact the network's functional
+properties for simulation purposes. These zero-impedance branches do not contribute to
+the network’s overall impedance matrix, but would make it singular if added.
+To identify reducible branches, we construct an adjacency matrix representing
 connections between buses. The adjacency matrix is computed using the following algorithm:
 
 .. code-block::
@@ -154,14 +161,17 @@ A method that is found to be approximately 2.5 times faster in practice is the f
 
 .. note::
 
-    Both methods require matrices `C` and `A` to be sparse. Dense matrices would demand excessive memory and
-    computational resources, making them impractical for power system applications.
+    Both methods require matrices `C` and `A` to be sparse. Dense matrices would
+    demand excessive memory and computational resources, making them impractical
+    for power system applications.
 
 
-The nifty trick of composing A with the reducible elements, allows us to use a standard island-finding
-algorithms can identify groups of interconnected buses. These groups are treated as equivalent nodes for
-simulation purposes. In the given example, buses 0 and 1 are grouped, meaning bus 1 is effectively merged
-into bus 0. Buses 2 and 3 remain as independent nodes.
+The nifty trick of composing A with the reducible elements, allows us to use a
+standard island-finding algorithm to identify groups of buses connected by
+reducible elements that can be treated as a single bus because they are
+*topologically* the same place.
+In the given example, buses 0 and 1 are grouped, meaning bus 1 is effectively
+merged into bus 0. Buses 2 and 3 remain as independent nodes.
 
 After processing the reducible branches, the simplified circuit is:
 
@@ -177,8 +187,10 @@ After processing the reducible branches, the simplified circuit is:
 2 Finding the simulatable islands
 ------------------------------------
 
-Now that we have a system without reducible branches, we need to proceed with the cleaning and island slicing.
-For that we need to compute the Adjacency matrix, this time using the active branches:
+Now that we have a system without problematic branches, we need to proceed with
+the island slicing. For that, we need to compute the Adjacency matrix using the
+non-reducible, active branches. This is, the branches that have impedances and
+can transmit electricity:
 
 .. code-block::
 
@@ -340,10 +352,9 @@ Summary of the steps
 - First we must detect which buses are electrically (and topologically) the same as others.
 - Then we find the electrical islands.
 
-For both steps we use the islands search oved an adjacency matrix (A).
-In the first A we reflect the connections of the branches we want to reduce
-and all the buses, for the second A we reflect the connection of the branches
-that we want to keep.
+For both steps we use the islands search over an adjacency matrix (A).
+In the first connectivity matrix (A), we reflect the connections of the branches that we want to reduce.
+In the second connectivity matrix (A), we reflect the connection of the branches that we want to keep.
 
 .. figure:: ./../figures/TopologyProcessing1.png
     :alt: Topology processing steps
@@ -352,8 +363,9 @@ that we want to keep.
 Islands search function
 ------------------------------------
 
-The island search function is a depth-first search that exploits the CSC structure of the adjacency matrix.
-The particular version of the DFS algorithm presented here avoids recursivity in favor of cues for faster execution.
+The island search function is a depth-first search that exploits the CSC structure of
+the adjacency matrix. The particular version of the DFS algorithm presented here avoids
+recursivity in favor of cues for faster execution.
 
 .. code-block::
 
@@ -422,9 +434,9 @@ The spirit of CIM
 If you've encountered CIM or CGMES, or participated in guild discussions, you've
 likely heard about **node-breaker** and **bus-branch** modeling styles as distinct
 approaches. ENTSO-e's introductory CGMES training has historically taught that
-you can model using either **connectivity nodes** or **buses**. This guidance has
-been shared with hundreds of engineers accustomed to simpler models of buses,
-lines, etc., only to face what seems to be gratuitous complexity.
+you can model using either **connectivity nodes** or **TopologicalNodes** (AKA Buses).
+This guidance has been shared with hundreds of engineers accustomed to simpler
+models of buses, lines, etc., only to face what seems to be gratuitous complexity.
 
 After deep examination, one finds that this complexity is indeed unjustified.
 The **node-breaker** and **bus-branch** philosophies are fundamentally the same,
@@ -447,10 +459,10 @@ The modeling approaches are often thought of as follows:
 A common misconception is that bus-branch models lack switches, whereas node-
 breaker models include them. In practice, both approaches can incorporate
 switches. This fact is often emphasized in official CGMES trainings. If a
-**ConnectivityNode** must have a 0:1 association with a **TopologicalNode**, this
+**ConnectivityNode** must have a N:1 association with a **TopologicalNode**, this
 implies that any ConnectivityNode ultimately represents a TopologicalNode.
-This reinforces the argument that both are two faces of the same coin.
-**There is no difference. Both styles are fundamentally the same.**
+This reinforces the argument that both are two faces of the same coin,
+**Making both styles fundamentally equal.**
 
 **The Philosophy Behind CIM**
 
@@ -525,6 +537,10 @@ sets of objects for the same thing; Representing a node in a graph.
 
 By doing this, we also put an end to the node-breaker vs. bus-branch feud,
 allowing for compatibility with the so-called legacy models.
+
+.. figure:: ./../figures/TopologyRoundtrip.png
+    :alt: Topology processing steps
+
 
 Takeaways
 ^^^^^^^^^^

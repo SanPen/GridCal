@@ -503,16 +503,6 @@ class BranchParent(PhysicalDevice):
         else:
             return False
 
-    def apply_template(self, obj, Sbase, logger: Logger):
-        """
-        Virtual function to apply template
-        :param obj:
-        :param Sbase
-        :param logger
-        :return:
-        """
-        pass
-
     def get_substation_from(self) -> Union[Substation, None]:
         """
         Try to get the substation at the From side

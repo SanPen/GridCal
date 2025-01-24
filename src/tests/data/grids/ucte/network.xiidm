@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iidm:network xmlns:iidm="http://www.powsybl.org/schema/iidm/1_12" id="sim1" caseDate="2013-01-15T18:45:00.000+01:00" forecastDistance="0" sourceFormat="test" minimumValidationLevel="STEADY_STATE_HYPOTHESIS">
+    <iidm:substation id="P1" country="FR" tso="RTE" geographicalTags="A">
+        <iidm:voltageLevel id="VLGEN" nominalV="27.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="NGEN"/>
+                <iidm:bus id="NGEN2"/>
+                <iidm:bus id="NGEN3"/>
+                <iidm:bus id="F0000079"/>
+                <iidm:switch id="NGEN-NGEN2" kind="BREAKER" retained="true" open="false" bus1="NGEN" bus2="NGEN2"/>
+                <iidm:switch id="NGEN-NGEN3" kind="BREAKER" retained="true" open="false" bus1="NGEN" bus2="NGEN3"/>
+                <iidm:switch id="NGEN-NGEN4" kind="BREAKER" retained="true" open="false" bus1="NGEN" bus2="NGEN3"/>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="GEN" energySource="OTHER" minP="-9999.99" maxP="9999.99" voltageRegulatorOn="true" targetP="607.0" targetV="24.5" targetQ="301.0" bus="NGEN" connectableBus="NGEN">
+                <iidm:minMaxReactiveLimits minQ="-9999.99" maxQ="9999.99"/>
+            </iidm:generator>
+            <iidm:danglingLine id="DL1" name="Dangling Line 1" p0="100.0" q0="50.0" r="1.7" x="16.1" g="0.00001" b="0.000016" generationMinP="-1" generationMaxP="100" generationVoltageRegulationOn="false" generationTargetP="50" generationTargetQ="10"
+                               bus="NGEN2" connectableBus="NGEN2">
+                <iidm:minMaxReactiveLimits minQ="-1000.0" maxQ="1000.0"/>
+            </iidm:danglingLine>
+            <iidm:danglingLine id="DL2" name="Dangling Line 1" p0="100.0" q0="50.0" r="1.7" x="16.1" g="0.00001" b="0.000016" generationMinP="-1" generationMaxP="100" generationVoltageRegulationOn="false" generationTargetP="50" generationTargetQ="10"
+                               bus="NGEN2" connectableBus="NGEN2" pairingKey="X0000011">
+                <iidm:minMaxReactiveLimits minQ="-1000.0" maxQ="1000.0"/>
+            </iidm:danglingLine>
+            <iidm:danglingLine id="DL3" name="Dangling Line 1" p0="100.0" q0="50.0" r="1.7" x="16.1" g="0.00001" b="0.000016" generationMinP="-1" generationMaxP="100" generationVoltageRegulationOn="false" generationTargetP="50" generationTargetQ="10"
+                               bus="NGEN2" connectableBus="NGEN2" pairingKey="X000001$fgnjfn1">
+                <iidm:minMaxReactiveLimits minQ="-1000.0" maxQ="1000.0"/>
+            </iidm:danglingLine>
+        </iidm:voltageLevel>
+        <iidm:voltageLevel id="VLHV1" nominalV="380.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="NHV1"/>
+            </iidm:busBreakerTopology>
+        </iidm:voltageLevel>
+        <iidm:twoWindingsTransformer id="NGEN_NHV1" r="0.26658461538461536" x="11.104492831516762" g="0.0" b="0.0" ratedU1="24.0" ratedU2="400.0" voltageLevelId1="VLGEN" bus1="NGEN" connectableBus1="NGEN" voltageLevelId2="VLHV1" bus2="NHV1" connectableBus2="NHV1"/>
+    </iidm:substation>
+    <iidm:substation id="P2" country="FR" tso="RTE" geographicalTags="B">
+        <iidm:voltageLevel id="VLHV2" nominalV="380.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="NHV2"/>
+            </iidm:busBreakerTopology>
+        </iidm:voltageLevel>
+        <iidm:voltageLevel id="VLLOAD" nominalV="150.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="NLOAD"/>
+            </iidm:busBreakerTopology>
+            <iidm:load id="LOAD" loadType="UNDEFINED" p0="600.0" q0="200.0" bus="NLOAD" connectableBus="NLOAD"/>
+        </iidm:voltageLevel>
+        <iidm:twoWindingsTransformer id="NHV2_NLOAD" r="0.04724999999999999" x="4.049724365620455" g="0.0" b="0.0" ratedU1="400.0" ratedU2="158.0" voltageLevelId1="VLHV2" bus1="NHV2" connectableBus1="NHV2" voltageLevelId2="VLLOAD" bus2="NLOAD" connectableBus2="NLOAD">
+            <iidm:ratioTapChanger regulating="true" lowTapPosition="0" tapPosition="1" targetDeadband="0.0" loadTapChangingCapabilities="true" regulationMode="VOLTAGE" regulationValue="158.0">
+                <iidm:terminalRef id="NHV2_NLOAD" side="TWO"/>
+                <iidm:step r="0.0" x="0.0" g="0.0" b="0.0" rho="0.8505666905244191"/>
+                <iidm:step r="0.0" x="0.0" g="0.0" b="0.0" rho="1.0006666666666666"/>
+                <iidm:step r="0.0" x="0.0" g="0.0" b="0.0" rho="1.150766642808914"/>
+            </iidm:ratioTapChanger>
+        </iidm:twoWindingsTransformer>
+    </iidm:substation>
+    <iidm:substation id="P10" country="FR" tso="RTE" geographicalTags="A">
+        <iidm:voltageLevel id="VLTEST" nominalV="1.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="NHTEST"/>
+            </iidm:busBreakerTopology>
+        </iidm:voltageLevel>
+        <iidm:voltageLevel id="VLTEST2" nominalV="30000.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="NHTEST2"/>
+            </iidm:busBreakerTopology>
+        </iidm:voltageLevel>
+    </iidm:substation>
+    <iidm:line id="NHV1_NHV2_1" r="3.0" x="33.0" g1="0.0" b1="1.93E-4" g2="0.0" b2="1.93E-4" voltageLevelId1="VLHV1" bus1="NHV1" connectableBus1="NHV1" voltageLevelId2="VLHV2" bus2="NHV2" connectableBus2="NHV2"/>
+    <iidm:line id="NHV1_NHV2_2" r="3.0" x="33.0" g1="0.0" b1="1.93E-4" g2="0.0" b2="1.93E-4" voltageLevelId1="VLHV1" bus1="NHV1" connectableBus1="NHV1" voltageLevelId2="VLHV2" bus2="NHV2" connectableBus2="NHV2"/>
+</iidm:network>

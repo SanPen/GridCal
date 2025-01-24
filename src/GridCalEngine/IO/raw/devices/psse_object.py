@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import hashlib
 import uuid as uuidlib
-from typing import List, Dict, Union
+from typing import List, Dict, TypeVar
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_property import PsseProperty
 
@@ -18,6 +18,33 @@ def uuid_from_seed(seed: str):
     m = hashlib.md5()
     m.update(seed.encode('utf-8'))
     return uuidlib.UUID(m.hexdigest()).hex
+
+
+def format_raw_float(value: float) -> str:
+    """
+    Format a float in engineering notation with 5 decimals.
+    Ensure the formatted string doesn't exceed 8 characters when possible.
+    """
+    # Attempt engineering format with 5 decimals
+    formatted = f"{value:.5E}"
+
+    # Split into mantissa and exponent
+    mantissa, exponent = formatted.split("E")
+    exponent = int(exponent)
+
+    # Adjust the exponent to a multiple of 3
+    eng_exponent = 3 * (exponent // 3)
+    eng_mantissa = float(mantissa) * (10 ** (exponent - eng_exponent))
+
+    # Format the result
+    result = f"{eng_mantissa:.5f}E{eng_exponent:+03}"
+
+    # Ensure it fits within 8 characters
+    if len(result) <= 11:
+        return result
+    else:
+        # Fall back to a shorter general format if too long
+        return f"{value:.5g}"
 
 
 class RawObject:
@@ -71,7 +98,7 @@ class RawObject:
 
     def get_rawx_dict(self) -> Dict[str, PsseProperty]:
         """
-        Get the RAWX property dictionsry
+        Get the RAWX property dictionary
         :return: Dict[str, PsseProperty]
         """
 
@@ -81,13 +108,14 @@ class RawObject:
     def register_property(self,
                           property_name: str,
                           rawx_key: str,
-                          class_type: object,
+                          class_type: TypeVar | object,
                           unit: Unit = Unit(),
                           denominator_unit: Unit = Unit(),
                           description: str = '',
-                          max_chars=65000,
+                          max_chars=None,
                           min_value=-1e20,
-                          max_value=1e20):
+                          max_value=1e20,
+                          format_rule=None):
         """
         Register property of this object
         :param property_name:
@@ -109,7 +137,8 @@ class RawObject:
                                                                        description=description,
                                                                        max_chars=max_chars,
                                                                        min_value=min_value,
-                                                                       max_value=max_value)
+                                                                       max_value=max_value,
+                                                                       format_rule=format_rule)
         else:
             raise Exception('Property not found when trying to declare it :(')
 
@@ -130,19 +159,48 @@ class RawObject:
                     lst.append(str(val))
         return ", ".join(lst)
 
-    @staticmethod
-    def format_raw_line(props: List[Union[str, int, float]]) -> str:
+    def format_raw_line(self, props: List[str]) -> str:
         """
         Format a list of values
-        :param props: list of values
+        :param props: list of property names
         :return:
         """
         lst = list()
-        for val in props:
-            if type(val) == str:
-                lst.append("'" + val + "'")
+        for p_name in props:
+
+            prop = self.__registered_properties.get(p_name, None)
+
+            if prop is None:
+                raise Exception(f'Raw property {p_name} not found when trying to format it :(')
             else:
-                lst.append(str(val))
+                val = getattr(self, p_name)
+
+                if prop.class_type == str:
+                    str_val = str(val)
+                    if prop.max_chars is not None:
+                        lst.append(f"'{str_val.ljust(prop.max_chars)}'")
+                    else:
+                        lst.append(f"'{str_val}'")
+                elif prop.class_type == float:
+                    if prop.format_rule is None:
+                        str_val = format_raw_float(value=val)
+                    else:
+                        str_val = f"{val:{prop.format_rule}}"
+                    if prop.max_chars is not None:
+                        lst.append(f"{str_val.rjust(prop.max_chars)}")
+                    else:
+                        lst.append(f"{str_val.rjust(8)}")
+
+                elif prop.class_type == int:
+                    str_val = str(val)
+                    if prop.max_chars is not None:
+                        lst.append(f"{str_val.rjust(prop.max_chars)}")
+                    else:
+                        lst.append(f"{str_val.rjust(6)}")
+
+                else:
+                    lst.append(str(val))
+
         return ", ".join(lst)
 
     def get_raw_line(self, version: int) -> str:

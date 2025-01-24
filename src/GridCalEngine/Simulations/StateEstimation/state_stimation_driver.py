@@ -68,12 +68,12 @@ class StateEstimation(DriverTemplate):
         # bus measurements
         bus_dict = circuit.get_bus_index_dict()
 
-        for elm in circuit.get_pi_measurements():
-            se_input.p_inj_idx.append(bus_dict[elm.api_object])
+        for elm in circuit.get_p_measurements():
+            se_input.p_idx.append(bus_dict[elm.api_object])
             se_input.p_inj.append(elm)
 
-        for elm in circuit.get_qi_measurements():
-            se_input.q_inj_idx.append(bus_dict[elm.api_object])
+        for elm in circuit.get_q_measurements():
+            se_input.q_idx.append(bus_dict[elm.api_object])
             se_input.q_inj.append(elm)
 
         for elm in circuit.get_vm_measurements():
@@ -84,12 +84,12 @@ class StateEstimation(DriverTemplate):
         branch_dict = circuit.get_branches_wo_hvdc_index_dict()
 
         for elm in circuit.get_pf_measurements():
-            se_input.p_flow_idx.append(branch_dict[elm.api_object])
-            se_input.p_flow.append(elm)
+            se_input.pf_idx.append(branch_dict[elm.api_object])
+            se_input.pf_value.append(elm)
 
         for elm in circuit.get_qf_measurements():
-            se_input.q_flow_idx.append(branch_dict[elm.api_object])
-            se_input.q_flow.append(elm)
+            se_input.qf_idx.append(branch_dict[elm.api_object])
+            se_input.qf_value.append(elm)
 
         for elm in circuit.get_if_measurements():
             se_input.i_flow_idx.append(branch_dict[elm.api_object])
@@ -132,6 +132,7 @@ class StateEstimation(DriverTemplate):
                                    Ybus=adm.Ybus,
                                    Yf=adm.Yf,
                                    Yt=adm.Yt,
+                                   Yshunt_bus=adm.Yshunt_bus,
                                    F=island.passive_branch_data.F,
                                    T=island.passive_branch_data.T,
                                    se_input=se_input,

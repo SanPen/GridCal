@@ -390,7 +390,7 @@ class Transformer2W(ControllableBranchParent):
         Fix the inconsistencies
         :param logger:
         :param maximum_difference: proportion to be under or above
-        (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so its ok
+        (i.e. Transformer HV=41.9, bus HV=45 41.9/45 = 0.93 -> 0.9 <= 0.93 <= 1.1, so it's ok
         :return: were there any errors?
         """
         errors = False
@@ -423,7 +423,7 @@ class Transformer2W(ControllableBranchParent):
 
         return errors
 
-    def fill_design_properties(self, Pcu, Pfe, I0, Vsc, Sbase):
+    def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float):
         """
         Fill R, X, G, B from the short circuit study values
         :param Pcu: copper_losses (kW)
@@ -431,6 +431,7 @@ class Transformer2W(ControllableBranchParent):
         :param I0: No load current in %
         :param Vsc: Short circuit voltage (%)
         :param Sbase: Base power in MVA (take always 100 MVA)
+        :return: self pointer
         """
         tpe = TransformerType(hv_nominal_voltage=self.HV,
                               lv_nominal_voltage=self.LV,
@@ -449,6 +450,8 @@ class Transformer2W(ControllableBranchParent):
         self.X = np.round(z_series.imag, 6)
         self.G = np.round(y_shunt.real, 6)
         self.B = np.round(y_shunt.imag, 6)
+
+        return self
 
     def get_vcc(self) -> float:
         """

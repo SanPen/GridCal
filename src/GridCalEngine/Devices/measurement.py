@@ -9,6 +9,8 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.enumerations import DeviceType
 
+MEASURABLE_OBJECT = Union[Bus, BranchParent]
+
 
 class MeasurementTemplate(EditableDevice):
     """
@@ -17,7 +19,7 @@ class MeasurementTemplate(EditableDevice):
 
     def __init__(self, value: float,
                  uncertainty: float,
-                 api_obj: EditableDevice,
+                 api_obj: MEASURABLE_OBJECT,
                  name: str,
                  idtag: Union[str, None],
                  device_type: DeviceType):
@@ -36,7 +38,7 @@ class MeasurementTemplate(EditableDevice):
                                 device_type=device_type)
         self.value = float(value)
         self.sigma = float(uncertainty)
-        self.api_object: EditableDevice = api_obj
+        self.api_object: MEASURABLE_OBJECT = api_obj
 
         self.register("value", tpe=float, definition="Value of the measurement")
         self.register("sigma", tpe=float, definition="Uncertainty of the measurement")
@@ -56,7 +58,7 @@ class PiMeasurement(MeasurementTemplate):
                                      api_obj=api_obj,
                                      name=name,
                                      idtag=idtag,
-                                     device_type=DeviceType.PiMeasurementDevice)
+                                     device_type=DeviceType.PMeasurementDevice)
 
 
 class QiMeasurement(MeasurementTemplate):
@@ -72,7 +74,7 @@ class QiMeasurement(MeasurementTemplate):
                                      api_obj=api_obj,
                                      name=name,
                                      idtag=idtag,
-                                     device_type=DeviceType.QiMeasurementDevice)
+                                     device_type=DeviceType.QMeasurementDevice)
 
 
 class VmMeasurement(MeasurementTemplate):
@@ -121,6 +123,36 @@ class QfMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.QfMeasurementDevice)
+
+class PtMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.PtMeasurementDevice)
+
+class QtMeasurement(MeasurementTemplate):
+    """
+    Measurement class
+    """
+
+    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+                 idtag: Union[str, None] = None):
+        MeasurementTemplate.__init__(self,
+                                     value=value,
+                                     uncertainty=uncertainty,
+                                     api_obj=api_obj,
+                                     name=name,
+                                     idtag=idtag,
+                                     device_type=DeviceType.QtMeasurementDevice)
 
 
 class IfMeasurement(MeasurementTemplate):

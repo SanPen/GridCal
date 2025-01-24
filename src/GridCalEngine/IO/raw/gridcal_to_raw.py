@@ -2,10 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import math
+
 import numpy as np
 from typing import Dict
 from itertools import groupby
 from scipy.sparse import lil_matrix
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices import (RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator,
                                           RawSwitchedShunt, RawTransformer, RawBranch, RawVscDCLine,
@@ -14,6 +17,9 @@ from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import (TapChangerTypes,
+                                        TapPhaseControl,
+                                        TapModuleControl)
 
 
 def get_area(area: dev.Area, i: int) -> RawArea:
@@ -139,7 +145,8 @@ def get_psse_fixed_shunt(shunt: dev.Shunt, bus_dict: Dict[dev.Bus, int], id_numb
     return psse_shunt
 
 
-def get_psse_switched_shunt(shunt: dev.ControllableShunt, bus_dict: Dict[dev.Bus, int]) -> RawSwitchedShunt:
+def get_psse_switched_shunt(shunt: dev.ControllableShunt,
+                            bus_dict: Dict[dev.Bus, int]) -> RawSwitchedShunt:
     """
 
     :param shunt:
@@ -152,11 +159,14 @@ def get_psse_switched_shunt(shunt: dev.ControllableShunt, bus_dict: Dict[dev.Bus
 
     psse_switched_shunt.STATUS = 1 if shunt.active else 0
 
+    psse_switched_shunt.BINIT = shunt.B
+    psse_switched_shunt.STAT = int(shunt.active)
+
     if shunt.control_bus is not None and shunt.control_bus != shunt.bus:
         psse_switched_shunt.SWREG = bus_dict.get(shunt.control_bus, 0)
 
-    if len(shunt.g_steps) > 0:
-        diff_list = np.insert(np.diff(shunt.g_steps), 0, shunt.g_steps[0])
+    if len(shunt.b_steps) > 0:
+        diff_list = np.insert(np.diff(shunt.b_steps), 0, shunt.b_steps[0])
         aggregated_steps = [(sum(1 for _ in group), key) for key, group in groupby(diff_list)]
 
         for index, aggregated_step in enumerate(aggregated_steps):
@@ -197,7 +207,9 @@ def get_psse_generator(generator: dev.Generator, bus_dict: Dict[dev.Bus, int], i
     return psse_generator
 
 
-def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bus, int], ckt: int) -> RawTransformer:
+def get_psse_transformer2w(transformer: dev.Transformer2W,
+                           bus_dict: Dict[dev.Bus, int],
+                           ckt: int) -> RawTransformer:
     """
 
     :param transformer:
@@ -229,7 +241,7 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
 
     V1, V2 = transformer.get_from_to_nominal_voltages()
     psse_transformer.NOMV1 = V1
-    psse_transformer.NOMV2 = V2
+    psse_transformer.NOMV2 = V2 if V2 != V1 else 0.0
 
     psse_transformer.CZ = 1
     # 1 for resistance and reactance in pu on system MVA base and winding voltage base
@@ -247,10 +259,50 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
     psse_transformer.VMA1 = transformer.tap_changer.get_tap_module_max()
     psse_transformer.VMI1 = transformer.tap_changer.get_tap_module_min()
 
+    psse_transformer.ANG1 = np.rad2deg(transformer.tap_phase)
+
+    # Control types
+    if transformer.tap_changer.tc_type == TapChangerTypes.NoRegulation:
+
+        psse_transformer.COD1 = 0
+
+    elif transformer.tap_changer.tc_type == TapChangerTypes.VoltageRegulation:
+
+        if transformer.tap_module_control_mode == TapModuleControl.fixed:
+            psse_transformer.COD1 = -1
+        else:
+            psse_transformer.COD1 = 1
+
+    elif transformer.tap_changer.tc_type == TapChangerTypes.Symmetrical:
+
+        if transformer.tap_phase_control_mode == TapPhaseControl.fixed:
+            psse_transformer.COD1 = -3
+        else:
+            psse_transformer.COD1 = 3
+
+        # RMA - Phase shift angle in degrees when |COD1| is 3 or 5. No default is allowed
+        number_of_symmetrical_step = (transformer.tap_changer.total_positions - 1) / 2
+        psse_transformer.RMA1 = 2 * math.degrees(math.atan(
+             number_of_symmetrical_step * transformer.tap_changer.dV / 2
+        ))
+
+    elif transformer.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
+
+        if (transformer.tap_module_control_mode == TapModuleControl.fixed or
+                transformer.tap_phase_control_mode == TapPhaseControl.fixed):
+            psse_transformer.COD1 = -5
+        else:
+            psse_transformer.COD1 = 5
+        psse_transformer.CNXA1 = transformer.tap_changer.asymmetry_angle
+
+    else:
+        pass
+
     return psse_transformer
 
 
-def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bus, int]) -> RawTransformer:
+def get_psse_transformer3w(transformer: dev.Transformer3W,
+                           bus_dict: Dict[dev.Bus, int]) -> RawTransformer:
     """
 
     :param transformer:
@@ -259,6 +311,10 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     """
     psse_transformer = RawTransformer()
     psse_transformer.windings = 3
+
+    psse_transformer.NOMV1 = transformer.V1
+    psse_transformer.NOMV2 = transformer.V2
+    psse_transformer.NOMV3 = transformer.V3
 
     psse_transformer.idtag = transformer.idtag
     psse_transformer.STAT = 1 if transformer.active else 0
@@ -286,6 +342,13 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.J = bus_dict[transformer.bus2]
     psse_transformer.K = bus_dict[transformer.bus3]
     psse_transformer.CKT = ckt
+
+    psse_transformer.R1_2 = transformer.r12
+    psse_transformer.X1_2 = transformer.x12
+    psse_transformer.R2_3 = transformer.r23
+    psse_transformer.X2_3 = transformer.x23
+    psse_transformer.R3_1 = transformer.r31
+    psse_transformer.X3_1 = transformer.x31
 
     return psse_transformer
 
@@ -332,6 +395,12 @@ def get_vsc_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> Ra
     psse_vsc_dc_line.NAME = hvdc_line.name
     psse_vsc_dc_line.ACSET1 = hvdc_line.Vset_f
     psse_vsc_dc_line.ACSET2 = hvdc_line.Vset_t
+
+    V1 = hvdc_line.bus_from.Vnom * psse_vsc_dc_line.ACSET1
+    V2 = hvdc_line.bus_to.Vnom * psse_vsc_dc_line.ACSET2
+    dV = (V1 - V2) * 1000.0
+    P = hvdc_line.Pset / 1e-6
+    psse_vsc_dc_line.RDC = dV * dV / P if P != 0 else 0
 
     return psse_vsc_dc_line
 
@@ -495,7 +564,7 @@ def gridcal_to_raw(grid: MultiCircuit, logger: Logger) -> PsseCircuit:
     """
     psse_circuit = PsseCircuit()
 
-    # create dictionaires
+    # create dictionaries
     area_dict: Dict[dev.Area, int] = dict()
     zones_dict: Dict[dev.Zone, int] = dict()
 
@@ -510,11 +579,15 @@ def gridcal_to_raw(grid: MultiCircuit, logger: Logger) -> PsseCircuit:
         zones_dict[zone] = i + 1
 
     for i, bus in enumerate(grid.buses):
-        psse_bus = get_psse_bus(bus=bus,
-                                area_dict=area_dict,
-                                zones_dict=zones_dict,
-                                suggested_psse_number=counter.get_suggested_psse_number(bus=bus, logger=logger))
-        psse_circuit.buses.append(psse_bus)
+        if not bus.internal:
+            psse_bus = get_psse_bus(bus=bus,
+                                    area_dict=area_dict,
+                                    zones_dict=zones_dict,
+                                    suggested_psse_number=counter.get_suggested_psse_number(bus=bus, logger=logger))
+            psse_circuit.buses.append(psse_bus)
+        else:
+            logger.add_info(msg="Internal bus skipped at RAW export",
+                            device=bus.name)
 
     for load in grid.loads:
         psse_circuit.loads.append(get_psse_load(load=load,

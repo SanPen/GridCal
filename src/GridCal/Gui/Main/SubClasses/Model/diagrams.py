@@ -32,7 +32,7 @@ from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
                                                                    generate_schematic_diagram,
-                                                                   make_vecinity_diagram)
+                                                                   make_vicinity_diagram)
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
 from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
@@ -40,7 +40,6 @@ from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
-from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import OsmTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -160,27 +159,32 @@ class DiagramsMain(CompiledArraysMain):
             CartoDbTiles(
                 name='Carto voyager',
                 tiles_dir=os.path.join(tiles_path(), 'carto_db_voyager'),
-                tile_servers=["http://basemaps.cartocdn.com/rastertiles/voyager/"]
+                tile_servers=["https://basemaps.cartocdn.com/rastertiles/voyager/"]
             ),
             CartoDbTiles(
                 name='Carto positron',
                 tiles_dir=os.path.join(tiles_path(), 'carto_db_positron'),
-                tile_servers=['http://basemaps.cartocdn.com/light_all/']
+                tile_servers=['https://basemaps.cartocdn.com/light_all/']
             ),
             CartoDbTiles(
                 name='Carto dark matter',
                 tiles_dir=os.path.join(tiles_path(), 'carto_db_dark_matter'),
-                tile_servers=["http://basemaps.cartocdn.com/dark_all/"]
+                tile_servers=["https://basemaps.cartocdn.com/dark_all/"]
             ),
-            OsmTiles(
+            CartoDbTiles(
                 name='Open Street Map',
                 tiles_dir=os.path.join(tiles_path(), 'osm'),
                 tile_servers=["https://tile.openstreetmap.org"]
-            )
+            ),
+            # OimTiles(
+            #     name='Open infra Map',
+            #     tiles_dir=os.path.join(tiles_path(), 'osm'),
+            #     tile_servers=["https://openinframap.org/tiles"]
+            # )
         ]
-        tile_names = [tile.TilesetName for tile in self.tile_sources]
-        self.tile_index_dict = {tile.TilesetName: i for i, tile in enumerate(self.tile_sources)}
-        self.tile_name_dict = {tile.TilesetName: tile for tile in self.tile_sources}
+        tile_names = [tile.tile_set_name for tile in self.tile_sources]
+        self.tile_index_dict = {tile.tile_set_name: i for i, tile in enumerate(self.tile_sources)}
+        self.tile_name_dict = {tile.tile_set_name: tile for tile in self.tile_sources}
         self.ui.tile_provider_comboBox.setModel(gf.get_list_model(tile_names))
         self.ui.tile_provider_comboBox.setCurrentIndex(0)
 
@@ -1526,7 +1530,7 @@ class DiagramsMain(CompiledArraysMain):
                 diagram_widget.set_data(circuit=self.circuit, diagram=diagram)
 
             elif isinstance(diagram_widget, GridMapWidget):
-                diagram_widget.update_device_sizes()
+                diagram_widget.update_device_sizes(asynchronously=False)
 
     def set_selected_diagram_on_click(self):
         """
@@ -1614,9 +1618,9 @@ class DiagramsMain(CompiledArraysMain):
                 self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
                 self.set_diagrams_list_view()
 
-    def add_bus_vecinity_diagram_from_model(self):
+    def add_bus_vicinity_diagram_from_model(self):
         """
-        Add a bus vecinity diagram
+        Add a bus vicinity diagram
         :return:
         """
         model = self.ui.dataStructureTableView.model()
@@ -1676,11 +1680,11 @@ class DiagramsMain(CompiledArraysMain):
 
                         dlg = InputNumberDialogue(min_value=1, max_value=99,
                                                   default_value=1, is_int=True,
-                                                  title='Vecinity diagram',
+                                                  title='Vicinity diagram',
                                                   text='Select the expansion level')
 
                         if dlg.exec():
-                            diagram = make_vecinity_diagram(circuit=self.circuit,
+                            diagram = make_vicinity_diagram(circuit=self.circuit,
                                                             root_bus=root_bus,
                                                             max_level=dlg.value)
 
@@ -1701,11 +1705,11 @@ class DiagramsMain(CompiledArraysMain):
         """
         dlg = InputNumberDialogue(min_value=1, max_value=99,
                                   default_value=1, is_int=True,
-                                  title='Vecinity diagram',
-                                  text='Select the expansion level')
+                                  title='Vicinity diagram',
+                                  text=f'Set the expansion level from {root_bus.name}')
 
         if dlg.exec():
-            diagram = make_vecinity_diagram(circuit=self.circuit,
+            diagram = make_vicinity_diagram(circuit=self.circuit,
                                             root_bus=root_bus,
                                             max_level=dlg.value)
 
@@ -1727,7 +1731,7 @@ class DiagramsMain(CompiledArraysMain):
         buses = self.circuit.get_substation_buses(substation=substation)
 
         if len(buses):
-            diagram = make_vecinity_diagram(circuit=self.circuit,
+            diagram = make_vicinity_diagram(circuit=self.circuit,
                                             root_bus=buses[0],
                                             max_level=2,
                                             prog_func=None,
@@ -1787,13 +1791,17 @@ class DiagramsMain(CompiledArraysMain):
                     call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation
                 )
 
-                # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
+                # map_widget.go_to_level_and_position(5, -15.41, 40.11)
                 self.diagram_widgets_list.append(map_widget)
 
             else:
                 raise Exception("Unknown diagram type")
 
         self.set_diagrams_list_view()
+
+        if len(self.diagram_widgets_list) > 0:
+            diagram = self.diagram_widgets_list[0]
+            self.set_diagram_widget(diagram)
 
     def add_map_diagram(self, ask: bool = True) -> None:
         """
@@ -1949,7 +1957,7 @@ class DiagramsMain(CompiledArraysMain):
 
         if isinstance(widget, GridMapWidget):
             self.ui.tile_provider_comboBox.setEnabled(True)
-            self.ui.tile_provider_comboBox.setCurrentIndex(self.tile_index_dict[widget.map.tile_src.TilesetName])
+            self.ui.tile_provider_comboBox.setCurrentIndex(self.tile_index_dict[widget.map.tile_src.tile_set_name])
         else:
             self.ui.tile_provider_comboBox.setEnabled(False)
 

@@ -72,6 +72,8 @@ MEASUREMENT_TYPES = Union[
     IfMeasurement,
     QfMeasurement,
     PfMeasurement,
+    QtMeasurement,
+    PtMeasurement,
     QiMeasurement,
     PiMeasurement,
     VmMeasurement

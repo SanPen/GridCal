@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from typing import Union, Tuple, List
+from typing import Union, List
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -12,7 +12,7 @@ from GridCalEngine.enumerations import BuildStatus, SubObjectType, DeviceType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
-from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
+from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType, get_line_impedances_with_c
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Associations.association import Associations
@@ -175,7 +175,7 @@ class Line(BranchParent):
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
                       profile_name='temp_oper_prof')
         self.register(key='alpha', units='1/ºC', tpe=float,
-                      definition='Thermal coefficient to modify R,around a reference temperatureusing a '
+                      definition='Thermal coefficient to modify R,around a reference temperature using a '
                                  'linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,'
                                  'Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330')
         self.register(key='r_fault', units='p.u.', tpe=float,
@@ -293,9 +293,8 @@ class Line(BranchParent):
 
     def set_length(self, val: float):
         """
-
-        :param val:
-        :return:
+        Set the line length and change the electric parameters of the line as a consequence.
+        :param val: value in km
         """
         if isinstance(val, float):
             if val > 0.0:
@@ -363,9 +362,9 @@ class Line(BranchParent):
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
 
-    def change_base(self, Sbase_old, Sbase_new):
+    def change_base(self, Sbase_old: float, Sbase_new: float):
         """
-        Change the inpedance base
+        Change the impedance base
         :param Sbase_old: old base (MVA)
         :param Sbase_new: new base (MVA)
         """
@@ -377,25 +376,31 @@ class Line(BranchParent):
 
     def get_weight(self) -> float:
         """
-        Get a weight of this line for graph porpuses
-        the weight is the impedance moudule (sqrt(r^2 + x^2))
+        Get a weight of this line for graph purposes
+        the weight is the impedance module (sqrt(r^2 + x^2))
         :return: weight value
         """
         return np.sqrt(self.R * self.R + self.X * self.X)
 
-    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType], Sbase: float,
+    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType],
+                       Sbase: float, freq: float,
                        logger=Logger()):
         """
         Apply a line template to this object
         :param obj: OverheadLineType, UndergroundLineType, SequenceLineType
         :param Sbase: Nominal power in MVA
+        :param freq: Frequency in Hz
         :param logger: Logger
         """
 
         if type(obj) in [OverheadLineType, UndergroundLineType, SequenceLineType]:
 
-            self.R, self.X, self.B, self.R0, self.X0, self.B0, self.rate = obj.get_values(Sbase=Sbase,
-                                                                                          length=self.length)
+            (self.R, self.X, self.B,
+             self.R0, self.X0, self.B0,
+             self.rate) = obj.get_values(Sbase=Sbase,
+                                         freq=freq,
+                                         length=self.length,
+                                         line_Vnom=self.get_max_bus_nominal_voltage())
 
             if self.template is not None:
                 if obj != self.template:
@@ -486,35 +491,30 @@ class Line(BranchParent):
         elm.temperature_prof = self.temp_oper_prof
         return elm
 
-    def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase, apply_to_profile: bool = True, ):
+    def fill_design_properties(self, r_ohm: float, x_ohm: float, c_nf: float, length: float,
+                               Imax: float, freq: float, Sbase: float, apply_to_profile: bool = True, ):
         """
         Fill R, X, B from not-in-per-unit parameters
         :param r_ohm: Resistance per km in OHM/km
         :param x_ohm: Reactance per km in OHM/km
         :param c_nf: Capacitance per km in nF/km
-        :param length: lenght in kn
+        :param length: length in kn
         :param Imax: Maximum current in kA
         :param freq: System frequency in Hz
         :param Sbase: Base power in MVA (take always 100 MVA)
         :param apply_to_profile: modify the profile is checked
+        :return self pointer
         """
-        r_ohm_total = r_ohm * length
-        x_ohm_total = x_ohm * length
-        # impedance = 1 / (2 * pi * f * c),
-        # susceptance = (2 * pi * f * c)
-        b_siemens_total = (2 * np.pi * freq * c_nf * 1e-9) * length
-
-        Vf = self.get_max_bus_nominal_voltage()
-
-        Zbase = (Vf * Vf) / Sbase
-        Ybase = 1.0 / Zbase
-
-        self.R = np.round(r_ohm_total / Zbase, 6)
-        self.X = np.round(x_ohm_total / Zbase, 6)
-        self.B = np.round(b_siemens_total / Ybase, 6)
+        self.R, self.X, self.B, new_rate = get_line_impedances_with_c(r_ohm=r_ohm,
+                                                                      x_ohm=x_ohm,
+                                                                      c_nf=c_nf,
+                                                                      length=length,
+                                                                      Imax=Imax,
+                                                                      freq=freq,
+                                                                      Sbase=Sbase,
+                                                                      Vnom=self.get_max_bus_nominal_voltage())
 
         old_rate = float(self.rate)
-        new_rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
 
         self.rate = new_rate
         self._length = length
@@ -522,3 +522,5 @@ class Line(BranchParent):
         if apply_to_profile:
             prof_old = self.rate_prof.toarray()
             self.rate_prof.set(prof_old * new_rate / old_rate)
+
+        return self

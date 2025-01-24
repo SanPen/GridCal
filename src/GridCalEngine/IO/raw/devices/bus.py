@@ -19,20 +19,21 @@ class RawBus(RawObject):
         self.IDE = 1
         self.AREA = 0
         self.ZONE = 0
-        self.OWNER = 0
+        self.OWNER = 1
         self.VM = 1.0
         self.VA = 0.0
-        self.NVHI = 0
-        self.NVLO = 0
-        self.EVHI = 0
-        self.EVLO = 0
+        self.NVHI = 1.05
+        self.NVLO = 0.95
+        self.EVHI = 1.1
+        self.EVLO = 0.9
 
         self.register_property(property_name="I",
                                rawx_key="ibus",
                                class_type=int,
                                description="Bus number",
                                min_value=1,
-                               max_value=999997)
+                               max_value=999997,
+                               max_chars=6)
 
         self.register_property(property_name="NAME",
                                rawx_key="name",
@@ -45,14 +46,16 @@ class RawBus(RawObject):
                                class_type=float,
                                description="Bus base voltage",
                                unit=Unit.get_kv(),
-                               min_value=0.0)
+                               min_value=0.0,
+                               format_rule=".4f")
 
         self.register_property(property_name="IDE",
                                rawx_key="ide",
                                class_type=int,
                                description="Bus type (0:Disconnected, 1:PQ, 2:PV, 3:Slack)",
                                min_value=1,
-                               max_value=4)
+                               max_value=4,
+                               max_chars=1)
 
         self.register_property(property_name="AREA",
                                rawx_key="area",
@@ -81,7 +84,8 @@ class RawBus(RawObject):
                                description="Bus voltage magnitude",
                                unit=Unit.get_pu(),
                                min_value=0.0,
-                               max_value=2.0)
+                               max_value=2.0,
+                               format_rule=".5f")
 
         self.register_property(property_name="VA",
                                rawx_key="va",
@@ -89,31 +93,36 @@ class RawBus(RawObject):
                                description="Bus voltage angle",
                                unit=Unit.get_deg(),
                                min_value=0.0,
-                               max_value=360.0)
+                               max_value=360.0,
+                               format_rule=".4f")
 
         self.register_property(property_name="NVHI",
                                rawx_key="nvhi",
                                class_type=float,
                                description="Normal voltage magnitude high limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name="NVLO",
                                rawx_key="nvlo",
                                class_type=float,
                                description="Normal voltage magnitude low limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name="EVHI",
                                rawx_key="evhi",
                                class_type=float,
                                description="Emergency voltage magnitude high limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
         self.register_property(property_name="EVLO",
                                rawx_key="evlo",
                                class_type=float,
                                description="Emergency voltage magnitude low limit",
-                               unit=Unit.get_pu())
+                               unit=Unit.get_pu(),
+                               format_rule=".5f")
 
     def parse(self, data, version, logger: Logger):
         """
@@ -171,17 +180,17 @@ class RawBus(RawObject):
         #     raise Exception('Bus not implemented for version', str(version))
 
         if version >= 33:
-            return self.format_raw_line([self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
-                                         self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO])
+            return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "AREA", "ZONE",
+                                         "OWNER", "VM", "VA", "NVHI", "NVLO", "EVHI", "EVLO"])
 
         elif version == 32:
 
-            return self.format_raw_line([self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
-                                         self.OWNER, self.VM, self.VA])
+            return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "AREA", "ZONE",
+                                         "OWNER", "VM", "VA"])
 
         elif version in [29, 30]:
-            return self.format_raw_line([self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL,
-                                         self.AREA, self.ZONE, self.VM, self.VA, self.OWNER])
+            return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "GL", "BL",
+                                         "AREA", "ZONE", "VM", "VA", "OWNER"])
 
         else:
             raise Exception('Bus not implemented for version', str(version))

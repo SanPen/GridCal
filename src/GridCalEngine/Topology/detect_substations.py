@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import List, Union, TYPE_CHECKING
 import numpy as np
 import GridCalEngine.Devices as dev
+from GridCalEngine import DeviceType
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
 from GridCalEngine.basic_structures import IntVec
@@ -40,10 +41,21 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
     buses = grid.get_buses()
 
     # create a connectivity matrix only with transformers and lines with small (r+x)
-    branches: List[BRANCH_TYPES] = grid.get_transformers2w() + grid.get_windings()
-    for line in grid.get_lines():
-        if (line.R + line.X) <= r_x_threshold:
-            branches.append(line)
+    branches: List[BRANCH_TYPES] = list()
+    reducible_types = [
+        DeviceType.Transformer2WDevice,
+        DeviceType.WindingDevice,
+        DeviceType.SeriesReactanceDevice,
+        DeviceType.VscDevice
+    ]  # these are devices that are supposed to "live" within a substation
+
+    for br in grid.get_branches(add_hvdc=True, add_vsc=True, add_switch=True):
+        if br.reducible or br.device_type in reducible_types:
+            branches.append(br)
+        elif br.device_type == DeviceType.LineDevice:
+            if br.R > 0.0 or br.X > 0.0:
+                if (br.R + br.X) <= r_x_threshold:
+                    branches.append(br)
 
     # build the connectivity matrix
     nbr = len(branches)
@@ -114,7 +126,7 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
 def detect_facilities(grid: MultiCircuit) -> None:
     """
     Create facilities automatically
-    In essence is packing all the injections connected to he same bus into a facility object
+    In essence is packing all the injections connected to the same bus into a facility object
     :param grid: MultiCircuit
     """
     dict_bus_inj = grid.get_injection_devices_grouped_by_bus()

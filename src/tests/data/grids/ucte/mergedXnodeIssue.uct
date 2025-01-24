@@ -1,0 +1,15 @@
+##C 2007.05.01
+Test case for UCTE import issue in iPST entso-e package
+contact : sebastien.murgey@rte-france.com
+##N
+##ZXX
+XXNODE11              1 0      0       0       0       0       0       0       0       0       0     0       0       0
+XXNODE12              1 0      0       0       0       0       0       0       0       0       0     0       0       0
+##ZFR
+FRNODE11              0 0      0     100       0       0       0       0       0       0       0     0       0       0
+##ZES
+ESNODE11              0 0    400       0       0    -100       0       0    -200     200    -200     0       0       0
+##L
+FRNODE11 XXNODE11 1 0      2     10       65    200 INTERCO FR
+ESNODE11 XXNODE12 1 0      2     10       65    200 DANGLING XNODE
+ESNODE11 XXNODE11 1 0      2     10       65    200 INTERCO ES
