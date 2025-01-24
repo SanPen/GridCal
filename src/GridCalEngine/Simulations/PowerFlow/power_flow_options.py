@@ -46,7 +46,7 @@ class PowerFlowOptions(OptionsTemplate):
         :param branch_impedance_tolerance_mode: Type of modification of the Branches impedance
         :param distributed_slack: Applies the redistribution of the slack power proportionally among the controlled generators
         :param ignore_single_node_islands: If True the islands of 1 node are ignored
-        :param trust_radius:
+        :param trust_radius: trust radius used in some numerical methods like NR. It should be < 1.
         :param backtracking_parameter: parameter used to correct the "bad" iterations, typically 0.5
         :param use_stored_guess: Use the existing solution from the Bus class (Vm0, Va0)
         :param generate_report: Generate the power flow report after the solution?
