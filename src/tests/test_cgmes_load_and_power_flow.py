@@ -21,12 +21,12 @@ def test_load_and_run_pf() -> None:
         {"BD": os.path.join(base_folder, 'MicroGrid', 'BaseCase_BC',
                             'CGMES_v2.4.15_MicroGridTestConfiguration_BD_v2.zip'),
          "Files": [
-             os.path.join(base_folder, 'MicroGrid', 'BaseCase_BC',
-                          'CGMES_v2.4.15_MicroGridTestConfiguration_BC_Assembled_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'BaseCase_BC',
+             #              'CGMES_v2.4.15_MicroGridTestConfiguration_BC_Assembled_v2.zip'),
              # os.path.join(base_folder, 'MicroGrid', 'BaseCase_BC',
              #              'CGMES_v2.4.15_MicroGridTestConfiguration_BC_BE_v2.zip'),
-             # os.path.join(base_folder, 'MicroGrid', 'BaseCase_BC',
-             #              'CGMES_v2.4.15_MicroGridTestConfiguration_BC_NL_v2.zip'),
+             os.path.join(base_folder, 'MicroGrid', 'BaseCase_BC',
+                          'CGMES_v2.4.15_MicroGridTestConfiguration_BC_NL_v2.zip'),
          ]
          },
 
@@ -189,12 +189,12 @@ def test_load_and_run_pf() -> None:
                 failures += 1
 
             if grid is not None:
-                gce.power_flow(grid)
-                # try:
-                #     gce.power_flow(grid)
-                # except Exception as e:
-                #     logger.add_error(msg="Failed PF - " + str(e), device=os.path.basename(fname))
-                #     failures += 1
+                # gce.power_flow(grid)
+                try:
+                    gce.power_flow(grid)
+                except Exception as e:
+                    logger.add_error(msg="Failed PF - " + str(e), device=os.path.basename(fname))
+                    failures += 1
 
             # print("*" * 200)
 
