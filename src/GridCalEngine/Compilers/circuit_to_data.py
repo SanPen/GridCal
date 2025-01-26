@@ -639,6 +639,7 @@ def fill_generator_parent(
 
     data.controllable[k] = elm.is_controlled
     data.installed_p[k] = elm.Snom
+    bus_data.installed_power[i] += elm.Snom
 
     # r0, r1, r2, x0, x1, x2
     data.r0[k] = elm.R0

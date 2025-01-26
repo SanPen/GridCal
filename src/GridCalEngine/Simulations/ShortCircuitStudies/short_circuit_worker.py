@@ -152,7 +152,7 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
 
     Y_gen1 = nc.generator_data.get_Yshunt(seq=1)
     Y_batt1 = nc.battery_data.get_Yshunt(seq=1)
-    Yshunt_bus1 = nc.get_Yshunt_bus() + Y_gen1 + Y_batt1
+    Yshunt_bus1 = nc.get_Yshunt_bus_pu() + Y_gen1 + Y_batt1
 
     adm1 = compute_admittances(R=nc.passive_branch_data.R,
                                X=nc.passive_branch_data.X,

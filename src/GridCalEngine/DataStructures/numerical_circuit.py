@@ -520,7 +520,7 @@ class NumericalCircuit:
         """
         return self.load_data.get_admittance_injections_per_bus() / self.Sbase
 
-    def get_Yshunt_bus(self) -> CxVec:
+    def get_Yshunt_bus_pu(self) -> CxVec:
         """
 
         :return:
@@ -541,8 +541,8 @@ class NumericalCircuit:
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
 
-        self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
-        self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
+        # self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
+        # self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
 
         if self.active_branch_data.any_pf_control is False:
             if self.vsc_data.nelm > 0:
@@ -766,7 +766,7 @@ class NumericalCircuit:
             tap_angle=self.active_branch_data.tap_angle,
             Cf=self.passive_branch_data.Cf.tocsc(),
             Ct=self.passive_branch_data.Ct.tocsc(),
-            Yshunt_bus=self.get_Yshunt_bus(),
+            Yshunt_bus=self.get_Yshunt_bus_pu(),
             conn=self.passive_branch_data.conn,
             seq=1
         )
@@ -795,7 +795,7 @@ class NumericalCircuit:
             a=np.zeros(self.nbr, dtype=float),
             b=np.zeros(self.nbr, dtype=float),
             c=np.zeros(self.nbr, dtype=float),
-            Yshunt_bus=self.get_Yshunt_bus(),
+            Yshunt_bus=self.get_Yshunt_bus_pu(),
         )
 
     def get_fast_decoupled_amittances(self) -> ycalc.FastDecoupledAdmittanceMatrices:
@@ -1015,7 +1015,7 @@ class NumericalCircuit:
 
         elif structure_type == 'Yshunt':
             df = pd.DataFrame(
-                data=self.get_Yshunt_bus(),
+                data=self.get_Yshunt_bus_pu(),
                 columns=['Shunt admittance (p.u.)'],
                 index=self.bus_data.names,
             )
@@ -1415,10 +1415,12 @@ class NumericalCircuit:
                                               elm_active=self.passive_branch_data.active,
                                               F=self.passive_branch_data.F,
                                               T=self.passive_branch_data.T)
+
         hvdc_idx = tp.get_island_branch_indices(bus_map=bus_map,
                                                 elm_active=self.hvdc_data.active,
                                                 F=self.hvdc_data.F,
                                                 T=self.hvdc_data.T)
+
         vsc_idx = tp.get_island_branch_indices(bus_map=bus_map,
                                                elm_active=self.vsc_data.active,
                                                F=self.vsc_data.F,
@@ -1427,12 +1429,15 @@ class NumericalCircuit:
         load_idx = tp.get_island_monopole_indices(bus_map=bus_map,
                                                   elm_active=self.load_data.active,
                                                   elm_bus=self.load_data.bus_idx)
+
         gen_idx = tp.get_island_monopole_indices(bus_map=bus_map,
                                                  elm_active=self.generator_data.active,
                                                  elm_bus=self.generator_data.bus_idx)
+
         batt_idx = tp.get_island_monopole_indices(bus_map=bus_map,
                                                   elm_active=self.battery_data.active,
                                                   elm_bus=self.battery_data.bus_idx)
+
         shunt_idx = tp.get_island_monopole_indices(bus_map=bus_map,
                                                    elm_active=self.shunt_data.active,
                                                    elm_bus=self.shunt_data.bus_idx)
