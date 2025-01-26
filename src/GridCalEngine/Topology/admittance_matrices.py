@@ -34,10 +34,10 @@ class AdmittanceMatrices:
         :param Yt: Admittance matrix of the branches with their "to" bus
         :param Cf: Connectivity matrix of the branches with their "from" bus
         :param Ct: Connectivity matrix of the branches with their "to" bus
-        :param yff: admitance from-from primitives vector
-        :param yft: admitance from-to primitives vector
-        :param ytf: admitance to-from primitives vector
-        :param ytt: admitance to-to primitives vector
+        :param yff: admittance from-from primitives vector
+        :param yft: admittance from-to primitives vector
+        :param ytf: admittance to-from primitives vector
+        :param ytt: admittance to-to primitives vector
         :param Yshunt_bus: array of shunt admittances per bus
         """
         self.Ybus = Ybus if Ybus.format == 'csc' else Ybus.tocsc()
@@ -119,7 +119,6 @@ def compute_admittances(R: Vec,
                         X: Vec,
                         G: Vec,
                         B: Vec,
-                        k: Vec,
                         tap_module: Vec,
                         vtap_f: Vec,
                         vtap_t: Vec,
@@ -138,7 +137,6 @@ def compute_admittances(R: Vec,
     :param X: array of branch reactance (p.u.)
     :param G: array of branch conductance (p.u.)
     :param B: array of branch susceptance (p.u.)
-    :param k: array of converter values: 1 for regular Branches, sqrt(3) / 2 for VSC
     :param tap_module: array of tap modules (for all Branches, regardless of their type)
     :param vtap_f: array of virtual taps at the "from" side
     :param vtap_t: array of virtual taps at the "to" side
@@ -160,9 +158,6 @@ def compute_admittances(R: Vec,
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
     bc2 = (G + 1j * B) / 2.0  # shunt admittance
 
-    # k is already filled with the appropriate value for each type of branch
-    mp = k * tap_module
-
     # compose the primitives
     if add_windings_phase:
 
@@ -183,9 +178,9 @@ def compute_admittances(R: Vec,
                 elif con == WindingsConnection.GD:
                     ysf[i] = ys[i]
 
-            yff = (ysf + bc2) / (mp * mp * vtap_f * vtap_f)
-            yft = -ysft / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-            ytf = -ysft / (mp * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
+            yff = (ysf + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+            yft = -ysft / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+            ytf = -ysft / (tap_module * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
             ytt = (yst + bc2) / (vtap_t * vtap_t)
 
         elif seq == 2:  # negative sequence
@@ -193,9 +188,9 @@ def compute_admittances(R: Vec,
             factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
                                    for con in conn])
 
-            yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-            yft = -ys / (mp * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * np.conj(factor_psh)
-            ytf = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * factor_psh
+            yff = (ys + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+            yft = -ys / (tap_module * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * np.conj(factor_psh)
+            ytf = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * factor_psh
             ytt = (ys + bc2) / (vtap_t * vtap_t)
 
         elif seq == 1:  # positive sequence
@@ -204,18 +199,18 @@ def compute_admittances(R: Vec,
             factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
                                    for con in conn])
 
-            yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-            yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
-            ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
+            yff = (ys + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+            yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
+            ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
             ytt = (ys + bc2) / (vtap_t * vtap_t)
         else:
             raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
 
     else:  # original
         # with np.errstate(all='raise'):
-        yff = (ys + bc2) / (mp * mp * vtap_f * vtap_f)
-        yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        yff = (ys + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+        yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
         ytt = (ys + bc2) / (vtap_t * vtap_t)
 
         # tap = tap_module * np.exp(1.0j * tap_angle)
@@ -482,20 +477,13 @@ def compute_split_admittances(R: Vec,
                               X: Vec,
                               G: Vec,
                               B: Vec,
-                              k: Vec,
                               active: IntVec,
                               tap_module: Vec,
                               vtap_f: Vec,
                               vtap_t: Vec,
                               tap_angle: Vec,
-                              Beq: Vec,
-                              If: CxVec,
                               Cf: sp.csc_matrix,
                               Ct: sp.csc_matrix,
-                              G0sw: Vec,
-                              a: Vec,
-                              b: Vec,
-                              c: Vec,
                               Yshunt_bus: CxVec) -> SeriesAdmittanceMatrices:
     """
     Compute the complete admittance matrices for the helm method and others that may require them
@@ -503,34 +491,25 @@ def compute_split_admittances(R: Vec,
     :param X: array of branch reactance (p.u.)
     :param G: array of branch conductance (p.u.)
     :param B: array of branch susceptance (p.u.)
-    :param k: array of converter values: 1 for regular Branches, sqrt(3) / 2 for VSC
     :param active: array of active branches (bool)
     :param tap_module: array of tap modules (for all Branches, regardless of their type)
     :param vtap_f: array of virtual taps at the "from" side
     :param vtap_t: array of virtual taps at the "to" side
     :param tap_angle: array of tap angles (for all Branches, regardless of their type)
-    :param Beq: Array of equivalent susceptance
-    :param If: Array of currents "from" in all the Branches
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
-    :param G0sw: base converter switching losses
-    :param a: quadratic converter losses coefficient
-    :param b: linear converter losses coefficient
-    :param c: constant converter losses coefficient
     :param Yshunt_bus: array of shunts equivalent power per bus (p.u.)
     :return: Yseries, Yshunt
     """
-
-    Gsw = G0sw + a * np.power(If, 2) + b * If + c
 
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
     ysh = (G + 1j * B) / 2  # shunt admittance
 
     # k is already filled with the appropriate value for each type of branch
-    tap = k * tap_module * np.exp(1.0j * tap_angle)
+    tap = tap_module * np.exp(1.0j * tap_angle)
 
     # compose the primitives
-    yff = Gsw + ys / (tap * np.conj(tap) * vtap_f * vtap_f)
+    yff = ys / (tap * np.conj(tap) * vtap_f * vtap_f)
     yft = - ys / (np.conj(tap) * vtap_f * vtap_t)
     ytf = - ys / (tap * vtap_t * vtap_f)
     ytt = ys / (vtap_t * vtap_t)
@@ -555,22 +534,12 @@ def compute_split_admittances(R: Vec,
 
 class FastDecoupledAdmittanceMatrices:
     """
-    Admittance matrices for HELM and the AC linear methods
+    Admittance matrices for Fast decoupled method
     """
 
     def __init__(self, B1: sp.csc_matrix, B2: sp.csc_matrix):
         self.B1 = B1
         self.B2 = B2
-
-
-class GeneralisedACDCAdmittanceMatrices:
-    """
-    Admittance matrices for the generalised AC-DC power flow
-    """
-
-    def __init__(self, Yac: sp.csc_matrix, Ydc: sp.csc_matrix):
-        self.Yac = Yac
-        self.Ydc = Ydc
 
 
 def compute_fast_decoupled_admittances(X: Vec,
@@ -660,7 +629,7 @@ def compute_linear_admittances(nbr: int,
     :param Ct: Connectivity branch-bus "to" with the branch states computed
     :param ac: array of ac Branches indices
     :param dc: array of dc Branches indices
-    :return: Bbus, Bf, Btau
+    :return: Bbus, Bf
     """
     if len(dc):
         # compose the vector for AC-DC grids where the R is needed for this matrix
