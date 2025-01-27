@@ -833,7 +833,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         tap_changer.name = f'_tc_{mc_elm.name}'
         tap_changer.shortName = f'_tc_{mc_elm.name}'
 
-        tap_changer.neutralU = pte1.BaseVoltage.nominalVoltage
+        tap_changer.neutralU = pte1.ratedU
         tap_changer.TransformerEnd = pte1
 
         # STEPs
