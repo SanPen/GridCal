@@ -285,13 +285,19 @@ class MapView(QGraphicsView):
         if val:
             if event.angleDelta().y() > 0:
                 self.schema_zoom = self.schema_zoom * self.map_widget.zoom_factor
-                self.scale(self.map_widget.zoom_factor, self.map_widget.zoom_factor)
+                self.scale(
+                    self.map_widget.zoom_factor,
+                    self.map_widget.zoom_factor
+                )
             else:
                 self.schema_zoom = self.schema_zoom / self.map_widget.zoom_factor
-                self.scale(1.0 / self.map_widget.zoom_factor, 1.0 / self.map_widget.zoom_factor)
+                self.scale(
+                    1.0 / self.map_widget.zoom_factor,
+                    1.0 / self.map_widget.zoom_factor
+                )
         else:
             self.map_widget.level = zoomInitial
-            val = self.map_widget.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
+            self.map_widget.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
 
         self.map_widget.wheelEvent(event)
 
@@ -370,26 +376,26 @@ class MapView(QGraphicsView):
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
         Convert x, y position in the map to latitude and longitude
-        :param x:
-        :param y:
-        :return:
+        :param x: x position in pixels
+        :param y: y position in pixels
+        :return: latitude, longitude
         """
 
         ix, iy = self.map_widget.geo_to_view(longitude=0, latitude=0)
 
-        x = (x * self.schema_zoom) + ix
-        y = (y * self.schema_zoom) + iy
+        x2 = (x * self.schema_zoom) + ix
+        y2 = (y * self.schema_zoom) + iy
 
-        lon, lat = self.map_widget.view_to_geo_float(xview=x, yview=y)
+        lon, lat = self.map_widget.view_to_geo_float(xview=x2, yview=y2)
 
         return lat, lon
 
     def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
         """
 
-        :param lat:
-        :param lon:
-        :return:
+        :param lat: latitude (deg)
+        :param lon: longitude (deg)
+        :return: x, y in the map
         """
 
         ix, iy = self.map_widget.geo_to_view(longitude=0.0, latitude=0.0)
@@ -1577,8 +1583,8 @@ class MapWidget(QWidget):
         if longitude is None:
             return
 
-        # convert the geo posn to a tile position
-        (tile_x, tile_y) = self.tile_src.Geo2Tile(longitude, latitude)
+        # convert the geo position to a tile position
+        tile_x, tile_y = self.tile_src.Geo2Tile(longitude, latitude)
 
         # determine what the new key tile should be
         # figure out number of tiles from centre point to edges
@@ -1720,10 +1726,6 @@ class MapWidget(QWidget):
         if self.key_tile_top < 0:
             self.key_tile_top = 0
             self.key_tile_y_offset = (self.view_height - self.map_height) // 2
-
-    ######
-    #
-    ######
 
     @staticmethod
     def colour_to_internal(colour: Union[str, QColor, Tuple[int, int, int, int]]):

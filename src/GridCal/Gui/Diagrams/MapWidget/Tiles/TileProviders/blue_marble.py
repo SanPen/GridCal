@@ -66,7 +66,7 @@ class BlueMarbleTiles(Tiles):
 
         Note that we assume the point *is* on the map!
 
-        Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
+        Code taken from [https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
 
         lat_rad = math.radians(latitude)
@@ -83,7 +83,7 @@ class BlueMarbleTiles(Tiles):
 
         Note that we assume the point *is* on the map!
 
-        Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
+        Code taken from [https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
         n = 2.0 ** self.level
         xgeo = x_tile / n * 360.0 - 180.0
