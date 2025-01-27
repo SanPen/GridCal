@@ -117,6 +117,15 @@ class Profile:
         if arr is not None:
             self.set(arr=arr)
 
+    def clear(self):
+        """
+        Clear the profile
+        :return:
+        """
+        self._sparse_array: Union[SparseArray, None] = None
+        self._dense_array: Union[NumericVec, None] = None
+        self._initialized: bool = False
+
     def info(self):
         """
         Return dictionary with information about the profile object and its content
