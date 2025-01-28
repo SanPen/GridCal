@@ -744,7 +744,7 @@ class EditableDevice:
         Delete the object profiles (set all to None)
         """
         for magnitude in self.properties_with_profile.keys():
-            self.get_profile(magnitude=magnitude).resize(0)
+            self.get_profile(magnitude=magnitude).clear()
 
     def set_profile_values(self, t):
         """

@@ -62,8 +62,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.api_object: Substation = api_object  # reassign for the types to be clear
 
         self.radius = r
-        x, y = self.editor.to_x_y(lat=lat, lon=lon)
-        self.setRect(x, y, self.radius, self.radius)
+        r2 = r / 2
+        x, y = self.editor.to_x_y(lat=lat, lon=lon)  # upper left corner
+        self.setRect(
+            x - r2,
+            y - r2,
+            self.radius,
+            self.radius
+        )
 
         # Enable hover events for the item
         self.setAcceptHoverEvents(True)
@@ -155,8 +161,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :param lon:
         :return: x, y
         """
-        x, y = self.editor.to_x_y(lat=lat, lon=lon)
-        self.setRect(x, y, self.rect().width(), self.rect().height())
+        x, y = self.editor.to_x_y(lat=lat, lon=lon)  # upper left corner
+
+        self.setRect(
+            x - self.rect().width() / 2,
+            y - self.rect().height() / 2,
+            self.rect().width(),
+            self.rect().height()
+        )
 
         for vl in self.voltage_level_graphics:
             vl.center_on_substation()
@@ -230,6 +242,13 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                 vl_graphics.center_on_substation()
 
             self.update_position_at_the_diagram()  # always update
+
+        # QGraphicsRectItem.mouseMoveEvent(self, event)
+        # pos = self.mapToParent(event.pos())
+        # x = pos.x() + self.rect().width() / 2
+        # y = pos.y() + self.rect().height() / 2
+        # self.set_callbacks(x, y)
+        # self.update_position_at_the_diagram()  # always update
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """

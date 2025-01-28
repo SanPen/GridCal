@@ -39,7 +39,7 @@ class GeneratorData:
         self.snom: Vec = np.zeros(nelm, dtype=float)
         self.q_share: Vec = np.zeros(nelm, dtype=float)
 
-        # reliabilty
+        # reliability
         self.mttf: Vec = np.zeros(nelm, dtype=float)
         self.mttr: Vec = np.zeros(nelm, dtype=float)
 

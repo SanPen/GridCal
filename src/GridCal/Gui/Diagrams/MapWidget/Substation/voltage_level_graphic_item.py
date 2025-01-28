@@ -203,6 +203,8 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
                        icon_path="",
                        function_ptr=self.add_bus)
 
+        menu.exec_(event.screenPos())
+
     def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
 
@@ -238,7 +240,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         :param width: New pen width.
         """
         pen = self.pen()
-        pen.setWidth(width)
+        pen.setWidth(width)  # keep this and do not change to setWidthF
         self.setPen(pen)
 
     def add_bus(self):

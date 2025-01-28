@@ -138,7 +138,6 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                X=nc.passive_branch_data.X0,
                                G=nc.passive_branch_data.G0,  # renamed, it was overwritten
                                B=nc.passive_branch_data.B0,
-                               k=nc.passive_branch_data.k,
                                tap_module=nc.active_branch_data.tap_module,
                                vtap_f=nc.passive_branch_data.virtual_tap_f,
                                vtap_t=nc.passive_branch_data.virtual_tap_t,
@@ -152,13 +151,12 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
 
     Y_gen1 = nc.generator_data.get_Yshunt(seq=1)
     Y_batt1 = nc.battery_data.get_Yshunt(seq=1)
-    Yshunt_bus1 = nc.get_Yshunt_bus() + Y_gen1 + Y_batt1
+    Yshunt_bus1 = nc.get_Yshunt_bus_pu() + Y_gen1 + Y_batt1
 
     adm1 = compute_admittances(R=nc.passive_branch_data.R,
                                X=nc.passive_branch_data.X,
                                G=nc.passive_branch_data.G,
                                B=nc.passive_branch_data.B,
-                               k=nc.passive_branch_data.k,
                                tap_module=nc.active_branch_data.tap_module,
                                vtap_f=nc.passive_branch_data.virtual_tap_f,
                                vtap_t=nc.passive_branch_data.virtual_tap_t,
@@ -178,7 +176,6 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                X=nc.passive_branch_data.X2,
                                G=nc.passive_branch_data.G2,
                                B=nc.passive_branch_data.B2,
-                               k=nc.passive_branch_data.k,
                                tap_module=nc.active_branch_data.tap_module,
                                vtap_f=nc.passive_branch_data.virtual_tap_f,
                                vtap_t=nc.passive_branch_data.virtual_tap_t,
@@ -216,7 +213,6 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                      X=nc.passive_branch_data.X,
                                      G=np.zeros(nbr),
                                      B=np.zeros(nbr),
-                                     k=nc.passive_branch_data.k,
                                      tap_module=nc.active_branch_data.tap_module,
                                      vtap_f=nc.passive_branch_data.virtual_tap_f,
                                      vtap_t=nc.passive_branch_data.virtual_tap_t,

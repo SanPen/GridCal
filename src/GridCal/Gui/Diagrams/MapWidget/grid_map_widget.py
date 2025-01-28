@@ -217,10 +217,6 @@ class GridMapWidget(BaseDiagramWidget):
         # Any representation on the map must be done after this Goto Function
         self.map.go_to_level_and_position(level=6, longitude=longitude, latitude=latitude)
 
-        # self.map.startLev = 6
-        # self.map.startLat = 0
-        # self.map.startLon = 40
-
         # function pointer to call for a new substation diagram
         self.call_new_substation_diagram_func = call_new_substation_diagram_func
 
@@ -542,25 +538,6 @@ class GridMapWidget(BaseDiagramWidget):
         # there is not need to add to the scene
 
         return line_container
-
-    def update_connectors(self) -> None:
-        """
-
-        :return:
-        """
-        # for dev_tpe in [DeviceType.LineDevice,
-        #                 DeviceType.DCLineDevice,
-        #                 DeviceType.HVDCLineDevice,
-        #                 DeviceType.FluidPathDevice]:
-        #
-        #     dev_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
-        #
-        #     for idtag, graphic_object in dev_dict.items():
-        #         graphic_object.update_connectors()
-        #
-        #     for idtag, graphic_object in dev_dict.items():
-        #         graphic_object.end_update()
-        pass
 
     def add_api_substation(self,
                            api_object: Substation,
