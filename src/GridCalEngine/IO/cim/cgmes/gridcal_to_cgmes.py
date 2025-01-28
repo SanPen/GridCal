@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import Union
+from typing import Union, List
 
 import numpy as np
 
@@ -352,6 +352,15 @@ def get_cgmes_cn_nodes_from_tp_nodes(multi_circuit_model: MultiCircuit,
         if tn.ConnectivityNodeContainer:
             tn.ConnectivityNodeContainer.ConnectivityNodes = cn
             cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
+        else:
+            logger.add_error(
+                msg=f'TN has no ConnectivityNodeContainer, so cannot be assigned to CN',
+                device=tn.idtag,
+                device_class=tn.device_type.value,
+                device_property="Bus.voltage_level.idtag",
+                value=tn.ConnectivityNodeContainer,
+                comment="get_cgmes_cn_nodes_from_tp_nodes()"
+            )
 
         cgmes_model.add(cn)
 
@@ -486,6 +495,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
 
 def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                cgmes_model: CgmesCircuit,
+                               op_lim_types: List,
                                logger: DataLogger):
     """
     Converts every Multi Circuit line
@@ -527,6 +537,7 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         get_cgmes_current_limits(cgmes_model=cgmes_model,
                                  cgmes_elm=line,
                                  mc_elm=mc_elm,
+                                 op_lim_types=op_lim_types,
                                  logger=logger)
 
         vnom = line.BaseVoltage.nominalVoltage
@@ -695,6 +706,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
 
 def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
+                                 op_lim_types: List,
                                  logger: DataLogger):
     """
     Creates all transformer related CGMES classes from GridCal transformer.
@@ -740,6 +752,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         get_cgmes_current_limits(cgmes_model=cgmes_model,
                                  cgmes_elm=cm_transformer,
                                  mc_elm=mc_elm,
+                                 op_lim_types=op_lim_types,
                                  logger=logger)
 
         (pte1.r,
@@ -1048,6 +1061,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
                              cgmes_elm: Base,
                              mc_elm: BranchParent,
+                             op_lim_types: List,
                              logger: DataLogger):
     """
     Export Current Limits to CGMES for Branches.
@@ -1055,6 +1069,7 @@ def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
     :param cgmes_model: CgmesCircuit
     :param mc_elm: GcDev Transformer 2W/3W or ACLineSegment
     :param cgmes_elm: CGMES Transformer 2W or ACLineSegment
+    :param op_lim_types: list of used OperationalLimitTypes
     :param logger: DataLogger
     :return: None
     """
@@ -1067,18 +1082,21 @@ def get_cgmes_current_limits(cgmes_model: CgmesCircuit,
         :param rate_and_type: List of (rate_mw, op_limit_type) tuples
         """
         for rate_mw, op_limit_type in rate_and_type:
-            create_cgmes_current_limit(
-                terminal=termnl,
-                rate_mw=rate_mw,
-                op_limit_type=op_limit_type,
-                cgmes_model=cgmes_model,
-                logger=logger
-            )
+
+            if rate_mw != 0.0:
+
+                create_cgmes_current_limit(
+                    terminal=termnl,
+                    rate_mw=rate_mw,
+                    op_limit_type=op_limit_type,
+                    cgmes_model=cgmes_model,
+                    logger=logger
+                )
 
     # Get operational limit types
-    patl, tatl_900, tatl_60 = get_cgmes_operational_limit_types(cgmes_model)
+    patl, tatl_900, tatl_60 = op_lim_types
 
-    # Rate Mapping
+    # Rate and Type Mapping
     rates = [
         (mc_elm.rate, patl),
         # Normal rate
@@ -1366,42 +1384,86 @@ def get_cgmes_breakers(multicircuit_model: MultiCircuit,
         cgmes_model.add(br)
 
 
-def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
-                          pf_results: PowerFlowResults,
-                          logger: DataLogger) -> None:
+def get_cgmes_sv_voltages(
+        multi_circuit_model: MultiCircuit,
+        cgmes_model: CgmesCircuit,
+        pf_results: PowerFlowResults,
+        logger: DataLogger) -> None:
     """
     Creates a CgmesCircuit SvVoltage_list
     from PowerFlow results of the numerical circuit.
 
-    Args:
-        cgmes_model: CgmesCircuit
-        pf_results: PowerFlowResults
-        logger (DataLogger): The data logger for error handling.
-
-    Returns:
-        CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param pf_results:
+    :param logger:
+    :return:
     """
-    # SvVoltage: v, (a?) -> TopologicalNode
-    # TODO move it to tp node export
-    # TODO or simply loop on TP nodes list
-    for i, voltage in enumerate(pf_results.voltage):
-        object_template = cgmes_model.get_class_type("SvVoltage")
-        new_rdf_id = get_new_rdfid()
-        sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
+    # SvVoltage: v, a, TopologicalNode
 
-        tp_list_with_boundary = (
-                cgmes_model.cgmes_assets.TopologicalNode_list +
-                cgmes_model.elements_by_type_boundary.get(
-                    'TopologicalNode', None))
-        sv_voltage.TopologicalNode = tp_list_with_boundary[i]
+    for bus, voltage in zip(multi_circuit_model.buses, pf_results.voltage):
 
-        # as the ORDER of the results is the same as the order of buses (=tn)
-        bv = tp_list_with_boundary[i].BaseVoltage
-        sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
-        sv_voltage.angle = np.angle(voltage, deg=True)
+        if not bus.is_dc and not bus.internal:
 
-        # Add the SvVoltage instance to the SvVoltage_list
-        cgmes_model.add(sv_voltage)
+            tp_node = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+                target_uuid=bus.idtag
+            )
+            if tp_node:
+                object_template = cgmes_model.get_class_type("SvVoltage")
+                new_rdf_id = get_new_rdfid()
+                sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
+
+                sv_voltage.TopologicalNode = tp_node
+
+                # as the ORDER of the results is the same as the order of buses (=tn)
+                bv = tp_node.BaseVoltage
+                sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
+                sv_voltage.angle = np.angle(voltage, deg=True)
+
+                # Add the SvVoltage instance to the SvVoltage_list
+                cgmes_model.add(sv_voltage)
+            else:
+                logger.add_info(
+                    msg="TP Node not found for bus",
+                    value=tp_node,
+                    expected_value=bus.idtag,
+                )
+
+        else:
+            logger.add_info(
+                msg="SvVoltage is not exported for internal (TR3W) buses and DC buses",
+                value=voltage,
+            )
+
+    # if len(pf_results.voltage) == len(cgmes_model.cgmes_assets.TopologicalNode_list):
+    #
+    #     for i, tp_node in enumerate(cgmes_model.cgmes_assets.TopologicalNode_list):
+    #
+    #         object_template = cgmes_model.get_class_type("SvVoltage")
+    #         new_rdf_id = get_new_rdfid()
+    #         sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
+    #
+    #         sv_voltage.TopologicalNode = tp_node
+    #
+    #         voltage = pf_results.voltage[i]
+    #         # as the ORDER of the results is the same as the order of buses (=tn)
+    #         bv = tp_node.BaseVoltage
+    #         sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
+    #         sv_voltage.angle = np.angle(voltage, deg=True)
+    #
+    #         # Add the SvVoltage instance to the SvVoltage_list
+    #         cgmes_model.add(sv_voltage)
+    #
+    # else:
+    #
+    #     logger.add_error(
+    #         msg="Length mismatch: PF.res Voltages != TP node list, SvVoltage cannot be exported.",
+    #         value=len(pf_results.voltage),
+    #         expected_value=len(cgmes_model.cgmes_assets.TopologicalNode_list),
+    #         comment="SvVoltage cannot be exported",
+    #     )
 
 
 def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
@@ -1738,11 +1800,15 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_equivalent_injections(gc_model, cgmes_model, logger)
     get_cgmes_generators(gc_model, cgmes_model, logger)
 
+    # Get operational limit types
+    operational_limit_type_list = get_cgmes_operational_limit_types(cgmes_model)
+    # patl, tatl_900, tatl_60
+
     # BRANCHES
     # lines
-    get_cgmes_ac_line_segments(gc_model, cgmes_model, logger)
+    get_cgmes_ac_line_segments(gc_model, cgmes_model, operational_limit_type_list, logger)
     # transformers, windings
-    get_cgmes_power_transformers(gc_model, cgmes_model, logger)
+    get_cgmes_power_transformers(gc_model, cgmes_model, operational_limit_type_list, logger)
 
     # SHUNTS
     get_cgmes_equivalent_shunts(gc_model, cgmes_model, logger)
@@ -1761,7 +1827,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # if converged == True...
 
         # SvVoltage for every TopoNode
-        # get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
+        get_cgmes_sv_voltages(gc_model, cgmes_model, pf_results, logger)
 
         # PowerFlow: P, Q results for every terminal
         get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results,
