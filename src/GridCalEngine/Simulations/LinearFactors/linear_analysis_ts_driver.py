@@ -77,7 +77,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         # tpg = self.get_topologic_groups()
 
         for it, t in enumerate(self.time_indices):
-            self.report_text('Contingency at ' + str(self.grid.time_profile[t]))
+            self.report_text('Linear analysis at ' + str(self.grid.time_profile[t]))
             self.report_progress2(it, len(self.time_indices))
 
             nc: NumericalCircuit = compile_numerical_circuit_at(circuit=self.grid,
@@ -97,6 +97,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.Sf[it, :] = driver_.get_flows(Sbus=Sbus) * nc.Sbase
 
         rates = self.grid.get_branch_rates_wo_hvdc()
-        self.results.loading = self.results.Sf / (rates + 1e-9)
+        self.results.loading = self.results.Sf.real / (rates + 1e-9)
 
         self.toc()

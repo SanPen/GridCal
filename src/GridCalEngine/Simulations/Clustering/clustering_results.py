@@ -13,12 +13,15 @@ from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 class ClusteringResults(ResultsTemplate):
 
-    def __init__(self, time_indices: IntVec, sampled_probabilities: Vec, time_array: DateVec,
+    def __init__(self,
+                 time_indices: IntVec,
+                 sampled_probabilities: Vec,
+                 time_array: DateVec,
                  original_sample_idx: IntVec):
         """
         Clustering Results constructor
-        :param time_indices: number of Branches
-        :param sampled_probabilities: number of buses
+        :param time_indices: array of reduced time indices matching the number of samples
+        :param sampled_probabilities: array of probabilities of each sample
         :param time_array: Array of time values (all of them, because this array is sliced with time_indices)
         :param original_sample_idx: Array signifying to which cluster does each original value belong (same size as time_array)
         """

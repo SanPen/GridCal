@@ -15,6 +15,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE, ne
 from GridCalEngine.enumerations import EngineType, SimulationTypes
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_results import LinearAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -87,7 +88,7 @@ class LinearAnalysisDriver(DriverTemplate):
 
         if self.engine == EngineType.GridCal:
 
-            nc = compile_numerical_circuit_at(
+            nc: NumericalCircuit = compile_numerical_circuit_at(
                 circuit=self.grid,
                 t_idx=None,
                 opf_results=self.opf_results,
