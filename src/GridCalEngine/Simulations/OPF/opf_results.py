@@ -19,6 +19,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  branch_names: StrVec,
                  load_names: StrVec,
                  generator_names: StrVec,
+                 shunt_like_names: StrVec,
                  battery_names: StrVec,
                  hvdc_names: StrVec,
                  bus_types: IntVec,
@@ -57,7 +58,10 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                                              ResultTypes.BusReactivePower],
 
                                                     ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
+                                                                                   ResultTypes.GeneratorReactivePower,
                                                                                    ResultTypes.GeneratorShedding],
+
+                                                    ResultTypes.ShuntResults: [ResultTypes.ShuntReactivePower],
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower],
 
@@ -89,6 +93,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         m = len(branch_names)
         ngen = len(generator_names)
         nbat = len(battery_names)
+        nsh = len(shunt_like_names)
         nload = len(load_names)
         nhvdc = len(hvdc_names)
         n_fluid_node = len(fluid_node_names)
@@ -100,6 +105,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
+        self.shunt_like_names = shunt_like_names
         self.hvdc_names = hvdc_names
         self.fluid_node_names = fluid_node_names
         self.fluid_path_names = fluid_path_names
@@ -127,6 +133,10 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
         self.generator_shedding = np.zeros(ngen, dtype=float)
         self.generator_power = np.zeros(ngen, dtype=float)
+        self.generator_reactive_power = np.zeros(ngen, dtype=float)
+
+        self.shunt_like_reactive_power = np.zeros(nsh, dtype=float)
+
         self.battery_power = np.zeros(nbat, dtype=float)
 
         self.fluid_node_p2x_flow = np.zeros(n_fluid_node, dtype=float)  # m3
@@ -155,6 +165,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.register(name='branch_names', tpe=StrVec)
         self.register(name='load_names', tpe=StrVec)
         self.register(name='generator_names', tpe=StrVec)
+        self.register(name='shunt_like_names', tpe=StrVec)
         self.register(name='battery_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
 
@@ -184,8 +195,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.register(name='hvdc_losses', tpe=Vec)
 
         self.register(name='generator_power', tpe=Vec)
+        self.register(name='generator_reactive_power', tpe=Vec)
         self.register(name='generator_shedding', tpe=Vec)
+
         self.register(name='battery_power', tpe=Vec)
+
+        self.register(name='shunt_like_reactive_power', tpe=Vec)
 
         self.register(name='fluid_node_p2x_flow', tpe=Vec)
         self.register(name='fluid_node_current_level', tpe=Vec)
@@ -430,6 +445,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 xlabel='',
                                 units='(MW)')
 
+        elif result_type == ResultTypes.GeneratorReactivePower:
+
+            return ResultsTable(data=self.generator_reactive_power,
+                                index=self.generator_names,
+                                idx_device_type=DeviceType.GeneratorDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=str(result_type.value),
+                                ylabel='(MVAr)',
+                                xlabel='',
+                                units='(MVAr)')
+
         elif result_type == ResultTypes.BatteryPower:
 
             return ResultsTable(data=self.battery_power,
@@ -441,6 +468,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
+
+        elif result_type == ResultTypes.ShuntReactivePower:
+
+            return ResultsTable(data=self.shunt_like_reactive_power,
+                                index=self.shunt_like_names,
+                                idx_device_type=DeviceType.ShuntLikeDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=str(result_type.value),
+                                ylabel='(MVAr)',
+                                xlabel='',
+                                units='(MVAr)')
 
         elif result_type == ResultTypes.HvdcPowerFrom:
 

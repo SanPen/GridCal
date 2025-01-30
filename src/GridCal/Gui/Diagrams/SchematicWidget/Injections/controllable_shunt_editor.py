@@ -85,19 +85,29 @@ class ControllableShuntEditor(QDialog):
 
         self.setLayout(layout)
 
-    def get_g_steps(self) -> np.ndarray:
+    def get_active_steps(self) -> np.ndarray:
         """
 
         :return:
         """
         return self.model.get_data()[0]
 
-    def get_b_steps(self) -> np.ndarray:
+
+    def get_g_steps(self) -> np.ndarray:
         """
 
         :return:
         """
         return self.model.get_data()[1]
+
+    def get_b_steps(self) -> np.ndarray:
+        """
+
+        :return:
+        """
+        return self.model.get_data()[2]
+
+
 
     def add_row(self):
         """
