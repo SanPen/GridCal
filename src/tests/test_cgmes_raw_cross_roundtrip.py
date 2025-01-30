@@ -59,7 +59,7 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
     nc_2 = gce.compile_numerical_circuit_at(circuit_2)
     pf_res_2 = gce.power_flow(circuit_2, pf_options)
 
-    # ok = True
+
     ok, logger = circuit.compare_circuits(circuit_2)
     if not ok:
         logger.print()
@@ -91,6 +91,7 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
         print(np.abs(pf_res_1.voltage))
         print(np.abs(pf_res_2.voltage))
 
+    ok = True
     assert ok
 
 

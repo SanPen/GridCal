@@ -1486,12 +1486,13 @@ def get_cgmes_sv_voltages(
     #     )
 
 
-def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
-                            nc: NumericalCircuit,
-                            cgmes_model: CgmesCircuit,
-                            pf_results: PowerFlowResults,
-                            logger: DataLogger) -> None:
+def get_cgmes_sv_power_flow_1(multi_circuit: MultiCircuit,
+                              nc: NumericalCircuit,
+                              cgmes_model: CgmesCircuit,
+                              pf_results: PowerFlowResults,
+                              logger: DataLogger) -> None:
     """
+    For single-terminal devices:
     Creates a CgmesCircuit SvPowerFlow_list from PowerFlow results of the numerical circuit.
 
     :param multi_circuit:
@@ -1596,6 +1597,61 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
                              device_class=mc_shunt_like.device_type.value,
                              value=mc_shunt_like.idtag,
                              comment="SvPowerFlow is not exported.")
+
+
+def get_cgmes_sv_power_flow_2(multi_circuit: MultiCircuit,
+                              nc: NumericalCircuit,
+                              cgmes_model: CgmesCircuit,
+                              pf_results: PowerFlowResults,
+                              logger: DataLogger) -> None:
+    """
+    For Branches:
+    Creates a CgmesCircuit SvPowerFlow_list from PowerFlow results of the numerical circuit.
+
+    :param multi_circuit:
+    :param nc:
+    :param cgmes_model:
+    :param pf_results:
+    :param logger:
+    :return: SvVoltage_list is populated in CgmesCircuit.
+    """
+    # SVPowerFlow: p, q -> Terminals
+    # RuleDescription:
+    # 	Branches shall have cim:SvPowerFlow instantiated at its cim:Terminals for
+    # 	the following branch classes:
+    # 	- cim:SeriesCompensator
+    # 	- cim:ACLineSegment
+    # 	- cim:PowerTransformer
+    # 	- cim:EquivalentBranch
+    # 	- cim:Switch where cim:Switch.retained is true.
+
+    # Branches ------------------------------------------------------------
+    branch_objects = (multi_circuit.lines +
+                      multi_circuit.transformers2w +
+                      multi_circuit.transformers3w)
+
+    for (branch, pf_res_from, pf_res_to) \
+            in zip(branch_objects, pf_results.Sf, pf_results.St):
+
+        term = find_object_by_cond_eq_uuid(
+            object_list=cgmes_model.cgmes_assets.Terminal_list,
+            cond_eq_target_uuid=branch.idtag
+        )
+        if isinstance(term[0], cgmes_model.get_class_type("Terminal")):
+
+            create_sv_power_flow(
+                cgmes_model=cgmes_model,
+                p=pf_res_from.real,
+                q=pf_res_from.imag,
+                terminal=term
+            )
+
+        else:
+            logger.add_error(msg='No Terminal found for Branch',
+                             device=branch,
+                             device_class=branch.device_type.value,
+                             value=branch.idtag,
+                             comment="get_cgmes_sv_power_flow_2()")
 
 
 def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
@@ -1869,8 +1925,10 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         get_cgmes_sv_voltages(gc_model, cgmes_model, pf_results, logger)
 
         # PowerFlow: P, Q results for every terminal
-        get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results,
-                                logger)
+        get_cgmes_sv_power_flow_1(gc_model, num_circ, cgmes_model, pf_results,
+                                  logger)
+        # get_cgmes_sv_power_flow_2(gc_model, num_circ, cgmes_model, pf_results,
+        #                           logger)
 
         # SV Status: for ConductingEquipment
         # TODO create_sv_status() elements.active parameter
