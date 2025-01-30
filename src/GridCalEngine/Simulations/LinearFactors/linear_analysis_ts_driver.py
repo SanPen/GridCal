@@ -15,6 +15,7 @@ from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_results import LinearAnalysisTimeSeriesResults
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 
 class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
@@ -76,13 +77,13 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         # tpg = self.get_topologic_groups()
 
         for it, t in enumerate(self.time_indices):
-            self.report_text('Contingency at ' + str(self.grid.time_profile[t]))
+            self.report_text('Linear analysis at ' + str(self.grid.time_profile[t]))
             self.report_progress2(it, len(self.time_indices))
 
-            nc = compile_numerical_circuit_at(circuit=self.grid,
-                                              t_idx=t,
-                                              opf_results=self.opf_time_series_results,
-                                              logger=self.logger)
+            nc: NumericalCircuit = compile_numerical_circuit_at(circuit=self.grid,
+                                                                t_idx=t,
+                                                                opf_results=self.opf_time_series_results,
+                                                                logger=self.logger)
 
             driver_ = LinearAnalysis(
                 numerical_circuit=nc,
@@ -91,11 +92,11 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             )
 
             driver_.run()
-
-            self.results.S[it, :] = nc.Sbus * nc.Sbase
-            self.results.Sf[it, :] = driver_.get_flows(Sbus=nc.Sbus) * nc.Sbase
+            Sbus = nc.get_power_injections_pu()
+            self.results.S[it, :] = Sbus * nc.Sbase
+            self.results.Sf[it, :] = driver_.get_flows(Sbus=Sbus) * nc.Sbase
 
         rates = self.grid.get_branch_rates_wo_hvdc()
-        self.results.loading = self.results.Sf / (rates + 1e-9)
+        self.results.loading = self.results.Sf.real / (rates + 1e-9)
 
         self.toc()
