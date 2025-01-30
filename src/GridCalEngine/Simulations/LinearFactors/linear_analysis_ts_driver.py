@@ -3,8 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-
-import time
 from typing import Dict, Union
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.Devices.multi_circuit import MultiCircuit

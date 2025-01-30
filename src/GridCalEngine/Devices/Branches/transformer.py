@@ -423,7 +423,7 @@ class Transformer2W(ControllableBranchParent):
 
         return errors
 
-    def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float):
+    def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float, round=False):
         """
         Fill R, X, G, B from the short circuit study values
         :param Pcu: copper_losses (kW)
@@ -446,10 +446,16 @@ class Transformer2W(ControllableBranchParent):
 
         z_series, y_shunt = tpe.get_impedances(VH=self.HV, VL=self.LV, Sbase=Sbase)
 
-        self.R = np.round(z_series.real, 6)
-        self.X = np.round(z_series.imag, 6)
-        self.G = np.round(y_shunt.real, 6)
-        self.B = np.round(y_shunt.imag, 6)
+        if round:
+            self.R = np.round(z_series.real, 6)
+            self.X = np.round(z_series.imag, 6)
+            self.G = np.round(y_shunt.real, 6)
+            self.B = np.round(y_shunt.imag, 6)
+        else:
+            self.R = z_series.real
+            self.X = z_series.imag
+            self.G = y_shunt.real
+            self.B = y_shunt.imag
 
         return self
 

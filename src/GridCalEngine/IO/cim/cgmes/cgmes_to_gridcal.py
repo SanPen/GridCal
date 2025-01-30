@@ -861,12 +861,12 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
 
                     if cgmes_elm.LoadResponse.exponentModel:
                         logger.add_error(
-                            msg=f'Exponent model True at {cgmes_elm.name}',
+                            msg=f'Exponent model True',
                             device=cgmes_elm.rdfid,
                             device_class=cgmes_elm.tpe,
                             device_property="LoadResponse",
                             value=cgmes_elm.LoadResponse.exponentModel,
-                            comment="get_gcdev_loads()")
+                            comment=f"get_gcdev_loads() {cgmes_elm.name}")
                         # TODO convert exponent to ZIP
                     else:  # ZIP model
                         # :param P: Active power in MW
