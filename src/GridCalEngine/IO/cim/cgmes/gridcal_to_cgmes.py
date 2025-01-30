@@ -22,7 +22,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_create_instances import \
      create_cgmes_acdc_converter_terminal,
      create_cgmes_conform_load_group, create_cgmes_operational_limit_type,
      create_cgmes_sub_load_area,
-     create_cgmes_non_conform_load_group, create_cgmes_nonlinear_sc_point)
+     create_cgmes_non_conform_load_group, create_cgmes_nonlinear_sc_point,
+     create_sv_shunt_compensator_sections)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (RegulatingControlModeKind,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
@@ -83,6 +84,7 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
     :param logger:
     :return:
     """
+
     for mc_class in [multi_circuit_model.communities,
                      multi_circuit_model.zones]:
         for mc_elm in mc_class:
@@ -1279,6 +1281,15 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
                 )
             non_lin_sc.normalSections = non_lin_sc.sections
             non_lin_sc.maximumSections = len(b_points)
+            if non_lin_sc.maximumSections < non_lin_sc.sections:
+                logger.add_error(
+                    msg="Number or sections is out of range",
+                    device=non_lin_sc,
+                    device_class=non_lin_sc.tpe,
+                    value=non_lin_sc.sections,
+                    expected_value=non_lin_sc.maximumSections,
+                    comment="maxSections < sections"
+                )
             non_lin_sc.aggregate = False
 
             cgmes_model.add(non_lin_sc)
@@ -1312,6 +1323,15 @@ def get_cgmes_linear_and_non_linear_shunts(multicircuit_model: MultiCircuit,
             lsc.gPerSection = mc_elm.get_linear_g_steps()[0] / (lsc.nomU ** 2)
             lsc.normalSections = lsc.sections
             lsc.maximumSections = len(mc_elm.b_steps)
+            if lsc.maximumSections < lsc.sections:
+                logger.add_error(
+                    msg="Number or sections is out of range",
+                    device=lsc,
+                    device_class=lsc.tpe,
+                    value=lsc.sections,
+                    expected_value=lsc.maximumSections,
+                    comment="maxSections < sections"
+                )
             lsc.aggregate = False
 
             lsc.Terminals = (
@@ -1596,6 +1616,25 @@ def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
     pass
 
 
+def get_cgmes_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit) -> None:
+    """
+
+    :param cgmes_model:
+    :return:
+    """
+
+    for shunts in [cgmes_model.cgmes_assets.LinearShuntCompensator_list,
+                   cgmes_model.cgmes_assets.NonlinearShuntCompensator_list]:
+
+        for shunt in shunts:
+
+            create_sv_shunt_compensator_sections(
+                cgmes_model=cgmes_model,
+                sections=shunt.sections if shunt.sections is not None else 0,
+                cgmes_shunt_compensator=shunt,
+            )
+
+
 def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
                                  nc: NumericalCircuit,
                                  cgmes_model: CgmesCircuit,
@@ -1832,7 +1871,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # PowerFlow: P, Q results for every terminal
         get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results,
                                 logger)
-        # TODO check: two elements on one bus! (loads or gens, shunts)
 
         # SV Status: for ConductingEquipment
         # TODO create_sv_status() elements.active parameter
@@ -1843,16 +1881,15 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
                               logger)
 
         # SvShuntCompensatorSections:
-        # create_sv_shunt_compensator_sections()
-        # TODO call it from shunt function or write get_cgmes.. func
+        get_cgmes_sv_shunt_compensator_sections(cgmes_model)
 
-        # Topo Islands
+        # Topological Islands
         get_cgmes_topological_island(gc_model, num_circ, cgmes_model, logger)
 
     else:
         logger.add_error(msg="Missing power flow result for CGMES export.")
 
-    if logger.__len__() != 0:
+    if logger.has_logs():
         print("\nLogger is not empty! (cgmes export)")
 
     return cgmes_model
