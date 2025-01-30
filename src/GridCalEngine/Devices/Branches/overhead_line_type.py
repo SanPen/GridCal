@@ -296,28 +296,43 @@ class OverheadLineType(EditableDevice):
             if self.wires_in_tower[i].wire.name == wire.name:
                 return True
 
-    def get_values(self, Sbase, length):
+    def get_values(self, Sbase, length, round_vals: bool = False):
+
         """
 
-        :param Sbase:
-        :param length:
-        :return:
+        :param Sbase: Base power
+        :param length: Length of the line
+        :param round_vals: Boolean to round parameter values
+        :return: Line parameters and rate
         """
+
         Vn = self.Vnom
         Zbase = (Vn * Vn) / Sbase
         Ybase = 1 / Zbase
 
         z1 = self.z_series() * length / Zbase
         y1 = self.y_shunt() * length * -1e6 / Ybase
-        R1 = np.round(z1.real, 6)
-        X1 = np.round(z1.imag, 6)
-        B1 = np.round(y1.imag, 6)
 
         z0 = self.z0_series() * length / Zbase
         y0 = self.y0_shunt() * length * -1e6 / Ybase
-        R0 = np.round(z0.real, 6)
-        X0 = np.round(z0.imag, 6)
-        B0 = np.round(y0.imag, 6)
+
+        if round_vals:
+            R1 = np.round(z1.real, 6)
+            X1 = np.round(z1.imag, 6)
+            B1 = np.round(y1.imag, 6)
+
+            R0 = np.round(z0.real, 6)
+            X0 = np.round(z0.imag, 6)
+            B0 = np.round(y0.imag, 6)
+
+        else:
+            R1 = z1.real
+            X1 = z1.imag
+            B1 = y1.imag
+
+            R0 = z0.real
+            X0 = z0.imag
+            B0 = y0.imag
 
         z2 = self.z2_series() * length / Zbase
         y2 = self.y2_shunt() * length * -1e6 / Ybase
