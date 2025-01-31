@@ -114,8 +114,13 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         """
         dlg = ControllableShuntEditor(api_object=self.api_object)
         if dlg.exec():
+            self.api_object.active_steps = dlg.get_active_steps()
             self.api_object.g_steps = dlg.get_g_steps()
+            self.api_object.Gmax = self.api_object.g_steps.max()
+            self.api_object.Gmin = self.api_object.g_steps.min()
             self.api_object.b_steps = dlg.get_b_steps()
+            self.api_object.Bmax = self.api_object.b_steps.max()
+            self.api_object.Bmin = self.api_object.b_steps.min()
 
     def enable_disable_toggle(self):
         """

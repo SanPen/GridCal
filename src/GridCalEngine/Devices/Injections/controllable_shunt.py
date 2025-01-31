@@ -26,6 +26,10 @@ class ControllableShunt(ShuntParent):
                  step: int = 1,
                  g_per_step: float = 0.0,
                  b_per_step: float = 0.0,
+                 Bmin: float = -9999.0,
+                 Bmax: float = 9999.0,
+                 Gmin: float = -9999.0,
+                 Gmax: float = 9999.0,
                  Cost: float = 1200.0,
                  active: bool = True,
                  G: float = 1e-20,
@@ -74,7 +78,22 @@ class ControllableShunt(ShuntParent):
         self.is_controlled = bool(is_controlled)
         self.is_nonlinear = bool(is_nonlinear)
 
-        self._active_steps = np.ones(number_of_steps, dtype=int)
+        self.Bmin = Bmin
+        self.Bmax = Bmax
+
+        self.Gmin = Gmin
+        self.Gmax = Gmax
+
+        if number_of_steps > 0:
+            self.g_per_step = (self.Gmin + self.Gmax) / number_of_steps
+            self.b_per_step = (self.Bmin + self.Bmax) / number_of_steps
+            self._active_steps = np.ones(number_of_steps, dtype=int)
+
+        else:
+            self.g_per_step = 0
+            self.b_per_step = 0
+            self._active_steps = np.ones(0, dtype=int)
+
         self._g_steps = np.full(number_of_steps, g_per_step)
         self._b_steps = np.full(number_of_steps, b_per_step)
 
@@ -97,6 +116,18 @@ class ControllableShunt(ShuntParent):
 
         self.register(key='b_steps', units='MVAr@v=1p.u.', tpe=SubObjectType.Array,
                       definition='Susceptance steps', editable=False)
+
+        self.register(key='Gmax', units='MW', tpe=float,
+                      definition='Maximum conductance', editable=True)
+
+        self.register(key='Gmin', units='MW', tpe=float,
+                      definition='Minimum conductance', editable=True)
+
+        self.register(key='Bmax', units='MVAr', tpe=float,
+                      definition='Maximum susceptance', editable=True)
+
+        self.register(key='Bmin', units='MVAr', tpe=float,
+                      definition='Minimum susceptance', editable=True)
 
         self.register(key='active_steps', units='', tpe=SubObjectType.Array,
                       definition='steps active?', editable=False)
@@ -132,27 +163,27 @@ class ControllableShunt(ShuntParent):
 
             self._step = int(value)
 
-    @property
-    def Bmin(self):
-        """
-
-        :return:
-        """
-        if len(self._b_steps):
-            return self._b_steps[0] * self._active_steps[0]
-        else:
-            return -9999.0
-
-    @property
-    def Bmax(self):
-        """
-
-        :return:
-        """
-        if len(self._b_steps):
-            return np.sum(self._b_steps * self._active_steps)
-        else:
-            return 9999.0
+    # @property
+    # def Bmin(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if len(self._b_steps):
+    #         return self._b_steps[0] * self._active_steps[0]
+    #     else:
+    #         return -9999.0
+    #
+    # @property
+    # def Bmax(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #     if len(self._b_steps):
+    #         return np.sum(self._b_steps * self._active_steps)
+    #     else:
+    #         return 9999.0
 
     @property
     def g_steps(self):
@@ -166,6 +197,8 @@ class ControllableShunt(ShuntParent):
     def g_steps(self, value: np.ndarray):
         assert isinstance(value, np.ndarray)
         self._g_steps = value
+        # self.Gmax = value.max()
+        # self.Gmin = value.min()
 
     @property
     def active_steps(self):
@@ -229,6 +262,8 @@ class ControllableShunt(ShuntParent):
     def b_steps(self, value: np.ndarray):
         assert isinstance(value, np.ndarray)
         self._b_steps = value
+        # self.Bmax = value.max()
+        # self.Bmin = value.min()
 
     @property
     def Vset_prof(self) -> Profile:

@@ -138,6 +138,7 @@ def lacpf(nc: NumericalCircuit,
     :param Yf: Admittance from matrix
     :param Yt: Admittance to matrix
     :param Ys: Admittance matrix of the series elements
+    :param Yshunt_bus: Admittance vector of the series elements per bus
     :param S0: Power Injections vector of all the nodes
     :param V0: Set voltages of all the nodes (used for the slack and PV nodes)
     :param pq: list of indices of the pq nodes

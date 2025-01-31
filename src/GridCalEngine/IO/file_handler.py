@@ -554,6 +554,7 @@ class FileSave:
         logger = Logger()
 
         dfs = gather_model_as_data_frames(self.circuit,
+        logger=logger,
                                           legacy=False)
 
         model_data = gather_model_as_jsons(self.circuit)
@@ -578,7 +579,7 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = gather_model_as_data_frames(self.circuit)
+        dfs = gather_model_as_data_frames(self.circuit, logger=logger)
 
         save_data_frames_to_sqlite(dfs,
                                    file_path=self.file_name,

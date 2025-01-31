@@ -1082,6 +1082,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
+
     results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
                        nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
@@ -1130,6 +1131,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
-        results.voltage = nc.propagate_bus_result(results.voltage)
+        results.Va = nc.propagate_bus_result(results.Va)
+        results.Vm = nc.propagate_bus_result(results.Vm)
 
     return results

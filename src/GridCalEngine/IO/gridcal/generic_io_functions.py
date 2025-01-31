@@ -45,6 +45,12 @@ def parse_config_df(df, data=None):
 
 class CustomJSONizer(json.JSONEncoder):
     def default(self, obj):
-        # this solves the error:
-        # TypeError: Object of type bool_ is not JSON serializable
-        return super().encode(bool(obj)) if isinstance(obj, np.bool_) else super().default(obj)
+        if isinstance(obj, (np.int32, np.int64)):  # Handle NumPy integers
+            return int(obj)
+        elif isinstance(obj, (np.float32, np.float64)):  # Handle NumPy floats
+            return float(obj)
+        elif isinstance(obj, np.bool_):  # Handle NumPy boolean
+            return bool(obj)
+        elif isinstance(obj, np.ndarray):  # Convert NumPy arrays to lists
+            return obj.tolist()
+        return super().default(obj)

@@ -117,10 +117,12 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     return object_types
 
 
-def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> Dict[str, pd.DataFrame]:
+def gather_model_as_data_frames(circuit: MultiCircuit, logger: Logger = Logger(),
+                                legacy: bool = False) -> Dict[str, pd.DataFrame]:
     """
     Pack the circuit information into tables (DataFrames)
     :param circuit: MultiCircuit instance
+    :param logger: Logger instance
     :param legacy: Generate the legacy object DataFrames
     :return: dictionary of DataFrames
     """
@@ -188,8 +190,13 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
 
                                 if profile_property not in profiles.keys():
                                     # create the profile
-                                    profiles[profile_property] = np.zeros(shape=(nt, len(lists_of_objects)),
-                                                                          dtype=profile.dtype)
+                                    try:
+                                        profiles[profile_property] = np.zeros(shape=(nt, len(lists_of_objects)),
+                                                                              dtype=profile.dtype)
+                                    except TypeError:
+                                        logger.add_warning("Profile packed as object", device_class=str(profile.dtype))
+                                        profiles[profile_property] = np.zeros(shape=(nt, len(lists_of_objects)),
+                                                                              dtype=object)
 
                                 # copy the object profile to the array of profiles
                                 profiles[profile_property][:, k] = profile.toarray()

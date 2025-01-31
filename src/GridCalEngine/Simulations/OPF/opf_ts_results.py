@@ -30,6 +30,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                  load_names: StrVec,
                  generator_names: StrVec,
                  battery_names: StrVec,
+                 shunt_like_names: StrVec,
                  hvdc_names: StrVec,
                  fuel_names: StrVec,
                  emission_names: StrVec,
@@ -50,32 +51,34 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                  bus_types=(),
                  clustering_results: Union[None, ClusteringResults] = None):
         """
-        OPF Time Series results constructor
+
         :param bus_names:
         :param branch_names:
         :param load_names:
         :param generator_names:
         :param battery_names:
+        :param shunt_like_names:
         :param hvdc_names:
         :param fuel_names:
         :param emission_names:
         :param fluid_node_names:
         :param fluid_path_names:
         :param fluid_injection_names:
-        :param n: number of buses
-        :param m: number of Branches
-        :param nt: number of time steps
-        :param ngen: number of generators
-        :param nbat: number of batteries
-        :param nload: number of loads
-        :param nhvdc: number of HVDC lines
-        :param n_fluid_node: number of fluid nodes
-        :param n_fluid_path: number of fluid paths
-        :param n_fluid_injection: number of fluid injections
-        :param time_array: Time array (optional)
-        :param bus_types: array of bus types
+        :param n:
+        :param m:
+        :param nt:
+        :param ngen:
+        :param nbat:
+        :param nload:
+        :param nhvdc:
+        :param n_fluid_node:
+        :param n_fluid_path:
+        :param n_fluid_injection:
+        :param time_array:
+        :param bus_types:
         :param clustering_results:
         """
+
         ResultsTemplate.__init__(self,
                                  name='OPF time series',
                                  available_results={ResultTypes.BusResults: [ResultTypes.BusVoltageModule,
@@ -83,12 +86,15 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                                              ResultTypes.BusShadowPrices],
 
                                                     ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
+                                                                                   ResultTypes.GeneratorReactivePower,
                                                                                    ResultTypes.GeneratorShedding,
                                                                                    ResultTypes.GeneratorCost,
                                                                                    ResultTypes.GeneratorProducing,
                                                                                    ResultTypes.GeneratorStartingUp,
                                                                                    ResultTypes.GeneratorShuttingDown
                                                                                    ],
+
+                                                    ResultTypes.ShuntResults: [ResultTypes.ShuntReactivePower],
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower,
                                                                                  ResultTypes.BatteryEnergy],
@@ -128,6 +134,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
+        self.shunt_like_names = shunt_like_names
         self.hvdc_names = hvdc_names
         self.fuel_names = fuel_names
         self.emission_names = emission_names
@@ -138,6 +145,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         nfuels = len(fuel_names)
         nemissions = len(emission_names)
+        nsh = len(shunt_like_names)
 
         self.voltage = np.zeros((nt, n), dtype=complex)
         self.Sbus = np.zeros((nt, n), dtype=complex)
@@ -161,11 +169,14 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.load_shedding = np.zeros((nt, nload), dtype=float)
 
         self.generator_power = np.zeros((nt, ngen), dtype=float)
+        self.generator_reactive_power = np.zeros((nt, ngen), dtype=float)
         self.generator_shedding = np.zeros((nt, ngen), dtype=float)
         self.generator_cost = np.zeros((nt, ngen), dtype=float)
         self.generator_producing = np.zeros((nt, ngen), dtype=bool)
         self.generator_starting_up = np.zeros((nt, ngen), dtype=bool)
         self.generator_shutting_down = np.zeros((nt, ngen), dtype=bool)
+
+        self.shunt_like_reactive_power = np.zeros((nt, nsh), dtype=float)
 
         self.battery_power = np.zeros((nt, nbat), dtype=float)
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
@@ -189,6 +200,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='load_names', tpe=StrVec)
         self.register(name='generator_names', tpe=StrVec)
         self.register(name='battery_names', tpe=StrVec)
+        self.register(name='shunt_like_names', tpe=StrVec)
+
         self.register(name='hvdc_names', tpe=StrVec)
         self.register(name='bus_types', tpe=IntVec)
 
@@ -223,6 +236,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='fluid_injection_flow', tpe=Mat)
 
         self.register(name='generator_power', tpe=Mat)
+        self.register(name='generator_reactive_power', tpe=Mat)
         self.register(name='generator_shedding', tpe=Mat)
         self.register(name='generator_cost', tpe=Mat)
         # self.register(name='generator_fuel', tpe=Mat)
@@ -230,6 +244,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='generator_producing', tpe=Mat)
         self.register(name='generator_starting_up', tpe=Mat)
         self.register(name='generator_shutting_down', tpe=Mat)
+
+        self.register(name='shunt_like_reactive_power', tpe=Mat)
 
         self.register(name='battery_power', tpe=Mat)
         self.register(name='battery_energy', tpe=Mat)
@@ -544,6 +560,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 xlabel='',
                                 units='(MW)')
 
+        elif result_type == ResultTypes.GeneratorReactivePower:
+
+            return ResultsTable(data=self.generator_reactive_power,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=str(result_type.value),
+                                ylabel='(MVAr)',
+                                xlabel='',
+                                units='(MVAr)')
+
         elif result_type == ResultTypes.GeneratorShedding:
 
             return ResultsTable(data=self.generator_shedding,
@@ -603,6 +631,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 ylabel='',
                                 xlabel='',
                                 units='')
+
+        elif result_type == ResultTypes.ShuntReactivePower:
+
+            return ResultsTable(data=self.shunt_like_reactive_power,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.shunt_like_names,
+                                cols_device_type=DeviceType.ShuntLikeDevice,
+                                title=str(result_type.value),
+                                ylabel='(MVAr)',
+                                xlabel='',
+                                units='(MVAr)')
 
         elif result_type == ResultTypes.BatteryPower:
 

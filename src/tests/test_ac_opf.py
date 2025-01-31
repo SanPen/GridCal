@@ -78,7 +78,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     return base_sol, slack_sol, tap_sol, tap_slack_sol
 
-def case14_ctrlQ_shunts() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResults]:
+def case14_ctrlQ_shunts() -> NonlinearOPFResults:
     """
     Test case14 from matpower. Tests multiple situations
     :return:
@@ -94,9 +94,14 @@ def case14_ctrlQ_shunts() -> tuple[NonlinearOPFResults, NonlinearOPFResults, Non
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
 
-    csh = gce.ControllableShunt(name="Cshunt", number_of_steps=2, b_per_step=15.0)
+    csh = gce.ControllableShunt(name="Cshunt", Bmin=0.0, Bmax=18.0)
     grid.add_controllable_shunt(bus=grid.buses[3], api_obj=csh)
     grid.generators[2].Snom = 25.0
+
+    file_path_csh = os.path.join('data', 'grids', 'case14_csh.gridcal')
+    gce.save_file(grid, filename=file_path_csh)
+
+    grid = gce.FileOpen(file_path_csh).open()
 
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
@@ -291,3 +296,9 @@ def test_ieee14_controlQ_controllableshunts():
     assert np.allclose(res.Va, va_test, atol=1e-2)
     assert np.allclose(res.Pg, Pg_test, atol=1e-2)
     assert np.allclose(np.r_[res.Qg, res.Qsh], Qg_test, atol=1e-2)
+
+#
+# def test_superconductors_handling():
+#
+#     assert np.allclose(0, 1, atol=1e-2)
+
