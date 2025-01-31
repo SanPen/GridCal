@@ -88,3 +88,38 @@ def test_load_save_load2() -> None:
     assert equal
 
     os.remove(o_file)
+
+def test_load_save_load_xlsx() -> None:
+    """
+    This test checks if the saving and load process is correct
+
+    The test consists in:
+    - loading grids in different gridcal variations (grid1)
+    - saving the grid with a different name
+    - loading the saved grid (grid2)
+    - comparing that grid1 == grid2
+
+    """
+    folder = os.path.join('data', 'grids')
+
+    if not os.path.exists("output"):
+        os.makedirs("output")
+
+    for name in ['IEEE39_1W.gridcal',
+                 'hydro_grid_IEEE39.gridcal',
+                 'IEEE57.gridcal',
+                 'fubm_caseHVDC_vt.gridcal',
+                 'Test_SRAP.gridcal']:
+
+        fname = os.path.join(folder, name)
+
+        grid1 = gce.open_file(fname)
+
+        name, ext = os.path.splitext(os.path.basename(fname))
+
+        fname2 = os.path.join("output", name + '_to_save.xlsx')
+
+        gce.save_file(grid=grid1, filename=fname2)
+
+        # open the main grid again
+        grid2 = gce.open_file(fname2)

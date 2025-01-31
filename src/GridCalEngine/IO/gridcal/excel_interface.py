@@ -1134,11 +1134,14 @@ def save_excel(circuit: MultiCircuit, file_path):
     """
     logger = Logger()
 
-    dfs = gather_model_as_data_frames(circuit=circuit, legacy=True)
+    dfs = gather_model_as_data_frames(circuit=circuit, logger=logger, legacy=True)
 
     # flush-save ###################################################################################################
     with pd.ExcelWriter(file_path) as writer:
         for key in dfs.keys():
-            dfs[key].to_excel(excel_writer=writer, sheet_name=key)
+            key2 = str(key)
+            if len(key2) > 30:
+                key2 = key2[:30] # excel sheet names have a max of 30 chars
+            dfs[key].to_excel(excel_writer=writer, sheet_name=key2)
 
     return logger

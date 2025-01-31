@@ -115,9 +115,52 @@ def test_psse_conversion() -> None:
     assert np.allclose(tr3.B, -0.554981)
 
 
+def test_psse_conversion2() -> None:
+
+    """
+
+
+    :return:
+    """
+
+    # design values
+    Vhv = 275.0
+    Vlv = 132.0
+    Sn = 1110.0  # MVA
+    Pcu = 1500.0  # kW
+    Pfe = 300.0  # kW
+    # I0 = 5.0  # %
+    I0 = 0.05  # %
+    Vsc = 10.0  # %
+    Sbase = 100  # MVA
+
+    """
+    Expected (from PSSe) values un system p.u. (1, 1, 1)
+    -----------------------------------------------------
+    Specified R (pu): 0.00011	
+    Specified X (pu): 0.009008
+	Magnetizing G (pu): 0.00264
+	Magnetizing B (pu):	-0.55499
+    """
+
+    b1 = Bus(Vnom=Vlv)
+    b2 = Bus(Vnom=Vhv)
+    tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
+
+    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe,I0=I0, Vsc=Vsc, Sbase=Sbase)
+
+    print(f"R: {tr3.R}")
+    print(f"X: {tr3.X}")
+    print(f"G: {tr3.G}")
+    print(f"B: {tr3.B}")
+
+    assert np.allclose(tr3.R, 0.000121743)
+    assert np.allclose(tr3.X, 0.009008186)
+    assert np.allclose(tr3.G, 0.000270)
+    assert np.allclose(tr3.B, -0.554991901)
 
 
 if __name__ == '__main__':
     # template_from_impedances()
-    test_psse_conversion()
+    test_psse_conversion2()
     # test_transformer_type()
