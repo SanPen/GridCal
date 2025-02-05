@@ -297,8 +297,50 @@ def test_ieee14_controlQ_controllableshunts():
     assert np.allclose(res.Pg, Pg_test, atol=1e-2)
     assert np.allclose(np.r_[res.Qg, res.Qsh], Qg_test, atol=1e-2)
 
+
+
+
+
+def superconductor() -> NonlinearOPFResults:
+    """
+    Test case9 from matpower
+    :return:
+    """
+    cwd = os.getcwd()
+    print(cwd)
+
+    # Go back two directories
+    file_path = os.path.join('data', 'grids', 'case9.m')
+
+    grid = gce.FileOpen(file_path).open()
+    grid.lines[0].R = 0.0
+    grid.lines[0].X = 0.0
+    nc = gce.compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(control_q=False)
+    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8)
+    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+
+
+
+
+
+
+
 #
-# def test_superconductors_handling():
-#
-#     assert np.allclose(0, 1, atol=1e-2)
+def test_superconductors_handling():
+
+    vm_test = [0.900016, 1.053868, 0.970263, 0.900016 , 0.900015, 0.965768, 0.973281, 1.002337, 0.900006]
+
+    va_test = [0.0000, -0.218941, -0.205774, 0.000, -0.142571, -0.218089, -0.270923, -0.235027, -0.164417]
+
+    Pg_test = [0.10004189, 0.27187331, 0.19692853]
+    Qg_test = [-0.32656730, 0.87110995, 0.07563495]
+
+    res = superconductor()
+
+    assert np.allclose(res.Vm, vm_test, atol=1e-2)
+    assert np.allclose(res.Va, va_test, atol=1e-2)
+    assert np.allclose(res.Pg, Pg_test, atol=1e-2)
+    assert np.allclose(res.Qg, Qg_test, atol=1e-2)
+
 
