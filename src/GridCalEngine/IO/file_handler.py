@@ -238,7 +238,7 @@ class FileOpen:
             elif looks_like_ucte:
 
                 ucte_grid = UcteCircuit()
-                ucte_grid.parse_file(files=self.file_name)
+                ucte_grid.parse_file(files=self.file_name, logger=self.logger)
                 self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
 
             else:
@@ -431,9 +431,9 @@ class FileOpen:
                 elif file_extension.lower() == '.p':
                     self.circuit = Panda2GridCal(self.file_name, self.logger).get_multicircuit()
 
-                elif file_extension.lower() == '.uct':
+                elif file_extension.lower() == '.uct' or file_extension.lower() == '.uct2':
                     ucte_grid = UcteCircuit()
-                    ucte_grid.parse_file(files=[self.file_name])
+                    ucte_grid.parse_file(files=[self.file_name], logger=self.logger)
                     self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
 
             else:

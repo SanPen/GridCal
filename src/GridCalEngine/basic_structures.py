@@ -907,3 +907,4 @@ class ListSet(list):
     def copy(self):
         """Return a shallow copy of the ListSet."""
         return ListSet(self)
+

@@ -26,12 +26,12 @@ class UcteLine:
 
         """
         Status
-        0:real element in operation (R, X only positive values permitted)
+        0: real element in operation (R, X only positive values permitted)
         8: real element out of operation (R, X only positive values permitted)
-        1:equivalent element in operation
-        9:equivalent element out of operation        
-        2:busbar coupler in operation (definition: R=0, X=0, B=0)
-        7:busbar coupler out of operation (definition: R=0, X=0, B=0)
+        1: equivalent element in operation
+        9: equivalent element out of operation        
+        2: busbar coupler in operation (definition: R=0, X=0, B=0)
+        7: busbar coupler out of operation (definition: R=0, X=0, B=0)
         """
         if self.status == 0:
             return True, False
@@ -46,7 +46,12 @@ class UcteLine:
         elif self.status == 7:
             return False, True
 
-    def parse(self, line):
+    def parse(self, line: str):
+        """
+
+        :param line:
+        :return:
+        """
         self.node1 = line[0:8].strip()
         self.node2 = line[9:17].strip()
         self.order_code = line[18:19].strip()
@@ -55,4 +60,4 @@ class UcteLine:
         self.reactance = float(line[29:35].strip())
         self.susceptance = float(line[36:44].strip())
         self.current_limit = int(line[45:51].strip())
-        self.name = int(line[53:65].strip())
+        self.name = line[53::].strip()
