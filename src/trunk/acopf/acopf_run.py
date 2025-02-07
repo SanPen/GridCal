@@ -1,14 +1,15 @@
 import os
 import GridCalEngine.api as gce
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_new import run_nonlinear_opf
+
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 # from GridCalEngine.enumerations import TransformerControlType
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import NodalCapacityTimeSeriesDriver
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_options import NodalCapacityOptions
 import numpy as np
 import pandas as pd
-import math
 from GridCalEngine.enumerations import NodalCapacityMethod
 
 
@@ -300,6 +301,7 @@ def case14():
 
     # grid.delete_line(grid.lines[0])
     # grid.delete_line(grid.lines[1])
+    # grid.generators[2].enabled_dispatch = False
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
 
@@ -323,7 +325,7 @@ def case_gb():
 
     grid = gce.FileOpen(file_path).open()
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
-                                              acopf_mode=gce.AcOpfMode.ACOPFslacks, ips_tolerance=1e-8)
+                                              acopf_mode=gce.AcOpfMode.ACOPFstd, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
@@ -342,7 +344,7 @@ def case_pegase89():
     grid = gce.FileOpen(file_path).open()
     # nc = compile_numerical_circuit_at(grid)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
-                                              acopf_mode=gce.AcOpfMode.ACOPFstd, ips_tolerance=1e-7)
+                                              acopf_mode=gce.AcOpfMode.ACOPFstd, ips_tolerance=1e-7, ips_control_q_limits=False)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     # ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
@@ -365,7 +367,7 @@ def case300():
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, max_iter=50)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
-                                              acopf_mode=gce.AcOpfMode.ACOPFslacks)
+                                              acopf_mode=gce.AcOpfMode.ACOPFstd)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
@@ -387,9 +389,9 @@ def casepegase13k():
     power_flow.run()
 
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-6,
-                                              ips_iterations=70)
+                                              ips_iterations=150, acopf_mode=gce.AcOpfMode.ACOPFslacks)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
 
 
 def casehvdc():
@@ -491,10 +493,10 @@ def caseREE():
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
 
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFslacks,
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFstd,
                                               verbose=1, ips_iterations=100, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
 
 
 def case_nodalcap():
@@ -510,7 +512,6 @@ def case_nodalcap():
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
-
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFslacks,
                                               verbose=1, ips_iterations=150, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
@@ -521,6 +522,27 @@ def case_nodalcap():
     # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
+def superconductor():
+    """
+    Test case9 from matpower
+    :return:
+    """
+    cwd = os.getcwd()
+    print(cwd)
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+
+    grid = gce.FileOpen(file_path).open()
+    grid.lines[0].R = 0.0
+    grid.lines[0].X = 0.0
+    nc = gce.compile_numerical_circuit_at(grid)
+    pf_options = gce.PowerFlowOptions(control_q=False)
+    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, verbose=1)
+    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+
+
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
@@ -528,12 +550,13 @@ if __name__ == '__main__':
     # two_grids_of_3bus()
     # case9()
     # case14_linear_vs_nonlinear()
-    case14()
+    # case14()
     # case_gb()
     # case6ww()
-    # case_pegase89()
+    #  case_pegase89()
     # case300()
     # casepegase13k()
     # casehvdc()
-    #caseREE()
+    # caseREE()
     # case_nodalcap()
+    superconductor()
