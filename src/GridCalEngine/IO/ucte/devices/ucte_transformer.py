@@ -19,6 +19,13 @@ class UcteTransformer:
         self.current_limit = 0  # 70-75: Current limit (A)
         self.name = ""
 
+    def get_primary_key(self):
+        """
+        Get a transformer primary key
+        :return:
+        """
+        return f"{self.node1}_{self.node2}_{self.order_code}"
+
     def is_active_and_reducible(self) -> tuple[bool, bool]:
         """
         Returns if this line is active and/or reducible

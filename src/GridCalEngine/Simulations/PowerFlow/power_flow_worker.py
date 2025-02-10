@@ -54,7 +54,7 @@ def __split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results
     sh_q_share = nc.shunt_data.q_share / (nc.bus_data.q_shared_total[bus_idx_sh] + 1e-20)
 
     # Fixed injection of reactive power
-    # Zip formul: S0 + np.conj(I0 + Y0 * Vm) * Vm
+    # Zip formula: S0 + np.conj(I0 + Y0 * Vm) * Vm
     Vm = np.abs(results.voltage)
     Qfix = nc.bus_data.q_fixed - (nc.bus_data.ii_fixed + nc.bus_data.b_fixed * Vm) * Vm
 

@@ -12,6 +12,7 @@ from GridCalEngine.Devices.Aggregation.country import Country
 from GridCalEngine.Devices.Aggregation.community import Community
 from GridCalEngine.Devices.Aggregation.region import Region
 from GridCalEngine.Devices.Aggregation.municipality import Municipality
+from GridCalEngine.Devices.Aggregation.modelling_authority import ModellingAuthority
 from GridCalEngine.Devices.profile import Profile
 
 
@@ -83,6 +84,9 @@ class Substation(GenericAreaGroup):
 
         self.terrain_roughness: float = float(terrain_roughness)
 
+        self.modelling_authority: Union[ModellingAuthority, None] = None
+
+
         self.register(key="area", units="", tpe=DeviceType.AreaDevice,
                       definition="Substation area, altenativelly this can be obtained from the zone")
 
@@ -100,6 +104,9 @@ class Substation(GenericAreaGroup):
 
         self.register(key="municipality", units="", tpe=DeviceType.MunicipalityDevice,
                       definition="Substation municipality")
+
+        self.register(key='modelling_authority', units='', tpe=DeviceType.ModellingAuthority,
+                      definition='Modelling authority of this asset')
 
         self.register(key="address", units="", tpe=str,
                       definition="Substation address")

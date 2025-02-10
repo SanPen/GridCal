@@ -23,6 +23,13 @@ class UcteTransformerRegulation:
         self.p = 0.0  # 58-62: P (MW, optional)
         self.regulation_type = ""  # 64-67: Regulation type (ASYM, SYMM)
 
+    def get_primary_key(self):
+        """
+        Get a transformer primary key
+        :return:
+        """
+        return f"{self.node1}_{self.node2}_{self.order_code}"
+
     def parse(self, line: str):
         """
 

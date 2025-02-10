@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-class UcteTransformerSpecial:
+class UcteTransformerTapTable:
     """
 
     """
@@ -16,6 +16,13 @@ class UcteTransformerSpecial:
         self.reactance = 0.0  # 33-38: Reactance (Ω)
         self.delta_u = 0.0  # 40-44: Voltage deviation (%)
         self.phase_shift = 0.0  # 46-50: Phase shift angle (°)
+
+    def get_primary_key(self):
+        """
+        Get a transformer primary key
+        :return:
+        """
+        return f"{self.node1}_{self.node2}_{self.order_code}"
 
     def parse(self, line):
         self.node1 = line[0:8].strip()
