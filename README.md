@@ -803,9 +803,12 @@ fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
 
 grid = gce.open_file(filename=fname)
 
+# Define fault index explicitly
+fault_index = 2
+
 # Run a Line-Ground short circuit on the bus at index 2
 # Since we do not provide any power flow results, it will run one for us
-results = gce.short_circuit(grid, fault_index=2, fault_type=gce.FaultType.LG)
+results = gce.short_circuit(grid, fault_index, fault_type=gce.FaultType.LG)
 
 print("Short circuit power: ", results.SCpower[fault_index])
 ```
