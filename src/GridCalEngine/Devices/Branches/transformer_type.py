@@ -303,7 +303,8 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
 
         if val > 0:
             xm = 1.0 / sqrt(val)
-            rm = sqrt(xm * xm - zm * zm)
+            # rm = sqrt(xm * xm - zm * zm)
+            rm = rfe
         else:
             xm = 0.0
             rm = 0.0
@@ -336,6 +337,11 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
         y_shunt = 1 / z_shunt
     else:
         y_shunt = 0j
+
+    g_good = 1 / z_shunt.real * Sbase / Sn
+    b_good = -1 / z_shunt.imag
+    
+    y_shunt = g_good + 1j * b_good
 
     return z_series, y_shunt
 

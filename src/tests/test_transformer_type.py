@@ -71,6 +71,51 @@ def test_transformer3w_test() -> None:
     assert np.isclose(x31, tr3.x31)
 
 
+def powerfactory_conversion() -> None:
+
+    """
+
+
+    :return:
+    """
+
+    # design values
+    Vhv = 275.0
+    Vlv = 132.0
+    Sn = 1110.0  # MVA
+    Pcu = 1500.0  # kW
+    Pfe = 300.0  # kW
+    I0 = 5.0  # %
+    # I0 = 0.05  # %
+    Vsc = 10.0  # %
+    Sbase = 100  # MVA
+
+    """
+    Expected (from PowerFactory) values un system p.u. (1, 1, 1)
+    -----------------------------------------------------
+    Specified R (pu): 0.000122	
+    Specified X (pu): 0.009008
+	Magnetizing G (pu): 0.00270
+	Magnetizing B (pu):	-0.554992
+    """
+
+    b1 = Bus(Vnom=Vlv)
+    b2 = Bus(Vnom=Vhv)
+    tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
+
+    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe,I0=I0, Vsc=Vsc, Sbase=Sbase, round=True)
+
+    print(f"R: {tr3.R}")
+    print(f"X: {tr3.X}")
+    print(f"G: {tr3.G}")
+    print(f"B: {tr3.B}")
+
+    assert np.allclose(tr3.R, 0.000122)
+    assert np.allclose(tr3.X, 0.009008)
+    assert np.allclose(tr3.G, 0.000270)
+    assert np.allclose(tr3.B, -0.554992)
+
+
 def test_psse_conversion() -> None:
 
     """
@@ -160,7 +205,11 @@ def test_psse_conversion2() -> None:
     assert np.allclose(tr3.B, -0.554991901)
 
 
+
+
+
 if __name__ == '__main__':
     # template_from_impedances()
-    test_psse_conversion2()
+    # test_psse_conversion2()
     # test_transformer_type()
+    powerfactory_conversion()
