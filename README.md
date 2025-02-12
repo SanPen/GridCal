@@ -1015,10 +1015,8 @@ The simulation then tries all the contingency groups and apply the events regist
 ```python
 import os
 import GridCalEngine as gce
-from GridCalEngine import Contingency, SolverType, ResultTypes  # Import Contingency explicitly
 
-
-folder = os.path.join('..', 'Grids_and_profiles', 'grids')
+folder = os.path.join('Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE 5 Bus.xlsx')
 
 main_circuit = gce.open_file(fname)
@@ -1027,23 +1025,23 @@ branches = main_circuit.get_branches()
 
 # manually generate the contingencies
 for i, br in enumerate(branches):
-    # add a contingency group
-    group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
-    main_circuit.add_contingency_group(group)
+  # add a contingency group
+  group = gce.ContingencyGroup(name="contingency {}".format(i + 1))
+  main_circuit.add_contingency_group(group)
 
-    # add the branch contingency to the groups, only groups are failed at once
-    con = Contingency(device_idtag=br.idtag, name=br.name, group=group)  # Use imported Contingency
-    main_circuit.add_contingency(con)
+  # add the branch contingency to the groups, only groups are failed at once
+  con = gce.Contingency(device_idtag=br.idtag, name=br.name, group=group)
+  main_circuit.add_contingency(con)
 
 # add a special contingency
 group = gce.ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag,
-                                         name=branches[3].name, group=group))
-main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag,
-                                         name=branches[5].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device_idtag=branches[3].idtag,
+                                             name=branches[3].name, group=group))
+main_circuit.add_contingency(gce.Contingency(device_idtag=branches[5].idtag,
+                                             name=branches[5].name, group=group))
 
-pf_options = gce.PowerFlowOptions(solver_type=SolverType.NR)
+pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
 
 # declare the contingency options
 options_ = gce.ContingencyAnalysisOptions(use_provided_flows=False,
@@ -1060,7 +1058,6 @@ contingency_groups = main_circuit.get_contingency_groups()
 linear_multiple_contingencies = gce.LinearMultiContingencies(grid=main_circuit,
                                                              contingency_groups_used=contingency_groups)
 
-
 simulation = gce.ContingencyAnalysisDriver(grid=main_circuit,
                                            options=options_,
                                            linear_multiple_contingencies=linear_multiple_contingencies)
@@ -1068,8 +1065,9 @@ simulation = gce.ContingencyAnalysisDriver(grid=main_circuit,
 simulation.run()
 
 # print results
-df = simulation.results.mdl(ResultTypes.BranchActivePowerFrom).to_df()
+df = simulation.results.mdl(gce.ResultTypes.BranchActivePowerFrom).to_df()
 print("Contingency flows:\n", df)
+
 ```
 
 Output:
