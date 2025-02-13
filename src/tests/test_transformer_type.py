@@ -3,8 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
+import os
 import numpy as np
-
+import GridCalEngine.api as gce
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -159,6 +160,33 @@ def test_psse_conversion2() -> None:
     assert np.allclose(tr3.X, 0.009008)
     assert np.allclose(tr3.G, 0.00300)
     assert np.allclose(tr3.B, -0.004669)
+
+
+def test_psse_conversion3() -> None:
+
+    # Go back two directories
+    file_path = os.path.join('data', 'grids', 'RAW', 'trafos_for_sc_to_rxgb.raw')
+
+    grid = gce.FileOpen(file_path).open()
+
+    tr1 = grid.transformers2w[0]
+    assert np.allclose(tr1.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr1.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr1.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr1.B, -0.004669, atol=1e-6)
+
+    # Results as extracted from PSSe, with about 6 decimal points
+    tr2 = grid.transformers2w[1]
+    assert np.allclose(tr2.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr2.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr2.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr2.B, -0.55499, atol=1e-6)
+
+    tr3 = grid.transformers2w[2]
+    assert np.allclose(tr3.R, 3.76, atol=1e-6)
+    assert np.allclose(tr3.X, 18.0117295, atol=1e-6)
+    assert np.allclose(tr3.G, 2.7e-6, atol=1e-10)
+    assert np.allclose(tr3.B, - 2.485377e-5, atol=1e-10)
 
 
 if __name__ == '__main__':
