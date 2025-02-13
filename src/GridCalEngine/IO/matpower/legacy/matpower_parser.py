@@ -810,21 +810,21 @@ def get_matpower_case_data(filename, force_linear_cost=False) -> Dict:
     gen_cost_data = list()
     gen_cost_arr = data['gencost']
     for i in range(gen_cost_arr.shape[0]):
-        costtype = gen_cost_arr[i, 0]
+        cost_type = gen_cost_arr[i, 0]
         startup = gen_cost_arr[i, 1]
         shutdown = gen_cost_arr[i, 2]
         n = int(gen_cost_arr[i, 3])
-        costvector = gen_cost_arr[i, 3:3 + n]
+        cost_vector = gen_cost_arr[i, 3:3 + n]
 
         if force_linear_cost:
-            if len(costvector) == 3:
-                costvector[2] = 0.0
+            if len(cost_vector) == 3:
+                cost_vector[2] = 0.0
 
-        gen_cost_data.append({'costtype': costtype,
+        gen_cost_data.append({'costtype': cost_type,
                               'startup': startup,
                               'shutdown': shutdown,
                               'n': n,
-                              'costvector': costvector})
+                              'costvector': cost_vector})
 
     branch_data = list()
     bus_arr = data['branch']

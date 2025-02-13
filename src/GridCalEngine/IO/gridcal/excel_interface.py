@@ -157,27 +157,25 @@ def load_from_xls(filename: str) -> Dict[str, pd.DataFrame]:
 
             if name.lower() == "config":
                 df = xl.parse('config', index_col=0)
-                idx = df['Property'][df['Property'] == 'BaseMVA'].index
-                if len(idx) > 0:
-                    data["baseMVA"] = np.double(df.values[idx, 1])
-                else:
-                    data["baseMVA"] = 100
 
-                idx = df['Property'][df['Property'] == 'Version'].index
-                if len(idx) > 0:
-                    data["version"] = np.double(df.values[idx, 1])
+                data["baseMVA"] = 100
+                data["name"] = "Grid"
+                data["Comments"] = ""
+                # Note: Do not include a default value for version
 
-                idx = df['Property'][df['Property'] == 'Name'].index
-                if len(idx) > 0:
-                    data["name"] = df.values[idx[0], 1]
-                else:
-                    data["name"] = 'Grid'
+                for i, row in df.iterrows():
 
-                idx = df['Property'][df['Property'] == 'Comments'].index
-                if len(idx) > 0:
-                    data["Comments"] = df.values[idx[0], 1]
-                else:
-                    data["Comments"] = ''
+                    if row['Property'] == 'BaseMVA':
+                        data["baseMVA"] = np.double(row['Value'])
+
+                    elif row['Property'] == 'Version':
+                        data["version"] = np.double(row['Value'])
+
+                    elif row['Property'] == 'Name':
+                        data["name"] = str(row['Value'])
+
+                    elif row['Property'] == 'Comments':
+                        data["Comments"] = str(row['Value']).replace("nan", "")
 
             else:
                 # just pick the DataFrame

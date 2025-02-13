@@ -266,6 +266,7 @@ logger.print()
 GridCal supports many file formats:
 
 - CIM 16 (.zip and .xml)
+- UCTE.
 - CGMES 2.4.15 and 3.0 (.zip and .xml)
 - PSS/e raw and rawx versions 29 to 35, including USA market exchange RAW-30 specifics.
 - Matpower .m files directly.
