@@ -302,22 +302,16 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
         I0 = I0 * Sn / Sbase  # try?
         zm = 1.0 / (I0 / 100.0)
 
-        inside_sqrt = (-zm**2 * rm**2) / (zm**2 - rm**2)
+        inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
         if inside_sqrt > 0:
             xm = sqrt(inside_sqrt)
         else:
             xm = 0.0
 
-
-
     else:
 
         rm = 0.0
         xm = 0.0
-
-    # shunt impedance in p.u. of the machine
-    zsh = rm + 1j * xm
-    zsh = rm * 1j * xm / (rm + 1j * xm)
 
     # convert impedances from machine per unit to ohms
     z_base_hv = (HV * HV) / Sn
@@ -325,28 +319,13 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
 
     z_series_hv = zs * GR_hv1 * z_base_hv  # Ohm
     z_series_lv = zs * (1.0 - GR_hv1) * z_base_lv  # Ohm
-    z_shunt_hv = zsh * GR_hv1 * z_base_hv  # Ohm
-    z_shunt_lv = zsh * (1.0 - GR_hv1) * z_base_lv  # Ohm
 
     # convert impedances from ohms to system per unit
     z_base_hv_sys = (VH_bus * VH_bus) / Sbase
     z_base_lv_sys = (VL_bus * VL_bus) / Sbase
 
     z_series = z_series_hv / z_base_hv_sys + z_series_lv / z_base_lv_sys
-    z_shunt = z_shunt_hv / z_base_hv_sys + z_shunt_lv / z_base_lv_sys
-
-    if z_shunt != 0:
-        y_shunt = 1 / z_shunt
-    else:
-        y_shunt = 0j
-
-    # g_good = 1 / z_shunt.real * Sbase / Sn
-    # b_good = -1 / z_shunt.imag
-
-    g_good = 1 / rm 
-    b_good = - 1 / xm
-    
-    y_shunt = g_good + 1j * b_good
+    y_shunt = (1 / rm) - 1j / xm
 
     return z_series, y_shunt
 

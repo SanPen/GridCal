@@ -37,7 +37,7 @@ def test_transformer_type() -> None:
     z_series, y_shunt = obj.get_impedances(VH=Vhv, VL=Vlv, Sbase=Sbase)
 
     assert np.allclose(z_series, 3.76 + 18.0117295j)
-    assert np.allclose(y_shunt, 2.6532597915358445e-06 - 2.456722029199863e-05j)
+    assert np.allclose(y_shunt, 2.7e-6 -2.485377e-5j)
 
 
 def test_transformer3w_test() -> None:
