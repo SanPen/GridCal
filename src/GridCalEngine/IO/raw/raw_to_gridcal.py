@@ -240,7 +240,7 @@ def get_gridcal_shunt_switched(
     elm = dev.ControllableShunt(name='Switched shunt ' + busnum_id,
                                 active=bool(psse_elm.STAT),
                                 B=b_init,
-                                step=1,     # for testing
+                                step=0,
                                 vset=vset,
                                 code=busnum_id,
                                 is_nonlinear=True,

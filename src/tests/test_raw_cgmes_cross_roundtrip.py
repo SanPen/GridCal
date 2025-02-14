@@ -56,8 +56,8 @@ def get_power_flow_options() -> PowerFlowOptions:
     :return:
     """
     pfo = PowerFlowOptions(
-        # solver_type=SolverType.NR,
-        # retry_with_other_methods=True,
+        solver_type=SolverType.NR,
+        retry_with_other_methods=False,     # default True
         # verbose=0,
         # initialize_with_existing_solution=False,
         # tolerance=1e-6,
@@ -102,6 +102,7 @@ def run_raw_to_cgmes(import_path: str | list[str],
     pf1_res = gce.power_flow(circuit1, pf_options)
     # pf_options = None
     # pf1_res = None
+    assert pf1_res.converged
 
     logger_saving = Logger()
     pf_session_data = DriverToSave(name="powerflow results",
@@ -209,8 +210,8 @@ def test_raw_to_cgmes_cross_roundtrip():
     """
     script_path = os.path.abspath(__file__)
 
-    test_grid_name = 'IEEE 14 bus'  # PASSEED
-    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    # test_grid_name = 'IEEE 14 bus'  # PASSEED
+    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # braches excessive voltage diff: PASSED if these branches are not added as trafos
     # test_grid_name = 'IEEE 30 bus'  # num of transformer 2w??!! (tap_module num error)
@@ -225,8 +226,8 @@ def test_raw_to_cgmes_cross_roundtrip():
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # PST is controlling
-    # test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
-    # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
+    test_grid_name = 'IEEE_14_v35_3_nudox_1_hvdc_desf_rates_fs_ss'
+    boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'BD_IEEE_Grids.zip')
 
     # test_grid_name = 'DACF_20240404_00_IGM'       # STORE it somewhewre else!
     # boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'DACF_20240404_Boundary.zip')
@@ -244,29 +245,41 @@ def test_raw_to_cgmes_cross_roundtrip():
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))
 
-    # Non-public test cases
+    # # Non-public test cases
     # raw_path = os.path.join(
-    #     "C:\\Mate",  # Mate's
-    #     #"C:\\Work",  # Bence's
+    #     # "C:\\Mate",  # Mate's
+    #     r"C:\\Work",  # Bence's
     #     "gridDigIt Kft",
     #     "External projects - Documents",
     #     "REE",
     #     "test_models",
-    #     "miguel_models_2",
-    #     "DACF_20241205_00_IGM_35.raw"
+    #     # # DACF 1
+    #     # "miguel_models_2",
+    #     # "DACF_20241205_00_IGM_35.raw"
+    #     # DACF 2
+    #     "miguel_models_3",
+    #     "PLANNING MODELS AND OPERATIONAL PLANNING MODELS",
+    #     "DACF_model",
+    #     "DACF_20250121_00_IGM_35.raw"
     # )
     # export_relative_path = os.path.join('data', 'output', 'raw_to_cgmes_export_results',
     #                                     f'DACF_20241205_00_IGM_35_from_raw_GC.zip')
     # export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     # boundary_path = os.path.join(
-    #     "C:\\Mate", # Mate's
-    #     # "C:\\Work",  # Bence's
+    #     # r"C:\\Mate", # Mate's
+    #     r"C:\\Work",  # Bence's
     #     "gridDigIt Kft",
     #     "External projects - Documents",
     #     "REE",
     #     "test_models",
-    #     "miguel_models_2",
-    #     "BOUNDARY SET.zip"
+    #     # # DACF 1
+    #     # "miguel_models_2",
+    #     # "BOUNDARY SET.zip",
+    #     # DACF 2
+    #     "miguel_models_3",
+    #     "PLANNING MODELS AND OPERATIONAL PLANNING MODELS",
+    #     "DACF_model",
+    #     "20241201T0000Z__ENTSOE.zip"
     # )
 
     run_raw_to_cgmes(raw_path, export_name, boundary_path)
