@@ -65,7 +65,6 @@ dependencies = ['setuptools>=41.0.1',
                 "xlwt>=1.3.0",
                 "xlrd>=1.1.0",
                 "matplotlib>=2.1.1",
-                "qtconsole>=4.5.4",
                 "openpyxl>=2.4.9",
                 "chardet>=3.0.4",  # for the psse files character detection
                 "scikit-learn>=1.5.0",
