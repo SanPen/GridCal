@@ -41,8 +41,13 @@ def solve_acopf(case: Dict) -> Dict:
     :param case:
     :return:
     """
-    res = opf.solve_opf(case, opftype="AC")
-    return res
+    if GUROBI_OPTIMODS_AVAILABLE:
+        res = opf.solve_opf(case, opftype="AC")
+        return res
+    else:
+        raise ImportError("No gurobi optimization available")
+
+
 
 
 if __name__ == '__main__':
@@ -50,6 +55,7 @@ if __name__ == '__main__':
     fname = r'/home/santi/matpower8.0b1/data/case9_gurobi_test.m'
 
     # Gurobi
+    # case_ = gce.to_matpower(grid)
     case_ = gce.get_matpower_case_data(fname, force_linear_cost=True)
     result_optimods = solve_acopf(case_)
 

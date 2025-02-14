@@ -83,14 +83,14 @@ class PfFormulationTemplate:
 
     def x2var(self, x: Vec):
         """
-        Convert X to decission variables
+        Convert X to decision variables
         :param x: solution vector
         """
         pass
 
     def var2x(self) -> Vec:
         """
-        Convert the internal decission variables into the vector
+        Convert the internal decision variables into the vector
         """
         pass
 

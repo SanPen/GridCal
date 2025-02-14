@@ -133,7 +133,8 @@ class PfBasicFormulation(PfFormulationTemplate):
             dS[self.idx_dP].real,
             dS[self.idx_dQ].imag
         ]
-        # compute the rror
+        
+        # compute the error
         return compute_fx_error(_f), x
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:

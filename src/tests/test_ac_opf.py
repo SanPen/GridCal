@@ -78,6 +78,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     return base_sol, slack_sol, tap_sol, tap_slack_sol
 
+
 def case14_ctrlQ_shunts() -> NonlinearOPFResults:
     """
     Test case14 from matpower. Tests multiple situations
@@ -111,6 +112,7 @@ def case14_ctrlQ_shunts() -> NonlinearOPFResults:
     base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
     return base_sol
+
 
 def case_pegase89() -> NonlinearOPFResults:
     """
@@ -281,7 +283,6 @@ def test_pegase89():
 
 
 def test_ieee14_controlQ_controllableshunts():
-
     vm_test = [1.0600, 1.0398, 1.0044, 1.0195, 1.0194, 1.0600, 1.0488,
                1.0600, 1.0463, 1.0413, 1.0471, 1.0450, 1.0403, 1.0255]
     va_test = [-0.0000, -0.0707, -0.1772, -0.1527, -0.1304, -0.2198, -0.1900,
@@ -296,9 +297,6 @@ def test_ieee14_controlQ_controllableshunts():
     assert np.allclose(res.Va, va_test, atol=1e-2)
     assert np.allclose(res.Pg, Pg_test, atol=1e-2)
     assert np.allclose(np.r_[res.Qg, res.Qsh], Qg_test, atol=1e-2)
-
-
-
 
 
 def superconductor() -> NonlinearOPFResults:
@@ -321,15 +319,9 @@ def superconductor() -> NonlinearOPFResults:
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
 
-
-
-
-
-
 #
 def test_superconductors_handling():
-
-    vm_test = [0.900016, 1.053868, 0.970263, 0.900016 , 0.900015, 0.965768, 0.973281, 1.002337, 0.900006]
+    vm_test = [0.900016, 1.053868, 0.970263, 0.900016, 0.900015, 0.965768, 0.973281, 1.002337, 0.900006]
 
     va_test = [0.0000, -0.218941, -0.205774, 0.000, -0.142571, -0.218089, -0.270923, -0.235027, -0.164417]
 
@@ -342,5 +334,3 @@ def test_superconductors_handling():
     assert np.allclose(res.Va, va_test, atol=1e-2)
     assert np.allclose(res.Pg, Pg_test, atol=1e-2)
     assert np.allclose(res.Qg, Qg_test, atol=1e-2)
-
-

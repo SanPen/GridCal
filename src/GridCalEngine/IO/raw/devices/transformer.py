@@ -1189,19 +1189,40 @@ class RawTransformer(RawObject):
             on  Winding  1  to  2  MVA  base (SBASE1-2) and  winding  voltage  base
             """
             # Series impedance
-            Pcu = self.R1_2  # load loss AKA copper losses
-            zsc = self.X1_2  # short circuit impedance
-            rsc = (Pcu / 1000.0) / self.SBASE1_2
+            Pcu = self.R1_2 / 1000.0  # Pcu comes in W from PSSe, we want it in kW
+            Vsc = self.X1_2 * 100  # Vsc comes in p.u. from Psse, we want it in %
+            GR_hv1 = 0.5
+            Sn = self.SBASE1_2
+            HV = max(NOMV1, NOMV2)
+            LV = min(NOMV1, NOMV2)
+            VH_bus = max(v_bus_i, v_bus_j)
+            VL_bus = min(v_bus_i, v_bus_j)
+
+            zsc = Vsc / 100.0
+            rsc = (Pcu / 1000.0) / Sn
             if rsc < zsc:
                 xsc = np.sqrt(zsc ** 2 - rsc ** 2)
             else:
                 xsc = 0.0
 
-            # base change from winding base to system base
-            r_ohm = rsc * z_base_winding
-            x_ohm = xsc * z_base_winding
-            r = r_ohm / z_base_sys
-            x = x_ohm / z_base_sys
+            # series impedance in p.u. of the machine
+            zs = rsc + 1j * xsc
+
+            # convert impedances from machine per unit to ohms
+            z_base_hv = (HV * HV) / Sn
+            z_base_lv = (LV * LV) / Sn
+
+            z_series_hv = zs * GR_hv1 * z_base_hv  # Ohm
+            z_series_lv = zs * (1.0 - GR_hv1) * z_base_lv  # Ohm
+
+            # convert impedances from ohms to system per unit
+            z_base_hv_sys = (VH_bus * VH_bus) / Sbase
+            z_base_lv_sys = (VL_bus * VL_bus) / Sbase
+
+            z_series = z_series_hv / z_base_hv_sys + z_series_lv / z_base_lv_sys
+
+            r = z_series.real
+            x = z_series.imag
         else:
             raise Exception("Invalid value of CZ")
 
@@ -1220,39 +1241,29 @@ class RawTransformer(RawObject):
             MVA base (SBASE1-2) and nominal Winding 1 voltage, NOMV1
             """
             Pfe = self.MAG1 / 1000.0  # Iron losses, AKA magnetic losses (kW) Mag1 comes in W, convert it to kW
-            I0 = self.MAG2  # No-load current (%)
+            I0 = self.MAG2 * 100  # No-load current (%), comes in p.u. from PSSe
             Sn = self.SBASE1_2  # Base power MVA
 
             # Shunt impedance (leakage)
             if Pfe > 0.0 and I0 > 0.0:
-                rfe = Sn / (Pfe / 1000.0)
+
+                # rfe = Sn / (Pfe / 1000.0)
+                rm = Sbase / (Pfe / 1000.0)
+                I0 = I0 * Sn / Sbase  # try?
                 zm = 1.0 / (I0 / 100.0)
-                val = (1.0 / (zm ** 2)) - (1.0 / (rfe ** 2))
-                if val > 0:
-                    xm = 1.0 / np.sqrt(val)
-                    rm = np.sqrt(xm * xm - zm * zm)
+
+                inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
+                if inside_sqrt > 0:
+                    xm = np.sqrt(inside_sqrt)
                 else:
                     xm = 0.0
-                    rm = 0.0
-
             else:
                 rm = 0.0
                 xm = 0.0
 
-            # base change from winding base to system base
-            r_ohm = rm * z_base_winding
-            x_ohm = xm * z_base_winding
-            rsh = r_ohm / z_base_sys
-            xsh = x_ohm / z_base_sys
-
             # convert shunt impedance to shunt admittance
-            if rsh != 0.0 and xsh != 0.0:
-                ysh = 1 / (rsh + 1j * xsh)
-                g = ysh.real
-                b = ysh.imag
-            else:
-                g = 1e-20
-                b = 1e-20
+            g = 1.0 / rm if rm > 0.0 else 0.0
+            b = -1.0 / xm if xm > 0.0 else 0.0
         else:
             raise Exception("Invalid value of CM")
 

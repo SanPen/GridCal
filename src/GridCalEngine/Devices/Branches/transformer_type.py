@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple, Union
-from numpy import sqrt
+from numpy import sqrt, real, imag
 from GridCalEngine.enumerations import TapChangerTypes
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
@@ -297,24 +297,19 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
     # Shunt impedance (leakage)
     if Pfe > 0.0 and I0 > 0.0:
 
-        rfe = Sn / (Pfe / 1000.0)
+        # rfe = Sn / (Pfe / 1000.0)
+        rm = Sbase / (Pfe / 1000.0)
+        I0 = I0 * Sn / Sbase  # try?
         zm = 1.0 / (I0 / 100.0)
-        val = (1.0 / (zm ** 2)) - (1.0 / (rfe ** 2))
 
-        if val > 0:
-            xm = 1.0 / sqrt(val)
-            rm = sqrt(xm * xm - zm * zm)
+        inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
+        if inside_sqrt > 0:
+            xm = sqrt(inside_sqrt)
         else:
             xm = 0.0
-            rm = 0.0
-
     else:
-
         rm = 0.0
         xm = 0.0
-
-    # shunt impedance in p.u. of the machine
-    zsh = rm + 1j * xm
 
     # convert impedances from machine per unit to ohms
     z_base_hv = (HV * HV) / Sn
@@ -322,20 +317,16 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
 
     z_series_hv = zs * GR_hv1 * z_base_hv  # Ohm
     z_series_lv = zs * (1.0 - GR_hv1) * z_base_lv  # Ohm
-    z_shunt_hv = zsh * GR_hv1 * z_base_hv  # Ohm
-    z_shunt_lv = zsh * (1.0 - GR_hv1) * z_base_lv  # Ohm
 
     # convert impedances from ohms to system per unit
     z_base_hv_sys = (VH_bus * VH_bus) / Sbase
     z_base_lv_sys = (VL_bus * VL_bus) / Sbase
 
     z_series = z_series_hv / z_base_hv_sys + z_series_lv / z_base_lv_sys
-    z_shunt = z_shunt_hv / z_base_hv_sys + z_shunt_lv / z_base_lv_sys
 
-    if z_shunt != 0:
-        y_shunt = 1 / z_shunt
-    else:
-        y_shunt = 0j
+    g = 1 / rm if rm > 0.0 else 0.0
+    b = 1 / xm if xm > 0.0 else 0.0
+    y_shunt = g - 1j * b
 
     return z_series, y_shunt
 

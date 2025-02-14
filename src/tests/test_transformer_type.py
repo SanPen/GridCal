@@ -3,8 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
+import os
 import numpy as np
-
+import GridCalEngine.api as gce
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
@@ -36,8 +37,14 @@ def test_transformer_type() -> None:
     Sbase = 100
     z_series, y_shunt = obj.get_impedances(VH=Vhv, VL=Vlv, Sbase=Sbase)
 
-    assert np.allclose(z_series, 3.76 + 18.0117295j)
-    assert np.allclose(y_shunt, 2.6532597915358445e-06 - 2.456722029199863e-05j)
+    R = z_series.real
+    X = z_series.imag
+    G = y_shunt.real
+    B = y_shunt.imag
+    assert np.allclose(R, 3.76, atol=1e-6)
+    assert np.allclose(X, 18.0117295, atol=1e-6)
+    assert np.allclose(G, 2.7e-6, atol=1e-10)
+    assert np.allclose(B, - 2.485377e-5, atol=1e-10)
 
 
 def test_transformer3w_test() -> None:
@@ -83,18 +90,18 @@ def test_psse_conversion() -> None:
     Vhv = 275.0
     Vlv = 132.0
     Sn = 1110.0  # MVA
-    Pcu = 1350.0  # kW
-    Pfe = 264.0  # kW
+    Pcu = 1500.0  # kW
+    Pfe = 300.0  # kW
     I0 = 5.0  # %
     Vsc = 10.0  # %
     Sbase = 100  # MVA
 
     """
-    Expected (from PSSe) values un system p.u. (1, 1, 1)
+    PSSe values in base system p.u. 
     -----------------------------------------------------
-    Specified R (pu): 0.00011	
+    Specified R (pu): 0.000122
     Specified X (pu): 0.009008
-	Magnetizing G (pu): 0.00264
+	Magnetizing G (pu): 0.00300
 	Magnetizing B (pu):	-0.55499
     """
 
@@ -102,17 +109,18 @@ def test_psse_conversion() -> None:
     b2 = Bus(Vnom=Vhv)
     tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
 
-    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe,I0=I0, Vsc=Vsc, Sbase=Sbase)
+    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe, I0=I0, Vsc=Vsc, Sbase=Sbase, round_vals=True)
 
     print(f"R: {tr3.R}")
     print(f"X: {tr3.X}")
     print(f"G: {tr3.G}")
     print(f"B: {tr3.B}")
 
-    assert np.allclose(tr3.R, 0.00011)
-    assert np.allclose(tr3.X, 0.009008)
-    assert np.allclose(tr3.G, 0.00264)
-    assert np.allclose(tr3.B, -0.554981)
+    # Results as extracted from PSSe, with about 6 decimal points
+    assert np.allclose(tr3.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr3.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr3.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr3.B, -0.55499, atol=1e-6)
 
 
 def test_psse_conversion2() -> None:
@@ -129,38 +137,67 @@ def test_psse_conversion2() -> None:
     Sn = 1110.0  # MVA
     Pcu = 1500.0  # kW
     Pfe = 300.0  # kW
-    # I0 = 5.0  # %
     I0 = 0.05  # %
     Vsc = 10.0  # %
     Sbase = 100  # MVA
 
     """
+    PSSe values in base system p.u. 
     Expected (from PSSe) values un system p.u. (1, 1, 1)
     -----------------------------------------------------
-    Specified R (pu): 0.00011	
+    Specified R (pu): 0.000122	
     Specified X (pu): 0.009008
-	Magnetizing G (pu): 0.00264
-	Magnetizing B (pu):	-0.55499
+	Magnetizing G (pu): 0.00300
+	Magnetizing B (pu):	-0.00467
     """
 
     b1 = Bus(Vnom=Vlv)
     b2 = Bus(Vnom=Vhv)
     tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
 
-    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe,I0=I0, Vsc=Vsc, Sbase=Sbase)
+    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe, I0=I0, Vsc=Vsc, Sbase=Sbase, round_vals=True)
 
     print(f"R: {tr3.R}")
     print(f"X: {tr3.X}")
     print(f"G: {tr3.G}")
     print(f"B: {tr3.B}")
 
-    assert np.allclose(tr3.R, 0.000121743)
-    assert np.allclose(tr3.X, 0.009008186)
-    assert np.allclose(tr3.G, 0.000270)
-    assert np.allclose(tr3.B, -0.554991901)
+    assert np.allclose(tr3.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr3.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr3.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr3.B, -0.004669, atol=1e-6)
+
+
+def test_psse_conversion3() -> None:
+
+    # Go back two directories
+    file_path = os.path.join('data', 'grids', 'RAW', 'trafos_for_sc_to_rxgb.raw')
+
+    grid = gce.FileOpen(file_path).open()
+
+    tr1 = grid.transformers2w[0]
+    assert np.allclose(tr1.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr1.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr1.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr1.B, -0.004669, atol=1e-6)
+
+    # Results as extracted from PSSe, with about 6 decimal points
+    tr2 = grid.transformers2w[1]
+    assert np.allclose(tr2.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr2.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr2.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr2.B, -0.55499, atol=1e-6)
+
+    tr3 = grid.transformers2w[2]
+    assert np.allclose(tr3.R, 3.76, atol=1e-6)
+    assert np.allclose(tr3.X, 18.0117295, atol=1e-6)
+    assert np.allclose(tr3.G, 2.7e-6, atol=1e-10)
+    assert np.allclose(tr3.B, - 2.485377e-5, atol=1e-10)
 
 
 if __name__ == '__main__':
     # template_from_impedances()
+    test_psse_conversion()
     test_psse_conversion2()
     # test_transformer_type()
+    # test_transformer3w_test()
