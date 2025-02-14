@@ -26,7 +26,7 @@ A server Tiles object for pySlipQt tiles.
 All server tile sources should inherit from this class.
 For example, see osm_tiles.py.
 """
-
+import http.client
 import os
 import time
 import math
@@ -198,6 +198,9 @@ class Tiles(BaseTiles):
                 print(msg)
                 # raise Exception(msg) from None
         except urllib.error.URLError as e:
+            print(e)
+
+        except http.client.IncompleteRead as e:
             print(e)
 
         # set up the request queue and worker threads
