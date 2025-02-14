@@ -71,7 +71,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
                 fm.modelingAuthoritySet.append(mas_name)
         else:
             fm.modelingAuthoritySet.append("http://www.ree.es/OperationalPlanning")
-            logger.add_warning(msg="Missing Modeling Authority!",
+            logger.add_warning(msg="Missing Modeling Authority! (set to default)",
                                comment="Default value used. (http://www.ree.es/OperationalPlanning)")
         current_time = datetime.now()
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -891,14 +891,15 @@ def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
     Creates a SvShuntCompensatorSections instance
 
     :param cgmes_model: Cgmes Circuit
-    :param sections:
+    :param sections: sections active
     :param cgmes_shunt_compensator: Linear or Non-linear
         ShuntCompensator instance from cgmes model
     :return:
     """
     object_template = cgmes_model.get_class_type("SvShuntCompensatorSections")
     new_rdf_id = get_new_rdfid()
-    sv_scs = object_template(rdfid=new_rdf_id)
+    sv_scs = object_template(rdfid=new_rdf_id, 
+                             tpe="SvShuntCompensatorSections")
 
     # sections: The number of sections in service as a continous variable.
     # To get integer value scale with ShuntCompensator.bPerSection.

@@ -9,7 +9,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
 class SvShuntCompensatorSections(Base):
-	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
+	def __init__(self, rdfid, tpe="SvShuntCompensatorSections", resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
 		self.sections: float = None

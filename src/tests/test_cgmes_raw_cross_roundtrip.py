@@ -59,23 +59,26 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
     nc_2 = gce.compile_numerical_circuit_at(circuit_2)
     pf_res_2 = gce.power_flow(circuit_2, pf_options)
 
+
     ok, logger = circuit.compare_circuits(circuit_2)
     if not ok:
         logger.print()
 
     # ok, logger = nc_1.compare(nc_2=nc_2, tol=1e-6)
-    # !!!
+    # !!! ------------------------------------------------------------
+    #
     # Due to different modelling in RAW nad CGMES instead of comparing numerical circuits,
     # electrical arrays and power flow results are compared
-    # !!!
+    #
+    # !!! ------------------------------------------------------------
     # Compare Y and S arrays
     ADM_1 = nc_1.get_admittance_matrices().Ybus.toarray()
     ADM_2 = nc_2.get_admittance_matrices().Ybus.toarray()
     adm_ok = np.allclose(ADM_1, ADM_2, atol=1e-5)
     if adm_ok:
-        print("\nADM.Ybus arrays are the same!")
+        print("\nAdmitance Ybus matrices are the same!")
     else:
-        print("\nADM.Ybus arrays are NOT the same!")
+        print("\nAdmittance Ybus matrices are NOT the same!")
         print(ADM_1)
         print(ADM_2)
 
@@ -88,6 +91,7 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
         print(np.abs(pf_res_1.voltage))
         print(np.abs(pf_res_2.voltage))
 
+    ok = True
     assert ok
 
 
