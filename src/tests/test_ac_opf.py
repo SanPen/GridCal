@@ -8,7 +8,7 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
@@ -65,7 +65,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
-        grid.lines[ll].Cost_prof.default_value *= 10000  # TODO: why change the profile default, is this not a snapshot?
+
     for b in range(len(grid.buses)):
         grid.buses[b].Vm_cost *= 10000
 
@@ -309,24 +309,29 @@ def superconductor() -> NonlinearOPFResults:
 
     # Go back two directories
     file_path = os.path.join('data', 'grids', 'case9.m')
+    file_path2 = os.path.join('data', 'grids', 'case9_superconductor.gridcal')
+
 
     grid = gce.FileOpen(file_path).open()
     grid.lines[0].R = 0.0
     grid.lines[0].X = 0.0
-    nc = gce.compile_numerical_circuit_at(grid)
+    grid2 = gce.FileOpen(file_path2).open()
+    # nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    return run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
 
 #
 def test_superconductors_handling():
-    vm_test = [0.900016, 1.053868, 0.970263, 0.900016, 0.900015, 0.965768, 0.973281, 1.002337, 0.900006]
+    vm_test = [1.0957346797437704, 1.0969574703822882, 1.0862735278860973, 1.0957346797437704, 1.0854699877686833, 1.0999995150478854, 1.089489008278147, 1.0999995260914164, 1.072794065554122]
 
-    va_test = [0.0000, -0.218941, -0.205774, 0.000, -0.142571, -0.218089, -0.270923, -0.235027, -0.164417]
 
-    Pg_test = [0.10004189, 0.27187331, 0.19692853]
-    Qg_test = [-0.32656730, 0.87110995, 0.07563495]
+    va_test = [-4.2370941920734066e-20, 0.1286722741064758, 0.09997739459585175, -4.2370941920734066e-20, -0.026373782258851553, 0.05377100775984605, 0.022363497246639205, 0.05904426953721843, -0.03741724523896175]
+
+    Pg_test = [0.8980293097369652, 1.3431831933182758, 0.9418495481848482]
+
+    Qg_test = [0.10234788760630473, -0.006611610144747128, -0.23267626898436533]
 
     res = superconductor()
 
