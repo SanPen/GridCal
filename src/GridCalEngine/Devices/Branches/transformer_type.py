@@ -326,7 +326,7 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
 
     g = 1 / rm if rm > 0.0 else 0.0
     b = 1 / xm if xm > 0.0 else 0.0
-    y_shunt = g + 1j * b
+    y_shunt = g - 1j * b
 
     return z_series, y_shunt
 

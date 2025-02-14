@@ -67,7 +67,8 @@ def get_allowed_sheets() -> Dict[str, Any]:
                            'generator_technology': float,
                            'generator_fuel': float,
                            'generator_emission': float,
-                           'tower_wires': None}
+                           'tower_wires': None,
+                           'line_protection_rating_factor_': float}
 
     for object_type_name, object_sample in object_types.items():
 

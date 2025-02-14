@@ -37,8 +37,14 @@ def test_transformer_type() -> None:
     Sbase = 100
     z_series, y_shunt = obj.get_impedances(VH=Vhv, VL=Vlv, Sbase=Sbase)
 
-    assert np.allclose(z_series, 3.76 + 18.0117295j)
-    assert np.allclose(y_shunt, 2.7e-6 -2.485377e-5j)
+    R = z_series.real
+    X = z_series.imag
+    G = y_shunt.real
+    B = y_shunt.imag
+    assert np.allclose(R, 3.76, atol=1e-6)
+    assert np.allclose(X, 18.0117295, atol=1e-6)
+    assert np.allclose(G, 2.7e-6, atol=1e-10)
+    assert np.allclose(B, - 2.485377e-5, atol=1e-10)
 
 
 def test_transformer3w_test() -> None:
@@ -103,7 +109,7 @@ def test_psse_conversion() -> None:
     b2 = Bus(Vnom=Vhv)
     tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
 
-    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe,I0=I0, Vsc=Vsc, Sbase=Sbase, round=True)
+    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe, I0=I0, Vsc=Vsc, Sbase=Sbase, round_vals=True)
 
     print(f"R: {tr3.R}")
     print(f"X: {tr3.X}")
@@ -111,10 +117,10 @@ def test_psse_conversion() -> None:
     print(f"B: {tr3.B}")
 
     # Results as extracted from PSSe, with about 6 decimal points
-    assert np.allclose(tr3.R, 0.000122)
-    assert np.allclose(tr3.X, 0.009008)
-    assert np.allclose(tr3.G, 0.00300)
-    assert np.allclose(tr3.B, -0.55499)
+    assert np.allclose(tr3.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr3.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr3.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr3.B, -0.55499, atol=1e-6)
 
 
 def test_psse_conversion2() -> None:
@@ -149,17 +155,17 @@ def test_psse_conversion2() -> None:
     b2 = Bus(Vnom=Vhv)
     tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
 
-    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe,I0=I0, Vsc=Vsc, Sbase=Sbase, round=True)
+    tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe, I0=I0, Vsc=Vsc, Sbase=Sbase, round_vals=True)
 
     print(f"R: {tr3.R}")
     print(f"X: {tr3.X}")
     print(f"G: {tr3.G}")
     print(f"B: {tr3.B}")
 
-    assert np.allclose(tr3.R, 0.000122)
-    assert np.allclose(tr3.X, 0.009008)
-    assert np.allclose(tr3.G, 0.00300)
-    assert np.allclose(tr3.B, -0.004669)
+    assert np.allclose(tr3.R, 0.000122, atol=1e-6)
+    assert np.allclose(tr3.X, 0.009008, atol=1e-6)
+    assert np.allclose(tr3.G, 0.00300, atol=1e-6)
+    assert np.allclose(tr3.B, -0.004669, atol=1e-6)
 
 
 def test_psse_conversion3() -> None:

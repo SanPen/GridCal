@@ -327,10 +327,10 @@ class Transformer2W(ControllableBranchParent):
             # get the transformer impedance in the base of the transformer
             z_series, y_shunt = obj.get_impedances(VH=VH, VL=VL, Sbase=Sbase)
 
-            self.R = np.round(z_series.real, 6)
-            self.X = np.round(z_series.imag, 6)
-            self.G = np.round(y_shunt.real, 6)
-            self.B = np.round(y_shunt.imag, 6)
+            self.R = z_series.real
+            self.X = z_series.imag
+            self.G = y_shunt.real
+            self.B = y_shunt.imag
 
             self.rate = obj.Sn
             self.rate_prof.fill(self.rate)
@@ -353,30 +353,6 @@ class Transformer2W(ControllableBranchParent):
                     logger.add_error('Template not recognised', self.name)
             else:
                 self.template = obj
-
-    def get_save_data(self) -> Union[None, List[str]]:
-        """
-        Return the data that matches the edit_headers
-        :return:
-        """
-        data = list()
-        for property_name, properties in self.registered_properties.items():
-            obj = getattr(self, property_name)
-
-            if properties.tpe == DeviceType.BusDevice:
-                obj = obj.idtag
-
-            elif properties.tpe == DeviceType.TransformerTypeDevice:
-                if obj is None:
-                    obj = ''
-                else:
-                    obj = obj.idtag
-
-            elif properties.tpe not in [str, float, int, bool]:
-                obj = str(obj)
-
-            data.append(obj)
-        return data
 
     def delete_virtual_taps(self):
         """
@@ -423,7 +399,7 @@ class Transformer2W(ControllableBranchParent):
 
         return errors
 
-    def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float, round=False):
+    def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float, round_vals: bool=False):
         """
         Fill R, X, G, B from the short circuit study values
         :param Pcu: copper_losses (kW)
@@ -431,6 +407,7 @@ class Transformer2W(ControllableBranchParent):
         :param I0: No load current in %
         :param Vsc: Short circuit voltage (%)
         :param Sbase: Base power in MVA (take always 100 MVA)
+        :param round_vals: round the values?
         :return: self pointer
         """
         tpe = TransformerType(hv_nominal_voltage=self.HV,
@@ -446,7 +423,7 @@ class Transformer2W(ControllableBranchParent):
 
         z_series, y_shunt = tpe.get_impedances(VH=self.HV, VL=self.LV, Sbase=Sbase)
 
-        if round:
+        if round_vals:
             self.R = np.round(z_series.real, 6)
             self.X = np.round(z_series.imag, 6)
             self.G = np.round(y_shunt.real, 6)
