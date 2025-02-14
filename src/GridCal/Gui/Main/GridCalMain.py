@@ -74,7 +74,7 @@ class GridCalMainGUI(ScriptingMain):
         self.load_all_config()
 
         self.add_complete_bus_branch_diagram()
-        self.add_map_diagram(ask=False)
+        #self.add_map_diagram(ask=False)
         self.set_diagram_widget(self.diagram_widgets_list[0])
         self.update_available_results()
 
