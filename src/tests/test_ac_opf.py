@@ -8,7 +8,7 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
 
@@ -65,7 +65,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
-        grid.lines[ll].Cost_prof.default_value *= 10000  # TODO: why change the profile default, is this not a snapshot?
+
     for b in range(len(grid.buses)):
         grid.buses[b].Vm_cost *= 10000
 
@@ -309,14 +309,17 @@ def superconductor() -> NonlinearOPFResults:
 
     # Go back two directories
     file_path = os.path.join('data', 'grids', 'case9.m')
+    file_path2 = os.path.join('data', 'grids', 'case9_superconductor.gridcal')
+
 
     grid = gce.FileOpen(file_path).open()
     grid.lines[0].R = 0.0
     grid.lines[0].X = 0.0
-    nc = gce.compile_numerical_circuit_at(grid)
+    grid2 = gce.FileOpen(file_path2).open()
+    # nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8)
-    return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+    return run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
 
 
 #
@@ -326,6 +329,7 @@ def test_superconductors_handling():
     va_test = [0.0000, -0.218941, -0.205774, 0.000, -0.142571, -0.218089, -0.270923, -0.235027, -0.164417]
 
     Pg_test = [0.10004189, 0.27187331, 0.19692853]
+
     Qg_test = [-0.32656730, 0.87110995, 0.07563495]
 
     res = superconductor()
