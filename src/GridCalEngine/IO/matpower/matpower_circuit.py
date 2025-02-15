@@ -147,10 +147,10 @@ class MatpowerCircuit:
                 bus.qd /= 1e3
             self.logger.add_warning("Converted kW to MW")
 
-        if self.Sbase != 100.0:
-            self.logger.add_warning("Sbase was not 100, in GridCal it always should be 100MVA",
-                                    value=self.Sbase, expected_value=100.0)
-            self.Sbase = 100.0
+        # if self.Sbase != 100.0:
+        #     self.logger.add_warning("Sbase was not 100, in GridCal it always should be 100MVA",
+        #                             value=self.Sbase, expected_value=100.0)
+        #     self.Sbase = 100.0
 
         if not buses_found:
             self.logger.add_error('No bus data')
