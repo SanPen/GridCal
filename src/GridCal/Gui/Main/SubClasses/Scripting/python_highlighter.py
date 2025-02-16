@@ -73,7 +73,7 @@ class PythonHighlighter(QSyntaxHighlighter):
             frmt.setForeground(QBrush(color))
 
             if bold:
-                frmt.setFontWeight(QFont.Bold)
+                frmt.setFontWeight(QFont.Weight.Bold)
 
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 start, end = match.span()

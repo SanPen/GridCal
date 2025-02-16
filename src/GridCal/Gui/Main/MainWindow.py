@@ -595,45 +595,6 @@ class Ui_mainWindow(object):
         self.gridLayout_3 = QGridLayout(self.centralwidget)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.progress_frame = QFrame(self.centralwidget)
-        self.progress_frame.setObjectName(u"progress_frame")
-        self.progress_frame.setFrameShape(QFrame.Shape.NoFrame)
-        self.progress_frame.setFrameShadow(QFrame.Shadow.Raised)
-        self.gridLayout_7 = QGridLayout(self.progress_frame)
-        self.gridLayout_7.setObjectName(u"gridLayout_7")
-        self.progress_label = QLabel(self.progress_frame)
-        self.progress_label.setObjectName(u"progress_label")
-        self.progress_label.setFont(font)
-
-        self.gridLayout_7.addWidget(self.progress_label, 2, 3, 1, 1)
-
-        self.cancelButton = QPushButton(self.progress_frame)
-        self.cancelButton.setObjectName(u"cancelButton")
-        self.cancelButton.setMinimumSize(QSize(0, 24))
-        self.cancelButton.setFont(font)
-        self.cancelButton.setIcon(icon48)
-
-        self.gridLayout_7.addWidget(self.cancelButton, 4, 0, 1, 1)
-
-        self.progressBar = QProgressBar(self.progress_frame)
-        self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setFont(font)
-        self.progressBar.setStyleSheet(u"QProgressBar {\n"
-"	border: 1px solid rgb(186, 189, 182);\n"
-"    border-radius: 5px;\n"
-"	text-align: center;\n"
-"}\n"
-"QProgressBar::chunk{\n"
-"	background-color: rgb(0, 180, 136)\n"
-"}")
-        self.progressBar.setValue(20)
-        self.progressBar.setInvertedAppearance(False)
-
-        self.gridLayout_7.addWidget(self.progressBar, 4, 3, 1, 1)
-
-
-        self.gridLayout_3.addWidget(self.progress_frame, 3, 0, 1, 1)
-
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         font1 = QFont()
@@ -1961,6 +1922,75 @@ class Ui_mainWindow(object):
         self.verticalLayout_33 = QVBoxLayout(self.pythonConsoleTab)
         self.verticalLayout_33.setObjectName(u"verticalLayout_33")
         self.verticalLayout_33.setContentsMargins(0, 0, 0, 0)
+        self.frame_45 = QFrame(self.pythonConsoleTab)
+        self.frame_45.setObjectName(u"frame_45")
+        self.frame_45.setFrameShape(QFrame.Shape.NoFrame)
+        self.frame_45.setFrameShadow(QFrame.Shadow.Plain)
+        self.verticalLayout_16 = QVBoxLayout(self.frame_45)
+        self.verticalLayout_16.setObjectName(u"verticalLayout_16")
+        self.verticalLayout_16.setContentsMargins(0, 0, 0, 0)
+        self.consoleSplitter = QSplitter(self.frame_45)
+        self.consoleSplitter.setObjectName(u"consoleSplitter")
+        self.consoleSplitter.setOrientation(Qt.Orientation.Vertical)
+        self.frame_24 = QFrame(self.consoleSplitter)
+        self.frame_24.setObjectName(u"frame_24")
+        self.frame_24.setFrameShape(QFrame.Shape.NoFrame)
+        self.frame_24.setFrameShadow(QFrame.Shadow.Raised)
+        self.verticalLayout_19 = QVBoxLayout(self.frame_24)
+        self.verticalLayout_19.setObjectName(u"verticalLayout_19")
+        self.verticalLayout_19.setContentsMargins(0, 0, 6, 0)
+        self.frame_57 = QFrame(self.frame_24)
+        self.frame_57.setObjectName(u"frame_57")
+        self.frame_57.setFrameShape(QFrame.Shape.NoFrame)
+        self.frame_57.setFrameShadow(QFrame.Shadow.Raised)
+        self.horizontalLayout_11 = QHBoxLayout(self.frame_57)
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_11.addItem(self.horizontalSpacer_11)
+
+        self.clearConsoleButton = QPushButton(self.frame_57)
+        self.clearConsoleButton.setObjectName(u"clearConsoleButton")
+        self.clearConsoleButton.setIcon(icon34)
+
+        self.horizontalLayout_11.addWidget(self.clearConsoleButton)
+
+        self.runCommandButton = QPushButton(self.frame_57)
+        self.runCommandButton.setObjectName(u"runCommandButton")
+        self.runCommandButton.setMaximumSize(QSize(16777215, 16777215))
+        self.runCommandButton.setIcon(icon105)
+
+        self.horizontalLayout_11.addWidget(self.runCommandButton)
+
+
+        self.verticalLayout_19.addWidget(self.frame_57)
+
+        self.consoleOutputTextEdit = QTextEdit(self.frame_24)
+        self.consoleOutputTextEdit.setObjectName(u"consoleOutputTextEdit")
+
+        self.verticalLayout_19.addWidget(self.consoleOutputTextEdit)
+
+        self.consoleSplitter.addWidget(self.frame_24)
+        self.frame_46 = QFrame(self.consoleSplitter)
+        self.frame_46.setObjectName(u"frame_46")
+        self.frame_46.setFrameShape(QFrame.Shape.NoFrame)
+        self.frame_46.setFrameShadow(QFrame.Shadow.Raised)
+        self.verticalLayout_29 = QVBoxLayout(self.frame_46)
+        self.verticalLayout_29.setObjectName(u"verticalLayout_29")
+        self.verticalLayout_29.setContentsMargins(0, 0, 6, 0)
+        self.consoleInputTextEdit = QTextEdit(self.frame_46)
+        self.consoleInputTextEdit.setObjectName(u"consoleInputTextEdit")
+
+        self.verticalLayout_29.addWidget(self.consoleInputTextEdit)
+
+        self.consoleSplitter.addWidget(self.frame_46)
+
+        self.verticalLayout_16.addWidget(self.consoleSplitter)
+
+
+        self.verticalLayout_33.addWidget(self.frame_45)
+
         icon106 = QIcon()
         icon106.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.tabWidget_2.addTab(self.pythonConsoleTab, icon106, "")
@@ -4576,6 +4606,45 @@ class Ui_mainWindow(object):
 
         self.gridLayout_3.addWidget(self.tabWidget, 0, 0, 1, 1)
 
+        self.progress_frame = QFrame(self.centralwidget)
+        self.progress_frame.setObjectName(u"progress_frame")
+        self.progress_frame.setFrameShape(QFrame.Shape.NoFrame)
+        self.progress_frame.setFrameShadow(QFrame.Shadow.Raised)
+        self.gridLayout_7 = QGridLayout(self.progress_frame)
+        self.gridLayout_7.setObjectName(u"gridLayout_7")
+        self.progress_label = QLabel(self.progress_frame)
+        self.progress_label.setObjectName(u"progress_label")
+        self.progress_label.setFont(font)
+
+        self.gridLayout_7.addWidget(self.progress_label, 2, 3, 1, 1)
+
+        self.cancelButton = QPushButton(self.progress_frame)
+        self.cancelButton.setObjectName(u"cancelButton")
+        self.cancelButton.setMinimumSize(QSize(0, 24))
+        self.cancelButton.setFont(font)
+        self.cancelButton.setIcon(icon48)
+
+        self.gridLayout_7.addWidget(self.cancelButton, 4, 0, 1, 1)
+
+        self.progressBar = QProgressBar(self.progress_frame)
+        self.progressBar.setObjectName(u"progressBar")
+        self.progressBar.setFont(font)
+        self.progressBar.setStyleSheet(u"QProgressBar {\n"
+"	border: 1px solid rgb(186, 189, 182);\n"
+"    border-radius: 5px;\n"
+"	text-align: center;\n"
+"}\n"
+"QProgressBar::chunk{\n"
+"	background-color: rgb(0, 180, 136)\n"
+"}")
+        self.progressBar.setValue(20)
+        self.progressBar.setInvertedAppearance(False)
+
+        self.gridLayout_7.addWidget(self.progressBar, 4, 3, 1, 1)
+
+
+        self.gridLayout_3.addWidget(self.progress_frame, 3, 0, 1, 1)
+
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
@@ -5103,11 +5172,6 @@ class Ui_mainWindow(object):
         self.actionAdd_selected_as_remedial_action.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Add remedial action</span></p><p>Create a new remedial action from the schematic selection</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.actionDetect_facilities.setText(QCoreApplication.translate("mainWindow", u"Detect facilities", None))
-        self.progress_label.setText("")
-#if QT_CONFIG(tooltip)
-        self.cancelButton.setToolTip(QCoreApplication.translate("mainWindow", u"Cancel process", None))
-#endif // QT_CONFIG(tooltip)
-        self.cancelButton.setText("")
 #if QT_CONFIG(tooltip)
         self.diagramsListView.setToolTip(QCoreApplication.translate("mainWindow", u"List of available diagrams", None))
 #endif // QT_CONFIG(tooltip)
@@ -5374,6 +5438,14 @@ class Ui_mainWindow(object):
         self.runSourceCodeButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run the source code in the console", None))
 #endif // QT_CONFIG(tooltip)
         self.runSourceCodeButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.clearConsoleButton.setToolTip(QCoreApplication.translate("mainWindow", u"Clear the console", None))
+#endif // QT_CONFIG(tooltip)
+        self.clearConsoleButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.runCommandButton.setToolTip(QCoreApplication.translate("mainWindow", u"Run command", None))
+#endif // QT_CONFIG(tooltip)
+        self.runCommandButton.setText("")
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.pythonConsoleTab), QCoreApplication.translate("mainWindow", u"Python console", None))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.sourceCodeTab), QCoreApplication.translate("mainWindow", u"Source code", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QCoreApplication.translate("mainWindow", u"Scripting", None))
@@ -5902,6 +5974,11 @@ class Ui_mainWindow(object):
         self.server_status_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Server", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.SettingsTab), QCoreApplication.translate("mainWindow", u"Settings", None))
+        self.progress_label.setText("")
+#if QT_CONFIG(tooltip)
+        self.cancelButton.setToolTip(QCoreApplication.translate("mainWindow", u"Cancel process", None))
+#endif // QT_CONFIG(tooltip)
+        self.cancelButton.setText("")
         self.menuProject.setTitle(QCoreApplication.translate("mainWindow", u"File", None))
         self.menuAbout.setTitle(QCoreApplication.translate("mainWindow", u"Help", None))
         self.menuActions.setTitle(QCoreApplication.translate("mainWindow", u"Actions", None))

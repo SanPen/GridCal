@@ -66,80 +66,6 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
-    <item row="3" column="0">
-     <widget class="QFrame" name="progress_frame">
-      <property name="frameShape">
-       <enum>QFrame::Shape::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Shadow::Raised</enum>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_7">
-       <item row="2" column="3">
-        <widget class="QLabel" name="progress_label">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QPushButton" name="cancelButton">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Cancel process</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="icons.qrc">
-           <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="3">
-        <widget class="QProgressBar" name="progressBar">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QProgressBar {
-	border: 1px solid rgb(186, 189, 182);
-    border-radius: 5px;
-	text-align: center;
-}
-QProgressBar::chunk{
-	background-color: rgb(0, 180, 136)
-}</string>
-         </property>
-         <property name="value">
-          <number>20</number>
-         </property>
-         <property name="invertedAppearance">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="font">
@@ -3245,6 +3171,158 @@ QProgressBar::chunk{
                     <property name="bottomMargin">
                      <number>0</number>
                     </property>
+                    <item>
+                     <widget class="QFrame" name="frame_45">
+                      <property name="frameShape">
+                       <enum>QFrame::Shape::NoFrame</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Shadow::Plain</enum>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_16">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QSplitter" name="consoleSplitter">
+                         <property name="orientation">
+                          <enum>Qt::Orientation::Vertical</enum>
+                         </property>
+                         <widget class="QFrame" name="frame_24">
+                          <property name="frameShape">
+                           <enum>QFrame::Shape::NoFrame</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Shadow::Raised</enum>
+                          </property>
+                          <layout class="QVBoxLayout" name="verticalLayout_19">
+                           <property name="leftMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>6</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>0</number>
+                           </property>
+                           <item>
+                            <widget class="QFrame" name="frame_57">
+                             <property name="frameShape">
+                              <enum>QFrame::Shape::NoFrame</enum>
+                             </property>
+                             <property name="frameShadow">
+                              <enum>QFrame::Shadow::Raised</enum>
+                             </property>
+                             <layout class="QHBoxLayout" name="horizontalLayout_11">
+                              <property name="leftMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>0</number>
+                              </property>
+                              <item>
+                               <spacer name="horizontalSpacer_11">
+                                <property name="orientation">
+                                 <enum>Qt::Orientation::Horizontal</enum>
+                                </property>
+                                <property name="sizeHint" stdset="0">
+                                 <size>
+                                  <width>40</width>
+                                  <height>20</height>
+                                 </size>
+                                </property>
+                               </spacer>
+                              </item>
+                              <item>
+                               <widget class="QPushButton" name="clearConsoleButton">
+                                <property name="toolTip">
+                                 <string>Clear the console</string>
+                                </property>
+                                <property name="text">
+                                 <string/>
+                                </property>
+                                <property name="icon">
+                                 <iconset resource="icons.qrc">
+                                  <normaloff>:/Icons/icons/clear_runs.svg</normaloff>:/Icons/icons/clear_runs.svg</iconset>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QPushButton" name="runCommandButton">
+                                <property name="maximumSize">
+                                 <size>
+                                  <width>16777215</width>
+                                  <height>16777215</height>
+                                 </size>
+                                </property>
+                                <property name="toolTip">
+                                 <string>Run command</string>
+                                </property>
+                                <property name="text">
+                                 <string/>
+                                </property>
+                                <property name="icon">
+                                 <iconset resource="icons.qrc">
+                                  <normaloff>:/Icons/icons/next.svg</normaloff>:/Icons/icons/next.svg</iconset>
+                                </property>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QTextEdit" name="consoleOutputTextEdit"/>
+                           </item>
+                          </layout>
+                         </widget>
+                         <widget class="QFrame" name="frame_46">
+                          <property name="frameShape">
+                           <enum>QFrame::Shape::NoFrame</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Shadow::Raised</enum>
+                          </property>
+                          <layout class="QVBoxLayout" name="verticalLayout_29">
+                           <property name="leftMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>6</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>0</number>
+                           </property>
+                           <item>
+                            <widget class="QTextEdit" name="consoleInputTextEdit"/>
+                           </item>
+                          </layout>
+                         </widget>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                   <widget class="QWidget" name="sourceCodeTab">
@@ -10004,6 +10082,80 @@ QProgressBar::chunk{
         </item>
        </layout>
       </widget>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QFrame" name="progress_frame">
+      <property name="frameShape">
+       <enum>QFrame::Shape::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="2" column="3">
+        <widget class="QLabel" name="progress_label">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QPushButton" name="cancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Cancel process</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="icons.qrc">
+           <normaloff>:/Icons/icons/delete.svg</normaloff>:/Icons/icons/delete.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="3">
+        <widget class="QProgressBar" name="progressBar">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QProgressBar {
+	border: 1px solid rgb(186, 189, 182);
+    border-radius: 5px;
+	text-align: center;
+}
+QProgressBar::chunk{
+	background-color: rgb(0, 180, 136)
+}</string>
+         </property>
+         <property name="value">
+          <number>20</number>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
