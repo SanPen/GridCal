@@ -24,14 +24,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.IO.cim.db.db_handler import DbHandler
 from GridCalEngine.data_logger import DataLogger
-
-try:
-    from GridCal.Gui.RosetaExplorer.ConsoleWidget import ConsoleWidget
-
-    qt_console_available = True
-except ModuleNotFoundError:
-    print('No qtconsole available')
-    qt_console_available = False
+from GridCal.Gui.python_console import PythonConsole
 
 
 def clear_qt_layout(layout):
@@ -168,28 +161,19 @@ class RosetaExplorerGUI(QMainWindow):
         """
         Create console
         """
-        if qt_console_available:
-            if self.console is not None:
-                clear_qt_layout(self.ui.consoleLayout.layout())
+        if self.console is not None:
+            clear_qt_layout(self.ui.consoleLayout.layout())
 
-            self.console = ConsoleWidget(customBanner="Roseta Grid Converter console.\n\n"
-                                                      "type hlp() to see the available specific commands.\n\n"
-                                                      "the following libraries are already loaded:\n"
-                                                      "np: numpy\n"
-                                                      "pd: pandas\n"
-                                                      "app: This instance of Roseta Grid Converter\n"
-                                                      "circuit or app.circuit: The current grid\n\n")
+        self.console = PythonConsole()
 
-            self.console.buffer_size = 10000
+        # add the console widget to the user interface
+        self.ui.consoleLayout.layout().addWidget(self.console)
 
-            # add the console widget to the user interface
-            self.ui.consoleLayout.layout().addWidget(self.console)
-
-            # push some variables to the console
-            self.console.push_vars({"np": np,
-                                    "pd": pd,
-                                    'app': self,
-                                    'circuit': self.circuit})
+        # push some variables to the console
+        self.console.push_vars({"np": np,
+                                "pd": pd,
+                                'app': self,
+                                'circuit': self.circuit})
 
     def update_combo_boxes(self):
         """

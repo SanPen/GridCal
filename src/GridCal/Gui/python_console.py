@@ -6,6 +6,7 @@
 import io
 import sys
 import code
+from typing import Dict, Any
 from PySide6.QtGui import QFont, QFontMetrics
 from PySide6.QtWidgets import QApplication, QTextEdit, QMainWindow
 from PySide6.QtCore import Qt, QEvent, QObject
@@ -162,6 +163,22 @@ class PythonConsole(QTextEdit):
         cursor.insertText(text)
         self.setTextCursor(cursor)
 
+    def add_var(self, name: str, val: Any) -> None:
+        """
+        Add variable to the interpreter
+        :param name: name of the variable
+        :param val: value or pointer
+        """
+        self.interpreter.locals[name] = val
+
+    def push_vars(self, vars_dict: Dict[str, Any]) -> None:
+        """
+        Add vars to the interpreter
+        :param vars_dict: dictionary of var name -> value or function pointer
+        :return: None
+        """
+        for key, value in vars_dict.items():
+            self.add_var(key, value)
 
 if __name__ == "__main__":
 
