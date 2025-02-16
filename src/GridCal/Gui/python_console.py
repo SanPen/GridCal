@@ -1,10 +1,15 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
 import io
 import sys
 import code
-from PySide6.QtWidgets import QApplication, QTextEdit, QVBoxLayout, QWidget, QMainWindow
+from PySide6.QtGui import QFont, QFontMetrics
+from PySide6.QtWidgets import QApplication, QTextEdit, QMainWindow
 from PySide6.QtCore import Qt, QEvent, QObject
-from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
-import builtins
+from GridCal.Gui.python_highlighter import PythonHighlighter
 
 
 class PythonConsole(QTextEdit):
@@ -12,6 +17,14 @@ class PythonConsole(QTextEdit):
         super().__init__()
 
         self.interpreter = code.InteractiveConsole(locals=globals())
+
+        font = QFont("Consolas", 10)  # Replace "Consolas" with your preferred monospaced font
+
+        # Source code
+        self.setFont(font)
+        font_metrics = QFontMetrics(font)  # Set tab width to 4 spaces
+        tab_stop_width = font_metrics.horizontalAdvance(' ' * 4)  # Width of 4 spaces in the selected font
+        self.setTabStopDistance(tab_stop_width)
 
         # Enable syntax highlighting
         PythonHighlighter(self.document())
@@ -28,14 +41,22 @@ class PythonConsole(QTextEdit):
         # Store last cursor position (after prompt)
         self.last_cursor_pos = self.textCursor().position()
 
+        self.setPlaceholderText(banner + "\nEnter Python code here\nType Ctrl + Enter to run")
+
         # Install event filter to capture Enter key
         self.installEventFilter(self)
+
+    def resert(self):
+        """
+        Create a new interactive console object
+        """
+        self.interpreter = code.InteractiveConsole(locals=globals())
 
     def eventFilter(self, watched: QObject, event: QEvent):
         """
         Event filter to capture Enter key presses.
         """
-        if watched == self and event.type() == QEvent.KeyPress:
+        if watched == self and event.type() == QEvent.Type.KeyPress:
             cursor = self.textCursor()
             if event.key() == Qt.Key.Key_Return:
                 self.process_input()
@@ -56,10 +77,14 @@ class PythonConsole(QTextEdit):
                     self.history_index += 1
                     self.replace_current_input(self.history[self.history_index])
                     return True
-            elif event.modifiers() & Qt.ControlModifier and event.key() == Qt.Key.Key_C:
+            elif event.modifiers() & Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_C:
                 # Allow Ctrl+C for copying text
                 return False
         return super().eventFilter(watched, event)
+
+    def clear(self):
+        super().clear()
+        self.append_output(">>> ")
 
     def process_input(self):
         """
@@ -95,7 +120,6 @@ class PythonConsole(QTextEdit):
         """
         Run a command and display output.
         """
-        # self.append_output(f"{self.prompt_text}{command}")
 
         try:
             old_stdout = sys.stdout
@@ -113,9 +137,6 @@ class PythonConsole(QTextEdit):
                 self.append_output(stdout_output)
             if stderr_output:
                 self.append_output(stderr_output)
-
-            # if not success:
-            #     self.append_output("(Complete)")
 
         except Exception as e:
             self.append_output(str(e))
