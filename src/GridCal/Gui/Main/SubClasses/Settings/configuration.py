@@ -116,8 +116,6 @@ class ConfigurationMain(ResultsMain):
 
             self.colour_diagrams()
 
-            if self.console is not None:
-                self.console.set_dark_theme()
         else:
             set_light_mode()
             qdarktheme.setup_theme(theme='light',
@@ -130,9 +128,6 @@ class ConfigurationMain(ResultsMain):
                     diagram.set_light_mode()
 
             self.colour_diagrams()
-
-            if self.console is not None:
-                self.console.set_light_theme()
 
     @staticmethod
     def config_file_path() -> str:

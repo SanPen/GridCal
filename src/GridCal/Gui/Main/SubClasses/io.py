@@ -199,7 +199,6 @@ class IoMain(ConfigurationMain):
 
         self.clear_stuff_running()
         self.clear_results()
-        self.create_console()
 
         if create_default_diagrams:
             self.add_complete_bus_branch_diagram()
