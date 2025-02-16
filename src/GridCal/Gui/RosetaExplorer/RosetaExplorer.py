@@ -92,10 +92,7 @@ class RosetaExplorerGUI(QMainWindow):
 
         # Console
         self.console = None
-        try:
-            self.create_console()
-        except TypeError:
-            error_msg('The console has failed because the QtConsole guys have a bug in their package :(')
+        self.create_console()
 
         # Connections --------------------------------------------------------------------------------------------------
 
