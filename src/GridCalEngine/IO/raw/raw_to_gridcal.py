@@ -475,8 +475,11 @@ def get_gridcal_transformer(
             # NTP1 should be an odd number
             number_of_symmetrical_step = (psse_elm.NTP1 - 1) / 2
             tc_dV = 2 * math.tan(alpha_per_2) / number_of_symmetrical_step
-
-            d_ang = psse_elm.RMA1 / ((psse_elm.NTP1 - 1) / 2)
+            
+            if psse_elm.RMA1 > 0:
+              d_ang = psse_elm.RMA1 / ((psse_elm.NTP1 - 1) / 2)
+            else:
+              d_ang = 1
             # ?: this value is set internally by set_tap_phase
             # tc_tap_position
             tc_step = round(psse_elm.ANG1 / d_ang)
