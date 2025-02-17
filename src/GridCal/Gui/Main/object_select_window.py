@@ -54,4 +54,4 @@ if __name__ == '__main__':
     lst = [SampleObject(name='Object {}'.format(i)) for i in range(5)]
     screen = ObjectSelectWindow('Cosas', lst)
     screen.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

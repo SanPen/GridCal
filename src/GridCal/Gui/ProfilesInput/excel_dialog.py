@@ -42,4 +42,4 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = ExcelDialog()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

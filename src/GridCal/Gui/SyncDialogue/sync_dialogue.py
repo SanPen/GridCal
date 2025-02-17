@@ -49,7 +49,7 @@ class SyncDialogueWindow(QtWidgets.QDialog):
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        retval = msg.exec_()
+        retval = msg.exec()
 
     def closeEvent(self, event):
         self.file_sync_thread.resume()

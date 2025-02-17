@@ -67,7 +67,7 @@ class ContingencyPlannerGUI(QtWidgets.QDialog):
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        retval = msg.exec_()
+        retval = msg.exec()
 
     def auto_generate_contingencies(self):
         """

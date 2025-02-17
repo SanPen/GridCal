@@ -457,4 +457,4 @@ class ModelsInputGUI(QtWidgets.QDialog):
 #     window = ModelsInputGUI()
 #     window.resize(1.61 * 700.0, 600.0)  # golden ratio
 #     window.show()
-#     sys.exit(app.exec_())
+#     sys.exit(app.exec())

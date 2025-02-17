@@ -78,7 +78,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        retval = msg.exec_()
+        retval = msg.exec()
 
     def name_changed(self):
         """
@@ -160,7 +160,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         if not all_ok:
             logger_diag = LogsDialogue(name='Tower computation', logger=logs)
-            logger_diag.exec_()
+            logger_diag.exec()
         else:
             try:
                 # compute the matrices
@@ -274,4 +274,4 @@ if __name__ == "__main__":
 
     window.resize(1.61 * 600.0, 600.0)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

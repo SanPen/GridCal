@@ -262,7 +262,7 @@ def runTreeModelViewerGUI(use_native_dialogues=False):
     h = 740
     window.resize(int(1.61 * h), h)  # golden ratio :)
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":

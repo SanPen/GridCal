@@ -73,7 +73,7 @@ class TimeEventsMain(ObjectsTableMain):
         :return:
         """
         dlg = NewProfilesStructureDialogue()
-        if dlg.exec_():
+        if dlg.exec():
             steps, step_length, step_unit, time_base = dlg.get_values()
 
             self.ui.profiles_tableView.setModel(None)
@@ -130,7 +130,7 @@ class TimeEventsMain(ObjectsTableMain):
                                                               magnitudes=[magnitude])
 
                 self.profile_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-                self.profile_input_dialogue.exec_()  # exec leaves the parent on hold
+                self.profile_input_dialogue.exec()  # exec leaves the parent on hold
 
                 if self.profile_input_dialogue.time is not None:
 
@@ -366,7 +366,7 @@ class TimeEventsMain(ObjectsTableMain):
 
         if logger.has_logs():
             dlg = LogsDialogue("Set profile", logger=logger)
-            dlg.exec_()
+            dlg.exec()
 
     def re_index_time(self):
         """
@@ -376,7 +376,7 @@ class TimeEventsMain(ObjectsTableMain):
 
         dlg = TimeReIndexDialogue()
         dlg.setModal(True)
-        dlg.exec_()
+        dlg.exec()
 
         if dlg.is_accepted:
             self.circuit.re_index_time2(t0=dlg.date_time_editor.dateTime().toPython(),

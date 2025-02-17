@@ -197,13 +197,13 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
             else:
                 # raise dialogue to set the template
                 dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
-                if dlg.exec_():
+                if dlg.exec():
                     tpe = dlg.get_template()
                     self.editor.circuit.add_transformer_type(tpe)
         else:
             # raise dialogue to set the template
             dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
-            if dlg.exec_():
+            if dlg.exec():
                 tpe = dlg.get_template()
                 self.editor.circuit.add_transformer_type(tpe)
 

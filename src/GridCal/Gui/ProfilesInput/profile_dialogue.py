@@ -837,4 +837,4 @@ if __name__ == "__main__":
     window = ProfileInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

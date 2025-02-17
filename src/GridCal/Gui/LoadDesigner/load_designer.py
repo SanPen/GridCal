@@ -103,7 +103,7 @@ class LoadDesigner(QtWidgets.QDialog):
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        retval = msg.exec_()
+        retval = msg.exec()
 
     def process_by_peak(self):
 
@@ -143,5 +143,5 @@ if __name__ == "__main__":
     window = LoadDesigner()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 

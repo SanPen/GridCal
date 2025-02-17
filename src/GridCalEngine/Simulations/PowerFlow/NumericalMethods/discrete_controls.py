@@ -224,9 +224,8 @@ def control_q_josep_method(Scalc: CxVec, S0: CxVec,
     Assume we only want to change regular PV buses to PQ buses (as in the conventional method)
     :param Scalc: Calculated power array (changed inside)
     :param S0: Specified power array (changed inside)
-    :param nbus: Number of buses
+    :param pv: array of pv bus indices (changed inside)
     :param i_u_vm: array of buses with unknown Vm (changed inside)
-    :param i_k_p: array of buses with known P (changed inside)
     :param i_k_q: array of buses with known Q (changed inside)
     :param Qmin: Array of lower bus reactive power limits per bus in p.u.
     :param Qmax: Array of upper bus reactive power limits per bus in p.u.

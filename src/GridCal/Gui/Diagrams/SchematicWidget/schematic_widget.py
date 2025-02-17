@@ -4087,7 +4087,7 @@ class SchematicWidget(BaseDiagramWidget):
                                   suffix=' %',
                                   decimals=2,
                                   default_value=50.0)
-        if dlg.exec_():
+        if dlg.exec():
 
             if dlg.is_accepted:
                 position = dlg.value / 100.0
@@ -4111,7 +4111,7 @@ class SchematicWidget(BaseDiagramWidget):
                                   suffix=' %',
                                   decimals=2,
                                   default_value=50.0)
-        if dlg.exec_():
+        if dlg.exec():
 
             if dlg.is_accepted:
 
@@ -4128,7 +4128,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                decimals=2,
                                                default_value=1.0)
 
-                    if dlg2.exec_():
+                    if dlg2.exec():
 
                         if dlg2.is_accepted:
 

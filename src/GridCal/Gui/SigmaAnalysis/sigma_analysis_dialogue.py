@@ -61,7 +61,7 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         msg.setWindowTitle(title)
         # msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        retval = msg.exec_()
+        retval = msg.exec()
 
     def copy_to_clipboard(self):
         """
@@ -99,4 +99,4 @@ if __name__ == "__main__":
     window = SigmaAnalysisGUI()
     window.resize(1.61 * 700.0, 600.0)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

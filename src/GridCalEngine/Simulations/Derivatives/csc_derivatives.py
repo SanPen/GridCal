@@ -87,8 +87,7 @@ def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, Vm: V
             if j == i:
                 # diagonal elements
                 dS_dVa_x[k] += Ibus[j]  # diagIbus, after this it contains: diagIbus - Ybus * diagV
-                dS_dVm_x[
-                    k] += buffer  # conj(I(j)) * E(j), after this it contains; diag(V) * conj(Ybus * diagE) + conj(diagIbus) * diagE
+                dS_dVm_x[k] += buffer  # conj(I(j)) * E(j), after this it contains; diag(V) * conj(Ybus * diagE) + conj(diagIbus) * diagE
 
             # 1j * diagV * conj(diagIbus - Ybus * diagV)
             dS_dVa_x[k] = (1j * V[i]) * np.conj(dS_dVa_x[k])
