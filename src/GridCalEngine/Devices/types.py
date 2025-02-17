@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from typing import Dict, List, Any
+import pandas as pd
 from GridCalEngine.Devices.Aggregation import *
 from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Branches import *
@@ -113,3 +115,6 @@ ALL_DEV_TYPES = Union[
 CONNECTION_TYPE = Union[ConnectivityNode, Bus, None]
 
 ASSOCIATION_TYPES = Union[Fuel, Technology, EmissionGas]
+
+# this is the data type of the GridCal Json
+GRIDCAL_FILE_TYPE = Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]]

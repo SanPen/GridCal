@@ -10,7 +10,8 @@ import chardet
 import pandas as pd
 import zipfile
 from warnings import warn
-from typing import List, Dict, Union, Callable
+from typing import List, Dict, Union, Callable, Tuple, Any
+from GridCalEngine.Devices.types import GRIDCAL_FILE_TYPE
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.generic_io_functions import parse_config_df, CustomJSONizer
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -269,7 +270,7 @@ def read_data_frame_from_zip(file_pointer,
 def get_frames_from_zip(file_name_zip: str,
                         text_func: Union[None, Callable[[str], None]] = None,
                         progress_func: Union[None, Callable[[float], None]] = None,
-                        logger=Logger()):
+                        logger=Logger()) -> Tuple[GRIDCAL_FILE_TYPE, Dict[str, Any]]:
     """
     Open the csv files from a zip file
     :param file_name_zip: name of the zip file

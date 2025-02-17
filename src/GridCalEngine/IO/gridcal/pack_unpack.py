@@ -14,7 +14,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, GRIDCAL_FILE_TYPE
 from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TapPhaseControl, TapModuleControl,
                                         ContingencyOperationTypes)
 
@@ -1248,7 +1248,7 @@ def handle_legacy_jsons(model_data: Dict[str, List],
                                 value=f"{generator.name} -> {emission.name} at {rate}")
 
 
-def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]],
+def parse_gridcal_data(data: GRIDCAL_FILE_TYPE,
                        previous_circuit: Union[MultiCircuit, None] = None,
                        text_func: Union[Callable, None] = None,
                        progress_func: Union[Callable, None] = None,

@@ -47,7 +47,7 @@ class PythonConsole(QTextEdit):
         # Install event filter to capture Enter key
         self.installEventFilter(self)
 
-    def resert(self):
+    def reset(self):
         """
         Create a new interactive console object
         """

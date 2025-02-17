@@ -38,7 +38,7 @@ from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_pypsa_netcdf, parse_pypsa_hdf5
-from GridCalEngine.IO.others.pandapower_parser import is_pandapower_file, Panda2GridCal
+from GridCalEngine.IO.others.pandapower_parser import Panda2GridCal
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.ucte.devices.ucte_circuit import UcteCircuit
 from GridCalEngine.IO.ucte.ucte_to_gridcal import convert_ucte_to_gridcal
@@ -431,7 +431,7 @@ class FileOpen:
                 elif file_extension.lower() == '.p':
                     self.circuit = Panda2GridCal(self.file_name, self.logger).get_multicircuit()
 
-                elif file_extension.lower() == '.uct' or file_extension.lower() == '.uct2':
+                elif file_extension.lower() == '.uct' or file_extension.lower() == '.ucte':
                     ucte_grid = UcteCircuit()
                     ucte_grid.parse_file(files=[self.file_name], logger=self.logger)
                     self.circuit = convert_ucte_to_gridcal(ucte_grid=ucte_grid, logger=self.logger)
