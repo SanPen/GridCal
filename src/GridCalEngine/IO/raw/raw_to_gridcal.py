@@ -479,15 +479,18 @@ def get_gridcal_transformer(
             d_ang = psse_elm.RMA1 / ((psse_elm.NTP1 - 1) / 2)
             # ?: this value is set internally by set_tap_phase
             # tc_tap_position
-            tc_step = round(psse_elm.ANG1 / d_ang)
-            if tc_step - (psse_elm.ANG1 / d_ang) > 0.1:
-                logger.add_warning(
-                    device=psse_elm,
-                    device_class=psse_elm.class_name,
-                    msg="Tap changer is not on discrete step.",
-                    value=psse_elm.ANG1 / d_ang,
-                )
-            tc_tap_pos = tc_neutral_position + tc_step
+            if d_ang != 0.0:
+                tc_step = round(psse_elm.ANG1 / d_ang)
+                if tc_step - (psse_elm.ANG1 / d_ang) > 0.1:
+                    logger.add_warning(
+                        device=psse_elm,
+                        device_class=psse_elm.class_name,
+                        msg="Tap changer is not on discrete step.",
+                        value=psse_elm.ANG1 / d_ang,
+                    )
+                tc_tap_pos = tc_neutral_position + tc_step
+            else:
+                tc_step = 0
             # print()
             # corrected_phase = elm.tap_changer.set_tap_phase(elm.tap_phase)
             # elm.tap_phase = corrected_phase
