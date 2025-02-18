@@ -50,7 +50,7 @@ class UndergroundLineType(EditableDevice):
         self.register(key='X0', units='Ohm/km', tpe=float, definition='Zero-sequence reactance per km')
         self.register(key='B0', units='uS/km', tpe=float, definition='Zero-sequence shunt susceptance per km')
 
-    def get_values(self, Sbase, length):
+    def get_values(self, Sbase: float, length: float):
         """
         Get the per-unit values
         :param Sbase: Base power (MVA, always use 100MVA)

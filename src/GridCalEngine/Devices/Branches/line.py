@@ -393,8 +393,29 @@ class Line(BranchParent):
         :param logger: Logger
         """
 
-        if type(obj) in [OverheadLineType, UndergroundLineType, SequenceLineType]:
+        if isinstance(obj, OverheadLineType):
+            (self.R, self.X, self.B,
+             self.R0, self.X0, self.B0,
+             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length)
 
+            if self.template is not None:
+                if obj != self.template:
+                    self.template = obj
+            else:
+                self.template = obj
+
+        elif isinstance(obj, UndergroundLineType):
+            (self.R, self.X, self.B,
+             self.R0, self.X0, self.B0,
+             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length)
+
+            if self.template is not None:
+                if obj != self.template:
+                    self.template = obj
+            else:
+                self.template = obj
+
+        elif isinstance(obj, SequenceLineType):
             (self.R, self.X, self.B,
              self.R0, self.X0, self.B0,
              self.rate) = obj.get_values(Sbase=Sbase,
