@@ -299,11 +299,11 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
 
         # rfe = Sn / (Pfe / 1000.0)
         rm = Sbase / (Pfe / 1000.0)
-        I0 = I0 * Sn / Sbase  # try?
+        I0 = I0 * Sn / Sbase
         zm = 1.0 / (I0 / 100.0)
 
-        inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
-        if inside_sqrt > 0:
+        if zm < rm:  # only with this is possible to perform xm, otherwise we get div0 or sqrt(neg)
+            inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
             xm = sqrt(inside_sqrt)
         else:
             xm = 0.0

@@ -244,7 +244,7 @@ def get_gridcal_shunt_switched(
                                 vset=vset,
                                 code=busnum_id,
                                 is_nonlinear=True,
-                                is_controlled=is_controlled,)
+                                is_controlled=is_controlled, )
 
     if psse_elm.SWREG > 0:
         if psse_elm.SWREG != psse_elm.I:
@@ -413,9 +413,7 @@ def get_gridcal_transformer(
                     tc_total_positions = psse_elm.NTP1
                     tc_neutral_position = np.floor(psse_elm.NTP1 / 2)
                     tc_normal_position = np.floor(psse_elm.NTP1 / 2)
-                    tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (
-                            psse_elm.NTP1 - 1) \
-                        if (psse_elm.NTP1 - 1) > 0 else 0.01
+                    tc_dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1) if (psse_elm.NTP1 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI1
                     tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
             elif psse_elm.VMA2 != 0:
@@ -423,9 +421,7 @@ def get_gridcal_transformer(
                     tc_total_positions = psse_elm.NTP2
                     tc_neutral_position = np.floor(psse_elm.NTP2 / 2)
                     tc_normal_position = np.floor(psse_elm.NTP2 / 2)
-                    tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (
-                            psse_elm.NTP2 - 1) \
-                        if (psse_elm.NTP2 - 1) > 0 else 0.01
+                    tc_dV = (psse_elm.VMA2 - psse_elm.VMI2) / (psse_elm.NTP2 - 1) if (psse_elm.NTP2 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI2
                     tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
             else:
@@ -433,9 +429,7 @@ def get_gridcal_transformer(
                     tc_total_positions = psse_elm.NTP3
                     tc_neutral_position = np.floor(psse_elm.NTP3 / 2)
                     tc_normal_position = np.floor(psse_elm.NTP3 / 2)
-                    tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (
-                            psse_elm.NTP3 - 1) \
-                        if (psse_elm.NTP3 - 1) > 0 else 0.01
+                    tc_dV = (psse_elm.VMA3 - psse_elm.VMI3) / (psse_elm.NTP3 - 1) if (psse_elm.NTP3 - 1) > 0 else 0.01
                     distance_from_low = tap_module - psse_elm.VMI3
                     tc_tap_pos = distance_from_low / tc_dV if tc_dV != 0 else 0.5
 
