@@ -70,6 +70,19 @@ def test_load_save_load2() -> None:
     l2 = grid1.add_line(gce.Line(name='l2', bus_from=b2, bus_to=b3, rate=10.0))
     l3 = grid1.add_line(gce.Line(name='l3', bus_from=b3, bus_to=b1, rate=10.0))
 
+    wire1 = gce.Wire(name="w1")
+    wire2 = gce.Wire(name="w2")
+    wire3 = gce.Wire(name="w3")
+    tower = gce.OverheadLineType(name="Tower")
+    tower.add_wire_relationship(wire1, xpos=0, ypos=7, phase=1)
+    tower.add_wire_relationship(wire2, xpos=1.5, ypos=7, phase=1)
+    tower.add_wire_relationship(wire3, xpos=3, ypos=7, phase=1)
+    grid1.add_wire(wire1)
+    grid1.add_wire(wire2)
+    grid1.add_wire(wire3)
+
+    grid1.add_overhead_line(tower)
+
     l1.rate_prof[1] = 20.0
     l2.rate_prof[1] = 30.0
     l3.rate_prof[1] = 40.0

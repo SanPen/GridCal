@@ -27,7 +27,7 @@ def compute_beta(a: Vec, b: Vec, delta: float):
     c = a @ ba
     norm2_a = a @ a
     norm2_ba = ba @ ba
-    delta2_norm2a = (delta * delta - norm2_a)
+    delta2_norm2a = delta * delta - norm2_a
     if c <= 0.0:
         return (-c + np.sqrt(c * c + norm2_ba * delta2_norm2a)) / norm2_ba
     else:
@@ -93,27 +93,28 @@ def powell_fx(problem: PfFormulationTemplate,
 
     delta = trust
     f_error, converged, x, f = problem.update(x, update_controls=False)
-    J = mat_to_scipy(problem.Jacobian())
-
-    if J.shape[0] != J.shape[1]:
-        logger.add_error("Jacobian not square, check the controls!", "Powell")
-        return problem.get_solution(elapsed=time.time() - start, iterations=0)
-
-    g = J.T @ f
-
-    iteration = 0
-    error_evolution = np.zeros(max_iter + 1)
-
-    # save the error evolution
-    error_evolution[iteration] = f_error
-
-    if verbose > 0:
-        print(f'It {iteration}, error {f_error}, converged {converged}, x {x}, dx not computed yet')
 
     if problem.converged:
-        return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+        return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
     else:
+
+        J = mat_to_scipy(problem.Jacobian())
+
+        if J.shape[0] != J.shape[1]:
+            logger.add_error("Jacobian not square, check the controls!", "Powell")
+            return problem.get_solution(elapsed=time.time() - start, iterations=0)
+
+        g = J.T @ f
+
+        iteration = 0
+        error_evolution = np.zeros(max_iter + 1)
+
+        # save the error evolution
+        error_evolution[iteration] = f_error
+
+        if verbose > 0:
+            print(f'It {iteration}, error {f_error}, converged {converged}, x {x}, dx not computed yet')
 
         while not converged and iteration < max_iter:
 

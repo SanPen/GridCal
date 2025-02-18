@@ -218,7 +218,7 @@ def gather_model_as_data_frames(circuit: MultiCircuit, logger: Logger = Logger()
         # because each tower contains a reference to a number of wires, these relations need to be stored as well
         associations = list()
         for tower in circuit.overhead_line_types:
-            for wire in tower.wires_in_tower:
+            for wire in tower.wires_in_tower.data:
                 associations.append([tower.name, wire.name, wire.xpos, wire.ypos, wire.phase])
 
         dfs['tower_wires'] = pd.DataFrame(data=associations,
@@ -397,6 +397,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
             data[name] = obj.to_list()
 
         elif prop.tpe == SubObjectType.LineLocations:
+            data[name] = obj.to_list()
+
+        elif prop.tpe == SubObjectType.ListOfWires:
             data[name] = obj.to_list()
 
         elif prop.tpe == SubObjectType.TapChanger:
@@ -1095,6 +1098,13 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     # get the line locations object and fill it with the json data
                                     locations_obj: dev.LineLocations = elm.get_snapshot_value(prop=gc_prop)
                                     locations_obj.parse(property_value)
+
+                                elif gc_prop.tpe == SubObjectType.ListOfWires:
+
+                                    # get the line locations object and fill it with the json data
+                                    list_of_wires: dev.ListOfWires = elm.get_snapshot_value(prop=gc_prop)
+                                    list_of_wires.parse(data=property_value,
+                                                        wire_dict=elements_dict_by_type[DeviceType.WireDevice])
 
                                 elif gc_prop.tpe == SubObjectType.TapChanger:
 

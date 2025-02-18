@@ -2603,7 +2603,7 @@ class Assets:
         :param obj: Wire object
         """
         for tower in self._overhead_line_types:
-            for elm in tower.wires_in_tower:
+            for elm in tower.wires_in_tower.data:
                 if elm.template == obj:
                     elm.template = None
         try:

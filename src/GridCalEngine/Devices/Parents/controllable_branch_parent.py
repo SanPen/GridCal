@@ -241,7 +241,7 @@ class ControllableBranchParent(BranchParent):
                                  'is expected for transformers0% for lines.')
 
         self.register(key='tap_changer', units='', tpe=SubObjectType.TapChanger, definition='Tap changer object',
-                      editable=False)
+                      editable=False, display=False)
 
         self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
                       profile_name='tap_module_prof', old_names=['tap', 'm'])
