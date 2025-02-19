@@ -10,8 +10,10 @@ def parse_config_df(df, data=None):
     if data is None:
         data = dict()
 
-    if 'baseMVA' in df.index:
-        data["baseMVA"] = float(df.at['name', 'Value'])
+    if 'BaseMVA' in df.index:
+        data["baseMVA"] = float(df.at['BaseMVA', 'Value'])
+    elif 'baseMVA' in df.index:
+        data["baseMVA"] = float(df.at['baseMVA', 'Value'])
     else:
         data["baseMVA"] = 100
 
