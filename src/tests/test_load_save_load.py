@@ -61,7 +61,7 @@ def test_load_save_load2() -> None:
     This is according to issue #309
     :return:
     """
-    grid1 = gce.MultiCircuit()
+    grid1 = gce.MultiCircuit(Sbase=45)
     grid1.set_unix_time([0, 3600])
     b1 = grid1.add_bus()
     b2 = grid1.add_bus()
@@ -97,6 +97,9 @@ def test_load_save_load2() -> None:
     grid2 = gce.open_file(o_file)
 
     equal, logger = grid2.compare_circuits(grid1, detailed_profile_comparison=True)
+
+    if not equal:
+        logger.print()
 
     assert equal
 

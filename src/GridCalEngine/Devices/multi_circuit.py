@@ -1827,6 +1827,18 @@ class MultiCircuit(Assets):
         """
         logger = Logger()
 
+        if self.Sbase!= grid2.Sbase:
+            logger.add_error(msg="Different Sbase",
+                             device_class="time",
+                             value=grid2.Sbase,
+                             expected_value=self.Sbase)
+
+        if self.fBase != grid2.fBase:
+            logger.add_error(msg="Different fBase",
+                             device_class="time",
+                             value=grid2.fBase,
+                             expected_value=self.fBase)
+
         if self.get_time_number() != grid2.get_time_number():
             nt = 0
             logger.add_error(msg="Different number of time steps",
