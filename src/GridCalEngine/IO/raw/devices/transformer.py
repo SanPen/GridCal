@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-from typing import Tuple
+from typing import Tuple, List
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
@@ -661,7 +661,7 @@ class RawTransformer(RawObject):
                                    max_value=1.0,
                                    format_rule=".4f")
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data: List[List[float | int | str]], version: int, logger: Logger):
         """
 
         :param data:
@@ -674,8 +674,8 @@ class RawTransformer(RawObject):
         if version >= 34:
 
             # Line 1: for both types
-            self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR, \
-                self.NAME, self.STAT, *var, self.VECGRP, self.ZCOD = data[0]
+            (self.I, self.J, self.K, self.CKT, self.CW, self.CZ, self.CM, self.MAG1, self.MAG2, self.NMETR,
+             self.NAME, self.STAT, *var, self.VECGRP, self.ZCOD) = data[0]
 
             if len(data) == 4:
                 self.windings = 2
@@ -1247,13 +1247,12 @@ class RawTransformer(RawObject):
             # Shunt impedance (leakage)
             if Pfe > 0.0 and I0 > 0.0:
 
-                # rfe = Sn / (Pfe / 1000.0)
                 rm = Sbase / (Pfe / 1000.0)
-                I0 = I0 * Sn / Sbase  # try?
+                I0 = I0 * Sn / Sbase
                 zm = 1.0 / (I0 / 100.0)
 
-                inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
-                if inside_sqrt > 0:
+                if zm < rm:  # only with this is possible to perform xm, otherwise we get div0 or sqrt(neg)
+                    inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
                     xm = np.sqrt(inside_sqrt)
                 else:
                     xm = 0.0

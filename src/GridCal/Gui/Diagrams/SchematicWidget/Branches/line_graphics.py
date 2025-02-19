@@ -236,7 +236,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         current_template = self.api_object.template
         dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
                          templates=templates, current_template=current_template)
-        if dlg.exec_():
+        if dlg.exec():
             pass
 
     def show_line_editor(self):
@@ -248,7 +248,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
         dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
                          templates=None, current_template=None)
-        if dlg.exec_():
+        if dlg.exec():
             pass
 
     def add_to_catalogue(self):

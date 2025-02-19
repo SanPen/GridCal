@@ -330,7 +330,7 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         templates = self.editor.circuit.underground_cable_types + self.editor.circuit.overhead_line_types
         current_template = self.api_object.template
         dlg = DcLineEditor(self.api_object, Sbase, templates, current_template)
-        if dlg.exec_():
+        if dlg.exec():
             pass
 
     def add_to_templates(self):
@@ -341,7 +341,7 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         Sbase = self.editor.circuit.Sbase
 
         dlg = DcLineEditor(branch=self.api_object, Sbase=Sbase)
-        if dlg.exec_():
+        if dlg.exec():
             pass
 
 

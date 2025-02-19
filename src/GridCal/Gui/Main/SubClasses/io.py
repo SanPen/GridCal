@@ -199,7 +199,6 @@ class IoMain(ConfigurationMain):
 
         self.clear_stuff_running()
         self.clear_results()
-        self.create_console()
 
         if create_default_diagrams:
             self.add_complete_bus_branch_diagram()
@@ -408,14 +407,14 @@ class IoMain(ConfigurationMain):
                     # else, show the logger if it is necessary
                     if len(self.open_file_thread_object.logger) > 0:
                         dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-                        dlg.exec_()
+                        dlg.exec()
 
             else:
                 warning_msg(text='Error while loading the file(s)')
                 # else, show the logger if it is necessary
                 if len(self.open_file_thread_object.logger) > 0:
                     dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-                    dlg.exec_()
+                    dlg.exec()
         else:
             # center nodes
             diagram = self.get_selected_diagram_widget()
@@ -502,7 +501,7 @@ class IoMain(ConfigurationMain):
             if len(self.open_file_thread_object.logger) > 0:
                 dlg = LogsDialogue('Open file logger',
                                    self.open_file_thread_object.logger)
-                dlg.exec_()
+                dlg.exec()
 
             if self.open_file_thread_object.valid:
 
@@ -510,7 +509,7 @@ class IoMain(ConfigurationMain):
                                               question="How do you want to proceed?",
                                               answer1="Add grid",
                                               answer2="Merge grid")
-                dlg2.exec_()
+                dlg2.exec()
 
                 if dlg2.accepted_answer == 1:
                     # Create a blank diagram and add to it
@@ -524,13 +523,13 @@ class IoMain(ConfigurationMain):
 
                     if len(logger) > 0:
                         dlg = LogsDialogue('File merge logger', logger)
-                        dlg.exec_()
+                        dlg.exec()
 
                     dlg3 = CustomQuestionDialogue(title="Grid differential",
                                                   question="How do you want to represent the loaded grid?",
                                                   answer1="Create new diagram",
                                                   answer2="Add to current diagram")
-                    dlg3.exec_()
+                    dlg3.exec()
 
                     if dlg3.accepted_answer == 1:
                         # Create a blank diagram and add to it
@@ -588,7 +587,7 @@ class IoMain(ConfigurationMain):
                                     title="Load base grid to compare...")
         else:
             dlg = LogsDialogue('This circuit has duplicated idtags :(', logger)
-            dlg.exec_()
+            dlg.exec()
 
     def post_create_circuit_differential(self):
         """
@@ -601,7 +600,7 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.logger.has_logs():
                 dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
-                dlg.exec_()
+                dlg.exec()
 
             if self.open_file_thread_object.valid:
 
@@ -622,7 +621,7 @@ class IoMain(ConfigurationMain):
 
                         if diff_logger.has_logs():
                             dlg = LogsDialogue('Grid differences', diff_logger)
-                            dlg.exec_()
+                            dlg.exec()
 
                         # select the file to save
                         filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
@@ -824,7 +823,7 @@ class IoMain(ConfigurationMain):
         if self.save_file_thread_object.logger is not None:
             if len(self.save_file_thread_object.logger) > 0:
                 dlg = LogsDialogue('Save file logger', self.save_file_thread_object.logger)
-                dlg.exec_()
+                dlg.exec()
 
         self.stuff_running_now.remove('file_save')
 
@@ -844,7 +843,7 @@ class IoMain(ConfigurationMain):
         """
         self.grid_generator_dialogue = GridGeneratorGUI(parent=self)
         self.grid_generator_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-        self.grid_generator_dialogue.exec_()
+        self.grid_generator_dialogue.exec()
 
         if self.grid_generator_dialogue.applied:
 
@@ -890,7 +889,7 @@ class IoMain(ConfigurationMain):
         :return:
         """
         self.coordinates_window = CoordinatesInputGUI(self, self.circuit.get_buses())
-        self.coordinates_window.exec_()
+        self.coordinates_window.exec()
         self.set_xy_from_lat_lon()
 
     def export_object_profiles(self):
@@ -956,7 +955,7 @@ class IoMain(ConfigurationMain):
         if self.export_all_thread_object is not None:
             if self.export_all_thread_object.logger.has_logs():
                 dlg = LogsDialogue('Export all', self.export_all_thread_object.logger)
-                dlg.exec_()
+                dlg.exec()
 
         if len(self.stuff_running_now) == 0:
             self.UNLOCK()
@@ -1045,7 +1044,7 @@ class IoMain(ConfigurationMain):
 
             if len(logger) > 0:
                 dlg = LogsDialogue('Contingencies import', logger)
-                dlg.exec_()
+                dlg.exec()
 
     def export_contingencies(self):
         """

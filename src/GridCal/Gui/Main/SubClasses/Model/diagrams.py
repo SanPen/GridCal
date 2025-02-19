@@ -2113,7 +2113,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         if self.video_thread.logger.has_logs():
             dlg = LogsDialogue("Video export", self.video_thread.logger, True)
-            dlg.exec_()
+            dlg.exec()
 
     def set_xy_from_lat_lon(self):
         """
@@ -2239,7 +2239,7 @@ class DiagramsMain(CompiledArraysMain):
                                                                  group_label="Contingency name",
                                                                  group_text=group_text)
                 self.contingency_checks_diag.setModal(True)
-                self.contingency_checks_diag.exec_()
+                self.contingency_checks_diag.exec()
 
                 if self.contingency_checks_diag.is_accepted:
 
@@ -2278,7 +2278,7 @@ class DiagramsMain(CompiledArraysMain):
                                                         group_label="Remedial action name",
                                                         group_text=group_text)
                 self.ra_checks_diag.setModal(True)
-                self.ra_checks_diag.exec_()
+                self.ra_checks_diag.exec()
 
                 if self.ra_checks_diag.is_accepted:
 
@@ -2320,7 +2320,7 @@ class DiagramsMain(CompiledArraysMain):
                                                                 group_label="Investment name",
                                                                 group_text=group_name)
                 self.investment_checks_diag.setModal(True)
-                self.investment_checks_diag.exec_()
+                self.investment_checks_diag.exec()
 
                 if self.investment_checks_diag.is_accepted:
 
@@ -2353,7 +2353,7 @@ class DiagramsMain(CompiledArraysMain):
                                                            object_list=self.circuit.areas,
                                                            parent=self)
             self.object_select_window.setModal(True)
-            self.object_select_window.exec_()
+            self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
 
@@ -2366,7 +2366,7 @@ class DiagramsMain(CompiledArraysMain):
                                                            object_list=self.circuit.countries,
                                                            parent=self)
             self.object_select_window.setModal(True)
-            self.object_select_window.exec_()
+            self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
                 for k, bus, graphic_obj in self.get_current_buses():
@@ -2378,7 +2378,7 @@ class DiagramsMain(CompiledArraysMain):
                                                            object_list=self.circuit.zones,
                                                            parent=self)
             self.object_select_window.setModal(True)
-            self.object_select_window.exec_()
+            self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
                 for k, bus, graphic_obj in self.get_current_buses():
@@ -2399,7 +2399,7 @@ class DiagramsMain(CompiledArraysMain):
                                                            object_list=self.circuit.areas,
                                                            parent=self)
             self.object_select_window.setModal(True)
-            self.object_select_window.exec_()
+            self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
                 for k, bus, graphic_obj in self.get_selected_buses():
@@ -2411,7 +2411,7 @@ class DiagramsMain(CompiledArraysMain):
                                                            object_list=self.circuit.countries,
                                                            parent=self)
             self.object_select_window.setModal(True)
-            self.object_select_window.exec_()
+            self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
                 for k, bus, graphic_obj in self.get_selected_buses():
@@ -2423,7 +2423,7 @@ class DiagramsMain(CompiledArraysMain):
                                                            object_list=self.circuit.zones,
                                                            parent=self)
             self.object_select_window.setModal(True)
-            self.object_select_window.exec_()
+            self.object_select_window.exec()
 
             if self.object_select_window.selected_object is not None:
                 for k, bus, graphic_pbj in self.get_selected_buses():
@@ -2468,7 +2468,7 @@ class DiagramsMain(CompiledArraysMain):
         dlg = InputSearchDialogue(deafault_value="",
                                   title="Search",
                                   prompt="Search object by name, code or idtag in the diagram")
-        if dlg.exec_():
+        if dlg.exec():
 
             if dlg.is_accepted:
                 diagram = self.get_selected_diagram_widget()

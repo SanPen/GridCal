@@ -858,27 +858,6 @@ class MultiCircuit(Assets):
             elm.P *= factor
             elm.Q *= factor
 
-    def get_used_templates(self):
-        """
-        Get a list of the used templates in the objects
-        :return: list
-        """
-        val = set()
-
-        branches = self.get_branches()
-
-        for branch in branches:
-            if hasattr(branch, 'template'):
-                obj = getattr(branch, 'template')
-                val.add(obj)
-
-                # if it is a tower, add the wire templates too
-                if obj.device_type == DeviceType.OverheadLineTypeDevice:
-                    for wire in obj.wires_in_tower:
-                        val.add(wire)
-
-        return list(val)
-
     def get_automatic_precision(self):
         """
         Get the precision that simulates correctly the power flow

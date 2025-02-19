@@ -1036,7 +1036,7 @@ if __name__ == "__main__":
     #                                 answer2="stay here")
     #
     # window.show()
-    # sys.exit(app.exec_())
+    # sys.exit(app.exec())
 
     app = QApplication(sys.argv)
     window = ArrayEditor()

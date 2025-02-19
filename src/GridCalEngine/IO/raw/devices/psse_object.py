@@ -7,6 +7,7 @@ import uuid as uuidlib
 from typing import List, Dict, TypeVar
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_property import PsseProperty
+from GridCalEngine.basic_structures import Logger
 
 
 def uuid_from_seed(seed: str):
@@ -127,6 +128,7 @@ class RawObject:
         :param max_chars:
         :param min_value:
         :param max_value:
+        :param format_rule: some formatting rule
         """
         if hasattr(self, property_name):
             self.__registered_properties[property_name] = PsseProperty(property_name=property_name,

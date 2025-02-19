@@ -297,7 +297,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         """
         row = self.rowCount()
         self.beginRemoveRows(QtCore.QModelIndex(), row - 1, row - 1)
-        self.tower.wires_in_tower.pop(index)
+        self.tower.wires_in_tower.data.pop(index)
         self.endRemoveRows()
 
     def delete_by_name(self, wire: Wire):
@@ -305,9 +305,9 @@ class TowerModel(QtCore.QAbstractTableModel):
         Delete wire by name
         :param wire: Wire object
         """
-        n = len(self.tower.wires_in_tower)
+        n = len(self.tower.wires_in_tower.data)
         for i in range(n-1, -1, -1):
-            if self.tower.wires_in_tower[i].name == wire.name:
+            if self.tower.wires_in_tower.data[i].name == wire.name:
                 self.delete(i)
 
     def is_used(self, wire: Wire):
@@ -316,9 +316,9 @@ class TowerModel(QtCore.QAbstractTableModel):
         :param wire:
         :return:
         """
-        n = len(self.tower.wires_in_tower)
+        n = len(self.tower.wires_in_tower.data)
         for i in range(n-1, -1, -1):
-            if self.tower.wires_in_tower[i].name == wire.name:
+            if self.tower.wires_in_tower.data[i].name == wire.name:
                 return True
 
     def flags(self, index):
@@ -338,7 +338,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         :param parent:
         :return:
         """
-        return len(self.tower.wires_in_tower)
+        return len(self.tower.wires_in_tower.data)
 
     def columnCount(self, parent=None):
         """
@@ -357,7 +357,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                val = getattr(self.tower.wires_in_tower[index.row()], self.tower.index_prop[index.column()])
+                val = getattr(self.tower.wires_in_tower.data[index.row()], self.tower.index_prop[index.column()])
                 return str(val)
         return None
 
@@ -384,7 +384,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         :param role:
         """
         if self.tower.editable_wire[index.column()]:
-            wire = self.tower.wires_in_tower[index.row()]
+            wire = self.tower.wires_in_tower.data[index.row()]
             attr = self.tower.index_prop[index.column()]
 
             try:

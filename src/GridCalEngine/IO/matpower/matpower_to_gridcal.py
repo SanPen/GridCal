@@ -449,8 +449,9 @@ def convert_branches(circuit: MultiCircuit,
 
                 if rate == 0.0:
                     # in matpower rate=0 means not limited by rating
-                    rate = 10000
+                    rate = 10000.0
                     monitor_loading = False
+                    logger.add_info('Branch not limited by rating', f'Branch {code}')
                 else:
                     monitor_loading = True
 
@@ -672,6 +673,7 @@ def matpower_to_gridcal(m_grid: MatpowerCircuit, logger: Logger) -> MultiCircuit
     :return:
     """
     grid = MultiCircuit()
+    grid.Sbase = m_grid.Sbase
 
     # register the parsing logs
     logger += m_grid.logger

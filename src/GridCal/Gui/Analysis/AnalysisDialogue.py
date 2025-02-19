@@ -82,7 +82,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         if len(logger) > 0:
             dlg = LogsDialogue("Fixed issues", logger)
             dlg.setModal(True)
-            dlg.exec_()
+            dlg.exec()
 
         # re-analyze
         self.analyze_all()

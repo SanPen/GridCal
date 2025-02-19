@@ -309,14 +309,9 @@ def superconductor() -> NonlinearOPFResults:
 
     # Go back two directories
     file_path = os.path.join('data', 'grids', 'case9.m')
-    file_path2 = os.path.join('data', 'grids', 'case9_superconductor.gridcal')
-
-
     grid = gce.FileOpen(file_path).open()
     grid.lines[0].R = 0.0
     grid.lines[0].X = 0.0
-    grid2 = gce.FileOpen(file_path2).open()
-    # nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8)
     return run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options)
@@ -324,16 +319,23 @@ def superconductor() -> NonlinearOPFResults:
 
 #
 def test_superconductors_handling():
-    vm_test = [1.0957346797437704, 1.0969574703822882, 1.0862735278860973, 1.0957346797437704, 1.0854699877686833, 1.0999995150478854, 1.089489008278147, 1.0999995260914164, 1.072794065554122]
+    vm_test = [1.0957346797437704, 1.0969574703822882, 1.0862735278860973, 1.0957346797437704,
+               1.0854699877686833, 1.0999995150478854, 1.089489008278147, 1.0999995260914164, 1.072794065554122]
 
 
-    va_test = [-4.2370941920734066e-20, 0.1286722741064758, 0.09997739459585175, -4.2370941920734066e-20, -0.026373782258851553, 0.05377100775984605, 0.022363497246639205, 0.05904426953721843, -0.03741724523896175]
+    va_test = [-4.2370941920734066e-20, 0.1286722741064758, 0.09997739459585175, -4.2370941920734066e-20,
+               -0.026373782258851553, 0.05377100775984605, 0.022363497246639205, 0.05904426953721843,
+               -0.03741724523896175]
 
     Pg_test = [0.8980293097369652, 1.3431831933182758, 0.9418495481848482]
 
     Qg_test = [0.10234788760630473, -0.006611610144747128, -0.23267626898436533]
 
     res = superconductor()
+
+    # Since the buses 0 and 3 get merged, the must be the same voltage
+    assert np.allclose(res.Vm[0], res.Vm[3], atol=1e-9)
+    assert np.allclose(res.Va[0], res.Va[3], atol=1e-9)
 
     assert np.allclose(res.Vm, vm_test, atol=1e-2)
     assert np.allclose(res.Va, va_test, atol=1e-2)

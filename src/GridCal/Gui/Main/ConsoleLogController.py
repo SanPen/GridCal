@@ -32,4 +32,4 @@ if __name__ == "__main__":
 
     window.resize(int(1.61 * 400.0), 400)  # golden ratio
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

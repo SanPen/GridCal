@@ -314,7 +314,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     nnz_estimate = 5 * len(dS_dVm_x)
     J = CSC(nj, nj, nnz_estimate, False)
 
-    # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
+    # Note: The row and column pointer of dVm and dVa are the same as the one from Ybus
     lookup_dP = make_lookup(nbus, idx_dP)
     lookup_dQ = make_lookup(nbus, idx_dQ)
 

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
-from typing import List
+from typing import List, Dict
 import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Branches.wire import Wire
+from GridCalEngine.enumerations import SubObjectType
 
 """
 Equations source:
@@ -49,6 +50,72 @@ class WireInTower:
 
         self.device_type = DeviceType.WireDevice
 
+    def __eq__(self, other: "WireInTower"):
+
+        return (self.wire ==other.wire
+                and self.xpos == other.xpos
+                and self.ypos == other.ypos
+                and self.phase == other.phase
+                and self.name==other.name)
+
+    def to_dict(self) -> Dict[str, str | float | int]:
+        """
+
+        :return:
+        """
+        return {
+            "wire": self.wire.idtag,
+            "name": self.name,
+            "xpos": self.xpos,
+            "ypos": self.ypos,
+            "phase": self.phase,
+        }
+
+    def parse(self, data: Dict[str, str | float | int], wire_dict: dict[str, Wire]):
+        """
+
+        :param data:
+        :param wire_dict:
+        :return:
+        """
+        self.wire: Wire = wire_dict.get(data["wire"])
+        self.name: str = data["name"]
+        self.xpos: float = data["xpos"]
+        self.ypos: float = data["ypos"]
+        self.phase: int = data["phase"]
+
+class ListOfWires:
+
+    def __init__(self):
+        self.data: List[WireInTower] = list()
+
+    def append(self, elm: WireInTower):
+        self.data.append(elm)
+
+    def to_list(self):
+
+        return [e.to_dict() for e in self.data]
+
+    def parse(self, data: List[Dict[str, str | float | int]], wire_dict: dict[str, Wire]):
+
+        for entry in data:
+            elm = WireInTower( wire_dict.get(entry["wire"]),
+                               entry["xpos"],
+                               entry["ypos"],
+                               entry["phase"])
+            elm.parse(entry, wire_dict)
+            self.append(elm)
+
+    def __eq__(self, other: "ListOfWires"):
+
+        if len(self.data) != len(other.data):
+            return False
+
+        for elm, other_elm in zip(self.data, other.data):
+            if elm != other_elm:
+                return False
+
+        return True
 
 class OverheadLineType(EditableDevice):
 
@@ -64,7 +131,7 @@ class OverheadLineType(EditableDevice):
                                 device_type=DeviceType.OverheadLineTypeDevice)
 
         # list of wires in the tower
-        self.wires_in_tower: List[WireInTower] = list()
+        self.wires_in_tower: ListOfWires = ListOfWires()
 
         self.Vnom = 1.0
 
@@ -119,6 +186,9 @@ class OverheadLineType(EditableDevice):
         self.register(key='Bsh0', units='uS/Km', tpe=float, definition='Zero sequence shunt susceptance')
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
+
+        self.register(key='wires_in_tower', units='', tpe=SubObjectType.ListOfWires, definition='List of wires',
+                      editable=False, display=False)
 
     def add_wire_relationship(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
         """
@@ -176,12 +246,12 @@ class OverheadLineType(EditableDevice):
             fig = plt.Figure(figsize=(12, 6))
             ax = fig.add_subplot(1, 1, 1)
 
-        n = len(self.wires_in_tower)
+        n = len(self.wires_in_tower.data)
 
         if n > 0:
             x = np.zeros(n)
             y = np.zeros(n)
-            for i, wire_tower in enumerate(self.wires_in_tower):
+            for i, wire_tower in enumerate(self.wires_in_tower.data):
                 x[i] = wire_tower.xpos
                 y[i] = wire_tower.ypos
 
@@ -206,7 +276,7 @@ class OverheadLineType(EditableDevice):
 
         all_y_zero = True
         phases = set()
-        for i, wire_i in enumerate(self.wires_in_tower):
+        for i, wire_i in enumerate(self.wires_in_tower.data):
 
             phases.add(wire_i.phase)
 
@@ -217,7 +287,7 @@ class OverheadLineType(EditableDevice):
                 logger.add('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
                 return False
 
-            for j, wire_j in enumerate(self.wires_in_tower):
+            for j, wire_j in enumerate(self.wires_in_tower.data):
 
                 if i != j:
                     if wire_i.xpos == wire_j.xpos and wire_i.ypos == wire_j.ypos:
@@ -244,7 +314,7 @@ class OverheadLineType(EditableDevice):
         :return: max current (I) of the tower in A
         """
         r = 0
-        for wit in self.wires_in_tower:
+        for wit in self.wires_in_tower.data:
             r += wit.wire.max_current
 
         return r
@@ -263,14 +333,14 @@ class OverheadLineType(EditableDevice):
              self.z_phases_abcn,
              self.z_abc,
              self.z_phases_abc,
-             self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+             self.z_seq) = calc_z_matrix(self.wires_in_tower.data, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
             (self.y_abcn,
              self.y_phases_abcn,
              self.y_abc,
              self.y_phases_abc,
-             self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+             self.y_seq) = calc_y_matrix(self.wires_in_tower.data, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
             self.Imax = self.compute_rating()
@@ -291,9 +361,9 @@ class OverheadLineType(EditableDevice):
         :param wire:
         :return:
         """
-        n = len(self.wires_in_tower)
+        n = len(self.wires_in_tower.data)
         for i in range(n - 1, -1, -1):
-            if self.wires_in_tower[i].wire.name == wire.name:
+            if self.wires_in_tower.data[i].wire.name == wire.name:
                 return True
 
     def get_values(self, Sbase, length, round_vals: bool = False):

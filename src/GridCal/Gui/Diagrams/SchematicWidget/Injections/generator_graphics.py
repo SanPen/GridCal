@@ -280,7 +280,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                 longitude=self.api_object.bus.longitude,
                                 gen_name=self.api_object.name,
                                 bus_name=self.api_object.bus.name)
-            if dlg.exec_():
+            if dlg.exec():
                 if dlg.is_accepted:
                     if len(dlg.P) == self.api_object.P_prof.size():
                         self.api_object.P_prof.set(dlg.P)
@@ -307,7 +307,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                  longitude=self.api_object.bus.longitude,
                                  gen_name=self.api_object.name,
                                  bus_name=self.api_object.bus.name)
-            if dlg.exec_():
+            if dlg.exec():
                 if dlg.is_accepted:
                     if len(dlg.P) == self.api_object.P_prof.size():
                         self.api_object.P_prof.set(dlg.P)

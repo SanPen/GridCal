@@ -26,6 +26,8 @@ class RawBus(RawObject):
         self.NVLO = 0.95
         self.EVHI = 1.1
         self.EVLO = 0.9
+        self.GL = 0.0
+        self.BL = 0.0
 
         self.register_property(property_name="I",
                                rawx_key="ibus",
@@ -139,8 +141,8 @@ class RawBus(RawObject):
             dta = np.zeros(13, dtype=object)
             dta[0:n] = data[0]
 
-            self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, \
-                self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO = dta
+            (self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
+             self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO) = dta
 
         elif version == 32:
 
@@ -148,8 +150,8 @@ class RawBus(RawObject):
 
         elif version in [29, 30]:
             # I, 'NAME', BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
-            self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL, \
-                self.AREA, self.ZONE, self.VM, self.VA, self.OWNER = data[0]
+            (self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL,
+             self.AREA, self.ZONE, self.VM, self.VA, self.OWNER) = data[0]
 
 
         else:
@@ -161,23 +163,6 @@ class RawBus(RawObject):
         :param version: supported version
         :return:
         """
-        # if version >= 33:
-        #
-        #     return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "AREA", "ZONE",
-        #                                  "OWNER", "VM", "VA", "NVHI", "NVLO", "EVHI", "EVLO"])
-        #
-        # elif version == 32:
-        #
-        #     return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "AREA", "ZONE",
-        #                                  "OWNER", "VM", "VA"])
-        #
-        # elif version in [29, 30]:
-        #
-        #     return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "GL", "BL",
-        #                                  "AREA", "ZONE", "VM", "VA", "OWNER"])
-        #
-        # else:
-        #     raise Exception('Bus not implemented for version', str(version))
 
         if version >= 33:
             return self.format_raw_line(["I", "NAME", "BASKV", "IDE", "AREA", "ZONE",
@@ -197,5 +182,3 @@ class RawBus(RawObject):
 
     def get_id(self) -> str:
         return str(self.I)
-
-

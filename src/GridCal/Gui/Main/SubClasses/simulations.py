@@ -516,6 +516,9 @@ class SimulationsMain(TimeEventsMain):
             if isinstance(self.open_file_thread_object.file_name, str):
                 self.ui.file_information_label.setText(self.open_file_thread_object.file_name)
 
+        self.clear_console()
+        self.add_console_vars()
+
         self.ui.units_label.setText("")
 
     @staticmethod

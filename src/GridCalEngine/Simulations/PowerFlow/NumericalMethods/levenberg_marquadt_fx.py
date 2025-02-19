@@ -45,7 +45,6 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
         # for instance there might be a single node that is a slack node
         return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
-    normF = 100000
     update_jacobian = True
     iter_ = 0
     nu = 2.0

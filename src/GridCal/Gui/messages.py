@@ -18,7 +18,7 @@ def info_msg(text, title="Information"):
     msg.setText(text)
     msg.setWindowTitle(title)
     msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-    return msg.exec_()
+    return msg.exec()
 
 
 def warning_msg(text, title="Warning"):
@@ -32,7 +32,7 @@ def warning_msg(text, title="Warning"):
     msg.setText(text)
     msg.setWindowTitle(title)
     msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-    return msg.exec_()
+    return msg.exec()
 
 
 def error_msg(text, title="Error"):
@@ -46,7 +46,7 @@ def error_msg(text, title="Error"):
     msg.setText(text)
     msg.setWindowTitle(title)
     msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-    return msg.exec_()
+    return msg.exec()
 
 
 def yes_no_question(text, title='Question'):
