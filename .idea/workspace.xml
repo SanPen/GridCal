@@ -28,7 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Refactored the transformers short-circuit definition to system per-unit">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/xfo_sc.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/xfo_sc.rst" afterDir="false" />
     </list>
@@ -1864,7 +1864,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="569" />
+    <option name="localTasksCounter" value="570" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1910,7 +1910,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="format corrections at raw export" />
     <MESSAGE value="enhance ac line test with rate parameters, op lim tpye" />
     <MESSAGE value="NOMV2 exception" />
     <MESSAGE value="added powerflow comparison" />
@@ -1935,7 +1934,8 @@
     <MESSAGE value="Improved tests to check different Sbase" />
     <MESSAGE value="Handle that requests may fail loading" />
     <MESSAGE value="Refactored the transformers short-circuit definition to system per-unit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored the transformers short-circuit definition to system per-unit" />
+    <MESSAGE value="Improved docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

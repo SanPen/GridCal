@@ -53,11 +53,10 @@ First we compute the High voltage side:
 
     z_{base}^{HV} = \frac{HV^2}{S_n}
 
-    z_{s}^{ohm} = z_s \cdot Share_{hv1} \cdot z_{base}^{HV}
+    z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_{base}}
 
-    z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_n}
+    z_{s\_HV}^{system}  = z_s\cdot  \frac{z_{base}^{HV}}{z_{base}^{hv\_bus}} \cdot Share_{hv1}  = z_s \cdot  \frac{HV^2 \cdot S_{base}}{V_{hv\_bus}^2 \cdot S_n}  \cdot Share_{hv1}
 
-    z_{s\_HV}^{system} = \frac{z_{s}^{ohm}}{z_{base}^{hv\_bus}}
 
 Now, we compute the Low voltage side:
 
@@ -65,11 +64,10 @@ Now, we compute the Low voltage side:
 
     z_{base}^{LV} = \frac{LV^2}{S_n}
 
-    z_{s}^{ohm} = z_s \cdot (1 - Share_{hv1}) \cdot z_{base}^{LV}
+    z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_{base}}
 
-    z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_n}
+    z_{s\_LV}^{system} = z_s \cdot \frac{z_{base}^{LV}}{z_{base}^{lv\_bus}}  \cdot (1 - Share_{hv1})  = z_s \cdot  \frac{LV^2 \cdot S_{base}}{V_{lv\_bus}^2 \cdot S_n}  \cdot (1 - Share_{hv1})
 
-    z_{s\_LV}^{system} = \frac{z_{s}^{ohm}}{z_{base}^{lv\_bus}}
 
 
 Finally, the system series impedance in p.u. is:
@@ -93,9 +91,10 @@ Now, the leakage impedance (shunt of the model)
 
 .. math::
 
-    x_m = \sqrt{\frac{ - r_m^2 * z_m^2}{z_m^2 - r_m^2}}
+    x_m = \sqrt{\frac{ - r_m^2 \cdot z_m^2}{z_m^2 - r_m^2}}
 
-Finally the shunt admittance is:
+
+Finally the shunt admittance is (p.u. of the system):
 
 .. math::
 
