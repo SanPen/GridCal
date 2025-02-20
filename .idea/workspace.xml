@@ -28,12 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Handle that requests may fail loading">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/xfo_sc.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/xfo_sc.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Refactored the transformers short-circuit definition to system per-unit" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -214,7 +209,7 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in tests">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -479,29 +474,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="python_console" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal/Gui" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/Gui/python_console.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="test_power_flow" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -540,6 +512,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tests/test_raw_cgmes_cross_roundtrip.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -723,7 +718,7 @@
     <list>
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
-      <item itemvalue="Python.python_console" />
+      <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true" />
       <item itemvalue="Python tests.pytest for test_load_save_load.test_load_save_load2" />
@@ -731,11 +726,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.upload_to_pypi" />
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true" />
         <item itemvalue="Python tests.pytest for test_load_save_load.test_load_save_load2" />
-        <item itemvalue="Python.python_console" />
       </list>
     </recent_temporary>
   </component>
@@ -1521,7 +1516,7 @@
       <workItem from="1739864557422" duration="26226000" />
       <workItem from="1739956932484" duration="9128000" />
       <workItem from="1740000862314" duration="3373000" />
-      <workItem from="1740045012834" duration="2727000" />
+      <workItem from="1740045012834" duration="3376000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1866,7 +1861,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="568" />
+    <option name="localTasksCounter" value="569" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1912,7 +1907,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added calculation of RMA1" />
     <MESSAGE value="format corrections at raw export" />
     <MESSAGE value="enhance ac line test with rate parameters, op lim tpye" />
     <MESSAGE value="NOMV2 exception" />
@@ -1937,7 +1931,8 @@
     <MESSAGE value="Now we keep the wire configuration that was lost in overhead_line_type" />
     <MESSAGE value="Improved tests to check different Sbase" />
     <MESSAGE value="Handle that requests may fail loading" />
-    <option name="LAST_COMMIT_MESSAGE" value="Handle that requests may fail loading" />
+    <MESSAGE value="Refactored the transformers short-circuit definition to system per-unit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactored the transformers short-circuit definition to system per-unit" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
