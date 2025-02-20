@@ -8,13 +8,14 @@ the transformer to match the branch model, it is advised to transform the specif
 into the desired values. The values to take from the specs sheet are:
 
 - :math:`S_n`: Nominal power in MVA.
-- :math:`U_{hv}`: Voltage at the high-voltage side in kV.
-- :math:`U_{lv}`: Voltage at the low-voltage side in kV.
-- :math:`U_{sc}`: Short circuit voltage in %.
+- :math:`HV`: Voltage at the high-voltage side in kV.
+- :math:`LV`: Voltage at the low-voltage side in kV.
+- :math:`V_{hv\_bus}`: Nominal voltage of the high-voltage side bus kV.
+- :math:`V_{lv\_bus}`: Nominal voltage of the low-voltage side bus kV.
+- :math:`V_{sc}`: Short circuit voltage in %.
 - :math:`P_{cu}`: Copper losses in kW.
 - :math:`I_0`: No load current in %.
-- :math:`GX_{hv1}`: Reactance contribution to the HV side. Value from 0 to 1.
-- :math:`GR_{hv1}`: Resistance contribution to the HV side. Value from 0 to 1.
+- :math:`Share_{hv1}`: Contribution to the HV side. Value from 0 to 1.
 
 
 Short circuit impedance (p.u. of the machine)
@@ -52,7 +53,7 @@ First we compute the High voltage side:
 
     z_{base}^{HV} = \frac{HV^2}{S_n}
 
-    z_{s}^{ohm} = z_s \cdot GR_{hv1} \cdot z_{base}^{HV}
+    z_{s}^{ohm} = z_s \cdot Share_{hv1} \cdot z_{base}^{HV}
 
     z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_n}
 
@@ -64,7 +65,7 @@ Now, we compute the Low voltage side:
 
     z_{base}^{LV} = \frac{LV^2}{S_n}
 
-    z_{s}^{ohm} = z_s \cdot (1 - GR_{hv1}) \cdot z_{base}^{LV}
+    z_{s}^{ohm} = z_s \cdot (1 - Share_{hv1}) \cdot z_{base}^{LV}
 
     z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_n}
 
