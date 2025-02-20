@@ -16,35 +16,90 @@ into the desired values. The values to take from the specs sheet are:
 - :math:`GX_{hv1}`: Reactance contribution to the HV side. Value from 0 to 1.
 - :math:`GR_{hv1}`: Resistance contribution to the HV side. Value from 0 to 1.
 
-Then, the series and shunt impedances are computed as follows:
 
-- Nominal impedance HV (Ohm): :math:`Zn_{hv} = U_{hv}^2 / S_n`
-- Nominal impedance LV (Ohm): :math:`Zn_{lv} = U_{lv}^2 / S_n`
-- Short circuit impedance (p.u.): :math:`z_{sc} = U_{sc} / 100`
-- Short circuit resistance (p.u.): :math:`r_{sc} = \frac{P_{cu} / 1000}{S_n}`
-- Short circuit reactance (p.u.): :math:`x_{sc} = \sqrt{z_{sc}^2 - r_{sc} ^2}`
-- HV resistance (p.u.): :math:`r_{cu,hv} = r_{sc} \cdot GR_{hv1}`
-- LV resistance (p.u.): :math:`r_{cu,lv} = r_{sc} \cdot (1 - GR_{hv1})`
-- HV shunt reactance (p.u.): :math:`xs_{hv} = x_{sc} \cdot GX_{hv1}`
-- LV shunt reactance (p.u.): :math:`xs_{lv} = x_{sc} \cdot (1 - GX_{hv1})`
+Short circuit impedance (p.u. of the machine)
 
-If :math:`P_{fe} > 0` and :math:`I0 > 0`, then:
+.. math::
 
-- Shunt resistance (p.u.): :math:`r_{fe} = \frac{Sn}{P_{fe} / 1000}`
-- Magnetization impedance (p.u.): :math:`z_m = \frac{1}{I_0 / 100}`
-- Magnetization reactance (p.u.): :math:`x_m = \frac{1}{\sqrt{\frac{1}{z_m^2} - \frac{1}{r_{fe}^2}}}`
-- Magnetizing resistance (p.u.): :math:`r_m = \sqrt{x_m^2 - z_m^2}`
+    z_{sc} = \frac{V_{sc}}{100}
 
-else:
+Short circuit resistance (p.u. of the machine)
 
-- Magnetization reactance (p.u.): :math:`x_m = 0`
-- Magnetizing resistance (p.u.): :math:`r_m = 0`
+.. math::
 
-The final complex calculated parameters in per unit are:
+    r_{sc} = \frac{P_{cu} / 1000}{ S_n }
 
-- Magnetizing impedance (or series impedance): :math:`z_{series} = Z_m = r_{m} +j \cdot x_m`
-- Leakage impedance (or shunt impedance): :math:`Z_l = r_{sc} + j \cdot x_{sc}`
-- Shunt admittance: :math:`y_{shunt} = 1 / Z_l`
+
+Short circuit reactance (p.u. of the machine)
+Can only be computed if :math:`r_{sc} < z_{sc}`
+
+.. math::
+
+    x_{sc} = \sqrt{z_{sc}^2 - r_{sc}^2}
+
+Series impedance (p.u. of the machine)
+
+.. math::
+
+    z_s = r_{sc} + j \cdot x_{sc}
+
+
+The issue with tis is that we now must convert :math:`zs` from machine base to the system base.
+
+First we compute the High voltage side:
+
+.. math::
+
+    z_{base}^{HV} = \frac{HV^2}{S_n}
+
+    z_{s}^{ohm} = z_s \cdot GR_{hv1} \cdot z_{base}^{HV}
+
+    z_{base}^{hv\_bus} = \frac{V_{hv\_bus}^2}{S_n}
+
+    z_{s\_HV}^{system} = \frac{z_{s}^{ohm}}{z_{base}^{hv\_bus}}
+
+Now, we compute the Low voltage side:
+
+.. math::
+
+    z_{base}^{LV} = \frac{LV^2}{S_n}
+
+    z_{s}^{ohm} = z_s \cdot (1 - GR_{hv1}) \cdot z_{base}^{LV}
+
+    z_{base}^{lv\_bus} = \frac{V_{lv\_bus}^2}{S_n}
+
+    z_{s\_LV}^{system} = \frac{z_{s}^{ohm}}{z_{base}^{lv\_bus}}
+
+
+Finally, the system series impedance in p.u. is:
+
+.. math::
+
+    z_s = z_{s\_HV}^{system} + z_{s\_LV}^{system}
+
+
+Now, the leakage impedance (shunt of the model)
+
+.. math::
+
+    r_m = \frac{S_{base}}{P_{fe} / 1000}
+
+
+.. math::
+
+    z_m = \frac{100 \cdot S_{base}}{I0 \cdot S_n}
+
+
+.. math::
+
+    x_m = \sqrt{\frac{ - r_m^2 * z_m^2}{z_m^2 - r_m^2}}
+
+Finally the shunt admittance is:
+
+.. math::
+
+    y_{shunt} = \frac{1}{r_m} + j \cdot \frac{1}{x_m}
+
 
 Inverse definition of SC values from π model
 --------------------------------------------

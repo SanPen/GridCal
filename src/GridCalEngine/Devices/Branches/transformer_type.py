@@ -283,7 +283,7 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
     :return: Zseries and Yshunt in system per unit
     """
 
-    # Series impedance
+    # Series impedance -------------------------------------------------------------------------------------------------
     zsc = Vsc / 100.0
     rsc = (Pcu / 1000.0) / Sn
     if rsc < zsc:
@@ -294,38 +294,36 @@ def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float
     # series impedance in p.u. of the machine
     zs = rsc + 1j * xsc
 
-    # Shunt impedance (leakage)
+    # convert impedances from machine per unit to ohms (HV side)
+    z_base_hv = (HV * HV) / Sn
+    z_series_hv = zs * GR_hv1 * z_base_hv  # Ohm
+    z_base_hv_sys = (VH_bus * VH_bus) / Sbase  # convert impedances from ohms to system per unit
+
+    # convert impedances from machine per unit to ohms (LV side)
+    z_base_lv = (LV * LV) / Sn
+    z_series_lv = zs * (1.0 - GR_hv1) * z_base_lv  # Ohm
+    z_base_lv_sys = (VL_bus * VL_bus) / Sbase  # convert impedances from ohms to system per unit
+
+    z_series = (z_series_hv / z_base_hv_sys) + (z_series_lv / z_base_lv_sys)
+
+    # Shunt impedance (leakage) ----------------------------------------------------------------------------------------
     if Pfe > 0.0 and I0 > 0.0:
 
-        # rfe = Sn / (Pfe / 1000.0)
         rm = Sbase / (Pfe / 1000.0)
-        I0 = I0 * Sn / Sbase
-        zm = 1.0 / (I0 / 100.0)
+        zm = (100.0 * Sbase) / (I0 * Sn)
 
         if zm < rm:  # only with this is possible to perform xm, otherwise we get div0 or sqrt(neg)
-            inside_sqrt = (-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2)
-            xm = sqrt(inside_sqrt)
+            xm = sqrt((-zm ** 2 * rm ** 2) / (zm ** 2 - rm ** 2))
         else:
             xm = 0.0
     else:
         rm = 0.0
         xm = 0.0
 
-    # convert impedances from machine per unit to ohms
-    z_base_hv = (HV * HV) / Sn
-    z_base_lv = (LV * LV) / Sn
+    g = 1.0 / rm if rm > 0.0 else 0.0
+    b = 1.0 / xm if xm > 0.0 else 0.0
 
-    z_series_hv = zs * GR_hv1 * z_base_hv  # Ohm
-    z_series_lv = zs * (1.0 - GR_hv1) * z_base_lv  # Ohm
-
-    # convert impedances from ohms to system per unit
-    z_base_hv_sys = (VH_bus * VH_bus) / Sbase
-    z_base_lv_sys = (VL_bus * VL_bus) / Sbase
-
-    z_series = z_series_hv / z_base_hv_sys + z_series_lv / z_base_lv_sys
-
-    g = 1 / rm if rm > 0.0 else 0.0
-    b = 1 / xm if xm > 0.0 else 0.0
+    # observe that we don't need to convert y_shunt to the system base since it is already
     y_shunt = g - 1j * b
 
     return z_series, y_shunt
