@@ -98,8 +98,8 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
                     lbmda = 1e-3 * HtH.diagonal().max()
 
                 # compute system matrix A = H^T·H - lambda·I
-                Idn = sp.diags(np.ones(H.shape[0]))
-                A = (HtH + lbmda * Idn).tocsc()
+                Idn = sp.diags(np.full(H.shape[0], lbmda))
+                A = (HtH + Idn).tocsc()
 
             # right-hand side
             # H^t·dz

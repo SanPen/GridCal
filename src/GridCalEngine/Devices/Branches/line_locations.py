@@ -68,7 +68,7 @@ class LineLocations(EditableDevice):
         """
         Constructor
         :param name: Name
-        :param idtag: unique identifyer
+        :param idtag: unique identifier
         :param code: secondary code
         """
         EditableDevice.__init__(self,

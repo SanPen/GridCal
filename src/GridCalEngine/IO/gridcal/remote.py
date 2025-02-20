@@ -3,8 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import os
-import requests
-import asyncio
 from typing import Dict, Union, Any
 from uuid import uuid4, getnode
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -12,6 +10,14 @@ from GridCalEngine.enumerations import (SimulationTypes, JobStatus)
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
+
+try:
+    import requests
+
+    REQUESTS_AVAILABLE = True
+except AttributeError as e:
+    print(f"GridCalEngine/IO/gridcal/remote.py: Error with requests -> {e}")
+    REQUESTS_AVAILABLE = False
 
 
 class RemoteInstruction:
@@ -142,32 +148,36 @@ def get_certificate(base_url: str, certificate_path: str, pwd: str, logger: Logg
     :return: ok?
     """
     # Make a GET request to the root endpoint
-    try:
-        response = requests.get(f"{base_url}/get_cert",
-                                headers={"API-Key": pwd},
-                                verify=False,
-                                timeout=2)
+    if REQUESTS_AVAILABLE:
+        try:
+            response = requests.get(f"{base_url}/get_cert",
+                                    headers={"API-Key": pwd},
+                                    verify=False,
+                                    timeout=2)
 
-        # Save the certificate to a file
+            # Save the certificate to a file
 
-        with open(certificate_path, "wb") as cert_file:
-            cert_file.write(response.content)
+            with open(certificate_path, "wb") as cert_file:
+                cert_file.write(response.content)
 
-        # Check if the request was successful
-        if response.status_code == 200:
-            # Print the response body
-            # print("Response Body:", response.json())
-            # self.data_model.parse_data(data=response.json())
-            return True
-        else:
-            # Print error message
-            logger.add_error(msg=f"Response error", value=response.text)
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Print the response body
+                # print("Response Body:", response.json())
+                # self.data_model.parse_data(data=response.json())
+                return True
+            else:
+                # Print error message
+                logger.add_error(msg=f"Response error", value=response.text)
+                return False
+        except ConnectionError as e:
+            logger.add_error(msg=f"Connection error", value=str(e))
             return False
-    except ConnectionError as e:
-        logger.add_error(msg=f"Connection error", value=str(e))
-        return False
-    except Exception as e:
-        logger.add_error(msg=f"General exception error", value=str(e))
+        except Exception as e:
+            logger.add_error(msg=f"General exception error", value=str(e))
+            return False
+    else:
+        logger.add_error(msg=f"requests not available due to an error on import")
         return False
 
 
@@ -195,8 +205,8 @@ def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
 
 
 async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
-                   endpoint_url: str,
-                   certificate: str) -> Any:
+                         endpoint_url: str,
+                         certificate: str) -> Any:
     """
     Send a file along with instructions about the file
     :param json_data: Json with te model
@@ -205,12 +215,15 @@ async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str
     :return service response
     """
 
-    response = requests.post(
-        url=endpoint_url,
-        json=json_data,
-        stream=True,
-        verify=certificate
-    )
+    if REQUESTS_AVAILABLE:
+        response = requests.post(
+            url=endpoint_url,
+            json=json_data,
+            stream=True,
+            verify=certificate
+        )
 
-    # return server response
-    return response.json()
+        # return server response
+        return response.json()
+    else:
+        print(f"Requests not available due to an error on import")
