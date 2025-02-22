@@ -14,7 +14,7 @@ from GridCalEngine.basic_structures import Logger
 linear_solver = get_linear_solver()
 
 
-def levenberg_marquardt_fx(problem: PfFormulationTemplate,
+def levenberg_marquardt_fx_old(problem: PfFormulationTemplate,
                            tol: float = 1e-6,
                            max_iter: int = 10,
                            verbose: int = 0,
@@ -156,5 +156,135 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
                     print(f'It {iter_}, error {error}, converged {converged}, x {x}, dx {dx}')
                 else:
                     print(f'error {error}, converged {converged}, x {x}, dx {dx}')
+
+    return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+
+def norm(arr):
+    return np.max(np.abs(arr))
+
+def levenberg_marquardt_fx_alt(problem: PfFormulationTemplate,
+                           tol: float = 1e-6,
+                           max_iter: int = 10,
+                           verbose: int = 0,
+                           logger: Logger = Logger()) -> NumericPowerFlowResults:
+    """
+    Levenberg-Marquardt to solve:
+
+        min: error(f(x))
+        s.t.
+            f(x) = 0
+
+    From METHODS FOR NON-LINEAR LEAST SQUARES PROBLEMS by K. Madsen, H.B. Nielsen, O. Tingleff
+
+    :param problem: PfFormulationTemplate
+    :param tol: Error tolerance
+    :param max_iter: Maximum number of iterations
+    :param verbose:  Display console information
+    :param logger: Logger instance
+    :return: ConvexMethodResult
+    """
+    start = time.time()
+
+    # get the initial point
+    x = problem.var2x()
+
+    if len(x) == 0:
+        # if the length of x is zero, means that there's nothing to solve
+        # for instance there might be a single node that is a slack node
+        return problem.get_solution(elapsed=time.time() - start, iterations=0)
+
+    iter_ = 0
+    nu = 2.0
+    e1 = tol
+    e2 = tol
+
+    # initialize the problem
+    error, converged_prob, x, f = problem.update(x, update_controls=False)
+
+
+    J = mat_to_scipy(problem.Jacobian())
+
+    if J.shape[0] != J.shape[1]:
+        logger.add_error("Jacobian not square, check the controls!", "Levenberg-Marquadt")
+        return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+    Jt = J.T
+    A = Jt @ J
+    g = Jt @ f
+    mu = 1e-3 * A.diagonal().max()
+    converged = norm(g) < e1
+
+    # save the error evolution
+    error_evolution = np.zeros(max_iter + 1)
+    error_evolution[iter_] = error
+
+    if verbose > 0:
+        print(f'It {iter_}, error {problem.error}, converged {problem.converged}, x {x}, dx not computed yet')
+
+    if converged:
+        return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+    else:
+
+        while not converged and iter_ < max_iter:
+
+            # update iteration counter
+            iter_ += 1
+
+            # compute update step
+            mu_Idn = sp.diags(A.diagonal() * 1e-3)
+            sys_mat = (A + mu_Idn).tocsc()
+
+            try:
+                # Solve the increment
+                hlm = linear_solver(sys_mat, -g)
+
+            except RuntimeError:
+                logger.add_error(f"Levenberg-Marquardt's system matrix is singular @iter {iter_}:")
+                return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+            if verbose > 1:
+                print("J:\n", problem.get_jacobian_df(J))
+                print("g:\n", problem.get_f_df(g))
+                print("hlm:\n", problem.get_x_df(hlm))
+
+            x_new = x + hlm
+            dL = 0.5 * hlm @ (mu * hlm - g)
+
+            new_error, _ = problem.check_error(x_new)
+
+            rho = (error - new_error) / dL if dL != 0.0 else 1.0  # we recompute if dL == 0
+
+            if rho > 0:
+
+                # update the problem
+                error, converged_prob, x, f = problem.update(x_new, update_controls=error < (tol * 100))
+
+                J = mat_to_scipy(problem.Jacobian())
+
+                if J.shape[0] != J.shape[1]:
+                    logger.add_error("Jacobian not square, check the controls!", "Levenberg-Marquadt")
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+                Jt = J.T
+                A = Jt @ J
+                g = Jt @ f
+                mu *= max(0.33333333, 1.0 - np.pow(2 * rho -1, 3))
+                converged = norm(g) < e1
+                nu = 2.0
+
+            else:
+                mu *= nu
+                nu *= 2.0
+
+            # save the error evolution
+            error_evolution[iter_] = error
+
+            if verbose > 0:
+                if verbose == 1:
+                    print(f'It {iter_}, error {error}, converged {converged}, x {x}, dx {hlm}')
+                else:
+                    print(f'error {error}, converged {converged}, x {x}, dx {hlm}')
 
     return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
