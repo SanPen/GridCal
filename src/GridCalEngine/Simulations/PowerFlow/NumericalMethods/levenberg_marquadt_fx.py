@@ -14,7 +14,7 @@ from GridCalEngine.basic_structures import Logger
 linear_solver = get_linear_solver()
 
 
-def levenberg_marquardt_fx_old(problem: PfFormulationTemplate,
+def levenberg_marquardt_fx(problem: PfFormulationTemplate,
                            tol: float = 1e-6,
                            max_iter: int = 10,
                            verbose: int = 0,
@@ -163,7 +163,7 @@ def levenberg_marquardt_fx_old(problem: PfFormulationTemplate,
 def norm(arr):
     return np.max(np.abs(arr))
 
-def levenberg_marquardt_fx_alt(problem: PfFormulationTemplate,
+def levenberg_marquardt_fx2(problem: PfFormulationTemplate,
                            tol: float = 1e-6,
                            max_iter: int = 10,
                            verbose: int = 0,
@@ -200,8 +200,7 @@ def levenberg_marquardt_fx_alt(problem: PfFormulationTemplate,
     e2 = tol
 
     # initialize the problem
-    error, converged_prob, x, f = problem.update(x, update_controls=False)
-
+    error, converged, x, f = problem.update(x, update_controls=False)
 
     J = mat_to_scipy(problem.Jacobian())
 
@@ -213,7 +212,6 @@ def levenberg_marquardt_fx_alt(problem: PfFormulationTemplate,
     A = Jt @ J
     g = Jt @ f
     mu = 1e-3 * A.diagonal().max()
-    converged = norm(g) < e1
 
     # save the error evolution
     error_evolution = np.zeros(max_iter + 1)
@@ -233,7 +231,7 @@ def levenberg_marquardt_fx_alt(problem: PfFormulationTemplate,
             iter_ += 1
 
             # compute update step
-            mu_Idn = sp.diags(A.diagonal() * 1e-3)
+            mu_Idn = sp.diags(np.full(A.shape[0], mu))
             sys_mat = (A + mu_Idn).tocsc()
 
             try:
@@ -259,7 +257,7 @@ def levenberg_marquardt_fx_alt(problem: PfFormulationTemplate,
             if rho > 0:
 
                 # update the problem
-                error, converged_prob, x, f = problem.update(x_new, update_controls=error < (tol * 100))
+                error, converged, x, f = problem.update(x_new, update_controls=error < (tol * 100))
 
                 J = mat_to_scipy(problem.Jacobian())
 
@@ -270,8 +268,7 @@ def levenberg_marquardt_fx_alt(problem: PfFormulationTemplate,
                 Jt = J.T
                 A = Jt @ J
                 g = Jt @ f
-                mu *= max(0.33333333, 1.0 - np.pow(2 * rho -1, 3))
-                converged = norm(g) < e1
+                mu *= max(0.33333333, 1.0 - np.power(2 * rho -1, 3))
                 nu = 2.0
 
             else:
