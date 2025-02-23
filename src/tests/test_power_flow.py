@@ -623,7 +623,7 @@ def test_hvdc_all_methods() -> None:
             logger.print(f"Errors on {solver_type.value} with controls:")
 
         assert res.converged
-        assert res.Pf_hvdc[0] == 10.0
+        assert np.isclose(res.Pf_hvdc[0], 10.0)
         assert np.isclose(abs(res.voltage[6]), 1.01111, atol=1e-4)
         assert np.isclose(abs(res.voltage[1]), 1.02222, atol=1e-4)
 
