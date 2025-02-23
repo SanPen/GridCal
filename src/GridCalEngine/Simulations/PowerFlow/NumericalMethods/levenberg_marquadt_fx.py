@@ -58,6 +58,9 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
 
     error, converged, x, dz = problem.update(x, update_controls=False)
 
+    # objective function to minimize
+    f = 0.5 * dz @ dz
+
     # save the error evolution
     error_evolution[iter_] = problem.error
 
@@ -125,13 +128,12 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
                 print("F:\n", problem.get_f_df(rhs))
                 print("dx:\n", problem.get_x_df(dx))
 
-            # objective function to minimize
-            f = 0.5 * dz @ dz
+
 
             # decision function
             dL = 0.5 * dx @ (lbmda * dx + rhs)
             dF = f_prev - f
-            if (dL > 0.0) and (dF > 0.0):
+            if (dL > 0.0) and (dF != 0.0):
                 update_jacobian = True
                 rho = dF / dL
                 lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
@@ -142,6 +144,10 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
 
                 update_controls = error < (tol * 100)
                 error, converged, x, dz = problem.update(x, update_controls=update_controls)
+
+                # objective function to minimize
+                f_prev = f
+                f = 0.5 * dz @ dz
 
             else:
                 update_jacobian = False
