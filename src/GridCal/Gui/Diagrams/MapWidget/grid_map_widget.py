@@ -1107,19 +1107,6 @@ class GridMapWidget(BaseDiagramWidget):
             image = self.get_image()
             image.save(filename)
 
-        elif extension == '.svg':
-            w = self.width()
-            h = self.height()
-            svg_gen = QSvgGenerator()
-            svg_gen.setFileName(filename)
-            svg_gen.setSize(QSize(w, h))
-            svg_gen.setViewBox(QRect(0, 0, w, h))
-            svg_gen.setTitle("Electrical grid schematic")
-            svg_gen.setDescription("An SVG drawing created by GridCal")
-
-            painter = QPainter(svg_gen)
-            self.render(painter)
-            painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 

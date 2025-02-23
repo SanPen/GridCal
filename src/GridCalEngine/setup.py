@@ -79,6 +79,7 @@ dependencies = ['setuptools>=41.0.1',
                 "rdflib",
                 "pymoo>=0.6",
                 "websockets",
+                "brotlicffi",
                 "opencv-python>=4.10.0.84",
                 ]
 

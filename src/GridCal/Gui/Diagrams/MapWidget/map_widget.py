@@ -721,9 +721,9 @@ class MapWidget(QWidget):
         Could be end of a drag or point or box selection.  If it's the end of
         a drag we don't do a lot.  If a selection we process that.
         """
-
-        x = event.x()
-        y = event.y()
+        pos = event.position()
+        x = pos.x()
+        y = pos.y()
 
         # cursor back to normal in case it was a box select
         self.setCursor(self.default_cursor)
@@ -782,8 +782,9 @@ class MapWidget(QWidget):
         If we are off the map, ensure self.mouse_x, etc, are None.
         """
         if not self.block_movement:
-            x = event.x()
-            y = event.y()
+            pos = event.position()
+            x = pos.x()
+            y = pos.y()
 
             mouse_geo = self.view_to_geo(x, y)
 
@@ -1756,7 +1757,7 @@ class MapWidget(QWidget):
                 result = (r, g, b, a)
         elif isinstance(colour, QColor):
             # if it's a QColor, get float RGBA values, convert to ints
-            result = [int(v * 255) for v in colour.getRgbF()]
+            result = [int(v * 255) for v in tuple(colour.getRgbF())]
         else:
 
             # we assume a list or tuple

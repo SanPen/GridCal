@@ -45,29 +45,57 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
         # for instance there might be a single node that is a slack node
         return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
-    update_jacobian = True
     iter_ = 0
-    nu = 2.0
-    lbmda = 0
-    f_prev = 1e9  # very large number
-    # csc_matrix identity
-    H: sp.csc_matrix = sp.csc_matrix((0, 0))
-    Ht: sp.csc_matrix = sp.csc_matrix((0, 0))
-    A: sp.csc_matrix = sp.csc_matrix((0, 0))
-    error_evolution = np.zeros(max_iter + 1)
 
-    error, converged, x, dz = problem.update(x, update_controls=False)
+    # initialize the problem state
+    error, converged, x, f = problem.update(x, update_controls=False)
 
     # save the error evolution
+    error_evolution = np.zeros(max_iter + 1)
     error_evolution[iter_] = problem.error
 
     if verbose > 0:
         print(f'It {iter_}, error {problem.error}, converged {problem.converged}, x {x}, dx not computed yet')
 
-    if problem.converged:
+    if converged:
         return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
 
     else:
+
+        nu = 2.0
+        obj_val_prev = 1e9  # very large number
+
+        J = mat_to_scipy(problem.Jacobian())
+
+        if J.shape[0] != J.shape[1]:
+            logger.add_error("Jacobian not square, check the controls!", "Levenberg-Marquadt")
+            return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+        elif J.shape[0] != len(f):
+            logger.add_error("Jacobian and residuals have different sizes!", "Levenberg-Marquadt",
+                             value=len(f), expected_value=J.shape[0])
+            return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+        # system matrix
+        # H1 = H^t
+        Jt = J.T
+
+        # H2 = H1·H
+        A = Jt @ J
+
+        # set first value of mu
+        mu = 1e-3 * A.diagonal().max()
+
+        # compute system matrix A = H^T·H - lambda·I
+        Idn = sp.diags(np.full(J.shape[0], mu))
+        sys_mat = (A + Idn).tocsc()
+
+        # right-hand side
+        # H^t·dz
+        g = Jt @ f
+
+        # objective function to minimize
+        obj_val = 0.5 * f @ f
 
         while not converged and iter_ < max_iter:
 
@@ -79,73 +107,67 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
                 print(f'Iter: {iter_}')
                 print('-' * 200)
 
-            if update_jacobian:
-                H = mat_to_scipy(problem.Jacobian())
-
-                if H.shape[0] != H.shape[1]:
-                    logger.add_error("Jacobian not square, check the controls!", "Levenberg-Marquadt")
-                    return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
-
-                # system matrix
-                # H1 = H^t
-                Ht = H.T
-
-                # H2 = H1·H
-                HtH = Ht @ H
-
-                # set first value of lmbda
-                if iter_ == 0:
-                    lbmda = 1e-3 * HtH.diagonal().max()
-
-                # compute system matrix A = H^T·H - lambda·I
-                Idn = sp.diags(np.full(H.shape[0], lbmda))
-                A = (HtH + Idn).tocsc()
-
-            # right-hand side
-            # H^t·dz
-            rhs = Ht @ dz
-
-            if H.shape[0] != len(rhs):
-                logger.add_error("Jacobian and residuals have different sizes!", "LM",
-                                 value=len(rhs), expected_value=H.shape[0])
-                return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
-
-            # compute update step
             try:
 
                 # Solve the increment
-                dx = linear_solver(A, rhs)
+                dx = linear_solver(sys_mat, g)
 
             except RuntimeError:
                 logger.add_error(f"Levenberg-Marquardt's system matrix is singular @iter {iter_}:")
                 return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
 
             if verbose > 1:
-                print("H:\n", problem.get_jacobian_df(H))
-                print("F:\n", problem.get_f_df(rhs))
+                print("H:\n", problem.get_jacobian_df(J))
+                print("F:\n", problem.get_f_df(g))
                 print("dx:\n", problem.get_x_df(dx))
 
-            # objective function to minimize
-            f = 0.5 * dz @ dz
-
             # decision function
-            dL = 0.5 * dx @ (lbmda * dx + rhs)
-            dF = f_prev - f
-            if (dL > 0.0) and (dF > 0.0):
-                update_jacobian = True
+            dF = obj_val_prev - obj_val
+            dL = 0.5 * dx @ (mu * dx + g)
+
+            if (dF != 0.0) and (dL > 0.0):
                 rho = dF / dL
-                lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
+                mu *= max([1.0 / 3.0, 1.0 - np.pow(2 * rho - 1, 3.0)])
                 nu = 2.0
 
-                # update x
-                x -= dx
-
+                # update
                 update_controls = error < (tol * 100)
-                error, converged, x, dz = problem.update(x, update_controls=update_controls)
+                error, converged, x, f = problem.update(x - dx, update_controls=update_controls)
+
+                # record the previous objective function value
+                obj_val_prev = obj_val
+
+                # objective function to minimize
+                obj_val = 0.5 * f @ f
+
+                # update Jacobian and system matrix
+                J = mat_to_scipy(problem.Jacobian())
+
+                if J.shape[0] != J.shape[1]:
+                    logger.add_error("Jacobian not square, check the controls!", "Levenberg-Marquadt")
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+                elif J.shape[0] != len(f):
+                    logger.add_error("Jacobian and residuals have different sizes!", "Levenberg-Marquadt",
+                                     value=len(f), expected_value=J.shape[0])
+                    return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+
+                # system matrix
+                # H1 = H^t
+                Jt = J.T
+
+                # H2 = H1·H
+                A = Jt @ J
+
+                # compute system matrix sys_mat = A + mu·I
+                Idn = sp.diags(np.full(J.shape[0], mu))
+                sys_mat = (A + Idn).tocsc()
+
+                # update right-hand side
+                g = Jt @ f
 
             else:
-                update_jacobian = False
-                lbmda *= nu
+                mu *= nu
                 nu *= 2.0
 
             # save the error evolution
@@ -158,3 +180,4 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
                     print(f'error {error}, converged {converged}, x {x}, dx {dx}')
 
     return problem.get_solution(elapsed=time.time() - start, iterations=iter_)
+

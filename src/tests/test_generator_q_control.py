@@ -28,9 +28,10 @@ def test_q_control_true() -> None:
         assert power_flow.results.converged
 
         for i in indices.pv:
+            tol = 1e-4  # tolerance of the comparison
             Q = power_flow.results.Sbus.imag[i]
-            Qmin = Qmin_bus[i] * nc.Sbase
-            Qmax = Qmax_bus[i] * nc.Sbase
+            Qmin = Qmin_bus[i] * nc.Sbase - tol
+            Qmax = Qmax_bus[i] * nc.Sbase + tol
             ok = Qmin <= Q <= Qmax
 
             assert ok

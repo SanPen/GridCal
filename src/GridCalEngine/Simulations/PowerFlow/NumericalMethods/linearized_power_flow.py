@@ -173,7 +173,7 @@ def lacpf(nc: NumericalCircuit,
 
         # solve the linear system
         try:
-            x = linear_solver(Asys, rhs)
+            x = linear_solver(Asys, -rhs)
         except RuntimeError as e:
             V = V0
             # Calculate the error and check the convergence
