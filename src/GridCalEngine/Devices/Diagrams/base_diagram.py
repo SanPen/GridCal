@@ -119,9 +119,9 @@ class BaseDiagram:
                  name: str,
                  diagram_type: DiagramType = DiagramType,
                  use_flow_based_width: bool = False,
-                 min_branch_width: int = 5,
+                 min_branch_width: int = 0.1,
                  max_branch_width=5,
-                 min_bus_width=20,
+                 min_bus_width=0.1,
                  max_bus_width=20,
                  arrow_size=20,
                  palette: Colormaps = Colormaps.GridCal,
@@ -370,11 +370,11 @@ class BaseDiagram:
         self.name = data['name']
 
         self.use_flow_based_width: bool = data.get("use_flow_based_width", False)
-        self.min_branch_width: float = data.get("min_branch_width", 5)
+        self.min_branch_width: float = data.get("min_branch_width", 1)
         self.max_branch_width: float = data.get("max_branch_width", 5)
-        self.min_bus_width: float = data.get("min_bus_width", 20)
+        self.min_bus_width: float = data.get("min_bus_width", 1)
         self.max_bus_width: float = data.get("max_bus_width", 20)
-        self.arrow_size: float = data.get("arrow_size", 20)
+        self.arrow_size: float = data.get("arrow_size", 1)
         self.palette = Colormaps(data.get("palette", 'GridCal'))
         self.default_bus_voltage = data.get("default_bus_voltage", 10)
 
