@@ -775,7 +775,6 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                 # it is NOT dispatchable
                 p = gen_data_t.p[k] / Sbase
-                gen_vars.p[t, k] = p
 
                 # Operational cost (linear...)
                 gen_vars.cost[t, k] += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
@@ -785,7 +784,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                     gen_vars.shedding[t, k] = prob.add_var(0, p, join("gen_shedding_", [t, k], "_"))
 
-                    prob.add_cst(cst=gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
+                    prob.add_cst(cst=gen_vars.p[t, k] == p - gen_vars.shedding[t, k],
                                  name=join("gen==PG-PGslack", [t, k], "_"))
 
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
@@ -801,7 +800,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                 else:
                     # the generation value is exactly zero, pass
-                    pass
+                    set_var_bounds(var=gen_vars.p[t, k], lb=0.0, ub=0.0)
 
                 gen_vars.producing[t, k] = 1
                 gen_vars.shutting_down[t, k] = 0
