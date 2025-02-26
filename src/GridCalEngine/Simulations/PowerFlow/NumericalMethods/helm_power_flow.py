@@ -385,6 +385,7 @@ def helm_coefficients_josep(Ybus: CscMat, Yseries: CscMat, V0: CxVec, S0: CxVec,
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
     iter_ = 1
     c = 2
+    norm_f_prev = 1e20
     converged = False
     V = np.empty(n, dtype=complex)
     V[sl] = V0[sl]
@@ -423,9 +424,14 @@ def helm_coefficients_josep(Ybus: CscMat, Yseries: CscMat, V0: CxVec, S0: CxVec,
             Scalc = cf.compute_power(Ybus, V)
             norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, no_slack, pq))
             converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
+
+            if norm_f > norm_f_prev:
+                return U[c-1, :], X[c-1, :], Q[c-1, :], V, iter_ - 1, converged
+
+            norm_f_prev = norm_f
         else:
             # completely erroneous
-            break
+            return U[c-1, :], X[c-1, :], Q[c-1, :], V, iter_ - 1, converged
 
         iter_ += 1
         c += 1

@@ -664,7 +664,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                     final_solution = solution
                 else:
                     # if the method is supposed to be exact, we check the solution quality
-                    if abs(solution.norm_f) < 0.1:
+                    if abs(solution.norm_f) < 0.1 or (options.retry_with_other_methods == False):
                         final_solution = solution
                     else:
                         logger.add_info('Tried solution is garbage',

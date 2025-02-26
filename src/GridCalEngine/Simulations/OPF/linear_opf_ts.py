@@ -775,6 +775,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                 # it is NOT dispatchable
                 p = gen_data_t.p[k] / Sbase
+                gen_vars.p[t, k] = p
 
                 # Operational cost (linear...)
                 gen_vars.cost[t, k] += (gen_data_t.cost_1[k] * gen_vars.p[t, k]) + gen_data_t.cost_0[k]
@@ -911,7 +912,10 @@ def add_linear_battery_formulation(t: Union[int, None],
                                        ub=batt_data_t.pmax[k] / Sbase)
 
                 # compute the time increment in hours
-                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
+                if len(time_array) > 1:
+                    dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
+                else:
+                    dt =  1.0
 
                 if ramp_constraints and t is not None:
                     if t > 0:
