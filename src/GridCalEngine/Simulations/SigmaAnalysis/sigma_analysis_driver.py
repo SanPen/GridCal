@@ -7,6 +7,7 @@ import numba as nb
 from matplotlib import pyplot as plt
 from typing import Union
 
+from GridCalEngine import BusMode
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.results_table import ResultsTable
@@ -244,85 +245,111 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
                                       logger=logger)
     results.bus_names = nc.bus_data.names
 
-    # we cannot handle P and PQV node types, hence we must convert those:
-    # PQ_tpe = 1  # control P, Q
-    # PV_tpe = 2  # Control P, Vm
-    # Slack_tpe = 3  # Control Vm, Va (slack)
-    # PQV_tpe = 4  # voltage-controlled bus (P, Q, V set, theta computed)
-    # P_tpe = 5  # voltage-controlling bus (P set, Q, V, theta computed)
-    nc.bus_data.bus_types[nc.bus_data.bus_types == 4] = 1 # PQV to PQ
-    nc.bus_data.bus_types[nc.bus_data.bus_types == 5] = 2  # P tp PV
-
     Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(
         Sbase=nc.Sbase,
         theta=np.zeros(nc.nbus),
     )
 
-    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
+                                    consider_hvdc_as_island_links=False,
+                                    logger=logger)
 
     if len(islands) == 0:
         return results
 
     # simulate each island and merge the results
-    for i in range(len(islands)):
-        island = islands[i]
-        indices = island.get_simulation_indices()
+    for i, island in enumerate(islands):
+
+        # we cannot handle P and PQV node types, hence we must convert those:
+        # PQ_tpe = 1  # control P, Q
+        # PV_tpe = 2  # Control P, Vm
+        # Slack_tpe = 3  # Control Vm, Va (slack)
+        # PQV_tpe = 4  # voltage-controlled bus (P, Q, V set, theta computed)
+        # P_tpe = 5  # voltage-controlling bus (P set, Q, V, theta computed)
+
+        # bus_types = island.bus_data.bus_types.copy()
+
+        # PQV to PQ
+        # bus_types[bus_types == 4] = 1
+
+        # # P tp PV
+        # bus_types[bus_types == 5] = 2
+
+        # make sure
+        # replace_bus_types(bus_types)
+
+        # if 4 in bus_types:
+        #     raise Exception("Handled bus types don't match")
+        # if 5 in bus_types:
+        #     raise Exception("Handled bus types don't match")
+
+        # for i in range(island.nbus):
+        #     if bus_types[i] == BusMode.PQV_tpe.value: # PQV to PQ
+        #         bus_types[i] = BusMode.PQ_tpe.value
+        #     elif bus_types[i] == BusMode.P_tpe.value: # P tp PV
+        #         bus_types[i] = BusMode.PV_tpe.value
+
+        S0 = island.get_power_injections_pu()
+        Sbus = S0 + Shvdc[island.bus_data.original_idx]
+        indices = island.get_simulation_indices(Sbus=Sbus, force_only_pq_pv_vd_types=True)
 
         if len(indices.vd) > 0:
-            S0 = island.get_power_injections_pu()
-            Sbus = S0 + Shvdc[island.bus_data.original_idx]
 
-            adm = nc.get_admittance_matrices()
-            adms = nc.get_series_admittance_matrices()
+            adm = island.get_admittance_matrices()
+            adms = island.get_series_admittance_matrices()
 
-            # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
-            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=adm.Ybus,
-                                                                   Yseries=adms.Yseries,
-                                                                   V0=island.bus_data.Vbus,
-                                                                   S0=Sbus,
-                                                                   Ysh0=adms.Yshunt,
-                                                                   pq=indices.pq,
-                                                                   pv=indices.pv,
-                                                                   sl=indices.vd,
-                                                                   no_slack=indices.no_slack,
-                                                                   tolerance=options.tolerance,
-                                                                   max_coeff=options.max_iter,
-                                                                   verbose=False,
-                                                                   logger=logger)
+            if len(indices.pv) + len(indices.pq) + len(indices.vd) == island.nbus:
 
-            # compute the sigma values
-            n = island.bus_data.nbus
-            sig_re = np.zeros(n, dtype=float)
-            sig_im = np.zeros(n, dtype=float)
+                # V, converged, norm_f, Scalc, iter_, elapsed, Sig_re, Sig_im
+                U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=adm.Ybus,
+                                                                       Yseries=adms.Yseries,
+                                                                       V0=island.bus_data.Vbus,
+                                                                       S0=Sbus,
+                                                                       Ysh0=adms.Yshunt,
+                                                                       pq=indices.pq,
+                                                                       pv=indices.pv,
+                                                                       sl=indices.vd,
+                                                                       no_slack=indices.no_slack,
+                                                                       tolerance=options.tolerance,
+                                                                       max_coeff=options.max_iter,
+                                                                       verbose=False,
+                                                                       stop_if_too_bad=False,
+                                                                       logger=logger)
 
-            try:
-                if iter_ > 1:
-                    sigma = sigma_function(U, X, iter_ - 1, island.bus_data.Vbus[indices.vd])
-                    sig_re[indices.no_slack] = np.real(sigma)
-                    sig_im[indices.no_slack] = np.imag(sigma)
-                else:
-                    sig_re = np.zeros(n, dtype=float)
-                    sig_im = np.zeros(n, dtype=float)
-            except np.linalg.LinAlgError:
-                print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
-                # sigma = np.zeros(n, dtype=complex)
+                # compute the sigma values
+                n = island.bus_data.nbus
                 sig_re = np.zeros(n, dtype=float)
                 sig_im = np.zeros(n, dtype=float)
 
-            sigma_distances = sigma_distance(sig_re, sig_im)
+                try:
+                    if iter_ > 1:
+                        sigma = sigma_function(U, X, iter_ - 1, island.bus_data.Vbus[indices.vd])
+                        sig_re[indices.no_slack] = np.real(sigma)
+                        sig_im[indices.no_slack] = np.imag(sigma)
+                    else:
+                        sig_re = np.zeros(n, dtype=float)
+                        sig_im = np.zeros(n, dtype=float)
+                except np.linalg.LinAlgError:
+                    print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
+                    # sigma = np.zeros(n, dtype=complex)
+                    sig_re = np.zeros(n, dtype=float)
+                    sig_im = np.zeros(n, dtype=float)
 
-            # store the results
-            island_results = SigmaAnalysisResults(n=n)
-            island_results.lambda_value = 1.0
-            island_results.Sbus = Sbus
-            island_results.sigma_re = sig_re
-            island_results.sigma_im = sig_im
-            island_results.distances = sigma_distances
-            island_results.converged = converged
+                sigma_distances = sigma_distance(sig_re, sig_im)
 
-            # merge the results from this island
-            results.apply_from_island(island_results, island.bus_data.original_idx)
+                # store the results
+                island_results = SigmaAnalysisResults(n=n)
+                island_results.lambda_value = 1.0
+                island_results.Sbus = Sbus
+                island_results.sigma_re = sig_re
+                island_results.sigma_im = sig_im
+                island_results.distances = sigma_distances
+                island_results.converged = converged
 
+                # merge the results from this island
+                results.apply_from_island(island_results, island.bus_data.original_idx)
+            else:
+                logger.add_info("Handled bus types don't match")
         else:
             logger.add_info('No slack nodes in the island', str(i))
 

@@ -474,7 +474,6 @@ class NumericalCircuit:
         """
         return self.__topology_performed
 
-
     def get_reduction_bus_mapping(self) -> IntVec:
         """
         Get array is used to keep track of the bus topological reduction
@@ -719,14 +718,24 @@ class NumericalCircuit:
 
         return injections
 
-    def get_simulation_indices(self, Sbus: CxVec | None = None) -> si.SimulationIndices:
+    def get_simulation_indices(self, Sbus: CxVec | None = None,
+                               bus_types: IntVec | None = None,
+                               force_only_pq_pv_vd_types=False) -> si.SimulationIndices:
         """
         Get the simulation indices
+        :param Sbus: Array of bus powers (optional)
+        :param bus_types: different array of bus_types (optional)
+        :param force_only_pq_pv_vd_types: if true, all bus types are forced into PQ PV or VD,
+                                          for certain types of simulations that cannot handle other bus types
         :return: SimulationIndices
         """
         if Sbus is None:
             Sbus = self.get_power_injections_pu()
-        return si.SimulationIndices(bus_types=self.bus_data.bus_types,
+
+        if bus_types is None:
+            bus_types = self.bus_data.bus_types
+
+        return si.SimulationIndices(bus_types=bus_types,
                                     Pbus=Sbus.real,
                                     tap_module_control_mode=self.active_branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.active_branch_data.tap_phase_control_mode,
@@ -734,7 +743,8 @@ class NumericalCircuit:
                                     is_converter=np.zeros(self.nbr, dtype=bool),
                                     F=self.passive_branch_data.F,
                                     T=self.passive_branch_data.T,
-                                    is_dc_bus=self.bus_data.is_dc)
+                                    is_dc_bus=self.bus_data.is_dc,
+                                    force_only_pq_pv_vd_types=force_only_pq_pv_vd_types)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """
@@ -1458,7 +1468,8 @@ class NumericalCircuit:
         nc.passive_branch_data = self.passive_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx,
                                                                 bus_map=bus_map, logger=logger)
 
-        nc.active_branch_data = self.active_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
+        nc.active_branch_data = self.active_branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx,
+                                                              bus_map=bus_map, logger=logger)
 
         nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx, bus_map=bus_map)
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx, bus_map=bus_map)
