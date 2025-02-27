@@ -279,7 +279,7 @@ def __solve_island_complete_support(nc: NumericalCircuit,
         return final_solution, report
 
 
-def __solve_island_limited_support(nc: NumericalCircuit,
+def __solve_island_limited_support(island: NumericalCircuit,
                                    indices: SimulationIndices,
                                    options: PowerFlowOptions,
                                    V0: CxVec,
@@ -290,7 +290,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
     Run a power flow simulation using the selected method (no outer loop controls).
     This routine supports remove voltage controls,and Hvdc links through external injections (Shvdc)
     Also requires grids to be split by HvdcLines
-    :param nc: SnapshotData circuit, this ensures on-demand admittances computation
+    :param island: SnapshotData circuit, this ensures on-demand admittances computation
     :param indices: SimulationIndices
     :param options: PowerFlow options
     :param V0: Array of initial voltages
@@ -323,33 +323,33 @@ def __solve_island_limited_support(nc: NumericalCircuit,
     solver_idx = 0
 
     # set the initial value
-    Qmax, Qmin = nc.get_reactive_power_limits()
-    I0 = nc.get_current_injections_pu()
-    Y0 = nc.get_admittance_injections_pu()
+    Qmax, Qmin = island.get_reactive_power_limits()
+    I0 = island.get_current_injections_pu()
+    Y0 = island.get_admittance_injections_pu()
 
-    Sbase_plus_hvdc = S_base + Shvdc
+    Sbase_plus_hvdc: CxVec = S_base + Shvdc
 
     if len(indices.vd) == 0:
         solution = NumericPowerFlowResults(V=np.zeros(len(S_base), dtype=complex),
                                            Scalc=Sbase_plus_hvdc,
-                                           m=nc.active_branch_data.tap_module,
-                                           tau=nc.active_branch_data.tap_angle,
-                                           Sf=np.zeros(nc.nbr, dtype=complex),
-                                           St=np.zeros(nc.nbr, dtype=complex),
-                                           If=np.zeros(nc.nbr, dtype=complex),
-                                           It=np.zeros(nc.nbr, dtype=complex),
-                                           loading=np.zeros(nc.nbr, dtype=complex),
-                                           losses=np.zeros(nc.nbr, dtype=complex),
-                                           Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-                                           St_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                           If_vsc=np.zeros(nc.nvsc, dtype=float),
-                                           It_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                           losses_vsc=np.zeros(nc.nvsc, dtype=float),
-                                           loading_vsc=np.zeros(nc.nvsc, dtype=float),
-                                           Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                           St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                           losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                           loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           m=island.active_branch_data.tap_module,
+                                           tau=island.active_branch_data.tap_angle,
+                                           Sf=np.zeros(island.nbr, dtype=complex),
+                                           St=np.zeros(island.nbr, dtype=complex),
+                                           If=np.zeros(island.nbr, dtype=complex),
+                                           It=np.zeros(island.nbr, dtype=complex),
+                                           loading=np.zeros(island.nbr, dtype=complex),
+                                           losses=np.zeros(island.nbr, dtype=complex),
+                                           Pf_vsc=np.zeros(island.nvsc, dtype=float),
+                                           St_vsc=np.zeros(island.nvsc, dtype=complex),
+                                           If_vsc=np.zeros(island.nvsc, dtype=float),
+                                           It_vsc=np.zeros(island.nvsc, dtype=complex),
+                                           losses_vsc=np.zeros(island.nvsc, dtype=float),
+                                           loading_vsc=np.zeros(island.nvsc, dtype=float),
+                                           Sf_hvdc=np.zeros(island.nhvdc, dtype=complex),
+                                           St_hvdc=np.zeros(island.nhvdc, dtype=complex),
+                                           losses_hvdc=np.zeros(island.nhvdc, dtype=complex),
+                                           loading_hvdc=np.zeros(island.nhvdc, dtype=complex),
                                            converged=False,
                                            norm_f=1e200,
                                            iterations=0,
@@ -362,30 +362,30 @@ def __solve_island_limited_support(nc: NumericalCircuit,
 
     else:
 
-        adm = nc.get_admittance_matrices()
+        adm = island.get_admittance_matrices()
 
         final_solution = NumericPowerFlowResults(V=V0,
                                                  converged=False,
                                                  norm_f=1e200,
                                                  Scalc=Sbase_plus_hvdc,
-                                                 m=nc.active_branch_data.tap_module,
-                                                 tau=nc.active_branch_data.tap_angle,
-                                                 Sf=np.zeros(nc.nbr, dtype=complex),
-                                                 St=np.zeros(nc.nbr, dtype=complex),
-                                                 If=np.zeros(nc.nbr, dtype=complex),
-                                                 It=np.zeros(nc.nbr, dtype=complex),
-                                                 loading=np.zeros(nc.nbr, dtype=complex),
-                                                 losses=np.zeros(nc.nbr, dtype=complex),
-                                                 Pf_vsc=np.zeros(nc.nvsc, dtype=float),
-                                                 St_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                                 If_vsc=np.zeros(nc.nvsc, dtype=float),
-                                                 It_vsc=np.zeros(nc.nvsc, dtype=complex),
-                                                 losses_vsc=np.zeros(nc.nvsc, dtype=float),
-                                                 loading_vsc=np.zeros(nc.nvsc, dtype=float),
-                                                 Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                                 St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                                 losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
-                                                 loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                                 m=island.active_branch_data.tap_module,
+                                                 tau=island.active_branch_data.tap_angle,
+                                                 Sf=np.zeros(island.nbr, dtype=complex),
+                                                 St=np.zeros(island.nbr, dtype=complex),
+                                                 If=np.zeros(island.nbr, dtype=complex),
+                                                 It=np.zeros(island.nbr, dtype=complex),
+                                                 loading=np.zeros(island.nbr, dtype=complex),
+                                                 losses=np.zeros(island.nbr, dtype=complex),
+                                                 Pf_vsc=np.zeros(island.nvsc, dtype=float),
+                                                 St_vsc=np.zeros(island.nvsc, dtype=complex),
+                                                 If_vsc=np.zeros(island.nvsc, dtype=float),
+                                                 It_vsc=np.zeros(island.nvsc, dtype=complex),
+                                                 losses_vsc=np.zeros(island.nvsc, dtype=float),
+                                                 loading_vsc=np.zeros(island.nvsc, dtype=float),
+                                                 Sf_hvdc=np.zeros(island.nhvdc, dtype=complex),
+                                                 St_hvdc=np.zeros(island.nhvdc, dtype=complex),
+                                                 losses_hvdc=np.zeros(island.nhvdc, dtype=complex),
+                                                 loading_hvdc=np.zeros(island.nhvdc, dtype=complex),
                                                  iterations=0,
                                                  elapsed=0)
 
@@ -395,9 +395,9 @@ def __solve_island_limited_support(nc: NumericalCircuit,
 
             # type HELM
             if solver_type == SolverType.HELM:
-                adms = nc.get_series_admittance_matrices()
+                adms = island.get_series_admittance_matrices()
 
-                solution = pflw.helm_josep(nc=nc,
+                solution = pflw.helm_josep(nc=island,
                                            Ybus=adm.Ybus,
                                            Yf=adm.Yf,
                                            Yt=adm.Yt,
@@ -419,9 +419,9 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                 if options.distributed_slack:
                     ok, delta = compute_slack_distribution(Scalc=solution.Scalc,
                                                            vd=indices.vd,
-                                                           bus_installed_power=nc.bus_data.installed_power)
+                                                           bus_installed_power=island.bus_data.installed_power)
                     if ok:
-                        solution = pflw.helm_josep(nc=nc,
+                        solution = pflw.helm_josep(nc=island,
                                                    Ybus=adm.Ybus,
                                                    Yf=adm.Yf,
                                                    Yt=adm.Yt,
@@ -443,11 +443,11 @@ def __solve_island_limited_support(nc: NumericalCircuit,
             # type DC
             elif solver_type == SolverType.DC:
 
-                lin_adm = nc.get_linear_admittance_matrices(indices=indices)
+                lin_adm = island.get_linear_admittance_matrices(indices=indices)
                 Bpqpv = lin_adm.get_Bred(pqpv=indices.no_slack)
                 Bref = lin_adm.get_Bslack(pqpv=indices.no_slack, vd=indices.vd)
 
-                solution = pflw.dcpf(nc=nc,
+                solution = pflw.dcpf(nc=island,
                                      Ybus=adm.Ybus,
                                      Bpqpv=Bpqpv,
                                      Bref=Bref,
@@ -456,7 +456,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                      I0=I0,
                                      Y0=Y0,
                                      V0=V0,
-                                     tau=nc.active_branch_data.tap_angle,
+                                     tau=island.active_branch_data.tap_angle,
                                      vd=indices.vd,
                                      no_slack=indices.no_slack,
                                      pq=indices.pq,
@@ -465,9 +465,9 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                 if options.distributed_slack:
                     ok, delta = compute_slack_distribution(Scalc=solution.Scalc,
                                                            vd=indices.vd,
-                                                           bus_installed_power=nc.bus_data.installed_power)
+                                                           bus_installed_power=island.bus_data.installed_power)
                     if ok:
-                        solution = pflw.dcpf(nc=nc,
+                        solution = pflw.dcpf(nc=island,
                                              Ybus=adm.Ybus,
                                              Bpqpv=Bpqpv,
                                              Bref=Bref,
@@ -476,7 +476,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                              I0=I0,
                                              Y0=Y0,
                                              V0=V0,
-                                             tau=nc.active_branch_data.tap_angle,
+                                             tau=island.active_branch_data.tap_angle,
                                              vd=indices.vd,
                                              no_slack=indices.no_slack,
                                              pq=indices.pq,
@@ -484,8 +484,8 @@ def __solve_island_limited_support(nc: NumericalCircuit,
 
             # LAC PF
             elif solver_type == SolverType.LACPF:
-                adms = nc.get_series_admittance_matrices()
-                solution = pflw.lacpf(nc=nc,
+                adms = island.get_series_admittance_matrices()
+                solution = pflw.lacpf(nc=island,
                                       Ybus=adm.Ybus,
                                       Yf=adm.Yf,
                                       Yt=adm.Yt,
@@ -499,9 +499,9 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                 if options.distributed_slack:
                     ok, delta = compute_slack_distribution(Scalc=solution.Scalc,
                                                            vd=indices.vd,
-                                                           bus_installed_power=nc.bus_data.installed_power)
+                                                           bus_installed_power=island.bus_data.installed_power)
                     if ok:
-                        solution = pflw.lacpf(nc=nc,
+                        solution = pflw.lacpf(nc=island,
                                               Ybus=adm.Ybus,
                                               Yf=adm.Yf,
                                               Yt=adm.Yt,
@@ -515,7 +515,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
 
             # Gauss-Seidel
             elif solver_type == SolverType.GAUSS:
-                solution = pflw.gausspf(nc=nc,
+                solution = pflw.gausspf(nc=island,
                                         Ybus=adm.Ybus,
                                         Yf=adm.Yf,
                                         Yt=adm.Yt,
@@ -529,7 +529,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                         p=indices.p,
                                         pqv=indices.pqv,
                                         vd=indices.vd,
-                                        bus_installed_power=nc.bus_data.installed_power,
+                                        bus_installed_power=island.bus_data.installed_power,
                                         Qmin=Qmin,
                                         Qmax=Qmax,
                                         tol=options.tolerance,
@@ -547,7 +547,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                              Y0=Y0,
                                              Qmin=Qmin,
                                              Qmax=Qmax,
-                                             nc=nc,
+                                             nc=island,
                                              options=options)
 
                 solution = levenberg_marquardt_fx(problem=problem,
@@ -558,9 +558,9 @@ def __solve_island_limited_support(nc: NumericalCircuit,
 
             # Fast decoupled
             elif solver_type == SolverType.FASTDECOUPLED:
-                fd_adm = nc.get_fast_decoupled_amittances()
+                fd_adm = island.get_fast_decoupled_amittances()
 
-                solution = pflw.FDPF(nc=nc,
+                solution = pflw.FDPF(nc=island,
                                      Vbus=V0,
                                      S0=Sbase_plus_hvdc,
                                      I0=I0,
@@ -578,7 +578,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                      vd_=indices.vd,
                                      Qmin=Qmin,
                                      Qmax=Qmax,
-                                     bus_installed_power=nc.bus_data.installed_power,
+                                     bus_installed_power=island.bus_data.installed_power,
                                      tol=options.tolerance,
                                      max_it=options.max_iter,
                                      control_q=options.control_Q,
@@ -592,7 +592,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                              Y0=Y0,
                                              Qmin=Qmin,
                                              Qmax=Qmax,
-                                             nc=nc,
+                                             nc=island,
                                              options=options)
 
                 solution = newton_raphson_fx(problem=problem,
@@ -610,7 +610,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                                              Y0=Y0,
                                              Qmin=Qmin,
                                              Qmax=Qmax,
-                                             nc=nc,
+                                             nc=island,
                                              options=options)
 
                 solution = powell_fx(problem=problem,
@@ -622,7 +622,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
 
             # Newton-Raphson-Iwamoto
             elif solver_type == SolverType.IWAMOTO:
-                solution = pflw.IwamotoNR(nc=nc,
+                solution = pflw.IwamotoNR(nc=island,
                                           Ybus=adm.Ybus,
                                           Yf=adm.Yf,
                                           Yt=adm.Yt,
@@ -664,7 +664,7 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                     final_solution = solution
                 else:
                     # if the method is supposed to be exact, we check the solution quality
-                    if abs(solution.norm_f) < 0.1:
+                    if abs(solution.norm_f) < 0.1 or (options.retry_with_other_methods == False):
                         final_solution = solution
                     else:
                         logger.add_info('Tried solution is garbage',
@@ -687,10 +687,10 @@ def __solve_island_limited_support(nc: NumericalCircuit,
                              expected_value=f"<{options.tolerance}")
 
         if final_solution.tap_module is None:
-            final_solution.tap_module = nc.active_branch_data.tap_module
+            final_solution.tap_module = island.active_branch_data.tap_module
 
         if final_solution.tap_angle is None:
-            final_solution.tap_angle = nc.active_branch_data.tap_angle
+            final_solution.tap_angle = island.active_branch_data.tap_angle
 
         return final_solution, report
 
@@ -835,14 +835,14 @@ def __multi_island_pf_nc_limited_support(nc: NumericalCircuit,
 
     for i, island in enumerate(islands):
 
-        indices = island.get_simulation_indices()
         Sbus_base = island.get_power_injections_pu()
+        indices = island.get_simulation_indices(Sbus=Sbus_base)
 
         if len(indices.vd) > 0:
 
             # call the numerical methods
             solution, report = __solve_island_limited_support(
-                nc=island,
+                island=island,
                 indices=indices,
                 options=options,
                 V0=island.bus_data.Vbus if V_guess is None else V_guess[island.bus_data.original_idx],

@@ -248,7 +248,7 @@ def conv3(A, B, c, indices):
 
 def helm_coefficients_josep(Ybus: CscMat, Yseries: CscMat, V0: CxVec, S0: CxVec, Ysh0: CxVec,
                             pq: IntVec, pv: IntVec, sl: IntVec, no_slack: IntVec,
-                            tolerance=1e-6, max_coeff=30, verbose=False,
+                            tolerance=1e-6, max_coeff=30, verbose=False, stop_if_too_bad=False,
                             logger: Logger = None):
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
@@ -265,6 +265,7 @@ def helm_coefficients_josep(Ybus: CscMat, Yseries: CscMat, V0: CxVec, S0: CxVec,
     :param tolerance: target error (or tolerance)
     :param max_coeff: maximum number of coefficients
     :param verbose: print intermediate information
+    :param stop_if_too_bad: stop when things go wrong
     :param logger: Logger object to store the debug info
     :return: U, X, Q, V, iterations
     """
@@ -385,6 +386,7 @@ def helm_coefficients_josep(Ybus: CscMat, Yseries: CscMat, V0: CxVec, S0: CxVec,
     # .......................CALCULATION OF TERMS [>=2] ----------------------------------------------------------------
     iter_ = 1
     c = 2
+    norm_f_prev = 1e20
     converged = False
     V = np.empty(n, dtype=complex)
     V[sl] = V0[sl]
@@ -419,13 +421,25 @@ def helm_coefficients_josep(Ybus: CscMat, Yseries: CscMat, V0: CxVec, S0: CxVec,
         # compute power mismatch
         V[no_slack] += U[c, :]
 
-        if V.real.max() < 10:
+        if stop_if_too_bad:
+            # usually we want to go this route for power flows
+            if V.real.max() < 10:
+                Scalc = cf.compute_power(Ybus, V)
+                norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, no_slack, pq))
+                converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
+
+                if norm_f > norm_f_prev:
+                    return U[c - 1, :], X[c - 1, :], Q[c - 1, :], V, iter_ - 1, converged
+
+                norm_f_prev = norm_f
+            else:
+                # completely erroneous
+                return U[c - 1, :], X[c - 1, :], Q[c - 1, :], V, iter_ - 1, converged
+        else:
+            # usually we want to go this route for sigma analysis
             Scalc = cf.compute_power(Ybus, V)
             norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, no_slack, pq))
             converged = (norm_f <= tolerance) and (c % 2)  # we want an odd amount of coefficients
-        else:
-            # completely erroneous
-            break
 
         iter_ += 1
         c += 1
@@ -740,7 +754,8 @@ def helm_josep(nc: NumericalCircuit,
                                                            no_slack=no_slack,
                                                            tolerance=tolerance,
                                                            max_coeff=max_coefficients,
-                                                           verbose=verbose,
+                                                           verbose=bool(verbose),
+                                                           stop_if_too_bad=True,
                                                            logger=logger)
 
     # --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------

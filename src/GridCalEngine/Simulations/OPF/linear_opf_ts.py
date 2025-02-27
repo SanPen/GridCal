@@ -696,7 +696,9 @@ def add_linear_generation_formulation(t: Union[int, None],
 
         gen_vars.cost[t, k] = 0.0
 
-        if gen_data_t.active[k] and k not in id_gen_nonvd:
+        # nodal_cap_condition = gen_data_t.bus_idx[k] not in vd if nodal_capacity_active else True
+
+        if gen_data_t.active[k] and k not in id_gen_nonvd:  # TODO Review and change this stuff
 
             # declare active power var (limits will be applied later)
             gen_vars.p[t, k] = prob.add_var(-1e20, 1e20, join("gen_p_", [t, k], "_"))
@@ -784,7 +786,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                     gen_vars.shedding[t, k] = prob.add_var(0, p, join("gen_shedding_", [t, k], "_"))
 
-                    prob.add_cst(cst=gen_vars.p[t, k] == gen_data_t.p[k] / Sbase - gen_vars.shedding[t, k],
+                    prob.add_cst(cst=gen_vars.p[t, k] == p - gen_vars.shedding[t, k],
                                  name=join("gen==PG-PGslack", [t, k], "_"))
 
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
@@ -799,8 +801,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
                 else:
-                    # the generation value is exactly zero, pass
-                    pass
+                    # the generation value is exactly zero
+                    set_var_bounds(var=gen_vars.p[t, k], lb=0.0, ub=0.0)
 
                 gen_vars.producing[t, k] = 1
                 gen_vars.shutting_down[t, k] = 0
@@ -808,7 +810,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
         else:
             # the generator is not available at time step
-            gen_vars.p[t, k] = 0.0
+            gen_vars.p[t, k] = 0.0  # there has not been any variable assigned to p[t, k] at this point
 
         # add to the objective function the total cost of the generator
         f_obj += gen_vars.cost[t, k]
@@ -911,7 +913,10 @@ def add_linear_battery_formulation(t: Union[int, None],
                                        ub=batt_data_t.pmax[k] / Sbase)
 
                 # compute the time increment in hours
-                dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
+                if len(time_array) > 1:
+                    dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
+                else:
+                    dt =  1.0
 
                 if ramp_constraints and t is not None:
                     if t > 0:

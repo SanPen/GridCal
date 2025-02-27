@@ -222,3 +222,5 @@ def test_opf_trafo_controls():
     assert pf1 != pf2
     assert np.isclose(pf1, pf3, atol=1e-3)
 
+if __name__ == '__main__':
+    test_opf_gen()

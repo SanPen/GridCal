@@ -102,12 +102,19 @@ class PowerFlowDriver(DriverTemplate):
                                         value=loading[i] * 100.0,
                                         expected_value=100.0)
 
-        for i, gen in enumerate(self.grid.get_generation_like_devices()):
-            if not (gen.Qmin <= self.results.gen_q[i] <= gen.Qmax):
-                self.logger.add_warning("Generator like Q out of bounds",
-                                        device=gen.name,
+        for i, elm in enumerate(self.grid.generators):
+            if not (elm.Qmin <= self.results.gen_q[i] <= elm.Qmax):
+                self.logger.add_warning("Generator Q out of bounds",
+                                        device=elm.name,
                                         value=self.results.gen_q[i],
-                                        expected_value=f"[{gen.Qmin}, {gen.Qmax}]",)
+                                        expected_value=f"[{elm.Qmin}, {elm.Qmax}]",)
+
+        for i, elm in enumerate(self.grid.batteries):
+            if not (elm.Qmin <= self.results.battery_q[i] <= elm.Qmax):
+                self.logger.add_warning("Battery Q out of bounds",
+                                        device=elm.name,
+                                        value=self.results.battery_q[i],
+                                        expected_value=f"[{elm.Qmin}, {elm.Qmax}]",)
 
     def run(self) -> None:
         """

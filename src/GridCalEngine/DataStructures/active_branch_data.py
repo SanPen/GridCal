@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
-from GridCalEngine.basic_structures import Vec, IntVec, ObjVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, ObjVec, CxVec, Logger
 
 
 class ActiveBranchData:
@@ -60,7 +60,8 @@ class ActiveBranchData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> ActiveBranchData:
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec,
+              bus_map: IntVec, logger: Logger | None) -> ActiveBranchData:
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
@@ -90,6 +91,15 @@ class ActiveBranchData:
         data.vset = self.vset[elm_idx]
 
         data.any_pf_control = self.any_pf_control
+
+        for k in range(data.nelm):
+            if data.tap_controlled_buses[k] != 0:
+                data.tap_controlled_buses[k] = bus_map[data.tap_controlled_buses[k]]
+                if data.tap_controlled_buses[k] == -1:
+                    if logger is not None:
+                        logger.add_error(f"Branch {k}, {self.names[k]} is controlling a bus from another island ",
+                                         value=data.F[k])
+
 
         return data
 

@@ -27,7 +27,7 @@ def find_terms_connections(cgmes_terminal: Base,
     calc_node = None
     cn = None
     if cgmes_terminal is not None:
-        try:        # Try for AC terminal
+        try:  # Try for AC terminal
             # get the rosetta calculation node if exists
             if cgmes_terminal.TopologicalNode is not None:
                 calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
@@ -39,7 +39,7 @@ def find_terms_connections(cgmes_terminal: Base,
                 cn = cn_dict.get(cgmes_terminal.ConnectivityNode.uuid, None)
             else:
                 cn = None
-        except:     # Try for DC Terminal
+        except:  # Try for DC Terminal
             # get the rosetta calculation node if exists
             if hasattr(cgmes_terminal, "DCTopologicalNode"):
                 if cgmes_terminal.DCTopologicalNode is not None:
@@ -186,7 +186,7 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
                             tatl_60_dict[branch_id] = rate_mva
 
                     else:
-                        logger.add_info(
+                        logger.add_warning(
                             msg="Not supported .acceptable duration for OperationalLimitType",
                             device=op_lim_type,
                             device_class=op_lim_type.tpe,
@@ -194,7 +194,7 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
                             comment="Currently only 900 and 60 is imported for TATL limits",
                         )
                 else:
-                    logger.add_info(
+                    logger.add_warning(
                         msg="Not supported .limitType duration for OperationalLimitType",
                         device=op_lim_type,
                         device_class=op_lim_type.tpe,
@@ -203,24 +203,24 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
                     )
 
             else:
-                logger.add_info(msg='ConductingEquipment is missing for terminal.',
-                                device=op_lim_set.Terminal.rdfid,
-                                device_class=op_lim_set.Terminal.tpe,
-                                device_property="ConductingEquipment",
-                                value=op_lim_set.Terminal)
+                logger.add_error(msg='ConductingEquipment is missing for terminal.',
+                                 device=op_lim_set.Terminal.rdfid,
+                                 device_class=op_lim_set.Terminal.tpe,
+                                 device_property="ConductingEquipment",
+                                 value=op_lim_set.Terminal)
 
     # later development
     for al in cgmes_model.cgmes_assets.ActivePowerLimit_list:
-        logger.add_info(msg='ActivePowerLimit is not supported yet.',
-                        device=al,
-                        device_class=al.tpe,
-                        comment="Only CurrentLimit is imported!")
+        logger.add_warning(msg='ActivePowerLimit is not supported yet.',
+                           device=al,
+                           device_class=al.tpe,
+                           comment="Only CurrentLimit is imported!")
 
     for app_lim in cgmes_model.cgmes_assets.ApparentPowerLimit_list:
-        logger.add_info(msg='ApparentPowerLimit is not supported yet.',
-                        device=app_lim,
-                        device_class=app_lim.tpe,
-                        comment="Only CurrentLimit is imported!")
+        logger.add_warning(msg='ApparentPowerLimit is not supported yet.',
+                           device=app_lim,
+                           device_class=app_lim.tpe,
+                           comment="Only CurrentLimit is imported!")
 
     return patl_dict, tatl_900_dict, tatl_60_dict
 

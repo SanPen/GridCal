@@ -11,23 +11,33 @@ from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
 @nb.njit(cache=True)
 def compile_types(Pbus: Vec,
-                  types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec, IntVec, IntVec]:
+                  types: IntVec,
+                  pq_val =1,
+                  pv_val=2,
+                  vd_val=3,
+                  pqv_val=4,
+                  p_val=5) -> Tuple[IntVec, IntVec, IntVec, IntVec, IntVec, IntVec]:
     """
     Compile the types.
     :param Pbus: array of real power Injections per node used to choose the slack as
                  the node with greater generation if no slack is provided
     :param types: array of tentative node types (it may be modified internally)
+    :param pq_val: value of PQ type
+    :param pv_val: value of PV values to use
+    :param vd_val: value of VD values to use
+    :param pqv_val: value of PQ values to use
+    :param p_val: value of PQ values to use
     :return: ref, pq, pv, pqpv
     """
 
     # check that Sbus is a 1D array
     assert (len(Pbus.shape) == 1)
 
-    pq = np.where(types == BusMode.PQ_tpe.value)[0]
-    pv = np.where(types == BusMode.PV_tpe.value)[0]
-    pqv = np.where(types == BusMode.PQV_tpe.value)[0]
-    p = np.where(types == BusMode.P_tpe.value)[0]
-    ref = np.where(types == BusMode.Slack_tpe.value)[0]
+    pq = np.where(types == pq_val)[0]
+    pv = np.where(types == pv_val)[0]
+    pqv = np.where(types == pqv_val)[0]
+    p = np.where(types == p_val)[0]
+    ref = np.where(types == vd_val)[0]
 
     if len(ref) == 0:  # there is no slack!
 
@@ -58,6 +68,17 @@ def compile_types(Pbus: Vec,
 
     return ref, pq, pv, pqv, p, no_slack
 
+@nb.njit(cache=True)
+def replace_bus_types(bus_types, pq_val =1, pv_val=2, pqv_val=4, p_val=5):
+
+    for i in range(len(bus_types)):
+
+        if bus_types[i] == pqv_val:
+            bus_types[i] = pq_val
+
+        elif bus_types[i] == p_val:
+            bus_types[i] = pv_val
+
 
 class SimulationIndices:
     """
@@ -73,7 +94,8 @@ class SimulationIndices:
                  is_converter: BoolVec,
                  F: IntVec,
                  T: IntVec,
-                 is_dc_bus: BoolVec):
+                 is_dc_bus: BoolVec,
+                 force_only_pq_pv_vd_types=False):
         """
 
         :param bus_types: Bus type initial guess array
@@ -83,6 +105,8 @@ class SimulationIndices:
         :param tap_controlled_buses: Array of bus indices where the tap module control occurs
         :param is_converter: Array of is converter per branch?
         :param is_dc_bus: Array of is DC ? per bus
+        :param force_only_pq_pv_vd_types: if true, all bus types are forced into PQ PV or VD,
+                                          for certain types of simulations that cannot handle other bus types
         """
         # master aray of bus types (nbus)
         self.bus_types = bus_types
@@ -121,6 +145,10 @@ class SimulationIndices:
         self.pqv: IntVec = np.zeros(0, dtype=int)  # PV-remote pair
         self.vd: IntVec = np.zeros(0, dtype=int)  # slack
         self.no_slack: IntVec = np.zeros(0, dtype=int)  # all bus indices that are not slack, sorted
+
+        if force_only_pq_pv_vd_types:
+            replace_bus_types(self.bus_types)
+
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(
             Pbus=Pbus,
             types=self.bus_types

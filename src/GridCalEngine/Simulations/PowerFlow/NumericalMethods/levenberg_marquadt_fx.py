@@ -127,7 +127,7 @@ def levenberg_marquardt_fx(problem: PfFormulationTemplate,
 
             if (dF != 0.0) and (dL > 0.0):
                 rho = dF / dL
-                mu *= max([1.0 / 3.0, 1.0 - np.pow(2 * rho - 1, 3.0)])
+                mu *= max([1.0 / 3.0, 1.0 - (2 * rho - 1) ** 3.0])
                 nu = 2.0
 
                 # update
