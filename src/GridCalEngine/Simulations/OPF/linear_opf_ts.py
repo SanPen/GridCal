@@ -696,7 +696,9 @@ def add_linear_generation_formulation(t: Union[int, None],
 
         gen_vars.cost[t, k] = 0.0
 
-        if gen_data_t.active[k] and k not in id_gen_nonvd:
+        # nodal_cap_condition = gen_data_t.bus_idx[k] not in vd if nodal_capacity_active else True
+
+        if gen_data_t.active[k] and k not in id_gen_nonvd:  # TODO Review and change this stuff
 
             # declare active power var (limits will be applied later)
             gen_vars.p[t, k] = prob.add_var(-1e20, 1e20, join("gen_p_", [t, k], "_"))
@@ -799,7 +801,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
                 else:
-                    # the generation value is exactly zero, pass
+                    # the generation value is exactly zero
                     set_var_bounds(var=gen_vars.p[t, k], lb=0.0, ub=0.0)
 
                 gen_vars.producing[t, k] = 1
@@ -808,7 +810,7 @@ def add_linear_generation_formulation(t: Union[int, None],
 
         else:
             # the generator is not available at time step
-            gen_vars.p[t, k] = 0.0
+            gen_vars.p[t, k] = 0.0  # there has not been any variable assigned to p[t, k] at this point
 
         # add to the objective function the total cost of the generator
         f_obj += gen_vars.cost[t, k]
