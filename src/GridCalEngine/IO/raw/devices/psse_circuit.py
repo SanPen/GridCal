@@ -108,13 +108,20 @@ class PsseCircuit(RawObject, BaseCircuit):
         self.register_property(property_name="multi_line_sections", rawx_key="msline",
                                class_type=RawMultiLineSection)
 
-    def parse(self, data: List[int | float]) -> None:
+    def parse(self, data: List[int | float], logger: Logger) -> None:
         """
         Parse the basic data
         :param data: line with information
+        :param logger: logger object
         :return:
         """
-        self.IC, self.SBASE, self.REV, self.XFRRAT, self.NXFRAT, self.BASFRQ = data
+        if len(data) == 6:
+            self.IC, self.SBASE, self.REV, self.XFRRAT, self.NXFRAT, self.BASFRQ = data
+        elif len(data) == 3:
+            self.IC, self.SBASE, self.REV = data
+            logger.add_warning("RAW header contains 3 elements instead of the expected 6")
+        else:
+            logger.add_warning(f"RAW header contains {len(data)} elements instead of the expected 6")
 
     def get_class_properties(self) -> List[PsseProperty]:
         """
