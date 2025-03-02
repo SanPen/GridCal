@@ -510,7 +510,7 @@ class ContingencyResultsReport:
                 top_n: int = 5,
                 detailed_massive_report: bool = True):
         """
-        Analize contingency resuts and add them to the report
+        Analyze contingency results and add them to the report
         :param t: time index
         :param t_prob: probability of te time
         :param mon_idx: array of monitored branch indices

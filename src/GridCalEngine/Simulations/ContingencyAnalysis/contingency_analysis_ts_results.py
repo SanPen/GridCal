@@ -34,7 +34,7 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         :param n: number of nodes
         :param nbr: number of branches
         :param time_array: array of time values
-        :param bus_names: rray of bus names
+        :param bus_names: array of bus names
         :param branch_names: array of branch names
         :param bus_types: array of bus types
         :param con_names: array of contingency names

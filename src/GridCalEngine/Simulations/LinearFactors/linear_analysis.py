@@ -360,8 +360,11 @@ class ContingencyIndices:
     Contingency indices
     """
 
-    def __init__(self, contingency_group: ContingencyGroup, contingency_group_dict, branches_dict,
-                 generator_dict, bus_index_dict):
+    def __init__(self, contingency_group: ContingencyGroup,
+                 contingency_group_dict,
+                 branches_dict,
+                 generator_dict,
+                 bus_index_dict):
 
         (self.branch_contingency_indices,
          self.bus_contingency_indices,
@@ -372,11 +375,16 @@ class ContingencyIndices:
                                                                 bus_index_dict=bus_index_dict)
 
     @staticmethod
-    def try_find_indices(cnt: Contingency, branches_dict, generator_dict, bus_index_dict,
-                         branch_contingency_indices, bus_contingency_indices, injections_factors):
+    def try_find_indices(cnt: Contingency,
+                         branches_dict,
+                         generator_dict,
+                         bus_index_dict,
+                         branch_contingency_indices,
+                         bus_contingency_indices,
+                         injections_factors):
         """
         Try to find the contingency indices f the device in the contingency
-        :param cnt: Contingency
+        :param cnt:
         :param branches_dict:
         :param generator_dict:
         :param bus_index_dict:
@@ -417,8 +425,10 @@ class ContingencyIndices:
             print(f"contingency generator {cnt.device_idtag} not found")
 
     def get_contingencies_info(self, contingency_group: ContingencyGroup,
-                               contingency_group_dict, branches_dict,
-                               generator_dict, bus_index_dict) -> Tuple[IntVec, IntVec, Vec]:
+                               contingency_group_dict,
+                               branches_dict,
+                               generator_dict,
+                               bus_index_dict) -> Tuple[IntVec, IntVec, Vec]:
         """
         Get the indices from a contingency group
         :param contingency_group:
