@@ -10234,6 +10234,7 @@ QProgressBar::chunk{
     <addaction name="actionSmaller_nodes"/>
     <addaction name="actionAutoatic_layout"/>
     <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionRotate"/>
     <addaction name="actionDisable_all_results_tags"/>
     <addaction name="actionEnable_all_results_tags"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
@@ -11914,6 +11915,20 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Detect facilities</string>
+   </property>
+  </action>
+  <action name="actionRotate">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/undo.svg</normaloff>:/Icons/icons/undo.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Rotate</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
    </property>
   </action>
  </widget>

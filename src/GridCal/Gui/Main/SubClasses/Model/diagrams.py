@@ -255,6 +255,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionDisable_all_results_tags.triggered.connect(self.disable_all_results_tags)
         self.ui.actionEnable_all_results_tags.triggered.connect(self.enable_all_results_tags)
         self.ui.actionConsolidate_diagram_coordinates.triggered.connect(self.consolidate_diagram_coordinates)
+        self.ui.actionRotate.triggered.connect(self.rotate)
 
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
@@ -2614,6 +2615,23 @@ class DiagramsMain(CompiledArraysMain):
 
         if diagram_widget is not None:
             ok = yes_no_question(text="The diagram coordinates will be saved into the corresponding properties "
-                                      "of the database, overwritting the existing ones. Do you want to do this?",
+                                      "of the database, overwriting the existing ones. Do you want to do this?",
                                  title="Consolidate diagram coordinates into the DB")
-            diagram_widget.consolidate_coordinates()
+            if ok:
+                diagram_widget.consolidate_coordinates()
+
+    def rotate(self):
+        """
+        Rotate the selected diagram
+        :return:
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+
+        if diagram_widget is not None:
+            dlg = InputNumberDialogue(min_value=-180, max_value=180,
+                                      default_value=-90, is_int=False,
+                                      title='Rotate diagram',
+                                      text=f'Rotation angle (degrees)')
+
+            if dlg.exec():
+                diagram_widget.rotate(dlg.value)

@@ -1916,7 +1916,7 @@ class SchematicWidget(BaseDiagramWidget):
 
         transformer = pyproj.Transformer.from_crs(4326, 25830, always_xy=True)
 
-        # the longitude is more reated to x, the latitude is more related to y
+        # the longitude is more related to x, the latitude is more related to y
         y, x = transformer.transform(xx=lon, yy=lat)
         x *= - factor
         y *= - factor
@@ -1936,6 +1936,53 @@ class SchematicWidget(BaseDiagramWidget):
                 bus.x = x[i]
                 bus.y = y[i]
             i += 1
+
+    def rotate(self, angle_degrees):
+        """
+        Rotates a list of points around a given pivot by a specified angle.
+
+        Parameters:
+            angle_degrees (float): The rotation angle in degrees.
+
+        Returns:
+            list of tuples: The rotated points.
+        """
+
+        # get the buses info
+        buses_info_list = self.get_buses()
+
+        # gather the coordinates
+        n = len(buses_info_list)
+        X = np.zeros(n)
+        Y = np.zeros(n)
+        for i in range(n):
+            idx, bus, graphic_object = buses_info_list[i]
+            X[i] = graphic_object.pos().x()
+            Y[i] = graphic_object.pos().y()
+
+        # compute the center
+        cx = np.mean(X)
+        cy = np.mean(Y)
+
+        # compute the sin and cos
+        angle_rad = np.deg2rad(angle_degrees)
+        cos_a = np.cos(angle_rad)
+        sin_a = np.sin(angle_rad)
+        for i in range(n):
+            idx, bus, graphic_object = buses_info_list[i]
+
+            # Translate the point to the origin relative to the pivot
+            x_rel = X[i] - cx
+            y_rel = Y[i] - cy
+
+            # Rotate the point
+            x_rot = x_rel * cos_a - y_rel * sin_a
+            y_rot = x_rel * sin_a + y_rel * cos_a
+
+            # Translate back to the original coordinate system
+            x_new = x_rot + cx
+            y_new = y_rot + cy
+            graphic_object.set_position(x_new, y_new)
 
     def get_image(self, transparent: bool = False) -> QImage:
         """
