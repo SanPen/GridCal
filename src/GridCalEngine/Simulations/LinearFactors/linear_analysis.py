@@ -6,7 +6,7 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict
 from scipy.sparse.linalg import spsolve as scipy_spsolve
 
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
@@ -20,7 +20,6 @@ from GridCalEngine.Utils.Sparse.csc import dense_to_csc
 import GridCalEngine.Utils.Sparse.csc2 as csc
 from GridCalEngine.Utils.MIP.selected_interface import lpDot
 from GridCalEngine.enumerations import ContingencyOperationTypes
-
 
 
 @nb.njit()
@@ -360,102 +359,51 @@ class ContingencyIndices:
     Contingency indices
     """
 
-    def __init__(self, contingency_group: ContingencyGroup,
-                 contingency_group_dict,
-                 branches_dict,
-                 generator_dict,
-                 bus_index_dict):
-
-        (self.branch_contingency_indices,
-         self.bus_contingency_indices,
-         self.injections_factors) = self.get_contingencies_info(contingency_group=contingency_group,
-                                                                contingency_group_dict=contingency_group_dict,
-                                                                branches_dict=branches_dict,
-                                                                generator_dict=generator_dict,
-                                                                bus_index_dict=bus_index_dict)
-
-    @staticmethod
-    def try_find_indices(cnt: Contingency,
-                         branches_dict,
-                         generator_dict,
-                         bus_index_dict,
-                         branch_contingency_indices,
-                         bus_contingency_indices,
-                         injections_factors):
+    def __init__(self,
+                 contingency_group: ContingencyGroup,
+                 contingency_group_dict: Dict[str, List[Contingency]],
+                 branches_dict: Dict[str, int],
+                 generator_bus_index_dict: Dict[str, int]):
         """
-        Try to find the contingency indices f the device in the contingency
-        :param cnt:
-        :param branches_dict:
-        :param generator_dict:
-        :param bus_index_dict:
-        :param branch_contingency_indices:
-        :param bus_contingency_indices:
-        :param injections_factors:
-        :return:
-        """
-        # search for the contingency in the Branches
-        br_idx = branches_dict.get(cnt.device_idtag, None)
-        branch_found = False
-        if br_idx is not None:
-            if cnt.prop == ContingencyOperationTypes.Active:
-                branch_contingency_indices.append(br_idx)
-                return
-            else:
-                branch_found = True
-                print(f'Unknown branch contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
-        else:
-            branch_found = False
-
-        gen = generator_dict.get(cnt.device_idtag, None)
-        gen_found = False
-        if gen is not None:
-            if cnt.prop == ContingencyOperationTypes.PowerPercentage:
-                bus_contingency_indices.append(bus_index_dict[gen.bus])
-                injections_factors.append(cnt.value / 100.0)
-                return
-            else:
-                branch_found = True
-                print(f'Unknown generator contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
-        else:
-            gen_found = False
-
-        if not branch_found:
-            print(f"contingency branch {cnt.device_idtag} not found")
-        if not gen_found:
-            print(f"contingency generator {cnt.device_idtag} not found")
-
-    def get_contingencies_info(self, contingency_group: ContingencyGroup,
-                               contingency_group_dict,
-                               branches_dict,
-                               generator_dict,
-                               bus_index_dict) -> Tuple[IntVec, IntVec, Vec]:
-        """
-        Get the indices from a contingency group
-        :param contingency_group:
-        :param contingency_group_dict:
-        :param branches_dict:
-        :param generator_dict:
-        :param bus_index_dict:
-        :return: branch_contingency_indices, bus_contingency_indices, injections_factors
+        Contingency indices
+        :param contingency_group: ContingencyGroup
+        :param contingency_group_dict: dictionary to get the list of contingencies matching a contingency group
+        :param branches_dict: dictionary to get the branch index by the branch idtag
+        :param generator_bus_index_dict: dictionary to get the generator bus index by the generator idtag
         """
 
         # get the group's contingencies
         contingencies = contingency_group_dict[contingency_group.idtag]
 
-        branch_contingency_indices = list()
-        bus_contingency_indices = list()
-        injections_factors = list()
+        branch_contingency_indices_list = list()
+        bus_contingency_indices_list = list()
+        injections_factors_list = list()
 
         # apply the contingencies
         for cnt in contingencies:
-            self.try_find_indices(cnt, branches_dict, generator_dict, bus_index_dict,
-                                  branch_contingency_indices, bus_contingency_indices, injections_factors)
 
-        branch_contingency_indices = np.array(branch_contingency_indices)
-        bus_contingency_indices = np.array(bus_contingency_indices)
-        injections_factors = np.array(injections_factors)
+            if cnt.prop == ContingencyOperationTypes.Active:
 
-        return branch_contingency_indices, bus_contingency_indices, injections_factors
+                # search for the contingency in the Branches
+                br_idx = branches_dict.get(cnt.device_idtag, None)
+                if br_idx is not None:
+                    branch_contingency_indices_list.append(br_idx)
+                else:
+                    print(f"contingency branch {cnt.device_idtag} not found")
+
+            elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
+                bus_idx = generator_bus_index_dict.get(cnt.device_idtag, None)
+                if bus_idx is not None:
+                    bus_contingency_indices_list.append(bus_idx)
+                    injections_factors_list.append(cnt.value / 100.0)
+                else:
+                    print(f"contingency generator {cnt.device_idtag} not found")
+            else:
+                print(f'Unknown branch contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+        self.branch_contingency_indices = np.array(branch_contingency_indices_list)
+        self.bus_contingency_indices = np.array(bus_contingency_indices_list)
+        self.injections_factors = np.array(injections_factors_list)
 
 
 class LinearMultiContingencies:
@@ -474,26 +422,29 @@ class LinearMultiContingencies:
 
         # auxiliary structures
         self.__contingency_group_dict = grid.get_contingency_group_dict()
-        self.__bus_index_dict = grid.get_bus_index_dict()
+        bus_index_dict = grid.get_bus_index_dict()
         self.__branches_dict = {b.idtag: i for i, b in enumerate(grid.get_branches_wo_hvdc())}
-        self.__generator_dict = {g.idtag: g for g in grid.get_contingency_devices()}
+        self.__generator_bus_index_dict = {g.idtag: bus_index_dict[g.bus] for g in grid.get_generators()}
 
         self.contingency_indices = list()
 
         # for each contingency group
         for ic, contingency_group in enumerate(self.contingency_groups_used):
-            self.contingency_indices.append(ContingencyIndices(contingency_group=contingency_group,
-                                                               contingency_group_dict=self.__contingency_group_dict,
-                                                               branches_dict=self.__branches_dict,
-                                                               generator_dict=self.__generator_dict,
-                                                               bus_index_dict=self.__bus_index_dict))
+            self.contingency_indices.append(
+                ContingencyIndices(
+                    contingency_group=contingency_group,
+                    contingency_group_dict=self.__contingency_group_dict,
+                    branches_dict=self.__branches_dict,
+                    generator_bus_index_dict=self.__generator_bus_index_dict
+                )
+            )
 
         # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
     def get_contingency_group_names(self) -> List[str]:
         """
-        Returns a list of of the names of the used contingency groups
+        Returns a list of the names of the used contingency groups
         :return:
         """
         return [elm.name for elm in self.contingency_groups_used]
