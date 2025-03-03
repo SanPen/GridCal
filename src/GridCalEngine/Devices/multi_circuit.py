@@ -2580,18 +2580,22 @@ class MultiCircuit(Assets):
                            position: float,
                            km_io: float):
         """
-
-        :param original_line:
-        :param position:
-        :param km_io:
-        :return:
+        Split line with in/out
+        :param original_line: Line device to split
+        :param position: Position in per-unit (0, 1) measured from the "from" side where the splits happens
+        :param km_io: Amount of kilometers to the Substation to connect with the in/out
+        :return: mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4
         """
 
         # Each of the Branches will have the proportional impedance
-        # Bus_from           Middle_bus            Bus_To
-        # o----------------------o--------------------o
-        #   >-------- x -------->|
-        #   (x: distance measured in per unit (0~1)
+        # Bus_from              B1  B2                Bus_To
+        # o----------------------o o--------------------o
+        #                        | |   ^
+        #                        | |   | km_io: Distance of the in/out in km
+        #                        | |   ^
+        #                         o  B3 (substation bus)
+        #  >--------- x -------->|
+        #  x: distance measured in per unit (0~1) from the "from" node
 
         # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
 
@@ -2663,7 +2667,7 @@ class MultiCircuit(Assets):
                        contingency_factor=original_line.contingency_factor,
                        protection_rating_factor=original_line.protection_rating_factor)
 
-        # kilometers of the in/out appart from the original line
+        # kilometers of the in/out apart from the original line
         proportion_io = km_io / original_line.length
 
         br3 = dev.Line(name=original_line.name + ' in',
