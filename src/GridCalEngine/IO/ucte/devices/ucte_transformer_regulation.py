@@ -2,6 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from GridCalEngine.IO.ucte.devices.ucte_base import try_get
+from GridCalEngine.basic_structures import Logger
+
 
 class UcteTransformerRegulation:
     def __init__(self):
@@ -30,24 +33,41 @@ class UcteTransformerRegulation:
         """
         return f"{self.node1}_{self.node2}_{self.order_code}"
 
-    def parse(self, line: str):
+    def parse(self, line: str, logger: Logger):
         """
 
         :param line:
         :return:
         """
-        self.node1 = line[0:8].strip()
-        self.node2 = line[9:17].strip()
-        self.order_code = line[18:19].strip()
+        # self.node1 = line[0:8].strip()
+        # self.node2 = line[9:17].strip()
+        # self.order_code = line[18:19].strip()
+        #
+        # self.delta_u1 = float(line[20:25].strip()) if line[20:25].strip() else 0.0
+        # self.n1 = int(line[26:28].strip()) if line[26:28].strip() else 0
+        # self.n1_prime = int(line[29:32].strip()) if line[29:32].strip() else 0
+        # self.u1 = float(line[33:38].strip()) if line[33:38].strip() else 0.0
+        #
+        # self.delta_u2 = float(line[39:44].strip()) if line[39:44].strip() else 0.0
+        # self.theta = float(line[45:50].strip()) if line[45:50].strip() else 0.0
+        # self.n2 = int(line[51:53].strip()) if line[51:53].strip() else 0
+        # self.n2_prime = int(line[54:57].strip()) if line[54:57].strip() else 0
+        # self.p = float(line[58:63].strip()) if line[58:63].strip() else 0.0
+        # self.regulation_type = line[64:68].strip() if line[64:68].strip() else ""
 
-        self.delta_u1 = float(line[20:25].strip()) if line[20:25].strip() else 0.0
-        self.n1 = int(line[26:28].strip()) if line[26:28].strip() else 0
-        self.n1_prime = int(line[29:32].strip()) if line[29:32].strip() else 0
-        self.u1 = float(line[33:38].strip()) if line[33:38].strip() else 0.0
+        device = "TransformerRegulation"
+        self.node1 = try_get(line, 0, 8, str, device, "node1", logger)
+        self.node2 = try_get(line, 9, 17, str, device, "node2", logger)
+        self.order_code = try_get(line, 18, 19, str, device, "order_code", logger)
 
-        self.delta_u2 = float(line[39:44].strip()) if line[39:44].strip() else 0.0
-        self.theta = float(line[45:50].strip()) if line[45:50].strip() else 0.0
-        self.n2 = int(line[51:53].strip()) if line[51:53].strip() else 0
-        self.n2_prime = int(line[54:57].strip()) if line[54:57].strip() else 0
-        self.p = float(line[58:63].strip()) if line[58:63].strip() else 0.0
-        self.regulation_type = line[64:68].strip() if line[64:68].strip() else ""
+        self.delta_u1 = try_get(line, 20, 25, float, device, "delta_u1", logger)
+        self.n1 = try_get(line, 26, 28, int, device, "n1", logger)
+        self.n1_prime = try_get(line, 29, 32, int, device, "n1_prime", logger)
+        self.u1 = try_get(line, 33, 38, float, device, "u1", logger)
+
+        self.delta_u2 = try_get(line, 39, 44, float, device, "delta_u2", logger)
+        self.theta = try_get(line, 45, 50, float, device, "theta", logger)
+        self.n2 = try_get(line, 51, 53, int, device, "n2", logger)
+        self.n2_prime = try_get(line, 54, 57, int, device, "n2_prime", logger)
+        self.p = try_get(line, 58, 63, float, device, "p", logger)
+        self.regulation_type = try_get(line, 64, 68, str, device, "regulation_type", logger)

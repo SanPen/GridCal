@@ -92,29 +92,31 @@ class UcteCircuit:
 
                             elif current_block == "lines":
                                 line_obj = UcteLine()
-                                line_obj.parse(line)
-
+                                line_obj.parse(line, logger)
                                 self.lines.append(line_obj)
+
                             elif current_block == "transformers":
                                 transformer = UcteTransformer()
-                                transformer.parse(line)
+                                transformer.parse(line, logger)
                                 self.transformers.append(transformer)
 
                             elif current_block == "regulations":
                                 regulation = UcteTransformerRegulation()
-                                regulation.parse(line)
+                                regulation.parse(line, logger)
                                 self.regulations.append(regulation)
                                 self.regulations_dict[regulation.get_primary_key()] = regulation
 
+
                             elif current_block == "special_transformers":
                                 special_transformer = UcteTransformerTapTable()
-                                special_transformer.parse(line)
+                                special_transformer.parse(line, logger)
                                 self.transformer_tap_tables.append(special_transformer)
                                 self.transformer_tap_tables_dict[special_transformer.get_primary_key()] = special_transformer
 
+
                             elif current_block == "exchange_powers":
                                 exchange = UcteExchangePower()
-                                exchange.parse(line)
+                                exchange.parse(line, logger)
                                 self.exchange_powers.append(exchange)
             else:
                 logger.add_error("Passed non-ucte file to UCTE reading process",
