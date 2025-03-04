@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Type
 from GridCalEngine.basic_structures import Logger
 
 
@@ -16,7 +15,7 @@ def sub_float(line: str, a: int, b: int, device: str, prop_name: str, logger: Lo
     :param device: device type name
     :param prop_name: property name
     :param logger: Logger to record issues
-    :return: float | int | string
+    :return: float
     """
     if len(line) > b:
         chunk = line[a:b].strip()
@@ -30,10 +29,11 @@ def sub_float(line: str, a: int, b: int, device: str, prop_name: str, logger: Lo
                              value=chunk)
             return 0.0
     else:
-        logger.add_error(msg="String is too short",
+        logger.add_error(msg=f"Could not parse {prop_name} because the file row is too short",
                          device=device,
                          device_property=prop_name,
-                         value=line)
+                         value=line,
+                         expected_value=b)
         return 0.0
 
 
@@ -46,7 +46,7 @@ def sub_int(line: str, a: int, b: int, device: str, prop_name: str,  logger: Log
     :param device: device type name
     :param prop_name: property name
     :param logger: Logger to record issues
-    :return: float | int | string
+    :return: int
     """
     if len(line) > b:
         chunk = line[a:b].strip()
@@ -60,10 +60,11 @@ def sub_int(line: str, a: int, b: int, device: str, prop_name: str,  logger: Log
                              value=chunk)
             return 0
     else:
-        logger.add_error(msg="String is too short",
+        logger.add_error(msg=f"Could not parse {prop_name} because the file row is too short",
                          device=device,
                          device_property=prop_name,
-                         value=line)
+                         value=line,
+                         expected_value=b)
         return 0
 
 
@@ -74,16 +75,19 @@ def sub_str(line: str, a: int, b: int, device: str, prop_name: str,  logger: Log
     :param line: string
     :param a: start point
     :param b: end+1 point
+    :param device: device type name
+    :param prop_name: property name
     :param logger: Logger to record issues
-    :return: float | int | string
+    :return: string
     """
 
     if len(line) > b:
         chunk = line[a:b].strip()
         return chunk
     else:
-        logger.add_error(msg="String is too short",
+        logger.add_error(msg=f"Could not parse {prop_name} because the file row is too short",
                          device=device,
                          device_property=prop_name,
-                         value=line)
+                         value=line,
+                         expected_value=b)
         return ""
