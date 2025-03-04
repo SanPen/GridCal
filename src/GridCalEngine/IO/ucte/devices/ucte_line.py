@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.IO.ucte.devices.ucte_base import try_get
+from GridCalEngine.IO.ucte.devices.ucte_base import sub_int, sub_str, sub_float
 from GridCalEngine.basic_structures import Logger
 
 class UcteLine:
@@ -55,23 +55,14 @@ class UcteLine:
         :param logger:
         :return:
         """
-        # self.node1 = line[0:8].strip()
-        # self.node2 = line[9:17].strip()
-        # self.order_code = line[18:19].strip()
-        # self.status = int(line[20:21].strip())
-        # self.resistance = float(line[22:28].strip())
-        # self.reactance = float(line[29:35].strip())
-        # self.susceptance = float(line[36:44].strip())
-        # self.current_limit = int(line[45:51].strip())
-        # self.name = line[53::].strip()
 
         device = "Line"
-        self.node1 = try_get(line, 0, 8, str, device, "node1", logger)
-        self.node2 = try_get(line, 9, 17, str, device, "node2", logger)
-        self.order_code = try_get(line, 18, 19, str, device, "order_code", logger)
-        self.status = try_get(line, 20, 21, int, device, "status", logger)
-        self.resistance = try_get(line, 22, 28, float, device, "resistance", logger)
-        self.reactance = try_get(line, 29, 35, float, device, "reactance", logger)
-        self.susceptance = try_get(line, 36, 44, float, device, "susceptance", logger)
-        self.current_limit = try_get(line, 45, 51, int, device, "current_limit", logger)
-        self.name = try_get(line, 53, len(line), str, device, "name", logger)
+        self.node1 = sub_str(line, 0, 8, device,"node1",  logger)
+        self.node2 = sub_str(line, 9, 17,device,  "node2", logger)
+        self.order_code = sub_str(line, 18, 19, device, "", logger)
+        self.status = sub_int(line, 20, 21, device, "status", logger)
+        self.resistance = sub_float(line, 22, 28, device, "resistance", logger)
+        self.reactance = sub_float(line, 29, 35, device, "reactance", logger)
+        self.susceptance = sub_float(line, 36, 44, device, "susceptance", logger)
+        self.current_limit = sub_int(line, 45, 51, device, "current_limit", logger)
+        self.name = sub_str(line, 53, len(line), device, "name", logger)

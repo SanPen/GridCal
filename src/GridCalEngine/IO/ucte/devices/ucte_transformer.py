@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.IO.ucte.devices.ucte_base import try_get
+from GridCalEngine.IO.ucte.devices.ucte_base import sub_int, sub_str, sub_float
 from GridCalEngine.basic_structures import Logger
 
 
@@ -58,31 +58,25 @@ class UcteTransformer:
             return False, True
 
     def parse(self, line, logger: Logger):
-        # self.node1 = line[0:8].strip()
-        # self.node2 = line[9:17].strip()
-        # self.order_code = line[18:19].strip()
-        # self.status = int(line[20:21].strip())
-        # self.rated_voltage1 = float(line[22:27].strip())
-        # self.rated_voltage2 = float(line[28:33].strip())
-        # self.nominal_power = float(line[34:39].strip())
-        # self.resistance = float(line[40:46].strip())
-        # self.reactance = float(line[47:53].strip())
-        # self.susceptance = float(line[54:62].strip())
-        # self.conductance = float(line[63:69].strip())
-        # self.current_limit = int(line[70:76].strip())
-        # self.name = line[77:88].strip()
+        """
+
+        :param line:
+        :param logger:
+        :return:
+        """
+
         device = "Transformer"
 
-        self.node1 = try_get(line, 0, 8, str, device, "node1", logger)
-        self.node2 = try_get(line, 9, 17, str, device, "node2", logger)
-        self.order_code = try_get(line, 18, 19, str, device, "order_code", logger)
-        self.status = try_get(line, 20, 21, int, device, "status", logger)
-        self.rated_voltage1 = try_get(line, 22, 27, float, device, "rated_voltage1", logger)
-        self.rated_voltage2 = try_get(line, 28, 33, float, device, "rated_voltage2", logger)
-        self.nominal_power = try_get(line, 34, 39, float, device, "nominal_power", logger)
-        self.resistance = try_get(line, 40, 46, float, device, "resistance", logger)
-        self.reactance = try_get(line, 47, 53, float, device, "reactance", logger)
-        self.susceptance = try_get(line, 54, 62, float, device, "susceptance", logger)
-        self.conductance = try_get(line, 63, 69, float, device, "conductance", logger)
-        self.current_limit = try_get(line, 70, 76, int, device, "current_limit", logger)
-        self.name = try_get(line, 77, 88, str, device, "name", logger)
+        self.node1 = sub_str(line, 0, 8, device, "node1", logger)
+        self.node2 = sub_str(line, 9, 17, device, "node2", logger)
+        self.order_code = sub_str(line, 18, 19, device, "order_code", logger)
+        self.status = sub_int(line, 20, 21, device, "status", logger)
+        self.rated_voltage1 = sub_float(line, 22, 27, device, "rated_voltage1", logger)
+        self.rated_voltage2 = sub_float(line, 28, 33, device, "rated_voltage2", logger)
+        self.nominal_power = sub_float(line, 34, 39, device, "nominal_power", logger)
+        self.resistance = sub_float(line, 40, 46, device, "resistance", logger)
+        self.reactance = sub_float(line, 47, 53, device, "reactance", logger)
+        self.susceptance = sub_float(line, 54, 62, device, "susceptance", logger)
+        self.conductance = sub_float(line, 63, 69, device, "conductance", logger)
+        self.current_limit = sub_int(line, 70, 76, device, "current_limit", logger)
+        self.name = sub_str(line, 77, 88, device, "name", logger)

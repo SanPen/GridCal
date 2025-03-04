@@ -6,51 +6,84 @@ from __future__ import annotations
 from typing import Type
 from GridCalEngine.basic_structures import Logger
 
-def try_get(line: str, a: int, b:int,
-            tpe: Type[float] | Type[int] | Type[str],
-            device: str, prop_name: str,
-            logger: Logger):
-    """
 
-    :param line:
-    :param a:
-    :param b:
-    :param tpe:
-    :param device:
-    :param prop_name:
-    :param logger:
-    :return:
+def sub_float(line: str, a: int, b: int, device: str, prop_name: str, logger: Logger) -> float:
+    """
+    Try to get a value from a substring
+    :param line: string
+    :param a: start point
+    :param b: end+1 point
+    :param device: device type name
+    :param prop_name: property name
+    :param logger: Logger to record issues
+    :return: float | int | string
+    """
+    if len(line) > b:
+        chunk = line[a:b].strip()
+
+        try:
+            return float(chunk)
+        except ValueError as e:
+            logger.add_error(msg=str(e),
+                             device=device,
+                             device_property=prop_name,
+                             value=chunk)
+            return 0.0
+    else:
+        logger.add_error(msg="String is too short",
+                         device=device,
+                         device_property=prop_name,
+                         value=line)
+        return 0.0
+
+
+def sub_int(line: str, a: int, b: int, device: str, prop_name: str,  logger: Logger) -> int:
+    """
+    Try to get a value from a substring
+    :param line: string
+    :param a: start point
+    :param b: end+1 point
+    :param device: device type name
+    :param prop_name: property name
+    :param logger: Logger to record issues
+    :return: float | int | string
+    """
+    if len(line) > b:
+        chunk = line[a:b].strip()
+
+        try:
+            return int(chunk)
+        except ValueError as e:
+            logger.add_error(msg=str(e),
+                             device=device,
+                             device_property=prop_name,
+                             value=chunk)
+            return 0
+    else:
+        logger.add_error(msg="String is too short",
+                         device=device,
+                         device_property=prop_name,
+                         value=line)
+        return 0
+
+
+
+def sub_str(line: str, a: int, b: int, device: str, prop_name: str,  logger: Logger) -> str:
+    """
+    Try to get a value from a substring
+    :param line: string
+    :param a: start point
+    :param b: end+1 point
+    :param logger: Logger to record issues
+    :return: float | int | string
     """
 
     if len(line) > b:
         chunk = line[a:b].strip()
-
-        if tpe == float:
-            try:
-                return float(chunk)
-            except ValueError as e:
-                logger.add_error(msg=str(e),
-                                 device=device,
-                                 device_property=prop_name,
-                                 value=chunk)
-
-        elif tpe == int:
-            try:
-                return int(chunk)
-            except ValueError as e:
-                logger.add_error(msg=str(e),
-                                 device=device,
-                                 device_property=prop_name,
-                                 value=chunk)
-
-        elif tpe == str:
-            return chunk
+        return chunk
     else:
-        if tpe == float:
-            return 0.0
-        elif tpe == int:
-            return 0
-        elif tpe == str:
-            return ""
-        else:
-            return ""
+        logger.add_error(msg="String is too short",
+                         device=device,
+                         device_property=prop_name,
+                         value=line)
+        return ""

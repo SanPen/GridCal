@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from GridCalEngine.IO.ucte.devices.ucte_base import try_get
+from GridCalEngine.IO.ucte.devices.ucte_base import sub_int, sub_str, sub_float
 from GridCalEngine.basic_structures import Logger
 
 
@@ -14,12 +14,15 @@ class UcteExchangePower:
         self.comments = ""  # 14-25: Optional comments
 
     def parse(self, line, logger: Logger):
-        # self.country1 = line[0:2].strip()
-        # self.country2 = line[3:5].strip()
-        # self.active_power = float(line[6:13].strip())
-        # self.comments = line[14:26].strip()
+        """
+
+        :param line:
+        :param logger:
+        :return:
+        """
+
         device = "Exchange Power"
-        self.country1 = try_get(line, 0, 2, str, device, "country1", logger)
-        self.country2 = try_get(line, 3, 5, str, device, "country2", logger)
-        self.active_power = try_get(line, 6, 13, float, device, "active_power", logger)
-        self.comments = try_get(line, 14, 26, str, device, "comments", logger)
+        self.country1 = sub_str(line, 0, 2, device, "country1", logger)
+        self.country2 = sub_str(line, 3, 5, device, "country2", logger)
+        self.active_power = sub_float(line, 6, 13, device, "active_power", logger)
+        self.comments = sub_str(line, 14, 26, device, "comments", logger)
