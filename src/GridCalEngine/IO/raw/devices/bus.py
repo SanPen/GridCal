@@ -146,10 +146,18 @@ class RawBus(RawObject):
 
         elif version == 32:
 
-            self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE, self.OWNER, self.VM, self.VA = data[0]
+            n = len(data[0])
+            dta = np.zeros(9, dtype=object)
+            dta[0:n] = data[0]
+
+            (self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
+             self.OWNER, self.VM, self.VA) = data[0]
 
         elif version in [29, 30]:
-            # I, 'NAME', BASKV, IDE, GL, BL, AREA, ZONE, VM, VA, OWNER
+            n = len(data[0])
+            dta = np.zeros(11, dtype=object)
+            dta[0:n] = data[0]
+
             (self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL,
              self.AREA, self.ZONE, self.VM, self.VA, self.OWNER) = data[0]
 

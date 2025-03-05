@@ -203,11 +203,11 @@ class RawSwitchedShunt(RawObject):
                 ],
                 dynamic_values)
 
-        elif version >= 29 <= 34:
+        elif 31 <= version <= 34:
             rest = []
 
-            self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-                self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = field_values
+            (self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO,
+                self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values) = field_values
 
             parse_dynamic_fields(
                 [
@@ -227,6 +227,32 @@ class RawSwitchedShunt(RawObject):
             for i in range(1, 9):
                 if getattr(self, f"N{i}") != 0:
                     setattr(self, f"S{i}", 1)
+
+        elif 29 <= version <= 30:
+
+            # I, MODSW, VSWHI, VSWLO, SWREM, RMPCT, 'RMIDNT', BINIT, N1, B1, N2
+            (self.I, self.MODSW, self.VSWHI, self.VSWLO,
+             self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values) = field_values
+
+            parse_dynamic_fields(
+                [
+                    'N1', 'B1',
+                    'N2', 'B2',
+                    'N3', 'B3',
+                    'N4', 'B4',
+                    'N5', 'B5',
+                    'N6', 'B6',
+                    'N7', 'B7',
+                    'N8', 'B8'
+                ],
+                dynamic_values)
+
+            # In this version, the RAW format does not support the S.
+            # S is set to 1 by default.
+            for i in range(1, 9):
+                if getattr(self, f"N{i}") != 0:
+                    setattr(self, f"S{i}", 1)
+
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 
