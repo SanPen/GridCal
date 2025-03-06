@@ -909,6 +909,7 @@ class SubObjectType(Enum):
     ObjectsList = "ObjectsList"
     Associations = "AssociationsList"
     ListOfWires = 'ListOfWires'
+    AdmittanceMatrix = "Admittance Matrix"
 
     def __str__(self) -> str:
         return str(self.value)

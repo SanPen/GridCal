@@ -408,6 +408,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
         elif prop.tpe == SubObjectType.Associations:
             data[name] = obj.to_dict()
 
+        elif prop.tpe == SubObjectType.AdmittanceMatrix:
+            data[name] = obj.to_dict()
+
         elif prop.tpe == SubObjectType.Array:
             data[name] = list(obj)
 
@@ -1116,6 +1119,12 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                     val = np.array(property_value)
                                     elm.set_snapshot_value(gc_prop.name, val)
+
+                                elif gc_prop.tpe == SubObjectType.AdmittanceMatrix:
+
+                                    # get the line locations object and fill it with the json data
+                                    adm_mat: SubObjectType.AdmittanceMatrix = elm.get_snapshot_value(prop=gc_prop)
+                                    adm_mat.parse(property_value)
 
                                 elif gc_prop.tpe == SubObjectType.Associations:
 
