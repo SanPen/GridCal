@@ -100,6 +100,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
             self.editor.remove_from_scene(self.nexus)
             self.editor.remove_element(device=self.api_object, graphic_object=self)
             self.editor.remove_from_scene(self)
+            self.editor.delete_diagram_element(device=self.api_object)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
