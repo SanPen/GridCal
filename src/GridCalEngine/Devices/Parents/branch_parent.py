@@ -122,8 +122,8 @@ class BranchParent(PhysicalDevice):
 
         self.build_status = build_status
 
-        self._ys = AdmittanceMatrix(size=3)
-        self._ysh = AdmittanceMatrix(size=3)
+        self._ys = AdmittanceMatrix()
+        self._ysh = AdmittanceMatrix()
 
         # line rating in MVA
         if not isinstance(rate, Union[float, int]):

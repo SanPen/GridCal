@@ -398,6 +398,9 @@ class Line(BranchParent):
              self.R0, self.X0, self.B0,
              self.rate) = obj.get_values(Sbase=Sbase,  length=self.length)
 
+            # self.ys.values = obj.y_abcn
+            # self.ysh.values = obj.y_abcn
+
             if self.template is not None:
                 if obj != self.template:
                     self.template = obj
