@@ -45,6 +45,15 @@ class AdmittanceMatrix:
         self.__values: CxMat = np.zeros((size, size), dtype=complex)
 
     @property
+    def size(self) -> int:
+        return self.__size
+
+    @size.setter
+    def size(self, size: int) -> None:
+        self.__size = size
+        self.__values: CxMat = np.zeros((size, size), dtype=complex)
+
+    @property
     def values(self) -> CxMat:
         return self.__values
 
@@ -53,6 +62,7 @@ class AdmittanceMatrix:
         if isinstance(value, np.ndarray):
             if value.dtype == complex:
                 self.__values = value
+                self.__size = value.shape[0]
             else:
                 raise ValueError("AdmittanceMatrix only supports complex values")
         else:

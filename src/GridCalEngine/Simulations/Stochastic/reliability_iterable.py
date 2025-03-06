@@ -13,8 +13,8 @@ from GridCalEngine.basic_structures import Vec, IntVec,Logger
 
 def get_transition_probabilities(lbda: Vec, mu: Vec) -> Tuple[Vec, Vec]:
     """
-    Probability of the component beign unavailable
-    See: Power distriution system reliability p.67
+    Probability of the component being unavailable
+    See: Power distribution system reliability p.67
     :param lbda: failure rate ( 1 / mttf)
     :param mu: repair rate (1 / mttr)
     :return: availability probability, unavailability probability

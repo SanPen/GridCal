@@ -11,6 +11,7 @@ fname = os.path.join('..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with stor
 
 circuit_ = FileOpen(fname).open()
 
+nc = compile_numerical_circuit_at(circuit_)
 
 iterator = ReliabilityIterable(grid=circuit_,
                                forced_mttf=10.0,
@@ -19,5 +20,8 @@ iterator = ReliabilityIterable(grid=circuit_,
 for state, pf_res in iterator:
 
     if sum(state) < len(state):
+
+        nc.passive_branch_data.active = state
+
         print(state, "\n", np.abs(pf_res.voltage))
         time.sleep(0.1)
