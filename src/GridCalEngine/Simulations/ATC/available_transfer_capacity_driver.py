@@ -435,16 +435,14 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             correct_values=self.options.correct_values,
         )
 
-        linear.run()
-
         # get the branch indices to analyze
         br_idx = nc.passive_branch_data.get_monitor_enabled_indices()
         con_br_idx = nc.passive_branch_data.get_contingency_enabled_indices()
 
         # declare the results
         self.results = AvailableTransferCapacityResults(
-            br_names=linear.numerical_circuit.branch_names,
-            bus_names=linear.numerical_circuit.bus_names,
+            br_names=linear.numerical_circuit.passive_branch_data.names,
+            bus_names=linear.numerical_circuit.bus_data.names,
             rates=nc.Rates,
             contingency_rates=nc.ContingencyRates,
             clustering_results=None

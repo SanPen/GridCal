@@ -144,10 +144,10 @@ def make_ptdf(Bpqpv: sp.csc_matrix,
     """
 
     n = Bf.shape[1]
-    nb = n
-    nbi = n
-    noref = no_slack  # np.arange(1, nb)
-    noslack = no_slack
+    # nb = n
+    # nbi = n
+    # noref = no_slack  # np.arange(1, nb)
+    # noslack = no_slack
 
     if distribute_slack:
         dP = np.ones((n, n)) * (-1 / (n - 1))
@@ -157,14 +157,14 @@ def make_ptdf(Bpqpv: sp.csc_matrix,
         dP = np.eye(n, n)
 
     # solve for change in voltage angles
-    dTheta = np.zeros((nb, nbi))
+    dTheta = np.zeros((n, n))
     # Bref = Bbus[noslack, :][:, noref].tocsc()
-    dtheta_ref = scipy_spsolve(Bpqpv, dP[noslack, :])
+    dtheta_ref = scipy_spsolve(Bpqpv, dP[no_slack, :])
 
     if sp.issparse(dtheta_ref):
-        dTheta[noref, :] = dtheta_ref.toarray()
+        dTheta[no_slack, :] = dtheta_ref.toarray()
     else:
-        dTheta[noref, :] = dtheta_ref
+        dTheta[no_slack, :] = dtheta_ref
 
     # compute corresponding change in branch Sf
     # Bf is a sparse matrix
@@ -426,11 +426,11 @@ class LinearMultiContingencies:
         self.__branches_dict = {b.idtag: i for i, b in enumerate(grid.get_branches_wo_hvdc())}
         self.__generator_bus_index_dict = {g.idtag: bus_index_dict[g.bus] for g in grid.get_generators()}
 
-        self.contingency_indices = list()
+        self.contingency_indices_list = list()
 
         # for each contingency group
         for ic, contingency_group in enumerate(self.contingency_groups_used):
-            self.contingency_indices.append(
+            self.contingency_indices_list.append(
                 ContingencyIndices(
                     contingency_group=contingency_group,
                     contingency_group_dict=self.__contingency_group_dict,
@@ -470,7 +470,7 @@ class LinearMultiContingencies:
         # for each contingency group
         for ic, contingency_group in enumerate(self.contingency_groups_used):
 
-            contingency_indices = self.contingency_indices[ic]
+            contingency_indices = self.contingency_indices_list[ic]
 
             if len(contingency_indices.branch_contingency_indices) > 1:
 
@@ -583,24 +583,11 @@ class LinearAnalysis:
         :param correct_values: boolean to fix out layer values
         """
 
-        self.numerical_circuit: NumericalCircuit = numerical_circuit
-        self.distributed_slack: bool = distributed_slack
-        self.correct_values: bool = correct_values
-
-        self.PTDF: Union[np.ndarray, None] = None
-        self.LODF: Union[np.ndarray, None] = None
-
         self.logger: Logger = Logger()
 
-    def run(self):
-        """
-        Compute the PTDF and LODF for all the islands
-        """
-
-        # self.numerical_circuit = compile_snapshot_circuit(self.grid)
-        islands = self.numerical_circuit.split_into_islands()
-        n_br = self.numerical_circuit.nbr
-        n_bus = self.numerical_circuit.nbus
+        islands = numerical_circuit.split_into_islands()
+        n_br = numerical_circuit.nbr
+        n_bus = numerical_circuit.nbus
 
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
@@ -623,7 +610,7 @@ class LinearAnalysis:
                         ptdf_island = make_ptdf(Bpqpv=Bpqpv,
                                                 Bf=adml.Bf,
                                                 no_slack=indices.no_slack,
-                                                distribute_slack=self.distributed_slack)
+                                                distribute_slack=distributed_slack)
 
                         # assign the PTDF to the main PTDF matrix
                         self.PTDF[np.ix_(island.passive_branch_data.original_idx,
@@ -633,7 +620,7 @@ class LinearAnalysis:
                         lodf_island = make_lodf(Cf=island.passive_branch_data.Cf.tocsc(),
                                                 Ct=island.passive_branch_data.Ct.tocsc(),
                                                 PTDF=ptdf_island,
-                                                correct_values=self.correct_values)
+                                                correct_values=correct_values)
 
                         # assign the LODF to the main LODF matrix
                         self.LODF[np.ix_(island.passive_branch_data.original_idx,
@@ -647,33 +634,20 @@ class LinearAnalysis:
                 else:
                     self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
         else:
+            # there are no islands
+            pass
 
-            idx = islands[0].get_simulation_indices()
-            adml = islands[0].get_linear_admittance_matrices(indices=idx)
-            Bpqpv = adml.get_Bred(pqpv=idx.no_slack)
-
-            # there is only 1 island, compute the PTDF
-            self.PTDF = make_ptdf(Bpqpv=Bpqpv,
-                                  Bf=adml.Bf,
-                                  no_slack=idx.no_slack,
-                                  distribute_slack=self.distributed_slack)
-
-            # compute the LODF upon the PTDF
-            self.LODF = make_lodf(Cf=islands[0].passive_branch_data.Cf.tocsc(),
-                                  Ct=islands[0].passive_branch_data.Ct.tocsc(),
-                                  PTDF=self.PTDF,
-                                  correct_values=self.correct_values)
-
-    def get_transfer_limits(self, flows: np.ndarray):
+    def get_transfer_limits(self, flows: np.ndarray, rates: Vec):
         """
         Compute the maximum transfer limits of each branch in normal operation
         :param flows: base Sf in MW
+        :param rates: rates in MW
         :return: Max transfer limits vector (n-branch)
         """
         return make_transfer_limits(
             ptdf=self.PTDF,
             flows=flows,
-            rates=self.numerical_circuit.passive_branch_data.rates
+            rates=rates
         )
 
     def get_flows(self, Sbus: Union[CxVec, CxMat]) -> Union[CxVec, CxMat]:

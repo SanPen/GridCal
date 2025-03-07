@@ -38,7 +38,6 @@ linear = LinearAnalysis(
 )
 
 tm0 = time.time()
-linear.run()
 print(f'linear analysis computed in {time.time() - tm0:.2f} scs.')
 
 tm0 = time.time()
