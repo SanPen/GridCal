@@ -898,7 +898,7 @@ def add_hvdc_data(circuit: MultiCircuit,
         npa_circuit.addHvdcLine(hvdc)
 
 
-def to_newton_pa(circuit: MultiCircuit,
+def to_gslv(circuit: MultiCircuit,
                  use_time_series: bool,
                  time_indices: Union[IntVec, None] = None,
                  override_branch_controls=False,
@@ -970,7 +970,7 @@ def get_snapshots_from_gslv(circuit: MultiCircuit, override_branch_controls=Fals
     :return:
     """
 
-    npa_circuit, (bus_dict, area_dict, zone_dict) = to_newton_pa(circuit,
+    npa_circuit, (bus_dict, area_dict, zone_dict) = to_gslv(circuit,
                                                                  use_time_series=False,
                                                                  override_branch_controls=override_branch_controls)
 
@@ -1060,7 +1060,7 @@ def get_snapshots_from_gslv(circuit: MultiCircuit, override_branch_controls=Fals
     return data_lst
 
 
-def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "pg.PowerFlowOptions":
+def get_gslv_pf_options(opt: PowerFlowOptions) -> "pg.PowerFlowOptions":
     """
     Translate GridCal power flow options to Newton power flow options
     :param opt:
@@ -1107,11 +1107,11 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "pg.PowerFlowOptions":
                                mu0=opt.trust_radius)
 
 
-def newton_pa_pf(circuit: MultiCircuit,
-                 pf_opt: PowerFlowOptions,
-                 time_series: bool = False,
-                 time_indices: Union[IntVec, None] = None,
-                 opf_results: Union[None, OptimalPowerFlowResults] = None) -> "pg.PowerFlowResults":
+def gslv_pf(circuit: MultiCircuit,
+               pf_opt: PowerFlowOptions,
+               time_series: bool = False,
+               time_indices: Union[IntVec, None] = None,
+               opf_results: Union[None, OptimalPowerFlowResults] = None) -> "pg.PowerFlowResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -1123,13 +1123,13 @@ def newton_pa_pf(circuit: MultiCircuit,
     """
     override_branch_controls = not (pf_opt.control_taps_modules and pf_opt.control_taps_phase)
 
-    npa_circuit, _ = to_newton_pa(circuit,
+    npa_circuit, _ = to_gslv(circuit,
                                   use_time_series=time_series,
                                   time_indices=None,
                                   override_branch_controls=override_branch_controls,
                                   opf_results=opf_results)
 
-    pf_options = get_newton_pa_pf_options(pf_opt)
+    pf_options = get_gslv_pf_options(pf_opt)
 
     if time_series:
         # it is already sliced to the relevant time indices
