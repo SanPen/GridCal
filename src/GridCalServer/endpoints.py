@@ -4,11 +4,15 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 import json
+import socket
+import requests
 from typing import Dict
 from hashlib import sha256
-from fastapi import FastAPI, Header, HTTPException, BackgroundTasks, Response
+from fastapi import FastAPI, Header, HTTPException, BackgroundTasks, Response, Request
 from fastapi.responses import FileResponse
 from starlette.responses import StreamingResponse
+from contextlib import asynccontextmanager
+
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction, RemoteJob
 from GridCalEngine.IO.gridcal.pack_unpack import parse_gridcal_data
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -16,7 +20,126 @@ from GridCalEngine.enumerations import SimulationTypes, JobStatus
 from GridCalEngine.IO.gridcal.zip_interface import save_results_only
 import GridCalEngine.api as gce
 
-app = FastAPI()
+
+class ExtraSettings:
+    def __init__(self):
+        self.am_i_master: bool = True
+        self.master_host: str = ""
+        self.master_port = 0
+        self.this_port = 0
+        self.this_username = ""
+        self.this_password = ""
+
+
+settings = ExtraSettings()
+
+
+def lifespan(app: FastAPI):
+    """
+    Function that is called once the app starts.
+    :param app:
+    :return:
+    """
+    print("app startup")
+
+    if not settings.am_i_master:
+        print("I am a child service")
+        res = register_with_master(host=settings.master_host,
+                                   port=settings.master_port,
+                                   this_port=settings.this_port,
+                                   username=settings.this_username,
+                                   password=settings.this_password)
+        print("registering response:", res)
+    else:
+        print("I am the master service")
+
+    yield  # The application runs here
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+def get_local_ip():
+    try:
+        return socket.gethostbyname(socket.gethostname())  # Gets internal IP
+    except Exception:
+        return "127.0.0.1"  # Fallback to localhost
+
+
+def get_certificate(base_url: str, certificate_path: str, pwd: str) -> str:
+    """
+    Try connecting to the server
+    :return: ok?
+    """
+    # Make a GET request to the root endpoint
+    try:
+        response = requests.get(f"{base_url}/get_cert",
+                                headers={"API-Key": pwd},
+                                verify=False,
+                                timeout=2)
+
+        # Save the certificate to a file
+
+        with open(certificate_path, "wb") as cert_file:
+            cert_file.write(response.content)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            return ""
+        else:
+            # Print error message
+            return response.text
+
+    except ConnectionError as e:
+        return str(e)
+
+    except Exception as e:
+        return str(e)
+
+
+def register_with_master(host: str, port: int, this_port: int, username: str, password: str):
+    """
+    register this service with a master service
+    :param host:
+    :param port:
+    :param this_port:
+    :param username:
+    :param password:
+    :return:
+    """
+
+    url = f"{host}:{port}/register_child_server"
+    HEADERS = {"Content-Type": "application/json"}
+    worker_data = {
+        "ip": get_local_ip(),  # Detect IP dynamically
+        "port": this_port,  # Set worker's port
+        "username": username,
+        "password": password,
+    }
+
+    response = requests.post(url,
+                             json=worker_data,
+                             # headers=HEADERS,
+                             verify=False,
+                             timeout=5)
+    response.raise_for_status()
+    return response.json()  # Return JSON response
+
+    # try:
+    #     response = requests.post(MASTER_URL,
+    #                              json=worker_data,
+    #                              # headers=HEADERS,
+    #                              verify=False,
+    #                              timeout=5)
+    #     response.raise_for_status()
+    #     return response.json()  # Return JSON response
+    # except requests.exceptions.Timeout:
+    #     return {"error": "Request timed out"}
+    # except requests.exceptions.ConnectionError:
+    #     return {"error": f"Failed to connect to the master server {MASTER_URL}. Is it running?"}
+    # except requests.exceptions.RequestException as e:
+    #     return {"error": f"Request failed: {str(e)}"}
+
 
 # Store WebSocket connections in a set
 __connections__ = set()
@@ -85,6 +208,47 @@ async def favicon():
     :return:
     """
     return FileResponse(os.path.join(os.path.dirname(__file__), "data", "GridCal_icon.ico"))
+
+
+# Dictionary to store registered services
+registered_services = {}
+
+
+@app.post("/register_child_server")
+async def register_child_server(data: dict):
+    try:
+        # data = await request.json()  # Parse JSON manually
+        ip = data.get("ip", None)
+        port = data.get("port", None)
+        username = data.get("username", None)
+        password = data.get("password", None)
+
+        key = f"{username}:{ip}:{port}"
+
+        if ip is None or port is None:
+            raise HTTPException(status_code=400, detail="Missing 'ip' or 'port'")
+
+        if key in registered_services:
+            raise HTTPException(status_code=400, detail="Service already registered")
+
+        # Store the service information
+        registered_services[key] = {"ip": ip, "port": port}
+
+        return {"message": "Service registered successfully", "service": username, "ip": ip, "port": port}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid request: {str(e)}")
+
+
+@app.get("/registered_child_servers")
+def get_registered_child_servers():
+    """
+    Return all registered services
+    :return:
+    """
+    if not registered_services:
+        raise HTTPException(status_code=404, detail="No services registered")
+    return registered_services
 
 
 async def stream_load_json(json_data):
@@ -265,10 +429,10 @@ if __name__ == "__main__":
 
     key_fname = "key.pem"
     cert_fname = "cert.pem"
-    host = "0.0.0.0"
-    port = 8080
+    host_ = "0.0.0.0"
+    port_ = 8080
 
     if not os.path.exists(key_fname) or not os.path.exists(cert_fname):
         generate_ssl_certificate(key_fname=key_fname, cert_fname=cert_fname)
 
-    uvicorn.run(app, host=host, port=port, ssl_keyfile=key_fname, ssl_certfile=cert_fname)
+    uvicorn.run(app, host=host_, port=port_, ssl_keyfile=key_fname, ssl_certfile=cert_fname)

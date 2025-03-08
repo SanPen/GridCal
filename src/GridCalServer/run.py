@@ -11,29 +11,51 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
-from GridCalServer.endpoints import app
+from GridCalServer.endpoints import app, settings
 from GridCalServer.generate_ssl_key import generate_ssl_certificate
+from GridCalServer.__version__ import __GridCalServer_VERSION__
 
-
-def start_server(key_fname: str = "key.pem", cert_fname: str = "cert.pem", host: str = "0.0.0.0", port: int = 8000):
+def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem",
+                 host: str = "0.0.0.0", port: int = 8000,
+                 master_host: str= "", master_port: int= 0,
+                 username: str="", password: str = "", is_master: bool=True,
+                 secure: bool = True):
     """
     Start server function
-    :param key_fname: name of the key file that the server generates
-    :param cert_fname: name of the certificate file that the server generates
+    :param key_file_name: name of the key file that the server generates
+    :param cert_file_name: name of the certificate file that the server generates
     :param host: Hosting ip (localhost usually)
     :param port: Port to serve (8000 usually)
+    :param master_host: IP address to register the server to (if this runs in child mode)
+    :param master_port: Port to register the server to (if this runs in child mode)
+    :param username: Username to authenticate with
+    :param password: Password to authenticate with
+    :param is_master: Whether the server is master or not
     """
-    print("""
-┏┓  • ┓┏┓  ┓┏┓          
+    print(f"""
+┏┓  • ┓┏┓  ┓┏┓ ({__GridCalServer_VERSION__} Alpha) 
 ┃┓┏┓┓┏┫┃ ┏┓┃┗┓┏┓┏┓┓┏┏┓┏┓
 ┗┛┛ ┗┗┻┗┛┗┻┗┗┛┗ ┛ ┗┛┗ ┛
-                    (Alpha) 
+{host}:{port}  
     """)
 
-    if not os.path.exists(key_fname) or not os.path.exists(cert_fname):
-        generate_ssl_certificate(key_fname=key_fname, cert_fname=cert_fname)
+    if secure:
+        if not os.path.exists(key_file_name) or not os.path.exists(cert_file_name):
+            generate_ssl_certificate(key_fname=key_file_name, cert_fname=cert_file_name)
 
-    uvicorn.run(app, host=host, port=port, ssl_keyfile=key_fname, ssl_certfile=cert_fname)
+    # extra attributed on launch
+    settings.am_i_master = is_master
+    settings.master_host = master_host
+    settings.master_port = master_port
+    settings.this_host = host
+    settings.this_port = port
+    settings.this_username = username
+    settings.this_password = password
+
+    if secure:
+        uvicorn.run(app, host=host, port=port, ssl_keyfile=key_file_name, ssl_certfile=cert_file_name)
+    else:
+        uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":
@@ -52,8 +74,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Call the start_server function with the parsed arguments
-    start_server(key_fname=args.key_fname,
-                 cert_fname=args.cert_fname,
+    start_server(key_file_name=args.key_fname,
+                 cert_file_name=args.cert_fname,
                  host=args.host,
                  port=args.port)
 
