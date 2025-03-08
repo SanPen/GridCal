@@ -29,6 +29,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
+from GridCalEngine.Compilers.circuit_to_gslv import GSLV_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 import GridCal.Gui.gui_functions as gf
 import GridCal.Session.synchronization_driver as syncdrv
@@ -178,6 +179,8 @@ class BaseMainGui(QMainWindow):
 
         # available engines --------------------------------------------------------------------------------------------
         engine_lst = [EngineType.GridCal]
+        if GSLV_AVAILABLE:
+            engine_lst.append(EngineType.GSLV)
         if NEWTON_PA_AVAILABLE:
             engine_lst.append(EngineType.NewtonPA)
         if BENTAYGA_AVAILABLE:

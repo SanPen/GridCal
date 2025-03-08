@@ -282,7 +282,33 @@ class SimulationsMain(TimeEventsMain):
         """
         eng = self.get_preferred_engine()
 
-        if eng == EngineType.NewtonPA:
+        if eng == EngineType.GSLV:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(True)
+
+            # add the AC_OPF option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+            self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
+
+            # Power Flow Methods
+            self.solvers_dict[SolverType.NR.value] = SolverType.NR
+            self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+            self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
+            self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+            self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
+            self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
+            self.solvers_dict[SolverType.DC.value] = SolverType.DC
+
+            self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setCurrentIndex(0)
+
+            mip_solvers = get_newton_mip_solvers_list()
+            self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
+
+        elif eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
 
             # add the AC_OPF option

@@ -93,12 +93,12 @@ def get_final_profile(time_series: bool,
 
 
 def add_npa_areas(circuit: MultiCircuit,
-                  npa_circuit: "pg.MultiCircuit",
+                  gslv_grid: "pg.MultiCircuit",
                   n_time: int = 1) -> Dict[dev.Area, "pg.Area"]:
     """
     Add Newton Areas
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton Circuit
+    :param gslv_grid: Newton Circuit
     :param n_time: number of time steps
     :return: Dictionary [GridCal area] -> Newton Area
     """
@@ -107,7 +107,7 @@ def add_npa_areas(circuit: MultiCircuit,
     for i, area in enumerate(circuit.areas):
         elm = pg.Area(idtag=area.idtag, code=str(area.code), name=area.name)
 
-        npa_circuit.addArea(elm)
+        gslv_grid.add_area(elm)
 
         d[area] = elm
 
@@ -115,12 +115,12 @@ def add_npa_areas(circuit: MultiCircuit,
 
 
 def add_npa_zones(circuit: MultiCircuit,
-                  npa_circuit: "pg.MultiCircuit",
+                  gslv_grid: "pg.MultiCircuit",
                   n_time: int = 1) -> Dict[dev.Zone, "pg.Zone"]:
     """
     Add Newton Zones
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton Circuit
+    :param gslv_grid: Newton Circuit
     :param n_time: number of time steps
     :return: Dictionary [GridCal Zone] -> Newton Zone
     """
@@ -129,7 +129,7 @@ def add_npa_zones(circuit: MultiCircuit,
     for i, area in enumerate(circuit.zones):
         elm = pg.Zone(idtag=area.idtag, code=str(area.code), name=area.name)
 
-        npa_circuit.addZone(elm)
+        gslv_grid.add_zone(elm)
 
         d[area] = elm
 
@@ -137,12 +137,12 @@ def add_npa_zones(circuit: MultiCircuit,
 
 
 def add_npa_contingency_groups(circuit: MultiCircuit,
-                               npa_circuit: "pg.MultiCircuit",
+                               gslv_grid: "pg.MultiCircuit",
                                n_time: int = 1) -> Dict[dev.ContingencyGroup, "pg.ContingencyGroup"]:
     """
     Add Newton ContingenciesGroup
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton Circuit
+    :param gslv_grid: Newton Circuit
     :param n_time: number of time steps
     :return: Dictionary [GridCal ContingenciesGroup] -> Newton ContingenciesGroup
     """
@@ -154,7 +154,7 @@ def add_npa_contingency_groups(circuit: MultiCircuit,
                                   name=elm.name,
                                   category=elm.category)
 
-        npa_circuit.addContingenciesGroup(dev)
+        gslv_grid.add_contingency_group(dev)
 
         d[elm] = dev
 
@@ -162,13 +162,13 @@ def add_npa_contingency_groups(circuit: MultiCircuit,
 
 
 def add_npa_contingencies(circuit: MultiCircuit,
-                          npa_circuit: "pg.MultiCircuit",
+                          gslv_grid: "pg.MultiCircuit",
                           n_time: int,
                           groups_dict: Dict[dev.ContingencyGroup, "pg.ContingencyGroup"], ):
     """
     Add Newton ContingenciesGroup
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton Circuit
+    :param gslv_grid: Newton Circuit
     :param n_time: number of time steps
     :param groups_dict: Contingency groups dictionary
     :return: Dictionary [GridCal ContingenciesGroup] -> Newton ContingenciesGroup
@@ -185,18 +185,18 @@ def add_npa_contingencies(circuit: MultiCircuit,
                              value=elm.value,
                              group=groups_dict[elm.group])
 
-        npa_circuit.addContingency(dev)
+        gslv_grid.add_contingency(dev)
 
         d[elm] = dev
 
     return d
 
 
-def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "pg.MultiCircuit"):
+def add_npa_investment_groups(circuit: MultiCircuit, gslv_grid: "pg.MultiCircuit"):
     """
 
     :param circuit:
-    :param npa_circuit:
+    :param gslv_grid:
     :return:
     """
     d = dict()
@@ -207,7 +207,7 @@ def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "pg.MultiCircu
                                  name=elm.name,
                                  category=elm.category)
 
-        npa_circuit.addInvestmentsGroup(dev)
+        gslv_grid.add_investment_group(dev)
 
         d[elm] = dev
 
@@ -215,12 +215,12 @@ def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "pg.MultiCircu
 
 
 def add_npa_investments(circuit: MultiCircuit,
-                        npa_circuit: "pg.MultiCircuit",
+                        gslv_grid: "pg.MultiCircuit",
                         groups_dict: Dict[dev.InvestmentsGroup, "pg.InvestmentGroup"]):
     """
 
     :param circuit:
-    :param npa_circuit:
+    :param gslv_grid:
     :param groups_dict:
     :return:
     """
@@ -235,7 +235,7 @@ def add_npa_investments(circuit: MultiCircuit,
                             CAPEX=elm.CAPEX,
                             OPEX=elm.OPEX)
 
-        npa_circuit.addInvestment(dev)
+        gslv_grid.add_investment(dev)
 
         d[elm] = dev
 
@@ -243,7 +243,7 @@ def add_npa_investments(circuit: MultiCircuit,
 
 
 def add_npa_buses(circuit: MultiCircuit,
-                  npa_circuit: "pg.MultiCircuit",
+                  gslv_grid: "pg.MultiCircuit",
                   time_series: bool,
                   n_time: int = 1,
                   time_indices: Union[IntVec, None] = None,
@@ -251,7 +251,7 @@ def add_npa_buses(circuit: MultiCircuit,
     """
     Convert the buses to Newton buses
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise, just the snapshot
     :param n_time: number of time steps
     :param time_indices: Array of time indices
@@ -273,13 +273,13 @@ def add_npa_buses(circuit: MultiCircuit,
                      code=str(bus.code),
                      name=bus.name,
                      nt=n_time,
-                     slack=bus.is_slack,
-                     dc=bus.is_dc,
-                     nominal_voltage=bus.Vnom,
-                     vm_min=bus.Vmin,
-                     vm_max=bus.Vmax,
-                     va_min=-6.28,
-                     va_max=6.28,
+                     is_slack=bus.is_slack,
+                     is_dc=bus.is_dc,
+                     Vnom=bus.Vnom,
+                     vmin=bus.Vmin,
+                     vmax=bus.Vmax,
+                     angle_min=bus.angle_min,
+                     angle_max=bus.angle_max,
                      area=area_dict.get(bus.area, None))
 
         if time_series and n_time > 1:
@@ -288,14 +288,14 @@ def add_npa_buses(circuit: MultiCircuit,
         else:
             elm.active = np.ones(n_time, dtype=BINT) * int(bus.active)
 
-        npa_circuit.addCalculationNode(elm)
+        gslv_grid.add_bus(elm)
         bus_dict[bus.idtag] = elm
 
     return bus_dict
 
 
 def add_npa_loads(circuit: MultiCircuit,
-                  npa_circuit: "pg.MultiCircuit",
+                  gslv_grid: "pg.MultiCircuit",
                   bus_dict: Dict[str, "pg.Bus"],
                   time_series: bool,
                   n_time=1,
@@ -304,7 +304,7 @@ def add_npa_loads(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param bus_dict: dictionary of bus id to Newton bus object
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param n_time: number of time steps
@@ -315,13 +315,16 @@ def add_npa_loads(circuit: MultiCircuit,
     devices = circuit.get_loads()
     for k, elm in enumerate(devices):
 
-        load = pg.Load(idtag=elm.idtag,
-                       code=str(elm.code),
-                       name=elm.name,
-                       calc_node=bus_dict[elm.bus.idtag],
-                       nt=n_time,
-                       P=elm.P if opf_results is None else elm.P - opf_results.load_shedding[k],
-                       Q=elm.Q)
+        load = pg.Load(
+            idtag=elm.idtag,
+            code=str(elm.code),
+            name=elm.name,
+            calc_node=bus_dict[elm.bus.idtag],
+            nt=n_time,
+            P=elm.P if opf_results is None else elm.P - opf_results.load_shedding[k],
+            Q=elm.Q,
+            build_status=elm.build_status,
+        )
 
         if time_series:
             load.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
@@ -339,10 +342,10 @@ def add_npa_loads(circuit: MultiCircuit,
             load.active = np.ones(n_time, dtype=BINT) * int(elm.active)
             load.setAllCost1(elm.Cost)
 
-        npa_circuit.addLoad(load)
+        gslv_grid.add_load(load)
 
 
-def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "pg.MultiCircuit",
+def add_npa_static_generators(circuit: MultiCircuit, gslv_grid: "pg.MultiCircuit",
                               bus_dict: Dict[str, "pg.Bus"],
                               time_series: bool,
                               n_time=1,
@@ -350,7 +353,7 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "pg.MultiCircu
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -359,13 +362,16 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "pg.MultiCircu
     devices = circuit.get_static_generators()
     for k, elm in enumerate(devices):
 
-        pe_inj = pg.StaticGenerator(idtag=elm.idtag,
-                                    code=str(elm.code),
-                                    name=elm.name,
-                                    calc_node=bus_dict[elm.bus.idtag],
-                                    nt=n_time,
-                                    P=elm.P,
-                                    Q=elm.Q)
+        pe_inj = pg.StaticGenerator(
+            idtag=elm.idtag,
+            code=str(elm.code),
+            name=elm.name,
+            calc_node=bus_dict[elm.bus.idtag],
+            nt=n_time,
+            P=elm.P,
+            Q=elm.Q,
+            build_status=elm.build_status,
+        )
 
         if time_series:
             pe_inj.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
@@ -377,11 +383,11 @@ def add_npa_static_generators(circuit: MultiCircuit, npa_circuit: "pg.MultiCircu
             pe_inj.active = np.ones(n_time, dtype=BINT) * int(elm.active)
             pe_inj.setAllCost1(elm.Cost)
 
-        npa_circuit.addPowerElectronicsInjection(pe_inj)
+        gslv_grid.add_static_generator(pe_inj)
 
 
 def add_npa_shunts(circuit: MultiCircuit,
-                   npa_circuit: "pg.MultiCircuit",
+                   gslv_grid: "pg.MultiCircuit",
                    bus_dict: Dict[str, "pg.Bus"],
                    time_series: bool,
                    n_time=1,
@@ -389,7 +395,7 @@ def add_npa_shunts(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -398,27 +404,31 @@ def add_npa_shunts(circuit: MultiCircuit,
     devices = circuit.get_shunts()
     for k, elm in enumerate(devices):
 
-        sh = pg.Shunt(idtag=elm.idtag,
-                      code=str(elm.code),
-                      name=elm.name,
-                      calc_node=bus_dict[elm.bus.idtag],
-                      nt=n_time,
-                      G=elm.G,
-                      B=elm.B)
+        sh = pg.Shunt(
+            idtag=elm.idtag,
+            code=str(elm.code),
+            name=elm.name,
+            calc_node=bus_dict[elm.bus.idtag],
+            nt=n_time,
+            G=elm.G,
+            B=elm.B,
+            build_status=elm.build_status,
+        )
 
         if time_series:
-            sh.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
-                time_indices]
+            sh.active = (elm.active_prof.astype(BINT)
+                         if time_indices is None
+                         else elm.active_prof.astype(BINT)[time_indices])
             sh.G = elm.G_prof.toarray() if time_indices is None else elm.G_prof.toarray()[time_indices]
             sh.B = elm.B_prof.toarray() if time_indices is None else elm.B_prof.toarray()[time_indices]
         else:
             sh.active = np.ones(n_time, dtype=BINT) * int(elm.active)
 
-        npa_circuit.addCapacitor(sh)
+        gslv_grid.add_shunt(sh)
 
 
 def add_npa_generators(circuit: MultiCircuit,
-                       npa_circuit: "pg.MultiCircuit",
+                       gslv_grid: "pg.MultiCircuit",
                        bus_dict: Dict[str, "pg.Bus"],
                        time_series: bool,
                        n_time=1,
@@ -427,7 +437,7 @@ def add_npa_generators(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -448,11 +458,11 @@ def add_npa_generators(circuit: MultiCircuit,
                            Pmax=elm.Pmax,
                            Qmin=elm.Qmin,
                            Qmax=elm.Qmax,
+                           Snom=elm.Snom,
                            controllable_default=BINT(elm.is_controlled),
-                           dispatchable_default=BINT(elm.enabled_dispatch)
-                           )
-
-        gen.nominal_power = elm.Snom
+                           dispatchable_default=BINT(elm.enabled_dispatch),
+                           is_controlled=elm.is_controlled,
+                           q_points=elm.q_curve.get_data())
 
         if time_series:
 
@@ -483,11 +493,11 @@ def add_npa_generators(circuit: MultiCircuit,
             gen.setAllCost1(elm.Cost)
             gen.setAllCost2(elm.Cost2)
 
-        npa_circuit.addGenerator(gen)
+        gslv_grid.add_generator(gen)
 
 
 def add_battery_data(circuit: MultiCircuit,
-                     npa_circuit: "pg.MultiCircuit",
+                     gslv_grid: "pg.MultiCircuit",
                      bus_dict: Dict[str, "pg.Bus"],
                      time_series: bool,
                      n_time: int = 1,
@@ -496,7 +506,7 @@ def add_battery_data(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -519,16 +529,11 @@ def add_battery_data(circuit: MultiCircuit,
                          Qmin=elm.Qmin,
                          Qmax=elm.Qmax,
                          Pmin=elm.Pmin,
-                         Pmax=elm.Pmax)
-
-        gen.nominal_power = elm.Snom
-        gen.charge_efficiency = elm.charge_efficiency
-        gen.discharge_efficiency = elm.discharge_efficiency
-
-        if elm.is_controlled:
-            gen.setAllControllable(1)
-        else:
-            gen.setAllControllable(0)
+                         Pmax=elm.Pmax,
+                         Snom=elm.Snom,
+                         charge_efficiency=elm.charge_efficiency,
+                         discharge_efficiency=elm.discharge_efficiency,
+                         is_controlled=elm.is_controlled, )
 
         if time_series:
             gen.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
@@ -559,11 +564,11 @@ def add_battery_data(circuit: MultiCircuit,
             gen.setAllCost1(elm.Cost)
             gen.setAllCost2(elm.Cost2)
 
-        npa_circuit.addBattery(gen)
+        gslv_grid.add_battery(gen)
 
 
 def add_npa_line(circuit: MultiCircuit,
-                 npa_circuit: "pg.MultiCircuit",
+                 gslv_grid: "pg.MultiCircuit",
                  bus_dict: Dict[str, "pg.Bus"],
                  time_series: bool,
                  n_time: int = 1,
@@ -571,7 +576,7 @@ def add_npa_line(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -606,11 +611,11 @@ def add_npa_line(circuit: MultiCircuit,
         else:
             lne.setAllOverloadCost(elm.Cost)
 
-        npa_circuit.addAcLine(lne)
+        gslv_grid.add_line(lne)
 
 
 def add_transformer_data(circuit: MultiCircuit,
-                         npa_circuit: "pg.MultiCircuit",
+                         gslv_grid: "pg.MultiCircuit",
                          bus_dict: Dict[str, "pg.Bus"],
                          time_series: bool,
                          n_time: int = 1,
@@ -619,7 +624,7 @@ def add_transformer_data(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -655,6 +660,12 @@ def add_transformer_data(circuit: MultiCircuit,
                                monitor_contingency_default=elm.contingency_enabled,
                                tap=elm.tap_module,
                                phase=elm.tap_phase)
+
+        tr2.tap_phase_min = elm.tap_phase_min
+        tr2.tap_phase_max = elm.tap_phase_max
+        tr2.tap_module_min = elm.tap_module_min
+        tr2.tap_module_max = elm.tap_module_max
+
         if time_series:
             contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
             active_prof = elm.active_prof.astype(BINT)
@@ -677,15 +688,11 @@ def add_transformer_data(circuit: MultiCircuit,
         #     # tr2.setAllControlMode(ctrl_dict[elm.control_mode])
         #     pass
 
-        tr2.phase_min = elm.tap_phase_min
-        tr2.phase_max = elm.tap_phase_max
-        tr2.tap_min = elm.tap_module_min
-        tr2.tap_max = elm.tap_module_max
-        npa_circuit.addTransformers2wFul(tr2)
+        gslv_grid.add_transformer(tr2)
 
 
 def add_transformer3w_data(circuit: MultiCircuit,
-                           npa_circuit: "pg.MultiCircuit",
+                           gslv_grid: "pg.MultiCircuit",
                            bus_dict: Dict[str, "pg.Bus"],
                            time_series: bool,
                            n_time=1,
@@ -694,7 +701,7 @@ def add_transformer3w_data(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -736,11 +743,11 @@ def add_transformer3w_data(circuit: MultiCircuit,
             pass
 
         # because the central bus was added already, do not add it here
-        npa_circuit.addTransformers3w(tr3, add_central_node=False)
+        gslv_grid.add_transformer_3w(tr3, add_central_node=False)
 
 
 def add_vsc_data(circuit: MultiCircuit,
-                 npa_circuit: "pg.MultiCircuit",
+                 gslv_grid: "pg.MultiCircuit",
                  bus_dict: Dict[str, "pg.Bus"],
                  time_series: bool,
                  n_time: int = 1,
@@ -748,7 +755,7 @@ def add_vsc_data(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -761,7 +768,7 @@ def add_vsc_data(circuit: MultiCircuit,
                      calc_node_from=bus_dict[elm.bus_from.idtag],
                      calc_node_to=bus_dict[elm.bus_to.idtag],
                      nt=n_time,
-                     active_default=elm.active)
+                     active=elm.active,)
 
         vsc.alpha1 = elm.alpha1
         vsc.alpha2 = elm.alpha2
@@ -781,11 +788,11 @@ def add_vsc_data(circuit: MultiCircuit,
             vsc.setAllRates(elm.rate)
             vsc.setAllOverloadCost(elm.Cost)
 
-        npa_circuit.addAcDcConverter(vsc)
+        gslv_grid.add_vsc(vsc)
 
 
 def add_dc_line_data(circuit: MultiCircuit,
-                     npa_circuit: "pg.MultiCircuit",
+                     gslv_grid: "pg.MultiCircuit",
                      bus_dict: Dict[str, "pg.Bus"],
                      time_series: bool,
                      n_time: int = 1,
@@ -793,7 +800,7 @@ def add_dc_line_data(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -815,8 +822,10 @@ def add_dc_line_data(circuit: MultiCircuit,
                         )
 
         if time_series:
-            lne.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
-                time_indices]
+            lne.active = (elm.active_prof.astype(BINT)
+                          if time_indices is None
+                          else elm.active_prof.astype(BINT)[time_indices])
+
             lne.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
 
             contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
@@ -825,11 +834,11 @@ def add_dc_line_data(circuit: MultiCircuit,
         else:
             lne.setAllOverloadCost(elm.Cost)
 
-        npa_circuit.addDcLine(lne)
+        gslv_grid.add_dc_line(lne)
 
 
 def add_hvdc_data(circuit: MultiCircuit,
-                  npa_circuit: "pg.MultiCircuit",
+                  gslv_grid: "pg.MultiCircuit",
                   bus_dict: Dict[str, "pg.Bus"],
                   time_series: bool,
                   n_time=1,
@@ -837,7 +846,7 @@ def add_hvdc_data(circuit: MultiCircuit,
     """
 
     :param circuit: GridCal circuit
-    :param npa_circuit: Newton circuit
+    :param gslv_grid: Newton circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to Newton bus object
     :param n_time: number of time steps
@@ -895,14 +904,14 @@ def add_hvdc_data(circuit: MultiCircuit,
             hvdc.setAllOverloadCost(elm.Cost)
             hvdc.setAllControlMode(cmode_dict[elm.control_mode])
 
-        npa_circuit.addHvdcLine(hvdc)
+        gslv_grid.add_hvdc_line(hvdc)
 
 
 def to_gslv(circuit: MultiCircuit,
-                 use_time_series: bool,
-                 time_indices: Union[IntVec, None] = None,
-                 override_branch_controls=False,
-                 opf_results: Union[None, OptimalPowerFlowResults] = None):
+            use_time_series: bool,
+            time_indices: Union[IntVec, None] = None,
+            override_branch_controls=False,
+            opf_results: Union[None, OptimalPowerFlowResults] = None):
     """
     Convert GridCal circuit to Newton
     :param circuit: MultiCircuit
@@ -921,7 +930,7 @@ def to_gslv(circuit: MultiCircuit,
         n_time = len(time_indices)
 
     pg_grid = pg.MultiCircuit(name=circuit.name, nt=n_time)
-    # npa_circuit.idtag = circuit.idtag
+    # gslv_grid.idtag = circuit.idtag
 
     area_dict = add_npa_areas(circuit, pg_grid, n_time)
     zone_dict = add_npa_zones(circuit, pg_grid, n_time)
@@ -970,12 +979,12 @@ def get_snapshots_from_gslv(circuit: MultiCircuit, override_branch_controls=Fals
     :return:
     """
 
-    npa_circuit, (bus_dict, area_dict, zone_dict) = to_gslv(circuit,
-                                                                 use_time_series=False,
-                                                                 override_branch_controls=override_branch_controls)
+    gslv_grid, (bus_dict, area_dict, zone_dict) = to_gslv(circuit,
+                                                          use_time_series=False,
+                                                          override_branch_controls=override_branch_controls)
 
     logger = pg.Logger()
-    npa_data_lst = pg.compile(npa_circuit, logger, t=0).splitIntoIslands()
+    npa_data_lst = pg.compile(gslv_grid, logger, t=0).splitIntoIslands()
 
     data_lst = list()
 
@@ -1108,10 +1117,10 @@ def get_gslv_pf_options(opt: PowerFlowOptions) -> "pg.PowerFlowOptions":
 
 
 def gslv_pf(circuit: MultiCircuit,
-               pf_opt: PowerFlowOptions,
-               time_series: bool = False,
-               time_indices: Union[IntVec, None] = None,
-               opf_results: Union[None, OptimalPowerFlowResults] = None) -> "pg.PowerFlowResults":
+            pf_opt: PowerFlowOptions,
+            time_series: bool = False,
+            time_indices: Union[IntVec, None] = None,
+            opf_results: Union[None, OptimalPowerFlowResults] = None) -> "pg.PowerFlowResults":
     """
     Newton power flow
     :param circuit: MultiCircuit instance
@@ -1123,11 +1132,11 @@ def gslv_pf(circuit: MultiCircuit,
     """
     override_branch_controls = not (pf_opt.control_taps_modules and pf_opt.control_taps_phase)
 
-    npa_circuit, _ = to_gslv(circuit,
-                                  use_time_series=time_series,
-                                  time_indices=None,
-                                  override_branch_controls=override_branch_controls,
-                                  opf_results=opf_results)
+    gslv_grid, _ = to_gslv(circuit,
+                           use_time_series=time_series,
+                           time_indices=None,
+                           override_branch_controls=override_branch_controls,
+                           opf_results=opf_results)
 
     pf_options = get_gslv_pf_options(pf_opt)
 
@@ -1142,7 +1151,7 @@ def gslv_pf(circuit: MultiCircuit,
         time_indices = [0]
         n_threads = 1
 
-    pf_res = pg.multi_island_pf(grid=npa_circuit,
+    pf_res = pg.multi_island_pf(grid=gslv_grid,
                                 options=pf_options,
                                 time_indices=time_indices,
                                 n_threads=n_threads)
