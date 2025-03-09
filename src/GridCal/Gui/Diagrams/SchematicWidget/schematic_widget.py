@@ -1116,6 +1116,9 @@ class SchematicWidget(BaseDiagramWidget):
                 # remove the buses (from the schematic and the circuit)
                 for bus, graphic_obj in selected:
                     self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=False)
+                    self.remove_from_scene(graphic_obj)
+                    if hasattr(graphic_obj, 'nexus'):
+                        self.remove_from_scene(graphic_obj.nexus)
             else:
                 pass
         else:
