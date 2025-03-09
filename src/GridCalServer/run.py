@@ -11,7 +11,8 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
-from GridCalServer.endpoints import app, settings
+from GridCalServer.main import app
+from GridCalServer.settings import settings
 from GridCalServer.generate_ssl_key import generate_ssl_certificate
 from GridCalServer.__version__ import __GridCalServer_VERSION__
 
@@ -31,6 +32,7 @@ def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem
     :param username: Username to authenticate with
     :param password: Password to authenticate with
     :param is_master: Whether the server is master or not
+    :param secure: Whether the server is secure or not (if it looks for the certificates or not)
     """
     print(f"""
 ┏┓  • ┓┏┓  ┓┏┓ ({__GridCalServer_VERSION__} Alpha) 
