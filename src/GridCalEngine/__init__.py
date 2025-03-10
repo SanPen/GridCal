@@ -14,6 +14,9 @@ try:
     from GridCalEngine.DataStructures import *
     from GridCalEngine.Topology import *
     from GridCalEngine.Compilers import *
+    from GridCalEngine.IO.file_handler import FileOpen, FileSave, FileSavingOptions
+    from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction,
+                                                 SimulationTypes, send_json_data, get_certificate_path, get_certificate)
 
     PROPERLY_LOADED_API = True
 except ModuleNotFoundError as e:

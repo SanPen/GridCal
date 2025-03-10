@@ -193,7 +193,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     def __init__(self,
                  grid: MultiCircuit,
                  options: AvailableTransferCapacityOptions | None,
-                 time_indices: DateVec,
+                 time_indices: IntVec,
                  clustering_results: Union[ClusteringResults, None] = None):
 
         """

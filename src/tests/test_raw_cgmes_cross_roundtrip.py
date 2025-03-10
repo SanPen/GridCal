@@ -7,9 +7,8 @@ from __future__ import annotations
 import os
 
 import numpy as np
-from GridCalEngine.IO import FileSave
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
-from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileOpen
+from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileOpen, FileSave
 from GridCalEngine.Simulations import PowerFlowOptions
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes

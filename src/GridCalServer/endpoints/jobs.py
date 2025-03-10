@@ -8,7 +8,7 @@ from typing import Dict
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Response
 from starlette.responses import StreamingResponse
 
-from GridCalEngine.IO.gridcal.remote import RemoteInstruction, RemoteJob
+from GridCalEngine.IO.gridcal.remote import RemoteInstruction, RemoteJob, run_job
 from GridCalEngine.IO.gridcal.pack_unpack import parse_gridcal_data
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SimulationTypes, JobStatus
@@ -37,36 +37,7 @@ def generate_job_file_path(job_id: str):
     return os.path.join(get_fs_folder(), f"{job_id}.zip")
 
 
-def run_job(grid: MultiCircuit, job: RemoteJob):
-    """
 
-    :param grid:
-    :param job:
-    :return:
-    """
-    if job.instruction.operation == SimulationTypes.PowerFlow_run:
-        driver = gce.PowerFlowDriver(grid=grid)
-
-    elif job.instruction.operation == SimulationTypes.PowerFlowTimeSeries_run:
-
-        driver = gce.PowerFlowTimeSeriesDriver(grid=grid)
-
-    elif job.instruction.operation == SimulationTypes.OPF_run:
-
-        driver = gce.OptimalPowerFlowDriver(grid=grid)
-
-    elif job.instruction.operation == SimulationTypes.OPFTimeSeries_run:
-
-        driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
-
-    else:
-        return None
-
-    job.status = JobStatus.Running
-    driver.run()
-    save_results_only(filename_zip=generate_job_file_path(job_id=job.id_tag),
-                      sessions_data=[driver])
-    job.status = JobStatus.Done
 
 
 async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
@@ -76,9 +47,6 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     """
     grid = parse_gridcal_data(data=json_data)
     print(f'Circuit loaded alright nbus{grid.get_bus_number()}, nbr{grid.get_branch_number()}')
-
-    # with open("mi_red.json", "w") as f:
-    #     f.write(json.dumps(json_data, indent=4))
 
     if 'instruction' in json_data:
         instruction = RemoteInstruction(data=json_data['instruction'])
@@ -98,7 +66,7 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
 
 async def stream_load_json(json_data):
     """
-
+    Async function to stream a json file
     :param json_data:
     :return:
     """
@@ -115,7 +83,7 @@ async def stream_load_json(json_data):
 @router.post("/upload/")
 async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
     """
-
+    Endpoint to upload a job into here
     :param json_data:
     :param background_tasks:
     :return:
@@ -129,7 +97,7 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
 @router.get("/jobs_list")
 async def jobs_list():
     """
-    Root
+    Endpoint to return the list of jobs
     :return: string
     """
     return [job.get_data() for id_tag, job in JOBS_LIST.items()]
@@ -167,8 +135,7 @@ async def cancel_job(job_id: str):
 @router.get("/download_results/{job_id}")
 async def download_large_file(job_id: str):
     """
-
-    :return:
+    Function to download a large file, ie the results of a simulation
     """
 
     job = JOBS_LIST.get(job_id, None)
@@ -187,7 +154,7 @@ async def download_large_file(job_id: str):
         return Response(status_code=406, content=f"File not found {file_path}")
 
     # Function to stream the file
-    def iterfile(chunk_size=1024 * 1024):
+    def iter_file(chunk_size=1024 * 1024):
         """
 
         :param chunk_size:
@@ -203,4 +170,4 @@ async def download_large_file(job_id: str):
     print("Sending", job_id)
 
     # Return a streaming response
-    return StreamingResponse(iterfile(), media_type="application/octet-stream")
+    return StreamingResponse(iter_file(), media_type="application/octet-stream")

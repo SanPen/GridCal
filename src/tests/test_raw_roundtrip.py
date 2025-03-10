@@ -4,11 +4,10 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 
-from GridCalEngine.IO import FileSave
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions
+from GridCalEngine.IO.file_handler import FileSavingOptions, FileOpenOptions, FileSave
 import GridCalEngine.api as gc
 
 
