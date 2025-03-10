@@ -11,7 +11,7 @@ from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
 from PySide6 import QtCore
 from GridCalEngine.basic_structures import Logger
-
+from GridCalEngine.Simulations.driver_handler import create_driver
 from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction, RemoteJob,
                                              send_json_data, get_certificate_path, get_certificate)
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -204,6 +204,10 @@ class ServerDriver(QThread):
         :return:
         """
         return f"https://{self.url}:{self.port}"
+
+    def get_certificate_path(self):
+
+        return self._certificate_path
 
     def is_running(self) -> bool:
         """
@@ -465,3 +469,58 @@ class ServerDriver(QThread):
         """
 
         self.items_processed_event.emit()
+
+
+class RemoteJobDriver(QThread):
+    """
+    Server driver
+    """
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal()
+    sync_event = Signal()
+    items_processed_event = Signal()
+
+    def __init__(self, grid: MultiCircuit,
+                 instruction: RemoteInstruction,
+                 base_url: str,
+                 certificate_path: str,
+                 register_driver_func) -> None:
+        """
+
+        :param grid:
+        :param instruction:
+        :param base_url:
+        :param certificate_path:
+        """
+        QThread.__init__(self)
+        self.grid = grid
+        self.instruction = instruction
+        self.base_url = base_url
+        self.certificate_path = certificate_path
+
+        self.register_driver_func = register_driver_func
+
+    def run(self):
+        """
+
+        :return:
+        """
+        websocket_url = f"{self.base_url}/upload_job"
+
+        model_data = gather_model_as_jsons_for_communication(circuit=self.grid, instruction=self.instruction)
+
+        response = send_json_data(json_data=model_data,
+                                  endpoint_url=websocket_url,
+                                  certificate=self.certificate_path)
+
+        time_indices = response.get('time_indices', self.grid.get_all_time_indices())
+        driver = create_driver(grid=self.grid,
+                               driver_tpe=self.instruction.operation,
+                               time_indices=time_indices)
+
+        if driver is not None:
+            driver.results.parse_data(data=response)
+            self.register_driver_func(driver=driver)
+
+        self.done_signal.emit()

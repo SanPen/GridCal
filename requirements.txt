@@ -30,6 +30,7 @@ fastapi
 starlette
 uvicorn
 websockets
+aiohttp
 cryptography
 brotlicffi
 opencv-python>=4.10.0.84

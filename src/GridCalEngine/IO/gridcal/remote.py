@@ -209,7 +209,7 @@ def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
     return data
 
 
-async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
+def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
                          endpoint_url: str,
                          certificate: str) -> Any:
     """

@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import datetime
 import asyncio
+import functools
 import numpy as np
 from collections import OrderedDict
 from typing import List, Tuple, Dict, Union, Any
@@ -23,6 +24,7 @@ from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+from GridCal.Session.server_driver import RemoteJobDriver
 
 # Engine imports
 import GridCalEngine.Devices as dev
@@ -54,6 +56,8 @@ class SimulationsMain(TimeEventsMain):
 
         # create main window
         TimeEventsMain.__init__(self, parent)
+
+        self._remote_jobs = list()
 
         # Power Flow Methods
         self.solvers_dict = OrderedDict()
@@ -823,7 +827,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.PowerFlow_run)
 
-            asyncio.run(self.run_remote(instruction=instruction))
+            self.run_remote(instruction=instruction)
 
         else:
             if self.ts_flag():
@@ -842,7 +846,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.OPF_run)
 
-            asyncio.run(self.run_remote(instruction=instruction))
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_opf_time_series()
@@ -860,7 +864,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_run)
 
-            asyncio.run(self.run_remote(instruction=instruction))
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_available_transfer_capacity_ts()
@@ -878,7 +882,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacity_run)
 
-            asyncio.run(self.run_remote(instruction=instruction))
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_opf_ntc_ts()
@@ -896,7 +900,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.LinearAnalysis_run)
 
-            asyncio.run(self.run_remote(instruction=instruction))
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_linear_analysis_ts()
@@ -914,7 +918,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.ContingencyAnalysis_run)
 
-            asyncio.run(self.run_remote(instruction=instruction))
+            self.run_remote(instruction=instruction)
 
         else:
             if self.ts_flag():
@@ -2868,31 +2872,26 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.tolerance_spinBox.setValue(tol_idx)
 
-    async def run_remote(self, instruction):
+    def run_remote(self, instruction):
         """
         Run remote simulation
         :param instruction:
         :return:
         """
-        response: Dict[str, Any | Dict[str, Any]] = self.server_driver.send_job(grid=self.circuit,
-                                                                                instruction=instruction)
 
-        if response is not None:
+        if self.server_driver.is_running():
+            driver = RemoteJobDriver(grid=self.circuit,
+                                     instruction=instruction,
+                                     base_url=self.server_driver.base_url(),
+                                     certificate_path=self.server_driver.get_certificate_path(),
+                                     register_driver_func=self.session.register_driver)
+            driver.done_signal.connect(self.post_run_remote)
 
-            self.update_available_results()
-            self.colour_diagrams()
+            self._remote_jobs.append(driver)
 
-            time_indices = response.get('time_indices', self.circuit.get_all_time_indices())
-            driver = create_driver(grid=self.circuit,
-                                   driver_tpe=instruction.operation,
-                                   time_indices=time_indices)
+            driver.start()
 
-            if driver is not None:
-                driver.results.parse_data(data=response)
-
-                self.session.register_driver(driver)
-                self.update_available_results()
-                self.colour_diagrams()
-
-            else:
-                return None
+    def post_run_remote(self):
+        print("Done!")
+        self.update_available_results()
+        self.colour_diagrams()
