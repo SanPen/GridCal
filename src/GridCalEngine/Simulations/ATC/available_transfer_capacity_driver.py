@@ -357,12 +357,13 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         else:
             print('Empty raw report :/')
 
-    def get_results_dict(self):
+    def get_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'report': self.report.tolist()}
+        data = super().get_dict()
+        data['report'] = self.report.tolist()
         return data
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:

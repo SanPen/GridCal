@@ -3473,7 +3473,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                   Va=vang[i],
                                                   P=Sbus[i].real if Sbus is not None else None,
                                                   Q=Sbus[i].imag if Sbus is not None else None,
-                                                  tpe=bus_types[types[i]] if types is not None else None)
+                                                  tpe=bus_types[int(types[i])] if types is not None else None)
 
                         if use_flow_based_width:
                             graphic_object.change_size(w=graphic_object.w)
@@ -3779,7 +3779,7 @@ class SchematicWidget(BaseDiagramWidget):
                             Va=vang[i],
                             P=Sbus[i].real if Sbus is not None else None,
                             Q=Sbus[i].imag if Sbus is not None else None,
-                            tpe=bus_types[types[i]] if types is not None else None,
+                            tpe=bus_types[int(types[i])] if types is not None else None,
                             fluid_node_p2x_flow=fluid_node_p2x_flow[i] if fluid_node_p2x_flow is not None else None,
                             fluid_node_current_level=fluid_node_current_level[
                                 i] if fluid_node_current_level is not None else None,

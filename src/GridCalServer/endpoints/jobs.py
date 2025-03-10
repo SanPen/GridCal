@@ -12,8 +12,6 @@ from GridCalEngine.IO.gridcal.remote import RemoteInstruction, RemoteJob, run_jo
 from GridCalEngine.IO.gridcal.pack_unpack import parse_gridcal_data
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SimulationTypes, JobStatus
-from GridCalEngine.IO.gridcal.zip_interface import save_results_only
-import GridCalEngine.api as gce
 
 router = APIRouter()
 
@@ -57,11 +55,25 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
         JOBS_LIST[job.id_tag] = job
 
         # print("Job data\n", job.get_data())
+        if job.instruction.operation != SimulationTypes.NoSim:
+            driver = run_job(grid=grid, job=job)
 
-        run_job(grid=grid, job=job)
+            if driver is not None:
+                print("Driver:", driver.name)
+                if driver.results is not None:
+                    return driver.results.get_dict()
+                else:
+                    return dict()
+            else:
+                return dict()
+
+        else:
+            print("No simulation")
+            return dict()
 
     else:
         print('No Instruction found\n\n', json_data)
+        return dict()
 
 
 async def stream_load_json(json_data):
@@ -80,7 +92,7 @@ async def stream_load_json(json_data):
     return StreamingResponse(generate())
 
 
-@router.post("/upload/")
+@router.post("/upload_job/")
 async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
     """
     Endpoint to upload a job into here
@@ -89,9 +101,43 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
     :return:
     """
     background_tasks.add_task(stream_load_json, json_data)
-    background_tasks.add_task(process_json_data, json_data)
 
-    return {"message": "Job processing initiated"}
+    grid: MultiCircuit = parse_gridcal_data(data=json_data)
+
+    print(f'Circuit loaded alright nbus{grid.get_bus_number()}, nbr{grid.get_branch_number()}')
+
+    if 'instruction' in json_data:
+        instruction = RemoteInstruction(data=json_data['instruction'])
+
+        job = RemoteJob(grid=grid, instruction=instruction)
+
+        # register the job
+        JOBS_LIST[job.id_tag] = job
+        job.status = JobStatus.Running
+
+        # print("Job data\n", job.get_data())
+        if job.instruction.operation != SimulationTypes.NoSim:
+            driver = run_job(grid=grid, job=job)
+
+            job.status = JobStatus.Done
+            JOBS_LIST.pop(job.id_tag)
+
+            if driver is not None:
+                print("Driver:", driver.name)
+                if driver.results is not None:
+                    return driver.results.get_dict()
+                else:
+                    return dict()
+            else:
+                return dict()
+
+        else:
+            print("No simulation")
+            return dict()
+
+    else:
+        print('No Instruction found\n\n', json_data)
+        return dict()
 
 
 @router.get("/jobs_list")

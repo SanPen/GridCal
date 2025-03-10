@@ -659,7 +659,7 @@ class IoMain(ConfigurationMain):
 
         if self.server_driver.is_running():
             instruction = RemoteInstruction(operation=SimulationTypes.NoSim)
-            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
+            self.server_driver.send_job(grid=self.circuit, instruction=instruction)
 
         else:
             # declare the allowed file types

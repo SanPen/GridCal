@@ -201,6 +201,14 @@ class SimulationSession:
         # run!
         thr.start()
 
+    def register_driver(self, driver: DRIVER_OBJECTS):
+        """
+        Register driver
+        :param driver:
+        :return:
+        """
+        self.drivers[driver.tpe] = driver
+
     def get_available_drivers(self):
         """
         Get a list of the available driver objects

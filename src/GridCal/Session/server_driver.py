@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 import time
 import requests
 import asyncio
@@ -14,6 +15,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction, RemoteJob,
                                              send_json_data, get_certificate_path, get_certificate)
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 
 disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -282,17 +284,17 @@ class ServerDriver(QThread):
             self.logger.add_error(msg=f"General exception error", value=str(e))
             return False
 
-    def send_data(self, circuit: MultiCircuit, instruction: RemoteInstruction) -> None:
+    def send_job(self, grid: MultiCircuit, instruction: RemoteInstruction) -> Dict[str, Any] | None:
         """
         
-        :param circuit: 
+        :param grid:
         :param instruction:
         :return: 
         """
-        websocket_url = f"{self.base_url()}/upload"
+        websocket_url = f"{self.base_url()}/upload_job"
 
         if self.is_running():
-            model_data = gather_model_as_jsons_for_communication(circuit=circuit, instruction=instruction)
+            model_data = gather_model_as_jsons_for_communication(circuit=grid, instruction=instruction)
 
             response = asyncio.get_event_loop().run_until_complete(
                 send_json_data(json_data=model_data,
@@ -300,7 +302,10 @@ class ServerDriver(QThread):
                                certificate=self._certificate_path)
             )
 
-            self.get_jobs()
+            return response
+
+        else:
+            return None
 
     def delete_job(self, job_id: str, api_key: str) -> dict:
         """

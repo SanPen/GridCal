@@ -85,16 +85,16 @@ class ContinuationPowerFlowResults(ResultsTemplate):
         self.register(name='losses', tpe=CxMat)
         self.register(name='Sbus', tpe=CxMat)
 
-    def get_results_dict(self):
-        """
-        Returns a dictionary with the results sorted in a dictionary
-        :return: dictionary of 2D numpy arrays (probably of complex numbers)
-        """
-        data = {'lambda': self.lambdas.tolist(),
-                'Vm': np.abs(self.voltages).tolist(),
-                'Va': np.angle(self.voltages).tolist(),
-                'error': self.error.tolist()}
-        return data
+    # def get_dict(self):
+    #     """
+    #     Returns a dictionary with the results sorted in a dictionary
+    #     :return: dictionary of 2D numpy arrays (probably of complex numbers)
+    #     """
+    #     data = {'lambda': self.lambdas.tolist(),
+    #             'Vm': np.abs(self.voltages).tolist(),
+    #             'Va': np.angle(self.voltages).tolist(),
+    #             'error': self.error.tolist()}
+    #     return data
 
     def apply_from_island(self, results: CpfNumericResults, bus_original_idx, branch_original_idx):
         """

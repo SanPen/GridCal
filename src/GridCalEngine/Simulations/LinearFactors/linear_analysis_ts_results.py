@@ -70,20 +70,20 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
         rates = nc.Rates.T
         self.loading = self.Sf / (rates + 1e-9)
 
-    def get_results_dict(self):
-        """
-        Returns a dictionary with the results sorted in a dictionary
-        :return: dictionary of 2D numpy arrays (probably of complex numbers)
-        """
-        data = {
-            'V': self.voltage.tolist(),
-            'P': self.S.real.tolist(),
-            'Q': self.S.imag.tolist(),
-            'Sbr_real': self.Sf.real.tolist(),
-            'Sbr_imag': self.Sf.imag.tolist(),
-            'loading': np.abs(self.loading).tolist()
-        }
-        return data
+    # def get_dict(self):
+    #     """
+    #     Returns a dictionary with the results sorted in a dictionary
+    #     :return: dictionary of 2D numpy arrays (probably of complex numbers)
+    #     """
+    #     data = {
+    #         'V': self.voltage.tolist(),
+    #         'P': self.S.real.tolist(),
+    #         'Q': self.S.imag.tolist(),
+    #         'Sbr_real': self.Sf.real.tolist(),
+    #         'Sbr_imag': self.Sf.imag.tolist(),
+    #         'loading': np.abs(self.loading).tolist()
+    #     }
+    #     return data
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """

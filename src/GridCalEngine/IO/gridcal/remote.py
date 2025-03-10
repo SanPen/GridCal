@@ -245,7 +245,7 @@ def run_job(grid: MultiCircuit, job: RemoteJob) -> DRIVER_OBJECTS | None:
     driver: DRIVER_OBJECTS | None = create_driver(
         grid=grid,
         driver_tpe=job.instruction.operation,
-        time_indices=np.array([], dtype=int)
+        time_indices=None
     )
 
     if driver is not None:
