@@ -158,20 +158,29 @@ class ResultsTemplate:
             # get the array
             arr: np.ndarray = getattr(self, arr_name)
 
-            if isinstance(arr, np.ndarray):
-                if np.iscomplexobj(arr):
-                    r = arr.real
-                    i = arr.imag
-                    data[arr_name] = {
-                        "real": r.tolist(),
-                        "imag": i.tolist(),
-                    }
-                else:
+            if arr_prop.tpe == CxVec:
+                r = arr.real
+                i = arr.imag
+                data[arr_name] = {
+                    "real": r.tolist(),
+                    "imag": i.tolist(),
+                }
+            elif arr_prop.tpe == Vec or arr_prop.tpe == IntVec or arr_prop.tpe == StrVec:
+                if isinstance(arr, np.ndarray):
                     data[arr_name] = arr.tolist()
-            elif isinstance(arr, list):
-                data[arr_name] = arr
-            elif isinstance(arr, dict):
-                data[arr_name] = arr
+                elif isinstance(arr, list):
+                    data[arr_name] = arr
+
+            elif arr_prop.tpe == DateVec:
+                data[arr_name] = arr.values.astype(float).tolist()  # pass the unix nano-seconds
+
+            else:
+                if isinstance(arr, list):
+                    data[arr_name] = arr
+                elif isinstance(arr, dict):
+                    data[arr_name] = arr
+                else:
+                    data[arr_name] = arr
 
         return data
 
@@ -181,21 +190,31 @@ class ResultsTemplate:
         :param data:
         :return:
         """
+
+
+
         for arr_name, arr_prop in self.data_variables.items():
 
             arr_data = data.get(arr_name, None)
 
-            if arr_data is not None:
-                if "real" in arr_data and "imag" in arr_data:
-                    r = np.array(arr_data["real"])
-                    i = np.array(arr_data["imag"])
-                    arr = r + 1j * i
-                    setattr(self, arr_name, arr)
-                else:
-                    pass
-            else:
+            if arr_prop.tpe == CxVec:
+                r = np.array(arr_data["real"])
+                i = np.array(arr_data["imag"])
+                arr = r + 1j * i
+                setattr(self, arr_name, arr)
+
+            elif arr_prop.tpe == Vec or arr_prop.tpe == IntVec or arr_prop.tpe == StrVec:
                 arr = np.array(arr_data)
                 setattr(self, arr_name, arr)
+
+            elif arr_prop.tpe == DateVec:
+
+                arr = pd.to_datetime(np.array(arr_data), unit='ns')# pass the unix nano-seconds
+                setattr(self, arr_name, arr)
+
+            else:
+                data[arr_name] = arr_data
+
 
     def get_name_to_results_type_dict(self):
         """

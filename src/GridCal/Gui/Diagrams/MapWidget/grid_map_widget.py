@@ -14,10 +14,8 @@ from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
-from PySide6.QtSvg import QSvgGenerator
-from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex,
-                            QRunnable, QThreadPool)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent)
+from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
@@ -145,7 +143,7 @@ class MapLibraryModel(QStandardItemModel):
         @param idxs:
         @return:
         """
-        mimedata = QMimeData()
+        mime_data = QMimeData()
         for idx in idxs:
             if idx.isValid():
                 txt = self.data(idx, Qt.ItemDataRole.DisplayRole)
@@ -154,8 +152,8 @@ class MapLibraryModel(QStandardItemModel):
                 stream = QDataStream(data, QIODevice.WriteOnly)
                 stream.writeQString(txt)
 
-                mimedata.setData('component/name', data)
-        return mimedata
+                mime_data.setData('component/name', data)
+        return mime_data
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         """
@@ -1345,20 +1343,10 @@ def generate_map_diagram(
         diagram.set_point(device=branch, location=MapLocation())
 
         # register all the line locations
-        # if branch.bus_from is not None:
-        #     diagram.set_point(device=branch.bus_from, location=MapLocation(latitude=branch.bus_from.latitude,
-        #                                                                    longitude=branch.bus_from.longitude,
-        #                                                                    altitude=0))
-
         for loc in branch.locations.get_locations():
             diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
                                                                longitude=loc.long,
                                                                altitude=loc.alt))
-
-        # if branch.bus_to is not None:
-        #     diagram.set_point(device=branch.bus_to, location=MapLocation(latitude=branch.bus_to.latitude,
-        #                                                                  longitude=branch.bus_to.longitude,
-        #                                                                  altitude=0))
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
@@ -1408,7 +1396,6 @@ def generate_map_diagram(
         if prog_func is not None:
             prog_func((i + 1) / nn * 100.0)
 
-        # branch.graphic_obj = self.add_api_upfc(branch)
         diagram.set_point(device=elm, location=MapLocation())
 
         # register all the line locations
