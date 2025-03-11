@@ -528,13 +528,22 @@ class RemoteJobDriver(QThread):
             self.logger.add_error("Remote end closed connection without response")
 
         if response is not None:
-            time_indices = response.get('time_indices', self.grid.get_all_time_indices())
-            driver = create_driver(grid=self.grid,
-                                   driver_tpe=self.instruction.operation,
-                                   time_indices=time_indices)
 
-            if driver is not None:
-                driver.results.parse_data(data=response)
-                self.register_driver_func(driver=driver)
+            success = response.get("success", False)
+
+
+            if success:
+                results_data = response["results"]
+
+                time_indices = results_data.get('time_indices', self.grid.get_all_time_indices())
+                driver = create_driver(grid=self.grid,
+                                       driver_tpe=self.instruction.operation,
+                                       time_indices=time_indices)
+
+                if driver is not None:
+                    driver.results.parse_data(data=results_data)
+                    self.register_driver_func(driver=driver)
+            else:
+                self.logger.add_error(msg=response.get("msg", "No message"))
 
         self.done_signal.emit(self.idtag)

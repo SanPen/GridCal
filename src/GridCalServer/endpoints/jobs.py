@@ -117,7 +117,11 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
 
         # print("Job data\n", job.get_data())
         if job.instruction.operation != SimulationTypes.NoSim:
-            driver = run_job(grid=grid, job=job)
+
+            try:
+                driver = run_job(grid=grid, job=job)
+            except Exception as e:
+                return {"success": False, "results": None, "msg": f"{e}"}
 
             job.status = JobStatus.Done
             JOBS_LIST.pop(job.id_tag)
@@ -125,19 +129,17 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
             if driver is not None:
                 print("Driver:", driver.name)
                 if driver.results is not None:
-                    return driver.results.get_dict()
+                    return {"success": True, "results": driver.results.get_dict(), "msg": "all good"}
                 else:
-                    return dict()
+                    return {"success": False, "results": None, "msg": "No results in the driver"}
             else:
-                return dict()
+                return {"success": False, "results": None, "msg": "The driver is None"}
 
         else:
-            print("No simulation")
-            return dict()
+            return {"success": False, "results": None, "msg": "No simulation"}
 
     else:
-        print('No Instruction found\n\n', json_data)
-        return dict()
+        return {"success": False, "results": None, "msg": "No Instruction found"}
 
 
 @router.get("/jobs_list")
