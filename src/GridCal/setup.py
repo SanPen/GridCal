@@ -78,7 +78,6 @@ dependencies = ['setuptools>=41.0.1',
                 "darkdetect",
                 "pyqtdarktheme",
                 "websockets",
-                "aiohttp",
                 "opencv-python>=4.10.0.84",
                 "packaging",
                 "GridCalEngine==" + __GridCal_VERSION__,  # the GridCalEngine version must be exactly the same
