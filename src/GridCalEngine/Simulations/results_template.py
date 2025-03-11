@@ -10,7 +10,8 @@ import pandas as pd
 from typing import List, Dict, Any, Union, TYPE_CHECKING
 
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat, Logger
+from GridCalEngine.basic_structures import (IntVec, IntMat, Vec, CxVec, StrVec, StrMat, Mat, DateVec, CxMat, BoolVec,
+                                            Logger)
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
@@ -158,14 +159,14 @@ class ResultsTemplate:
             # get the array
             arr: np.ndarray = getattr(self, arr_name)
 
-            if arr_prop.tpe == CxVec:
+            if arr_prop.tpe in (CxVec, CxMat):
                 r = arr.real
                 i = arr.imag
                 data[arr_name] = {
                     "real": r.tolist(),
                     "imag": i.tolist(),
                 }
-            elif arr_prop.tpe == Vec or arr_prop.tpe == IntVec or arr_prop.tpe == StrVec:
+            elif arr_prop.tpe in (Vec, Mat, IntVec, IntMat, StrVec, StrMat, BoolVec):
                 if isinstance(arr, np.ndarray):
                     data[arr_name] = arr.tolist()
                 elif isinstance(arr, list):
@@ -191,30 +192,27 @@ class ResultsTemplate:
         :return:
         """
 
-
-
         for arr_name, arr_prop in self.data_variables.items():
 
             arr_data = data.get(arr_name, None)
 
-            if arr_prop.tpe == CxVec:
+            if arr_prop.tpe in (CxVec, CxMat):
                 r = np.array(arr_data["real"])
                 i = np.array(arr_data["imag"])
                 arr = r + 1j * i
                 setattr(self, arr_name, arr)
 
-            elif arr_prop.tpe == Vec or arr_prop.tpe == IntVec or arr_prop.tpe == StrVec:
+            elif arr_prop.tpe in (Vec, Mat, IntVec, IntMat, StrVec, StrMat, BoolVec):
                 arr = np.array(arr_data)
                 setattr(self, arr_name, arr)
 
             elif arr_prop.tpe == DateVec:
 
-                arr = pd.to_datetime(np.array(arr_data), unit='ns')# pass the unix nano-seconds
+                arr = pd.to_datetime(np.array(arr_data), unit='ns')  # pass the unix nano-seconds
                 setattr(self, arr_name, arr)
 
             else:
                 data[arr_name] = arr_data
-
 
     def get_name_to_results_type_dict(self):
         """

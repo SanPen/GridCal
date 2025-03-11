@@ -57,7 +57,7 @@ class SimulationsMain(TimeEventsMain):
         # create main window
         TimeEventsMain.__init__(self, parent)
 
-        self._remote_jobs = list()
+        self._remote_jobs: Dict[str, RemoteJobDriver] = dict()
 
         # Power Flow Methods
         self.solvers_dict = OrderedDict()
@@ -2887,11 +2887,27 @@ class SimulationsMain(TimeEventsMain):
                                      register_driver_func=self.session.register_driver)
             driver.done_signal.connect(self.post_run_remote)
 
-            self._remote_jobs.append(driver)
+            self._remote_jobs[driver.idtag] = driver
 
             driver.start()
 
-    def post_run_remote(self):
+    def post_run_remote(self, driver_idtag: str):
+        """
+        Function executed upon data reception complete
+        :return:
+        """
         print("Done!")
-        self.update_available_results()
-        self.colour_diagrams()
+
+        remote_job_driver = self._remote_jobs.get(driver_idtag, None)
+
+        if remote_job_driver is not None:
+            if remote_job_driver.logger.has_logs():
+                # Show dialogue
+                dlg = LogsDialogue(name="Remote connection logs", logger=remote_job_driver.logger)
+                dlg.setModal(True)
+                dlg.exec()
+
+            self.update_available_results()
+            self.colour_diagrams()
+
+            self._remote_jobs.pop(driver_idtag)
