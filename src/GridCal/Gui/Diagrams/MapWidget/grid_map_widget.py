@@ -38,6 +38,7 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
+from GridCalEngine.enumerations import Colormaps
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
@@ -323,7 +324,6 @@ class GridMapWidget(BaseDiagramWidget):
         if self.map.level - 1 >= self.map.min_level:
             self.map.zoom_level(level=self.map.level - 1)
 
-
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
         Convert x, y position in the map to latitude and longitude
@@ -550,9 +550,15 @@ class GridMapWidget(BaseDiagramWidget):
         :param lon:
         :return:
         """
-        graphic_object = SubstationGraphicItem(editor=self, api_object=api_object, lat=lat, lon=lon,
+        graphic_object = SubstationGraphicItem(editor=self,
+                                               api_object=api_object,
+                                               lat=lat,
+                                               lon=lon,
                                                r=self.diagram.min_bus_width)
-        self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
+
+        self.graphics_manager.add_device(elm=api_object,
+                                         graphic=graphic_object)
+
         self.add_to_scene(graphic_object=graphic_object)
 
         return graphic_object
@@ -1232,16 +1238,26 @@ class GridMapWidget(BaseDiagramWidget):
             info_msg("There are no time series, so nothing to plot :/")
 
 
-def generate_map_diagram(substations: List[Substation],
-                         voltage_levels: List[VoltageLevel],
-                         lines: List[Line],
-                         dc_lines: List[DcLine],
-                         hvdc_lines: List[HvdcLine],
-                         fluid_nodes: List[FluidNode],
-                         fluid_paths: List[FluidPath],
-                         prog_func: Union[Callable, None] = None,
-                         text_func: Union[Callable, None] = None,
-                         name='Map diagram') -> MapDiagram:
+def generate_map_diagram(
+        substations: List[Substation],
+        voltage_levels: List[VoltageLevel],
+        lines: List[Line],
+        dc_lines: List[DcLine],
+        hvdc_lines: List[HvdcLine],
+        fluid_nodes: List[FluidNode],
+        fluid_paths: List[FluidPath],
+        prog_func: Union[Callable, None] = None,
+        text_func: Union[Callable, None] = None,
+        name='Map diagram',
+        use_flow_based_width: bool = False,
+        min_branch_width: int = 1.0,
+        max_branch_width=5,
+        min_bus_width=1.0,
+        max_bus_width=20,
+        arrow_size=20,
+        palette: Colormaps = Colormaps.GridCal,
+        default_bus_voltage: float = 10
+) -> MapDiagram:
     """
     Add a elements to the schematic scene
     :param substations: list of Substation objects
@@ -1254,9 +1270,27 @@ def generate_map_diagram(substations: List[Substation],
     :param prog_func: progress report function
     :param text_func: Text report function
     :param name: name of the diagram
+    :param use_flow_based_width: use flow based width
+    :param min_branch_width: minimum branch width
+    :param max_branch_width: maximum branch width
+    :param min_bus_width:
+    :param max_bus_width: maximum bus width
+    :param arrow_size: arrow size
+    :param palette: Colormaps
+    :param default_bus_voltage: default bus voltage
     """
 
-    diagram = MapDiagram(name=name)
+    diagram = MapDiagram(
+        name=name,
+        use_flow_based_width=use_flow_based_width,
+        min_branch_width=min_branch_width,
+        max_branch_width=max_branch_width,
+        min_bus_width=min_bus_width,
+        max_bus_width=max_bus_width,
+        arrow_size=arrow_size,
+        palette=palette,
+        default_bus_voltage=default_bus_voltage
+    )
 
     # first create the buses
     if text_func is not None:
@@ -1383,7 +1417,7 @@ def generate_map_diagram(substations: List[Substation],
                                                                longitude=loc.long,
                                                                altitude=loc.alt))
 
-    # find the diagram cented and set it internally
+    # find the diagram centre and set it internally
     diagram.set_center()
 
     return diagram

@@ -63,7 +63,8 @@ class BranchParent(PhysicalDevice):
                  capex: float,
                  opex: float,
                  cost: float,
-                 device_type: DeviceType):
+                 device_type: DeviceType,
+                 color: str | None = None):
         """
 
         :param name: name of the branch
@@ -85,6 +86,7 @@ class BranchParent(PhysicalDevice):
         :param opex: Cost of operation. (e/MWh)
         :param cost: Cost of overloads. Used in OPF (e/MWh)
         :param device_type: device_type (passed on)
+        :param color: Color of the branch
         """
 
         PhysicalDevice.__init__(self,
@@ -138,6 +140,8 @@ class BranchParent(PhysicalDevice):
         self._protection_rating_factor = float(protection_rating_factor)
         self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor, data_type=float)
 
+        self.color = color if color is not None else "#909090" # light gray
+
         # group of this branch
         self.group: Union[BranchGroup, None] = None
 
@@ -180,6 +184,8 @@ class BranchParent(PhysicalDevice):
         self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
         self.register('group', units="", tpe=DeviceType.BranchGroupDevice,
                       definition="Group where this branch belongs")
+
+        self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram')
 
     @property
     def bus_from(self) -> Bus:

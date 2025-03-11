@@ -1535,7 +1535,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def set_selected_diagram_on_click(self):
         """
-        on list-view click, set the currentlt selected diagram widget
+        on list-view click, set the currently selected diagram widget
         """
         diagram = self.get_selected_diagram_widget()
 
@@ -1815,16 +1815,29 @@ class DiagramsMain(CompiledArraysMain):
             ok = True
 
         if ok:
-            diagram = generate_map_diagram(substations=self.circuit.get_substations(),
-                                           voltage_levels=self.circuit.get_voltage_levels(),
-                                           lines=self.circuit.get_lines(),
-                                           dc_lines=self.circuit.get_dc_lines(),
-                                           hvdc_lines=self.circuit.get_hvdc(),
-                                           fluid_nodes=self.circuit.get_fluid_nodes(),
-                                           fluid_paths=self.circuit.get_fluid_paths(),
-                                           prog_func=None,
-                                           text_func=None,
-                                           name='Map diagram')
+            cmap_text = self.ui.palette_comboBox.currentText()
+            cmap = self.cmap_dict[cmap_text]
+
+            diagram = generate_map_diagram(
+                substations=self.circuit.get_substations(),
+                voltage_levels=self.circuit.get_voltage_levels(),
+                lines=self.circuit.get_lines(),
+                dc_lines=self.circuit.get_dc_lines(),
+                hvdc_lines=self.circuit.get_hvdc(),
+                fluid_nodes=self.circuit.get_fluid_nodes(),
+                fluid_paths=self.circuit.get_fluid_paths(),
+                prog_func=None,
+                text_func=None,
+                name='Map diagram',
+                use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                min_bus_width=self.ui.min_node_size_spinBox.value(),
+                max_bus_width=self.ui.max_node_size_spinBox.value(),
+                arrow_size=self.ui.arrow_size_size_spinBox.value(),
+                palette=cmap,
+                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()
+            )
 
             # set other default properties of the diagram
             diagram.tile_source = self.ui.tile_provider_comboBox.currentText()

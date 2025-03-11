@@ -234,7 +234,6 @@ class MapLineContainer(GenericDiagramWidget):
             # draw the segment in the scene
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
-
         self.update_connectors()
 
         # self.editor.update_device_sizes()

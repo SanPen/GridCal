@@ -33,7 +33,7 @@ class GenericAreaGroup(EditableDevice):
 
         self.register(key='longitude', units='deg', tpe=float, definition='longitude.', profile_name='')
         self.register(key='latitude', units='deg', tpe=float, definition='latitude.', profile_name='')
-        self.register(key='color', units='', tpe=str, definition='Color to paint the SE in the map diagram')
+        self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram')
 
 
 class Area(GenericAreaGroup):
