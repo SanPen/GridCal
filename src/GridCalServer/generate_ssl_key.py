@@ -8,8 +8,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 import datetime
-
 import socket
+import ipaddress
 
 
 def get_my_ip():
@@ -38,7 +38,7 @@ def generate_ssl_certificate(ip: str | None = None, domain: str | None = None,
     subjects_list = [x509.DNSName(u"localhost")]
 
     if ip is not None:
-        subjects_list.append(x509.DNSName(ip))
+        subjects_list.append(x509.IPAddress(ipaddress.ip_address(ip)))
 
     if domain is not None:
         subjects_list.append(x509.DNSName(domain))
@@ -90,7 +90,7 @@ def generate_ssl_certificate(ip: str | None = None, domain: str | None = None,
     with open(cert_file_name, "wb") as cert_file:
         cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
 
-    print("SSL certificate and key have been generated.")
+    print(f"SSL certificate and key have been generated: cert={cert_file_name}, key={key_file_name}")
 
 
 if __name__ == "__main__":
