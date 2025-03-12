@@ -218,9 +218,9 @@ class ServerDriver(QThread):
         """
         return self.__running__
 
-    def get_certificate(self) -> bool:
+    def get_server_certificate(self) -> bool:
         """
-        Try connecting to the server
+        Try get the server certificate
         :return: ok?
         """
 
@@ -236,8 +236,7 @@ class ServerDriver(QThread):
         """
 
         # get the SSL certificate (only once per class instance)
-        if not self._loaded_certificate:
-            self._loaded_certificate = self.get_certificate()
+        self._loaded_certificate = self.get_server_certificate()
 
         # Make a GET request to the root endpoint
         try:
@@ -254,12 +253,15 @@ class ServerDriver(QThread):
             else:
                 # Print error message
                 self.logger.add_error(msg=f"Response error", value=response.text)
+                print(response.text)
                 return False
         except ConnectionError as e:
             self.logger.add_error(msg=f"Connection error", value=str(e))
+            print(str(e))
             return False
         except Exception as e:
             self.logger.add_error(msg=f"General exception error", value=str(e))
+            print(str(e))
             return False
 
     def get_jobs(self) -> bool:

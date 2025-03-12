@@ -130,7 +130,7 @@ class ServerMain(BaseMainGui):
         :return:
         """
         if not self.server_driver.is_running():
-            if len(self.server_driver.logger):
+            if self.server_driver.logger.has_logs():
                 warning_msg(text="Could not connect to the server", title="Server connection")
                 self.ui.actionEnable_server_mode.setChecked(False)
 
