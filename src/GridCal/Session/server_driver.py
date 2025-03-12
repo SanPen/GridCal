@@ -412,28 +412,30 @@ class ServerDriver(QThread):
             # get the running jobs
             self.get_jobs()
 
-            while not self.__cancel__:
+            self.report_status("Sync" if ok else "Server not responding")
 
-                if not self.__pause__:
-                    self.report_status("Sync" if ok else "Server not responding")
-                    self.__running__ = True
-
-                    # sleep
-                    time.sleep(self.sleep_time)
-
-                else:
-                    self.report_status("Sync paused" if ok else "Server not responding")
-                    self.__running__ = False
-
-                    # sleep 1 second to catch other events
-                    time.sleep(self.sleep_time)
-
-                # check if alive
-                ok = self.server_connect()
-
-                if not ok:
-                    # set to false, so that we force re-download on reconnection
-                    self._loaded_certificate = False
+            # while not self.__cancel__:
+            #
+            #     if not self.__pause__:
+            #         self.report_status("Sync" if ok else "Server not responding")
+            #         self.__running__ = True
+            #
+            #         # sleep
+            #         time.sleep(self.sleep_time)
+            #
+            #     else:
+            #         self.report_status("Sync paused" if ok else "Server not responding")
+            #         self.__running__ = False
+            #
+            #         # sleep 1 second to catch other events
+            #         time.sleep(self.sleep_time)
+            #
+            #     # check if alive
+            #     ok = self.server_connect()
+            #
+            #     if not ok:
+            #         # set to false, so that we force re-download on reconnection
+            #         self._loaded_certificate = False
 
         else:
             # bad connection
