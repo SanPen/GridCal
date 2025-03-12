@@ -4,13 +4,20 @@
 # SPDX-License-Identifier: MPL-2.0
 import os
 from hashlib import sha256
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Response, Query
 from fastapi.responses import FileResponse
 
 from GridCalServer.endpoints import register_in_master
 from GridCalServer.endpoints import register_sub_servers
 from GridCalServer.endpoints import calculations
 from GridCalServer.endpoints import jobs
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
+from datetime import datetime, timedelta
+import ipaddress
 
 app = FastAPI()
 app.include_router(register_in_master.router)
@@ -40,6 +47,7 @@ def verify_api_key(api_key: str = Header(None)):
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
 
+
 @app.get("/get_cert")
 def get_cert():
     """
@@ -50,7 +58,6 @@ def get_cert():
     return FileResponse("cert.pem",
                         media_type="application/x-pem-file",
                         filename="cert.pem")
-
 
 @app.get("/")
 async def read_root():
