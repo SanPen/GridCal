@@ -237,6 +237,7 @@ class ServerDriver(QThread):
 
         # get the SSL certificate (only once per class instance)
         self._loaded_certificate = self.get_server_certificate()
+        self.__running__ = False
 
         # Make a GET request to the root endpoint
         try:
@@ -249,6 +250,7 @@ class ServerDriver(QThread):
             if response.status_code == 200:
                 # Print the response body
                 # print("Response Body:", response.json())
+                self.__running__ = True
                 return True
             else:
                 # Print error message
@@ -444,10 +446,10 @@ class ServerDriver(QThread):
             self.done_signal.emit()
             return None
 
-        self.data_model.clear()
-        self.report_status("Sync stop")
-        self.__running__ = False
-        self.done_signal.emit()
+        # self.data_model.clear()
+        # self.report_status("Sync stop")
+        # self.__running__ = False
+        # self.done_signal.emit()
 
     def cancel(self) -> None:
         """
