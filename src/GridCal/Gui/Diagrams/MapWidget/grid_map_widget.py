@@ -1509,6 +1509,7 @@ def generate_map_diagram(
 
 
 def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], max_level: int = 1) -> Tuple[
+    List[Substation],
     List[VoltageLevel],
     List[Line],
     List[DcLine],
@@ -1521,27 +1522,15 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
     :return:
     """
 
-    branch_idx = list()
-    bus_idx = list()
-
-    bus_dict = circuit.get_bus_index_dict()
-
     # get all Branches
     all_branches = circuit.get_branches() + circuit.get_switches()
-    branch_dict = {b: i for i, b in enumerate(all_branches)}
-
-    bus2se = dict()
-    for b in circuit.buses:
-        if b.substation is not None:
-            bus2se[b] = b.substation
 
     # create a pool of buses that belong to the substations
-    bus_pool = [(b, 0) for b in circuit.buses if
-                b in substations]  # store the bus objects and their level from the root
+    # store the bus objects and their level from the root
+    bus_pool = [(b, 0) for b in circuit.buses if b.substation in substations]
 
-    substations = set()
     voltage_levels = set()
-
+    substations_extended = set()
     selected_branches = set()
 
     while len(bus_pool) > 0:
@@ -1549,28 +1538,24 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
         # search the next bus
         bus, level = bus_pool.pop()
 
-        bus_idx.append(bus_dict[bus])
+        if bus.voltage_level is not None:
+            voltage_levels.add(bus.voltage_level)
+            substations_extended.add(bus.substation)
 
-        # add searched bus
-        se = bus_dict.get(bus, None)
+        if level < max_level:
 
-        if se is not None:
-            substations.add(se)
+            for i, br in enumerate(all_branches):
 
-            if level < max_level:
+                if br.bus_from == bus:
+                    bus_pool.append((br.bus_to, level + 1))
+                    selected_branches.add(br)
 
-                for i, br in enumerate(all_branches):
+                elif br.bus_to == bus:
+                    bus_pool.append((br.bus_from, level + 1))
+                    selected_branches.add(br)
 
-                    if br.bus_from == bus:
-                        bus_pool.append((br.bus_to, level + 1))
-                        selected_branches.add(br)
-
-                    elif br.bus_to == bus:
-                        bus_pool.append((br.bus_from, level + 1))
-                        selected_branches.add(br)
-
-                    else:
-                        pass
+                else:
+                    pass
 
     # sort Branches
     lines: List[Line] = list()
@@ -1578,8 +1563,6 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
     hvdc_lines: List[HvdcLine] = list()
 
     for obj in selected_branches:
-
-        branch_idx.append(branch_dict[obj])
 
         if obj.device_type == DeviceType.LineDevice:
             lines.append(obj)
@@ -1594,7 +1577,7 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
         else:
             raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
-    return (list(voltage_levels), lines, dc_lines, hvdc_lines)
+    return (list(substations_extended), list(voltage_levels), lines, dc_lines, hvdc_lines)
 
 
 def make_diagram_from_substations(circuit: MultiCircuit,
@@ -1627,12 +1610,14 @@ def make_diagram_from_substations(circuit: MultiCircuit,
     :return:
     """
 
-    (voltage_levels, lines, dc_lines, hvdc_lines) = get_devices_to_expand(circuit=circuit, substations=substations,
-                                                                          max_level=1)
+    (substations_extended, voltage_levels,
+     lines, dc_lines, hvdc_lines) = get_devices_to_expand(circuit=circuit,
+                                                          substations=substations,
+                                                          max_level=1)
 
     # Draw schematic subset
     diagram = generate_map_diagram(
-        substations=substations,
+        substations=substations_extended,
         voltage_levels=voltage_levels,
         lines=lines,
         dc_lines=dc_lines,

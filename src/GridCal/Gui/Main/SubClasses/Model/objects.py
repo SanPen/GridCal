@@ -462,17 +462,14 @@ class ObjectsTableMain(DiagramsMain):
         elm2se = dict()
         for se in self.circuit.substations:
 
-            if se.country is not None:
-                elm2se[se.country] = se
+            for elm in [se.country, se.community, se.region, se.municipality]:
 
-            if se.community is not None:
-                elm2se[se.community] = se
+                if elm is not None:
+                    if elm in elm2se:
+                        elm2se[elm].append(se)
+                    else:
+                        elm2se[elm] = [se]
 
-            if se.region is not None:
-                elm2se[se.region] = se
-
-            if se.municipality is not None:
-                elm2se[se.municipality] = se
 
         if model is not None:
 
@@ -488,9 +485,10 @@ class ObjectsTableMain(DiagramsMain):
                     for idx in unique:
 
                         sel_obj: ALL_DEV_TYPES = model.objects[idx]
-                        se = elm2se.get(sel_obj, None)
-                        if se is not None:
-                            substations.add(se)
+                        se_list = elm2se.get(sel_obj, None)
+                        if se_list is not None:
+                            for se in se_list:
+                                substations.add(se)
 
         return substations
 
