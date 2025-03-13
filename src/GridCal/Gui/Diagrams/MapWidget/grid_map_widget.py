@@ -9,16 +9,18 @@ import json
 import numpy as np
 import math
 import pandas as pd
-import asyncio
+from warnings import warn
 from matplotlib import pyplot as plt
 
-from PySide6.QtWidgets import QGraphicsItem
+from PySide6.QtWidgets import QGraphicsItem, QMessageBox
 from collections.abc import Callable
 from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
+
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
+from GridCal.Gui.general_dialogues import CheckListDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
@@ -241,8 +243,11 @@ class GridMapWidget(BaseDiagramWidget):
         :param propagate: Propagate the delete to other diagrams?
         :return:
         """
-        # TODO: Implement this
-        pass
+        self.diagram.delete_device(device=device)
+        graphic_object: ALL_MAP_GRAPHICS = self.graphics_manager.delete_device(device=device)
+
+        if graphic_object is not None:
+            self.remove_from_scene(graphic_object)
 
         if propagate:
             if self.call_delete_db_element_func is not None:
@@ -264,6 +269,13 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
         self.diagram.name = val
+
+    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, ALL_MAP_GRAPHICS]]:
+        """
+        Get selection
+        :return: List of EditableDevice, QGraphicsItem
+        """
+        return [(elm.api_object, elm) for elm in self.map.diagram_scene.selectedItems()]
 
     def add_to_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
@@ -289,6 +301,49 @@ class GridMapWidget(BaseDiagramWidget):
         if api_object is not None:
             self.graphics_manager.delete_device(api_object)
         self.map.diagram_scene.removeItem(graphic_object)
+
+    def remove_element(self,
+                       device: ALL_DEV_TYPES,
+                       graphic_object: ALL_MAP_GRAPHICS = None,
+                       delete_from_db: bool = False) -> None:
+        """
+        Remove device from the diagram and the database
+        :param device: EditableDevice
+        :param graphic_object: optionally provide the graphics object associated
+        :param delete_from_db: Delete the element also from the database?
+        """
+
+        if graphic_object is not None:
+            if isinstance(graphic_object, SubstationGraphicItem):
+                self.remove_substation(substation=graphic_object,
+                                       delete_from_db=delete_from_db)
+
+            elif isinstance(graphic_object, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)):
+                self.remove_branch_graphic(line=graphic_object,  delete_from_db=delete_from_db)
+
+        self.delete_diagram_element(device=device, propagate=delete_from_db)
+
+        # if device is not None:
+        #     self.delete_diagram_element(device=device, propagate=delete_from_db)
+        #
+        #     if delete_from_db:
+        #         try:
+        #             self.circuit.delete_element(obj=device)
+        #         except ValueError as e:
+        #             print("GridMapWidget.remove_element", e)
+        #
+        # if graphic_object is not None:
+        #
+        #     if isinstance(graphic_object,
+        #                   SubstationGraphicItem):
+        #         self.remove_substation(substation=graphic_object,
+        #                                delete_from_db=delete_from_db)
+        #
+        #     self.remove_from_scene(graphic_object)
+        # else:
+        #     warn(f"Graphic object {graphic_object} and device {device} are none")
+
+        self.object_editor_table.setModel(None)
 
     def zoom_callback(self, zoom_level: int) -> None:
         """
@@ -443,32 +498,75 @@ class GridMapWidget(BaseDiagramWidget):
         self.map.diagram_scene.removeItem(nod)
         nod.line_container.remove_line_location_graphic(node)
 
-    def remove_substation(self, substation: SubstationGraphicItem):
+    def remove_substation(self, substation: SubstationGraphicItem, delete_from_db: bool = False):
         """
 
         :param substation:
+        :param delete_from_db:
         :return:
         """
         sub = self.graphics_manager.delete_device(substation.api_object)
         self.map.diagram_scene.removeItem(sub)
 
+        if delete_from_db:
+            self.circuit.delete_substation(obj=sub)
+
         br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
 
         for tpe in br_types:
+
             elms = self.graphics_manager.get_device_type_list(tpe)
+
             for elm in elms:
+
                 if (elm.api_object.get_substation_from() == substation.api_object
                         or elm.api_object.get_substation_to() == substation.api_object):
-                    self.remove_branch_graphic(elm)
 
-    def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES):
+                    self.remove_branch_graphic(elm, delete_from_db)
+
+    def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES, delete_from_db: bool = False):
         """
         Removes line from diagram and scene
         :param line: Line to remove
+        :param delete_from_db:
         """
         lin = self.graphics_manager.delete_device(line.api_object)
+
+        if delete_from_db:
+            self.circuit.delete_branch(obj=line.api_object)
+
         for seg in lin.segments_list:
             self.map.diagram_scene.removeItem(seg)
+
+    def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
+        """
+        Delete the selected items from the diagram
+        """
+        # get the selected objects
+        selected = self.get_selected()
+
+        if len(selected) > 0:
+
+            dlg = CheckListDialogue(
+                objects_list=[f"{elm.device_type.value}: {elm.name}" for elm, graphic_obj in selected],
+                title="Delete Selected"
+            )
+
+            dlg.setModal(True)
+            dlg.exec()
+
+            if dlg.is_accepted:
+
+                for i in dlg.selected_indices:
+                    elm, graphic_obj = selected[i]
+                    self.remove_element(device=elm,
+                                        graphic_object=graphic_obj,
+                                        delete_from_db=delete_from_db)
+                    # self.remove_from_scene(graphic_obj)
+
+        else:
+            info_msg('Choose some elements from the schematic', 'Delete')
+
 
     def add_api_line(self, api_object: Line) -> MapAcLine:
         """
@@ -678,8 +776,9 @@ class GridMapWidget(BaseDiagramWidget):
 
             elif isinstance(elm, Line):
                 line_container = self.add_api_line(elm)
-                for segment in line_container.segments_list:
-                    self.add_to_scene(graphic_object=segment)
+                self.add_to_scene(graphic_object=line_container)
+                # for segment in line_container.segments_list:
+                #     self.add_to_scene(graphic_object=segment)
 
             elif isinstance(elm, DcLine):
                 line_container = self.add_api_dc_line(elm)
@@ -800,28 +899,30 @@ class GridMapWidget(BaseDiagramWidget):
         Caller to the asynchronous device update sizes
         :return:
         """
-        if asynchronously:
-            try:
-                loop = asyncio.get_event_loop()
-                self.wheel_move_task = loop.create_task(self.__update_device_sizes())
-            except RuntimeError:
-                pass
-        else:
-            # do it now
-            asyncio.run(self.__update_device_sizes())
+        # if asynchronously:
+        #     try:
+        #         loop = asyncio.get_event_loop()
+        #         self.wheel_move_task = loop.create_task(self.__update_device_sizes())
+        #     except RuntimeError:
+        #         pass
+        # else:
+        #     # do it now
+        #     asyncio.run(self.__update_device_sizes())
 
-    async def __update_device_sizes(self) -> None:
+        self.__update_device_sizes()
+
+    def __update_device_sizes(self) -> None:
         """
         Update the devices' sizes
         :return:
         """
         print('Updating device sizes!')
-        # self.map.diagram_scene.blockSignals(True)
+        self.map.diagram_scene.blockSignals(True)
         self.map.diagram_scene.invalidate(self.map.diagram_scene.sceneRect())
 
-        br_scale = self.get_branch_width()
-        arrow_scale = self.get_arrow_scale()
-        se_scale = self.get_substation_scale()
+        branch_width = self.diagram.min_branch_width  # self.get_branch_width()
+        arrow_width = self.diagram.arrow_size  # self.get_arrow_scale()
+        se_width = self.diagram.min_bus_width  # self.get_substation_scale()
 
         # rescale lines
         for dev_tpe in [DeviceType.LineDevice,
@@ -830,17 +931,17 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
 
-            # this is super-slow
+            #  TODO: this is super-slow
             for key, elm_graphics in graphics_dict.items():
-                elm_graphics.set_width_scale(branch_scale=br_scale, arrow_scale=arrow_scale)
+                elm_graphics.set_width_scale(width=branch_width, arrow_width=arrow_width)
 
         # rescale substations (this is super-fast)
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
         for se_key, elm_graphics in data.items():
             elm_graphics.set_api_object_color()
-            elm_graphics.re_scale(r=se_scale)
+            elm_graphics.set_size(r=se_width)
 
-        # self.map.diagram_scene.blockSignals(False)
+        self.map.diagram_scene.blockSignals(False)
         self.map.diagram_scene.update(self.map.diagram_scene.sceneRect())
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
@@ -950,7 +1051,7 @@ class GridMapWidget(BaseDiagramWidget):
                 latitudes[i] = bus.latitude
                 nodes_dict[bus.name] = (bus.latitude, bus.longitude)
 
-        arrow_scale = self.get_arrow_scale()
+        arrow_size = self.diagram.arrow_size  # self.get_arrow_scale()
 
         # Try colouring the branches
         if self.circuit.get_branch_number_wo_hvdc():
@@ -1004,7 +1105,7 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = self.get_branch_width()
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(branch_scale=weight, arrow_scale=arrow_scale)
+                    graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
 
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
@@ -1079,7 +1180,7 @@ class GridMapWidget(BaseDiagramWidget):
                         graphic_object.set_arrows_with_hvdc_power(Pf=float(hvdc_Pf[i]), Pt=-hvdc_Pf[i])
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(branch_scale=weight, arrow_scale=arrow_scale)
+                    graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
 
         if fluid_path_flow is not None:
 

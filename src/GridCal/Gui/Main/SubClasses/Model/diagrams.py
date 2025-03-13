@@ -280,14 +280,14 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
         self.ui.defaultBusVoltageSpinBox.valueChanged.connect(self.default_voltage_change)
 
-        self.ui.min_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.max_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.min_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.max_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.arrow_size_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
+        self.ui.min_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.max_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.min_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.max_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.arrow_size_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
 
         # check boxes
-        self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_contraints)
+        self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_constraints)
 
         # context menu
         self.ui.diagramsListView.customContextMenuRequested.connect(self.show_diagrams_context_menu)
@@ -2192,9 +2192,10 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected_from_widget()
-        else:
-            pass
+            diagram_widget.delete_Selected_from_widget(delete_from_db=False)
+
+        elif isinstance(diagram_widget, GridMapWidget):
+            diagram_widget.delete_Selected_from_widget(delete_from_db=False)
 
     def delete_selected_from_the_diagram_and_db(self):
         """
@@ -2202,9 +2203,10 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected_from_widget_and_db()
-        else:
-            pass
+            diagram_widget.delete_Selected_from_widget(delete_from_db=True)
+
+        elif isinstance(diagram_widget, GridMapWidget):
+            diagram_widget.delete_Selected_from_widget(delete_from_db=True)
 
     def try_to_fix_buses_location(self):
         """
@@ -2568,7 +2570,7 @@ class DiagramsMain(CompiledArraysMain):
         except ValueError as e:
             print(e)
 
-    def set_diagrams_size_contraints(self):
+    def set_diagrams_size_constraints(self):
         """
         Set the size constraints
         """

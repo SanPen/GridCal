@@ -66,7 +66,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.general_dialogues import InputNumberDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
@@ -501,7 +501,7 @@ class SchematicWidget(BaseDiagramWidget):
         :return:
         """
         if event.key() == Qt.Key.Key_Delete:
-            self.delete_Selected_from_widget_and_db()
+            self.delete_Selected_from_widget(delete_from_db=True)
 
     def zoom_in(self, scale_factor: float = 1.15) -> None:
         """
@@ -968,8 +968,9 @@ class SchematicWidget(BaseDiagramWidget):
 
                 # try to remove nexus and children
                 if isinstance(graphic_object,
-                              (BusGraphicItem, CnGraphicItem, BusBarGraphicItem, FluidNodeGraphicItem)):
-                    graphic_object.delete_all_connections()
+                              (BusGraphicItem, CnGraphicItem,
+                               BusBarGraphicItem, FluidNodeGraphicItem)):
+                    # graphic_object.delete_all_connections()
                     for g in graphic_object.shunt_children:
                         self.diagram_scene.removeItem(g.nexus)
 
@@ -1014,6 +1015,12 @@ class SchematicWidget(BaseDiagramWidget):
                     print("SchamaticWidget.remove_element", e)
 
         elif graphic_object is not None:
+
+            if isinstance(graphic_object,
+                          (BusGraphicItem, CnGraphicItem,
+                           BusBarGraphicItem, FluidNodeGraphicItem)):
+                graphic_object.delete_all_connections()
+
             self.remove_from_scene(graphic_object)
         else:
             warn(f"Graphic object {graphic_object} and device {device} are none")
@@ -1075,52 +1082,34 @@ class SchematicWidget(BaseDiagramWidget):
                     lst.append((idx, bus, graphic_object))
         return lst
 
-    def delete_Selected_from_widget_and_db(self) -> None:
+    def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
         """
         Delete the selected items from the diagram
         """
-        # get the selected buses
+        # get the selected objects
         selected = self.get_selected()
 
         if len(selected) > 0:
-            reply = QMessageBox.question(self, 'Delete objects from the diagram and the DB',
-                                         'Are you sure that you want to delete the selected elements?',
-                                         QMessageBox.StandardButton.Yes,
-                                         QMessageBox.StandardButton.No)
 
-            if reply == QMessageBox.StandardButton.Yes.value:
+            dlg = CheckListDialogue(
+                objects_list=[f"{elm.device_type.value}: {elm.name}" for elm, graphic_obj in selected],
+                title="Delete Selected"
+            )
 
-                # remove the buses (from the schematic and the circuit)
-                for bus, graphic_obj in selected:
-                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=True)
-            else:
-                pass
-        else:
-            info_msg('Choose some elements from the schematic', 'Delete')
+            dlg.setModal(True)
+            dlg.exec()
 
-    def delete_Selected_from_widget(self) -> None:
-        """
-        Delete the selected items from the diagram
-        """
-        # get the selected buses
-        selected = self.get_selected()
+            if dlg.is_accepted:
 
-        if len(selected) > 0:
-            reply = QMessageBox.question(self, 'Delete objects from the diagram',
-                                         'Are you sure that you want to delete the selected elements?',
-                                         QMessageBox.StandardButton.Yes,
-                                         QMessageBox.StandardButton.No)
-
-            if reply == QMessageBox.StandardButton.Yes.value:
-
-                # remove the buses (from the schematic and the circuit)
-                for bus, graphic_obj in selected:
-                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=False)
-                    self.remove_from_scene(graphic_obj)
+                for i in dlg.selected_indices:
+                    elm, graphic_obj = selected[i]
+                    self.remove_element(device=elm,
+                                        graphic_object=graphic_obj,
+                                        delete_from_db=delete_from_db)
+                    # self.remove_from_scene(graphic_obj)
                     if hasattr(graphic_obj, 'nexus'):
                         self.remove_from_scene(graphic_obj.nexus)
-            else:
-                pass
+
         else:
             info_msg('Choose some elements from the schematic', 'Delete')
 

@@ -28,11 +28,16 @@ class MapLineSegment(QGraphicsLineItem):
     Segment joining two NodeGraphicItem
     """
 
-    def __init__(self, first: LineLocationGraphicItem, second: LineLocationGraphicItem, container: MapLineContainer):
+    def __init__(self,
+                 first: LineLocationGraphicItem,
+                 second: LineLocationGraphicItem,
+                 container: MapLineContainer,
+                 width: float):
         """
         Segment constructor
-        :param first: NodeGraphicItem
-        :param second: NodeGraphicItem
+        :param first: LineLocationGraphicItem
+        :param second: LineLocationGraphicItem
+        :param container: MapLineContainer
         """
         QGraphicsLineItem.__init__(self)
         self.first: LineLocationGraphicItem = first
@@ -48,7 +53,7 @@ class MapLineSegment(QGraphicsLineItem):
         self.hoover_color = QColor(self.api_object.color)
         self.hoover_color.setAlpha(180)
 
-        self.width = 0.1
+        self.width = width
 
         self.pos1: QPointF = self.first.get_center_pos()
         self.pos2: QPointF = self.second.get_center_pos()
@@ -70,6 +75,7 @@ class MapLineSegment(QGraphicsLineItem):
         self.second.add_position_change_callback(self.set_to_side_coordinates)
 
         self._pen = self.set_colour(self.color, self.style)
+        self._pen.setCosmetic(True)
         self.update_endings()
         self.needsUpdate = True
         self.setZValue(0)
@@ -99,20 +105,24 @@ class MapLineSegment(QGraphicsLineItem):
         :param width:
         :return:
         """
-        if self._pen.widthF() != width:  # Only update if width changes
+
+        # self.setScale(width / self.width)  # Faster since it avoids repainting each QPen
+
+        if self.width != width:  # Only update if width changes
             self._pen.setWidthF(width)
             self.setPen(self._pen)
+            self.width = width
 
-    def set_arrow_scale(self, width: float):
+    def set_arrow_sizes(self, width: float):
         """
 
         :param width:
         :return:
         """
-        self.arrow_p_from.setScale(width)
-        self.arrow_q_from.setScale(width)
-        self.arrow_p_to.setScale(width)
-        self.arrow_q_to.setScale(width)
+        self.arrow_p_from.set_size(width)
+        self.arrow_q_from.set_size(width)
+        self.arrow_p_to.set_size(width)
+        self.arrow_q_to.set_size(width)
 
     def set_colour(self, color: QColor, style: Qt.PenStyle):
         """
@@ -125,10 +135,10 @@ class MapLineSegment(QGraphicsLineItem):
         pen = QPen(color, self.width, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
 
         self.setPen(pen)
-        self.arrow_p_from.set_colour(color, self.arrow_p_from.w, style)
-        self.arrow_q_from.set_colour(color, self.arrow_q_from.w, style)
-        self.arrow_p_to.set_colour(color, self.arrow_p_to.w, style)
-        self.arrow_q_to.set_colour(color, self.arrow_q_to.w, style)
+        self.arrow_p_from.set_colour(color)
+        self.arrow_q_from.set_colour(color)
+        self.arrow_p_to.set_colour(color)
+        self.arrow_q_to.set_colour(color)
 
         return pen
 

@@ -348,10 +348,9 @@ class ArrowHead(QGraphicsPolygonItem):
         self.label.setPlainText("")
         self.show_text = show_text
 
-        self.w = arrow_size
-        self.h = arrow_size
-
         self.setPen(Qt.PenStyle.NoPen)
+
+        # self.setFlag(self.GraphicsItemFlag.ItemIgnoresTransformations, True)
 
     def setScale(self, scale):
         """
@@ -362,7 +361,11 @@ class ArrowHead(QGraphicsPolygonItem):
         super().setScale(scale)
         self.label.setScale(scale)
 
-    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+    def set_size(self, size: float):
+        self.arrow_size: float = size
+        self.redraw()
+
+    def set_colour(self, color: QColor):
         """
         Set color and style
         :param color: QColor instance
@@ -573,10 +576,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         pen = QPen(color, w, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
 
         self.setPen(pen)
-        self.arrow_p_from.set_colour(color, w, style)
-        self.arrow_q_from.set_colour(color, w, style)
-        self.arrow_p_to.set_colour(color, w, style)
-        self.arrow_q_to.set_colour(color, w, style)
+        self.arrow_p_from.set_colour(color)
+        self.arrow_q_from.set_colour(color)
+        self.arrow_p_to.set_colour(color)
+        self.arrow_q_to.set_colour(color)
 
         if self.symbol is not None:
             self.symbol.set_colour(color, w, style)

@@ -80,7 +80,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Create a pen with reduced line width
-        self.change_pen_width(0.5)
+        # self.change_pen_width(0.5)
+        self.setPen(Qt.PenStyle.NoPen)
+        # self.setFlag(self.GraphicsItemFlag.ItemIgnoresTransformations, True)
+        # self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
+        # self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
 
         # Create a pen with reduced line width
         self.color = QColor(self.api_object.color)
@@ -90,11 +94,12 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.border_color = QColor(self.api_object.color)  # No Alpha
 
         self.set_default_color()
+        # self.pen().setCosmetic(True)
 
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
-    def re_scale(self, r: float):
+    def set_size(self, r: float):
         """
 
         :param r: radius in pixels
@@ -315,7 +320,12 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         add_menu_entry(menu=menu,
                        text="Remove from schematic",
                        icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=self.remove_function)
+                       function_ptr=self.remove_function_from_schematic)
+
+        add_menu_entry(menu=menu,
+                       text="Remove from schematic and database",
+                       icon_path=":/Icons/icons/delete_db.svg",
+                       function_ptr=self.remove_function_from_schematic_and_db)
 
         add_menu_entry(menu=menu,
                        text="Show diagram",
@@ -368,7 +378,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         pass
 
-    def remove_function(self) -> None:
+    def remove_function_from_schematic(self) -> None:
         """
         Function to be called when Action 1 is selected.
         """
@@ -376,7 +386,19 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                              "Remove substation graphics")
 
         if ok:
-            self.editor.remove_substation(substation=self)
+            self.editor.remove_substation(substation=self, delete_from_db=False)
+
+    def remove_function_from_schematic_and_db(self) -> None:
+        """
+
+        :return:
+        """
+
+        ok = yes_no_question(f"Remove substation {self.api_object.name} from the map and the database?",
+                             "Remove substation graphics and database item")
+
+        if ok:
+            self.editor.remove_substation(substation=self, delete_from_db=True)
 
     def move_to_api_coordinates(self):
         """
@@ -454,7 +476,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :param width: New pen width.
         """
         pen = self.pen()
-        pen.setWidth(width)
+        pen.setWidthF(width)
         self.setPen(pen)
 
     def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:

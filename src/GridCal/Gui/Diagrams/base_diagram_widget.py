@@ -228,6 +228,7 @@ class BaseDiagramWidget(QSplitter):
         # video pointer
         self._video: Union[None, cv2.VideoWriter] = None
 
+
     @property
     def name(self):
         """
