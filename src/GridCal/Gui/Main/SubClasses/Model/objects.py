@@ -26,10 +26,9 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.general_dialogues import LogsDialogue
-from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
-from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
-                                                                   make_diagram_from_buses)
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_diagram_from_substations
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
 
 
 class ObjectsTableMain(DiagramsMain):
@@ -446,6 +445,55 @@ class ObjectsTableMain(DiagramsMain):
 
         return buses
 
+    def get_selected_substations(self) -> Set[dev.Substation]:
+        """
+        Get the substations matching the table selection
+        :return:  set of substations
+        """
+        buses = self.get_selected_table_buses()
+        substations = set()
+
+        for bus in buses:
+            if bus.substation is not None:
+                substations.add(bus.substation)
+
+        model = self.ui.dataStructureTableView.model()
+
+        elm2se = dict()
+        for se in self.circuit.substations:
+
+            if se.country is not None:
+                elm2se[se.country] = se
+
+            if se.community is not None:
+                elm2se[se.community] = se
+
+            if se.region is not None:
+                elm2se[se.region] = se
+
+            if se.municipality is not None:
+                elm2se[se.municipality] = se
+
+        if model is not None:
+
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
+
+            if len(objects) > 0:
+
+                if len(sel_idx) > 0:
+
+                    unique = {idx.row() for idx in sel_idx}
+
+                    for idx in unique:
+
+                        sel_obj: ALL_DEV_TYPES = model.objects[idx]
+                        se = elm2se.get(sel_obj, None)
+                        if se is not None:
+                            substations.add(se)
+
+        return substations
+
     def delete_selected_objects(self):
         """
         Delete selection
@@ -578,6 +626,49 @@ class ObjectsTableMain(DiagramsMain):
                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                              time_index=self.get_diagram_slider_index(),
                                              call_delete_db_element_func=self.call_delete_db_element)
+
+            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                diagram=diagram)
+            self.set_diagrams_list_view()
+
+    def add_new_map_from_selection(self):
+        """
+        Create a New map from a buses selection
+        """
+        selected_objects = self.get_selected_substations()
+
+        if len(selected_objects):
+            cmap_text = self.ui.palette_comboBox.currentText()
+            cmap = self.cmap_dict[cmap_text]
+
+            diagram = make_diagram_from_substations(
+                circuit=self.circuit,
+                substations=selected_objects,
+                use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                min_bus_width=self.ui.min_node_size_spinBox.value(),
+                max_bus_width=self.ui.max_node_size_spinBox.value(),
+                arrow_size=self.ui.arrow_size_size_spinBox.value(),
+                palette=cmap,
+                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()
+            )
+
+            default_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
+            tile_source = self.tile_name_dict.get(diagram.tile_source, default_tile_source)
+
+            diagram_widget = GridMapWidget(
+                gui=self,
+                tile_src=tile_source,
+                start_level=diagram.start_level,
+                longitude=diagram.longitude,
+                latitude=diagram.latitude,
+                name=diagram.name,
+                circuit=self.circuit,
+                diagram=diagram,
+                call_delete_db_element_func=self.call_delete_db_element,
+                call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation
+            )
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
                                                 diagram=diagram)
@@ -1229,6 +1320,11 @@ class ObjectsTableMain(DiagramsMain):
                           text="Add to current diagram",
                           icon_path=":/Icons/icons/schematicadd_to.svg",
                           function_ptr=self.add_objects_to_current_diagram)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New map from selection",
+                          icon_path=":/Icons/icons/map.svg",
+                          function_ptr=self.add_new_map_from_selection)
 
         gf.add_menu_entry(menu=context_menu,
                           text="Highlight buses selection",

@@ -1775,8 +1775,8 @@ class DiagramsMain(CompiledArraysMain):
 
             elif isinstance(diagram, dev.MapDiagram):
                 # select the tile source from the diagram, if not fund pick the one from the GUI
-                defualt_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
-                tile_source = self.tile_name_dict.get(diagram.tile_source, defualt_tile_source)
+                default_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
+                tile_source = self.tile_name_dict.get(diagram.tile_source, default_tile_source)
 
                 # create the map widget
                 map_widget = GridMapWidget(

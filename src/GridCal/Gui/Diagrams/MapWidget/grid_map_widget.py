@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 import os
-from typing import Union, List, Tuple, Dict, TYPE_CHECKING
+from typing import Union, List, Set, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
@@ -16,7 +16,6 @@ from PySide6.QtWidgets import QGraphicsItem, QMessageBox
 from collections.abc import Callable
 from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
-
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
@@ -319,7 +318,7 @@ class GridMapWidget(BaseDiagramWidget):
                                        delete_from_db=delete_from_db)
 
             elif isinstance(graphic_object, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)):
-                self.remove_branch_graphic(line=graphic_object,  delete_from_db=delete_from_db)
+                self.remove_branch_graphic(line=graphic_object, delete_from_db=delete_from_db)
 
         self.delete_diagram_element(device=device, propagate=delete_from_db)
 
@@ -521,7 +520,6 @@ class GridMapWidget(BaseDiagramWidget):
 
                 if (elm.api_object.get_substation_from() == substation.api_object
                         or elm.api_object.get_substation_to() == substation.api_object):
-
                     self.remove_branch_graphic(elm, delete_from_db)
 
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES, delete_from_db: bool = False):
@@ -566,7 +564,6 @@ class GridMapWidget(BaseDiagramWidget):
 
         else:
             info_msg('Choose some elements from the schematic', 'Delete')
-
 
     def add_api_line(self, api_object: Line) -> MapAcLine:
         """
@@ -1507,5 +1504,152 @@ def generate_map_diagram(
 
     # find the diagram centre and set it internally
     diagram.set_center()
+
+    return diagram
+
+
+def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], max_level: int = 1) -> Tuple[
+    List[VoltageLevel],
+    List[Line],
+    List[DcLine],
+    List[HvdcLine]]:
+    """
+    get lists of devices to expand given a root bus
+    :param circuit: MultiCircuit
+    :param substations: List of Bus
+    :param max_level: max expansion level
+    :return:
+    """
+
+    branch_idx = list()
+    bus_idx = list()
+
+    bus_dict = circuit.get_bus_index_dict()
+
+    # get all Branches
+    all_branches = circuit.get_branches() + circuit.get_switches()
+    branch_dict = {b: i for i, b in enumerate(all_branches)}
+
+    bus2se = dict()
+    for b in circuit.buses:
+        if b.substation is not None:
+            bus2se[b] = b.substation
+
+    # create a pool of buses that belong to the substations
+    bus_pool = [(b, 0) for b in circuit.buses if
+                b in substations]  # store the bus objects and their level from the root
+
+    substations = set()
+    voltage_levels = set()
+
+    selected_branches = set()
+
+    while len(bus_pool) > 0:
+
+        # search the next bus
+        bus, level = bus_pool.pop()
+
+        bus_idx.append(bus_dict[bus])
+
+        # add searched bus
+        se = bus_dict.get(bus, None)
+
+        if se is not None:
+            substations.add(se)
+
+            if level < max_level:
+
+                for i, br in enumerate(all_branches):
+
+                    if br.bus_from == bus:
+                        bus_pool.append((br.bus_to, level + 1))
+                        selected_branches.add(br)
+
+                    elif br.bus_to == bus:
+                        bus_pool.append((br.bus_from, level + 1))
+                        selected_branches.add(br)
+
+                    else:
+                        pass
+
+    # sort Branches
+    lines: List[Line] = list()
+    dc_lines: List[DcLine] = list()
+    hvdc_lines: List[HvdcLine] = list()
+
+    for obj in selected_branches:
+
+        branch_idx.append(branch_dict[obj])
+
+        if obj.device_type == DeviceType.LineDevice:
+            lines.append(obj)
+
+        elif obj.device_type == DeviceType.DCLineDevice:
+            dc_lines.append(obj)
+
+
+        elif obj.device_type == DeviceType.HVDCLineDevice:
+            hvdc_lines.append(obj)
+
+        else:
+            raise Exception(f'Unrecognized branch type {obj.device_type.value}')
+
+    return (list(voltage_levels), lines, dc_lines, hvdc_lines)
+
+
+def make_diagram_from_substations(circuit: MultiCircuit,
+                                  substations: List[Substation] | Set[Substation],
+                                  prog_func: Union[Callable, None] = None,
+                                  text_func: Union[Callable, None] = None,
+                                  use_flow_based_width: bool = False,
+                                  min_branch_width: int = 1.0,
+                                  max_branch_width=5,
+                                  min_bus_width=1.0,
+                                  max_bus_width=20,
+                                  arrow_size=20,
+                                  palette: Colormaps = Colormaps.GridCal,
+                                  default_bus_voltage: float = 10
+                                  ):
+    """
+    Create a vicinity diagram
+    :param circuit: MultiCircuit
+    :param substations: List of Bus
+    :param prog_func:
+    :param text_func:
+    :param use_flow_based_width: use flow based width
+    :param min_branch_width: minimum branch width
+    :param max_branch_width: maximum branch width
+    :param min_bus_width:
+    :param max_bus_width: maximum bus width
+    :param arrow_size: arrow size
+    :param palette: Colormaps
+    :param default_bus_voltage: default bus voltage
+    :return:
+    """
+
+    (voltage_levels, lines, dc_lines, hvdc_lines) = get_devices_to_expand(circuit=circuit, substations=substations,
+                                                                          max_level=1)
+
+    # Draw schematic subset
+    diagram = generate_map_diagram(
+        substations=substations,
+        voltage_levels=voltage_levels,
+        lines=lines,
+        dc_lines=dc_lines,
+        hvdc_lines=hvdc_lines,
+        fluid_nodes=list(),
+        fluid_paths=list(),
+        prog_func=prog_func,
+        text_func=text_func,
+        name='Map diagram',
+        use_flow_based_width=use_flow_based_width,
+        min_branch_width=min_branch_width,
+        max_branch_width=max_branch_width,
+        min_bus_width=min_bus_width,
+        max_bus_width=max_bus_width,
+        arrow_size=arrow_size,
+        palette=palette,
+        default_bus_voltage=default_bus_voltage
+    )
 
     return diagram
