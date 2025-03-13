@@ -41,8 +41,11 @@ class TilesCache(pycacheback.PyCacheBack):
         self._tiles_dir  path to the on-disk cache directory
     """
 
-    PicExtension = 'png'
-    TilePath = '{Z}/{X}/{Y}.%s' % PicExtension
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.PicExtension = 'png'
+        self.TilePath = '{Z}/{X}/{Y}.%s' % self.PicExtension
 
     def tile_date(self, key: Tuple[int, float, float]):
         """Return the creation date of a tile given its key."""
@@ -94,10 +97,10 @@ class TilesCache(pycacheback.PyCacheBack):
         try:
             os.makedirs(dir_path)
         except OSError:
-            # we assume it's a "directory exists' error, which we ignore
+            # we assume it's a 'directory exists' error, which we ignore
             pass
 
-        image.save(tile_path, TilesCache.PicExtension)
+        image.save(tile_path, self.PicExtension)
 
     def add(self, key: Tuple[int, float, float], image: QPixmap):
         """

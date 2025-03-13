@@ -470,7 +470,6 @@ class ObjectsTableMain(DiagramsMain):
                     else:
                         elm2se[elm] = [se]
 
-
         if model is not None:
 
             sel_idx = self.ui.dataStructureTableView.selectedIndexes()
@@ -639,6 +638,9 @@ class ObjectsTableMain(DiagramsMain):
             cmap_text = self.ui.palette_comboBox.currentText()
             cmap = self.cmap_dict[cmap_text]
 
+            expand_outside = yes_no_question(text="Expand outside of the given selection using the branches?",
+                                             title="Expand outside")
+
             diagram = make_diagram_from_substations(
                 circuit=self.circuit,
                 substations=selected_objects,
@@ -649,7 +651,8 @@ class ObjectsTableMain(DiagramsMain):
                 max_bus_width=self.ui.max_node_size_spinBox.value(),
                 arrow_size=self.ui.arrow_size_size_spinBox.value(),
                 palette=cmap,
-                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()
+                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                expand_outside=expand_outside
             )
 
             default_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]

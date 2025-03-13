@@ -70,8 +70,7 @@ class TileWorker(QThread):
         :param error_image: the image to return on some error
         :param refresh_tiles_after_days:
         """
-
-        QThread.__init__(self)
+        super().__init__()
 
         self.id_num = id_num
         self.server = server

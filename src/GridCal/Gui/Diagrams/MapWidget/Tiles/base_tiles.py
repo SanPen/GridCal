@@ -36,7 +36,7 @@ from PySide6.QtGui import QPixmap
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles_cache import TilesCache
 
 
-class BaseTiles(object):
+class BaseTiles:
     """A base tile object to source local tiles for pySlip."""
 
     def __init__(self,

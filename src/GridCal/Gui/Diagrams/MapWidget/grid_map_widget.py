@@ -1508,7 +1508,8 @@ def generate_map_diagram(
     return diagram
 
 
-def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], max_level: int = 1) -> Tuple[
+def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], max_level: int = 1,
+                          expand_outside: bool = True) -> Tuple[
     List[Substation],
     List[VoltageLevel],
     List[Line],
@@ -1519,6 +1520,7 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
     :param circuit: MultiCircuit
     :param substations: List of Bus
     :param max_level: max expansion level
+    :param expand_outside: whether to expand outside of the given references using the branches
     :return:
     """
 
@@ -1547,11 +1549,13 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
             for i, br in enumerate(all_branches):
 
                 if br.bus_from == bus:
-                    bus_pool.append((br.bus_to, level + 1))
+                    if expand_outside:
+                        bus_pool.append((br.bus_to, level + 1))
                     selected_branches.add(br)
 
                 elif br.bus_to == bus:
-                    bus_pool.append((br.bus_from, level + 1))
+                    if expand_outside:
+                        bus_pool.append((br.bus_from, level + 1))
                     selected_branches.add(br)
 
                 else:
@@ -1591,8 +1595,8 @@ def make_diagram_from_substations(circuit: MultiCircuit,
                                   max_bus_width=20,
                                   arrow_size=20,
                                   palette: Colormaps = Colormaps.GridCal,
-                                  default_bus_voltage: float = 10
-                                  ):
+                                  default_bus_voltage: float = 10,
+                                  expand_outside: bool = True):
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
@@ -1607,13 +1611,15 @@ def make_diagram_from_substations(circuit: MultiCircuit,
     :param arrow_size: arrow size
     :param palette: Colormaps
     :param default_bus_voltage: default bus voltage
+    :param expand_outside: whether to expand outside of the given references using the branches
     :return:
     """
 
     (substations_extended, voltage_levels,
      lines, dc_lines, hvdc_lines) = get_devices_to_expand(circuit=circuit,
                                                           substations=substations,
-                                                          max_level=1)
+                                                          max_level=1,
+                                                          expand_outside=expand_outside)
 
     # Draw schematic subset
     diagram = generate_map_diagram(
