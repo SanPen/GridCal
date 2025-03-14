@@ -480,9 +480,14 @@ class GridMapWidget(BaseDiagramWidget):
             bus1 = dialog.bus_from()
             bus2 = dialog.bus_to()
             if bus1 is not None and bus2 is not None:
-                new_line = Line(bus_from=bus1, bus_to=bus2)
-                self.add_api_line(new_line)
-                self.circuit.add_line(new_line)
+                if bus1.Vnom == bus2.Vnom:
+                    new_line = Line(bus_from=bus1, bus_to=bus2)
+                    self.add_api_line(new_line)
+                    self.circuit.add_line(new_line)
+                else:
+                    error_msg(text="The nominal voltage of the two connecting substations is not the same :(",
+                                   title="Create new line")
+                    return None
             else:
                 error_msg(text="Some of the buses was None :(", title="Create new line")
                 return None
