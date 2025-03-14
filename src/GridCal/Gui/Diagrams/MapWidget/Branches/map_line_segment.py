@@ -75,7 +75,7 @@ class MapLineSegment(QGraphicsLineItem):
         self.second.add_position_change_callback(self.set_to_side_coordinates)
 
         self._pen = self.set_colour(self.color, self.style)
-        self._pen.setCosmetic(True)
+        # self._pen.setCosmetic(True)
         self.update_endings()
         self.needsUpdate = True
         self.setZValue(0)
