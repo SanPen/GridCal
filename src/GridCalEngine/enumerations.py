@@ -1360,6 +1360,9 @@ class ResultTypes(Enum):
     BusShortCircuitActivePower = 'Short circuit active power'
     BusShortCircuitReactivePower = 'Short circuit reactive power'
 
+    BusShortCircuitActiveCurrent = 'Short circuit active current'
+    BusShortCircuitReactiveCurrent = 'Short circuit reactive current'
+
     # PTDF
     PTDF = 'PTDF'
     PTDFBusVoltageSensitivity = 'Bus voltage sensitivity'
