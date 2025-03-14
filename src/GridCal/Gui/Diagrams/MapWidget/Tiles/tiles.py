@@ -55,11 +55,7 @@ class Tiles(BaseTiles):
     A tile object to source server tiles for the widget.
     """
 
-    # allowed file types and associated values
-    AllowedFileTypes = {'png': 'PNG', 'jpg': 'JPG'}
 
-    # the number of seconds in a day
-    SecondsInADay = 60 * 60 * 24
 
     def __init__(self,
                  tile_set_name: str,
@@ -92,6 +88,15 @@ class Tiles(BaseTiles):
         :param http_proxy: proxy to use if required
         :param re_fetch_days: fetch new server tile if older than this in days (0 means don't ever update tiles)
         """
+        # perform the base class initialization
+        super().__init__(levels, tile_width, tile_height, tiles_dir, max_lru)
+
+        # allowed file types and associated values
+        self.AllowedFileTypes = {'png': 'PNG', 'jpg': 'JPG'}
+
+        # the number of seconds in a day
+        self.SecondsInADay = 60 * 60 * 24
+
         self.tile_set_name = tile_set_name
         self.tile_set_short_name = tile_set_short_name
         self.tile_set_version = tile_set_version
@@ -105,8 +110,7 @@ class Tiles(BaseTiles):
             if not os.path.isdir(level_dir):
                 os.makedirs(level_dir)
 
-        # perform the base class initialization
-        super().__init__(levels, tile_width, tile_height, tiles_dir, max_lru)
+
 
         # save params not saved in super()
         self.servers = servers

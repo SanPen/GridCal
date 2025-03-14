@@ -84,7 +84,8 @@ class MapDiagramScene(QGraphicsScene):
     """
 
     def __init__(self, parent: "MapWidget" = None) -> None:
-        super(MapDiagramScene, self).__init__(parent)
+        super().__init__(parent)
+
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.BspTreeIndex)  # For efficient item indexing
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -127,7 +128,7 @@ class MapView(QGraphicsView):
         :param scene:
         :param map_widget:
         """
-        QGraphicsView.__init__(self, scene)
+        super().__init__(scene)
 
         self._scene: QGraphicsScene = scene
 
@@ -452,7 +453,7 @@ class MapWidget(QWidget):
         :param position_callback: position change callback function
         """
 
-        QWidget.__init__(self, parent)  # inherit all parent object setup
+        super().__init__(parent)  # inherit all parent object setup
 
         # this is where you draw
         self.diagram_scene = MapDiagramScene(self)
