@@ -309,7 +309,7 @@ class MapLineSegment(QGraphicsLineItem):
         Call the line editor
         :return:
         """
-        Sbase = self.editor.circuit.Sbase
+
         Vnom = self.api_object.get_max_bus_nominal_voltage()
         templates = list()
 
@@ -320,9 +320,13 @@ class MapLineSegment(QGraphicsLineItem):
                 if Vnom == temp.Vnom:
                     templates.append(temp)
 
-        current_template = self.api_object.template
-        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
-                         templates=templates, current_template=current_template)
+        dlg = LineEditor(
+            line=self.api_object,
+            Sbase=self.editor.circuit.Sbase,
+            frequency=self.editor.circuit.fBase,
+            templates=templates,
+            current_template=self.api_object.template
+        )
         dlg.exec()
 
     def plot_profiles(self) -> None:
@@ -400,7 +404,7 @@ class MapLineSegment(QGraphicsLineItem):
         if ok:
             self.editor.remove_branch_graphic(line=self.container)
             # self.editor.circuit.delete_branch(obj=self.api_object)
-            # self.editor.delete_diagram_element(device=self.api_object)
+            self.editor.delete_diagram_element(device=self.api_object)
 
     def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """

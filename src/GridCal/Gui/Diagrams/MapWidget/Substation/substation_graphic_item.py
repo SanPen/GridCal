@@ -476,6 +476,12 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                 if bus.substation in deleted_api_objs:
                     bus.substation = self.api_object
 
+            # remove connections that are from and to the same substation
+            for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
+                for elm in self.editor.graphics_manager.get_device_type_list(tpe):
+                    if elm.api_object.get_substation_from() == elm.api_object.get_substation_to():
+                        self.editor.remove_branch_graphic(elm, delete_from_db=True)
+
         self.update_position_at_the_diagram()  # always update
 
     def new_substation_diagram(self):
