@@ -450,25 +450,35 @@ class ObjectsTableMain(DiagramsMain):
         Get the substations matching the table selection
         :return:  set of substations
         """
-        buses = self.get_selected_table_buses()
+        # buses = self.get_selected_table_buses()
         substations = set()
 
-        for bus in buses:
-            if bus.substation is not None:
-                substations.add(bus.substation)
+        # for bus in buses:
+        #     if bus.substation is not None:
+        #         substations.add(bus.substation)
 
         model = self.ui.dataStructureTableView.model()
 
         elm2se = dict()
+
+        # Associate country, community, region and municipality to substation
         for se in self.circuit.substations:
-
             for elm in [se.country, se.community, se.region, se.municipality]:
-
                 if elm is not None:
                     if elm in elm2se:
                         elm2se[elm].append(se)
                     else:
                         elm2se[elm] = [se]
+
+        # associate voltage levels to substations
+        for vl in self.circuit.voltage_levels:
+            if vl.substation is not None:
+                elm2se[vl] = [vl.substation]
+
+        # associate buses to substations
+        for bus in self.circuit.buses:
+            if bus.substation is not None:
+                elm2se[bus] = [bus.substation]
 
         if model is not None:
 
@@ -1305,38 +1315,6 @@ class ObjectsTableMain(DiagramsMain):
                           icon_path=":/Icons/icons/copy.svg",
                           function_ptr=self.copy_selected_idtag)
 
-        context_menu.addSeparator()
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="New vicinity diagram",
-                          icon_path=":/Icons/icons/grid_icon.svg",
-                          function_ptr=self.add_bus_vicinity_diagram_from_model)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="New diagram from selection",
-                          icon_path=":/Icons/icons/schematicadd_to.svg",
-                          function_ptr=self.add_new_bus_diagram_from_selection)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="Add to current diagram",
-                          icon_path=":/Icons/icons/schematicadd_to.svg",
-                          function_ptr=self.add_objects_to_current_diagram)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="New map from selection",
-                          icon_path=":/Icons/icons/map.svg",
-                          function_ptr=self.add_new_map_from_selection)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="Highlight buses selection",
-                          icon_path=":/Icons/icons/highlight.svg",
-                          function_ptr=self.highlight_selection_buses)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="Highlight based on property",
-                          icon_path=":/Icons/icons/highlight2.svg",
-                          function_ptr=self.highlight_based_on_property)
-
         gf.add_menu_entry(menu=context_menu,
                           text="Crop model to buses selection",
                           icon_path=":/Icons/icons/schematic.svg",
@@ -1356,6 +1334,40 @@ class ObjectsTableMain(DiagramsMain):
                           text="Assign to profile",
                           icon_path=":/Icons/icons/assign_to_profile.svg",
                           function_ptr=self.assign_to_profile)
+
+        context_menu.addSeparator()
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New vicinity diagram",
+                          icon_path=":/Icons/icons/grid_icon.svg",
+                          function_ptr=self.add_bus_vicinity_diagram_from_model)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New diagram from selection",
+                          icon_path=":/Icons/icons/schematicadd_to.svg",
+                          function_ptr=self.add_new_bus_diagram_from_selection)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Add to current diagram",
+                          icon_path=":/Icons/icons/schematicadd_to.svg",
+                          function_ptr=self.add_objects_to_current_diagram)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Highlight buses selection",
+                          icon_path=":/Icons/icons/highlight.svg",
+                          function_ptr=self.highlight_selection_buses)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Highlight based on property",
+                          icon_path=":/Icons/icons/highlight2.svg",
+                          function_ptr=self.highlight_based_on_property)
+
+        context_menu.addSeparator()
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="New map from selection",
+                          icon_path=":/Icons/icons/map.svg",
+                          function_ptr=self.add_new_map_from_selection)
 
         # Convert global position to local position of the list widget
         mapped_pos = self.ui.dataStructureTableView.viewport().mapToGlobal(pos)

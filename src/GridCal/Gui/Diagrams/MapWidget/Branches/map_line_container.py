@@ -185,6 +185,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             if nod.index > node.index:
                 nod.index = nod.index - 1
 
+        self.editor.remove_line_location_graphic(node)
         self.redraw_segments()
 
     def redraw_segments(self) -> None:

@@ -12,7 +12,7 @@ from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.general_dialogues import InputNumberDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
@@ -87,10 +87,6 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
         # Create a pen with reduced line width
         self.change_pen_width(0.05 * size)
-        # self.setPen(Qt.PenStyle.NoPen)
-        # self.setFlag(self.GraphicsItemFlag.ItemIgnoresTransformations, True)
-        # self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
-        # self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
 
         # Create a pen with reduced line width
         self.color = QColor(self.api_object.color)
@@ -100,10 +96,17 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.border_color = QColor(self.api_object.color)  # No Alpha
 
         self.set_default_color()
-        # self.pen().setCosmetic(True)
 
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+    def merge(self, se: "SubstationGraphicItem"):
+        """
+        Merge a substation into this one
+        :param se: other SubstationGraphicItem
+        """
+        self._callbacks += se._callbacks
+        self.voltage_level_graphics += se.voltage_level_graphics
 
     def set_size(self, r: float):
         """
@@ -324,6 +327,11 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                        function_ptr=self.create_new_line)
 
         add_menu_entry(menu=menu,
+                       text="Merge selected substations here",
+                       icon_path=":/Icons/icons/fusion.svg",
+                       function_ptr=self.merge_selected_substations)
+
+        add_menu_entry(menu=menu,
                        text="Set coordinates to DB",
                        icon_path=":/Icons/icons/down.svg",
                        function_ptr=self.move_to_api_coordinates)
@@ -428,6 +436,48 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
             x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
             self.set_callbacks(x, y)
 
+    def merge_selected_substations(self):
+        """
+        Merge selected substations into this one
+        """
+        selected = self.editor.get_selected_substations()
+
+        dlg = CheckListDialogue(
+            objects_list=[f"{graphic_obj.api_object.device_type.value}: {graphic_obj.api_object.name}"
+                          for graphic_obj in selected],
+            title=f"Merge into {self.api_object.name}"
+        )
+
+        dlg.setModal(True)
+        dlg.exec()
+
+        if dlg.is_accepted:
+
+            deleted_api_objs: List[Substation] = list()
+
+            for i in dlg.selected_indices:
+
+                se_graphics = selected[i]
+
+                deleted_api_objs.append(se_graphics.api_object)
+
+                if se_graphics != self:
+                    self.merge(se=se_graphics)
+                    self.editor.remove_substation(substation=se_graphics,
+                                                  delete_from_db=True,
+                                                  delete_connections=False)
+
+            # re-index the stuff pointing at deleted api elements to this api object
+            for vl in self.editor.circuit.voltage_levels:
+                if vl.substation in deleted_api_objs:
+                    vl.substation = self.api_object
+
+            for bus in self.editor.circuit.buses:
+                if bus.substation in deleted_api_objs:
+                    bus.substation = self.api_object
+
+        self.update_position_at_the_diagram()  # always update
+
     def new_substation_diagram(self):
         """
         Function to create a new substation
@@ -527,3 +577,5 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         # https://maps.google.com/?q=<lat>,<lng>
         url = f"https://www.google.com/maps/?q={self.lat},{self.lon}"
         webbrowser.open(url)
+
+

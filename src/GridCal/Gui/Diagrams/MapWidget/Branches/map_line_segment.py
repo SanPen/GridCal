@@ -398,8 +398,9 @@ class MapLineSegment(QGraphicsLineItem):
             ok = True
 
         if ok:
-            self.editor.circuit.delete_branch(obj=self.api_object)
-            self.editor.delete_diagram_element(device=self.api_object)
+            self.editor.remove_branch_graphic(line=self.container)
+            # self.editor.circuit.delete_branch(obj=self.api_object)
+            # self.editor.delete_diagram_element(device=self.api_object)
 
     def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """

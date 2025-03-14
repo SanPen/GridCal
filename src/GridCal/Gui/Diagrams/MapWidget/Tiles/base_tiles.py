@@ -92,7 +92,9 @@ class BaseTiles:
                 raise Exception(msg) from None
 
             msg = "The tiles directory %s doesn't exist." % tiles_dir
-            raise Exception(msg) from None
+            print(msg)
+            # raise Exception(msg) from None
+            os.makedirs(tiles_dir)
 
     @property
     def max_level(self):

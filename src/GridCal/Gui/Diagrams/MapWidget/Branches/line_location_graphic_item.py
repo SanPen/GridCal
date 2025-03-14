@@ -226,12 +226,9 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
     def remove(self):
         """
-
-        :return:
+        Remove
         """
-        # Implement the functionality for Action 1 here
-        self.editor.remove_line_location_graphic(self)
-
+        self.line_container.removeNode(node=self)
 
 
     def setNodeColor(self, inner_color: QColor, border_color: QColor = None) -> None:

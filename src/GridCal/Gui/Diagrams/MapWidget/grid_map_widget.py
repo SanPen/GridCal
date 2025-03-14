@@ -224,8 +224,9 @@ class GridMapWidget(BaseDiagramWidget):
         self.thread_pool = QThreadPool()
         self.wheel_move_task: QRunnable | None = None
 
-        # draw
+        # draw & center
         self.draw()
+        self.center()
 
     def set_diagram(self, diagram: MapDiagram):
         """
@@ -500,13 +501,16 @@ class GridMapWidget(BaseDiagramWidget):
 
         nod = self.graphics_manager.delete_device(node.api_object)
         self.map.diagram_scene.removeItem(nod)
-        nod.line_container.remove_line_location_graphic(node)
 
-    def remove_substation(self, substation: SubstationGraphicItem, delete_from_db: bool = False):
+    def remove_substation(self,
+                          substation: SubstationGraphicItem,
+                          delete_from_db: bool = False,
+                          delete_connections: bool = True):
         """
 
         :param substation:
         :param delete_from_db:
+        :param delete_connections:
         :return:
         """
         sub = self.graphics_manager.delete_device(substation.api_object)
@@ -515,19 +519,20 @@ class GridMapWidget(BaseDiagramWidget):
         if delete_from_db:
             self.circuit.delete_substation(obj=sub)
 
-        br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
+        if delete_connections:
+            br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
 
-        for tpe in br_types:
+            for tpe in br_types:
 
-            elms = self.graphics_manager.get_device_type_list(tpe)
+                elms = self.graphics_manager.get_device_type_list(tpe)
 
-            for elm in elms:
+                for elm in elms:
 
-                if (elm.api_object.get_substation_from() == substation.api_object
-                        or elm.api_object.get_substation_to() == substation.api_object):
-                    self.remove_branch_graphic(elm, delete_from_db)
+                    if (elm.api_object.get_substation_from() == substation.api_object
+                            or elm.api_object.get_substation_to() == substation.api_object):
+                        self.remove_branch_graphic(elm, delete_from_db)
 
-    def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES, delete_from_db: bool = False):
+    def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """
         Removes line from diagram and scene
         :param line: Line to remove
@@ -535,11 +540,13 @@ class GridMapWidget(BaseDiagramWidget):
         """
         lin = self.graphics_manager.delete_device(line.api_object)
 
-        if delete_from_db:
-            self.circuit.delete_branch(obj=line.api_object)
+        if lin is not None:
 
-        for seg in lin.segments_list:
-            self.map.diagram_scene.removeItem(seg)
+            if delete_from_db:
+                self.circuit.delete_branch(obj=line.api_object)
+
+            for seg in lin.segments_list:
+                self.map.diagram_scene.removeItem(seg)
 
     def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
         """
@@ -957,6 +964,24 @@ class GridMapWidget(BaseDiagramWidget):
         for idtag, graphic_object in dev_dict.items():
             graphic_object.resize(new_radius)
             graphic_object.change_pen_width(pen_width)
+
+    def center(self):
+        """
+        Center the diagram
+        """
+        lat = 0.0
+        lon = 0.0
+        n = 0
+        for graphic_obj in self.graphics_manager.get_device_type_list(DeviceType.SubstationDevice):
+            lat += graphic_obj.lat
+            lon += graphic_obj.lon
+            n += 1
+
+        if n > 0:
+            lat /= n
+            lon /= n
+            self.map.pan_position(latitude=lat, longitude=lon)
+
 
     def colour_results(self,
                        Sbus: CxVec,

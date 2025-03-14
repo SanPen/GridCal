@@ -354,16 +354,19 @@ class DiagramsMain(CompiledArraysMain):
         Center the nodes in the screen
         """
 
-        diagram = self.get_selected_diagram_widget()
-        if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
+        widget = self.get_selected_diagram_widget()
+        if widget is not None:
+            if isinstance(widget, SchematicWidget):
                 selected = self.get_selected_buses()
 
                 if len(selected) == 0:
-                    diagram.center_nodes(elements=None)
+                    widget.center_nodes(elements=None)
                 else:
                     buses = [bus for i, bus, graphic in selected]
-                    diagram.center_nodes(elements=buses)
+                    widget.center_nodes(elements=buses)
+
+            elif isinstance(widget, GridMapWidget):
+                widget.center()
 
     def get_selected_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:
         """
