@@ -55,6 +55,7 @@ class SubstationDesigner(QtWidgets.QDialog):
         self._accepted = False
 
         self.ui.se_name_lineEdit.setText(f"Substation {self.grid.get_substation_number()}")
+        self.ui.se_code_lineEdit.setText('')
 
         obj1 = VoltageLevelTemplate(name="VL", voltage=self.default_voltage,
                                     device_type=DeviceType.VoltageLevelTemplate)
@@ -79,6 +80,13 @@ class SubstationDesigner(QtWidgets.QDialog):
         :return:
         """
         return self.ui.se_name_lineEdit.text()
+
+    def get_code(self):
+        """
+        Get the SE code
+        :return:
+        """
+        return self.ui.se_code_lineEdit.text()
 
     def get_selected_objects(self):
         """

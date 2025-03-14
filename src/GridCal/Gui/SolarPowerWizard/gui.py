@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -28,17 +28,17 @@ class Ui_MainWindow(object):
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(836, 561)
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/solar_power.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/solar_power.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         MainWindow.setWindowIcon(icon)
         self.actionCopy_to_clipboard = QAction(MainWindow)
         self.actionCopy_to_clipboard.setObjectName(u"actionCopy_to_clipboard")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionCopy_to_clipboard.setIcon(icon1)
         self.actionSave = QAction(MainWindow)
         self.actionSave.setObjectName(u"actionSave")
         icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionSave.setIcon(icon2)
         self.verticalLayout = QVBoxLayout(MainWindow)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -128,7 +128,7 @@ class Ui_MainWindow(object):
         self.plotButton = QPushButton(self.frame_4)
         self.plotButton.setObjectName(u"plotButton")
         icon3 = QIcon()
-        icon3.addFile(u":/Icons/icons/plot.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/Icons/icons/plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.plotButton.setIcon(icon3)
 
         self.gridLayout.addWidget(self.plotButton, 1, 0, 1, 2)

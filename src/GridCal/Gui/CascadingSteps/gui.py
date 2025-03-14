@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -43,7 +43,7 @@ class Ui_Dialog(object):
         self.run_cascade_pushButton = QPushButton(self.frame_11)
         self.run_cascade_pushButton.setObjectName(u"run_cascade_pushButton")
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/run_cascade.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/run_cascade.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.run_cascade_pushButton.setIcon(icon)
 
         self.horizontalLayout_3.addWidget(self.run_cascade_pushButton)
@@ -51,7 +51,7 @@ class Ui_Dialog(object):
         self.run_cascade_step_pushButton = QPushButton(self.frame_11)
         self.run_cascade_step_pushButton.setObjectName(u"run_cascade_step_pushButton")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.run_cascade_step_pushButton.setIcon(icon1)
 
         self.horizontalLayout_3.addWidget(self.run_cascade_step_pushButton)
@@ -59,7 +59,7 @@ class Ui_Dialog(object):
         self.copy_cascade_step_pushButton = QPushButton(self.frame_11)
         self.copy_cascade_step_pushButton.setObjectName(u"copy_cascade_step_pushButton")
         icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.copy_cascade_step_pushButton.setIcon(icon2)
 
         self.horizontalLayout_3.addWidget(self.copy_cascade_step_pushButton)
@@ -71,7 +71,7 @@ class Ui_Dialog(object):
         self.clear_cascade_pushButton = QPushButton(self.frame_11)
         self.clear_cascade_pushButton.setObjectName(u"clear_cascade_pushButton")
         icon3 = QIcon()
-        icon3.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.clear_cascade_pushButton.setIcon(icon3)
 
         self.horizontalLayout_3.addWidget(self.clear_cascade_pushButton)

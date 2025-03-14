@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'load_designer_ui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -185,7 +185,7 @@ class Ui_Dialog(object):
         self.draw_by_peak_pushButton = QPushButton(self.frame_7)
         self.draw_by_peak_pushButton.setObjectName(u"draw_by_peak_pushButton")
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.draw_by_peak_pushButton.setIcon(icon)
 
         self.horizontalLayout_8.addWidget(self.draw_by_peak_pushButton)

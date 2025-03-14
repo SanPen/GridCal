@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -30,7 +30,7 @@ class Ui_mainWindow(object):
         mainWindow.setBaseSize(QSize(0, 0))
         mainWindow.setAcceptDrops(True)
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/roseta.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/roseta.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         mainWindow.setWindowIcon(icon)
         mainWindow.setAutoFillBackground(False)
         mainWindow.setIconSize(QSize(48, 48))
@@ -42,12 +42,12 @@ class Ui_mainWindow(object):
         self.actionOpen = QAction(mainWindow)
         self.actionOpen.setObjectName(u"actionOpen")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/loadc.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/Icons/icons/loadc.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionOpen.setIcon(icon1)
         self.actionConvert_to_psse = QAction(mainWindow)
         self.actionConvert_to_psse.setObjectName(u"actionConvert_to_psse")
         icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionConvert_to_psse.setIcon(icon2)
         self.actionConvert_to_CGMES = QAction(mainWindow)
         self.actionConvert_to_CGMES.setObjectName(u"actionConvert_to_CGMES")

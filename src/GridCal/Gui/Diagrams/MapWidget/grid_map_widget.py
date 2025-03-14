@@ -846,7 +846,10 @@ class GridMapWidget(BaseDiagramWidget):
         if dlg.was_ok():
 
             # create the SE
-            se_object = Substation(name=dlg.get_name(), latitude=lat, longitude=lon)
+            se_object = Substation(name=dlg.get_name(),
+                                   code=dlg.get_code(),
+                                   latitude=lat,
+                                   longitude=lon)
 
             self.circuit.add_substation(obj=se_object)
             substation_graphics = self.add_api_substation(api_object=se_object, lat=lat, lon=lon)
