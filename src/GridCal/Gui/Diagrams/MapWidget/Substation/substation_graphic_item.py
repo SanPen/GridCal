@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+import webbrowser
 from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsRectItem
@@ -133,6 +134,8 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
+
+            self.change_pen_width(0.05 * self.size)
 
             self.update_position_at_the_diagram()
 
@@ -345,6 +348,11 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                        icon_path=":/Icons/icons/plot.svg",
                        function_ptr=self.plot)
 
+        add_menu_entry(menu=menu,
+                       text="Open in street view",
+                       icon_path=":/Icons/icons/map.svg",
+                       function_ptr=self.open_street_view)
+
         menu.exec_(event.screenPos())
 
     def create_new_line(self):
@@ -510,3 +518,12 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         """
         # Example: color assignment
         self.set_color(self.color, self.border_color)
+
+    def open_street_view(self):
+        """
+        Call open street maps
+        :return:
+        """
+        # https://maps.google.com/?q=<lat>,<lng>
+        url = f"https://www.google.com/maps/?q={self.lat},{self.lon}"
+        webbrowser.open(url)
