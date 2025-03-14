@@ -28,8 +28,8 @@ class PowerLineItem(QGraphicsLineItem):
 
     def update_line(self):
         """Update the line to match the current position of the nodes."""
-        start_pos = self.start_node.pos() + QPointF(self.start_node.radius, self.start_node.radius)
-        end_pos = self.end_node.pos() + QPointF(self.end_node.radius, self.end_node.radius)
+        start_pos = self.start_node.pos() + QPointF(self.start_node.size, self.start_node.size)
+        end_pos = self.end_node.pos() + QPointF(self.end_node.size, self.end_node.size)
         self.setLine(QLineF(start_pos, end_pos))
         self.update()  # Trigger redraw of the arrows
 

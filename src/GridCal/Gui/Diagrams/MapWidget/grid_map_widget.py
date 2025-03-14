@@ -9,7 +9,6 @@ import json
 import numpy as np
 import math
 import pandas as pd
-from warnings import warn
 from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox
@@ -27,6 +26,7 @@ from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
+from GridCalEngine.Topology.topology import accept_line_connection
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
@@ -480,7 +480,7 @@ class GridMapWidget(BaseDiagramWidget):
             bus1 = dialog.bus_from()
             bus2 = dialog.bus_to()
             if bus1 is not None and bus2 is not None:
-                if bus1.Vnom == bus2.Vnom:
+                if accept_line_connection(V1=bus1.Vnom, V2=bus2.Vnom, branch_connection_voltage_tolerance=0.1):
                     new_line = Line(bus_from=bus1, bus_to=bus2)
                     self.add_api_line(new_line)
                     self.circuit.add_line(new_line)
@@ -652,7 +652,7 @@ class GridMapWidget(BaseDiagramWidget):
                                                api_object=api_object,
                                                lat=lat,
                                                lon=lon,
-                                               r=self.diagram.min_bus_width)
+                                               size=self.diagram.min_bus_width)
 
         self.graphics_manager.add_device(elm=api_object,
                                          graphic=graphic_object)

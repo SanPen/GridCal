@@ -28,9 +28,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="improved gslv compatibility">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added the short circuit current to the calculations and results per bus">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Tiles/TileProviders/cartodb.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Tiles/TileProviders/cartodb.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/topology.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/topology.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_3.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -77,12 +84,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "JosepFanals"
-  }
-}]]></component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
       <filtered-out-file-type name="LOCAL_BRANCH" />
@@ -98,12 +99,6 @@
       </list>
     </option>
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/sanpen/gridcal",
-    "accountId": "c83e7de2-10f3-4bb6-9d42-f56a405fd4ff"
-  }
-}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" root0="FORCE_HIGHLIGHTING" />
@@ -177,11 +172,10 @@
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.circuit_to_optimods.executor": "Run",
-    "Python.grid_map_widget.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
     "Python.post_example.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
@@ -194,6 +188,7 @@
     "Python.run_master.executor": "Run",
     "Python.run_server_farm.executor": "Debug",
     "Python.server_example.executor": "Run",
+    "Python.short_circuit_driver.executor": "Run",
     "Python.test_power_flow.executor": "Run",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
     "Python.update_gui_file.executor": "Run",
@@ -204,8 +199,8 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "immprove__map__performance",
-    "last_opened_file_path": "/Users/josep/Desktop/gridcal",
+    "git-widget-placeholder": "199__finalize__cgmes__import",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/trunk/server",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -237,7 +232,7 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -257,36 +252,6 @@
       <option name="CUSTOM_SETTINGS" value="false" />
       <option name="USE_OPTIONS" value="false" />
       <option name="OPTIONS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="DjangoTestsConfigurationType">
-      <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="TARGET" value="" />
-      <option name="SETTINGS_FILE" value="" />
-      <option name="CUSTOM_SETTINGS" value="false" />
-      <option name="USE_OPTIONS" value="false" />
-      <option name="OPTIONS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="MatlabApplication">
-      <option name="FILE_PATH" value="" />
-      <option name="INTERPRETER_PATH" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="PARAMETERS" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
@@ -336,20 +301,6 @@
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Python.FlaskServer">
-      <module name="GridCalEngine" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="Python.FlaskServer">
@@ -470,6 +421,36 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="DjangoTestsConfigurationType">
+      <module name="GridCalEngine" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="TARGET" value="" />
+      <option name="SETTINGS_FILE" value="" />
+      <option name="CUSTOM_SETTINGS" value="false" />
+      <option name="USE_OPTIONS" value="false" />
+      <option name="OPTIONS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="MatlabApplication">
+      <option name="FILE_PATH" value="" />
+      <option name="INTERPRETER_PATH" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="PARAMETERS" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -516,29 +497,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalServer" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalServer/run.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="run_master" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -554,6 +512,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/server/run_master.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="short_circuit_driver" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_driver.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -629,6 +610,20 @@
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Python.FlaskServer">
+      <module name="GridCalEngine" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
@@ -756,26 +751,27 @@
     <list>
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
-      <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.run" />
-      <item itemvalue="Python.run_master" />
+      <item itemvalue="Python.short_circuit_driver" />
       <item itemvalue="Python.upload_to_pypi" />
+      <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python.run_master" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python.short_circuit_driver" />
         <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python.run_master" />
-        <item itemvalue="Python.run" />
-        <item itemvalue="Python tests.pytest in tests" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-fc1d50d2d915-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.24978.54" />
+        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-PY-243.22562.220" />
+        <option value="bundled-python-sdk-0fc6c617c4bd-9a18a617cbe4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.22562.220" />
       </set>
     </attachedChunks>
   </component>
@@ -1578,7 +1574,10 @@
       <workItem from="1741855539444" duration="12566000" />
       <workItem from="1741877198853" duration="2665000" />
       <workItem from="1741879870489" duration="4511000" />
-      <workItem from="1741884537477" duration="839000" />
+      <workItem from="1741884537477" duration="3488000" />
+      <workItem from="1741939383978" duration="1842000" />
+      <workItem from="1741943123501" duration="1011000" />
+      <workItem from="1741945222742" duration="5406000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1923,7 +1922,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="594" />
+    <option name="localTasksCounter" value="597" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1956,7 +1955,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="devel" />
+                        <option value="immprove_map_performance" />
                       </list>
                     </value>
                   </entry>
@@ -1969,8 +1968,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved docs" />
-    <MESSAGE value="Improved UCTE parsing protection" />
     <MESSAGE value="added ys and ysh to the BranchParent" />
     <MESSAGE value="Particularized saving AdmittanceMatrix as real and imaginary&#10;Added phase flags to the bus" />
     <MESSAGE value="Added trunk scripts for 3-phase Ybus composition" />
@@ -1994,197 +1991,199 @@
     <MESSAGE value="fixed some server driver logic after the while loop removal" />
     <MESSAGE value="Improved delete functions in the map&#10;Improved drawing performance" />
     <MESSAGE value="Created add_new_bus_diagram_from_selection function" />
-    <option name="LAST_COMMIT_MESSAGE" value="Created add_new_bus_diagram_from_selection function" />
+    <MESSAGE value="improved add_new_bus_diagram_from_selection function" />
+    <MESSAGE value="Added the short circuit current to the calculations and results per bus" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added the short circuit current to the calculations and results per bus" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/research/power_flow/asd/josep/v3_pv.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/power_flow/asd/josep/v3_pv.py</url>
           <line>163</line>
           <option name="timeStamp" value="189" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/OPF/ac_opf_ts.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/OPF/ac_opf_ts.py</url>
           <line>403</line>
           <option name="timeStamp" value="328" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/tests/test_transformer_regulator.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/tests/test_transformer_regulator.py</url>
           <line>185</line>
           <option name="timeStamp" value="352" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="conv == DeviceType" language="Python" />
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/excel_interface.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/excel_interface.py</url>
           <line>276</line>
           <option name="timeStamp" value="402" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/helm_power_flow.py</url>
           <line>185</line>
           <option name="timeStamp" value="407" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>1166</line>
           <option name="timeStamp" value="418" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>1192</line>
           <option name="timeStamp" value="419" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>1189</line>
           <option name="timeStamp" value="420" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Sparse/sparse_utils.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Sparse/sparse_utils.py</url>
           <line>453</line>
           <option name="timeStamp" value="486" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/h5_interface.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/h5_interface.py</url>
           <line>101</line>
           <option name="timeStamp" value="625" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Core/DataStructures/generator_data.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Core/DataStructures/generator_data.py</url>
           <line>173</line>
           <option name="timeStamp" value="740" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/power_world_parser.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/power_world_parser.py</url>
           <line>237</line>
           <option name="timeStamp" value="808" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/StateEstimation/state_estimation.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/StateEstimation/state_estimation.py</url>
           <line>285</line>
           <option name="timeStamp" value="851" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/ThirdParty/pulp/solver_interfaces/cplex.py</url>
           <line>127</line>
           <option name="timeStamp" value="922" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>551</line>
           <option name="timeStamp" value="995" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/jacobian_based_power_flow.py</url>
           <line>543</line>
           <option name="timeStamp" value="996" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Core/admittance_matrices.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Core/admittance_matrices.py</url>
           <line>296</line>
           <option name="timeStamp" value="1032" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="nnz == 10" language="Python" />
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/ac_jacobian.py</url>
           <line>140</line>
           <option name="timeStamp" value="1045" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
           <line>165</line>
           <option name="timeStamp" value="1048" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="k == 7" language="Python" />
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
           <line>159</line>
           <option name="timeStamp" value="1050" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="k == 7" language="Python" />
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/derivatives.py</url>
           <line>145</line>
           <option name="timeStamp" value="1051" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/NumericalMethods/newton_raphson.py</url>
           <line>121</line>
           <option name="timeStamp" value="1056" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/PowerFlow/power_flow_worker.py</url>
           <line>503</line>
           <option name="timeStamp" value="1115" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/IO/cim/cim_parser.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/IO/cim/cim_parser.py</url>
           <line>848</line>
           <option name="timeStamp" value="1116" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>200</line>
           <option name="timeStamp" value="1133" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>545</line>
           <option name="timeStamp" value="1135" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>543</line>
           <option name="timeStamp" value="1136" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_2.py</url>
           <line>531</line>
           <option name="timeStamp" value="1137" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_3.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/derivatives_and_jacobian/branch_power_3.py</url>
           <line>22</line>
           <option name="timeStamp" value="1144" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/research/experimental_readers/arrillagas_book_grids_to_gridcal.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/research/experimental_readers/arrillagas_book_grids_to_gridcal.py</url>
           <line>58</line>
           <option name="timeStamp" value="1145" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
           <line>238</line>
           <option name="timeStamp" value="1160" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_driver.py</url>
           <line>240</line>
           <option name="timeStamp" value="1161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit.py</url>
           <line>98</line>
           <option name="timeStamp" value="1177" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
           <line>270</line>
           <option name="timeStamp" value="1178" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Engine/Simulations/ShortCircuitStudies/short_circuit_worker.py</url>
           <line>108</line>
           <option name="timeStamp" value="1179" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/trunk/qt_related/se_editor.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/trunk/qt_related/se_editor.py</url>
           <line>78</line>
           <option name="timeStamp" value="1829" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$USER_HOME$/Comparison/GridCal/src/GridCal/Gui/Main/update_gui_file.py</url>
+          <url>file://$PROJECT_DIR$/../../Comparison/GridCal/src/GridCal/Gui/Main/update_gui_file.py</url>
           <line>23</line>
           <option name="timeStamp" value="2078" />
         </line-breakpoint>
@@ -2400,12 +2399,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>523</line>
+          <line>527</line>
           <option name="timeStamp" value="2515" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>534</line>
+          <line>538</line>
           <option name="timeStamp" value="2516" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2425,17 +2424,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>1562</line>
+          <line>1566</line>
           <option name="timeStamp" value="2525" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>1581</line>
+          <line>1585</line>
           <option name="timeStamp" value="2526" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>1639</line>
+          <line>1643</line>
           <option name="timeStamp" value="2528" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2447,6 +2446,16 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py</url>
           <line>655</line>
           <option name="timeStamp" value="2530" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
+          <line>88</line>
+          <option name="timeStamp" value="2532" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py</url>
+          <line>511</line>
+          <option name="timeStamp" value="2533" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2537,7 +2546,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_contingency_test_contingency.coverage" NAME="Nosetests for test_contingency.test_contingency Coverage Results" MODIFIED="1701701999217" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_grid_diff_test_add_stuff_roundtrip.coverage" NAME="pytest for test_grid_diff.test_add_stuff_roundtrip Coverage Results" MODIFIED="1729768456435" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1741885107387" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1741950082078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power.coverage" NAME="branch_power Coverage Results" MODIFIED="1659016478801" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
@@ -2899,10 +2908,10 @@
     <SUITE FILE_PATH="coverage/GridCal$run_contingencies.coverage" NAME="run_contingencies Coverage Results" MODIFIED="1707303266446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/contingencies" />
     <SUITE FILE_PATH="coverage/GridCal$flatpak_pip_generator.coverage" NAME="flatpak-pip-generator Coverage Results" MODIFIED="1694345245258" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$run_child_1.coverage" NAME="run_child_1 Coverage Results" MODIFIED="1741517519759" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/server" />
-    <SUITE FILE_PATH="coverage/GridCal$short_circuit_driver.coverage" NAME="short_circuit_driver Coverage Results" MODIFIED="1660563199034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/ShortCircuitStudies" />
+    <SUITE FILE_PATH="coverage/GridCal$short_circuit_driver.coverage" NAME="short_circuit_driver Coverage Results" MODIFIED="1741948028642" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_continuation_power_flow.coverage" NAME="Nosetests for tests.test_continuation_power_flow Coverage Results" MODIFIED="1712338444431" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_power_flow_test_dc_pf_ieee14.coverage" NAME="Nosetests for test_power_flow.test_dc_pf_ieee14 Coverage Results" MODIFIED="1708459374133" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1741729635215" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1741948044557" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$LineBuilderDialogue.coverage" NAME="LineBuilderDialogue Coverage Results" MODIFIED="1633774223527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_ptdf_test_ptdf_generation_contingencies.coverage" NAME="Nosetests for tests.test_ptdf.test_ptdf_generation_contingencies Coverage Results" MODIFIED="1710155943890" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$power_world_parser.coverage" NAME="power_world_parser Coverage Results" MODIFIED="1632911407871" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />

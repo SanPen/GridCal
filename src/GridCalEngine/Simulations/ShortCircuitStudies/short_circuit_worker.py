@@ -112,7 +112,6 @@ def short_circuit_ph3(nc: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: in
 
 def short_circuit_unbalanced(nc: NumericalCircuit,
                              Vpf: CxVec,
-                             Vnom: Vec,
                              Zf: CxVec,
                              bus_index: int,
                              fault_type: FaultType):
@@ -251,7 +250,7 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                                    Y0=adm0.Ybus,
                                                    Y1=adm1.Ybus,
                                                    Y2=adm2.Ybus,
-                                                   Vnom=Vnom,
+                                                   Vnom=nc.bus_data.Vnom,
                                                    Vbus=Vpf,
                                                    Zf=Zf,
                                                    fault_type=fault_type,

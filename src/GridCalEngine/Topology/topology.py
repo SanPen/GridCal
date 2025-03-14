@@ -47,7 +47,7 @@ def find_islands_numba(node_number: int, indptr: IntVec, indices: IntVec, active
             # DFS: store in the island all the reachable vertices from current vertex "node"
             #
             # declare a stack with the initial node to visit (node)
-            stack = list()  # type: List[int]
+            stack: List[int] = list()  # type:
             stack.append(node)
 
             while len(stack) > 0:
@@ -474,10 +474,28 @@ def dev_per_bus(nbus: int, bus_indices: IntVec) -> IntVec:
     Summation of magnitudes per bus (bool)
     :param nbus: number of buses
     :param bus_indices: elements' bus indices
-    :param magnitude: elements' magnitude to add per bus
     :return: array of size nbus
     """
     res = np.zeros(nbus, dtype=np.int64)
     for i in range(len(bus_indices)):
         res[bus_indices[i]] += 1
     return res
+
+
+def accept_line_connection(V1: float, V2: float, branch_connection_voltage_tolerance=0.1) -> float:
+    """
+    This function checks if a line can be connected between 2 voltages
+    :param V1: Voltage 1
+    :param V2: Voltage 2
+    :param branch_connection_voltage_tolerance:
+    :return: Can be connected?
+    """
+    if V2 > 0:
+        per = V1 / V2
+
+        if per < (1.0 - branch_connection_voltage_tolerance):
+            return False
+        else:
+            return True
+    else:
+        return V1 == V2

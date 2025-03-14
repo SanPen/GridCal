@@ -52,17 +52,12 @@ class CartoDbTiles(Tiles):
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,
-                         servers=[
-                             "https://basemaps.cartocdn.com/dark_all/"
-                         ] if tile_servers is None else tile_servers,
+                         servers=["https://basemaps.cartocdn.com/dark_all/"] if tile_servers is None else tile_servers,
                          url_path='/{Z}/{X}/{Y}.png',
                          max_server_requests=2,
                          max_lru=10000,
                          http_proxy=http_proxy,
                          attribution="© CARTO, © OpenStreetMap contributors")
-        # TODO: implement map wrap-around
-        #        self.wrap_x = True
-        #        self.wrap_y = False
 
         # get tile information into instance
         self.level = min(self.levels)

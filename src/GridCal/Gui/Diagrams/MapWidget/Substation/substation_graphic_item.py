@@ -23,7 +23,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 
 
-class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
+class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -39,7 +39,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                  api_object: Substation,
                  lat: float,
                  lon: float,
-                 r: float = 0.8,
+                 size: float = 0.8,
                  draw_labels: bool = True):
         """
 
@@ -47,28 +47,33 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :param api_object:
         :param lat:
         :param lon:
-        :param r:
+        :param size:
         """
+        # Correct way to call multiple inheritance
+        super().__init__()
+
+        # Explicitly call QGraphicsRectItem initialization
         QGraphicsRectItem.__init__(self)
-        NodeTemplate.__init__(self,
-                              api_object=api_object,
+
+        # Explicitly call NodeTemplate initialization
+        NodeTemplate.__init__(self, api_object=api_object,
                               editor=editor,
                               draw_labels=draw_labels,
                               lat=lat,
                               lon=lon)
 
+        self.size = size
         self.line_container = None
         self.editor: GridMapWidget = editor  # reassign for the types to be clear
         self.api_object: Substation = api_object  # reassign for the types to be clear
 
-        self.radius = r
-        r2 = r / 2
-        x, y = self.editor.to_x_y(lat=lat, lon=lon)  # upper left corner
+        r2 = size / 2
+        x, y = editor.to_x_y(lat=lat, lon=lon)  # upper left corner
         self.setRect(
             x - r2,
             y - r2,
-            self.radius,
-            self.radius
+            self.size,
+            self.size
         )
 
         # Enable hover events for the item
@@ -80,8 +85,8 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Create a pen with reduced line width
-        # self.change_pen_width(0.5)
-        self.setPen(Qt.PenStyle.NoPen)
+        self.change_pen_width(0.05 * size)
+        # self.setPen(Qt.PenStyle.NoPen)
         # self.setFlag(self.GraphicsItemFlag.ItemIgnoresTransformations, True)
         # self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         # self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
@@ -105,17 +110,17 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :param r: radius in pixels
         :return:
         """
-        if r != self.radius:
+        if r != self.size:
             rect = self.rect()
             rect.setWidth(r)
             rect.setHeight(r)
 
             # change the width and height while keeping the same center
-            r2 = (self.radius - r) / 2
+            r2 = (self.size - r) / 2
             new_x = rect.x() + r2
             new_y = rect.y() + r2
 
-            self.radius = r
+            self.size = r
 
             # Set the new rectangle with the updated dimensions
             self.setRect(new_x, new_y, r, r)
@@ -145,7 +150,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         for vl_graphics in self.voltage_level_graphics:
             # radius here is the width, therefore we need to send W/2
             scale = vl_graphics.api_object.Vnom / max_vl * 0.5
-            vl_graphics.set_size(r=self.radius * scale)
+            vl_graphics.set_size(r=self.size * scale)
             vl_graphics.center_on_substation()
 
     def set_api_object_color(self) -> None:
@@ -154,9 +159,12 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         self.color = QColor(self.api_object.color)
         self.color.setAlpha(128)
+
         self.hoover_color = QColor(self.api_object.color)
         self.hoover_color.setAlpha(180)
+
         self.border_color = QColor(self.api_object.color)  # No Alpha
+
         self.set_default_color()
 
     def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
@@ -199,7 +207,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         for vl_graphics in self.voltage_level_graphics:
             scale = vl_graphics.api_object.Vnom / max_vl * 0.8
-            vl_graphics.set_size(r=self.radius * scale)
+            vl_graphics.set_size(r=self.size * scale)
             vl_graphics.center_on_substation()
 
         sorted_objects = sorted(self.voltage_level_graphics, key=lambda x: -x.api_object.Vnom)

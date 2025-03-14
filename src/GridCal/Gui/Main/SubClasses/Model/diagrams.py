@@ -38,7 +38,6 @@ from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
@@ -139,11 +138,6 @@ class DiagramsMain(CompiledArraysMain):
 
         # map tile sources
         self.tile_sources = [
-            BlueMarbleTiles(
-                name='Blue Marble',
-                tiles_dir=os.path.join(tiles_path(), 'blue_marble')
-            ),
-
             # Carto layers:
             # light_all,
             # dark_all,
