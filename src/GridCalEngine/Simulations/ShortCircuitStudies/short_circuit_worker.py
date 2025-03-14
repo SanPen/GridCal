@@ -71,11 +71,12 @@ def short_circuit_ph3(nc: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: in
     Ybus_gen_batt = adm.Ybus + sp.diags(Y_gen) + sp.diags(Y_batt)
 
     # Compute the short circuit
-    V, SCpower = short_circuit_3p(bus_idx=bus_index,
-                                  Ybus=Ybus_gen_batt,
-                                  Vbus=Vpf,
-                                  Zf=Zf,
-                                  baseMVA=nc.Sbase)
+    V, SCpower, ICurrent = short_circuit_3p(bus_idx=bus_index,
+                                            Ybus=Ybus_gen_batt,
+                                            Vbus=Vpf,
+                                            Vnom=nc.bus_data.Vnom,
+                                            Zf=Zf,
+                                            baseMVA=nc.Sbase)
 
     (Sfb, Stb, If, It, Vbranch,
      loading, losses) = short_circuit_post_process(calculation_inputs=nc,
@@ -95,6 +96,7 @@ def short_circuit_ph3(nc: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: in
                                   area_names=None)
 
     results.SCpower = SCpower
+    results.ICurrent = ICurrent
     results.Sbus1 = nc.get_power_injections_pu() * nc.Sbase  # MVA
     results.voltage1 = V
     results.Sf1 = Sfb  # in MVA already
@@ -110,6 +112,7 @@ def short_circuit_ph3(nc: NumericalCircuit, Vpf: CxVec, Zf: CxVec, bus_index: in
 
 def short_circuit_unbalanced(nc: NumericalCircuit,
                              Vpf: CxVec,
+                             Vnom: Vec,
                              Zf: CxVec,
                              bus_index: int,
                              fault_type: FaultType):
@@ -117,6 +120,7 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
     Run an unbalanced short circuit simulation for a single island
     :param nc:
     :param Vpf: Power flow voltage vector applicable to the island
+    :param Vnom: Buses nominal voltages (kV)
     :param Zf: Short circuit impedance vector applicable to the island
     :param bus_index: Index of the failed bus
     :param fault_type: FaultType
@@ -243,14 +247,15 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
     Vpf[pqpv] = polar_to_rect(np.abs(Vpf[pqpv]), np.angle(Vpf[pqpv]) + ph_add.T)
 
     # solve the fault
-    V0, V1, V2, SCC = short_circuit_unbalance(bus_idx=bus_index,
-                                              Y0=adm0.Ybus,
-                                              Y1=adm1.Ybus,
-                                              Y2=adm2.Ybus,
-                                              Vbus=Vpf,
-                                              Zf=Zf,
-                                              fault_type=fault_type,
-                                              baseMVA=nc.Sbase)
+    V0, V1, V2, SCC, ICC = short_circuit_unbalance(bus_idx=bus_index,
+                                                   Y0=adm0.Ybus,
+                                                   Y1=adm1.Ybus,
+                                                   Y2=adm2.Ybus,
+                                                   Vnom=Vnom,
+                                                   Vbus=Vpf,
+                                                   Zf=Zf,
+                                                   fault_type=fault_type,
+                                                   baseMVA=nc.Sbase)
 
     # process results in the sequences
     (Sfb0, Stb0, If0, It0, Vbranch0,
@@ -285,6 +290,7 @@ def short_circuit_unbalanced(nc: NumericalCircuit,
                                   area_names=None)
 
     results.SCpower = SCC
+    results.ICurrent = ICC
 
     results.voltage0 = V0
     results.Sf0 = Sfb0  # in MVA already
