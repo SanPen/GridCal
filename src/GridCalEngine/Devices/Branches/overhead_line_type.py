@@ -30,7 +30,7 @@ class WireInTower:
     Wire -> Tower association
     """
 
-    def __init__(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
+    def __init__(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1, circuit_index: int = 1):
         """
         Wire in a tower
         :param wire: Wire instance
@@ -48,20 +48,22 @@ class WireInTower:
 
         self.phase: int = phase
 
+        self.circuit_index: int = circuit_index
+
         self.device_type = DeviceType.WireDevice
 
     def __eq__(self, other: "WireInTower"):
-
-        return (self.wire ==other.wire
+        return (self.wire == other.wire
                 and self.xpos == other.xpos
                 and self.ypos == other.ypos
                 and self.phase == other.phase
-                and self.name==other.name)
+                and self.circuit_index == other.circuit_index
+                and self.name == other.name)
 
     def to_dict(self) -> Dict[str, str | float | int]:
         """
-
-        :return:
+        data to dict
+        :return: json like dictionary
         """
         return {
             "wire": self.wire.idtag,
@@ -69,13 +71,14 @@ class WireInTower:
             "xpos": self.xpos,
             "ypos": self.ypos,
             "phase": self.phase,
+            "circuit_index": self.circuit_index,
         }
 
     def parse(self, data: Dict[str, str | float | int], wire_dict: dict[str, Wire]):
         """
-
-        :param data:
-        :param wire_dict:
+        Parse data from json dictionary
+        :param data: data to parse
+        :param wire_dict: wires dictionary
         :return:
         """
         self.wire: Wire = wire_dict.get(data["wire"])
@@ -83,6 +86,8 @@ class WireInTower:
         self.xpos: float = data["xpos"]
         self.ypos: float = data["ypos"]
         self.phase: int = data["phase"]
+        self.circuit_index: int = data.get("circuit_index", 1)
+
 
 class ListOfWires:
 
@@ -93,21 +98,57 @@ class ListOfWires:
         self.data.append(elm)
 
     def to_list(self):
-
+        """
+        Generate list of WireInTower objects
+        :return:
+        """
         return [e.to_dict() for e in self.data]
 
     def parse(self, data: List[Dict[str, str | float | int]], wire_dict: dict[str, Wire]):
-
+        """
+        Parse data from json dictionary
+        :param data:
+        :param wire_dict:
+        :return:
+        """
         for entry in data:
-            elm = WireInTower( wire_dict.get(entry["wire"]),
-                               entry["xpos"],
-                               entry["ypos"],
-                               entry["phase"])
+            elm = WireInTower(
+                wire=wire_dict.get(entry["wire"]),
+                xpos=entry["xpos"],
+                ypos=entry["ypos"],
+                phase=entry["phase"],
+                circuit_index=entry.get("circuit_index", 1)
+            )
+
             elm.parse(entry, wire_dict)
             self.append(elm)
 
-    def __eq__(self, other: "ListOfWires"):
+    def get_phases(self):
+        """
+        Get the introduced phases
+        :return: list of phase numbers
+        """
+        x = set()
+        for entry in self.data:
+            x.add(entry.phase)
+        return list(x)
 
+    def get_circuits(self):
+        """
+        Get the introduced circuits
+        :return: list of circuit numbers
+        """
+        x = set()
+        for entry in self.data:
+            x.add(entry.circuit_index)
+        return list(x)
+
+    def __eq__(self, other: "ListOfWires"):
+        """
+        Equality operator
+        :param other:
+        :return:
+        """
         if len(self.data) != len(other.data):
             return False
 
@@ -117,6 +158,7 @@ class ListOfWires:
 
         return True
 
+
 class OverheadLineType(EditableDevice):
 
     def __init__(self, name='Tower', idtag: str | None = None):
@@ -124,21 +166,20 @@ class OverheadLineType(EditableDevice):
         Overhead line editor
         :param name: name
         """
-        EditableDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code='',
-                                device_type=DeviceType.OverheadLineTypeDevice)
+        super().__init__(name=name,
+                         idtag=idtag,
+                         code='',
+                         device_type=DeviceType.OverheadLineTypeDevice)
 
         # list of wires in the tower
         self.wires_in_tower: ListOfWires = ListOfWires()
 
-        self.Vnom = 1.0
+        # nominal voltage
+        self.Vnom = 1.0  # kV
 
-        # properties
-        # self.tower_name = name
-        self.earth_resistivity = 100
-        self.frequency = 50
+        self.earth_resistivity = 100  # ohm/m3
+
+        self.frequency = 50  # Hz
 
         # total series impedance (positive sequence)
         self.R1 = 0.0
@@ -171,10 +212,10 @@ class OverheadLineType(EditableDevice):
         self.y_seq = None
 
         # wire properties for edition (do not confuse with the properties of this very object...)
-        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase']
-        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase'}
-        self.converter = {0: str, 1: float, 2: float, 3: int}
-        self.editable_wire = [False, True, True, True]
+        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', "Circuit Index"]
+        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'circuit_index'}
+        self.converter = {0: str, 1: float, 2: float, 3: int, 4: int}
+        self.editable_wire = [False, True, True, True, True]
 
         self.register(key='earth_resistivity', units='Ohm/m3', tpe=float, definition='Earth resistivity')
         self.register(key='frequency', units='Hz', tpe=float, definition='Frequency')
@@ -190,15 +231,20 @@ class OverheadLineType(EditableDevice):
         self.register(key='wires_in_tower', units='', tpe=SubObjectType.ListOfWires, definition='List of wires',
                       editable=False, display=False)
 
-    def add_wire_relationship(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
+    def add_wire_relationship(self, wire: Wire,
+                              xpos: float = 0.0,
+                              ypos: float = 0.0,
+                              phase: int = 1,
+                              circuit_index: int = 1):
         """
         Wire in a tower
         :param wire: Wire instance
         :param xpos: x position in m
         :param ypos: y position in m
         :param phase: 0->Neutral, 1->A, 2->B, 3->C
+        :param circuit_index: circuit index
         """
-        w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
+        w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase, circuit_index=circuit_index)
         self.wires_in_tower.append(w)
 
     def z_series(self):
@@ -256,9 +302,11 @@ class OverheadLineType(EditableDevice):
                 y[i] = wire_tower.ypos
 
             ax.plot(x, y, '.')
-            ax.set_title('Tower wire position')
-            ax.set_xlabel('m')
-            ax.set_ylabel('m')
+            ax.set_title('Tower wire position', fontsize=14)
+            ax.set_xlabel('m', fontsize=8)
+            ax.set_ylabel('m', fontsize=8)
+            ax.tick_params(axis='x', labelsize=8)
+            ax.tick_params(axis='y', labelsize=8)
             ax.set_xlim([min(0, np.min(x) - 1), np.max(x) + 1])
             ax.set_ylim([0, np.max(y) + 1])
             ax.patch.set_facecolor('white')

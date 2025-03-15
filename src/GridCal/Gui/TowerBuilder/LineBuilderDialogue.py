@@ -5,12 +5,13 @@
 
 
 import sys
+from typing import List
 import pandas as pd
 from PySide6 import QtWidgets
 
-from GridCal.Gui.TowerBuilder.gui import Ui_Dialog
+from GridCal.Gui.TowerBuilder.tower_builder import Ui_TowerBuilderDialog
 import GridCalEngine.Devices as dev
-from GridCal.Gui.TowerBuilder.table_models import TowerModel, WireInTower, WiresTable
+from GridCal.Gui.TowerBuilder.table_models import TowerModel, WireInTower, WiresTable, Wire
 from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCalEngine.basic_structures import Logger
@@ -18,7 +19,7 @@ from GridCalEngine.basic_structures import Logger
 
 class TowerBuilderGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, tower: dev.OverheadLineType = None, wires_catalogue=list()):
+    def __init__(self, parent=None, tower: dev.OverheadLineType = None, wires_catalogue: List[Wire] = None):
         """
 
         :param parent:
@@ -26,24 +27,27 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         :param wires_catalogue:
         """
         QtWidgets.QDialog.__init__(self, parent)
-        self.ui = Ui_Dialog()
+        self.ui = Ui_TowerBuilderDialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Line builder')
 
-        # 10:1
-        self.ui.main_splitter.setStretchFactor(0, 8)
-        self.ui.main_splitter.setStretchFactor(1, 2)
-
         # create wire collection from the catalogue
         self.wires_table = WiresTable(self)
-        for wire in wires_catalogue:
-            self.wires_table.add(wire)
 
-        # was there a tower passed? else create one
-        if tower is None:
-            self.tower_driver = TowerModel(self, edit_callback=self.plot)
-        else:
-            self.tower_driver = TowerModel(self, edit_callback=self.plot, tower=tower)
+        if wires_catalogue is not None:
+            for wire in wires_catalogue:
+                self.wires_table.add(wire)
+
+        # create the tower driver
+        self.tower_driver = TowerModel(self, edit_callback=self.compute, tower=tower)
+
+        # matrix combo
+        self.ui.matrixViewComboBox.addItem("Series impedance [Ω/km]")
+        self.ui.matrixViewComboBox.addItem("Series impedance (no neutral) [Ω/km]")
+        self.ui.matrixViewComboBox.addItem("Series impedance (sequence) [Ω/km]")
+        self.ui.matrixViewComboBox.addItem("Shunt admittance [μS/km]")
+        self.ui.matrixViewComboBox.addItem("Shunt admittance (no neutral) [μS/km]")
+        self.ui.matrixViewComboBox.addItem("Shunt admittance (sequence) [μS/km]")
 
         self.ui.name_lineEdit.setText(self.tower_driver.tower.name)
         self.ui.rho_doubleSpinBox.setValue(self.tower_driver.tower.earth_resistivity)
@@ -53,17 +57,18 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.tower_tableView.setModel(self.tower_driver)
 
         # set divider
-        self.ui.main_splitter.setStretchFactor(0, 2)
-        self.ui.main_splitter.setStretchFactor(1, 3)
+        self.ui.main_splitter.setStretchFactor(0, 6)
+        self.ui.main_splitter.setStretchFactor(1, 2)
 
         # button clicks
-        # self.ui.add_wire_pushButton.clicked.connect(self.add_wire_to_collection)
-        # self.ui.delete_wire_pushButton.clicked.connect(self.delete_wire_from_collection)
         self.ui.add_to_tower_pushButton.clicked.connect(self.add_wire_to_tower)
         self.ui.delete_from_tower_pushButton.clicked.connect(self.delete_wire_from_tower)
         self.ui.compute_pushButton.clicked.connect(self.compute)
         self.ui.acceptButton.clicked.connect(self.accept)
         self.ui.name_lineEdit.textChanged.connect(self.name_changed)
+
+        # combobox update
+        self.ui.matrixViewComboBox.currentIndexChanged.connect(self.show_matrix)
 
     def msg(self, text, title="Warning"):
         """
@@ -112,7 +117,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
             # delete from the catalogue
             self.wires_table.delete(sel_idx)
 
-            self.plot()
+            self.compute()
         else:
             self.msg('Select a wire in the wires catalogue')
 
@@ -126,7 +131,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         if sel_idx > -1:
             selected_wire: Wire = self.wires_table.wires[sel_idx].copy()
-            self.tower_driver.add(WireInTower(selected_wire))
+            self.tower_driver.add(WireInTower(wire=selected_wire))
+            self.compute()
         else:
             self.msg('Select a wire in the wires catalogue')
 
@@ -140,10 +146,65 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         if sel_idx > -1:
             self.tower_driver.delete(sel_idx)
-
-            self.plot()
+            self.compute()
         else:
             self.msg('Select a wire from the wire composition')
+
+    def show_matrix(self):
+        """
+        Display a computed matrix
+        :return:
+        """
+        idx = self.ui.matrixViewComboBox.currentIndex()
+
+        if idx == 0:
+
+            # Impedances in Ohm/km
+            cols = ['Phase' + str(i) for i in self.tower_driver.tower.z_phases_abcn]
+            z_df = pd.DataFrame(data=self.tower_driver.tower.z_abcn, columns=cols, index=cols)
+            self.ui.matrixTableView.setModel(PandasModel(z_df))
+
+        elif idx == 1:
+
+            cols = ['Phase' + str(i) for i in self.tower_driver.tower.z_phases_abc]
+            z_df = pd.DataFrame(data=self.tower_driver.tower.z_abc, columns=cols, index=cols)
+            self.ui.matrixTableView.setModel(PandasModel(z_df))
+
+        elif idx == 2:
+            cols = ['Sequence ' + str(i) for i in range(3)]
+            z_df = pd.DataFrame(data=self.tower_driver.tower.z_seq, columns=cols, index=cols)
+            self.ui.matrixTableView.setModel(PandasModel(z_df))
+
+        elif idx == 3:
+            # Admittances in uS/km
+            cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abcn]
+            z_df = pd.DataFrame(data=self.tower_driver.tower.y_abcn.imag * 1e6, columns=cols, index=cols)
+            self.ui.matrixTableView.setModel(PandasModel(z_df))
+
+        elif idx == 4:
+            cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abc]
+            z_df = pd.DataFrame(data=self.tower_driver.tower.y_abc.imag * 1e6, columns=cols, index=cols)
+            self.ui.matrixTableView.setModel(PandasModel(z_df))
+
+        elif idx == 5:
+            cols = ['Sequence ' + str(i) for i in range(3)]
+            z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq.imag * 1e6, columns=cols, index=cols)
+            self.ui.matrixTableView.setModel(PandasModel(z_df))
+
+        # set auto adjust headers
+        self.ui.matrixTableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.ui.matrixTableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.ui.matrixTableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
+        self.ui.matrixTableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.ui.matrixTableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.ui.matrixTableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
     def compute(self):
         """
@@ -166,40 +227,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
                 # compute the matrices
                 self.tower_driver.tower.compute()
 
-                # Impedances in Ohm/km
-                cols = ['Phase' + str(i) for i in self.tower_driver.tower.z_phases_abcn]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.z_abcn, columns=cols, index=cols)
-                self.ui.z_tableView_abcn.setModel(PandasModel(z_df))
-
-                cols = ['Phase' + str(i) for i in self.tower_driver.tower.z_phases_abc]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.z_abc, columns=cols, index=cols)
-                self.ui.z_tableView_abc.setModel(PandasModel(z_df))
-
-                cols = ['Sequence ' + str(i) for i in range(3)]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.z_seq, columns=cols, index=cols)
-                self.ui.z_tableView_seq.setModel(PandasModel(z_df))
-
-                # Admittances in uS/km
-                cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abcn]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abcn.imag * 1e6, columns=cols, index=cols)
-                self.ui.y_tableView_abcn.setModel(PandasModel(z_df))
-
-                cols = ['Phase' + str(i) for i in self.tower_driver.tower.y_phases_abc]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.y_abc.imag * 1e6, columns=cols, index=cols)
-                self.ui.y_tableView_abc.setModel(PandasModel(z_df))
-
-                cols = ['Sequence ' + str(i) for i in range(3)]
-                z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq.imag * 1e6, columns=cols, index=cols)
-                self.ui.y_tableView_seq.setModel(PandasModel(z_df))
-
-                # set auto adjust headers
-                self.ui.z_tableView_abcn.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-                self.ui.z_tableView_abc.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-                self.ui.z_tableView_seq.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-
-                self.ui.y_tableView_abcn.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-                self.ui.y_tableView_abc.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-                self.ui.y_tableView_seq.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+                self.show_matrix()
 
                 # plot
                 self.plot()
@@ -217,8 +245,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         fig = self.ui.plotwidget.get_figure()
         fig.set_facecolor('white')
         ax = self.ui.plotwidget.get_axis()
-
         self.tower_driver.tower.plot(ax=ax)
+        fig.tight_layout()
         self.ui.plotwidget.redraw()
 
     def example_1(self):
