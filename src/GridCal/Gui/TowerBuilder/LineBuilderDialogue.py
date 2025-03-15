@@ -63,12 +63,14 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         # button clicks
         self.ui.add_to_tower_pushButton.clicked.connect(self.add_wire_to_tower)
         self.ui.delete_from_tower_pushButton.clicked.connect(self.delete_wire_from_tower)
-        self.ui.compute_pushButton.clicked.connect(self.compute)
+        self.ui.compute_pushButton.clicked.connect(self.compute_btn_click)
         self.ui.acceptButton.clicked.connect(self.accept)
         self.ui.name_lineEdit.textChanged.connect(self.name_changed)
 
         # combobox update
         self.ui.matrixViewComboBox.currentIndexChanged.connect(self.show_matrix)
+        self.ui.frequency_doubleSpinBox.valueChanged.connect(self.compute)
+        self.ui.rho_doubleSpinBox.valueChanged.connect(self.compute)
 
     def msg(self, text, title="Warning"):
         """
@@ -219,10 +221,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         logs = Logger()
         all_ok = self.tower_driver.tower.check(logs)
 
-        if not all_ok:
-            logger_diag = LogsDialogue(name='Tower computation', logger=logs)
-            logger_diag.exec()
-        else:
+        if all_ok:
             try:
                 # compute the matrices
                 self.tower_driver.tower.compute()
@@ -232,9 +231,10 @@ class TowerBuilderGUI(QtWidgets.QDialog):
                 # plot
                 self.plot()
 
-            except:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.msg(str(exc_traceback) + '\n' + str(exc_value), 'Tower calculation')
+            except Exception as e:
+                self.msg(str(e), 'Tower calculation')
+
+        return all_ok, logs
 
     def plot(self):
         """
@@ -248,6 +248,17 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.tower_driver.tower.plot(ax=ax)
         fig.tight_layout()
         self.ui.plotwidget.redraw()
+
+    def compute_btn_click(self):
+        """
+        Call compute and display the bugs (if any)
+        :return:
+        """
+        all_ok, logs = self.compute()
+
+        if not all_ok:
+            logger_diag = LogsDialogue(name='Tower computation', logger=logs)
+            logger_diag.exec()
 
     def example_1(self):
         name = '4/0 6/1 ACSR'

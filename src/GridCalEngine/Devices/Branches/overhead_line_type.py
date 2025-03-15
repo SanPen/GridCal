@@ -381,14 +381,14 @@ class OverheadLineType(EditableDevice):
              self.z_phases_abcn,
              self.z_abc,
              self.z_phases_abc,
-             self.z_seq) = calc_z_matrix(self.wires_in_tower.data, f=self.frequency, rho=self.earth_resistivity)
+             self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
             (self.y_abcn,
              self.y_phases_abcn,
              self.y_abc,
              self.y_phases_abc,
-             self.y_seq) = calc_y_matrix(self.wires_in_tower.data, f=self.frequency, rho=self.earth_resistivity)
+             self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
             self.Imax = self.compute_rating()
@@ -620,16 +620,16 @@ def wire_bundling(phases_set, primitive, phases_vector):
     return primitive, phases_vector
 
 
-def calc_z_matrix(wires: list, f=50, rho=100):
+def calc_z_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     """
     Impedance matrix
-    :param wires: list of wire objects
+    :param wires_in_tower: WireInTower
     :param f: system frequency (Hz)
     :param rho: earth resistivity
     :return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C
     """
 
-    n = len(wires)
+    n = len(wires_in_tower.data)
     z_prim = np.zeros((n, n), dtype=complex)
 
     # dictionary with the wire indices per phase
@@ -637,7 +637,7 @@ def calc_z_matrix(wires: list, f=50, rho=100):
 
     phases_abcn = np.zeros(n, dtype=int)
 
-    for i, wire_i in enumerate(wires):
+    for i, wire_i in enumerate(wires_in_tower.data):
 
         # self impedance
         z_prim[i, i] = z_ii(r_i=wire_i.wire.R,
@@ -648,7 +648,7 @@ def calc_z_matrix(wires: list, f=50, rho=100):
                             rho=rho)
 
         # mutual impedances
-        for j, wire_j in enumerate(wires):
+        for j, wire_j in enumerate(wires_in_tower.data):
 
             if i != j:
                 #  mutual impedance
@@ -689,16 +689,16 @@ def calc_z_matrix(wires: list, f=50, rho=100):
     return z_abcn, phases_abcn, z_abc, phases_abc, z_seq
 
 
-def calc_y_matrix(wires: list, f=50, rho=100):
+def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     """
     Impedance matrix
-    :param wires: list of wire objects
+    :param wires_in_tower: ListOfWires
     :param f: system frequency (Hz)
     :param rho: earth resistivity
     :return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C
     """
 
-    n = len(wires)
+    n = len(wires_in_tower.data)
 
     # Maxwell's potential matrix
     p_prim = np.zeros((n, n), dtype=complex)
@@ -714,7 +714,7 @@ def calc_y_matrix(wires: list, f=50, rho=100):
 
     phases_abcn = np.zeros(n, dtype=int)
 
-    for i, wire_i in enumerate(wires):
+    for i, wire_i in enumerate(wires_in_tower.data):
 
         # self impedance
         if wire_i.ypos > 0:
@@ -724,7 +724,7 @@ def calc_y_matrix(wires: list, f=50, rho=100):
             print(wire_i.name, 'has y=0 !')
 
             # mutual impedances
-        for j, wire_j in enumerate(wires):
+        for j, wire_j in enumerate(wires_in_tower.data):
 
             if i != j:
                 #  mutual impedance
