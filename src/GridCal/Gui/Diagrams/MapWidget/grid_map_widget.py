@@ -1581,7 +1581,45 @@ class GridMapWidget(BaseDiagramWidget):
         
         # Only add the insertion point if it's not a duplicate
         if not is_duplicate:
-            line1.locations.add_location(lat=closest_lat, long=closest_lon, alt=0.0)
+            # Add an offset (5% of segment length) to the waypoint for line 1 to prevent visual overlap
+            # Calculate a bearing from the closest point to the substation
+            bearing_to_substation = math.atan2(
+                math.sin(math.radians(substation_lon) - math.radians(closest_lon)) * math.cos(math.radians(substation_lat)),
+                math.cos(math.radians(closest_lat)) * math.sin(math.radians(substation_lat)) - 
+                math.sin(math.radians(closest_lat)) * math.cos(math.radians(substation_lat)) * 
+                math.cos(math.radians(substation_lon) - math.radians(closest_lon))
+            )
+            
+            # Calculate a perpendicular bearing (90 degrees offset)
+            perpendicular_bearing = bearing_to_substation + math.pi/2
+            
+            # Calculate the segment length
+            segment_length = haversine_distance(
+                waypoints[closest_segment_idx][0], 
+                waypoints[closest_segment_idx][1], 
+                waypoints[closest_segment_idx + 1][0], 
+                waypoints[closest_segment_idx + 1][1]
+            )
+            
+            # Distance to offset (5% of segment length)
+            offset_distance = segment_length * 0.05
+            
+            # Calculate the offset point for line 1 (perpendicular to the bearing to substation)
+            R = 6371.0  # Earth's radius in km
+            offset_lat1 = math.asin(
+                math.sin(math.radians(closest_lat)) * math.cos(offset_distance/R) + 
+                math.cos(math.radians(closest_lat)) * math.sin(offset_distance/R) * math.cos(perpendicular_bearing)
+            )
+            offset_lon1 = math.radians(closest_lon) + math.atan2(
+                math.sin(perpendicular_bearing) * math.sin(offset_distance/R) * math.cos(math.radians(closest_lat)),
+                math.cos(offset_distance/R) - math.sin(math.radians(closest_lat)) * math.sin(offset_lat1)
+            )
+            
+            offset_lat1 = math.degrees(offset_lat1)
+            offset_lon1 = math.degrees(offset_lon1)
+            
+            # Add the offset point to line 1
+            line1.locations.add_location(lat=offset_lat1, long=offset_lon1, alt=0.0)
         
         # Line 2: from new_bus to original bus_to
         line2_name = f"{line_api.name}_2"
@@ -1622,9 +1660,25 @@ class GridMapWidget(BaseDiagramWidget):
             line2.active = line_api.active
             
         # Preserve waypoints for line 2 (from insertion point to end)
-        # Add the insertion point as the first waypoint
+        # Add the insertion point as the first waypoint with a small offset
         if not is_duplicate:
-            line2.locations.add_location(lat=closest_lat, long=closest_lon, alt=0.0)
+            # Calculate the offset point for line 2 (opposite direction from line 1)
+            opposite_bearing = perpendicular_bearing + math.pi  # 180 degrees from the first offset
+            
+            offset_lat2 = math.asin(
+                math.sin(math.radians(closest_lat)) * math.cos(offset_distance/R) + 
+                math.cos(math.radians(closest_lat)) * math.sin(offset_distance/R) * math.cos(opposite_bearing)
+            )
+            offset_lon2 = math.radians(closest_lon) + math.atan2(
+                math.sin(opposite_bearing) * math.sin(offset_distance/R) * math.cos(math.radians(closest_lat)),
+                math.cos(offset_distance/R) - math.sin(math.radians(closest_lat)) * math.sin(offset_lat2)
+            )
+            
+            offset_lat2 = math.degrees(offset_lat2)
+            offset_lon2 = math.degrees(offset_lon2)
+            
+            # Add the offset point to line 2
+            line2.locations.add_location(lat=offset_lat2, long=offset_lon2, alt=0.0)
         
         # Add all remaining waypoints from the original line
         for i in range(closest_segment_idx + 1, len(original_line_container.nodes_list)):
@@ -1763,8 +1817,7 @@ class GridMapWidget(BaseDiagramWidget):
         """
         Create a T-joint connection between a selected line and a selected substation.
         This creates a new substation at the closest point on the line to the selected substation,
-        and then creates a new line connecting the two substations.
-        The original line remains intact.
+        splits the original line into two segments, and creates a new line connecting the two substations.
         """
         # Get selected items
         selected_items = self.get_selected()
@@ -1918,13 +1971,134 @@ class GridMapWidget(BaseDiagramWidget):
         # Add the new bus to the circuit
         self.circuit.add_bus(new_bus)
         
-        # Step 5: Create a new line connecting the two substations
+        # Step 5: Calculate the lengths of the segments
+        # Calculate length of first segment (from original start to junction point)
+        length1 = 0.0
+        for i in range(closest_segment_idx):
+            lat1, lon1 = waypoints[i]
+            lat2, lon2 = waypoints[i + 1]
+            length1 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Add distance from last waypoint to junction point
+        lat1, lon1 = waypoints[closest_segment_idx]
+        lat2, lon2 = closest_point
+        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Calculate length of second segment (from junction point to original end)
+        length2 = 0.0
+        # First, add distance from junction point to next waypoint
+        lat1, lon1 = closest_point
+        lat2, lon2 = waypoints[closest_segment_idx + 1]
+        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Add remaining segments
+        for i in range(closest_segment_idx + 1, len(waypoints) - 1):
+            lat1, lon1 = waypoints[i]
+            lat2, lon2 = waypoints[i + 1]
+            length2 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Calculate the proportion of each segment
+        total_length = length1 + length2
+        ratio1 = length1 / total_length
+        ratio2 = length2 / total_length
+        
+        # Step 6: Create the two new line segments that replace the original line
+        # Line 1: from original bus_from to new_bus
+        line1_name = f"{line_api.name}_1"
+        
+        # Handle the code property - it might be a list of strings
+        if hasattr(line_api, 'code') and line_api.code is not None:
+            if isinstance(line_api.code, list):
+                line1_code = [f"{code}_1" for code in line_api.code]
+            else:
+                line1_code = f"{line_api.code}_1"
+        else:
+            line1_code = ""
+            
+        line1 = Line(name=line1_name,
+                    bus_from=line_api.bus_from,
+                    bus_to=new_bus,
+                    code=line1_code,
+                    r=line_api.R * ratio1,  # Set impedance proportional to length
+                    x=line_api.X * ratio1,
+                    b=line_api.B * ratio1,
+                    r0=line_api.R0 * ratio1,
+                    x0=line_api.X0 * ratio1,
+                    b0=line_api.B0 * ratio1,
+                    r2=line_api.R2 * ratio1,
+                    x2=line_api.X2 * ratio1,
+                    b2=line_api.B2 * ratio1,
+                    length=length1,  # Set the actual calculated length
+                    rate=line_api.rate,
+                    contingency_factor=line_api.contingency_factor,
+                    protection_rating_factor=line_api.protection_rating_factor)
+        
+        # Copy other properties from the original line
+        if hasattr(line_api, 'color'):
+            line1.color = line_api.color
+        if hasattr(line_api, 'tags') and line_api.tags:
+            line1.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
+        if hasattr(line_api, 'active'):
+            line1.active = line_api.active
+            
+        # Preserve waypoints for line 1 (from start to junction point)
+        # Add all waypoints from the original line up to the closest segment
+        for i in range(closest_segment_idx + 1):
+            if i < len(original_line_container.nodes_list):
+                node = original_line_container.nodes_list[i]
+                line1.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
+        
+        # Line 2: from new_bus to original bus_to
+        line2_name = f"{line_api.name}_2"
+        
+        # Handle the code property for line 2
+        if hasattr(line_api, 'code') and line_api.code is not None:
+            if isinstance(line_api.code, list):
+                line2_code = [f"{code}_2" for code in line_api.code]
+            else:
+                line2_code = f"{line_api.code}_2"
+        else:
+            line2_code = ""
+            
+        line2 = Line(name=line2_name,
+                    bus_from=new_bus,
+                    bus_to=line_api.bus_to,
+                    code=line2_code,
+                    r=line_api.R * ratio2,  # Set impedance proportional to length
+                    x=line_api.X * ratio2,
+                    b=line_api.B * ratio2,
+                    r0=line_api.R0 * ratio2,
+                    x0=line_api.X0 * ratio2,
+                    b0=line_api.B0 * ratio2,
+                    r2=line_api.R2 * ratio2,
+                    x2=line_api.X2 * ratio2,
+                    b2=line_api.B2 * ratio2,
+                    length=length2,  # Set the actual calculated length
+                    rate=line_api.rate,
+                    contingency_factor=line_api.contingency_factor,
+                    protection_rating_factor=line_api.protection_rating_factor)
+                    
+        # Copy other properties from the original line
+        if hasattr(line_api, 'color'):
+            line2.color = line_api.color
+        if hasattr(line_api, 'tags') and line_api.tags:
+            line2.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
+        if hasattr(line_api, 'active'):
+            line2.active = line_api.active
+        
+        # Preserve waypoints for line 2 (from junction point to end)
+        # Add all remaining waypoints from the original line starting from the next segment
+        for i in range(closest_segment_idx + 1, len(original_line_container.nodes_list)):
+            node = original_line_container.nodes_list[i]
+            line2.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
+        
+        # Step 7: Create a new line connecting the selected substation to the new junction substation
         connection_line_name = f"{substation_api.name}_to_{new_substation.name}"
         
         # Calculate the distance between the two substations
         distance = haversine_distance(substation_lat, substation_lon, closest_lat, closest_lon)
         
-        # Create the new line
+        # Create the new connection line
         connection_line = Line(name=connection_line_name,
                               bus_from=suitable_bus_in_selected,
                               bus_to=new_bus,
@@ -1950,10 +2124,16 @@ class GridMapWidget(BaseDiagramWidget):
         if hasattr(line_api, 'active'):
             connection_line.active = line_api.active
         
-        # Add the new line to the circuit
+        # No waypoints needed for the connection line - it will go directly from one substation to the other
+        
+        # Add the new lines to the circuit
+        self.circuit.add_line(line1)
+        self.circuit.add_line(line2)
         self.circuit.add_line(connection_line)
         
-        # Add the new line to the map
+        # Add the new lines to the map
+        line1_graphic = self.add_api_line(line1)
+        line2_graphic = self.add_api_line(line2)
         connection_line_graphic = self.add_api_line(connection_line)
         
         # Get the branch width and arrow size from the general diagram settings
@@ -1967,14 +2147,19 @@ class GridMapWidget(BaseDiagramWidget):
                 branch_width = segment.width
                 arrow_size = segment._arrow_size
         
-        # Apply the same width and arrow size to the new line
+        # Apply the same width and arrow size to the new lines
+        line1_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
+        line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
+        
+        # Remove the original line
+        self.remove_branch_graphic(line=line_graphic, delete_from_db=True)
         
         # Notify the user
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)
         msg.setText(f"T-joint connection created between {substation_api.name} and {line_api.name}.")
-        msg.setInformativeText(f"New substation '{new_substation.name}' created at the closest point on the line.\nNew connection line: {distance:.2f} km")
+        msg.setInformativeText(f"New substation '{new_substation.name}' created at the closest point on the line.\nOriginal line split into two segments:\n- {line1.name}: {length1:.2f} km\n- {line2.name}: {length2:.2f} km\nNew connection line: {distance:.2f} km")
         msg.setWindowTitle("Operation Successful")
         msg.exec()
 

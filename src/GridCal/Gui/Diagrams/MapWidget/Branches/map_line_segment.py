@@ -249,7 +249,7 @@ class MapLineSegment(QGraphicsLineItem):
             add_menu_entry(menu=menu,
                            text="Connect line to selected substation (T-joint)",
                            function_ptr=self.editor.create_t_joint_to_substation,
-                           icon_path=":/Icons/icons/connect.svg")
+                           icon_path=":/Icons/icons/divide.svg")
 
         add_menu_entry(menu=menu,
                        text="Plot profiles",
