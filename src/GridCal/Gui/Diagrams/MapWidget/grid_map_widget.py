@@ -1450,7 +1450,78 @@ class GridMapWidget(BaseDiagramWidget):
             # Add the new bus to the circuit
             self.circuit.add_bus(suitable_bus)
         
-        # Create two new lines
+        # Step 1: Collect all waypoints of the original line
+        waypoints = []
+        
+        # Add the "from" substation
+        substation_from_graphics = self.graphics_manager.query(elm=line_api.get_substation_from())
+        if substation_from_graphics is not None:
+            waypoints.append((substation_from_graphics.lat, substation_from_graphics.lon))
+        
+        # Add all intermediate points
+        for node in original_line_container.nodes_list:
+            waypoints.append((node.lat, node.lon))
+        
+        # Add the "to" substation
+        substation_to_graphics = self.graphics_manager.query(elm=line_api.get_substation_to())
+        if substation_to_graphics is not None:
+            waypoints.append((substation_to_graphics.lat, substation_to_graphics.lon))
+        
+        # Step 2: Find the closest segment to the selected substation
+        substation_lat = substation_api.latitude
+        substation_lon = substation_api.longitude
+        
+        min_distance = float('inf')
+        closest_segment_idx = 0
+        closest_point = (0, 0)
+        
+        for i in range(len(waypoints) - 1):
+            lat1, lon1 = waypoints[i]
+            lat2, lon2 = waypoints[i + 1]
+            
+            # Find the closest point on this segment to the substation
+            point, distance = self._closest_point_on_segment(
+                lat1, lon1, lat2, lon2, substation_lat, substation_lon
+            )
+            
+            if distance < min_distance:
+                min_distance = distance
+                closest_segment_idx = i
+                closest_point = point
+        
+        # Step 3: Calculate the lengths of the two new segments
+        length1 = 0.0
+        length2 = 0.0
+        
+        # Calculate length of first segment (from original start to insertion point)
+        for i in range(closest_segment_idx):
+            lat1, lon1 = waypoints[i]
+            lat2, lon2 = waypoints[i + 1]
+            length1 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Add distance from last waypoint to insertion point
+        lat1, lon1 = waypoints[closest_segment_idx]
+        lat2, lon2 = closest_point
+        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Calculate length of second segment (from insertion point to original end)
+        # First, add distance from insertion point to next waypoint
+        lat1, lon1 = closest_point
+        lat2, lon2 = waypoints[closest_segment_idx + 1]
+        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Add remaining segments
+        for i in range(closest_segment_idx + 1, len(waypoints) - 1):
+            lat1, lon1 = waypoints[i]
+            lat2, lon2 = waypoints[i + 1]
+            length2 += haversine_distance(lat1, lon1, lat2, lon2)
+        
+        # Step 4: Calculate the proportion of each segment
+        total_length = length1 + length2
+        ratio1 = length1 / total_length
+        ratio2 = length2 / total_length
+        
+        # Step 5: Create the new lines with the correct properties from the start
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
         
@@ -1467,16 +1538,16 @@ class GridMapWidget(BaseDiagramWidget):
                     bus_from=bus_from,
                     bus_to=suitable_bus,
                     code=line1_code,
-                    r=line_api.R * 0.5,  # Split the impedance
-                    x=line_api.X * 0.5,
-                    b=line_api.B * 0.5,
-                    r0=line_api.R0 * 0.5,
-                    x0=line_api.X0 * 0.5,
-                    b0=line_api.B0 * 0.5,
-                    r2=line_api.R2 * 0.5,
-                    x2=line_api.X2 * 0.5,
-                    b2=line_api.B2 * 0.5,
-                    length=line_api.length * 0.5,  # Split the length
+                    r=line_api.R * ratio1,  # Set impedance proportional to length
+                    x=line_api.X * ratio1,
+                    b=line_api.B * ratio1,
+                    r0=line_api.R0 * ratio1,
+                    x0=line_api.X0 * ratio1,
+                    b0=line_api.B0 * ratio1,
+                    r2=line_api.R2 * ratio1,
+                    x2=line_api.X2 * ratio1,
+                    b2=line_api.B2 * ratio1,
+                    length=length1,  # Set the actual calculated length
                     rate=line_api.rate,
                     contingency_factor=line_api.contingency_factor,
                     protection_rating_factor=line_api.protection_rating_factor)
@@ -1488,6 +1559,29 @@ class GridMapWidget(BaseDiagramWidget):
             line1.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
         if hasattr(line_api, 'active'):
             line1.active = line_api.active
+            
+        # Preserve waypoints for line 1 (from start to insertion point)
+        # Add all waypoints from the original line up to the closest segment
+        for i in range(closest_segment_idx):
+            if i < len(original_line_container.nodes_list):
+                node = original_line_container.nodes_list[i]
+                line1.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
+            
+        # Add the insertion point (closest point to the substation) as the last waypoint
+        closest_lat, closest_lon = closest_point
+        
+        # Check if the closest point is very close to an existing waypoint
+        # If so, we'll use that waypoint instead of adding a new one
+        is_duplicate = False
+        if closest_segment_idx < len(original_line_container.nodes_list):
+            node = original_line_container.nodes_list[closest_segment_idx]
+            if haversine_distance(closest_lat, closest_lon, node.lat, node.lon) < 0.01:  # 10 meters threshold
+                is_duplicate = True
+                closest_lat, closest_lon = node.lat, node.lon
+        
+        # Only add the insertion point if it's not a duplicate
+        if not is_duplicate:
+            line1.locations.add_location(lat=closest_lat, long=closest_lon, alt=0.0)
         
         # Line 2: from new_bus to original bus_to
         line2_name = f"{line_api.name}_2"
@@ -1505,16 +1599,16 @@ class GridMapWidget(BaseDiagramWidget):
                     bus_from=suitable_bus,
                     bus_to=bus_to,
                     code=line2_code,
-                    r=line_api.R * 0.5,
-                    x=line_api.X * 0.5,
-                    b=line_api.B * 0.5,
-                    r0=line_api.R0 * 0.5,
-                    x0=line_api.X0 * 0.5,
-                    b0=line_api.B0 * 0.5,
-                    r2=line_api.R2 * 0.5,
-                    x2=line_api.X2 * 0.5,
-                    b2=line_api.B2 * 0.5,
-                    length=line_api.length * 0.5,
+                    r=line_api.R * ratio2,  # Set impedance proportional to length
+                    x=line_api.X * ratio2,
+                    b=line_api.B * ratio2,
+                    r0=line_api.R0 * ratio2,
+                    x0=line_api.X0 * ratio2,
+                    b0=line_api.B0 * ratio2,
+                    r2=line_api.R2 * ratio2,
+                    x2=line_api.X2 * ratio2,
+                    b2=line_api.B2 * ratio2,
+                    length=length2,  # Set the actual calculated length
                     rate=line_api.rate,
                     contingency_factor=line_api.contingency_factor,
                     protection_rating_factor=line_api.protection_rating_factor)
@@ -1526,6 +1620,16 @@ class GridMapWidget(BaseDiagramWidget):
             line2.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
         if hasattr(line_api, 'active'):
             line2.active = line_api.active
+            
+        # Preserve waypoints for line 2 (from insertion point to end)
+        # Add the insertion point as the first waypoint
+        if not is_duplicate:
+            line2.locations.add_location(lat=closest_lat, long=closest_lon, alt=0.0)
+        
+        # Add all remaining waypoints from the original line
+        for i in range(closest_segment_idx + 1, len(original_line_container.nodes_list)):
+            node = original_line_container.nodes_list[i]
+            line2.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
         
         # Add the new lines to the circuit
         self.circuit.add_line(line1)
@@ -1538,16 +1642,14 @@ class GridMapWidget(BaseDiagramWidget):
         # Get the branch width and arrow size from the general diagram settings
         branch_width = self.diagram.min_branch_width
         arrow_size = self.diagram.arrow_size
-        print('Diagram arrow size: ', arrow_size)
         
         # If we have segments in the original line, use their width and arrow size
         if original_line_container and original_line_container.segments_list:
             if len(original_line_container.segments_list) > 0:
                 segment = original_line_container.segments_list[0]
                 branch_width = segment.width
-                arrow_size = segment._arrow_size  # Should we implement a getter?
-                print('Segment arrow size: ', arrow_size)
-
+                arrow_size = segment._arrow_size
+        
         # Apply the same width and arrow size to the new lines
         line1_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
@@ -1555,15 +1657,55 @@ class GridMapWidget(BaseDiagramWidget):
         # Remove the original line
         self.remove_branch_graphic(line=line_graphic, delete_from_db=True)
         
-        # Update the diagram
-        # self.update_device_sizes()
-        
         # Notify the user
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)
         msg.setText(f"Line {line_api.name} has been split and connected to substation {substation_api.name}.")
+        msg.setInformativeText(f"Line 1 ({line1.name}): {length1:.2f} km\nLine 2 ({line2.name}): {length2:.2f} km\n\nImpedance parameters have been set proportionally based on the actual lengths.")
         msg.setWindowTitle("Operation Successful")
         msg.exec()
+        
+    def _closest_point_on_segment(self, lat1, lon1, lat2, lon2, lat3, lon3):
+        """
+        Find the closest point on a line segment to a given point.
+        
+        :param lat1, lon1: Coordinates of the first endpoint of the segment
+        :param lat2, lon2: Coordinates of the second endpoint of the segment
+        :param lat3, lon3: Coordinates of the point to find the closest point to
+        :return: (closest_lat, closest_lon), distance_in_km
+        """
+        # Convert to Cartesian coordinates for simplicity
+        # This is a simplification and works for short distances
+        # For more accuracy, a proper map projection would be needed
+        x1, y1 = lon1, lat1
+        x2, y2 = lon2, lat2
+        x3, y3 = lon3, lat3
+        
+        # Vector from point 1 to point 2
+        dx = x2 - x1
+        dy = y2 - y1
+        
+        # Square of the length of the line segment
+        len_sq = dx * dx + dy * dy
+        
+        # If the segment is just a point, return the distance to that point
+        if len_sq == 0:
+            closest_y = lat1
+            closest_x = lon1
+            distance = haversine_distance(lat1, lon1, lat3, lon3)
+        else:
+            # Calculate the projection of point 3 onto the line segment
+            # This gives us the parameter t along the line
+            t = max(0, min(1, ((x3 - x1) * dx + (y3 - y1) * dy) / len_sq))
+            
+            # Calculate the closest point on the line segment
+            closest_x = x1 + t * dx
+            closest_y = y1 + t * dy
+            
+            # Calculate the distance using haversine
+            distance = haversine_distance(closest_y, closest_x, lat3, lon3)
+            
+        return (closest_y, closest_x), distance
 
 
 def generate_map_diagram(
