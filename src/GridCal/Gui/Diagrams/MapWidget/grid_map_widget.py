@@ -1453,9 +1453,20 @@ class GridMapWidget(BaseDiagramWidget):
         # Create two new lines
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
+        
+        # Handle the code property - it might be a list of strings
+        if hasattr(line_api, 'code') and line_api.code is not None:
+            if isinstance(line_api.code, list):
+                line1_code = [f"{code}_1" for code in line_api.code]
+            else:
+                line1_code = f"{line_api.code}_1"
+        else:
+            line1_code = ""
+            
         line1 = Line(name=line1_name,
                     bus_from=bus_from,
                     bus_to=suitable_bus,
+                    code=line1_code,
                     r=line_api.R * 0.5,  # Split the impedance
                     x=line_api.X * 0.5,
                     b=line_api.B * 0.5,
@@ -1470,11 +1481,30 @@ class GridMapWidget(BaseDiagramWidget):
                     contingency_factor=line_api.contingency_factor,
                     protection_rating_factor=line_api.protection_rating_factor)
         
+        # Copy other properties from the original line
+        if hasattr(line_api, 'color'):
+            line1.color = line_api.color
+        if hasattr(line_api, 'tags') and line_api.tags:
+            line1.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
+        if hasattr(line_api, 'active'):
+            line1.active = line_api.active
+        
         # Line 2: from new_bus to original bus_to
         line2_name = f"{line_api.name}_2"
+        
+        # Handle the code property for line 2
+        if hasattr(line_api, 'code') and line_api.code is not None:
+            if isinstance(line_api.code, list):
+                line2_code = [f"{code}_2" for code in line_api.code]
+            else:
+                line2_code = f"{line_api.code}_2"
+        else:
+            line2_code = ""
+            
         line2 = Line(name=line2_name,
                     bus_from=suitable_bus,
                     bus_to=bus_to,
+                    code=line2_code,
                     r=line_api.R * 0.5,
                     x=line_api.X * 0.5,
                     b=line_api.B * 0.5,
@@ -1488,6 +1518,14 @@ class GridMapWidget(BaseDiagramWidget):
                     rate=line_api.rate,
                     contingency_factor=line_api.contingency_factor,
                     protection_rating_factor=line_api.protection_rating_factor)
+                    
+        # Copy other properties from the original line
+        if hasattr(line_api, 'color'):
+            line2.color = line_api.color
+        if hasattr(line_api, 'tags') and line_api.tags:
+            line2.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
+        if hasattr(line_api, 'active'):
+            line2.active = line_api.active
         
         # Add the new lines to the circuit
         self.circuit.add_line(line1)

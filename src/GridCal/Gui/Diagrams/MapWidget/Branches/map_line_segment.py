@@ -222,6 +222,12 @@ class MapLineSegment(QGraphicsLineItem):
                        function_ptr=self.call_editor,
                        icon_path=":/Icons/icons/edit.svg")
 
+        # We could create a new icon for this I guess
+        add_menu_entry(menu=menu,
+                       text="Calculate total length",
+                       function_ptr=self.calculate_total_length,
+                       icon_path=":/Icons/icons/resize.svg")
+
         menu.addSeparator()
 
         # Check if a substation is selected
@@ -448,3 +454,20 @@ class MapLineSegment(QGraphicsLineItem):
         self.arrow_q_from.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
         self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
         self.arrow_q_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+
+    def calculate_total_length(self):
+        """
+        Calculate the total length of the line by summing the distances between all waypoints
+        using the haversine formula, and update the line's length property.
+        """
+        # Use the container's method to calculate the total length
+        total_length = self.container.calculate_total_length()
+        
+        # Show a message with the calculated length
+        from PySide6.QtWidgets import QMessageBox
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(f"Line length calculated: {total_length:.2f} km")
+        msg.setInformativeText(f"The length property of line '{self.api_object.name}' has been updated.")
+        msg.setWindowTitle("Length Calculation")
+        msg.exec()

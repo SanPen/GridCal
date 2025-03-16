@@ -492,3 +492,43 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         """
         for segment in self.segments_list:
             segment.set_arrows_with_hvdc_power(Pf=Pf, Pt=Pt)
+
+    def calculate_total_length(self) -> float:
+        """
+        Calculate the total length of the line by summing the distances between all waypoints
+        using the haversine formula, and update the line's length property. Issue #23
+        
+        :return: Total length in kilometers
+        """
+        from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import haversine_distance
+        
+        # Get all connection points (substations and intermediate points)
+        connection_points = []
+        
+        # Add the substation from
+        substation_from = self.substation_from()
+        if substation_from is not None:
+            connection_points.append((substation_from.lat, substation_from.lon))
+        
+        # Add all intermediate points
+        for node in self.nodes_list:
+            connection_points.append((node.lat, node.lon))
+        
+        # Add the substation to
+        substation_to = self.substation_to()
+        if substation_to is not None:
+            connection_points.append((substation_to.lat, substation_to.lon))
+        
+        # Calculate total length by summing distances between consecutive points
+        total_length = 0.0
+        for i in range(len(connection_points) - 1):
+            lat1, lon1 = connection_points[i]
+            lat2, lon2 = connection_points[i + 1]
+            segment_length = haversine_distance(lat1, lon1, lat2, lon2)
+            total_length += segment_length
+        
+        # Update the line's length property
+        if total_length > 0.0:
+            self.api_object.length = total_length
+            
+        return total_length
