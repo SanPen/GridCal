@@ -204,12 +204,14 @@ class OverheadLineType(EditableDevice):
         self.z_abc = None
         self.z_phases_abc = None
         self.z_seq = None
+        self.z_0123 = None
 
         self.y_abcn = None
         self.y_phases_abcn = None
         self.y_abc = None
         self.y_phases_abc = None
         self.y_seq = None
+        self.y_0123 = None
 
         # wire properties for edition (do not confuse with the properties of this very object...)
         self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', "Circuit Index"]
@@ -372,7 +374,7 @@ class OverheadLineType(EditableDevice):
         Compute the tower matrices
         :return:
         """
-        # heck the wires configuration
+        # check the wires configuration
         all_ok = self.check()
 
         if all_ok:
@@ -381,14 +383,16 @@ class OverheadLineType(EditableDevice):
              self.z_phases_abcn,
              self.z_abc,
              self.z_phases_abc,
-             self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+             self.z_seq,
+             self.z_0123) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
             (self.y_abcn,
              self.y_phases_abcn,
              self.y_abc,
              self.y_phases_abc,
-             self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+             self.y_seq,
+             self.y_0123) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
             self.Imax = self.compute_rating()
@@ -686,7 +690,10 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     # compute the sequence components
     z_seq = abc_2_seq(z_abc)
 
-    return z_abcn, phases_abcn, z_abc, phases_abc, z_seq
+    # Ordered abc matrices
+    z_0123 = z_abcn[np.ix_(phases_abcn, phases_abcn)]
+
+    return z_abcn, phases_abcn, z_abc, phases_abc, z_seq, z_0123
 
 
 def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
@@ -768,4 +775,7 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     # compute the sequence components
     y_seq = abc_2_seq(y_abc)
 
-    return y_abcn, phases_abcn, y_abc, phases_abc, y_seq
+    # Ordered abc matrices
+    y_0123 = y_abcn[np.ix_(phases_abcn, phases_abcn)]
+
+    return y_abcn, phases_abcn, y_abc, phases_abc, y_seq, y_0123
