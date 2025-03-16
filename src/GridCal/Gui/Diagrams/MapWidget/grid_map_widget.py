@@ -17,6 +17,7 @@ from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, Q
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
 from GridCal.Gui.general_dialogues import CheckListDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
@@ -325,12 +326,6 @@ class GridMapWidget(BaseDiagramWidget):
 
         # if device is not None:
         #     self.delete_diagram_element(device=device, propagate=delete_from_db)
-        #
-        #     if delete_from_db:
-        #         try:
-        #             self.circuit.delete_element(obj=device)
-        #         except ValueError as e:
-        #             print("GridMapWidget.remove_element", e)
         #
         # if graphic_object is not None:
         #
@@ -1365,6 +1360,172 @@ class GridMapWidget(BaseDiagramWidget):
                 plt.show()
         else:
             info_msg("There are no time series, so nothing to plot :/")
+
+    def split_line_to_substation(self):
+        """
+        Split a selected line and connect it to a selected substation.
+        This creates two new lines: one from the original "from" bus to the selected substation,
+        and another from the selected substation to the original "to" bus.
+        The original line is removed.
+        """
+        # Get selected items
+        selected_items = self.get_selected()
+        
+        # Find the line and substation in the selection
+        selected_line = None
+        selected_substation = None
+        
+        for api_obj, graphic_obj in selected_items:
+            if isinstance(api_obj, Line) and isinstance(graphic_obj, MapLineSegment):
+                selected_line = (api_obj, graphic_obj)
+            elif isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
+                selected_substation = (api_obj, graphic_obj)
+        
+        # Check if we have both a line and a substation selected
+        if selected_line is None or selected_substation is None:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Please select exactly one line and one substation.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+        
+        # Get the API objects
+        line_api, line_graphic = selected_line
+        substation_api, substation_graphic = selected_substation
+        
+        # Get the original line container to access its properties
+        original_line_container = line_graphic.container
+        
+        # Get the original buses
+        bus_from = line_api.bus_from
+        bus_to = line_api.bus_to
+        
+        # Find a suitable bus in the selected substation
+        # First, check if the substation already has a voltage level with the same voltage as the line
+        vnom = line_api.get_max_bus_nominal_voltage()
+        suitable_bus = None
+        
+        # Look for a bus in the substation with matching voltage
+        for bus in self.circuit.get_substation_buses(substation=substation_api):
+            if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
+                suitable_bus = bus
+                break
+        
+        # If no suitable bus found, create a new voltage level and bus
+        if suitable_bus is None:
+            # Find or create a voltage level with the appropriate voltage
+            voltage_level = None
+            for vl in substation_api.voltage_levels:
+                if abs(vl.nominal_voltage - vnom) < 0.01:
+                    voltage_level = vl
+                    break
+            
+            if voltage_level is None:
+                # Create a new voltage level
+                voltage_level_name = f"{substation_api.name} {vnom} kV"
+                voltage_level = VoltageLevel(name=voltage_level_name, 
+                                            substation=substation_api,
+                                            nominal_voltage=vnom)
+                self.circuit.add_voltage_level(voltage_level)
+                
+                # Add the voltage level graphic
+                vl_graphic = self.add_api_voltage_level(
+                    substation_graphics=substation_graphic,
+                    api_object=voltage_level
+                )
+            
+            # Create a new bus in the substation
+            new_bus_name = f"{substation_api.name} {vnom} kV Bus"
+            suitable_bus = Bus(name=new_bus_name,
+                             Vnom=vnom,
+                             vmin=bus_from.Vmin,  # Use the same limits as the original bus
+                             vmax=bus_from.Vmax,
+                             voltage_level=voltage_level,
+                             substation=substation_api,
+                             area=bus_from.area,
+                             zone=bus_from.zone,
+                             country=bus_from.country)
+            
+            # Add the new bus to the circuit
+            self.circuit.add_bus(suitable_bus)
+        
+        # Create two new lines
+        # Line 1: from original bus_from to new_bus
+        line1_name = f"{line_api.name}_1"
+        line1 = Line(name=line1_name,
+                    bus_from=bus_from,
+                    bus_to=suitable_bus,
+                    r=line_api.R * 0.5,  # Split the impedance
+                    x=line_api.X * 0.5,
+                    b=line_api.B * 0.5,
+                    r0=line_api.R0 * 0.5,
+                    x0=line_api.X0 * 0.5,
+                    b0=line_api.B0 * 0.5,
+                    r2=line_api.R2 * 0.5,
+                    x2=line_api.X2 * 0.5,
+                    b2=line_api.B2 * 0.5,
+                    length=line_api.length * 0.5,  # Split the length
+                    rate=line_api.rate,
+                    contingency_factor=line_api.contingency_factor,
+                    protection_rating_factor=line_api.protection_rating_factor)
+        
+        # Line 2: from new_bus to original bus_to
+        line2_name = f"{line_api.name}_2"
+        line2 = Line(name=line2_name,
+                    bus_from=suitable_bus,
+                    bus_to=bus_to,
+                    r=line_api.R * 0.5,
+                    x=line_api.X * 0.5,
+                    b=line_api.B * 0.5,
+                    r0=line_api.R0 * 0.5,
+                    x0=line_api.X0 * 0.5,
+                    b0=line_api.B0 * 0.5,
+                    r2=line_api.R2 * 0.5,
+                    x2=line_api.X2 * 0.5,
+                    b2=line_api.B2 * 0.5,
+                    length=line_api.length * 0.5,
+                    rate=line_api.rate,
+                    contingency_factor=line_api.contingency_factor,
+                    protection_rating_factor=line_api.protection_rating_factor)
+        
+        # Add the new lines to the circuit
+        self.circuit.add_line(line1)
+        self.circuit.add_line(line2)
+        
+        # Add the new lines to the map
+        line1_graphic = self.add_api_line(line1)
+        line2_graphic = self.add_api_line(line2)
+        
+        # Get the branch width and arrow size from the general diagram settings
+        branch_width = self.diagram.min_branch_width
+        arrow_size = self.diagram.arrow_size
+        print('Diagram arrow size: ', arrow_size)
+        
+        # If we have segments in the original line, use their width and arrow size
+        if original_line_container and original_line_container.segments_list:
+            if len(original_line_container.segments_list) > 0:
+                segment = original_line_container.segments_list[0]
+                branch_width = segment.width
+                arrow_size = segment._arrow_size  # Should we implement a getter?
+                print('Segment arrow size: ', arrow_size)
+
+        # Apply the same width and arrow size to the new lines
+        line1_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
+        line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
+        
+        # Remove the original line
+        self.remove_branch_graphic(line=line_graphic, delete_from_db=True)
+        
+        # Update the diagram
+        # self.update_device_sizes()
+        
+        # Notify the user
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(f"Line {line_api.name} has been split and connected to substation {substation_api.name}.")
+        msg.setWindowTitle("Operation Successful")
+        msg.exec()
 
 
 def generate_map_diagram(

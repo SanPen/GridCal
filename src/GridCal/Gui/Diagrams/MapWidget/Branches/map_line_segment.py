@@ -16,6 +16,7 @@ from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
 
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
@@ -223,6 +224,22 @@ class MapLineSegment(QGraphicsLineItem):
 
         menu.addSeparator()
 
+        # Check if a substation is selected
+        selected_items = self.editor.get_selected()
+        has_substation = False
+        
+        for api_obj, _ in selected_items:
+            if hasattr(api_obj, 'device_type') and api_obj.device_type == DeviceType.SubstationDevice:
+                has_substation = True
+                break
+        
+        # Add the split line to substation option if a substation is selected
+        if has_substation:
+            add_menu_entry(menu=menu,
+                           text="Split line to selected substation",
+                           function_ptr=self.editor.split_line_to_substation,
+                           icon_path=":/Icons/icons/divide.svg")
+
         add_menu_entry(menu=menu,
                        text="Plot profiles",
                        function_ptr=self.plot_profiles,
@@ -242,11 +259,6 @@ class MapLineSegment(QGraphicsLineItem):
                        text="Add point",
                        function_ptr=self.add_path_node,
                        icon_path=":/Icons/icons/cn_icon.svg")
-
-        # add_menu_entry(menu=menu,
-        #                text="Add substation here",
-        #                function_ptr=self.add_substation_here,
-        #                icon_path=":/Icons/icons/substation.svg")
 
         menu.addSeparator()
 
