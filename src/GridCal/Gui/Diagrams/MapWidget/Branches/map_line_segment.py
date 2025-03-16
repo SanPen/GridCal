@@ -242,9 +242,14 @@ class MapLineSegment(QGraphicsLineItem):
         # Add the split line to substation option if a substation is selected
         if has_substation:
             add_menu_entry(menu=menu,
-                           text="Split line to selected substation",
+                           text="Split line to selected substation (In-Out)",
                            function_ptr=self.editor.split_line_to_substation,
                            icon_path=":/Icons/icons/divide.svg")
+            
+            add_menu_entry(menu=menu,
+                           text="Connect line to selected substation (T-joint)",
+                           function_ptr=self.editor.create_t_joint_to_substation,
+                           icon_path=":/Icons/icons/connect.svg")
 
         add_menu_entry(menu=menu,
                        text="Plot profiles",

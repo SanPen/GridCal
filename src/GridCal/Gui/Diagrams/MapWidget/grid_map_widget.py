@@ -1707,6 +1707,225 @@ class GridMapWidget(BaseDiagramWidget):
             
         return (closest_y, closest_x), distance
 
+    def create_t_joint_to_substation(self):
+        """
+        Create a T-joint connection between a selected line and a selected substation.
+        This creates a new substation at the closest point on the line to the selected substation,
+        and then creates a new line connecting the two substations.
+        The original line remains intact.
+        """
+        # Get selected items
+        selected_items = self.get_selected()
+        
+        # Find the line and substation in the selection
+        selected_line = None
+        selected_substation = None
+        
+        for api_obj, graphic_obj in selected_items:
+            if isinstance(api_obj, Line) and isinstance(graphic_obj, MapLineSegment):
+                selected_line = (api_obj, graphic_obj)
+            elif isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
+                selected_substation = (api_obj, graphic_obj)
+        
+        # Check if we have both a line and a substation selected
+        if selected_line is None or selected_substation is None:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Please select exactly one line and one substation.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+        
+        # Get the API objects
+        line_api, line_graphic = selected_line
+        substation_api, substation_graphic = selected_substation
+        
+        # Get the original line container to access its properties
+        original_line_container = line_graphic.container
+        
+        # Step 1: Collect all waypoints of the original line
+        waypoints = []
+        
+        # Add the "from" substation
+        substation_from_graphics = self.graphics_manager.query(elm=line_api.get_substation_from())
+        if substation_from_graphics is not None:
+            waypoints.append((substation_from_graphics.lat, substation_from_graphics.lon))
+        
+        # Add all intermediate points
+        for node in original_line_container.nodes_list:
+            waypoints.append((node.lat, node.lon))
+        
+        # Add the "to" substation
+        substation_to_graphics = self.graphics_manager.query(elm=line_api.get_substation_to())
+        if substation_to_graphics is not None:
+            waypoints.append((substation_to_graphics.lat, substation_to_graphics.lon))
+        
+        # Step 2: Find the closest segment to the selected substation
+        substation_lat = substation_api.latitude
+        substation_lon = substation_api.longitude
+        
+        min_distance = float('inf')
+        closest_segment_idx = 0
+        closest_point = (0, 0)
+        
+        for i in range(len(waypoints) - 1):
+            lat1, lon1 = waypoints[i]
+            lat2, lon2 = waypoints[i + 1]
+            
+            # Find the closest point on this segment to the substation
+            point, distance = self._closest_point_on_segment(
+                lat1, lon1, lat2, lon2, substation_lat, substation_lon
+            )
+            
+            if distance < min_distance:
+                min_distance = distance
+                closest_segment_idx = i
+                closest_point = point
+        
+        # Step 3: Create a new substation at the closest point
+        closest_lat, closest_lon = closest_point
+        new_substation_name = f"{line_api.name}_Junction"
+        
+        # Create the new substation
+        new_substation = Substation(name=new_substation_name,
+                                   code=f"{line_api.code}_Junction" if hasattr(line_api, 'code') and line_api.code else "",
+                                   latitude=closest_lat,
+                                   longitude=closest_lon)
+        
+        self.circuit.add_substation(obj=new_substation)
+        new_substation_graphic = self.add_api_substation(api_object=new_substation, lat=closest_lat, lon=closest_lon)
+        
+        # Step 4: Find a suitable bus in the selected substation and create a matching one in the new substation
+        vnom = line_api.get_max_bus_nominal_voltage()
+        suitable_bus_in_selected = None
+        
+        # Look for a bus in the selected substation with matching voltage
+        for bus in self.circuit.get_substation_buses(substation=substation_api):
+            if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
+                suitable_bus_in_selected = bus
+                break
+        
+        # If no suitable bus found, create a new voltage level and bus in the selected substation
+        if suitable_bus_in_selected is None:
+            # Find or create a voltage level with the appropriate voltage in the selected substation
+            voltage_level_in_selected = None
+            for vl in substation_api.voltage_levels:
+                if abs(vl.nominal_voltage - vnom) < 0.01:
+                    voltage_level_in_selected = vl
+                    break
+            
+            if voltage_level_in_selected is None:
+                # Create a new voltage level
+                voltage_level_name = f"{substation_api.name} {vnom} kV"
+                voltage_level_in_selected = VoltageLevel(name=voltage_level_name, 
+                                                        substation=substation_api,
+                                                        nominal_voltage=vnom)
+                self.circuit.add_voltage_level(voltage_level_in_selected)
+                
+                # Add the voltage level graphic
+                vl_graphic = self.add_api_voltage_level(
+                    substation_graphics=substation_graphic,
+                    api_object=voltage_level_in_selected
+                )
+            
+            # Create a new bus in the selected substation
+            bus_name = f"{substation_api.name} {vnom} kV Bus"
+            suitable_bus_in_selected = Bus(name=bus_name,
+                                         Vnom=vnom,
+                                         vmin=0.9,
+                                         vmax=1.1,
+                                         voltage_level=voltage_level_in_selected,
+                                         substation=substation_api)
+            
+            # Add the new bus to the circuit
+            self.circuit.add_bus(suitable_bus_in_selected)
+        
+        # Create a voltage level and bus in the new substation
+        voltage_level_in_new = VoltageLevel(name=f"{new_substation.name} {vnom} kV",
+                                           substation=new_substation,
+                                           Vnom=vnom)
+        self.circuit.add_voltage_level(voltage_level_in_new)
+        
+        # Add the voltage level graphic
+        vl_graphic = self.add_api_voltage_level(
+            substation_graphics=new_substation_graphic,
+            api_object=voltage_level_in_new
+        )
+        
+        # Create a new bus in the new substation
+        new_bus = Bus(name=f"{new_substation.name} {vnom} kV Bus",
+                     Vnom=vnom,
+                     vmin=suitable_bus_in_selected.Vmin,
+                     vmax=suitable_bus_in_selected.Vmax,
+                     voltage_level=voltage_level_in_new,
+                     substation=new_substation,
+                     area=suitable_bus_in_selected.area,
+                     zone=suitable_bus_in_selected.zone,
+                     country=suitable_bus_in_selected.country)
+        
+        # Add the new bus to the circuit
+        self.circuit.add_bus(new_bus)
+        
+        # Step 5: Create a new line connecting the two substations
+        connection_line_name = f"{substation_api.name}_to_{new_substation.name}"
+        
+        # Calculate the distance between the two substations
+        distance = haversine_distance(substation_lat, substation_lon, closest_lat, closest_lon)
+        
+        # Create the new line
+        connection_line = Line(name=connection_line_name,
+                              bus_from=suitable_bus_in_selected,
+                              bus_to=new_bus,
+                              r=line_api.R * (distance / line_api.length),  # Scale impedance based on distance
+                              x=line_api.X * (distance / line_api.length),
+                              b=line_api.B * (distance / line_api.length),
+                              r0=line_api.R0 * (distance / line_api.length),
+                              x0=line_api.X0 * (distance / line_api.length),
+                              b0=line_api.B0 * (distance / line_api.length),
+                              r2=line_api.R2 * (distance / line_api.length),
+                              x2=line_api.X2 * (distance / line_api.length),
+                              b2=line_api.B2 * (distance / line_api.length),
+                              length=distance,
+                              rate=line_api.rate,
+                              contingency_factor=line_api.contingency_factor,
+                              protection_rating_factor=line_api.protection_rating_factor)
+        
+        # Copy other properties from the original line
+        if hasattr(line_api, 'color'):
+            connection_line.color = line_api.color
+        if hasattr(line_api, 'tags') and line_api.tags:
+            connection_line.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
+        if hasattr(line_api, 'active'):
+            connection_line.active = line_api.active
+        
+        # Add the new line to the circuit
+        self.circuit.add_line(connection_line)
+        
+        # Add the new line to the map
+        connection_line_graphic = self.add_api_line(connection_line)
+        
+        # Get the branch width and arrow size from the general diagram settings
+        branch_width = self.diagram.min_branch_width
+        arrow_size = self.diagram.arrow_size
+        
+        # If we have segments in the original line, use their width and arrow size
+        if original_line_container and original_line_container.segments_list:
+            if len(original_line_container.segments_list) > 0:
+                segment = original_line_container.segments_list[0]
+                branch_width = segment.width
+                arrow_size = segment._arrow_size
+        
+        # Apply the same width and arrow size to the new line
+        connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
+        
+        # Notify the user
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(f"T-joint connection created between {substation_api.name} and {line_api.name}.")
+        msg.setInformativeText(f"New substation '{new_substation.name}' created at the closest point on the line.\nNew connection line: {distance:.2f} km")
+        msg.setWindowTitle("Operation Successful")
+        msg.exec()
+
 
 def generate_map_diagram(
         substations: List[Substation],
