@@ -51,6 +51,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         self.ui.name_lineEdit.setText(self.tower_driver.tower.name)
         self.ui.rho_doubleSpinBox.setValue(self.tower_driver.tower.earth_resistivity)
+        self.ui.frequency_doubleSpinBox.setValue(self.tower_driver.tower.frequency)
+        self.ui.voltage_doubleSpinBox.setValue(self.tower_driver.tower.Vnom)
 
         # set models
         self.ui.wires_tableView.setModel(self.wires_table)
@@ -71,6 +73,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.matrixViewComboBox.currentIndexChanged.connect(self.show_matrix)
         self.ui.frequency_doubleSpinBox.valueChanged.connect(self.compute)
         self.ui.rho_doubleSpinBox.valueChanged.connect(self.compute)
+        self.ui.voltage_doubleSpinBox.valueChanged.connect(self.compute)
 
     def msg(self, text, title="Warning"):
         """
@@ -216,6 +219,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         self.tower_driver.tower.frequency = self.ui.frequency_doubleSpinBox.value()
         self.tower_driver.tower.earth_resistivity = self.ui.rho_doubleSpinBox.value()
+        self.tower_driver.tower.Vnom = self.ui.voltage_doubleSpinBox.value()
 
         # heck the wires configuration
         logs = Logger()
