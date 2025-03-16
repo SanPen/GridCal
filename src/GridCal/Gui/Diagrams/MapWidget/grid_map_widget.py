@@ -515,17 +515,134 @@ class GridMapWidget(BaseDiagramWidget):
             self.circuit.delete_substation(obj=sub)
 
         if delete_connections:
+            # Find all branches connected to this substation
+            connected_branches = []
             br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
 
             for tpe in br_types:
-
                 elms = self.graphics_manager.get_device_type_list(tpe)
-
                 for elm in elms:
-
                     if (elm.api_object.get_substation_from() == substation.api_object
                             or elm.api_object.get_substation_to() == substation.api_object):
-                        self.remove_branch_graphic(elm, delete_from_db)
+                        connected_branches.append(elm)
+            
+            # If there are connected branches, ask the user if they want to reconnect them
+            if len(connected_branches) > 0:
+                # Create a list of branch names for the message
+                branch_names = [branch.api_object.name for branch in connected_branches]
+                branch_list_text = "\n- " + "\n- ".join(branch_names)
+                
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Question)
+                msg.setText(f"The substation {substation.api_object.name} has "
+                            f"the following connected branches:{branch_list_text}")
+                msg.setInformativeText("Do you want me to try to reconnect "
+                                       "these branches to the closest substations?")
+                msg.setWindowTitle("Reconnect Branches")
+                msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                result = msg.exec()
+                
+                if result == QMessageBox.StandardButton.Yes:
+                    # Find all other substations to consider as reconnection candidates
+                    other_substations = []
+                    for sub_graphic in self.graphics_manager.get_device_type_list(DeviceType.SubstationDevice):
+                        if sub_graphic.api_object != substation.api_object:
+                            other_substations.append(sub_graphic)
+                    
+                    # Process each connected branch
+                    for branch in connected_branches:
+                        # Determine if this branch connects from or to the substation being removed
+                        connects_from = branch.api_object.get_substation_from() == substation.api_object
+                        
+                        # Find the closest substation with a compatible voltage level
+                        closest_sub = None
+                        min_distance = 1e20  # Initialize with a large value
+                        
+                        # Get the voltage of the bus that's not being removed
+                        if connects_from:
+                            vnom = branch.api_object.bus_to.Vnom
+                        else:  # If not in the from side, it is in the to
+                            vnom = branch.api_object.bus_from.Vnom
+                        
+                        for sub_graphic in other_substations:
+                            # Skip the substation being removed
+                            # if sub_graphic.api_object == substation.api_object:
+                            #     continue
+                            
+                            # Calculate distance
+                            distance = haversine_distance(
+                                substation.lat, substation.lon,
+                                sub_graphic.lat, sub_graphic.lon
+                            )
+                            
+                            # Check if this substation has a compatible voltage level
+                            has_compatible_vl = False
+                            suitable_bus = None
+                            
+                            for bus in self.circuit.get_substation_buses(substation=sub_graphic.api_object):
+                                if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
+                                    has_compatible_vl = True
+                                    suitable_bus = bus
+                                    break
+                            
+                            if has_compatible_vl and distance < min_distance:
+                                min_distance = distance
+                                closest_sub = (sub_graphic, suitable_bus)
+                        
+                        # If we found a suitable substation, update the branch
+                        if closest_sub is not None:
+                            sub_graphic, suitable_bus = closest_sub
+                            
+                            # Check if this would create a line connecting to the same substation at both ends
+                            other_end_substation = None
+                            if connects_from:
+                                other_end_substation = branch.api_object.get_substation_to()
+                            else:
+                                other_end_substation = branch.api_object.get_substation_from()
+                            
+                            # If reconnecting would create a line with the same substation at both ends, remove the line
+                            if other_end_substation == sub_graphic.api_object:
+                                # Remove the branch instead of reconnecting it
+                                self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
+                                
+                                # Inform the user
+                                info_msg = QMessageBox()
+                                info_msg.setIcon(QMessageBox.Icon.Information)
+                                info_msg.setText(f"Branch {branch.api_object.name} removed")
+                                info_msg.setInformativeText(f"Reconnecting would have created a line connecting the same substation to itself.")
+                                info_msg.setWindowTitle("Branch Removed")
+                                info_msg.exec()
+                            else:
+                                # Update the branch connection
+                                if connects_from:
+                                    branch.api_object.bus_from = suitable_bus
+                                    # Update the line container's from_substation
+                                    branch.from_substation = sub_graphic
+                                else:
+                                    branch.api_object.bus_to = suitable_bus
+                                    # Update the line container's to_substation
+                                    branch.to_substation = sub_graphic
+                                
+                                # Redraw the branch to update its visual representation
+                                branch.draw_all()
+                                
+                                # Inform the user
+                                info_msg = QMessageBox()
+                                info_msg.setIcon(QMessageBox.Icon.Information)
+                                info_msg.setText(f"Branch {branch.api_object.name} reconnected")
+                                info_msg.setInformativeText(f"Connected to substation {sub_graphic.api_object.name}")
+                                info_msg.setWindowTitle("Branch Reconnected")
+                                info_msg.exec()
+                        else:
+                            # If no suitable substation found, remove the branch
+                            self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
+                else:
+                    # User chose not to reconnect, so remove all connected branches
+                    for branch in connected_branches:
+                        self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
+        else:
+            br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
+
 
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """
