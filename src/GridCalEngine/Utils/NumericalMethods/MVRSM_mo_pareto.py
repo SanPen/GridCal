@@ -19,7 +19,7 @@
 # Source: https://github.com/lbliek/MVRSM
 # Article: Black-box Mixed-Variable Optimization using a Surrogate Model that Satisfies Integer Constraints,
 # 		   by Laurens Bliek, Arthur Guijt, Sicco Verwer, Mathijs de Weerdt
-import time
+
 import math
 import random
 import numpy as np
@@ -28,7 +28,6 @@ from scipy.linalg.blas import dger
 from scipy.optimize import minimize
 from GridCalEngine.Utils.NumericalMethods.non_dominated_sorting import non_dominated_sorting, dominates
 from GridCalEngine.basic_structures import Vec, Mat, IntVec
-import timeit
 
 
 def relu(x):
@@ -91,7 +90,7 @@ class SurrogateModel:
         :param num_int: the number of discrete decision variables (`0 ≤ num_int ≤ d`).
         """
         # Define the basis functions parameters.
-        W = []  # weights
+        W = []  # weights  TODO: can we know the size beforehand?
         b = []  # biases
 
         # Add a constant basis functions independent of x, giving the model an offset.
