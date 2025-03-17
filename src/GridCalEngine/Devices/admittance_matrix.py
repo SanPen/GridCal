@@ -15,19 +15,22 @@ def list_to_matrix(data: List[List[float]] | None, size: int) -> Mat:
     :param size: size of the matrix (square)
     :return: Numpy array representing a matrix
     """
-    if data is None:
-        return np.zeros((size, size), dtype=complex)
-    else:
-
-        candidate = np.array(data)
-
-        if candidate.ndim == 2:
-            if candidate.shape[1] == size and candidate.shape[0] == size:
-                return candidate
-            else:
-                raise ValueError("AdmittanceMatrix values must be a square matrix")
+    if size > 0 and len(data) > 0:
+        if data is None:
+            return np.zeros((size, size), dtype=complex)
         else:
-            raise ValueError("AdmittanceMatrix values must be a matrix")
+
+            candidate = np.array(data)
+
+            if candidate.ndim == 2:
+                if candidate.shape[1] == size and candidate.shape[0] == size:
+                    return candidate
+                else:
+                    raise ValueError("AdmittanceMatrix values must be a square matrix")
+            else:
+                raise ValueError("AdmittanceMatrix values must be a matrix")
+    else:
+        return np.zeros((size, size), dtype=complex)
 
 
 class AdmittanceMatrix:
