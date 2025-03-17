@@ -1458,7 +1458,7 @@ def parse_gridcal_data(data: GRIDCAL_FILE_TYPE,
                 xpos = df['xpos'].values[i]
                 ypos = df['ypos'].values[i]
                 phase = df['phase'].values[i]
-                tower.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase, circuit_index=1)
+                tower.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
 
     # create diagrams --------------------------------------------------------------------------------------------------
     if text_func is not None:

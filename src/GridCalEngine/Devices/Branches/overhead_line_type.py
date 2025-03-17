@@ -236,20 +236,6 @@ class OverheadLineType(EditableDevice):
 
         self.frequency = 50  # Hz
 
-        # total series impedance (positive sequence)
-        self.R1 = 0.0
-        self.X1 = 0.0
-
-        # total shunt admittance (positive sequence)
-        self.Bsh1 = 0.0
-
-        # total series impedance (positive sequence)
-        self.R0 = 0.0
-        self.X0 = 0.0
-
-        # total shunt admittance (positive sequence)
-        self.Bsh0 = 0.0
-
         # current rating of the tower in kA
         self.Imax = 0.0
 
@@ -276,12 +262,12 @@ class OverheadLineType(EditableDevice):
 
         self.register(key='earth_resistivity', units='Ohm/m3', tpe=float, definition='Earth resistivity')
         self.register(key='frequency', units='Hz', tpe=float, definition='Frequency')
-        self.register(key='R1', units='Ohm/Km', tpe=float, definition='Positive sequence resistance')
-        self.register(key='X1', units='Ohm/Km', tpe=float, definition='Positive sequence reactance')
-        self.register(key='Bsh1', units='uS/Km', tpe=float, definition='Positive sequence shunt susceptance')
-        self.register(key='R0', units='Ohm/Km', tpe=float, definition='Zero-sequence resistance')
-        self.register(key='X0', units='Ohm/Km', tpe=float, definition='Zero sequence reactance')
-        self.register(key='Bsh0', units='uS/Km', tpe=float, definition='Zero sequence shunt susceptance')
+        # self.register(key='R1', units='Ohm/Km', tpe=float, definition='Positive sequence resistance')
+        # self.register(key='X1', units='Ohm/Km', tpe=float, definition='Positive sequence reactance')
+        # self.register(key='Bsh1', units='uS/Km', tpe=float, definition='Positive sequence shunt susceptance')
+        # self.register(key='R0', units='Ohm/Km', tpe=float, definition='Zero-sequence resistance')
+        # self.register(key='X0', units='Ohm/Km', tpe=float, definition='Zero sequence reactance')
+        # self.register(key='Bsh0', units='uS/Km', tpe=float, definition='Zero sequence shunt susceptance')
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
 
@@ -302,41 +288,41 @@ class OverheadLineType(EditableDevice):
         w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
         self.wires_in_tower.append(w)
 
-    def z_series(self):
-        """
-        positive sequence series impedance in Ohm per unit of length
-        """
-        return self.R1 + 1j * self.X1
-
-    def z0_series(self):
-        """
-        zero sequence series impedance in Ohm per unit of length
-        """
-        return self.R0 + 1j * self.X0
-
-    def z2_series(self):
-        """
-        negative sequence series impedance in Ohm per unit of length
-        """
-        return self.R0 + 1j * self.X0
-
-    def y_shunt(self):
-        """
-        positive sequence shunt admittance in S per unit of length
-        """
-        return 1j * self.Bsh1
-
-    def y0_shunt(self):
-        """
-        zero sequence shunt admittance in S per unit of length
-        """
-        return 1j * self.Bsh0
-
-    def y2_shunt(self):
-        """
-        negative sequence shunt admittance in S per unit of length
-        """
-        return 1j * self.Bsh0
+    # def z_series(self):
+    #     """
+    #     positive sequence series impedance in Ohm per unit of length
+    #     """
+    #     return self.R1 + 1j * self.X1
+    #
+    # def z0_series(self):
+    #     """
+    #     zero sequence series impedance in Ohm per unit of length
+    #     """
+    #     return self.R0 + 1j * self.X0
+    #
+    # def z2_series(self):
+    #     """
+    #     negative sequence series impedance in Ohm per unit of length
+    #     """
+    #     return self.R0 + 1j * self.X0
+    #
+    # def y_shunt(self):
+    #     """
+    #     positive sequence shunt admittance in S per unit of length
+    #     """
+    #     return 1j * self.Bsh1
+    #
+    # def y0_shunt(self):
+    #     """
+    #     zero sequence shunt admittance in S per unit of length
+    #     """
+    #     return 1j * self.Bsh0
+    #
+    # def y2_shunt(self):
+    #     """
+    #     negative sequence shunt admittance in S per unit of length
+    #     """
+    #     return 1j * self.Bsh0
 
     def plot(self, ax=None):
         """
@@ -409,6 +395,17 @@ class OverheadLineType(EditableDevice):
             logger.add('All the wires are in the same phase!')
             return False
 
+        # if there is a phase, all the preceding ones must be present too
+        mx = max(phases)
+        missing_phases = False
+        for i in range(1, mx):
+            if i not in phases:
+                logger.add('Missing phase', value=i)
+                missing_phases = True
+
+        if missing_phases:
+            return False
+
         return True
 
     def compute_rating(self):
@@ -448,13 +445,6 @@ class OverheadLineType(EditableDevice):
             # compute the tower rating in kA
             self.Imax = self.compute_rating()
 
-            self.R0 = self.z_seq[0, 0].real
-            self.X0 = self.z_seq[0, 0].imag
-            self.Bsh0 = self.y_seq[0, 0].imag * 1e6
-
-            self.R1 = self.z_seq[1, 1].real
-            self.X1 = self.z_seq[1, 1].imag
-            self.Bsh1 = self.y_seq[1, 1].imag * 1e6
         else:
             pass
 
@@ -469,12 +459,12 @@ class OverheadLineType(EditableDevice):
             if self.wires_in_tower.data[i].wire.name == wire.name:
                 return True
 
-    def get_values(self, Sbase, length, round_vals: bool = False):
-
+    def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False):
         """
-
+        Get the sequence values of the template
         :param Sbase: Base power
         :param length: Length of the line
+        :param circuit_index: index of the circuit
         :param round_vals: Boolean to round parameter values
         :return: Line parameters and rate
         """
@@ -483,11 +473,21 @@ class OverheadLineType(EditableDevice):
         Zbase = (Vn * Vn) / Sbase
         Ybase = 1 / Zbase
 
-        z1 = self.z_series() * length / Zbase
-        y1 = self.y_shunt() * length * -1e6 / Ybase
+        a0 = 3 * circuit_index
+        R0 = self.z_seq[a0, a0].real
+        X0 = self.z_seq[a0, a0].imag
+        Bsh0 = self.y_seq[a0, a0].imag * 1e6
 
-        z0 = self.z0_series() * length / Zbase
-        y0 = self.y0_shunt() * length * -1e6 / Ybase
+        a1 = 3 * circuit_index + 1
+        R1 = self.z_seq[a1, a1].real
+        X1 = self.z_seq[a1, a1].imag
+        Bsh1 = self.y_seq[a1, a1].imag * 1e6
+
+        z1 = (R1 + 1j * X1) * length / Zbase
+        y1 = 1j * Bsh1 * length * -1e6 / Ybase
+
+        z0 = (R0 + 1j * X0) * length / Zbase
+        y0 = 1j * Bsh0 * length * -1e6 / Ybase
 
         if round_vals:
             R1 = np.round(z1.real, 6)
@@ -507,8 +507,8 @@ class OverheadLineType(EditableDevice):
             X0 = z0.imag
             B0 = y0.imag
 
-        z2 = self.z2_series() * length / Zbase
-        y2 = self.y2_shunt() * length * -1e6 / Ybase
+        z2 = (R0 + 1j * X0) * length / Zbase
+        y2 = 1j * Bsh0 * length * -1e6 / Ybase
 
         # get the rating in MVA = kA * kV
         rate = self.Imax * Vn * np.sqrt(3)

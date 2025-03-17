@@ -412,7 +412,7 @@ class Line(BranchParent):
         if isinstance(obj, OverheadLineType):
             (self.R, self.X, self.B,
              self.R0, self.X0, self.B0,
-             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length)
+             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length, circuit_index=self.circuit)
 
             if self.template is not None:
                 if obj != self.template:
