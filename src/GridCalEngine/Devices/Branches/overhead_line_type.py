@@ -30,7 +30,7 @@ class WireInTower:
     Wire -> Tower association
     """
 
-    def __init__(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1, circuit_index: int = 1):
+    def __init__(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
         """
         Wire in a tower
         :param wire: Wire instance
@@ -46,9 +46,13 @@ class WireInTower:
 
         self.ypos: float = ypos
 
-        self.phase: int = phase
+        self._phase: int = phase
 
-        self.circuit_index: int = circuit_index
+        self.circuit_index: int = 0
+
+        self.phase_type: str = ""
+
+        self.set_phase(phase)
 
         self.device_type = DeviceType.WireDevice
 
@@ -59,6 +63,59 @@ class WireInTower:
                 and self.phase == other.phase
                 and self.circuit_index == other.circuit_index
                 and self.name == other.name)
+
+    def set_phase(self, phase: int):
+        """
+        Pase setter
+
+         A    B    C   circuit_idx
+        --------------------------
+         1    2    3       1
+         4    5    6       2
+         7    8    9       3
+         ...
+
+        :param phase:
+        :return: None
+        """
+        k = int((phase - 1) / 3)
+        n_circuit = k + 1
+
+        if phase == 0:
+            self._phase = phase
+            self.phase_type = "N"
+            self.circuit_index = 0
+
+        elif (phase - 1) % 3 == 0:
+            self._phase = phase
+            self.phase_type = "A"
+            self.circuit_index = n_circuit
+
+        elif (phase - 2) % 3 == 0:
+            self._phase = phase
+            self.phase_type = "B"
+            self.circuit_index = n_circuit
+
+        elif (phase - 3) % 3 == 0:
+            self._phase = phase
+            self.phase_type = "C"
+            self.circuit_index = n_circuit
+
+        else:
+            print("Cannot recognize the phase...")
+
+    @property
+    def phase(self):
+        return self._phase
+
+    @phase.setter
+    def phase(self, phase: int):
+        """
+        Pase setter
+        :param phase: phase number
+        """
+        self.set_phase(phase)
+
 
     def to_dict(self) -> Dict[str, str | float | int]:
         """
@@ -116,8 +173,7 @@ class ListOfWires:
                 wire=wire_dict.get(entry["wire"]),
                 xpos=entry["xpos"],
                 ypos=entry["ypos"],
-                phase=entry["phase"],
-                circuit_index=entry.get("circuit_index", 1)
+                phase=entry["phase"]
             )
 
             elm.parse(entry, wire_dict)
@@ -214,10 +270,10 @@ class OverheadLineType(EditableDevice):
         self.y_0123 = None
 
         # wire properties for edition (do not confuse with the properties of this very object...)
-        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', "Circuit Index"]
-        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'circuit_index'}
-        self.converter = {0: str, 1: float, 2: float, 3: int, 4: int}
-        self.editable_wire = [False, True, True, True, True]
+        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', "Circuit Index", "Phase name"]
+        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'circuit_index', 5: 'phase_type'}
+        self.converter = {0: str, 1: float, 2: float, 3: int, 4: int, 5: str}
+        self.editable_wire = [False, True, True, True, False, False]
 
         self.register(key='earth_resistivity', units='Ohm/m3', tpe=float, definition='Earth resistivity')
         self.register(key='frequency', units='Hz', tpe=float, definition='Frequency')
@@ -236,17 +292,15 @@ class OverheadLineType(EditableDevice):
     def add_wire_relationship(self, wire: Wire,
                               xpos: float = 0.0,
                               ypos: float = 0.0,
-                              phase: int = 1,
-                              circuit_index: int = 1):
+                              phase: int = 1):
         """
         Wire in a tower
         :param wire: Wire instance
         :param xpos: x position in m
         :param ypos: y position in m
         :param phase: 0->Neutral, 1->A, 2->B, 3->C
-        :param circuit_index: circuit index
         """
-        w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase, circuit_index=circuit_index)
+        w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
         self.wires_in_tower.append(w)
 
     def z_series(self):
@@ -383,16 +437,14 @@ class OverheadLineType(EditableDevice):
              self.z_phases_abcn,
              self.z_abc,
              self.z_phases_abc,
-             self.z_seq,
-             self.z_0123) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+             self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
             (self.y_abcn,
              self.y_phases_abcn,
              self.y_abc,
              self.y_phases_abc,
-             self.y_seq,
-             self.y_0123) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+             self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
             self.Imax = self.compute_rating()
@@ -691,9 +743,9 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     z_seq = abc_2_seq(z_abc)
 
     # Ordered abc matrices
-    z_0123 = z_abcn[np.ix_(phases_abcn, phases_abcn)]
+    # z_0123 = z_abcn[np.ix_(phases_abcn, phases_abcn)]
 
-    return z_abcn, phases_abcn, z_abc, phases_abc, z_seq, z_0123
+    return z_abcn, phases_abcn, z_abc, phases_abc, z_seq
 
 
 def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
@@ -776,6 +828,6 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     y_seq = abc_2_seq(y_abc)
 
     # Ordered abc matrices
-    y_0123 = y_abcn[np.ix_(phases_abcn, phases_abcn)]
+    # y_0123 = y_abcn[np.ix_(phases_abcn, phases_abcn)]
 
-    return y_abcn, phases_abcn, y_abc, phases_abc, y_seq, y_0123
+    return y_abcn, phases_abcn, y_abc, phases_abc, y_seq

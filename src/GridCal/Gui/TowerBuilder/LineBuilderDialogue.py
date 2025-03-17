@@ -226,17 +226,17 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         all_ok = self.tower_driver.tower.check(logs)
 
         if all_ok:
-            try:
-                # compute the matrices
-                self.tower_driver.tower.compute()
+            # try:
+            # compute the matrices
+            self.tower_driver.tower.compute()
 
-                self.show_matrix()
+            self.show_matrix()
 
-                # plot
-                self.plot()
+            # plot
+            self.plot()
 
-            except Exception as e:
-                self.msg(str(e), 'Tower calculation')
+            # except Exception as e:
+            #     self.msg(str(e), 'Tower calculation')
 
         return all_ok, logs
 
@@ -307,12 +307,31 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         self.wires_table.add(wire)
 
+    def example_3(self):
+        name = '4/0 6/1 ACSR'
+        r = 0.367851632  # ohm / km
+        x = 0  # ohm / km
+        gmr = 0.002481072  # m
+
+        wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
+
+        self.tower_driver.add(WireInTower(wire=wire, xpos=1.5, ypos=10, phase=0))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=1, ypos=7, phase=1))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=1, ypos=8, phase=2))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=1, ypos=9, phase=3))
+
+        self.tower_driver.add(WireInTower(wire=wire, xpos=2, ypos=7, phase=4))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=2, ypos=8, phase=5))
+        self.tower_driver.add(WireInTower(wire=wire, xpos=2, ypos=9, phase=6))
+
+        self.wires_table.add(wire)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = TowerBuilderGUI()
 
-    window.example_2()
+    window.example_3()
     window.compute()
 
     window.resize(1.61 * 600.0, 600.0)  # golden ratio
