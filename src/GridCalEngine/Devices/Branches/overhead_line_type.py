@@ -9,7 +9,7 @@ import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
 
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, Mat, IntVec
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Branches.wire import Wire
 from GridCalEngine.enumerations import SubObjectType
@@ -579,7 +579,7 @@ def kron_reduction(mat, keep, embed):
     return Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
 
 
-def wire_bundling(phases_set, primitive, phases_vector):
+def wire_bundling(phases_set: List[int], primitive: Mat, phases_vector: IntVec):
     """
     Algorithm to bundle wires per phase
     :param phases_set: set of phases (list with unique occurrences of each phase values, i.e. [0, 1, 2, 3])
