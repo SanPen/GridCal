@@ -19,7 +19,7 @@
 # Source: https://github.com/lbliek/MVRSM
 # Article: Black-box Mixed-Variable Optimization using a Surrogate Model that Satisfies Integer Constraints,
 # 		   by Laurens Bliek, Arthur Guijt, Sicco Verwer, Mathijs de Weerdt
-
+import time
 import math
 import random
 import numpy as np
@@ -29,6 +29,7 @@ from scipy.optimize import minimize
 from GridCalEngine.Utils.NumericalMethods.non_dominated_sorting import non_dominated_sorting, dominates
 from GridCalEngine.basic_structures import Vec, Mat, IntVec
 import timeit
+
 
 def relu(x):
     """
@@ -59,8 +60,9 @@ class SurrogateModel:
         `Φ_k(x)` is a ReLU with input `z_k(x)`, a linear function with weights `W_{k, ·}ᵀ`
         and bias `b_k`.
         Let `d` be the number of (discrete and continuous) decision variables.
+        :param n_obj: the number of decision variables
         :param m: the number of basis functions.
-        :param c: the basis functions weights (m×1 vector).  --> changes with multiple objectives
+        :param c: the basis functions weights (n_obj x m matrix).  --> changes with multiple objectives
         :param W: the `z_k(x)` functions weights (m×d matrix).
         :param b: the `z_k(x)` functions biases (m×1 vector).
         :param reg: the regularization parameter.
@@ -192,33 +194,33 @@ class SurrogateModel:
         """
 
         phi = self.phi(x)  # basis function values for k = 1, ..., m.
-        st = timeit.default_timer()
+        # st = timeit.default_timer()
         # Recursive least squares algorithm
         v = np.matmul(self.P, phi, out=self.scratch)
-        end = timeit.default_timer()
-        print(f"Time to calculate v: {end - st}")
+        # end = timeit.default_timer()
+        # print(f"Time to calculate v: {end - st}")
 
-        st = timeit.default_timer()
-        g0 = v / (1 + np.inner(phi, v))  # --> changes with multiple objectives.  Let g depend on the objective index. Do this initialization for all objectives.
+        # st = timeit.default_timer()
+        # --> changes with multiple objectives.  Let g depend on the objective index. Do this initialization for all objectives.
+        g0 = v / (1 + np.inner(phi, v))
         # P ← P - gvᵀ
-        end = timeit.default_timer()
-        print(f"Time to calculate g0: {end - st}")
+        # end = timeit.default_timer()
+        # print(f"Time to calculate g0: {end - st}")
 
-        st = timeit.default_timer()
-        self.P = dger(-1.0, g0, v, a=self.P,
-                      overwrite_x=False, overwrite_y=True, overwrite_a=True)
-        end = timeit.default_timer()
-        print(f"Time to update P: {end - st}")
+        # st = timeit.default_timer()
+        self.P = dger(-1.0, g0, v, a=self.P, overwrite_x=False, overwrite_y=True, overwrite_a=True)
+        # end = timeit.default_timer()
+        # print(f"Time to update P: {end - st}")
 
-        st = timeit.default_timer()
+        # st = timeit.default_timer()
         # for each objective index...
         for i in range(self.n_obj):
             g = g0 * (y[i] - np.inner(phi, self.c[i, :]))  # --> changes with multiple objectives.
             ## So do this calculation for all different objectives, make sure c and y correspond to the right objective
             # So there will be multiple g: one for each. Initialize them the same way with g = v / (1 + np.inner(phi, v))
             self.c[i, :] += g  # do this for each objective
-        end = timeit.default_timer()
-        print(f"Time to update c: {end - st}")
+        # end = timeit.default_timer()
+        # print(f"Time to update c: {end - st}")
 
     def g(self, x):  # change this to have the objective index in the argument   def g(self, x, obj_index):
         """
@@ -237,14 +239,15 @@ class SurrogateModel:
         :param x: the decision variable values.
         """
         phi_prime = self.phi_deriv(x, out=self.scratch)
-        b = np.multiply(self.c, phi_prime, out=self.scratch)  # use c[obj_index]
-        return np.matmul(b, self.W)  # 1×d vector
+        # b = np.multiply(self.c[i,:], phi_prime, out=self.scratch)  # use c[obj_index]
+        b = np.empty((self.n_obj, self.m))
+        for i in range(self.n_obj):
+            b[i, :] = self.c[i, :] * phi_prime
+        return b @ self.W  # n_obj×d matrix
 
-    # --> changes with multiple objectives.
-    # Find a way to scalarize mutliple objectives
     def g_scalarize(self, x, scalarization_weights: Vec):
         """
-        Evaluates the basis functions at `x`.
+        Evaluates the linear scalarization of multiple objectives.
         :param x: the decision variable values
         :param scalarization_weights: vector of size n_obj
         """
@@ -253,26 +256,106 @@ class SurrogateModel:
         # return single_obj
         return self.g(x) @ scalarization_weights
 
-    # We need to also calculate the Jacobian of the scalarized single_obj,
-    # But we can ignore it for now
-    # def scalarized_jac
-    # Probably just scalarization_weights[obj_index]*g_jac[obj_index]
+    def g_scalarize_max(self, x, scalarization_weights):
+        """
+        Evaluates the maximum or Tchebycheff scalarization of multiple objectives.
+        :param x: the decision variable values
+        :param scalarization_weights: vector of size n_obj
+        """
+        # worst objective after multiplying with weight
+        mul = np.multiply(self.g(x), scalarization_weights)
+        j = np.argmax(mul)
+        return self.g(x)[j]
+
+    def g_scalarize_jac(self, x, scalarization_weights):
+        """
+        Evaluates the Jacobian of the linear scalarization of multiple objectives.
+        :param x: the decision variable values
+        :param scalarization_weights: vector of size n_obj
+        """
+        return np.matmul(scalarization_weights, self.g_jac(x))
+
+    def g_scalarize_max_jac(self, x, scalarization_weights):
+        """
+        Evaluates the Jacobian of the maximum or Tchebycheff scalarization of multiple objectives.
+        :param x: the decision variable values
+        :param scalarization_weights: vector of size n_obj
+        """
+        mul = np.multiply(self.g(x), scalarization_weights)
+        j = np.argmax(mul)
+        return self.g_jac(x)[j, :]
+
+    def augmented_Tchebycheff(self, x, scalarization_weights):
+        """
+        Evaluates the augmented Tchebycheff scalarization of multiple objectives.
+        :param x: the decision variable values
+        :param scalarization_weights: vector of size n_obj
+        """
+        # Augmented Tchebycheff scalarization from ``ParEGO: A Hybrid Algorithm With On-Line Landscape Approximation for Expensive Multiobjective Optimization Problems''
+        return self.g_scalarize_max(x, scalarization_weights) + 0.05 * self.g_scalarize(x, scalarization_weights)
+
+    def augmented_Tchebycheff_jac(self, x, scalarization_weights):
+        """
+        Evaluates the Jacobian of the augmented Tchebycheff scalarization of multiple objectives.
+        :param x: the decision variable values
+        :param scalarization_weights: vector of size n_obj
+        """
+        return self.g_scalarize_max_jac(x, scalarization_weights) + 0.05 * self.g_scalarize_jac(x,
+                                                                                                scalarization_weights)
 
     def minimum(self, x0, scalarization_weights) -> Vec:
         """
         Find a minimum of the surrogate model approximately.
         :param x0: the initial guess.
-        :param scalarization_weights: weights for the scalarization
-        :return minimization evaluation
+        :param scalarization_weights: weights for the scalarization of multiple objectives
+        :return minimization evaluation and corresponding function values
         """
-        res = minimize(self.g_scalarize, x0,
-                       args=(scalarization_weights,),
-                       method='L-BFGS-B',
-                       # --> changes with multiple objectives: instead of g, minimize the single_obj that comes out of scalarize
-                       bounds=self.bounds,
-                       # jac=self.g_jac, # remove jacobian at first, until it is calculated
-                       options={'maxiter': 20, 'maxfun': 20})
-        return res.x
+        scalarization_type = 2  # 0=linear, 1=max, 0.5 is a mix, 2 is augmented Tchebycheff. max seems to capture the shape of nonconvex pareto front better (also according to theory) but has worse performance
+        # Current default is the augmented Tchebycheff, as it is used in other papers.
+
+        if scalarization_type == 0:
+            # with linear scalarization
+            # print('Using linear scalarization')
+            res = minimize(self.g_scalarize, x0, args=(scalarization_weights,), method='L-BFGS-B', bounds=self.bounds,
+                           jac=self.g_scalarize_jac,
+                           options={'maxiter': 20, 'maxfun': 20})
+        elif scalarization_type == 1:
+            # with max scalarization
+            # Similar to:
+            # Golovin, Daniel and Qiuyi Zhang. “Random Hypervolume Scalarizations for Provable Multi-Objective Black Box Optimization.” ArXiv abs/2006.04655 (2020): n. pag.
+            # print('Using max scalarization')
+            res = minimize(self.g_scalarize_max, x0, args=(scalarization_weights,), method='L-BFGS-B',
+                           bounds=self.bounds,
+                           jac=self.g_scalarize_max_jac,
+                           options={'maxiter': 20, 'maxfun': 20})
+        elif scalarization_type == 0.5:
+            # with mix scalarization
+            r = random.random()
+            if r > 0.5:
+                # print('Using mixed scalarization (now max)')
+                res = minimize(self.g_scalarize_max, x0, args=(scalarization_weights,), method='L-BFGS-B',
+                               bounds=self.bounds,
+                               jac=self.g_scalarize_max_jac,
+                               options={'maxiter': 20, 'maxfun': 20})
+            elif r <= 0.5:
+                # print('Using mixed scalarization (now linear)')
+                res = minimize(self.g_scalarize, x0, args=(scalarization_weights,), method='L-BFGS-B',
+                               bounds=self.bounds,
+                               jac=self.g_scalarize_jac,
+                               options={'maxiter': 20, 'maxfun': 20})
+            else:
+                print('Warning: wrong random number generated')
+        elif scalarization_type == 2:
+            # with augmented Tchebycheff scalarization (from ``ParEGO: A Hybrid Algorithm With On-Line Landscape Approximation for Expensive Multiobjective Optimization Problems'')
+            # Warning: type 2 Augmented Tchebycheff is untested!!!
+            # print('Using augmented Tchebycheff scalarization')
+            res = minimize(self.augmented_Tchebycheff, x0, args=(scalarization_weights,), method='L-BFGS-B',
+                           bounds=self.bounds,
+                           jac=self.augmented_Tchebycheff_jac,
+                           options={'maxiter': 20, 'maxfun': 20})
+        else:
+            print('Warning: wrong scalarization chosen.')
+        return res.x, res.fun
 
 
 def scale(y, y0,
@@ -292,14 +375,11 @@ def scale(y, y0,
     for i in range(len(y)):
         if y0[i] > scale_threshold:
             y[i] /= y0[i]
-    #
-    # if abs(y0) > scale_threshold
-    #     y /= abs(y0)
     return y
 
 
 def inv_scale(y_scaled, y0,
-              scale_threshold=1e-8):  # do this for every objective so that all objectives are more or less in the same range
+              scale_threshold=1e-8):
     """
     Computes the inverse function of `scale(y, y0)`.
     :param y_scaled: the scaled objective function value.
@@ -307,10 +387,10 @@ def inv_scale(y_scaled, y0,
     :param scale_threshold: value under which no scaling is done
     :return: the value `y` such that `scale(y, y0) = y_scaled`.
     """
-    if abs(y0) > scale_threshold:
-        y_scaled *= abs(y0)
+    for i in range(len(y0)):
+        if abs(y0[i]) > scale_threshold:
+            y_scaled[i] *= abs(y0[i])
     return y_scaled + y0
-
 
 
 def get_norm_factors(scaling_values):
@@ -381,10 +461,16 @@ def MVRSM_mo_pareto(obj_func,
 
     best_x = np.copy(next_x)  # best candidate solution found so far
     best_y = obj_func(best_x)  # least objective function value found so far, equal to obj(best_x).
+    # Do this if best_y does not have a value for each objective:
+    # if n_objectives >=2:
+    #    best_y = [math.inf]*n_objectives  # least objective function value found so far, equal to obj(best_x).
 
     # Initialize storing arrays
     y_population = np.zeros((max_evals, n_objectives))
     x_population = np.zeros((max_evals, d))
+
+    # if n_objectives >= 2:  # should always be declared
+    Pareto_index = []  # List of the iterations of which evaluated solutions are currently Pareto optimal
 
     # Start random iterations loop
     for i in range(rand_evals):
@@ -434,22 +520,81 @@ def MVRSM_mo_pareto(obj_func,
         y_normalized = normalize_md(y, normalization_factors)
 
         model.update(x, y_normalized)
-        e_time = time.time()
-        print(f"Time to update model: {e_time - st_time}")
+        # e_time = time.time()
+        # print(f"Time to update model: {e_time - st_time}")
+
+        # Keep track of Pareto front
+        # Note: Should actually do this for the random evaluations too
+        # Note2: Can make this shorter by using the existing dominates function
+        if n_objectives >= 2:
+            if i == rand_evals:
+                Pareto_index.append(i)
+            else:
+                y_is_dominated = 0  # whether y is dominated by any of the previous Pareto optimal solutions
+                pp_to_remove = []  # Pareto optimal points that should be removed because they are not Pareto optimal anymore due to y
+                for pp in Pareto_index:
+                    y_dominates_pp = 0
+                    pp_dominates_y = 0
+                    TOL = 1e-8  # tolerance level for determining Pareto optimality
+                    y_pp_scaled = normalize_md(y_population[pp, :], normalization_factors)
+
+                    # Check if y is exactly the same as pp, in which case it is not useful to add it to the list of Pareto optimal solutions
+                    if np.all(y_pp_scaled == y_normalized):
+                        y_is_dominated = 1
+                        break
+                    for obj_i in range(n_objectives):
+                        # Situation A: y is dominated by pp
+                        diff = y_pp_scaled[obj_i] - y_normalized[obj_i]
+                        if diff < -TOL:
+                            pp_dominates_y += 1
+
+                        # Situation B: pp dominated by y
+                        if diff > TOL:
+                            y_dominates_pp += 1
+                    # print('pp_dominates_y', pp_dominates_y)
+                    # print('y_dominates_pp', y_dominates_pp)
+                    # Situation A: y is dominated by pp
+                    if pp_dominates_y >= 1 and y_dominates_pp == 0:
+                        # keep list the same, and don't add y
+                        # y is dominated by pp so stop checking other pp
+                        y_is_dominated = 1
+                        # print('A')
+                        break
+
+                    # Situation B: pp dominated by y
+                    if y_dominates_pp >= 1 and pp_dominates_y == 0:
+                        pp_to_remove.append(pp)
+                        # print('B')
+                for pp in pp_to_remove:
+                    Pareto_index.remove(pp)
+                # Situation C: pp and y don't dominate each other, for every pp --> y is then Pareto optimal
+                if y_is_dominated == 0:
+                    Pareto_index.append(i)
+
         # Get scalarization weights
-        # rnd_weights = np.random.rand(n_objectives)
-        rnd_weights = np.random.lognormal(0, 1, n_objectives)
+        rnd_weights = np.random.rand(n_objectives)
+        # rnd_weights = np.random.lognormal(0, 1, n_objectives)
         # rnd_weights = np.full(n_objectives, 0.5)
         scalarization_weights = rnd_weights / rnd_weights.sum()
 
+        # Pick a random Pareto optimal x to start optimization from
+        if n_objectives >= 2:
+            rand_pp = np.random.randint(len(Pareto_index))
+            best_x = x_population[Pareto_index[rand_pp], :]
+        # if n_objectives == 1:
+        #     if y_normalized < best_y:
+        #         best_x = np.copy(x)
+        #         best_y = y
+
         # Minimize surrogate model
-        if dominates(y, best_y):
-            best_x = np.copy(x)
-            best_y = y_normalized
-        st_time = time.time()
-        next_x = model.minimum(best_x, scalarization_weights)
-        e_time = time.time()
-        print(f"Time to find minimum: {e_time - st_time}")
+        if n_objectives == 1:
+            if dominates(y, best_y):
+                best_x = np.copy(x)
+                best_y = y_normalized
+        # st_time = time.time()
+        next_x, fbest = model.minimum(best_x, scalarization_weights)
+        # e_time = time.time()
+        # print(f"Time to find minimum: {e_time - st_time}")
         # Round discrete variables to the nearest integer.
         next_x[0:num_int].round(out=next_x[0:num_int])
 
