@@ -454,11 +454,18 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         if dlg.is_accepted:
 
             deleted_api_objs: List[Substation] = list()
-
+            
+            # Collect all codes to merge
+            merged_codes = ""
+            
             for i in dlg.selected_indices:
 
                 se_graphics = selected[i]
-
+                if merged_codes == "":
+                    merged_codes = se_graphics.api_object.code
+                else:
+                    merged_codes = merged_codes + ',' + se_graphics.api_object.code
+                
                 deleted_api_objs.append(se_graphics.api_object)
 
                 if se_graphics != self:
@@ -466,6 +473,15 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                     self.editor.remove_substation(substation=se_graphics,
                                                   delete_from_db=True,
                                                   delete_connections=False)
+            
+            # Update the code of the base substation
+            self.api_object.code = merged_codes  # Needed?
+            
+            # Find the base substation in the circuit's collection and update it
+            for i, substation in enumerate(self.editor.circuit._substations):
+                if substation == self.api_object:
+                    self.editor.circuit._substations[i].code = merged_codes
+                    break
 
             # re-index the stuff pointing at deleted api elements to this api object
             for vl in self.editor.circuit.voltage_levels:
