@@ -11,9 +11,9 @@ import math
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from PySide6.QtWidgets import QGraphicsItem, QMessageBox
+from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox
 from collections.abc import Callable
-from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
+from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool, QEventLoop)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
@@ -497,152 +497,230 @@ class GridMapWidget(BaseDiagramWidget):
         nod = self.graphics_manager.delete_device(node.api_object)
         self.map.diagram_scene.removeItem(nod)
 
+    def handle_substation_selection_for_reconnection(self, branch, connects_from, vnom, delete_from_db):
+        """
+        Handle the interactive selection of a new substation for a branch reconnection
+        
+        :param branch: The branch to reconnect
+        :param connects_from: True if the branch connects from the substation being removed
+        :param vnom: The nominal voltage of the bus that's not being removed
+        :param delete_from_db: Whether to delete from the database if reconnection fails
+        :return: True if reconnection was successful, False otherwise
+        """
+        from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox
+        
+        # Create an initial instruction dialog
+        info_msg = QMessageBox()
+        info_msg.setIcon(QMessageBox.Icon.Information)
+        info_msg.setText(f"Please select a substation to reconnect branch {branch.api_object.name}")
+        info_msg.setInformativeText(f"Click on a substation with a compatible voltage level ({vnom} kV)")
+        info_msg.setWindowTitle("Select Substation")
+        info_msg.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+        result = info_msg.exec()
+        
+        if result == QMessageBox.StandardButton.Cancel:
+            # User canceled, remove the branch
+            self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
+            return False
+        
+        # Create a non-modal dialog that will stay on top but allow interaction with the map
+        class SelectionDialog(QDialog):
+            def __init__(self, parent=None):
+                super().__init__(parent)
+                self.setWindowTitle("Waiting for Selection")
+                self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+                
+                layout = QVBoxLayout()
+                
+                # Add instructions
+                instruction_label = QLabel(f"Click on a substation to reconnect branch {branch.api_object.name}")
+                instruction_label.setWordWrap(True)
+                layout.addWidget(instruction_label)
+                
+                # Add more detailed instructions
+                detail_label = QLabel(f"The substation should have a compatible voltage level ({vnom} kV)")
+                detail_label.setWordWrap(True)
+                layout.addWidget(detail_label)
+                
+                # Add a status label that will be updated
+                self.status_label = QLabel("Waiting for selection...")
+                self.status_label.setWordWrap(True)
+                layout.addWidget(self.status_label)
+                
+                # Add a cancel button
+                cancel_button = QPushButton("Cancel")
+                cancel_button.clicked.connect(self.reject)
+                layout.addWidget(cancel_button)
+                
+                self.setLayout(layout)
+                self.resize(300, 200)
+                
+            def update_status(self, text):
+                self.status_label.setText(text)
+        
+        # Create the dialog
+        selection_dialog = SelectionDialog()
+        selection_dialog.show()  # Show but don't block (non-modal)
+        
+        # Set up a flag to track if a selection was made
+        selection_made = [False]
+        selected_substation = [None]
+        
+        # Define a callback function to handle substation selection
+        def on_substation_selected(substation_graphic):
+            # Check if the selected substation has a compatible voltage level
+            suitable_bus = None
+            for bus in self.circuit.get_substation_buses(substation=substation_graphic.api_object):
+                if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
+                    suitable_bus = bus
+                    break
+            
+            if suitable_bus is not None:
+                # Check if this would create a line connecting to the same substation at both ends
+                other_end_substation = None
+                if connects_from:
+                    other_end_substation = branch.api_object.get_substation_to()
+                else:
+                    other_end_substation = branch.api_object.get_substation_from()
+                
+                # If reconnecting would create a line with the same substation at both ends, show an error
+                if other_end_substation == substation_graphic.api_object:
+                    selection_dialog.update_status("Cannot reconnect: This would create a line connecting the same substation to itself.")
+                    return False
+                
+                # Update the branch connection
+                if connects_from:
+                    branch.api_object.bus_from = suitable_bus
+                else:
+                    branch.api_object.bus_to = suitable_bus
+                
+                # Redraw the branch to update its visual representation
+                branch.draw_all()
+                
+                # Set the flag to indicate a selection was made
+                selection_made[0] = True
+                selected_substation[0] = substation_graphic
+                
+                # Close the dialog
+                selection_dialog.accept()
+                return True
+            else:
+                # No compatible voltage level found
+                selection_dialog.update_status(f"No compatible voltage level: The selected substation does not have a voltage level compatible with {vnom} kV.")
+                return False
+        
+        # Store the original click event handler
+        original_click_handler = self.map.view.mousePressEvent
+        
+        # Define a new click event handler
+        def selection_click_handler(event):
+            # Call the original handler to maintain normal behavior
+            original_click_handler(event)
+            
+            # Check if a substation was clicked
+            selected_items = self.map.view.selected_items()
+            for item in selected_items:
+                if isinstance(item, SubstationGraphicItem):
+                    on_substation_selected(item)
+                    break
+        
+        # Replace the click event handler
+        self.map.view.mousePressEvent = selection_click_handler
+        
+        # Wait for the dialog to close (this won't block the event loop)
+        # We need to use a QEventLoop to wait for the dialog to close
+        loop = QEventLoop()
+        selection_dialog.finished.connect(loop.quit)
+        loop.exec()  # This will block until the dialog is closed
+        
+        # Restore the original click event handler
+        self.map.view.mousePressEvent = original_click_handler
+        
+        # If the user canceled or no selection was made, remove the branch
+        if not selection_dialog.result() or not selection_made[0]:
+            self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
+            return False
+        
+        # Inform the user about the successful reconnection
+        success_msg = QMessageBox()
+        success_msg.setIcon(QMessageBox.Icon.Information)
+        success_msg.setText(f"Branch {branch.api_object.name} reconnected")
+        success_msg.setInformativeText(f"Connected to substation {selected_substation[0].api_object.name}")
+        success_msg.setWindowTitle("Branch Reconnected")
+        success_msg.exec()
+        
+        return True
+
     def remove_substation(self,
                           substation: SubstationGraphicItem,
                           delete_from_db: bool = False,
                           delete_connections: bool = True):
         """
-
-        :param substation:
-        :param delete_from_db:
-        :param delete_connections:
-        :return:
+        Remove a substation from the schematic and optionally from the database
+        
+        :param substation: Substation graphic item to remove
+        :param delete_from_db: Delete from the database too?
+        :param delete_connections: Delete the connections too?
+        :return: None
         """
-        sub = self.graphics_manager.delete_device(substation.api_object)
-        self.map.diagram_scene.removeItem(sub)
-
-        if delete_from_db:
-            self.circuit.delete_substation(obj=sub)
-
+        # Store the API object before deleting the graphic
+        api_object = substation.api_object
+        
+        # Handle connected branches if requested
         if delete_connections:
-            # Find all branches connected to this substation
+            # Get all branches connected to this substation
             connected_branches = []
             br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
-
-            for tpe in br_types:
-                elms = self.graphics_manager.get_device_type_list(tpe)
-                for elm in elms:
-                    if (elm.api_object.get_substation_from() == substation.api_object
-                            or elm.api_object.get_substation_to() == substation.api_object):
-                        connected_branches.append(elm)
             
-            # If there are connected branches, ask the user if they want to reconnect them
+            for branch_type in br_types:
+                for branch in self.graphics_manager.get_device_type_list(branch_type):
+                    # Use the methods to get the substations instead of attributes
+                    from_substation = branch.substation_from()
+                    to_substation = branch.substation_to()
+                    
+                    if from_substation is not None and from_substation.api_object == api_object:
+                        connected_branches.append((branch, True))  # True indicates connects_from
+                    elif to_substation is not None and to_substation.api_object == api_object:
+                        connected_branches.append((branch, False))  # False indicates connects_to
+            
             if len(connected_branches) > 0:
-                # Create a list of branch names for the message
-                branch_names = [branch.api_object.name for branch in connected_branches]
-                branch_list_text = "\n- " + "\n- ".join(branch_names)
-                
+                # Ask the user what to do with the connected branches
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Icon.Question)
-                msg.setText(f"The substation {substation.api_object.name} has "
-                            f"the following connected branches:{branch_list_text}")
-                msg.setInformativeText("Do you want me to try to reconnect "
-                                       "these branches to the closest substations?")
-                msg.setWindowTitle("Reconnect Branches")
+                msg.setText(f"Substation {api_object.name} has {len(connected_branches)} connected branches.")
+                msg.setInformativeText("Do you want to select a new substation for each branch?")
+                msg.setWindowTitle("Connected Branches")
                 msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
                 result = msg.exec()
                 
                 if result == QMessageBox.StandardButton.Yes:
-                    # Find all other substations to consider as reconnection candidates
-                    other_substations = []
-                    for sub_graphic in self.graphics_manager.get_device_type_list(DeviceType.SubstationDevice):
-                        if sub_graphic.api_object != substation.api_object:
-                            other_substations.append(sub_graphic)
-                    
                     # Process each connected branch
-                    for branch in connected_branches:
-                        # Determine if this branch connects from or to the substation being removed
-                        connects_from = branch.api_object.get_substation_from() == substation.api_object
-                        
-                        # Find the closest substation with a compatible voltage level
-                        closest_sub = None
-                        min_distance = 1e20  # Initialize with a large value
-                        
+                    for branch, connects_from in connected_branches:
                         # Get the voltage of the bus that's not being removed
                         if connects_from:
                             vnom = branch.api_object.bus_to.Vnom
                         else:  # If not in the from side, it is in the to
                             vnom = branch.api_object.bus_from.Vnom
                         
-                        for sub_graphic in other_substations:
-                            # Skip the substation being removed
-                            # if sub_graphic.api_object == substation.api_object:
-                            #     continue
-                            
-                            # Calculate distance
-                            distance = haversine_distance(
-                                substation.lat, substation.lon,
-                                sub_graphic.lat, sub_graphic.lon
-                            )
-                            
-                            # Check if this substation has a compatible voltage level
-                            has_compatible_vl = False
-                            suitable_bus = None
-                            
-                            for bus in self.circuit.get_substation_buses(substation=sub_graphic.api_object):
-                                if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
-                                    has_compatible_vl = True
-                                    suitable_bus = bus
-                                    break
-                            
-                            if has_compatible_vl and distance < min_distance:
-                                min_distance = distance
-                                closest_sub = (sub_graphic, suitable_bus)
-                        
-                        # If we found a suitable substation, update the branch
-                        if closest_sub is not None:
-                            sub_graphic, suitable_bus = closest_sub
-                            
-                            # Check if this would create a line connecting to the same substation at both ends
-                            other_end_substation = None
-                            if connects_from:
-                                other_end_substation = branch.api_object.get_substation_to()
-                            else:
-                                other_end_substation = branch.api_object.get_substation_from()
-                            
-                            # If reconnecting would create a line with the same substation at both ends, remove the line
-                            if other_end_substation == sub_graphic.api_object:
-                                # Remove the branch instead of reconnecting it
-                                self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
-                                
-                                # Inform the user
-                                info_msg = QMessageBox()
-                                info_msg.setIcon(QMessageBox.Icon.Information)
-                                info_msg.setText(f"Branch {branch.api_object.name} removed")
-                                info_msg.setInformativeText(f"Reconnecting would have created a line connecting the same substation to itself.")
-                                info_msg.setWindowTitle("Branch Removed")
-                                info_msg.exec()
-                            else:
-                                # Update the branch connection
-                                if connects_from:
-                                    branch.api_object.bus_from = suitable_bus
-                                    # Update the line container's from_substation
-                                    branch.from_substation = sub_graphic
-                                else:
-                                    branch.api_object.bus_to = suitable_bus
-                                    # Update the line container's to_substation
-                                    branch.to_substation = sub_graphic
-                                
-                                # Redraw the branch to update its visual representation
-                                branch.draw_all()
-                                
-                                # Inform the user
-                                info_msg = QMessageBox()
-                                info_msg.setIcon(QMessageBox.Icon.Information)
-                                info_msg.setText(f"Branch {branch.api_object.name} reconnected")
-                                info_msg.setInformativeText(f"Connected to substation {sub_graphic.api_object.name}")
-                                info_msg.setWindowTitle("Branch Reconnected")
-                                info_msg.exec()
-                        else:
-                            # If no suitable substation found, remove the branch
-                            self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
+                        # Let the user select a new substation for this branch
+                        self.handle_substation_selection_for_reconnection(
+                            branch=branch,
+                            connects_from=connects_from,
+                            vnom=vnom,
+                            delete_from_db=delete_from_db
+                        )
                 else:
                     # User chose not to reconnect, so remove all connected branches
-                    for branch in connected_branches:
+                    for branch, _ in connected_branches:
                         self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
-        else:
-            br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
-
+        
+        # Remove from graphics manager and scene
+        sub = self.graphics_manager.delete_device(api_object)
+        self.map.diagram_scene.removeItem(sub)
+        
+        # Finally, delete from the database if requested
+        if delete_from_db:
+            self.circuit.delete_substation(obj=api_object)
 
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """

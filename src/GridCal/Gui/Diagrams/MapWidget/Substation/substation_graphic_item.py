@@ -337,7 +337,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                        function_ptr=self.move_to_api_coordinates)
 
         add_menu_entry(menu=menu,
-                       text="Remove from schematic",
+                       text="Remove from schematic only",
                        icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove_function_from_schematic)
 
@@ -404,22 +404,21 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
     def remove_function_from_schematic(self) -> None:
         """
-        Function to be called when Action 1 is selected.
+        Removes the substation from the schematic only. The substation will remain in the database.
         """
-        ok = yes_no_question(f"Remove substation {self.api_object.name}?",
-                             "Remove substation graphics")
+        ok = yes_no_question(f"Remove substation {self.api_object.name} from the schematic only? It will remain in the database.",
+                             "Remove substation from schematic")
 
         if ok:
             self.editor.remove_substation(substation=self, delete_from_db=False)
 
     def remove_function_from_schematic_and_db(self) -> None:
         """
-
-        :return:
+        Removes the substation from both the schematic and the database. This action cannot be undone.
         """
 
-        ok = yes_no_question(f"Remove substation {self.api_object.name} from the map and the database?",
-                             "Remove substation graphics and database item")
+        ok = yes_no_question(f"Remove substation {self.api_object.name} from both the schematic and the database? This action cannot be undone.",
+                             "Remove substation from schematic and database")
 
         if ok:
             self.editor.remove_substation(substation=self, delete_from_db=True)
