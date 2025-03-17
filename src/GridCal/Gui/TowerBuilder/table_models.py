@@ -20,6 +20,8 @@ Typical values of earth
 """
 
 
+
+
 class WiresTable(QtCore.QAbstractTableModel):
     """
     Wires table for the tower
@@ -35,7 +37,7 @@ class WiresTable(QtCore.QAbstractTableModel):
 
         self.converter = {0: str, 1: float, 2: float, 3: float}
 
-        self.editable = [True, True, True, True]
+        self.editable = [False, False, False, False]
 
         self.wires: List[Wire] = list()
 
@@ -66,7 +68,7 @@ class WiresTable(QtCore.QAbstractTableModel):
         checks if the name is used
         """
         n = len(self.wires)
-        for i in range(n-1, -1, -1):
+        for i in range(n - 1, -1, -1):
             if self.wires[i].name == name:
                 return True
         return False
@@ -196,7 +198,7 @@ class WiresCollection(QtCore.QAbstractTableModel):
         checks if the name is used
         """
         n = len(self.wires_in_tower)
-        for i in range(n-1, -1, -1):
+        for i in range(n - 1, -1, -1):
             if self.wires_in_tower[i].name == name:
                 return True
         return False
@@ -306,7 +308,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         :param wire: Wire object
         """
         n = len(self.tower.wires_in_tower.data)
-        for i in range(n-1, -1, -1):
+        for i in range(n - 1, -1, -1):
             if self.tower.wires_in_tower.data[i].name == wire.name:
                 self.delete(i)
 
@@ -317,7 +319,7 @@ class TowerModel(QtCore.QAbstractTableModel):
         :return:
         """
         n = len(self.tower.wires_in_tower.data)
-        for i in range(n-1, -1, -1):
+        for i in range(n - 1, -1, -1):
             if self.tower.wires_in_tower.data[i].name == wire.name:
                 return True
 
@@ -395,9 +397,10 @@ class TowerModel(QtCore.QAbstractTableModel):
                 val = 0
 
             # correct the phase to the correct range
-            if attr == 'phase':
-                if val < 0 or val > 3:
-                    val = 0
+            # if attr == 'phase':
+            #     phase_name, circuit_index = phase_to_circuit(val)
+            #     wire.phase_type = phase_name
+            #     wire.circuit_index = circuit_index
 
             setattr(wire, attr, val)
 
@@ -405,4 +408,3 @@ class TowerModel(QtCore.QAbstractTableModel):
                 self.edit_callback()
 
         return True
-

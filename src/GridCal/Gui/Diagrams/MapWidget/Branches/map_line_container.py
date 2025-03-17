@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Union
 
+from PySide6.QtWidgets import QGraphicsItemGroup
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class MapLineContainer(GenericDiagramWidget):
+class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
     """
     Represents a polyline in the map
     """
@@ -41,6 +42,7 @@ class MapLineContainer(GenericDiagramWidget):
                                       api_object=api_object,
                                       editor=editor,
                                       draw_labels=draw_labels)
+        QGraphicsItemGroup.__init__(self)
 
         self.editor: GridMapWidget = editor  # reassign to make clear the editor type
 
@@ -48,17 +50,18 @@ class MapLineContainer(GenericDiagramWidget):
         self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
 
-    def set_width_scale(self, branch_scale: float, arrow_scale: float):
+    def set_width_scale(self, width: float, arrow_width: float):
         """
         Set the width scale of the line
-        :param branch_scale:
-        :param arrow_scale:
+        :param width:
+        :param arrow_width:
         """
         for segment in self.segments_list:
             # pen = segment.pen()  # get the current pen
             # pen.setWidthF(val * segment.width)  # Set the fractional thickness of the line
-            segment.set_width(branch_scale * segment.width)  # Assign the pen to the line item
-            segment.set_arrow_scale(arrow_scale)
+            segment.set_width(width)  # Assign the pen to the line item
+            segment.set_arrow_sizes(arrow_width)
+        # self.setScale(branch_scale)
 
     def clean_segments(self) -> None:
         """
@@ -105,6 +108,7 @@ class MapLineContainer(GenericDiagramWidget):
         :param segment: Connector
         """
         self.segments_list.append(segment)
+        self.addToGroup(segment)
 
     def set_colour(self, color: QColor, style: Qt.PenStyle, tool_tip: str = '') -> None:
         """
@@ -132,8 +136,8 @@ class MapLineContainer(GenericDiagramWidget):
         :return:
         """
 
-        for conector in self.segments_list:
-            conector.end_update()
+        for segment in self.segments_list:
+            segment.end_update()
 
     def draw_all(self) -> None:
         """
@@ -181,6 +185,7 @@ class MapLineContainer(GenericDiagramWidget):
             if nod.index > node.index:
                 nod.index = nod.index - 1
 
+        self.editor.remove_line_location_graphic(node)
         self.redraw_segments()
 
     def redraw_segments(self) -> None:
@@ -220,20 +225,20 @@ class MapLineContainer(GenericDiagramWidget):
             # Assuming Connector takes (scene, node1, node2) as arguments
             segment_graphic_object = MapLineSegment(first=elm1,
                                                     second=elm2,
-                                                    container=self)
+                                                    container=self,
+                                                    width=self.editor.diagram.min_branch_width)
 
             elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
 
-            segment_graphic_object.set_width(br_scale * segment_graphic_object.width)  # Assign the pen to the line item
-            segment_graphic_object.set_arrow_scale(arrow_scale)
+            # segment_graphic_object.set_width(br_scale * segment_graphic_object.width)  # Assign the pen to the line item
+            # segment_graphic_object.set_arrow_sizes(arrow_scale)
 
             # register the segment in the line
             self.add_segment(segment=segment_graphic_object)
 
             # draw the segment in the scene
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
-
 
         self.update_connectors()
 
@@ -487,3 +492,43 @@ class MapLineContainer(GenericDiagramWidget):
         """
         for segment in self.segments_list:
             segment.set_arrows_with_hvdc_power(Pf=Pf, Pt=Pt)
+
+    def calculate_total_length(self) -> float:
+        """
+        Calculate the total length of the line by summing the distances between all waypoints
+        using the haversine formula, and update the line's length property. Issue #23
+        
+        :return: Total length in kilometers
+        """
+        from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import haversine_distance
+        
+        # Get all connection points (substations and intermediate points)
+        connection_points = []
+        
+        # Add the substation from
+        substation_from = self.substation_from()
+        if substation_from is not None:
+            connection_points.append((substation_from.lat, substation_from.lon))
+        
+        # Add all intermediate points
+        for node in self.nodes_list:
+            connection_points.append((node.lat, node.lon))
+        
+        # Add the substation to
+        substation_to = self.substation_to()
+        if substation_to is not None:
+            connection_points.append((substation_to.lat, substation_to.lon))
+        
+        # Calculate total length by summing distances between consecutive points
+        total_length = 0.0
+        for i in range(len(connection_points) - 1):
+            lat1, lon1 = connection_points[i]
+            lat2, lon2 = connection_points[i + 1]
+            segment_length = haversine_distance(lat1, lon1, lat2, lon2)
+            total_length += segment_length
+        
+        # Update the line's length property
+        if total_length > 0.0:
+            self.api_object.length = total_length
+            
+        return total_length

@@ -89,7 +89,6 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
                 correct_values=False,
             )
 
-            driver_.run()
             Sbus = nc.get_power_injections_pu()
             self.results.S[it, :] = Sbus * nc.Sbase
             self.results.Sf[it, :] = driver_.get_flows(Sbus=Sbus) * nc.Sbase

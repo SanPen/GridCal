@@ -1795,7 +1795,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
                     ls = LinearAnalysis(numerical_circuit=nc,
                                         distributed_slack=False,
                                         correct_values=True)
-                    ls.run()
 
                     # Compute the more generalistic contingency structures
                     mctg = LinearMultiContingencies(grid=grid,

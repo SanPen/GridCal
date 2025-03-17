@@ -2,14 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 import os
 from typing import Dict, Union, Any
 from uuid import uuid4, getnode
+import numpy as np
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (SimulationTypes, JobStatus)
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.Simulations.driver_handler import create_driver
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 
 try:
     import requests
@@ -204,7 +209,7 @@ def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
     return data
 
 
-async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
+def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
                          endpoint_url: str,
                          certificate: str) -> Any:
     """
@@ -227,3 +232,25 @@ async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str
         return response.json()
     else:
         print(f"Requests not available due to an error on import")
+
+
+def run_job(grid: MultiCircuit, job: RemoteJob) -> DRIVER_OBJECTS | None:
+    """
+    Function to run a job, this is a simple function
+    :param grid: MultiCircuit
+    :param job: RemoteJob
+    :return: DRIVER_OBJECTS or None
+    """
+
+    driver: DRIVER_OBJECTS | None = create_driver(
+        grid=grid,
+        driver_tpe=job.instruction.operation,
+        time_indices=None
+    )
+
+    if driver is not None:
+        job.status = JobStatus.Running
+        driver.run()
+        job.status = JobStatus.Done
+
+    return driver

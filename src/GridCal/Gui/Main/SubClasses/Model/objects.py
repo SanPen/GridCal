@@ -26,10 +26,9 @@ from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_m
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.general_dialogues import LogsDialogue
-from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
-from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
-                                                                   make_diagram_from_buses)
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, make_diagram_from_substations
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget, make_diagram_from_buses
 
 
 class ObjectsTableMain(DiagramsMain):
@@ -446,6 +445,62 @@ class ObjectsTableMain(DiagramsMain):
 
         return buses
 
+    def get_selected_substations(self) -> Set[dev.Substation]:
+        """
+        Get the substations matching the table selection
+        :return:  set of substations
+        """
+        # buses = self.get_selected_table_buses()
+        substations = set()
+
+        # for bus in buses:
+        #     if bus.substation is not None:
+        #         substations.add(bus.substation)
+
+        model = self.ui.dataStructureTableView.model()
+
+        elm2se = dict()
+
+        # Associate country, community, region and municipality to substation
+        for se in self.circuit.substations:
+            for elm in [se.country, se.community, se.region, se.municipality]:
+                if elm is not None:
+                    if elm in elm2se:
+                        elm2se[elm].append(se)
+                    else:
+                        elm2se[elm] = [se]
+
+        # associate voltage levels to substations
+        for vl in self.circuit.voltage_levels:
+            if vl.substation is not None:
+                elm2se[vl] = [vl.substation]
+
+        # associate buses to substations
+        for bus in self.circuit.buses:
+            if bus.substation is not None:
+                elm2se[bus] = [bus.substation]
+
+        if model is not None:
+
+            sel_idx = self.ui.dataStructureTableView.selectedIndexes()
+            objects = model.objects
+
+            if len(objects) > 0:
+
+                if len(sel_idx) > 0:
+
+                    unique = {idx.row() for idx in sel_idx}
+
+                    for idx in unique:
+
+                        sel_obj: ALL_DEV_TYPES = model.objects[idx]
+                        se_list = elm2se.get(sel_obj, None)
+                        if se_list is not None:
+                            for se in se_list:
+                                substations.add(se)
+
+        return substations
+
     def delete_selected_objects(self):
         """
         Delete selection
@@ -578,6 +633,53 @@ class ObjectsTableMain(DiagramsMain):
                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                              time_index=self.get_diagram_slider_index(),
                                              call_delete_db_element_func=self.call_delete_db_element)
+
+            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                diagram=diagram)
+            self.set_diagrams_list_view()
+
+    def add_new_map_from_selection(self):
+        """
+        Create a New map from a buses selection
+        """
+        selected_objects = self.get_selected_substations()
+
+        if len(selected_objects):
+            cmap_text = self.ui.palette_comboBox.currentText()
+            cmap = self.cmap_dict[cmap_text]
+
+            expand_outside = yes_no_question(text="Expand outside of the given selection using the branches?",
+                                             title="Expand outside")
+
+            diagram = make_diagram_from_substations(
+                circuit=self.circuit,
+                substations=selected_objects,
+                use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                min_bus_width=self.ui.min_node_size_spinBox.value(),
+                max_bus_width=self.ui.max_node_size_spinBox.value(),
+                arrow_size=self.ui.arrow_size_size_spinBox.value(),
+                palette=cmap,
+                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                expand_outside=expand_outside
+            )
+
+            default_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
+            tile_source = self.tile_name_dict.get(diagram.tile_source, default_tile_source)
+
+            diagram_widget = GridMapWidget(
+                gui=self,
+                tile_src=tile_source,
+                start_level=diagram.start_level,
+                longitude=diagram.longitude,
+                latitude=diagram.latitude,
+                name=diagram.name,
+                circuit=self.circuit,
+                diagram=diagram,
+                call_delete_db_element_func=self.call_delete_db_element,
+                call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation
+            )
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
                                                 diagram=diagram)
@@ -765,16 +867,14 @@ class ObjectsTableMain(DiagramsMain):
             if idx > -1:
                 if elm_type == DeviceType.OverheadLineTypeDevice.value:
 
-                    # pick the object
-                    tower = self.circuit.overhead_line_types[idx]
-
                     # launch editor
-                    self.tower_builder_window = TowerBuilderGUI(parent=self,
-                                                                tower=tower,
-                                                                wires_catalogue=self.circuit.wire_types)
+                    self.tower_builder_window = TowerBuilderGUI(
+                        tower=self.circuit.overhead_line_types[idx],
+                        wires_catalogue=self.circuit.wire_types
+                    )
+                    self.tower_builder_window.setModal(True)
                     self.tower_builder_window.resize(int(1.81 * 700.0), 700)
                     self.tower_builder_window.exec()
-                    self.collect_memory()
 
                 else:
 
@@ -1213,6 +1313,26 @@ class ObjectsTableMain(DiagramsMain):
                           icon_path=":/Icons/icons/copy.svg",
                           function_ptr=self.copy_selected_idtag)
 
+        gf.add_menu_entry(menu=context_menu,
+                          text="Crop model to buses selection",
+                          icon_path=":/Icons/icons/schematic.svg",
+                          function_ptr=self.crop_model_to_buses_selection)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Copy table",
+                          icon_path=":/Icons/icons/copy.svg",
+                          function_ptr=self.copy_objects_data)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Set value to column",
+                          icon_path=":/Icons/icons/copy2down.svg",
+                          function_ptr=self.set_value_to_column)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Assign to profile",
+                          icon_path=":/Icons/icons/assign_to_profile.svg",
+                          function_ptr=self.assign_to_profile)
+
         context_menu.addSeparator()
 
         gf.add_menu_entry(menu=context_menu,
@@ -1240,25 +1360,12 @@ class ObjectsTableMain(DiagramsMain):
                           icon_path=":/Icons/icons/highlight2.svg",
                           function_ptr=self.highlight_based_on_property)
 
-        gf.add_menu_entry(menu=context_menu,
-                          text="Crop model to buses selection",
-                          icon_path=":/Icons/icons/schematic.svg",
-                          function_ptr=self.crop_model_to_buses_selection)
+        context_menu.addSeparator()
 
         gf.add_menu_entry(menu=context_menu,
-                          text="Copy table",
-                          icon_path=":/Icons/icons/copy.svg",
-                          function_ptr=self.copy_objects_data)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="Set value to column",
-                          icon_path=":/Icons/icons/copy2down.svg",
-                          function_ptr=self.set_value_to_column)
-
-        gf.add_menu_entry(menu=context_menu,
-                          text="Assign to profile",
-                          icon_path=":/Icons/icons/assign_to_profile.svg",
-                          function_ptr=self.assign_to_profile)
+                          text="New map from selection",
+                          icon_path=":/Icons/icons/map.svg",
+                          function_ptr=self.add_new_map_from_selection)
 
         # Convert global position to local position of the list widget
         mapped_pos = self.ui.dataStructureTableView.viewport().mapToGlobal(pos)

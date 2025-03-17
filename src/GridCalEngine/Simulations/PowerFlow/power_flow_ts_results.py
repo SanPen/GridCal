@@ -238,21 +238,21 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
 
         return df
 
-    def get_results_dict(self):
-        """
-        Returns a dictionary with the results sorted in a dictionary
-        :return:  of 2D numpy arrays (probably of complex numbers)
-        """
-        data = {'Vm': np.abs(self.voltage).tolist(),
-                'Va': np.angle(self.voltage).tolist(),
-                'P': self.S.real.tolist(),
-                'Q': self.S.imag.tolist(),
-                'Sf_real': self.Sf.real.tolist(),
-                'Sf_imag': self.Sf.imag.tolist(),
-                'loading': np.abs(self.loading).tolist(),
-                'losses_real': np.real(self.losses).tolist(),
-                'losses_imag': np.imag(self.losses).tolist()}
-        return data
+    # def get_dict(self):
+    #     """
+    #     Returns a dictionary with the results sorted in a dictionary
+    #     :return:  of 2D numpy arrays (probably of complex numbers)
+    #     """
+    #     data = {'Vm': np.abs(self.voltage).tolist(),
+    #             'Va': np.angle(self.voltage).tolist(),
+    #             'P': self.S.real.tolist(),
+    #             'Q': self.S.imag.tolist(),
+    #             'Sf_real': self.Sf.real.tolist(),
+    #             'Sf_imag': self.Sf.imag.tolist(),
+    #             'loading': np.abs(self.loading).tolist(),
+    #             'losses_real': np.real(self.losses).tolist(),
+    #             'losses_imag': np.imag(self.losses).tolist()}
+    #     return data
 
     def to_json(self, fname):
         """
@@ -260,7 +260,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         """
 
         with open(fname, "w") as output_file:
-            json_str = json.dumps(self.get_results_dict())
+            json_str = json.dumps(self.get_dict())
             output_file.write(json_str)
 
     def get_ordered_area_names(self):

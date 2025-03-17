@@ -52,6 +52,7 @@ class Line(BranchParent):
                  r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0,
                  opex=0,
+                 circuit: int = 1,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line
@@ -147,6 +148,8 @@ class Line(BranchParent):
         # Conductor thermal constant (1/ºC)
         self.alpha = float(alpha)
 
+        self._circuit: int = int(circuit)
+
         # type template
         self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
 
@@ -170,6 +173,10 @@ class Line(BranchParent):
         self.register(key='tolerance', units='%', tpe=float,
                       definition='Tolerance expected for the impedance values % is expected '
                                  'for transformers0% for lines.')
+
+        self.register(key='circuit', units='', tpe=int,
+                      definition='Circuit index, used for multiple circuits sharing towers')
+
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
@@ -273,6 +280,15 @@ class Line(BranchParent):
     @B2.setter
     def B2(self, value):
         self._B2 = float(value)
+
+    @property
+    def circuit(self):
+        return self._circuit
+
+    @circuit.setter
+    def circuit(self, value):
+        if value >= 1:
+            self._circuit = int(value)
 
     @property
     def length(self) -> float:
@@ -396,7 +412,7 @@ class Line(BranchParent):
         if isinstance(obj, OverheadLineType):
             (self.R, self.X, self.B,
              self.R0, self.X0, self.B0,
-             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length)
+             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length, circuit_index=self.circuit)
 
             # self.ys.values = obj.y_abcn
             # self.ysh.values = obj.y_abcn

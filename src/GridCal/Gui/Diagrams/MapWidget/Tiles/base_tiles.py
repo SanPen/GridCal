@@ -36,7 +36,7 @@ from PySide6.QtGui import QPixmap
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles_cache import TilesCache
 
 
-class BaseTiles(object):
+class BaseTiles:
     """A base tile object to source local tiles for pySlip."""
 
     def __init__(self,
@@ -92,7 +92,9 @@ class BaseTiles(object):
                 raise Exception(msg) from None
 
             msg = "The tiles directory %s doesn't exist." % tiles_dir
-            raise Exception(msg) from None
+            print(msg)
+            # raise Exception(msg) from None
+            os.makedirs(tiles_dir)
 
     @property
     def max_level(self):

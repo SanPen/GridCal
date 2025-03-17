@@ -137,29 +137,19 @@ class RawBus(RawObject):
         self.version = version
 
         if version >= 33:
-            n = len(data[0])
-            dta = np.zeros(13, dtype=object)
-            dta[0:n] = data[0]
 
             (self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
-             self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO) = dta
+             self.OWNER, self.VM, self.VA, self.NVHI, self.NVLO, self.EVHI, self.EVLO) = self.extend_or_curtail(data[0], 13)
 
         elif version == 32:
 
-            n = len(data[0])
-            dta = np.zeros(9, dtype=object)
-            dta[0:n] = data[0]
-
             (self.I, self.NAME, self.BASKV, self.IDE, self.AREA, self.ZONE,
-             self.OWNER, self.VM, self.VA) = data[0]
+             self.OWNER, self.VM, self.VA) = self.extend_or_curtail(data[0], 9)
 
         elif version in [29, 30]:
-            n = len(data[0])
-            dta = np.zeros(11, dtype=object)
-            dta[0:n] = data[0]
 
             (self.I, self.NAME, self.BASKV, self.IDE, self.GL, self.BL,
-             self.AREA, self.ZONE, self.VM, self.VA, self.OWNER) = data[0]
+             self.AREA, self.ZONE, self.VM, self.VA, self.OWNER) = self.extend_or_curtail(data[0], 11)
 
 
         else:

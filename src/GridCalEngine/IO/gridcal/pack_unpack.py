@@ -1473,7 +1473,7 @@ def parse_gridcal_data(data: GRIDCAL_FILE_TYPE,
     if text_func is not None:
         text_func("Parsing diagrams...")
 
-    # try to get the get the list of diagrams
+    # try to get the list of diagrams
     list_of_diagrams: List[Dict[str, Any]] = data.get('diagrams', None)
 
     if list_of_diagrams is not None:

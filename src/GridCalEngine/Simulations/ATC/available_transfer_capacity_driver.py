@@ -357,12 +357,13 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         else:
             print('Empty raw report :/')
 
-    def get_results_dict(self):
+    def get_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'report': self.report.tolist()}
+        data = super().get_dict()
+        data['report'] = self.report.tolist()
         return data
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
@@ -435,16 +436,14 @@ class AvailableTransferCapacityDriver(DriverTemplate):
             correct_values=self.options.correct_values,
         )
 
-        linear.run()
-
         # get the branch indices to analyze
         br_idx = nc.passive_branch_data.get_monitor_enabled_indices()
         con_br_idx = nc.passive_branch_data.get_contingency_enabled_indices()
 
         # declare the results
         self.results = AvailableTransferCapacityResults(
-            br_names=linear.numerical_circuit.branch_names,
-            bus_names=linear.numerical_circuit.bus_names,
+            br_names=linear.numerical_circuit.passive_branch_data.names,
+            bus_names=linear.numerical_circuit.bus_data.names,
             rates=nc.Rates,
             contingency_rates=nc.ContingencyRates,
             clustering_results=None

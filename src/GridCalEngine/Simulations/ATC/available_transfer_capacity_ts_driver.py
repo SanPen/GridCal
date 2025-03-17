@@ -157,12 +157,13 @@ class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
         else:
             print('Empty raw report :/')
 
-    def get_results_dict(self):
+    def get_dict(self):
         """
         Returns a dictionary with the results sorted in a dictionary
         :return: dictionary of 2D numpy arrays (probably of complex numbers)
         """
-        data = {'report': self.report.tolist()}
+        data = super().get_dict()
+        data['report'] =  self.report.tolist()
         return data
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
@@ -193,7 +194,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     def __init__(self,
                  grid: MultiCircuit,
                  options: AvailableTransferCapacityOptions | None,
-                 time_indices: DateVec,
+                 time_indices: IntVec,
                  clustering_results: Union[ClusteringResults, None] = None):
 
         """
@@ -278,9 +279,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 distributed_slack=True,
                 correct_values=False,
             )
-            linear_analysis.run()
 
-            P: Vec = nc.Sbus.real
+            P: Vec = nc.get_power_injections().real
 
             # get flow
             if self.options.use_provided_flows:
@@ -296,7 +296,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             # compute the branch exchange sensitivity (alpha)
             alpha = compute_alpha(ptdf=linear_analysis.PTDF,
                                   P0=P,  # no problem that there are in p.u., are only used for the sensitivity
-                                  Pinstalled=nc.bus_installed_power,
+                                  Pinstalled=nc.bus_data.installed_power,
                                   Pgen=nc.generator_data.get_injections_per_bus().real,
                                   Pload=nc.load_data.get_injections_per_bus().real,
                                   bus_a1_idx=self.options.bus_idx_from,

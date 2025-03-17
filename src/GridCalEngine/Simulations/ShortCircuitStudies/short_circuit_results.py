@@ -40,7 +40,11 @@ class ShortCircuitResults(ResultsTemplate):
                                                               ResultTypes.BusVoltageAngle2,
 
                                                               ResultTypes.BusShortCircuitActivePower,
-                                                              ResultTypes.BusShortCircuitReactivePower],
+                                                              ResultTypes.BusShortCircuitReactivePower,
+
+                                                              ResultTypes.BusShortCircuitActiveCurrent,
+                                                              ResultTypes.BusShortCircuitReactiveCurrent
+                                                              ],
 
                                      ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom0,
                                                                  ResultTypes.BranchActivePowerFrom1,
@@ -128,6 +132,7 @@ class ShortCircuitResults(ResultsTemplate):
         self.sc_bus_index = 0
         self.sc_type = FaultType.ph3
         self.SCpower = np.zeros(n, dtype=complex)
+        self.ICurrent = np.zeros(n, dtype=complex)
 
         # Register results
         self.register(name='bus_names', tpe=StrVec)
@@ -180,6 +185,7 @@ class ShortCircuitResults(ResultsTemplate):
         self.register(name='sc_bus_index', tpe=int)
         self.register(name='sc_type', tpe=FaultType)
         self.register(name='SCpower', tpe=CxVec)
+        self.register(name='ICurrent', tpe=CxVec)
 
 
     @property
@@ -191,7 +197,7 @@ class ShortCircuitResults(ResultsTemplate):
         val = 0.0
         return val
 
-    def apply_from_island(self, results: "ShortCircuitResults", b_idx, br_idx):
+    def apply_from_island(self, results: "ShortCircuitResults", b_idx: IntVec, br_idx: IntVec):
         """
         Apply results from another island circuit to the circuit results represented
         here.
@@ -205,6 +211,7 @@ class ShortCircuitResults(ResultsTemplate):
             **elm_idx**: branch original indices
         """
         self.SCpower[b_idx] = results.SCpower
+        self.ICurrent[b_idx] = results.ICurrent
 
         self.Sbus1[b_idx] = results.Sbus1
         self.voltage1[b_idx] = results.voltage1
@@ -278,7 +285,7 @@ class ShortCircuitResults(ResultsTemplate):
         :return:
         """
 
-        columns = [result_type.value]
+        columns = np.array([result_type.value])
         title = result_type.value
 
         if result_type == ResultTypes.BusVoltageModule0:
@@ -327,6 +334,34 @@ class ShortCircuitResults(ResultsTemplate):
             labels = self.bus_names
             y = np.imag(self.SCpower)
             y_label = '(MVAr)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitActiveCurrent:
+            labels = self.bus_names
+            y = np.real(self.ICurrent)
+            y_label = '(kA)'
+
+            return ResultsTable(data=y,
+                                index=labels,
+                                idx_device_type=DeviceType.BusDevice,
+                                columns=columns,
+                                cols_device_type=DeviceType.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                units=y_label)
+
+        elif result_type == ResultTypes.BusShortCircuitReactiveCurrent:
+            labels = self.bus_names
+            y = np.imag(self.ICurrent)
+            y_label = '(kAr)'
 
             return ResultsTable(data=y,
                                 index=labels,

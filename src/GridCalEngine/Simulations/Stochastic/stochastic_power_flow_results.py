@@ -155,22 +155,22 @@ class StochasticPowerFlowResults(ResultsTemplate):
         self.loading = self.l_avg_conv[-2]
         self.losses = self.loss_avg_conv[-2]
 
-    def get_results_dict(self):
-        """
-        Returns a dictionary with the results sorted in a dictionary
-        :return: dictionary of 2D numpy arrays (probably of complex numbers)
-        """
-        data = {'P': self.S_points.real.tolist(),
-                'Q': self.S_points.imag.tolist(),
-                'Vm': np.abs(self.V_points).tolist(),
-                'Va': np.angle(self.V_points).tolist(),
-                'Ibr_real': self.Sbr_points.real.tolist(),
-                'Ibr_imag': self.Sbr_points.imag.tolist(),
-                'Sbr_real': self.Sbr_points.real.tolist(),
-                'Sbr_imag': self.Sbr_points.imag.tolist(),
-                'loading': np.abs(self.loading_points).tolist(),
-                'losses': np.abs(self.losses_points).tolist()}
-        return data
+    # def get_dict(self):
+    #     """
+    #     Returns a dictionary with the results sorted in a dictionary
+    #     :return: dictionary of 2D numpy arrays (probably of complex numbers)
+    #     """
+    #     data = {'P': self.S_points.real.tolist(),
+    #             'Q': self.S_points.imag.tolist(),
+    #             'Vm': np.abs(self.V_points).tolist(),
+    #             'Va': np.angle(self.V_points).tolist(),
+    #             'Ibr_real': self.Sbr_points.real.tolist(),
+    #             'Ibr_imag': self.Sbr_points.imag.tolist(),
+    #             'Sbr_real': self.Sbr_points.real.tolist(),
+    #             'Sbr_imag': self.Sbr_points.imag.tolist(),
+    #             'loading': np.abs(self.loading_points).tolist(),
+    #             'losses': np.abs(self.losses_points).tolist()}
+    #     return data
 
     def query_voltage(self, power_array):
         """

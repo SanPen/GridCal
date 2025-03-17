@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -30,17 +30,17 @@ class Ui_MainWindow(object):
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(841, 518)
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/automatic_layout.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/automatic_layout.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         MainWindow.setWindowIcon(icon)
         self.actionCopy_to_clipboard = QAction(MainWindow)
         self.actionCopy_to_clipboard.setObjectName(u"actionCopy_to_clipboard")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionCopy_to_clipboard.setIcon(icon1)
         self.actionSave = QAction(MainWindow)
         self.actionSave.setObjectName(u"actionSave")
         icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionSave.setIcon(icon2)
         self.verticalLayout_2 = QVBoxLayout(MainWindow)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
@@ -253,7 +253,7 @@ class Ui_MainWindow(object):
         self.applyButton.setObjectName(u"applyButton")
         self.applyButton.setMinimumSize(QSize(24, 24))
         icon3 = QIcon()
-        icon3.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/Icons/icons/color_grid.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.applyButton.setIcon(icon3)
 
         self.horizontalLayout_2.addWidget(self.applyButton)
@@ -262,7 +262,7 @@ class Ui_MainWindow(object):
         self.previewButton.setObjectName(u"previewButton")
         self.previewButton.setMinimumSize(QSize(24, 24))
         icon4 = QIcon()
-        icon4.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon4.addFile(u":/Icons/icons/run_cascade_step.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.previewButton.setIcon(icon4)
 
         self.horizontalLayout_2.addWidget(self.previewButton)

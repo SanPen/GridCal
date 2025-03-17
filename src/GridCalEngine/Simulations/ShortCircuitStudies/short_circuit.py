@@ -8,15 +8,17 @@ from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import inv
 from scipy.sparse import csc_matrix
 from GridCalEngine.enumerations import FaultType
-from GridCalEngine.basic_structures import CxVec
+from GridCalEngine.basic_structures import CxVec, Vec
 
 
-def short_circuit_3p(bus_idx: int, Ybus: csc_matrix, Vbus: CxVec, Zf: CxVec, baseMVA: float) -> Tuple[CxVec, float]:
+def short_circuit_3p(bus_idx: int, Ybus: csc_matrix, Vbus: CxVec, Vnom: Vec, Zf: CxVec, baseMVA: float) -> Tuple[
+    CxVec, float, float]:
     """
     Executes a 3-phase balanced short circuit study
     :param bus_idx: Index of the bus at which the short circuit is being studied
     :param Ybus: Admittance matrix
     :param Vbus: Voltages of the buses in the steady state
+    :param Vnom: Nominal Voltages of the buses (kV)
     :param Zf: Fault impedance array
     :param baseMVA: 
     :return: Voltages after the short circuit (p.u.), Short circuit power in MVA
@@ -40,9 +42,11 @@ def short_circuit_3p(bus_idx: int, Ybus: csc_matrix, Vbus: CxVec, Zf: CxVec, bas
     V = Vbus + Av
 
     idx_buses = range(n)
+    Ibase = baseMVA / Vnom[idx_buses]
+    ICC = Ibase * Vbus[idx_buses] / Zii
     SCC = baseMVA * Vbus[idx_buses] * Vbus[idx_buses] / Zii
 
-    return V, SCC
+    return V, SCC, ICC
 
 
 def short_circuit_unbalance(bus_idx: int,
@@ -50,9 +54,10 @@ def short_circuit_unbalance(bus_idx: int,
                             Y1: csc_matrix,
                             Y2: csc_matrix,
                             Vbus: CxVec,
+                            Vnom: Vec,
                             Zf: CxVec,
                             fault_type: FaultType,
-                            baseMVA) -> Tuple[CxVec, CxVec, CxVec, CxVec]:
+                            baseMVA) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Executes the unbalanced short circuits (LG, LL, LLG types)
 
@@ -61,6 +66,7 @@ def short_circuit_unbalance(bus_idx: int,
     :param Y1: Admittance matrix for the positive sequence
     :param Y2: Admittance matrix for the negative sequence
     :param Vbus: pre-fault voltage (positive sequence)
+    :param Vnom: nominal voltage (kV)
     :param Zf: fault impedance
     :param fault_type: type of unbalanced fault
     :param baseMVA: base MVA (100 MVA)
@@ -109,6 +115,9 @@ def short_circuit_unbalance(bus_idx: int,
     V2_fin = - spsolve(Y2, I2_vec)
 
     SCC = np.zeros_like(Vbus)
+    ICC = np.zeros_like(Vbus)
+    Ibase = baseMVA / Vnom[bus_idx]
+    ICC[bus_idx] = Ibase * V1_fin[bus_idx] / Zth1
     SCC[bus_idx] = baseMVA * V1_fin[bus_idx] * V1_fin[bus_idx] / Zth1
 
-    return V0_fin, V1_fin, V2_fin, SCC
+    return V0_fin, V1_fin, V2_fin, SCC, ICC

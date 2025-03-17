@@ -1153,13 +1153,10 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
 
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
-            # declare the linear analysis
+            # declare the linear analysis and compute the PTDF and LODF
             ls = LinearAnalysis(numerical_circuit=nc,
                                 distributed_slack=False,
                                 correct_values=True)
-
-            # compute the PTDF and LODF
-            ls.run()
 
             # compute the sensitivity to the exchange
             alpha = compute_alpha(ptdf=ls.PTDF,
@@ -1385,13 +1382,10 @@ def run_linear_ntc_opf_ts_fast(grid: MultiCircuit,
 
     indices = nc.get_simulation_indices()
 
-    # declare the linear analysis
+    # declare the linear analysis and compute the PTDF and LODF
     ls = LinearAnalysis(numerical_circuit=nc,
                         distributed_slack=False,
                         correct_values=True)
-
-    # compute the PTDF and LODF
-    ls.run()
 
     Pbus = nc.get_power_injections_pu().real
 

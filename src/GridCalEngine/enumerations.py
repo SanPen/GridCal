@@ -248,6 +248,7 @@ class EngineType(Enum):
     Bentayga = 'Bentayga'
     NewtonPA = 'Newton Power Analytics'
     PGM = 'Power Grid Model'
+    GSLV = "gslv"
 
     def __str__(self):
         return self.value
@@ -1359,6 +1360,9 @@ class ResultTypes(Enum):
     # Short-circuit
     BusShortCircuitActivePower = 'Short circuit active power'
     BusShortCircuitReactivePower = 'Short circuit reactive power'
+
+    BusShortCircuitActiveCurrent = 'Short circuit active current'
+    BusShortCircuitReactiveCurrent = 'Short circuit reactive current'
 
     # PTDF
     PTDF = 'PTDF'

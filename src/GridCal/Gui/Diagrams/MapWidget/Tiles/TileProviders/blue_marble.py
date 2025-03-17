@@ -44,20 +44,19 @@ class BlueMarbleTiles(Tiles):
         :param http_proxy:
         """
 
-        Tiles.__init__(self,
-                       tile_set_name=name,
-                       tile_set_short_name='BM Tiles',
-                       tile_set_version='1.0',
-                       levels=list(range(10)),
-                       tile_width=256,
-                       tile_height=256,
-                       tiles_dir=tiles_dir,
-                       max_lru=10000,
-                       servers=['https://s3.amazonaws.com', ],
-                       url_path='/com.modestmaps.bluemarble/{Z}-r{Y}-c{X}.jpg',
-                       max_server_requests=2,
-                       http_proxy=http_proxy,
-                       attribution="© NASA Blue Marble, © OpenStreetMap contributors")
+        super().__init__(tile_set_name=name,
+                         tile_set_short_name='BM Tiles',
+                         tile_set_version='1.0',
+                         levels=list(range(10)),
+                         tile_width=256,
+                         tile_height=256,
+                         tiles_dir=tiles_dir,
+                         max_lru=10000,
+                         servers=['https://s3.amazonaws.com', ],
+                         url_path='/com.modestmaps.bluemarble/{Z}-r{Y}-c{X}.jpg',
+                         max_server_requests=2,
+                         http_proxy=http_proxy,
+                         attribution="© NASA Blue Marble, © OpenStreetMap contributors")
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.

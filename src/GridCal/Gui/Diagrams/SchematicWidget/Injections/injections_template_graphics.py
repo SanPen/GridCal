@@ -100,6 +100,27 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
             self.editor.remove_from_scene(self.nexus)
             self.editor.remove_element(device=self.api_object, graphic_object=self)
             self.editor.remove_from_scene(self)
+            self.editor.delete_diagram_element(device=self.api_object)
+
+    def remove_from_widget_and_db(self, ask: bool = True, delete_from_db: bool = True) -> None:
+        """
+        Remove this element
+        @return:
+        """
+        if ask:
+            ok = yes_no_question('Are you sure that you want to remove this device',
+                                 'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
+        else:
+            ok = True
+
+        if ok:
+            self.editor.remove_element(device=self.api_object,
+                                       graphic_object=self,
+                                       delete_from_db=delete_from_db)
+
+            self.editor.remove_from_scene(self.nexus)
+            self.editor.remove_from_scene(self)
+            # self.editor.delete_diagram_element(device=self.api_object)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """

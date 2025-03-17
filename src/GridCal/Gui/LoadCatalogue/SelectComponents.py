@@ -3,24 +3,23 @@
 ################################################################################
 ## Form generated from reading UI file 'SelectComponents.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-                            QMetaObject, QObject, QPoint, QRect,
-                            QSize, QTime, QUrl, Qt)
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-                           QFont, QFontDatabase, QGradient, QIcon,
-                           QImage, QKeySequence, QLinearGradient, QPainter,
-                           QPalette, QPixmap, QRadialGradient, QTransform)
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
-                               QDialogButtonBox, QFrame, QGridLayout, QLabel,
-                               QSizePolicy, QVBoxLayout, QWidget)
+    QDialogButtonBox, QFrame, QGridLayout, QLabel,
+    QSizePolicy, QVBoxLayout, QWidget)
 from .icons_rc import *
 from .icons_rc import *
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -99,6 +98,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.label_3, 2, 1, 1, 1)
 
+
         self.verticalLayout_3.addLayout(self.gridLayout)
 
         self.buttonBox = QDialogButtonBox(self.frame)
@@ -107,14 +107,16 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addWidget(self.buttonBox)
 
+
         self.verticalLayout_2.addWidget(self.frame)
 
+
         self.verticalLayout.addLayout(self.verticalLayout_2)
+
 
         self.retranslateUi(MainWindow)
 
         QMetaObject.connectSlotsByName(MainWindow)
-
     # setupUi
 
     def retranslateUi(self, MainWindow):
@@ -128,7 +130,6 @@ class Ui_MainWindow(object):
         self.label.setText(QCoreApplication.translate("MainWindow", u"Insert Catalogue Component", None))
         self.checkBox_5.setText(QCoreApplication.translate("MainWindow", u"Reactor", None))
         self.checkBox_6.setText(QCoreApplication.translate("MainWindow", u"Switchgear", None))
-        self.label_3.setText(
-            QCoreApplication.translate("MainWindow", u"Please select the component data to add to the catalogue:",
-                                       None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Please select the component data to add to the catalogue:", None))
     # retranslateUi
+

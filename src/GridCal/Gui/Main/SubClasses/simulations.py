@@ -6,9 +6,11 @@ from __future__ import annotations
 
 import os
 import datetime
+import asyncio
+import functools
 import numpy as np
 from collections import OrderedDict
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, Any
 
 # GUI imports
 from PySide6 import QtGui, QtWidgets
@@ -22,6 +24,7 @@ from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
+from GridCal.Session.server_driver import RemoteJobDriver
 
 # Engine imports
 import GridCalEngine.Devices as dev
@@ -33,6 +36,7 @@ from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
+from GridCalEngine.Simulations.driver_handler import create_driver
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
@@ -52,6 +56,8 @@ class SimulationsMain(TimeEventsMain):
 
         # create main window
         TimeEventsMain.__init__(self, parent)
+
+        self._remote_jobs: Dict[str, RemoteJobDriver] = dict()
 
         # Power Flow Methods
         self.solvers_dict = OrderedDict()
@@ -282,7 +288,33 @@ class SimulationsMain(TimeEventsMain):
         """
         eng = self.get_preferred_engine()
 
-        if eng == EngineType.NewtonPA:
+        if eng == EngineType.GSLV:
+            self.ui.opfUnitCommitmentCheckBox.setVisible(True)
+
+            # add the AC_OPF option
+            self.lp_solvers_dict = OrderedDict()
+            self.lp_solvers_dict[SolverType.LINEAR_OPF.value] = SolverType.LINEAR_OPF
+            self.lp_solvers_dict[SolverType.NONLINEAR_OPF.value] = SolverType.NONLINEAR_OPF
+            self.lp_solvers_dict[SolverType.SIMPLE_OPF.value] = SolverType.SIMPLE_OPF
+            self.ui.lpf_solver_comboBox.setModel(gf.get_list_model(list(self.lp_solvers_dict.keys())))
+
+            # Power Flow Methods
+            self.solvers_dict[SolverType.NR.value] = SolverType.NR
+            self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+            self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
+            self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
+            self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
+            self.solvers_dict[SolverType.LACPF.value] = SolverType.LACPF
+            self.solvers_dict[SolverType.DC.value] = SolverType.DC
+
+            self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
+            self.ui.solver_comboBox.setCurrentIndex(0)
+
+            mip_solvers = get_newton_mip_solvers_list()
+            self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
+
+        elif eng == EngineType.NewtonPA:
             self.ui.opfUnitCommitmentCheckBox.setVisible(True)
 
             # add the AC_OPF option
@@ -795,7 +827,8 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.PowerFlow_run)
 
-            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
+            self.run_remote(instruction=instruction)
+
         else:
             if self.ts_flag():
                 self.run_power_flow_time_series()
@@ -813,7 +846,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.OPF_run)
 
-            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_opf_time_series()
@@ -831,7 +864,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_run)
 
-            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_available_transfer_capacity_ts()
@@ -849,7 +882,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacity_run)
 
-            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_opf_ntc_ts()
@@ -867,7 +900,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.LinearAnalysis_run)
 
-            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
+            self.run_remote(instruction=instruction)
         else:
             if self.ts_flag():
                 self.run_linear_analysis_ts()
@@ -885,7 +918,8 @@ class SimulationsMain(TimeEventsMain):
             else:
                 instruction = RemoteInstruction(operation=SimulationTypes.ContingencyAnalysis_run)
 
-            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
+            self.run_remote(instruction=instruction)
+
         else:
             if self.ts_flag():
                 self.run_contingency_analysis_ts()
@@ -2837,3 +2871,43 @@ class SimulationsMain(TimeEventsMain):
             tol_idx = 12
 
         self.ui.tolerance_spinBox.setValue(tol_idx)
+
+    def run_remote(self, instruction):
+        """
+        Run remote simulation
+        :param instruction:
+        :return:
+        """
+
+        if self.server_driver.is_running():
+            driver = RemoteJobDriver(grid=self.circuit,
+                                     instruction=instruction,
+                                     base_url=self.server_driver.base_url(),
+                                     certificate_path=self.server_driver.get_certificate_path(),
+                                     register_driver_func=self.session.register_driver)
+            driver.done_signal.connect(self.post_run_remote)
+
+            self._remote_jobs[driver.idtag] = driver
+
+            driver.start()
+
+    def post_run_remote(self, driver_idtag: str):
+        """
+        Function executed upon data reception complete
+        :return:
+        """
+        print("Done!")
+
+        remote_job_driver = self._remote_jobs.get(driver_idtag, None)
+
+        if remote_job_driver is not None:
+            if remote_job_driver.logger.has_logs():
+                # Show dialogue
+                dlg = LogsDialogue(name="Remote connection logs", logger=remote_job_driver.logger)
+                dlg.setModal(True)
+                dlg.exec()
+
+            self.update_available_results()
+            self.colour_diagrams()
+
+            self._remote_jobs.pop(driver_idtag)

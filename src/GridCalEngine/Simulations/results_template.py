@@ -7,10 +7,11 @@ from __future__ import annotations
 import json
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Union, TYPE_CHECKING
+from typing import List, Dict, Any, Union, TYPE_CHECKING
 
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, CxVec, StrVec, Mat, DateVec, CxMat, Logger
+from GridCalEngine.basic_structures import (IntVec, IntMat, Vec, CxVec, StrVec, StrMat, Mat, DateVec, CxMat, BoolVec,
+                                            Logger)
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
@@ -72,23 +73,23 @@ class ResultsTemplate:
         if clustering_results:
             self.clustering_results = clustering_results
             self.using_clusters = True
-            self.time_indices: IntVec = clustering_results.time_indices
-            self.sampled_probabilities: Vec = clustering_results.sampled_probabilities
-            self.original_sample_idx: IntVec = clustering_results.original_sample_idx
+            self.time_indices: IntVec | None = clustering_results.time_indices
+            self.sampled_probabilities: Vec | None = clustering_results.sampled_probabilities
+            self.original_sample_idx: IntVec | None = clustering_results.original_sample_idx
         else:
             self.clustering_results = None
             self.using_clusters = False
-            self.time_indices = None
-            self.sampled_probabilities = None
-            self.original_sample_idx = None
+            self.time_indices: IntVec | None = None
+            self.sampled_probabilities: Vec | None = None
+            self.original_sample_idx: IntVec | None = None
 
         # vars for the inter-area computation
-        self.F: IntVec = None
-        self.T: IntVec = None
-        self.hvdc_F: IntVec = None
-        self.hvdc_T: IntVec = None
-        self.bus_area_indices: IntVec = None
-        self.area_names: StrVec = None
+        self.F: IntVec | None = None
+        self.T: IntVec | None = None
+        self.hvdc_F: IntVec | None = None
+        self.hvdc_T: IntVec | None = None
+        self.bus_area_indices: IntVec | None = None
+        self.area_names: StrVec | None = None
 
         self.__show_plot = True
 
@@ -145,14 +146,73 @@ class ResultsTemplate:
         """
         pass
 
-    def get_results_dict(self):
+    def get_dict(self) -> Dict[str, Any]:
         """
-
+        Get data to pass via json
         :return:
         """
         data = dict()
 
+        # traverse the registered results
+        for arr_name, arr_prop in self.data_variables.items():
+
+            # get the array
+            arr: np.ndarray = getattr(self, arr_name)
+
+            if arr_prop.tpe in (CxVec, CxMat):
+                r = arr.real
+                i = arr.imag
+                data[arr_name] = {
+                    "real": r.tolist(),
+                    "imag": i.tolist(),
+                }
+            elif arr_prop.tpe in (Vec, Mat, IntVec, IntMat, StrVec, StrMat, BoolVec):
+                if isinstance(arr, np.ndarray):
+                    data[arr_name] = arr.tolist()
+                elif isinstance(arr, list):
+                    data[arr_name] = arr
+
+            elif arr_prop.tpe == DateVec:
+                data[arr_name] = arr.values.astype(float).tolist()  # pass the unix nano-seconds
+
+            else:
+                if isinstance(arr, list):
+                    data[arr_name] = arr
+                elif isinstance(arr, dict):
+                    data[arr_name] = arr
+                else:
+                    data[arr_name] = arr
+
         return data
+
+    def parse_data(self, data: Dict[str, Any | Dict[str, Any]]):
+        """
+        The function to parse the data created with get_dict
+        :param data:
+        :return:
+        """
+
+        for arr_name, arr_prop in self.data_variables.items():
+
+            arr_data = data.get(arr_name, None)
+
+            if arr_prop.tpe in (CxVec, CxMat):
+                r = np.array(arr_data["real"])
+                i = np.array(arr_data["imag"])
+                arr = r + 1j * i
+                setattr(self, arr_name, arr)
+
+            elif arr_prop.tpe in (Vec, Mat, IntVec, IntMat, StrVec, StrMat, BoolVec):
+                arr = np.array(arr_data)
+                setattr(self, arr_name, arr)
+
+            elif arr_prop.tpe == DateVec:
+
+                arr = pd.to_datetime(np.array(arr_data), unit='ns')  # pass the unix nano-seconds
+                setattr(self, arr_name, arr)
+
+            else:
+                data[arr_name] = arr_data
 
     def get_name_to_results_type_dict(self):
         """
@@ -192,7 +252,7 @@ class ResultsTemplate:
         """
 
         with open(file_name, "w") as output_file:
-            json_str = json.dumps(self.get_results_dict())
+            json_str = json.dumps(self.get_dict())
             output_file.write(json_str)
 
     def apply_new_rates(self, rates: Vec):
@@ -421,6 +481,7 @@ class DriverToSave:
     """
     Wrapper to save a driver
     """
+
     def __init__(self,
                  name: str,
                  tpe: SimulationTypes,

@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+import webbrowser
 from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsRectItem
@@ -11,7 +12,7 @@ from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.general_dialogues import InputNumberDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
@@ -23,7 +24,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 
 
-class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
+class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -39,7 +40,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                  api_object: Substation,
                  lat: float,
                  lon: float,
-                 r: float = 0.8,
+                 size: float = 0.8,
                  draw_labels: bool = True):
         """
 
@@ -47,28 +48,33 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :param api_object:
         :param lat:
         :param lon:
-        :param r:
+        :param size:
         """
+        # Correct way to call multiple inheritance
+        super().__init__()
+
+        # Explicitly call QGraphicsRectItem initialization
         QGraphicsRectItem.__init__(self)
-        NodeTemplate.__init__(self,
-                              api_object=api_object,
+
+        # Explicitly call NodeTemplate initialization
+        NodeTemplate.__init__(self, api_object=api_object,
                               editor=editor,
                               draw_labels=draw_labels,
                               lat=lat,
                               lon=lon)
 
+        self.size = size
         self.line_container = None
         self.editor: GridMapWidget = editor  # reassign for the types to be clear
         self.api_object: Substation = api_object  # reassign for the types to be clear
 
-        self.radius = r
-        r2 = r / 2
-        x, y = self.editor.to_x_y(lat=lat, lon=lon)  # upper left corner
+        r2 = size / 2
+        x, y = editor.to_x_y(lat=lat, lon=lon)  # upper left corner
         self.setRect(
             x - r2,
             y - r2,
-            self.radius,
-            self.radius
+            self.size,
+            self.size
         )
 
         # Enable hover events for the item
@@ -80,7 +86,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Create a pen with reduced line width
-        self.change_pen_width(0.5)
+        self.change_pen_width(0.05 * size)
 
         # Create a pen with reduced line width
         self.color = QColor(self.api_object.color)
@@ -94,23 +100,31 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
-    def re_scale(self, r: float):
+    def merge(self, se: "SubstationGraphicItem"):
+        """
+        Merge a substation into this one
+        :param se: other SubstationGraphicItem
+        """
+        self._callbacks += se._callbacks
+        self.voltage_level_graphics += se.voltage_level_graphics
+
+    def set_size(self, r: float):
         """
 
         :param r: radius in pixels
         :return:
         """
-        if r != self.radius:
+        if r != self.size:
             rect = self.rect()
             rect.setWidth(r)
             rect.setHeight(r)
 
             # change the width and height while keeping the same center
-            r2 = (self.radius - r) / 2
+            r2 = (self.size - r) / 2
             new_x = rect.x() + r2
             new_y = rect.y() + r2
 
-            self.radius = r
+            self.size = r
 
             # Set the new rectangle with the updated dimensions
             self.setRect(new_x, new_y, r, r)
@@ -123,6 +137,8 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
+
+            self.change_pen_width(0.05 * self.size)
 
             self.update_position_at_the_diagram()
 
@@ -140,7 +156,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         for vl_graphics in self.voltage_level_graphics:
             # radius here is the width, therefore we need to send W/2
             scale = vl_graphics.api_object.Vnom / max_vl * 0.5
-            vl_graphics.set_size(r=self.radius * scale)
+            vl_graphics.set_size(r=self.size * scale)
             vl_graphics.center_on_substation()
 
     def set_api_object_color(self) -> None:
@@ -149,9 +165,12 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         self.color = QColor(self.api_object.color)
         self.color.setAlpha(128)
+
         self.hoover_color = QColor(self.api_object.color)
         self.hoover_color.setAlpha(180)
+
         self.border_color = QColor(self.api_object.color)  # No Alpha
+
         self.set_default_color()
 
     def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
@@ -194,7 +213,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         for vl_graphics in self.voltage_level_graphics:
             scale = vl_graphics.api_object.Vnom / max_vl * 0.8
-            vl_graphics.set_size(r=self.radius * scale)
+            vl_graphics.set_size(r=self.size * scale)
             vl_graphics.center_on_substation()
 
         sorted_objects = sorted(self.voltage_level_graphics, key=lambda x: -x.api_object.Vnom)
@@ -308,6 +327,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        function_ptr=self.create_new_line)
 
         add_menu_entry(menu=menu,
+                       text="Merge selected substations here",
+                       icon_path=":/Icons/icons/fusion.svg",
+                       function_ptr=self.merge_selected_substations)
+
+        add_menu_entry(menu=menu,
                        text="Set coordinates to DB",
                        icon_path=":/Icons/icons/down.svg",
                        function_ptr=self.move_to_api_coordinates)
@@ -315,7 +339,12 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         add_menu_entry(menu=menu,
                        text="Remove from schematic",
                        icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=self.remove_function)
+                       function_ptr=self.remove_function_from_schematic)
+
+        add_menu_entry(menu=menu,
+                       text="Remove from schematic and database",
+                       icon_path=":/Icons/icons/delete_db.svg",
+                       function_ptr=self.remove_function_from_schematic_and_db)
 
         add_menu_entry(menu=menu,
                        text="Show diagram",
@@ -326,6 +355,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        text="Plot",
                        icon_path=":/Icons/icons/plot.svg",
                        function_ptr=self.plot)
+
+        add_menu_entry(menu=menu,
+                       text="Open in street view",
+                       icon_path=":/Icons/icons/map.svg",
+                       function_ptr=self.open_street_view)
 
         menu.exec_(event.screenPos())
 
@@ -368,7 +402,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         pass
 
-    def remove_function(self) -> None:
+    def remove_function_from_schematic(self) -> None:
         """
         Function to be called when Action 1 is selected.
         """
@@ -376,7 +410,19 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                              "Remove substation graphics")
 
         if ok:
-            self.editor.remove_substation(substation=self)
+            self.editor.remove_substation(substation=self, delete_from_db=False)
+
+    def remove_function_from_schematic_and_db(self) -> None:
+        """
+
+        :return:
+        """
+
+        ok = yes_no_question(f"Remove substation {self.api_object.name} from the map and the database?",
+                             "Remove substation graphics and database item")
+
+        if ok:
+            self.editor.remove_substation(substation=self, delete_from_db=True)
 
     def move_to_api_coordinates(self):
         """
@@ -389,6 +435,54 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         if ok:
             x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
             self.set_callbacks(x, y)
+
+    def merge_selected_substations(self):
+        """
+        Merge selected substations into this one
+        """
+        selected = self.editor.get_selected_substations()
+
+        dlg = CheckListDialogue(
+            objects_list=[f"{graphic_obj.api_object.device_type.value}: {graphic_obj.api_object.name}"
+                          for graphic_obj in selected],
+            title=f"Merge into {self.api_object.name}"
+        )
+
+        dlg.setModal(True)
+        dlg.exec()
+
+        if dlg.is_accepted:
+
+            deleted_api_objs: List[Substation] = list()
+
+            for i in dlg.selected_indices:
+
+                se_graphics = selected[i]
+
+                deleted_api_objs.append(se_graphics.api_object)
+
+                if se_graphics != self:
+                    self.merge(se=se_graphics)
+                    self.editor.remove_substation(substation=se_graphics,
+                                                  delete_from_db=True,
+                                                  delete_connections=False)
+
+            # re-index the stuff pointing at deleted api elements to this api object
+            for vl in self.editor.circuit.voltage_levels:
+                if vl.substation in deleted_api_objs:
+                    vl.substation = self.api_object
+
+            for bus in self.editor.circuit.buses:
+                if bus.substation in deleted_api_objs:
+                    bus.substation = self.api_object
+
+            # remove connections that are from and to the same substation
+            for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
+                for elm in self.editor.graphics_manager.get_device_type_list(tpe):
+                    if elm.api_object.get_substation_from() == elm.api_object.get_substation_to():
+                        self.editor.remove_branch_graphic(elm, delete_from_db=True)
+
+        self.update_position_at_the_diagram()  # always update
 
     def new_substation_diagram(self):
         """
@@ -454,7 +548,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :param width: New pen width.
         """
         pen = self.pen()
-        pen.setWidth(width)
+        pen.setWidthF(width)
         self.setPen(pen)
 
     def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
@@ -480,3 +574,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         # Example: color assignment
         self.set_color(self.color, self.border_color)
+
+    def open_street_view(self):
+        """
+        Call open street maps
+        :return:
+        """
+        # https://maps.google.com/?q=<lat>,<lng>
+        url = f"https://www.google.com/maps/?q={self.lat},{self.lon}"
+        webbrowser.open(url)
+
+

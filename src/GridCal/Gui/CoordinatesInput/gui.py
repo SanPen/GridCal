@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -65,7 +65,7 @@ class Ui_Dialog(object):
         self.open_button = QPushButton(self.frame_2)
         self.open_button.setObjectName(u"open_button")
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.open_button.setIcon(icon)
 
         self.gridLayout_2.addWidget(self.open_button, 2, 0, 1, 1)
@@ -176,7 +176,7 @@ class Ui_Dialog(object):
         self.acceptButton = QPushButton(self.frame_9)
         self.acceptButton.setObjectName(u"acceptButton")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.acceptButton.setIcon(icon1)
 
         self.gridLayout.addWidget(self.acceptButton, 0, 2, 1, 1)
@@ -184,7 +184,7 @@ class Ui_Dialog(object):
         self.refreshButton = QPushButton(self.frame_9)
         self.refreshButton.setObjectName(u"refreshButton")
         icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/transform.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/Icons/icons/transform.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.refreshButton.setIcon(icon2)
 
         self.gridLayout.addWidget(self.refreshButton, 0, 0, 1, 1)

@@ -2,18 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from __future__ import annotations
 import time
 import requests
 import asyncio
+from uuid import uuid4
+from warnings import warn
 from urllib3 import disable_warnings, exceptions
 from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
 from PySide6 import QtCore
 from GridCalEngine.basic_structures import Logger
-
+from GridCalEngine.Simulations.driver_handler import create_driver
 from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction, RemoteJob,
                                              send_json_data, get_certificate_path, get_certificate)
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 
 disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -203,6 +207,10 @@ class ServerDriver(QThread):
         """
         return f"https://{self.url}:{self.port}"
 
+    def get_certificate_path(self):
+
+        return self._certificate_path
+
     def is_running(self) -> bool:
         """
         Check if the server is running
@@ -210,9 +218,9 @@ class ServerDriver(QThread):
         """
         return self.__running__
 
-    def get_certificate(self) -> bool:
+    def get_server_certificate(self) -> bool:
         """
-        Try connecting to the server
+        Try get the server certificate
         :return: ok?
         """
 
@@ -228,8 +236,8 @@ class ServerDriver(QThread):
         """
 
         # get the SSL certificate (only once per class instance)
-        if not self._loaded_certificate:
-            self._loaded_certificate = self.get_certificate()
+        self._loaded_certificate = self.get_server_certificate()
+        self.__running__ = False
 
         # Make a GET request to the root endpoint
         try:
@@ -242,16 +250,20 @@ class ServerDriver(QThread):
             if response.status_code == 200:
                 # Print the response body
                 # print("Response Body:", response.json())
+                self.__running__ = True
                 return True
             else:
                 # Print error message
                 self.logger.add_error(msg=f"Response error", value=response.text)
+                print(response.text)
                 return False
         except ConnectionError as e:
             self.logger.add_error(msg=f"Connection error", value=str(e))
+            print(str(e))
             return False
         except Exception as e:
             self.logger.add_error(msg=f"General exception error", value=str(e))
+            print(str(e))
             return False
 
     def get_jobs(self) -> bool:
@@ -282,17 +294,17 @@ class ServerDriver(QThread):
             self.logger.add_error(msg=f"General exception error", value=str(e))
             return False
 
-    def send_data(self, circuit: MultiCircuit, instruction: RemoteInstruction) -> None:
+    def send_job(self, grid: MultiCircuit, instruction: RemoteInstruction) -> Dict[str, Any] | None:
         """
         
-        :param circuit: 
+        :param grid:
         :param instruction:
         :return: 
         """
-        websocket_url = f"{self.base_url()}/upload"
+        websocket_url = f"{self.base_url()}/upload_job"
 
         if self.is_running():
-            model_data = gather_model_as_jsons_for_communication(circuit=circuit, instruction=instruction)
+            model_data = gather_model_as_jsons_for_communication(circuit=grid, instruction=instruction)
 
             response = asyncio.get_event_loop().run_until_complete(
                 send_json_data(json_data=model_data,
@@ -300,7 +312,10 @@ class ServerDriver(QThread):
                                certificate=self._certificate_path)
             )
 
-            self.get_jobs()
+            return response
+
+        else:
+            return None
 
     def delete_job(self, job_id: str, api_key: str) -> dict:
         """
@@ -399,28 +414,30 @@ class ServerDriver(QThread):
             # get the running jobs
             self.get_jobs()
 
-            while not self.__cancel__:
+            self.report_status("Sync" if ok else "Server not responding")
 
-                if not self.__pause__:
-                    self.report_status("Sync" if ok else "Server not responding")
-                    self.__running__ = True
-
-                    # sleep
-                    time.sleep(self.sleep_time)
-
-                else:
-                    self.report_status("Sync paused" if ok else "Server not responding")
-                    self.__running__ = False
-
-                    # sleep 1 second to catch other events
-                    time.sleep(self.sleep_time)
-
-                # check if alive
-                ok = self.server_connect()
-
-                if not ok:
-                    # set to false, so that we force re-download on reconnection
-                    self._loaded_certificate = False
+            # while not self.__cancel__:
+            #
+            #     if not self.__pause__:
+            #         self.report_status("Sync" if ok else "Server not responding")
+            #         self.__running__ = True
+            #
+            #         # sleep
+            #         time.sleep(self.sleep_time)
+            #
+            #     else:
+            #         self.report_status("Sync paused" if ok else "Server not responding")
+            #         self.__running__ = False
+            #
+            #         # sleep 1 second to catch other events
+            #         time.sleep(self.sleep_time)
+            #
+            #     # check if alive
+            #     ok = self.server_connect()
+            #
+            #     if not ok:
+            #         # set to false, so that we force re-download on reconnection
+            #         self._loaded_certificate = False
 
         else:
             # bad connection
@@ -429,10 +446,10 @@ class ServerDriver(QThread):
             self.done_signal.emit()
             return None
 
-        self.data_model.clear()
-        self.report_status("Sync stop")
-        self.__running__ = False
-        self.done_signal.emit()
+        # self.data_model.clear()
+        # self.report_status("Sync stop")
+        # self.__running__ = False
+        # self.done_signal.emit()
 
     def cancel(self) -> None:
         """
@@ -460,3 +477,79 @@ class ServerDriver(QThread):
         """
 
         self.items_processed_event.emit()
+
+
+class RemoteJobDriver(QThread):
+    """
+    Server driver
+    """
+    progress_signal = Signal(float)
+    progress_text = Signal(str)
+    done_signal = Signal(str)
+    sync_event = Signal()
+    items_processed_event = Signal()
+
+    def __init__(self,
+                 grid: MultiCircuit,
+                 instruction: RemoteInstruction,
+                 base_url: str,
+                 certificate_path: str,
+                 register_driver_func) -> None:
+        """
+
+        :param grid:
+        :param instruction:
+        :param base_url:
+        :param certificate_path:
+        """
+        QThread.__init__(self)
+
+        self.idtag = uuid4().hex
+
+        self.grid = grid
+        self.instruction = instruction
+        self.base_url = base_url
+        self.certificate_path = certificate_path
+
+        self.register_driver_func = register_driver_func
+
+        self.logger = Logger()
+
+    def run(self):
+        """
+
+        :return:
+        """
+        websocket_url = f"{self.base_url}/upload_job"
+
+        model_data = gather_model_as_jsons_for_communication(circuit=self.grid, instruction=self.instruction)
+
+        try:
+            response = send_json_data(json_data=model_data,
+                                      endpoint_url=websocket_url,
+                                      certificate=self.certificate_path)
+        except requests.exceptions.ConnectionError as e:
+            warn(str(e))
+            response = None
+            self.logger.add_error("Remote end closed connection without response")
+
+        if response is not None:
+
+            success = response.get("success", False)
+
+
+            if success:
+                results_data = response["results"]
+
+                time_indices = results_data.get('time_indices', self.grid.get_all_time_indices())
+                driver = create_driver(grid=self.grid,
+                                       driver_tpe=self.instruction.operation,
+                                       time_indices=time_indices)
+
+                if driver is not None:
+                    driver.results.parse_data(data=results_data)
+                    self.register_driver_func(driver=driver)
+            else:
+                self.logger.add_error(msg=response.get("msg", "No message"))
+
+        self.done_signal.emit(self.idtag)

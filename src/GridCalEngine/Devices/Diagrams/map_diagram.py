@@ -9,6 +9,7 @@ from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import Colormaps
 
 
 class MapDiagram(BaseDiagram):
@@ -18,7 +19,15 @@ class MapDiagram(BaseDiagram):
 
     def __init__(self, idtag: Union[None, str] = None, name: str = '',
                  tile_source: str = '', start_level: int = 11,
-                 longitude: float = -15.41, latitude: float = 40.11) -> None:
+                 longitude: float = -15.41, latitude: float = 40.11,
+                 use_flow_based_width: bool = False,
+                 min_branch_width: int = 1.0,
+                 max_branch_width=5,
+                 min_bus_width=1.0,
+                 max_bus_width=20,
+                 arrow_size=20,
+                 palette: Colormaps = Colormaps.GridCal,
+                 default_bus_voltage: float = 10) -> None:
         """
         MapDiagram
         :param idtag: uuid
@@ -26,7 +35,15 @@ class MapDiagram(BaseDiagram):
         :param tile_source: tiles' source
         :param start_level: zoom level
         """
-        BaseDiagram.__init__(self, idtag=idtag, name=name, diagram_type=DiagramType.SubstationLineMap)
+        BaseDiagram.__init__(self, idtag=idtag, name=name, diagram_type=DiagramType.SubstationLineMap,
+                             use_flow_based_width=use_flow_based_width,
+                             min_branch_width=min_branch_width,
+                             max_branch_width=max_branch_width,
+                             min_bus_width=min_bus_width,
+                             max_bus_width=max_bus_width,
+                             arrow_size=arrow_size,
+                             palette=palette,
+                             default_bus_voltage=default_bus_voltage)
 
         self.tile_source = tile_source
 

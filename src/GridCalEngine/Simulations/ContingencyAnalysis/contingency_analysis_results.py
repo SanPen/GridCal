@@ -88,21 +88,21 @@ class ContingencyAnalysisResults(ResultsTemplate):
         """
         return list()
 
-    def get_results_dict(self):
-        """
-        Returns a dictionary with the results sorted in a dictionary
-        :return: dictionary of 2D numpy arrays (probably of complex numbers)
-        """
-        data = {
-            'Vm': np.abs(self.voltage).tolist(),
-            'Va': np.angle(self.voltage).tolist(),
-            'P': self.Sbus.real.tolist(),
-            'Q': self.Sbus.imag.tolist(),
-            'Sbr_real': self.Sf.real.tolist(),
-            'Sbr_imag': self.Sf.imag.tolist(),
-            'loading': np.abs(self.loading).tolist()
-        }
-        return data
+    # def get_dict(self):
+    #     """
+    #     Returns a dictionary with the results sorted in a dictionary
+    #     :return: dictionary of 2D numpy arrays (probably of complex numbers)
+    #     """
+    #     data = {
+    #         'Vm': np.abs(self.voltage).tolist(),
+    #         'Va': np.angle(self.voltage).tolist(),
+    #         'P': self.Sbus.real.tolist(),
+    #         'Q': self.Sbus.imag.tolist(),
+    #         'Sbr_real': self.Sf.real.tolist(),
+    #         'Sbr_imag': self.Sf.imag.tolist(),
+    #         'loading': np.abs(self.loading).tolist()
+    #     }
+    #     return data
 
     def mdl(self, result_type: ResultTypes):
         """

@@ -6,6 +6,9 @@
 from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING
+
+from numba.cuda.cudadrv.nvvm import nvvm_result
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
@@ -101,11 +104,10 @@ class LinearAnalysisDriver(DriverTemplate):
                 correct_values=self.options.correct_values
             )
 
-            analysis.run()
             self.logger += analysis.logger
-            self.results.bus_names = analysis.numerical_circuit.bus_data.names
-            self.results.branch_names = analysis.numerical_circuit.passive_branch_data.names
-            self.results.bus_types = analysis.numerical_circuit.bus_data.bus_types
+            self.results.bus_names = nc.bus_data.names
+            self.results.branch_names = nc.passive_branch_data.names
+            self.results.bus_types = nc.bus_data.bus_types
             self.results.PTDF = analysis.PTDF
             self.results.LODF = analysis.LODF
 
@@ -119,7 +121,7 @@ class LinearAnalysisDriver(DriverTemplate):
             Pbus_pu = Sbus.real + Shvdc
             self.results.Sbus = Pbus_pu * nc.Sbase
             self.results.Sf = analysis.get_flows(Pbus_pu) * nc.Sbase
-            self.results.loading = self.results.Sf / (analysis.numerical_circuit.passive_branch_data.rates + 1e-20)
+            self.results.loading = self.results.Sf / (nc.passive_branch_data.rates + 1e-20)
 
         elif self.engine == EngineType.Bentayga:
 

@@ -134,10 +134,18 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         menu.addSeparator()
 
-        add_menu_entry(menu=menu,
-                       text="Delete",
-                       icon_path=":/Icons/icons/delete3.svg",
-                       function_ptr=self.remove)
+        # add_menu_entry(menu=menu,
+        #                text="Delete",
+        #                icon_path=":/Icons/icons/delete3.svg",
+        #                function_ptr=self.remove)
+
+        add_menu_entry(menu, text='Remove from schematic and DB',
+                       icon_path=":/Icons/icons/delete_db.svg",
+                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
+
+        add_menu_entry(menu, text='Remove from schematic',
+                       icon_path=":/Icons/icons/delete_schematic.svg",
+                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=False))
 
         add_menu_entry(menu=menu,
                        text="Convert to battery",

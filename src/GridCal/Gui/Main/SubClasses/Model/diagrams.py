@@ -38,7 +38,6 @@ from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
@@ -139,11 +138,6 @@ class DiagramsMain(CompiledArraysMain):
 
         # map tile sources
         self.tile_sources = [
-            BlueMarbleTiles(
-                name='Blue Marble',
-                tiles_dir=os.path.join(tiles_path(), 'blue_marble')
-            ),
-
             # Carto layers:
             # light_all,
             # dark_all,
@@ -280,14 +274,14 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
         self.ui.defaultBusVoltageSpinBox.valueChanged.connect(self.default_voltage_change)
 
-        self.ui.min_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.max_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.min_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.max_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
-        self.ui.arrow_size_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
+        self.ui.min_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.max_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.min_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.max_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
+        self.ui.arrow_size_size_spinBox.valueChanged.connect(self.set_diagrams_size_constraints)
 
         # check boxes
-        self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_contraints)
+        self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_constraints)
 
         # context menu
         self.ui.diagramsListView.customContextMenuRequested.connect(self.show_diagrams_context_menu)
@@ -360,16 +354,19 @@ class DiagramsMain(CompiledArraysMain):
         Center the nodes in the screen
         """
 
-        diagram = self.get_selected_diagram_widget()
-        if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
+        widget = self.get_selected_diagram_widget()
+        if widget is not None:
+            if isinstance(widget, SchematicWidget):
                 selected = self.get_selected_buses()
 
                 if len(selected) == 0:
-                    diagram.center_nodes(elements=None)
+                    widget.center_nodes(elements=None)
                 else:
                     buses = [bus for i, bus, graphic in selected]
-                    diagram.center_nodes(elements=buses)
+                    widget.center_nodes(elements=buses)
+
+            elif isinstance(widget, GridMapWidget):
+                widget.center()
 
     def get_selected_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:
         """
@@ -1535,7 +1532,7 @@ class DiagramsMain(CompiledArraysMain):
 
     def set_selected_diagram_on_click(self):
         """
-        on list-view click, set the currentlt selected diagram widget
+        on list-view click, set the currently selected diagram widget
         """
         diagram = self.get_selected_diagram_widget()
 
@@ -1775,8 +1772,8 @@ class DiagramsMain(CompiledArraysMain):
 
             elif isinstance(diagram, dev.MapDiagram):
                 # select the tile source from the diagram, if not fund pick the one from the GUI
-                defualt_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
-                tile_source = self.tile_name_dict.get(diagram.tile_source, defualt_tile_source)
+                default_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
+                tile_source = self.tile_name_dict.get(diagram.tile_source, default_tile_source)
 
                 # create the map widget
                 map_widget = GridMapWidget(
@@ -1815,16 +1812,29 @@ class DiagramsMain(CompiledArraysMain):
             ok = True
 
         if ok:
-            diagram = generate_map_diagram(substations=self.circuit.get_substations(),
-                                           voltage_levels=self.circuit.get_voltage_levels(),
-                                           lines=self.circuit.get_lines(),
-                                           dc_lines=self.circuit.get_dc_lines(),
-                                           hvdc_lines=self.circuit.get_hvdc(),
-                                           fluid_nodes=self.circuit.get_fluid_nodes(),
-                                           fluid_paths=self.circuit.get_fluid_paths(),
-                                           prog_func=None,
-                                           text_func=None,
-                                           name='Map diagram')
+            cmap_text = self.ui.palette_comboBox.currentText()
+            cmap = self.cmap_dict[cmap_text]
+
+            diagram = generate_map_diagram(
+                substations=self.circuit.get_substations(),
+                voltage_levels=self.circuit.get_voltage_levels(),
+                lines=self.circuit.get_lines(),
+                dc_lines=self.circuit.get_dc_lines(),
+                hvdc_lines=self.circuit.get_hvdc(),
+                fluid_nodes=self.circuit.get_fluid_nodes(),
+                fluid_paths=self.circuit.get_fluid_paths(),
+                prog_func=None,
+                text_func=None,
+                name='Map diagram',
+                use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                min_bus_width=self.ui.min_node_size_spinBox.value(),
+                max_bus_width=self.ui.max_node_size_spinBox.value(),
+                arrow_size=self.ui.arrow_size_size_spinBox.value(),
+                palette=cmap,
+                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value()
+            )
 
             # set other default properties of the diagram
             diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
@@ -2179,9 +2189,10 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected_from_widget()
-        else:
-            pass
+            diagram_widget.delete_Selected_from_widget(delete_from_db=False)
+
+        elif isinstance(diagram_widget, GridMapWidget):
+            diagram_widget.delete_Selected_from_widget(delete_from_db=False)
 
     def delete_selected_from_the_diagram_and_db(self):
         """
@@ -2189,9 +2200,10 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected_from_widget_and_db()
-        else:
-            pass
+            diagram_widget.delete_Selected_from_widget(delete_from_db=True)
+
+        elif isinstance(diagram_widget, GridMapWidget):
+            diagram_widget.delete_Selected_from_widget(delete_from_db=True)
 
     def try_to_fix_buses_location(self):
         """
@@ -2555,7 +2567,7 @@ class DiagramsMain(CompiledArraysMain):
         except ValueError as e:
             print(e)
 
-    def set_diagrams_size_contraints(self):
+    def set_diagrams_size_constraints(self):
         """
         Set the size constraints
         """

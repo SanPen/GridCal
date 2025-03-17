@@ -532,7 +532,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         if ask:
             ok = yes_no_question('Are you sure that you want to remove this bus',
-                                 'Remove bus from schamatic and DB' if delete_from_db else "Remove bus from schamatic")
+                                 'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
         else:
             ok = True
 
