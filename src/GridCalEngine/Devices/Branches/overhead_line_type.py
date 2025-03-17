@@ -474,13 +474,14 @@ class OverheadLineType(EditableDevice):
             if self.wires_in_tower.data[i].wire.name == wire.name:
                 return True
 
-    def get_positive_sequence_values(self, circuit_idx: int):
+    def get_sequence_values(self, circuit_idx: int, seq: int = 1):
         """
         Get the positive sequence values R1 [Ohm], X1[Ohm] and Bsh1 [S].
-        :param circuit_idx: Circuit indexation
+        :param circuit_idx: Circuit indexation (starts at 0)
+        :param seq: Sequence number (0, 1, 2)
         :return: R1 [Ohm], X1[Ohm] and Bsh1 [S]
         """
-        a1 = 3 * circuit_idx + 1
+        a1 = 3 * circuit_idx + seq
         R1 = self.z_seq[a1, a1].real
         X1 = self.z_seq[a1, a1].imag
         Bsh1 = self.y_seq[a1, a1].imag * 1e6
