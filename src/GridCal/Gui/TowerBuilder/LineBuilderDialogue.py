@@ -33,13 +33,13 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         # create wire collection from the catalogue
         self.wires_table = WiresTable(self)
 
+        # create the tower driver
+        self.tower_driver = TowerModel(self, edit_callback=self.compute, tower=tower)
+
         if wires_catalogue is not None:
             for wire in wires_catalogue:
                 self.wires_table.add(wire)
             self.compute()
-
-        # create the tower driver
-        self.tower_driver = TowerModel(self, edit_callback=self.compute, tower=tower)
 
         # matrix combo
         self.ui.matrixViewComboBox.addItem("Series impedance [Ω/km]")
