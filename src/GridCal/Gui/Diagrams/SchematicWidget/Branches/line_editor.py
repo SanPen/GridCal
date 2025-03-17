@@ -105,7 +105,8 @@ class LineEditor(QDialog):
                             b_us = self.current_template.B
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            R1, X1, Bsh1 = self.current_template.get_positive_sequence_values(circuit_idx = self.line.circuit)
+                            R1, X1, Bsh1 = self.current_template.get_sequence_values(circuit_idx=self.line.circuit,
+                                                                                     seq=1)
                             I_KA = self.current_template.Imax
                             r_ohm = R1
                             x_ohm = X1
@@ -256,7 +257,7 @@ class LineEditor(QDialog):
             self.selected_template = template
 
         elif isinstance(template, OverheadLineType):
-            R1, X1, Bsh1 = template.get_positive_sequence_values(circuit_idx = self.line.circuit)
+            R1, X1, Bsh1 = template.get_sequence_values(circuit_idx=self.line.circuit, seq=1)
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(R1)
             self.x_spinner.setValue(X1)

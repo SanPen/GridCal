@@ -52,7 +52,7 @@ class Line(BranchParent):
                  r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0,
                  opex=0,
-                 circuit: int = 1,
+                 circuit_idx: int = 0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line
@@ -148,7 +148,7 @@ class Line(BranchParent):
         # Conductor thermal constant (1/ºC)
         self.alpha = float(alpha)
 
-        self._circuit: int = int(circuit)
+        self._circuit_idx: int = int(circuit_idx)
 
         # type template
         self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
@@ -174,8 +174,8 @@ class Line(BranchParent):
                       definition='Tolerance expected for the impedance values % is expected '
                                  'for transformers0% for lines.')
 
-        self.register(key='circuit', units='', tpe=int,
-                      definition='Circuit index, used for multiple circuits sharing towers')
+        self.register(key='circuit_idx', units='', tpe=int,
+                      definition='Circuit index, used for multiple circuits sharing towers (starts at zero)')
 
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
@@ -282,13 +282,13 @@ class Line(BranchParent):
         self._B2 = float(value)
 
     @property
-    def circuit(self):
-        return self._circuit
+    def circuit_idx(self):
+        return self._circuit_idx
 
-    @circuit.setter
-    def circuit(self, value):
-        if value >= 1:
-            self._circuit = int(value)
+    @circuit_idx.setter
+    def circuit_idx(self, value):
+        if value >= 0:
+            self._circuit_idx = int(value)
 
     @property
     def length(self) -> float:
@@ -301,7 +301,7 @@ class Line(BranchParent):
     @length.setter
     def length(self, val: float):
         """
-        Set the length of the line, if a valid length is provided, the electric parameters are scaled approprietly
+        Set the length of the line, if a valid length is provided, the electric parameters are scaled appropriately
         :param val:
         :return:
         """
@@ -413,6 +413,9 @@ class Line(BranchParent):
             (self.R, self.X, self.B,
              self.R0, self.X0, self.B0,
              self.rate) = obj.get_values(Sbase=Sbase,  length=self.length, circuit_index=self.circuit)
+
+            self.ys.values = obj.get_ys(self.circuit)
+            self.ysh.values = obj.get_ysh(self.circuit)
 
             if self.template is not None:
                 if obj != self.template:

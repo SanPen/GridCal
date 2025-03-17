@@ -164,6 +164,12 @@ class Bus(PhysicalDevice):
         self.longitude = float(longitude)
         self.latitude = float(latitude)
 
+        self.ph_a: bool = True
+        self.ph_b: bool = True
+        self.ph_c: bool = True
+        self.ph_n: bool = True
+        self.is_grounded: bool = True
+
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
         self.register(key='is_slack', units='', tpe=bool, definition='Force the bus to be of slack type.',
@@ -210,6 +216,12 @@ class Bus(PhysicalDevice):
                       definition='Voltage level of the bus.')
         self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='')
         self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='')
+
+        self.register(key='ph_a', units='', tpe=bool, definition='Has phase A?')
+        self.register(key='ph_b', units='', tpe=bool, definition='Has phase B?')
+        self.register(key='ph_c', units='', tpe=bool, definition='Has phase C?')
+        self.register(key='ph_n', units='', tpe=bool, definition='Has phase N?')
+        self.register(key='is_grounded', units='', tpe=bool, definition='Is this bus neutral grounded?.')
 
     @property
     def active_prof(self) -> Profile:

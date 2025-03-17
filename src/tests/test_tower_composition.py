@@ -25,9 +25,8 @@ def test_tower_composition():
 
     tower.compute()
 
-    R0, X0, Bsh0 = tower.get_zero_sequence_values(0)
-    R1, X1, Bsh1 = tower.get_positive_sequence_values(0)
-
+    R1, X1, B1 = tower.get_sequence_values(circuit_idx=0, seq=1)
+    R0, X0, B0 = tower.get_sequence_values(circuit_idx=0, seq=0)
     print(f"R0: {R0}, X0: {X0}")
     print(f"R1: {R1}, X1: {X1}")
 
