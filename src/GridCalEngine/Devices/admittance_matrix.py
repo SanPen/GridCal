@@ -94,3 +94,13 @@ class AdmittanceMatrix:
         data_i = list_to_matrix(data.get("values_i", None), self.__size)
 
         self.__values = data_r + 1j * data_i
+
+    def __eq__(self, other: "AdmittanceMatrix") -> bool:
+
+        if self.size != other.size:
+            return False
+
+        if not np.allclose(self.values, other.values, atol=1e-10):
+            return False
+
+        return True
