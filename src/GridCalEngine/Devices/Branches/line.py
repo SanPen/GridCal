@@ -52,7 +52,7 @@ class Line(BranchParent):
                  r2=1e-20, x2=1e-20, b2=1e-20,
                  capex=0,
                  opex=0,
-                 circuit: int = 1,
+                 circuit: int = 0,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         AC current Line
@@ -175,7 +175,7 @@ class Line(BranchParent):
                                  'for transformers0% for lines.')
 
         self.register(key='circuit', units='', tpe=int,
-                      definition='Circuit index, used for multiple circuits sharing towers')
+                      definition='Circuit index, used for multiple circuits sharing towers (starts at zero)')
 
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
@@ -287,7 +287,7 @@ class Line(BranchParent):
 
     @circuit.setter
     def circuit(self, value):
-        if value >= 1:
+        if value >= 0:
             self._circuit = int(value)
 
     @property
@@ -414,8 +414,8 @@ class Line(BranchParent):
              self.R0, self.X0, self.B0,
              self.rate) = obj.get_values(Sbase=Sbase,  length=self.length, circuit_index=self.circuit)
 
-            # self.ys.values = obj.y_abcn
-            # self.ysh.values = obj.y_abcn
+            self.ys.values = obj.get_ys(self.circuit)
+            self.ysh.values = obj.get_ysh(self.circuit)
 
             if self.template is not None:
                 if obj != self.template:
