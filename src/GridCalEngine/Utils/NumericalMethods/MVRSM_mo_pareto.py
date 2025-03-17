@@ -27,7 +27,7 @@ from typing import List, Tuple
 from scipy.linalg.blas import dger
 from scipy.optimize import minimize
 from GridCalEngine.Utils.NumericalMethods.non_dominated_sorting import non_dominated_sorting, dominates
-from GridCalEngine.basic_structures import Vec, Mat, IntVec
+from GridCalEngine.basic_structures import Vec, Mat
 
 
 def relu(x):
@@ -302,14 +302,17 @@ class SurrogateModel:
         return self.g_scalarize_max_jac(x, scalarization_weights) + 0.05 * self.g_scalarize_jac(x,
                                                                                                 scalarization_weights)
 
-    def minimum(self, x0, scalarization_weights) -> Vec:
+    def minimum(self, x0: Vec, scalarization_weights: Vec) -> Vec:
         """
         Find a minimum of the surrogate model approximately.
         :param x0: the initial guess.
         :param scalarization_weights: weights for the scalarization of multiple objectives
         :return minimization evaluation and corresponding function values
         """
-        scalarization_type = 2  # 0=linear, 1=max, 0.5 is a mix, 2 is augmented Tchebycheff. max seems to capture the shape of nonconvex pareto front better (also according to theory) but has worse performance
+        scalarization_type = 2  # 0=linear, 1=max, 0.5 is a mix, 2 is augmented Tchebycheff.
+        # max seems to capture the shape of nonconvex pareto front better (also according to theory)
+        # but has worse performance
+
         # Current default is the augmented Tchebycheff, as it is used in other papers.
 
         if scalarization_type == 0:
@@ -318,15 +321,18 @@ class SurrogateModel:
             res = minimize(self.g_scalarize, x0, args=(scalarization_weights,), method='L-BFGS-B', bounds=self.bounds,
                            jac=self.g_scalarize_jac,
                            options={'maxiter': 20, 'maxfun': 20})
+            return res.x
         elif scalarization_type == 1:
             # with max scalarization
             # Similar to:
-            # Golovin, Daniel and Qiuyi Zhang. “Random Hypervolume Scalarizations for Provable Multi-Objective Black Box Optimization.” ArXiv abs/2006.04655 (2020): n. pag.
+            # Golovin, Daniel and Qiuyi Zhang. “Random Hypervolume Scalarizations for
+            # Provable Multi-Objective Black Box Optimization.” ArXiv abs/2006.04655 (2020): n. pag.
             # print('Using max scalarization')
             res = minimize(self.g_scalarize_max, x0, args=(scalarization_weights,), method='L-BFGS-B',
                            bounds=self.bounds,
                            jac=self.g_scalarize_max_jac,
                            options={'maxiter': 20, 'maxfun': 20})
+            return res.x
         elif scalarization_type == 0.5:
             # with mix scalarization
             r = random.random()
@@ -336,30 +342,36 @@ class SurrogateModel:
                                bounds=self.bounds,
                                jac=self.g_scalarize_max_jac,
                                options={'maxiter': 20, 'maxfun': 20})
+                return res.x
             elif r <= 0.5:
                 # print('Using mixed scalarization (now linear)')
                 res = minimize(self.g_scalarize, x0, args=(scalarization_weights,), method='L-BFGS-B',
                                bounds=self.bounds,
                                jac=self.g_scalarize_jac,
                                options={'maxiter': 20, 'maxfun': 20})
+                return res.x
             else:
-                print('Warning: wrong random number generated')
+                raise Exception('Warning: wrong random number generated')
         elif scalarization_type == 2:
-            # with augmented Tchebycheff scalarization (from ``ParEGO: A Hybrid Algorithm With On-Line Landscape Approximation for Expensive Multiobjective Optimization Problems'')
+            # with augmented Tchebycheff scalarization
+            # (from ``ParEGO: A Hybrid Algorithm With On-Line Landscape Approximation for Expensive
+            # Multiobjective Optimization Problems'')
             # Warning: type 2 Augmented Tchebycheff is untested!!!
             # print('Using augmented Tchebycheff scalarization')
             res = minimize(self.augmented_Tchebycheff, x0, args=(scalarization_weights,), method='L-BFGS-B',
                            bounds=self.bounds,
                            jac=self.augmented_Tchebycheff_jac,
                            options={'maxiter': 20, 'maxfun': 20})
+            return res.x
         else:
-            print('Warning: wrong scalarization chosen.')
-        return res.x, res.fun
+            raise Exception('Warning: wrong scalarization chosen.')
 
 
-def scale(y, y0,
-          scale_threshold=1e-8):  # normalize: do this for every objective so that all objectives are more or less in the same range
+
+
+def scale(y, y0, scale_threshold=1e-8):
     """
+    # normalize: do this for every objective so that all objectives are more or less in the same range
     Scale the objective with respect to the initial objective value,
     causing the optimum to lie below zero. This helps exploration and
     prevents the algorithm from getting stuck at the boundary.
@@ -500,7 +512,7 @@ def MVRSM_mo_pareto(obj_func,
 
     # Update the model with the normalized random evaluation points
     for rand_it in range(len(objectives_normalized)):
-        model.update(x_population[rand_it], objectives_normalized[rand_it])
+        model.update(x=x_population[rand_it], y=objectives_normalized[rand_it])
         # print(f"Time to update model: {e_time - st_time}")
 
     # Iteratively evaluate the objective, update the model, find the minimum of the model,
@@ -516,9 +528,9 @@ def MVRSM_mo_pareto(obj_func,
         x_population[i, :] = x
 
         # Update the surrogate model
-        y_normalized = normalize_md(y, normalization_factors)
+        y_normalized = normalize_md(y_no_normalized=y, norm_factors=normalization_factors)
 
-        model.update(x, y_normalized)
+        model.update(x=x, y=y_normalized)
         # e_time = time.time()
         # print(f"Time to update model: {e_time - st_time}")
 
@@ -530,14 +542,18 @@ def MVRSM_mo_pareto(obj_func,
                 Pareto_index.append(i)
             else:
                 y_is_dominated = 0  # whether y is dominated by any of the previous Pareto optimal solutions
-                pp_to_remove = []  # Pareto optimal points that should be removed because they are not Pareto optimal anymore due to y
+
+                # Pareto optimal points that should be removed because they are not Pareto optimal anymore due to y
+                pp_to_remove = []
+
                 for pp in Pareto_index:
                     y_dominates_pp = 0
                     pp_dominates_y = 0
                     TOL = 1e-8  # tolerance level for determining Pareto optimality
                     y_pp_scaled = normalize_md(y_population[pp, :], normalization_factors)
 
-                    # Check if y is exactly the same as pp, in which case it is not useful to add it to the list of Pareto optimal solutions
+                    # Check if y is exactly the same as pp, in which case it is not
+                    # useful to add it to the list of Pareto optimal solutions
                     if np.all(y_pp_scaled == y_normalized):
                         y_is_dominated = 1
                         break
@@ -591,7 +607,7 @@ def MVRSM_mo_pareto(obj_func,
                 best_x = np.copy(x)
                 best_y = y_normalized
         # st_time = time.time()
-        next_x, fbest = model.minimum(best_x, scalarization_weights)
+        next_x = model.minimum(x0=best_x, scalarization_weights=scalarization_weights)
         # e_time = time.time()
         # print(f"Time to find minimum: {e_time - st_time}")
         # Round discrete variables to the nearest integer.
