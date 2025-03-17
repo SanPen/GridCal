@@ -274,6 +274,17 @@ class OverheadLineType(EditableDevice):
         self.register(key='wires_in_tower', units='', tpe=SubObjectType.ListOfWires, definition='List of wires',
                       editable=False, display=False)
 
+    def get_ys(self, circuit_idx: int):
+        k = (3*circuit_idx) + np.array([0, 1, 2])
+        z = self.z_abc[np.ix_(k, k)]
+        y = np.linalg.inv(z)
+        return y
+
+    def get_ysh(self, circuit_idx: int):
+        k = (3*circuit_idx) + np.array([0, 1, 2])
+        y = self.y_abc[np.ix_(k, k)]
+        return y
+
     def add_wire_relationship(self, wire: Wire,
                               xpos: float = 0.0,
                               ypos: float = 0.0,
@@ -428,22 +439,26 @@ class OverheadLineType(EditableDevice):
         all_ok = self.check()
 
         if all_ok:
-            # Impedances
-            (self.z_abcn,
-             self.z_phases_abcn,
-             self.z_abc,
-             self.z_phases_abc,
-             self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+            try:
+                # Impedances
+                (self.z_abcn,
+                 self.z_phases_abcn,
+                 self.z_abc,
+                 self.z_phases_abc,
+                 self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
-            # Admittances
-            (self.y_abcn,
-             self.y_phases_abcn,
-             self.y_abc,
-             self.y_phases_abc,
-             self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+                # Admittances
+                (self.y_abcn,
+                 self.y_phases_abcn,
+                 self.y_abc,
+                 self.y_phases_abc,
+                 self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
-            # compute the tower rating in kA
-            self.Imax = self.compute_rating()
+                # compute the tower rating in kA
+                self.Imax = self.compute_rating()
+
+            except np.linalg.LinAlgError as e:
+                print(e)
 
         else:
             pass
@@ -458,6 +473,30 @@ class OverheadLineType(EditableDevice):
         for i in range(n - 1, -1, -1):
             if self.wires_in_tower.data[i].wire.name == wire.name:
                 return True
+
+    def get_positive_sequence_values(self, circuit_idx: int):
+        """
+        Get the positive sequence values R1 [Ohm], X1[Ohm] and Bsh1 [S].
+        :param circuit_idx: Circuit indexation
+        :return: R1 [Ohm], X1[Ohm] and Bsh1 [S]
+        """
+        a1 = 3 * circuit_idx + 1
+        R1 = self.z_seq[a1, a1].real
+        X1 = self.z_seq[a1, a1].imag
+        Bsh1 = self.y_seq[a1, a1].imag * 1e6
+        return R1, X1, Bsh1
+
+    def get_zero_sequence_values(self, circuit_idx: int):
+        """
+        Get the positive sequence values R1 [Ohm], X1[Ohm] and Bsh1 [S].
+        :param circuit_idx: Circuit indexation
+        :return: R1 [Ohm], X1[Ohm] and Bsh1 [S]
+        """
+        a1 = 3 * circuit_idx + 0
+        R1 = self.z_seq[a1, a1].real
+        X1 = self.z_seq[a1, a1].imag
+        Bsh1 = self.y_seq[a1, a1].imag * 1e6
+        return R1, X1, Bsh1
 
     def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False):
         """

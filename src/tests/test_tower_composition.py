@@ -25,10 +25,13 @@ def test_tower_composition():
 
     tower.compute()
 
-    print(f"R0: {tower.R0}, X0: {tower.X0}")
-    print(f"R1: {tower.R1}, X1: {tower.X1}")
+    R0, X0, Bsh0 = tower.get_zero_sequence_values(0)
+    R1, X1, Bsh1 = tower.get_positive_sequence_values(0)
 
-    assert np.isclose(tower.R0, 1.5892070972018013, atol=1e-4)
-    assert np.isclose(tower.X0, 1.1989736994044684, atol=1e-4)
-    assert np.isclose(tower.R1, 1.485081882395359, atol=1e-4)
-    assert np.isclose(tower.X1, 0.3613207070253497, atol=1e-4)
+    print(f"R0: {R0}, X0: {X0}")
+    print(f"R1: {R1}, X1: {X1}")
+
+    assert np.isclose(R0, 1.5892070972018013, atol=1e-4)
+    assert np.isclose(X0, 1.1989736994044684, atol=1e-4)
+    assert np.isclose(R1, 1.485081882395359, atol=1e-4)
+    assert np.isclose(X1, 0.3613207070253497, atol=1e-4)
