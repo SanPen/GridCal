@@ -176,7 +176,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
             self.ui.matrixTableView.setModel(PandasModel(z_df))
 
         elif idx == 2:
-            cols = ['Sequence ' + str(i) for i in range(3)]
+            ncirc = max(self.tower_driver.tower.wires_in_tower.get_circuits())
+            cols = [f'Seq{i}@circ{c + 1}' for i in range(3) for c in range(ncirc)]
             z_df = pd.DataFrame(data=self.tower_driver.tower.z_seq, columns=cols, index=cols)
             self.ui.matrixTableView.setModel(PandasModel(z_df))
 
@@ -192,7 +193,8 @@ class TowerBuilderGUI(QtWidgets.QDialog):
             self.ui.matrixTableView.setModel(PandasModel(z_df))
 
         elif idx == 5:
-            cols = ['Sequence ' + str(i) for i in range(3)]
+            ncirc = max(self.tower_driver.tower.wires_in_tower.get_circuits())
+            cols = [f'Seq{i}@circ{c + 1}' for i in range(3) for c in range(ncirc)]
             z_df = pd.DataFrame(data=self.tower_driver.tower.y_seq.imag * 1e6, columns=cols, index=cols)
             self.ui.matrixTableView.setModel(PandasModel(z_df))
 

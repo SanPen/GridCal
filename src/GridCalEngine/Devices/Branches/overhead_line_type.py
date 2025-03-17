@@ -116,7 +116,6 @@ class WireInTower:
         """
         self.set_phase(phase)
 
-
     def to_dict(self) -> Dict[str, str | float | int]:
         """
         data to dict
@@ -598,19 +597,34 @@ def z_ij(x_i, x_j, h_i, h_j, d_ij, f, rho):
 
 def abc_2_seq(mat):
     """
-    Convert to sequence components
-    Args:
-        mat:
-
-    Returns:
-
+    Convert ABC to sequence components
+    :param mat: ABC impedances matrix (3x3, 6x6, 9x9, etc...)
+    Returns: Sequence matrix (3x3, 6x6, 9x9, etc...) where the 3x3 blocks are the sequences
     """
-    if mat.shape == (3, 3):
-        a = np.exp(2j * np.pi / 3)
-        a2 = a * a
-        A = np.array([[1, 1, 1], [1, a2, a], [1, a, a2]])
-        Ainv = (1.0 / 3.0) * np.array([[1, 1, 1], [1, a, a2], [1, a2, a]])
-        return Ainv.dot(mat).dot(A)
+    if mat.ndim == 2:
+        if mat.shape[0] == mat.shape[1]:
+            if mat.shape[0] % 3 == 0:
+
+                n_circuits = mat.shape[0] // 3
+                n = mat.shape[0]
+                z_seq = np.zeros((n, n), dtype=mat.dtype)
+
+                a = np.exp(2j * np.pi / 3)
+                a2 = a * a
+                A = np.array([[1, 1, 1], [1, a2, a], [1, a, a2]])
+                Ainv = (1.0 / 3.0) * np.array([[1, 1, 1], [1, a, a2], [1, a2, a]])
+
+                for k in range(n_circuits):
+                    i = (3 * k) + np.array([0, 1, 2])
+                    j = i
+                    mat_abc = mat[np.ix_(i, j)]
+                    z_seq[np.ix_(i, j)] = Ainv.dot(mat_abc).dot(A)
+
+                return z_seq
+            else:
+                return np.zeros_like(mat)
+        else:
+            return np.zeros((3, 3))
     else:
         return np.zeros((3, 3))
 
