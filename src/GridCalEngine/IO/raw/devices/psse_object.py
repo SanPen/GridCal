@@ -173,7 +173,7 @@ class RawObject:
             return data
         elif len(data) < n:
             diff = n - len(data)
-            extra = [0] * diff
+            extra = [0 for _ in range(diff)]
             return data + extra
         elif len(data) > n:
             return [data[i] for i in range(n)]

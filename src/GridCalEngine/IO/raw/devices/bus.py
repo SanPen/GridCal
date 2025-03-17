@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-import numpy as np
+from typing import List, Any
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_object import RawObject
 from GridCalEngine.basic_structures import Logger
@@ -126,7 +126,7 @@ class RawBus(RawObject):
                                unit=Unit.get_pu(),
                                format_rule=".5f")
 
-    def parse(self, data, version, logger: Logger):
+    def parse(self, data: List[List[Any]], version: int, logger: Logger):
         """
 
         :param data:
@@ -155,7 +155,7 @@ class RawBus(RawObject):
         else:
             logger.add_warning('Bus not implemented for version', str(version))
 
-    def get_raw_line(self, version):
+    def get_raw_line(self, version: int):
         """
         Get raw file line(s)
         :param version: supported version
