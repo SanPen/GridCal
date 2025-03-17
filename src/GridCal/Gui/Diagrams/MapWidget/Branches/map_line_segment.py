@@ -226,7 +226,7 @@ class MapLineSegment(QGraphicsLineItem):
         add_menu_entry(menu=menu,
                        text="Calculate total length",
                        function_ptr=self.calculate_total_length,
-                       icon_path=":/Icons/icons/resize.svg")
+                       icon_path=":/Icons/icons/ruler.svg")
 
         menu.addSeparator()
 

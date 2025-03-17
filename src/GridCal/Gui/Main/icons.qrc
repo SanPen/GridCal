@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/ruler.svg</file>
     <file>icons/zone.svg</file>
     <file>icons/area.svg</file>
     <file>icons/groups.svg</file>
