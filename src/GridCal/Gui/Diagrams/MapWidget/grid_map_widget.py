@@ -968,12 +968,12 @@ class GridMapWidget(BaseDiagramWidget):
 
             for vl_template in dlg.get_voltage_levels():
                 # substation_graphics.add_voltage_level()
-                vl = VoltageLevel(name=f"{se_object.name} @{kv}KV VL",
+                vl = VoltageLevel(name=f"{se_object.name} @{vl_template.voltage} kV VL",
                                   Vnom=vl_template.voltage,
                                   substation=se_object)
                 self.circuit.add_voltage_level(vl)
 
-                bus = Bus(name=f"{se_object.name} @{kv}KV bus",
+                bus = Bus(name=f"{se_object.name} @{vl_template.voltage} kV bus",
                           Vnom=vl_template.voltage,
                           substation=se_object,
                           voltage_level=vl)

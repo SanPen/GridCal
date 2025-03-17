@@ -531,11 +531,11 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
         if inpt.is_accepted:
             kv = inpt.value
-            vl = VoltageLevel(name=f'{kv}KV @ {self.api_object.name}',
+            vl = VoltageLevel(name=f'{self.api_object.name} @{kv} kV VL',
                               Vnom=kv,
                               substation=self.api_object)
 
-            bus = Bus(name=f"Bus {self.api_object.name}",
+            bus = Bus(name=f"{self.api_object.name} @{kv} kV bus",
                       Vnom=kv,
                       substation=self.api_object,
                       voltage_level=vl)
