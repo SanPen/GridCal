@@ -867,16 +867,14 @@ class ObjectsTableMain(DiagramsMain):
             if idx > -1:
                 if elm_type == DeviceType.OverheadLineTypeDevice.value:
 
-                    # pick the object
-                    tower = self.circuit.overhead_line_types[idx]
-
                     # launch editor
-                    self.tower_builder_window = TowerBuilderGUI(parent=self,
-                                                                tower=tower,
-                                                                wires_catalogue=self.circuit.wire_types)
+                    self.tower_builder_window = TowerBuilderGUI(
+                        tower=self.circuit.overhead_line_types[idx],
+                        wires_catalogue=self.circuit.wire_types
+                    )
+                    self.tower_builder_window.setModal(True)
                     self.tower_builder_window.resize(int(1.81 * 700.0), 700)
                     self.tower_builder_window.exec()
-                    self.collect_memory()
 
                 else:
 

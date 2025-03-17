@@ -19,14 +19,13 @@ from GridCalEngine.basic_structures import Logger
 
 class TowerBuilderGUI(QtWidgets.QDialog):
 
-    def __init__(self, parent=None, tower: dev.OverheadLineType = None, wires_catalogue: List[Wire] = None):
+    def __init__(self, tower: dev.OverheadLineType = None, wires_catalogue: List[Wire] = None):
         """
-
-        :param parent:
+        Constructor
         :param tower:
         :param wires_catalogue:
         """
-        QtWidgets.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self)
         self.ui = Ui_TowerBuilderDialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Line builder')
@@ -37,6 +36,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         if wires_catalogue is not None:
             for wire in wires_catalogue:
                 self.wires_table.add(wire)
+            self.compute()
 
         # create the tower driver
         self.tower_driver = TowerModel(self, edit_callback=self.compute, tower=tower)
