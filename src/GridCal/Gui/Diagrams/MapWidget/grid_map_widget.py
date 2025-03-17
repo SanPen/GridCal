@@ -1932,92 +1932,92 @@ class GridMapWidget(BaseDiagramWidget):
 
     def create_t_joint_to_substation(self):
         """
-        Create a T-joint connection between a selected line and a selected substation.
-        This creates a new substation at the closest point on the line to the selected substation,
-        splits the original line into two segments, and creates a new line connecting the two substations.
+        Create a T-joint connection between a line and a selected substation using a selected waypoint.
+        This replaces the waypoint with a new substation, splits the original line into two segments,
+        and creates a new line connecting the selected substation to the new substation at the waypoint.
+        
+        The user only needs to select a waypoint and a substation. The line is automatically determined
+        from the waypoint.
         """
         # Get selected items
         selected_items = self.get_selected()
         
-        # Find the line and substation in the selection
-        selected_line = None
+        # Find the substation and waypoint in the selection
         selected_substation = None
+        selected_waypoint = None
         
         for api_obj, graphic_obj in selected_items:
-            if isinstance(api_obj, Line) and isinstance(graphic_obj, MapLineSegment):
-                selected_line = (api_obj, graphic_obj)
-            elif isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
+            if isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
                 selected_substation = (api_obj, graphic_obj)
+            elif isinstance(graphic_obj, LineLocationGraphicItem):
+                selected_waypoint = graphic_obj
         
-        # Check if we have both a line and a substation selected
-        if selected_line is None or selected_substation is None:
+        # Check if we have a substation and a waypoint selected
+        if selected_substation is None or selected_waypoint is None:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Please select exactly one line and one substation.")
+            msg.setText("Please select one substation and one waypoint.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+        
+        # Get the line container from the waypoint
+        original_line_container = selected_waypoint.line_container
+        
+        if original_line_container is None:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Could not determine which line the waypoint belongs to.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+        
+        # Get the line API object
+        line_api = original_line_container.api_object
+        
+        if not isinstance(line_api, Line):
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("The waypoint must belong to a line.")
             msg.setWindowTitle("Selection Error")
             msg.exec()
             return
         
         # Get the API objects
-        line_api, line_graphic = selected_line
         substation_api, substation_graphic = selected_substation
         
-        # Get the original line container to access its properties
-        original_line_container = line_graphic.container
+        # Get the waypoint coordinates
+        waypoint_lat = selected_waypoint.lat
+        waypoint_lon = selected_waypoint.lon
         
-        # Step 1: Collect all waypoints of the original line
-        waypoints = []
+        # Find the index of the selected waypoint in the nodes list
+        waypoint_idx = -1
+        for i, node in enumerate(original_line_container.nodes_list):
+            if node == selected_waypoint:
+                waypoint_idx = i
+                break
         
-        # Add the "from" substation
-        substation_from_graphics = self.graphics_manager.query(elm=line_api.get_substation_from())
-        if substation_from_graphics is not None:
-            waypoints.append((substation_from_graphics.lat, substation_from_graphics.lon))
+        if waypoint_idx == -1:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Selected waypoint not found in the line's waypoints.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
         
-        # Add all intermediate points
-        for node in original_line_container.nodes_list:
-            waypoints.append((node.lat, node.lon))
-        
-        # Add the "to" substation
-        substation_to_graphics = self.graphics_manager.query(elm=line_api.get_substation_to())
-        if substation_to_graphics is not None:
-            waypoints.append((substation_to_graphics.lat, substation_to_graphics.lon))
-        
-        # Step 2: Find the closest segment to the selected substation
-        substation_lat = substation_api.latitude
-        substation_lon = substation_api.longitude
-        
-        min_distance = float('inf')
-        closest_segment_idx = 0
-        closest_point = (0, 0)
-        
-        for i in range(len(waypoints) - 1):
-            lat1, lon1 = waypoints[i]
-            lat2, lon2 = waypoints[i + 1]
-            
-            # Find the closest point on this segment to the substation
-            point, distance = self._closest_point_on_segment(
-                lat1, lon1, lat2, lon2, substation_lat, substation_lon
-            )
-            
-            if distance < min_distance:
-                min_distance = distance
-                closest_segment_idx = i
-                closest_point = point
-        
-        # Step 3: Create a new substation at the closest point
-        closest_lat, closest_lon = closest_point
+        # Step 1: Create a new substation at the waypoint location
         new_substation_name = f"{line_api.name}_Junction"
         
         # Create the new substation
         new_substation = Substation(name=new_substation_name,
                                    code=f"{line_api.code}_Junction" if hasattr(line_api, 'code') and line_api.code else "",
-                                   latitude=closest_lat,
-                                   longitude=closest_lon)
+                                   latitude=waypoint_lat,
+                                   longitude=waypoint_lon)
         
         self.circuit.add_substation(obj=new_substation)
-        new_substation_graphic = self.add_api_substation(api_object=new_substation, lat=closest_lat, lon=closest_lon)
+        new_substation_graphic = self.add_api_substation(api_object=new_substation, lat=waypoint_lat, lon=waypoint_lon)
         
-        # Step 4: Find a suitable bus in the selected substation and create a matching one in the new substation
+        # Step 2: Find a suitable bus in the selected substation and create a matching one in the new substation
         vnom = line_api.get_max_bus_nominal_voltage()
         suitable_bus_in_selected = None
         
@@ -2088,28 +2088,35 @@ class GridMapWidget(BaseDiagramWidget):
         # Add the new bus to the circuit
         self.circuit.add_bus(new_bus)
         
-        # Step 5: Calculate the lengths of the segments
-        # Calculate length of first segment (from original start to junction point)
+        # Step 3: Calculate the lengths of the segments
+        # Collect all waypoints of the original line
+        waypoints = []
+        
+        # Add the "from" substation
+        substation_from_graphics = self.graphics_manager.query(elm=line_api.get_substation_from())
+        if substation_from_graphics is not None:
+            waypoints.append((substation_from_graphics.lat, substation_from_graphics.lon))
+        
+        # Add all intermediate points
+        for node in original_line_container.nodes_list:
+            waypoints.append((node.lat, node.lon))
+        
+        # Add the "to" substation
+        substation_to_graphics = self.graphics_manager.query(elm=line_api.get_substation_to())
+        if substation_to_graphics is not None:
+            waypoints.append((substation_to_graphics.lat, substation_to_graphics.lon))
+        
+        # Calculate length of first segment (from original start to waypoint)
         length1 = 0.0
-        for i in range(closest_segment_idx):
-            lat1, lon1 = waypoints[i]
-            lat2, lon2 = waypoints[i + 1]
-            length1 += haversine_distance(lat1, lon1, lat2, lon2)
+        for i in range(waypoint_idx + 1):
+            if i < len(waypoints) - 1:
+                lat1, lon1 = waypoints[i]
+                lat2, lon2 = waypoints[i + 1]
+                length1 += haversine_distance(lat1, lon1, lat2, lon2)
         
-        # Add distance from last waypoint to junction point
-        lat1, lon1 = waypoints[closest_segment_idx]
-        lat2, lon2 = closest_point
-        length1 += haversine_distance(lat1, lon1, lat2, lon2)
-        
-        # Calculate length of second segment (from junction point to original end)
+        # Calculate length of second segment (from waypoint to original end)
         length2 = 0.0
-        # First, add distance from junction point to next waypoint
-        lat1, lon1 = closest_point
-        lat2, lon2 = waypoints[closest_segment_idx + 1]
-        length2 += haversine_distance(lat1, lon1, lat2, lon2)
-        
-        # Add remaining segments
-        for i in range(closest_segment_idx + 1, len(waypoints) - 1):
+        for i in range(waypoint_idx + 1, len(waypoints) - 1):
             lat1, lon1 = waypoints[i]
             lat2, lon2 = waypoints[i + 1]
             length2 += haversine_distance(lat1, lon1, lat2, lon2)
@@ -2119,7 +2126,7 @@ class GridMapWidget(BaseDiagramWidget):
         ratio1 = length1 / total_length
         ratio2 = length2 / total_length
         
-        # Step 6: Create the two new line segments that replace the original line
+        # Step 4: Create the two new line segments that replace the original line
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
         
@@ -2158,9 +2165,9 @@ class GridMapWidget(BaseDiagramWidget):
         if hasattr(line_api, 'active'):
             line1.active = line_api.active
             
-        # Preserve waypoints for line 1 (from start to junction point)
-        # Add all waypoints from the original line up to the closest segment
-        for i in range(closest_segment_idx + 1):
+        # Preserve waypoints for line 1 (from start to waypoint)
+        # Add all waypoints from the original line up to the waypoint
+        for i in range(waypoint_idx):
             if i < len(original_line_container.nodes_list):
                 node = original_line_container.nodes_list[i]
                 line1.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
@@ -2203,23 +2210,23 @@ class GridMapWidget(BaseDiagramWidget):
         if hasattr(line_api, 'active'):
             line2.active = line_api.active
         
-        # Preserve waypoints for line 2 (from junction point to end)
-        # Add all remaining waypoints from the original line starting from the next segment
-        for i in range(closest_segment_idx + 1, len(original_line_container.nodes_list)):
+        # Preserve waypoints for line 2 (from waypoint to end)
+        # Add all remaining waypoints from the original line after the waypoint
+        for i in range(waypoint_idx + 1, len(original_line_container.nodes_list)):
             node = original_line_container.nodes_list[i]
             line2.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
         
-        # Step 7: Create a new line connecting the selected substation to the new junction substation
+        # Step 5: Create a new line connecting the selected substation to the new junction substation
         connection_line_name = f"{substation_api.name}_to_{new_substation.name}"
         
         # Calculate the distance between the two substations
-        distance = haversine_distance(substation_lat, substation_lon, closest_lat, closest_lon)
+        distance = haversine_distance(substation_api.latitude, substation_api.longitude, waypoint_lat, waypoint_lon)
         
         # Create the new connection line
         connection_line = Line(name=connection_line_name,
                               bus_from=suitable_bus_in_selected,
                               bus_to=new_bus,
-                              r=line_api.R * (distance / line_api.length),  # Scale impedance based on distance
+                              r=line_api.R * (distance / line_api.length),
                               x=line_api.X * (distance / line_api.length),
                               b=line_api.B * (distance / line_api.length),
                               r0=line_api.R0 * (distance / line_api.length),
@@ -2270,13 +2277,13 @@ class GridMapWidget(BaseDiagramWidget):
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         
         # Remove the original line
-        self.remove_branch_graphic(line=line_graphic, delete_from_db=True)
+        self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
         
         # Notify the user
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)
         msg.setText(f"T-joint connection created between {substation_api.name} and {line_api.name}.")
-        msg.setInformativeText(f"New substation '{new_substation.name}' created at the closest point on the line.\nOriginal line split into two segments:\n- {line1.name}: {length1:.2f} km\n- {line2.name}: {length2:.2f} km\nNew connection line: {distance:.2f} km")
+        msg.setInformativeText(f"Waypoint replaced with new substation '{new_substation.name}'.\nOriginal line split into two segments:\n- {line1.name}: {length1:.2f} km\n- {line2.name}: {length2:.2f} km\nNew connection line: {distance:.2f} km")
         msg.setWindowTitle("Operation Successful")
         msg.exec()
 
