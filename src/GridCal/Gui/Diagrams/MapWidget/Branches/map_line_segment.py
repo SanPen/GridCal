@@ -3,6 +3,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+import webbrowser
 from typing import TYPE_CHECKING
 from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtGui import QPen, QColor, QCursor
@@ -22,6 +24,16 @@ if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+
+
+def open_street_view(lat: float, lon: float):
+    """
+    Call open street maps
+    :return:
+    """
+    # https://maps.google.com/?q=<lat>,<lng>
+    url = f"https://www.google.com/maps/?q={lat},{lon}"
+    webbrowser.open(url)
 
 
 class MapLineSegment(QGraphicsLineItem):
@@ -207,6 +219,13 @@ class MapLineSegment(QGraphicsLineItem):
         :param event:
         :return:
         """
+        scene_pos = event.scenePos()  # Position in scene coordinates
+        # screen_pos = event.screenPos()  # Position in global screen coordinates
+        # local_pos = event.pos()  # Position in item coordinates (if in an item)
+
+        x, y = scene_pos.x(), scene_pos.y()
+        lat, lon = self.editor.to_lat_lon(x=x, y=y)
+
         menu = QMenu()
 
         menu.addSection("Line")
@@ -239,19 +258,19 @@ class MapLineSegment(QGraphicsLineItem):
         # Check if a substation is selected
         selected_items = self.editor.get_selected()
         has_substation = False
-        
+
         for api_obj, _ in selected_items:
             if hasattr(api_obj, 'device_type') and api_obj.device_type == DeviceType.SubstationDevice:
                 has_substation = True
                 break
-        
+
         # Add the split line to substation option if a substation is selected
         if has_substation:
             add_menu_entry(menu=menu,
                            text="Split line to selected substation (In-Out)",
                            function_ptr=self.editor.split_line_to_substation,
                            icon_path=":/Icons/icons/divide.svg")
-            
+
             add_menu_entry(menu=menu,
                            text="Connect line to selected substation (T-joint)",
                            function_ptr=self.editor.create_t_joint_to_substation,
@@ -261,6 +280,11 @@ class MapLineSegment(QGraphicsLineItem):
                        text="Plot profiles",
                        function_ptr=self.plot_profiles,
                        icon_path=":/Icons/icons/plot.svg")
+
+        add_menu_entry(menu=menu,
+                       text="Open in google earth",
+                       function_ptr=lambda: open_street_view(lat, lon),
+                       icon_path=":/Icons/icons/map.svg")
 
         add_menu_entry(menu=menu,
                        text="Assign rate to profile",
@@ -473,7 +497,7 @@ class MapLineSegment(QGraphicsLineItem):
         """
         # Use the container's method to calculate the total length
         total_length = self.container.calculate_total_length()
-        
+
         # Show a message with the calculated length
         from PySide6.QtWidgets import QMessageBox
         msg = QMessageBox()

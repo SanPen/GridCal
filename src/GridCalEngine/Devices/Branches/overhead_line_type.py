@@ -216,10 +216,17 @@ class ListOfWires:
 
 class OverheadLineType(EditableDevice):
 
-    def __init__(self, name='Tower', idtag: str | None = None):
+    def __init__(self, name='Tower', idtag: str | None = None,
+                 Vnom: float=1.0,
+                 earth_resistivity: float=100,
+                 frequency: float=50):
         """
         Overhead line editor
         :param name: name
+        :param idtag:
+        :param Vnom: Nominal voltage (kV)
+        :param earth_resistivity: Earth resistivity (ohm/m3)
+        :param frequency: system frequency (Hz)
         """
         super().__init__(name=name,
                          idtag=idtag,
@@ -230,11 +237,11 @@ class OverheadLineType(EditableDevice):
         self.wires_in_tower: ListOfWires = ListOfWires()
 
         # nominal voltage
-        self.Vnom = 1.0  # kV
+        self.Vnom =Vnom  # kV
 
-        self.earth_resistivity = 100  # ohm/m3
+        self.earth_resistivity = earth_resistivity  # ohm/m3
 
-        self.frequency = 50  # Hz
+        self.frequency = frequency  # Hz
 
         # current rating of the tower in kA
         self.Imax = 0.0
