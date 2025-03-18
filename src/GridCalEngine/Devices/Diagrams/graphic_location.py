@@ -12,8 +12,8 @@ class GraphicLocation:
     """
 
     def __init__(self,
-                 x: int = 0,
-                 y: int = 0,
+                 x: float = 0,
+                 y: float = 0,
                  h: int = 80,
                  w: int = 80,
                  r: float = 0,
@@ -27,7 +27,7 @@ class GraphicLocation:
         :param h: height (px)
         :param w: width (px)
         :param r: rotation (deg)
-        :param poly_line: List of poits to represent a polyline, if this object is to use one
+        :param poly_line: List of points to represent a polyline, if this object is to use one
         :param draw_labels: Draw labels?
         :param api_object: object to be linked to this representation
         """

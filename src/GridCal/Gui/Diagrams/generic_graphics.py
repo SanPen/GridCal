@@ -43,7 +43,6 @@ def set_dark_mode() -> None:
     """
     Set the dark mode
     """
-    IS_DARK = True
     ACTIVE['color'] = WHITE
     ACTIVE['text'] = WHITE
 
@@ -52,7 +51,6 @@ def set_light_mode() -> None:
     """
     Set the light mode
     """
-    IS_DARK = False
     ACTIVE['color'] = BLACK
     ACTIVE['text'] = BLACK
 
@@ -81,7 +79,7 @@ class Polygon(QGraphicsPolygonItem):
         Constructor
         :param parent:
         """
-        QGraphicsPolygonItem.__init__(self, parent)
+        super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
@@ -106,7 +104,7 @@ class Square(QGraphicsRectItem):
         Constructor
         :param parent:
         """
-        QGraphicsRectItem.__init__(self, parent)
+        super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
@@ -131,7 +129,7 @@ class Circle(QGraphicsEllipseItem):
         Constructor
         :param parent:
         """
-        QGraphicsEllipseItem.__init__(self, parent)
+        super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
@@ -156,7 +154,7 @@ class Line(QGraphicsLineItem):
         Constructor
         :param parent:
         """
-        QGraphicsLineItem.__init__(self, parent)
+        super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:

@@ -517,7 +517,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         self.editor_graphics_view.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
-    def create_bus_graphics(self, bus: Bus, x: int, y: int, h: int, w: int,
+    def create_bus_graphics(self, bus: Bus, x: float, y: float, h: int, w: int,
                             draw_labels: bool = True, r: float = 0.0) -> BusGraphicItem:
         """
         create the Bus graphics
@@ -527,6 +527,7 @@ class SchematicWidget(BaseDiagramWidget):
         :param h: height (px)
         :param w: width (px)
         :param draw_labels: Draw labels?
+        :param r: rotation angle (deg)
         :return: BusGraphicItem
         """
 
