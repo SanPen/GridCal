@@ -105,7 +105,7 @@ class LineEditor(QDialog):
                             b_us = self.current_template.B
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            R1, X1, Bsh1 = self.current_template.get_sequence_values(circuit_idx=self.line.circuit,
+                            R1, X1, Bsh1 = self.current_template.get_sequence_values(circuit_idx=self.line.circuit_idx,
                                                                                      seq=1)
                             I_KA = self.current_template.Imax
                             r_ohm = R1

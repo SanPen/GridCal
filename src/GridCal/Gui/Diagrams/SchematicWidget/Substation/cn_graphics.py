@@ -94,22 +94,22 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         # connection terminals the block
         self._terminal = RoundTerminalItem('s', parent=self, editor=self.editor, h=20, w=20)  # , h=self.h))
-        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
+        self._terminal.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
         self._terminal.setPos(QPoint(15, 15))
         self._terminal_mid_point = QPoint(20, 20)  # (15, 15) + (20, 20) / 2
 
-        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        self.setBrush(Qt.transparent)
+        self.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style))
+        self.setBrush(Qt.GlobalColor.transparent)
         # self.setBrush(QBrush(QColor(255, 0, 0)))
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         self.set_position(x, y)
         self.setRect(0.0, 0.0, self.w, self.h)
 
     def get_nexus_point(self) -> QPointF:
         """
-        Get the connection point for the chldren nexus line
+        Get the connection point for the children nexus line
         :return: QPointF
         """
         return QPointF(self.x() + self._terminal_mid_point.x(),
@@ -143,17 +143,17 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                                            draw_labels=self.draw_labels,
                                            graphic_object=self)
 
-    def set_position(self, x: int, y: int) -> None:
+    def set_position(self, x: float, y: float) -> None:
         """
         Set the bus x, y position
         :param x: x in pixels
         :param y: y in pixels
         """
         if np.isnan(x):
-            x = 0
+            x = 0.0
         if np.isnan(y):
-            y = 0
-        self.setPos(QPoint(int(x), int(y)))
+            y = 0.0
+        self.setPos(QPointF(x, y))
 
     def merge(self, other_bus_graphic: "CnGraphicItem") -> None:
         """

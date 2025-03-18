@@ -20,7 +20,7 @@ from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
                            QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
                            QContextMenuEvent)
-from PySide6.QtWidgets import (QGraphicsView, QMessageBox, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, BRANCH_TYPES
@@ -3311,7 +3311,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         ACTIVE['color'] = QColor(255, 255, 255, 255)  # white
         ACTIVE['text'] = QColor(255, 255, 255, 255)  # white
-        ACTIVE['backgound'] = QColor(0, 0, 0, 255)  # black
+        ACTIVE['background'] = QColor(0, 0, 0, 255)  # black
         self.recolour_mode()
 
     def set_light_mode(self) -> None:
@@ -3321,7 +3321,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         ACTIVE['color'] = QColor(0, 0, 0, 255)  # black
         ACTIVE['text'] = QColor(0, 0, 0, 255)  # black
-        ACTIVE['backgound'] = QColor(255, 255, 255, 255)  # white
+        ACTIVE['background'] = QColor(255, 255, 255, 255)  # white
         self.recolour_mode()
 
     def colour_results(self,

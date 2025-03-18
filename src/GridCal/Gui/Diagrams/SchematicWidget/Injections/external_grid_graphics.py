@@ -11,14 +11,14 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphic
 from GridCal.Gui.messages import yes_no_question
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.SchematicWidget import DiagramEditorWidget
+    from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
 class ExternalGridGraphicItem(InjectionTemplateGraphicItem):
     """
     ExternalGrid graphic item
     """
-    def __init__(self, parent, api_obj: ExternalGrid, editor: DiagramEditorWidget):
+    def __init__(self, parent, api_obj: ExternalGrid, editor: SchematicWidget):
         """
 
         :param parent:

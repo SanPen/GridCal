@@ -638,7 +638,6 @@ class ObjectsTableMain(DiagramsMain):
         selected_buses, selected_objects = self.get_selected_table_buses()
 
         if len(selected_buses):
-
             diagram = make_diagram_from_buses(circuit=self.circuit,
                                               buses=selected_buses,
                                               name=selected_objects[0].name + " diagram")

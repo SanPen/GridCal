@@ -74,7 +74,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         if self.api_object.active:
             self.symbol.setBrush(self.color)
         else:
-            self.symbol.setBrush(QBrush(Qt.white))
+            self.symbol.setBrush(QBrush(Qt.GlobalColor.white))
 
     def make_reactance_symbol(self):
         """

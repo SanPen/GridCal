@@ -6,7 +6,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect, QPointF
+from PySide6.QtCore import Qt, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
@@ -100,7 +100,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         # connection terminals the block
         self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style,
+        self._terminal.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style,
                                    Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
         # Create corner for resize:
@@ -112,8 +112,8 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_tile_color(self.color)
 
-        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        self.setBrush(Qt.transparent)
+        self.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style))
+        self.setBrush(Qt.GlobalColor.transparent)
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
@@ -536,7 +536,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Disable short circuit
         """
         # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
-        self.tile.setPen(QPen(Qt.transparent, self.pen_width))
+        self.tile.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width))
         self.sc_enabled = [False, False, False, False]
 
     def enable_disable_sc_3p(self):

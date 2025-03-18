@@ -30,7 +30,7 @@ YELLOW = QColor(255, 247, 0, 255)
 ACTIVE = {'style': Qt.PenStyle.SolidLine,
           'color': WHITE if IS_DARK else BLACK,
           'text': WHITE if IS_DARK else BLACK,
-          'backgound': BLACK if IS_DARK else WHITE,
+          'background': BLACK if IS_DARK else WHITE,
           'fluid': QColor(0, 170, 212, 255)}
 
 DEACTIVATED = {'style': Qt.PenStyle.DashLine, 'color': GRAY}

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog, QGraphicsScene
+from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog
 from GridCal.Gui.gui_functions import get_list_model, add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCalEngine.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
@@ -87,7 +87,7 @@ class DcLineEditor(QDialog):
 
                         elif isinstance(self.current_template, OverheadLineType):
                             I = self.current_template.Imax
-                            R = self.current_template.R1
+                            R, X1, B1 = self.current_template.get_sequence_values(0, 1)
 
                     except:
                         pass
@@ -198,8 +198,10 @@ class DcLineEditor(QDialog):
             self.selected_template = template
 
         elif isinstance(template, OverheadLineType):
+            R1, X1, B1 = template.get_sequence_values(0, 1)
+
             self.i_spinner.setValue(template.Imax)
-            self.r_spinner.setValue(template.R1)
+            self.r_spinner.setValue(R1)
 
             self.selected_template = template
 

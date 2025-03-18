@@ -7,7 +7,6 @@ import uuid as uuidlib
 from typing import List, Dict, TypeVar, Any
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_property import PsseProperty
-from GridCalEngine.basic_structures import Logger
 
 
 def uuid_from_seed(seed: str):

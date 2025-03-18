@@ -280,9 +280,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         if self.editor.circuit.has_time_series:
 
-            time_array = self.editor.circuit.time_profile
-
-            dlg = SolarPvWizard(time_array=time_array,
+            dlg = SolarPvWizard(time_array=self.editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
                                 peak_power=self.api_object.Pmax,
                                 latitude=self.api_object.bus.latitude,
                                 longitude=self.api_object.bus.longitude,
@@ -307,9 +305,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         if self.editor.circuit.has_time_series:
 
-            time_array = self.editor.circuit.time_profile
-
-            dlg = WindFarmWizard(time_array=time_array,
+            dlg = WindFarmWizard(time_array=self.editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
                                  peak_power=self.api_object.Pmax,
                                  latitude=self.api_object.bus.latitude,
                                  longitude=self.api_object.bus.longitude,
