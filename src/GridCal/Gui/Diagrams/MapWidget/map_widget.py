@@ -486,7 +486,7 @@ class MapWidget(QWidget):
         # Internal vars
         # -------------------------------------------------------------------------
         # remember the tile source object
-        self._tile_src: Tiles = tile_src
+        self._tile_src: Tiles = tile_src.copy()
         self._tile_src.setCallback(self.on_tile_available)
         self.view.set_notice(val=self._tile_src.attribution_string)
 
@@ -580,7 +580,7 @@ class MapWidget(QWidget):
         level, longitude, latitude = self.get_level_and_position()
 
         if tile_src.tile_set_name != self._tile_src.tile_set_name:  # avoid changing tile sets to themselves
-            self._tile_src: Tiles = tile_src
+            self._tile_src: Tiles = tile_src.copy()
             self._tile_src.setCallback(self.on_tile_available)
             self.view.set_notice(val=self._tile_src.attribution_string)
 
