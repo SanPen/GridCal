@@ -84,6 +84,12 @@ class MapLineSegment(QGraphicsLineItem):
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
+    def get_width(self) -> float:
+        return self.width
+
+    def get_arrow_size(self) -> float:
+        return self._arrow_size
+
     @property
     def api_object(self) -> BRANCH_TYPES:
         """

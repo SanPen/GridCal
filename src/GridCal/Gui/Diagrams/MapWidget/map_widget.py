@@ -55,7 +55,7 @@ from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout,
                                QGraphicsSceneMouseEvent, QGraphicsItem, QLabel, QGraphicsProxyWidget)
-# from PySide6.QtOpenGLWidgets import QOpenGLWidget
+
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 if TYPE_CHECKING:
