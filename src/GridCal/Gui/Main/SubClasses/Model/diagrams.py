@@ -1671,6 +1671,18 @@ class DiagramsMain(CompiledArraysMain):
                     elif isinstance(sel_obj, dev.Switch):
                         root_bus = sel_obj.bus_from
 
+                    elif isinstance(sel_obj, dev.VoltageLevel):
+                        root_bus = None
+                        buses = self.circuit.get_voltage_level_buses(vl=sel_obj)
+                        if len(buses) > 0:
+                            root_bus = buses[0]
+
+                    elif isinstance(sel_obj, dev.Substation):
+                        root_bus = None
+                        buses = self.circuit.get_substation_buses(substation=sel_obj)
+                        if len(buses) > 0:
+                            root_bus = buses[0]
+
                     else:
                         root_bus = None
 

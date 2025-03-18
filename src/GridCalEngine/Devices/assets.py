@@ -1488,6 +1488,20 @@ class Assets:
         except ValueError:
             pass
 
+    def get_voltage_level_buses(self, vl: dev.VoltageLevel) -> List[dev.Bus]:
+        """
+        Get the list of buses of this substation
+        :param vl:
+        :return:
+        """
+        lst: List[dev.Bus] = list()
+
+        for bus in self.buses:
+            if bus.voltage_level == vl:
+                lst.append(bus)
+
+        return lst
+
     # ------------------------------------------------------------------------------------------------------------------
     # Load
     # ------------------------------------------------------------------------------------------------------------------

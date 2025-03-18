@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import numpy as np
-from typing import Union, List, Set
+from typing import Union, List, Set, Tuple
 from PySide6 import QtGui, QtCore, QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -377,7 +377,7 @@ class ObjectsTableMain(DiagramsMain):
         else:
             return list()
 
-    def get_selected_table_buses(self) -> Set[dev.Bus]:
+    def get_selected_table_buses(self) -> Tuple[Set[dev.Bus], List[ALL_DEV_TYPES]]:
         """
         Get the list of selected buses, regardless of the object table type
         If the object has buses, this one takes them
@@ -385,6 +385,7 @@ class ObjectsTableMain(DiagramsMain):
         """
         model = self.ui.dataStructureTableView.model()
         buses = set()
+        selected_objects: List[ALL_DEV_TYPES] = list()
 
         if model is not None:
 
@@ -400,6 +401,7 @@ class ObjectsTableMain(DiagramsMain):
                     for idx in unique:
 
                         sel_obj: ALL_DEV_TYPES = model.objects[idx]
+                        selected_objects.append(sel_obj)
 
                         if isinstance(sel_obj, dev.Bus):
                             root_bus = sel_obj
@@ -437,25 +439,32 @@ class ObjectsTableMain(DiagramsMain):
                         elif isinstance(sel_obj, dev.Switch):
                             root_bus = sel_obj.bus_from
 
+                        elif isinstance(sel_obj, dev.VoltageLevel):
+                            root_bus = None
+                            sel = self.circuit.get_voltage_level_buses(vl=sel_obj)
+                            for bus in sel:
+                                buses.add(bus)
+
+                        elif isinstance(sel_obj, dev.Substation):
+                            root_bus = None
+                            sel = self.circuit.get_substation_buses(substation=sel_obj)
+                            for bus in sel:
+                                buses.add(bus)
+
                         else:
                             root_bus = None
 
                         if root_bus is not None:
                             buses.add(root_bus)
 
-        return buses
+        return buses, selected_objects
 
     def get_selected_substations(self) -> Set[dev.Substation]:
         """
         Get the substations matching the table selection
         :return:  set of substations
         """
-        # buses = self.get_selected_table_buses()
         substations = set()
-
-        # for bus in buses:
-        #     if bus.substation is not None:
-        #         substations.add(bus.substation)
 
         model = self.ui.dataStructureTableView.model()
 
@@ -622,10 +631,13 @@ class ObjectsTableMain(DiagramsMain):
         """
         Create a New diagram from a buses selection
         """
-        selected_objects = self.get_selected_table_buses()
+        selected_buses, selected_objects = self.get_selected_table_buses()
 
-        if len(selected_objects):
-            diagram = make_diagram_from_buses(circuit=self.circuit, buses=selected_objects)
+        if len(selected_buses):
+
+            diagram = make_diagram_from_buses(circuit=self.circuit,
+                                              buses=selected_buses,
+                                              name=selected_objects[0].name + " diagram")
 
             diagram_widget = SchematicWidget(gui=self,
                                              circuit=self.circuit,
@@ -638,7 +650,7 @@ class ObjectsTableMain(DiagramsMain):
                                                 diagram=diagram)
             self.set_diagrams_list_view()
 
-    def add_new_map_from_selection(self):
+    def add_new_map_from_database_selection(self):
         """
         Create a New map from a buses selection
         """
@@ -690,9 +702,9 @@ class ObjectsTableMain(DiagramsMain):
         Crop model to buses selection
         :return:
         """
-        selected_objects = self.get_selected_table_buses()
+        selected_buses, selected_objects = self.get_selected_table_buses()
 
-        if len(selected_objects):
+        if len(selected_buses):
 
             ok = yes_no_question(text="This will delete all buses and their connected elements that were not selected."
                                       "This cannot be undone and it is dangerous if you don't know"
@@ -702,7 +714,7 @@ class ObjectsTableMain(DiagramsMain):
             if ok:
                 to_be_deleted = list()
                 for bus in self.circuit.buses:
-                    if bus not in selected_objects:
+                    if bus not in selected_buses:
                         to_be_deleted.append(bus)
 
                 for bus in to_be_deleted:
@@ -1365,7 +1377,7 @@ class ObjectsTableMain(DiagramsMain):
         gf.add_menu_entry(menu=context_menu,
                           text="New map from selection",
                           icon_path=":/Icons/icons/map.svg",
-                          function_ptr=self.add_new_map_from_selection)
+                          function_ptr=self.add_new_map_from_database_selection)
 
         # Convert global position to local position of the list widget
         mapped_pos = self.ui.dataStructureTableView.viewport().mapToGlobal(pos)

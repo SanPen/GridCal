@@ -5,6 +5,7 @@
 from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, List, Dict
+import webbrowser
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
@@ -474,6 +475,11 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.new_vecinity_diagram_from_here)
 
+        add_menu_entry(menu=menu,
+                       text="Open in street view",
+                       icon_path=":/Icons/icons/map.svg",
+                       function_ptr=self.open_street_view)
+
         menu.addSection("Add")
 
         # Actions under the "Add" section
@@ -899,6 +905,18 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
         self.setToolTip(msg)
+
+    def open_street_view(self):
+        """
+        Call open street maps
+        :return:
+        """
+        # https://maps.google.com/?q=<lat>,<lng>
+        if self.api_object is not None:
+            url = f"https://www.google.com/maps/?q={self.api_object.latitude},{self.api_object.longitude}"
+            webbrowser.open(url)
+        else:
+            warning_msg(f"No API object available :(")
 
     def __str__(self):
 

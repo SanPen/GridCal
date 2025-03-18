@@ -389,10 +389,10 @@ class SchematicWidget(BaseDiagramWidget):
         self.displacement = QPoint()
         self.startPos: Union[QPoint, None] = None
 
-        # for vecinity diagram porpuses
+        # for vicinity diagram purposes
         self.root_bus: Union[Bus, None] = None
 
-        # for graphics dev porpuses
+        # for graphics dev purposes
         # self.pos_label = QGraphicsTextItem()
         # self.add_to_scene(self.pos_label)
 
@@ -400,7 +400,7 @@ class SchematicWidget(BaseDiagramWidget):
             self.draw()
 
         # -------------------------------------------------------------------------------------------------
-        # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
+        # Note: Do not declare any variable beyond here, as it may not be considered if draw is called :/
 
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
@@ -4693,12 +4693,14 @@ def make_vicinity_diagram(circuit: MultiCircuit,
 
 def make_diagram_from_buses(circuit: MultiCircuit,
                             buses: List[Bus] | Set[Bus],
+                            name='Diagram from selection',
                             prog_func: Union[Callable, None] = None,
                             text_func: Union[Callable, None] = None):
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
     :param buses: List of Bus
+    :param name: name of the diagram
     :param prog_func:
     :param text_func:
     :return:
@@ -4730,6 +4732,6 @@ def make_diagram_from_buses(circuit: MultiCircuit,
                                          explode_factor=1.0,
                                          prog_func=prog_func,
                                          text_func=text_func,
-                                         name='Diagram from selection')
+                                         name=name)
 
     return diagram
