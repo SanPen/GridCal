@@ -459,12 +459,13 @@ class ObjectsTableMain(DiagramsMain):
 
         return buses, selected_objects
 
-    def get_selected_substations(self) -> Set[dev.Substation]:
+    def get_selected_substations(self) -> Tuple[Set[dev.Substation], List[ALL_DEV_TYPES]]:
         """
         Get the substations matching the table selection
-        :return:  set of substations
+        :return:  set of substations, list of selected objects originating the substation set
         """
         substations = set()
+        selected_objects: List[ALL_DEV_TYPES] = list()
 
         model = self.ui.dataStructureTableView.model()
 
@@ -503,12 +504,15 @@ class ObjectsTableMain(DiagramsMain):
                     for idx in unique:
 
                         sel_obj: ALL_DEV_TYPES = model.objects[idx]
+                        selected_objects.append(sel_obj)
+
                         se_list = elm2se.get(sel_obj, None)
+
                         if se_list is not None:
                             for se in se_list:
                                 substations.add(se)
 
-        return substations
+        return substations, selected_objects
 
     def delete_selected_objects(self):
         """
@@ -654,9 +658,9 @@ class ObjectsTableMain(DiagramsMain):
         """
         Create a New map from a buses selection
         """
-        selected_objects = self.get_selected_substations()
+        selected_substations, selected_objects = self.get_selected_substations()
 
-        if len(selected_objects):
+        if len(selected_substations):
             cmap_text = self.ui.palette_comboBox.currentText()
             cmap = self.cmap_dict[cmap_text]
 
@@ -665,7 +669,7 @@ class ObjectsTableMain(DiagramsMain):
 
             diagram = make_diagram_from_substations(
                 circuit=self.circuit,
-                substations=selected_objects,
+                substations=selected_substations,
                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
@@ -674,7 +678,8 @@ class ObjectsTableMain(DiagramsMain):
                 arrow_size=self.ui.arrow_size_size_spinBox.value(),
                 palette=cmap,
                 default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                expand_outside=expand_outside
+                expand_outside=expand_outside,
+                name=f"{selected_objects[0].name} diagram"
             )
 
             default_tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]

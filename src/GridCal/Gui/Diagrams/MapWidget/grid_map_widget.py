@@ -2557,7 +2557,7 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
     """
 
     # get all Branches
-    all_branches = circuit.get_branches() + circuit.get_switches()
+    all_branches = circuit.lines + circuit.dc_lines + circuit.hvdc_lines
 
     # create a pool of buses that belong to the substations
     # store the bus objects and their level from the root
@@ -2628,7 +2628,8 @@ def make_diagram_from_substations(circuit: MultiCircuit,
                                   arrow_size=20,
                                   palette: Colormaps = Colormaps.GridCal,
                                   default_bus_voltage: float = 10,
-                                  expand_outside: bool = True):
+                                  expand_outside: bool = True,
+                                  name="Map diagram"):
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
@@ -2644,6 +2645,7 @@ def make_diagram_from_substations(circuit: MultiCircuit,
     :param palette: Colormaps
     :param default_bus_voltage: default bus voltage
     :param expand_outside: whether to expand outside of the given references using the branches
+    :param name: Name of the diagram
     :return:
     """
 
@@ -2664,7 +2666,7 @@ def make_diagram_from_substations(circuit: MultiCircuit,
         fluid_paths=list(),
         prog_func=prog_func,
         text_func=text_func,
-        name='Map diagram',
+        name=name,
         use_flow_based_width=use_flow_based_width,
         min_branch_width=min_branch_width,
         max_branch_width=max_branch_width,
