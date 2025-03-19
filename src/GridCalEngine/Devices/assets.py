@@ -5914,7 +5914,7 @@ class Assets:
         """
         Get a dictionary of all elements
         :param: logger: Logger
-        :return: Dict[idtag] -> object
+        :return: Dict[idtag] -> object, ok
         """
         data = dict()
         ok = True

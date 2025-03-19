@@ -1270,7 +1270,8 @@ class MultiCircuit(Assets):
         # assign the new base
         self.Sbase = Sbase_new
 
-    def get_injection_devices_grouped_by_substation(self) -> Dict[dev.Substation, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+    def get_injection_devices_grouped_by_substation(self) -> Dict[
+        dev.Substation, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
         :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
@@ -1827,7 +1828,7 @@ class MultiCircuit(Assets):
         """
         logger = Logger()
 
-        if self.Sbase!= grid2.Sbase:
+        if self.Sbase != grid2.Sbase:
             logger.add_error(msg="Different Sbase",
                              device_class="time",
                              value=grid2.Sbase,
@@ -2009,69 +2010,76 @@ class MultiCircuit(Assets):
 
             else:
                 # check differences
-                for prop_name, prop in elm_from_here.registered_properties.items():
+                action, changed_props = elm_from_base.compare(
+                    other=elm_from_base,
+                    logger=logger,
+                    detailed_profile_comparison=detailed_profile_comparison,
+                    nt=nt
+                )
 
-                    # compare the snapshot values
-                    v1 = elm_from_here.get_property_value(prop=prop, t_idx=None)
-                    v2 = elm_from_base.get_property_value(prop=prop, t_idx=None)
-
-                    if v1 != v2:
-                        logger.add_info(msg="Different snapshot values",
-                                        device_class=elm_from_here.device_type.value,
-                                        device_property=prop.name,
-                                        value=v2,
-                                        expected_value=v1)
-                        action = ActionType.Modify
-
-                    if prop.has_profile():
-                        p1 = elm_from_here.get_profile_by_prop(prop=prop)
-                        p2 = elm_from_here.get_profile_by_prop(prop=prop)
-
-                        if p1 != p2:
-                            logger.add_info(msg="Different profile values",
-                                            device_class=elm_from_here.device_type.value,
-                                            device_property=prop.name,
-                                            object_value=p2,
-                                            expected_object_value=p1)
-                            action = ActionType.Modify
-
-                        if detailed_profile_comparison:
-                            for t_idx in range(nt):
-
-                                v1 = p1[t_idx]
-                                v2 = p2[t_idx]
-
-                                if v1 != v2:
-                                    logger.add_info(msg="Different time series values",
-                                                    device_class=elm_from_here.device_type.value,
-                                                    device_property=prop.name,
-                                                    device=str(elm_from_here),
-                                                    value=v2,
-                                                    expected_value=v1)
-                                    action = ActionType.Modify
-
-                                v1b = elm_from_here.get_property_value(prop=prop, t_idx=t_idx)
-                                v2b = elm_from_base.get_property_value(prop=prop, t_idx=t_idx)
-
-                                if v1 != v1b:
-                                    logger.add_info(
-                                        msg="Profile values differ with different getter methods!",
-                                        device_class=elm_from_here.device_type.value,
-                                        device_property=prop.name,
-                                        device=str(elm_from_here),
-                                        value=v1b,
-                                        expected_value=v1)
-                                    action = ActionType.Modify
-
-                                if v2 != v2b:
-                                    logger.add_info(
-                                        msg="Profile getting values differ with different getter methods!",
-                                        device_class=elm_from_here.device_type.value,
-                                        device_property=prop.name,
-                                        device=str(elm_from_here),
-                                        value=v1b,
-                                        expected_value=v1)
-                                    action = ActionType.Modify
+                # for prop_name, prop in elm_from_here.registered_properties.items():
+                #
+                #     # compare the snapshot values
+                #     v1 = elm_from_here.get_property_value(prop=prop, t_idx=None)
+                #     v2 = elm_from_base.get_property_value(prop=prop, t_idx=None)
+                #
+                #     if v1 != v2:
+                #         logger.add_info(msg="Different snapshot values",
+                #                         device_class=elm_from_here.device_type.value,
+                #                         device_property=prop.name,
+                #                         value=v2,
+                #                         expected_value=v1)
+                #         action = ActionType.Modify
+                #
+                #     if prop.has_profile():
+                #         p1 = elm_from_here.get_profile_by_prop(prop=prop)
+                #         p2 = elm_from_here.get_profile_by_prop(prop=prop)
+                #
+                #         if p1 != p2:
+                #             logger.add_info(msg="Different profile values",
+                #                             device_class=elm_from_here.device_type.value,
+                #                             device_property=prop.name,
+                #                             object_value=p2,
+                #                             expected_object_value=p1)
+                #             action = ActionType.Modify
+                #
+                #         if detailed_profile_comparison:
+                #             for t_idx in range(nt):
+                #
+                #                 v1 = p1[t_idx]
+                #                 v2 = p2[t_idx]
+                #
+                #                 if v1 != v2:
+                #                     logger.add_info(msg="Different time series values",
+                #                                     device_class=elm_from_here.device_type.value,
+                #                                     device_property=prop.name,
+                #                                     device=str(elm_from_here),
+                #                                     value=v2,
+                #                                     expected_value=v1)
+                #                     action = ActionType.Modify
+                #
+                #                 v1b = elm_from_here.get_property_value(prop=prop, t_idx=t_idx)
+                #                 v2b = elm_from_base.get_property_value(prop=prop, t_idx=t_idx)
+                #
+                #                 if v1 != v1b:
+                #                     logger.add_info(
+                #                         msg="Profile values differ with different getter methods!",
+                #                         device_class=elm_from_here.device_type.value,
+                #                         device_property=prop.name,
+                #                         device=str(elm_from_here),
+                #                         value=v1b,
+                #                         expected_value=v1)
+                #                     action = ActionType.Modify
+                #
+                #                 if v2 != v2b:
+                #                     logger.add_info(
+                #                         msg="Profile getting values differ with different getter methods!",
+                #                         device_class=elm_from_here.device_type.value,
+                #                         device_property=prop.name,
+                #                         device=str(elm_from_here),
+                #                         value=v1b,
+                #                         expected_value=v1)
+                #                     action = ActionType.Modify
 
             if action != ActionType.NoAction:
                 new_element = elm_from_here.copy(forced_new_idtag=False)
@@ -2110,7 +2118,6 @@ class MultiCircuit(Assets):
 
         # add profiles if required
         if self.time_profile is not None:
-
             new_grid.time_profile = self.time_profile
             new_grid.ensure_profiles_exist()
 
