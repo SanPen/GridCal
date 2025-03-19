@@ -484,38 +484,38 @@ class OverheadLineType(EditableDevice):
         a1 = 3 * circuit_idx + seq
         R1 = self.z_seq[a1, a1].real
         X1 = self.z_seq[a1, a1].imag
-        Bsh1 = self.y_seq[a1, a1].imag * 1e6
+        Bsh1 = self.y_seq[a1, a1].imag * 1e+6
         return R1, X1, Bsh1
 
     def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False):
         """
         Get the sequence values of the template
-        :param Sbase: Base power
+        :param Sbase: Base power in MVA
         :param length: Length of the line
         :param circuit_index: index of the circuit
         :param round_vals: Boolean to round parameter values
         :return: Line parameters and rate
         """
 
-        Vn = self.Vnom
-        Zbase = (Vn * Vn) / Sbase
-        Ybase = 1 / Zbase
+        Vn = self.Vnom  # kV
+        Zbase = (Vn * Vn) / Sbase  # Ohm
+        Ybase = 1 / Zbase  # S
 
         a0 = 3 * circuit_index
         R0 = self.z_seq[a0, a0].real
         X0 = self.z_seq[a0, a0].imag
-        Bsh0 = self.y_seq[a0, a0].imag * 1e6
+        Bsh0 = self.y_seq[a0, a0].imag
 
         a1 = 3 * circuit_index + 1
         R1 = self.z_seq[a1, a1].real
         X1 = self.z_seq[a1, a1].imag
-        Bsh1 = self.y_seq[a1, a1].imag * 1e6
+        Bsh1 = self.y_seq[a1, a1].imag
 
         z1 = (R1 + 1j * X1) * length / Zbase
-        y1 = 1j * Bsh1 * length * -1e6 / Ybase
+        y1 = 1j * Bsh1 * length / Ybase
 
         z0 = (R0 + 1j * X0) * length / Zbase
-        y0 = 1j * Bsh0 * length * -1e6 / Ybase
+        y0 = 1j * Bsh0 * length / Ybase
 
         if round_vals:
             R1 = np.round(z1.real, 6)
@@ -536,7 +536,7 @@ class OverheadLineType(EditableDevice):
             B0 = y0.imag
 
         z2 = (R0 + 1j * X0) * length / Zbase
-        y2 = 1j * Bsh0 * length * -1e6 / Ybase
+        y2 = 1j * Bsh0 * length / Ybase
 
         # get the rating in MVA = kA * kV
         rate = self.Imax * Vn * np.sqrt(3)

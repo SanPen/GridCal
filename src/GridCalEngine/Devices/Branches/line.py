@@ -412,7 +412,7 @@ class Line(BranchParent):
         if isinstance(obj, OverheadLineType):
             (self.R, self.X, self.B,
              self.R0, self.X0, self.B0,
-             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length, circuit_index=self.circuit_idx)
+             self.rate) = obj.get_values(Sbase=Sbase, length=self.length, circuit_index=self.circuit_idx)
 
             self.ys.values = obj.get_ys(self.circuit_idx)
             self.ysh.values = obj.get_ysh(self.circuit_idx)
