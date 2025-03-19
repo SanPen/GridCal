@@ -5,6 +5,7 @@
 
 import numpy as np
 from typing import Union, List
+
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -17,6 +18,25 @@ from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
+
+
+def accept_line_connection(V1: float, V2: float, branch_connection_voltage_tolerance=0.1) -> float:
+    """
+    This function checks if a line can be connected between 2 voltages
+    :param V1: Voltage 1
+    :param V2: Voltage 2
+    :param branch_connection_voltage_tolerance:
+    :return: Can be connected?
+    """
+    if V2 > 0:
+        per = V1 / V2
+
+        if per < (1.0 - branch_connection_voltage_tolerance):
+            return False
+        else:
+            return True
+    else:
+        return V1 == V2
 
 
 class Line(BranchParent):
@@ -398,7 +418,8 @@ class Line(BranchParent):
         """
         return np.sqrt(self.R * self.R + self.X * self.X)
 
-    def apply_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType],
+    def apply_template(self,
+                       obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType],
                        Sbase: float, freq: float,
                        logger=Logger()):
         """
@@ -410,29 +431,31 @@ class Line(BranchParent):
         """
 
         if isinstance(obj, OverheadLineType):
+
+            template_vn = obj.Vnom
+            vn = self.get_max_bus_nominal_voltage()
+
+            if not accept_line_connection(template_vn, vn, 0.1):
+                raise Exception('Template voltage differs too much from the line nominal voltage')
+
             (self.R, self.X, self.B,
              self.R0, self.X0, self.B0,
-             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length, circuit_index=self.circuit_idx)
+             self.rate) = obj.get_values(Sbase=Sbase,
+                                         length=self.length,
+                                         circuit_index=self.circuit_idx,
+                                         Vnom=vn)
 
-            self.ys.values = obj.get_ys(self.circuit_idx)
-            self.ysh.values = obj.get_ysh(self.circuit_idx)
+            self.ys.values = obj.get_ys(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
+            self.ysh.values = obj.get_ysh(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
 
-            if self.template is not None:
-                if obj != self.template:
-                    self.template = obj
-            else:
-                self.template = obj
+            self.template = obj
 
         elif isinstance(obj, UndergroundLineType):
             (self.R, self.X, self.B,
              self.R0, self.X0, self.B0,
-             self.rate) = obj.get_values(Sbase=Sbase,  length=self.length)
+             self.rate) = obj.get_values(Sbase=Sbase, length=self.length)
 
-            if self.template is not None:
-                if obj != self.template:
-                    self.template = obj
-            else:
-                self.template = obj
+            self.template = obj
 
         elif isinstance(obj, SequenceLineType):
             (self.R, self.X, self.B,
@@ -442,11 +465,7 @@ class Line(BranchParent):
                                          length=self.length,
                                          line_Vnom=self.get_max_bus_nominal_voltage())
 
-            if self.template is not None:
-                if obj != self.template:
-                    self.template = obj
-            else:
-                self.template = obj
+            self.template = obj
 
         else:
             logger.add_error('Template not recognised', self.name)

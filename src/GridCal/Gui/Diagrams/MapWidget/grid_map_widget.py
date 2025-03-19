@@ -23,12 +23,11 @@ from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigne
 from GridCal.Gui.general_dialogues import CheckListDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
-from GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
-from GridCalEngine.Topology.topology import accept_line_connection
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
