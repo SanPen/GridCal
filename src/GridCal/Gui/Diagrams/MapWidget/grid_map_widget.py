@@ -54,6 +54,7 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
+from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.messages import error_msg, info_msg
 
 if TYPE_CHECKING:
@@ -541,7 +542,7 @@ class GridMapWidget(BaseDiagramWidget):
         
         # Maybe worth it to have it defined in the header as a constant
         branch_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice, DeviceType.FluidPathDevice]
-        branches_to_disconnect: List[DeviceType] = []
+        branches_to_disconnect = []
         for br_type in branch_types:
             br_list = self.graphics_manager.get_device_type_dict(device_type=br_type)
             for br in br_list.values():
@@ -576,11 +577,28 @@ class GridMapWidget(BaseDiagramWidget):
         :param dialog_title: Title for the dialog
         """
         if branches_to_disconnect:
-            # Get branches and show them
+            # Get the actual branch objects
             branches = [br.api_object for br in branches_to_disconnect]
+            
+            # Create a custom property list that only includes name and idtag
+            custom_props = []
+            for prop in branches[0].property_list:
+                if prop.name in ['name', 'idtag']:
+                    custom_props.append(prop)
+            
+            # Create and show the dialog with our custom property list
             dialog = ElementsDialogue(name=dialog_title, elements=branches)
             
-            # The user must acknowledge it to continue
+            # Replace the model with our custom one that only shows name and idtag
+            model = ObjectsModel(objects=branches,
+                                 time_index=None,
+                                 property_list=custom_props,
+                                 parent=dialog.objects_table,
+                                 editable=False)
+            
+            dialog.objects_table.setModel(model)
+            
+            # Make the dialog modal so the user must acknowledge it before continuing
             dialog.setModal(True)
             dialog.exec()
         else:
