@@ -853,3 +853,87 @@ class EditableDevice:
                                 device=self.idtag + ":" + self.name,
                                 device_property=prop.name,
                                 value=str(new_obj))
+                
+    def compare(self, other: Any,
+                logger: Logger,
+                detailed_profile_comparison=False,
+                nt=0) -> Tuple[ActionType, List[GCProp]]:
+        """
+        Compare two objects
+        :param other: other device
+        :param logger: Logger
+        :param detailed_profile_comparison: Compare profiles?
+        :param nt: number of time steps (get it from the circuit)
+        :return: ActionType
+        """
+        action = ActionType.NoAction
+        properties_changed: List[GCProp] = list()
+
+        # check differences
+        for prop_name, prop in self.registered_properties.items():
+
+            # compare the snapshot values
+            v1 = self.get_property_value(prop=prop, t_idx=None)
+            v2 = other.get_property_value(prop=prop, t_idx=None)
+
+            if v1 != v2:
+                logger.add_info(msg="Different snapshot values",
+                                device_class=self.device_type.value,
+                                device_property=prop.name,
+                                value=v2,
+                                expected_value=v1)
+                action = ActionType.Modify
+                properties_changed.append(prop)
+
+            if prop.has_profile():
+                p1 = self.get_profile_by_prop(prop=prop)
+                p2 = self.get_profile_by_prop(prop=prop)
+
+                if p1 != p2:
+                    logger.add_info(msg="Different profile values",
+                                    device_class=self.device_type.value,
+                                    device_property=prop.name,
+                                    object_value=p2,
+                                    expected_object_value=p1)
+                    action = ActionType.Modify
+                    properties_changed.append(prop)
+
+                if detailed_profile_comparison:
+                    for t_idx in range(nt):
+
+                        v1 = p1[t_idx]
+                        v2 = p2[t_idx]
+
+                        if v1 != v2:
+                            logger.add_info(msg="Different time series values",
+                                            device_class=self.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(self),
+                                            value=v2,
+                                            expected_value=v1)
+                            action = ActionType.Modify
+
+                        v1b = self.get_property_value(prop=prop, t_idx=t_idx)
+                        v2b = other.get_property_value(prop=prop, t_idx=t_idx)
+
+                        if v1 != v1b:
+                            logger.add_info(
+                                msg="Profile values differ with different getter methods!",
+                                device_class=self.device_type.value,
+                                device_property=prop.name,
+                                device=str(self),
+                                value=v1b,
+                                expected_value=v1)
+                            action = ActionType.Modify
+
+                        if v2 != v2b:
+                            logger.add_info(
+                                msg="Profile getting values differ with different getter methods!",
+                                device_class=self.device_type.value,
+                                device_property=prop.name,
+                                device=str(self),
+                                value=v1b,
+                                expected_value=v1)
+                            action = ActionType.Modify
+
+        return action, properties_changed
