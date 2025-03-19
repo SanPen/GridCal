@@ -546,7 +546,7 @@ class GridMapWidget(BaseDiagramWidget):
         # voltage_levels = api_object.voltage_levels
 
         devs = []
-        # remove associated Branches in reverse order
+        # find associated Branches in reverse order
         for obj in substation_buses:
             for branch_list in self.circuit.get_branch_lists():
                 for i in range(len(branch_list) - 1, -1, -1):
@@ -555,12 +555,12 @@ class GridMapWidget(BaseDiagramWidget):
                     elif branch_list[i].bus_to == obj:
                         devs.append(branch_list[i])
 
-        # remove the associated injection devices
+        # find the associated injection devices
             for inj_list in self.circuit.get_injection_devices_lists():
                 for i in range(len(inj_list) - 1, -1, -1):
                     if inj_list[i].bus == obj:
                         devs.append(inj_list[i])
-        
+
         # Show all devices that will be disconnected
         title = f"Devices to be {'deleted' if delete_connections else 'disconnected'} from {api_object.name}"
         self.show_devices_to_disconnect_dialog(
@@ -573,6 +573,14 @@ class GridMapWidget(BaseDiagramWidget):
         # Remove from graphics manager and scene
         sub = self.graphics_manager.delete_device(api_object)
         self.map.diagram_scene.removeItem(sub)
+
+        # Find and delete all lines connected to the substation
+        for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
+            for elm in self.graphics_manager.get_device_type_list(tpe):
+                if elm.api_object.get_substation_from() == api_object or elm.api_object.get_substation_to() == api_object:
+                    self.graphics_manager.delete_device(elm.api_object)
+                    for segment in elm.segments_list:
+                        self.map.diagram_scene.removeItem(segment)
 
         # Finally, delete from the database if requested
         if delete_from_db:
