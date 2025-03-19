@@ -2314,6 +2314,9 @@ class GridMapWidget(BaseDiagramWidget):
         line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
 
+        # Explicitly remove the waypoint graphic from the scene to prevent artifact
+        self.map.diagram_scene.removeItem(selected_waypoint)
+
         # Remove the original line
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
 
