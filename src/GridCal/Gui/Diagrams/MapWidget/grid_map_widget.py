@@ -320,6 +320,40 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [(elm.api_object, elm) for elm in self.map.diagram_scene.selectedItems()]
 
+    
+    def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine, 
+                                                                  MapDcLine,
+                                                                  MapHvdcLine,
+                                                                  MapFluidPathLine)]]:
+            """
+            Get only selected line segments from the scene
+            
+            :return: List of (Line, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)) tuples
+            """
+            selected_line_segments = []
+            for item in self.map.diagram_scene.selectedItems():
+                if (hasattr(item, 'api_object') and hasattr(item, 'container')
+                    and isinstance(item.container, 
+                                (MapAcLine, 
+                                MapDcLine, 
+                                MapHvdcLine, 
+                                MapFluidPathLine))):
+                    selected_line_segments.append((item.api_object, item.container))
+            return selected_line_segments
+
+    def get_selected_substations_tup(self) -> List[Tuple[Substation, SubstationGraphicItem]]:
+            """
+            Get only selected substations from the scene
+            
+            :return: List of (Substation, SubstationGraphicItem) tuples
+            """
+            selected_substations = []
+            for item in self.map.diagram_scene.selectedItems():
+                if hasattr(item, 'api_object') and isinstance(item, SubstationGraphicItem):
+                    selected_substations.append((item.api_object, item))
+            return selected_substations
+
+
     def add_to_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
         Add item to the diagram and the diagram scene
@@ -1487,20 +1521,13 @@ class GridMapWidget(BaseDiagramWidget):
         The original line is removed.
         """
         # Get selected items
-        selected_items = self.get_selected()
+        # selected_items = self.get_selected()
 
         # Find the line and substation in the selection
-        selected_line = None
-        selected_substation = None
+        selected_lines = self.get_selected_line_segments_tup()
+        selected_substations = self.get_selected_substations_tup()
 
-        for api_obj, graphic_obj in selected_items:
-            if isinstance(api_obj, Line) and isinstance(graphic_obj, MapLineSegment):
-                selected_line = (api_obj, graphic_obj)  # TODO: Undo this and have it direct
-            elif isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
-                selected_substation = (api_obj, graphic_obj)  # TODO: Undo this and have it direct
-
-        # Check if we have both a line and a substation selected
-        if selected_line is None or selected_substation is None:
+        if len(selected_lines) != 1 or len(selected_substations) != 1:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Icon.Information)
             msg.setText("Please select exactly one line and one substation.")
@@ -1509,11 +1536,12 @@ class GridMapWidget(BaseDiagramWidget):
             return
 
         # Get the API objects
-        line_api, line_graphic = selected_line
-        substation_api, substation_graphic = selected_substation
+        line_api, line_graphic = selected_lines[0]
+        substation_api, substation_graphic = selected_substations[0]
 
         # Get the original line container to access its properties
-        original_line_container = line_graphic.container
+        # original_line_container = line_graphic.container
+        original_line_container = line_graphic
 
         # Get the original buses
         bus_from = line_api.bus_from
@@ -1535,7 +1563,6 @@ class GridMapWidget(BaseDiagramWidget):
             # Find or create a voltage level with the appropriate voltage
             voltage_level = None
 
-            # TODO: this is undefined because the type of substation_api is unclear
             for vl in substation_api.voltage_levels:
                 if abs(vl.nominal_voltage - vnom) < 0.01:
                     voltage_level = vl
@@ -1700,6 +1727,10 @@ class GridMapWidget(BaseDiagramWidget):
                 closest_lat, closest_lon = node.lat, node.lon
 
         # Only add the insertion point if it's not a duplicate
+        bearing_to_substation = 0.0  # initialize to zero
+        perpendicular_bearing = 0.0  # initialize to zero
+        R = 6371.0  # Earth's radius in km
+        offset_distance = 0.0  # initialize to zero
         if not is_duplicate:
             # Add an offset (5% of segment length) to the waypoint for line 1 to prevent visual overlap
             # Calculate a bearing from the closest point to the substation
@@ -1726,7 +1757,6 @@ class GridMapWidget(BaseDiagramWidget):
             offset_distance = segment_length * 0.05
 
             # Calculate the offset point for line 1 (perpendicular to the bearing to substation)
-            R = 6371.0  # Earth's radius in km
             offset_lat1 = math.asin(
                 math.sin(math.radians(closest_lat)) * math.cos(offset_distance / R) +
                 math.cos(math.radians(closest_lat)) * math.sin(offset_distance / R) * math.cos(perpendicular_bearing)
@@ -1784,10 +1814,9 @@ class GridMapWidget(BaseDiagramWidget):
         # Add the insertion point as the first waypoint with a small offset
         if not is_duplicate:
             # Calculate the offset point for line 2 (opposite direction from line 1)
-            # TODO: Local variable 'perpendicular_bearing' might be referenced before assignment
             opposite_bearing = perpendicular_bearing + math.pi  # 180 degrees from the first offset
 
-            offset_lat2 = math.asin(  # TODO: offset_distance and R referenced before assignment
+            offset_lat2 = math.asin( 
                 math.sin(math.radians(closest_lat)) * math.cos(offset_distance / R) +
                 math.cos(math.radians(closest_lat)) * math.sin(offset_distance / R) * math.cos(opposite_bearing)
             )
@@ -1831,8 +1860,6 @@ class GridMapWidget(BaseDiagramWidget):
         line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
 
         # Remove the original line
-        # TODO: Expected type 'MapAcLine | MapDcLine | MapHvdcLine | MapFluidPathLine | MapLineContainer',
-        #  got 'MapLineSegment' instead, this is a potential bug
         self.remove_branch_graphic(line=line_graphic, delete_from_db=True)
 
         # Notify the user
