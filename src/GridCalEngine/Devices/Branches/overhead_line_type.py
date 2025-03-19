@@ -482,9 +482,9 @@ class OverheadLineType(EditableDevice):
         :return: R1 [Ohm], X1[Ohm] and Bsh1 [S]
         """
         a1 = 3 * circuit_idx + seq
-        R1 = self.z_seq[a1, a1].real
-        X1 = self.z_seq[a1, a1].imag
-        Bsh1 = self.y_seq[a1, a1].imag * 1e+6
+        R1 = self.z_seq[a1, a1].real # Ohm/km
+        X1 = self.z_seq[a1, a1].imag # Ohm/km
+        Bsh1 = self.y_seq[a1, a1].imag * 1e6 # uS/km (for the GUI)
         return R1, X1, Bsh1
 
     def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False):
@@ -502,44 +502,44 @@ class OverheadLineType(EditableDevice):
         Ybase = 1 / Zbase  # S
 
         a0 = 3 * circuit_index
-        R0 = self.z_seq[a0, a0].real
-        X0 = self.z_seq[a0, a0].imag
-        Bsh0 = self.y_seq[a0, a0].imag
+        R0 = self.z_seq[a0, a0].real # Ohm/km
+        X0 = self.z_seq[a0, a0].imag # Ohm/km
+        Bsh0 = self.y_seq[a0, a0].imag # S/km
 
         a1 = 3 * circuit_index + 1
-        R1 = self.z_seq[a1, a1].real
-        X1 = self.z_seq[a1, a1].imag
-        Bsh1 = self.y_seq[a1, a1].imag
+        R1 = self.z_seq[a1, a1].real # Ohm/km
+        X1 = self.z_seq[a1, a1].imag # Ohm/km
+        Bsh1 = self.y_seq[a1, a1].imag # S/km
 
-        z1 = (R1 + 1j * X1) * length / Zbase
-        y1 = 1j * Bsh1 * length / Ybase
+        z1 = (R1 + 1j * X1) * length / Zbase # p.u.
+        y1 = 1j * Bsh1 * length / Ybase # p.u.
 
-        z0 = (R0 + 1j * X0) * length / Zbase
-        y0 = 1j * Bsh0 * length / Ybase
+        z0 = (R0 + 1j * X0) * length / Zbase # p.u.
+        y0 = 1j * Bsh0 * length / Ybase # p.u.
 
         if round_vals:
-            R1 = np.round(z1.real, 6)
-            X1 = np.round(z1.imag, 6)
-            B1 = np.round(y1.imag, 6)
+            R1 = np.round(z1.real, 6) # p.u.
+            X1 = np.round(z1.imag, 6) # p.u.
+            B1 = np.round(y1.imag, 6) # p.u.
 
-            R0 = np.round(z0.real, 6)
-            X0 = np.round(z0.imag, 6)
-            B0 = np.round(y0.imag, 6)
+            R0 = np.round(z0.real, 6) # p.u.
+            X0 = np.round(z0.imag, 6) # p.u.
+            B0 = np.round(y0.imag, 6) # p.u.
 
         else:
-            R1 = z1.real
-            X1 = z1.imag
-            B1 = y1.imag
+            R1 = z1.real # p.u.
+            X1 = z1.imag # p.u.
+            B1 = y1.imag # p.u.
 
-            R0 = z0.real
-            X0 = z0.imag
-            B0 = y0.imag
+            R0 = z0.real # p.u.
+            X0 = z0.imag # p.u.
+            B0 = y0.imag # p.u.
 
-        z2 = (R0 + 1j * X0) * length / Zbase
-        y2 = 1j * Bsh0 * length / Ybase
+        z2 = (R0 + 1j * X0) * length / Zbase # p.u.
+        y2 = 1j * Bsh0 * length / Ybase # p.u.
 
         # get the rating in MVA = kA * kV
-        rate = self.Imax * Vn * np.sqrt(3)
+        rate = self.Imax * Vn * np.sqrt(3) # MVA
 
         return R1, X1, B1, R0, X0, B0, rate
 
