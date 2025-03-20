@@ -305,7 +305,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         add_menu_entry(menu=menu,
                        text="Delete all the connections",
                        icon_path=":/Icons/icons/delete_conn.svg",
-                       function_ptr=self.delete_all_connections)
+                       function_ptr=lambda: self.delete_all_connections(ask=True, delete_from_db=True))
 
         add_menu_entry(menu=menu,
                        text="Delete",
@@ -419,11 +419,18 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.arrange_children()
         return _grph
 
-    def delete_all_connections(self):
+    def delete_all_connections(self, ask: bool, delete_from_db: bool) -> None:
         """
         Delete all bus connections
         """
-        self._terminal.remove_all_connections()
+        if ask:
+            ok = yes_no_question('Are you sure that you want to remove this fluid node',
+                                 'Remove fluid node from schematic and DB' if delete_from_db else "Remove bus from schematic")
+        else:
+            ok = True
+
+        if ok:
+            self._terminal.remove_all_connections(delete_from_db=delete_from_db)
 
     def remove(self, ask=True):
         """
@@ -437,11 +444,6 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             ok = True
 
         if ok:
-            self.delete_all_connections()
-
-            for g in self.shunt_children:
-                self.editor.remove_from_scene(g.nexus)
-
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):

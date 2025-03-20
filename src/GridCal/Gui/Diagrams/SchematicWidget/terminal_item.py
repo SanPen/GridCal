@@ -182,12 +182,14 @@ class BarTerminalItem(QGraphicsRectItem):
         """
         self.editor.start_connection(self)
 
-    def remove_all_connections(self) -> None:
+    def remove_all_connections(self, delete_from_db: bool ) -> None:
         """
         Removes all the terminal connections
         """
         for graphic_item, _ in self._hosting_connections.items():
-            self.editor.remove_element(graphic_object=graphic_item, device=graphic_item.api_object)
+            self.editor.remove_element(graphic_object=graphic_item,
+                                       device=graphic_item.api_object,
+                                       delete_from_db=delete_from_db)
 
         self._hosting_connections.clear()
 
@@ -393,12 +395,14 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         """
         self.editor.start_connection(self)
 
-    def remove_all_connections(self) -> None:
+    def remove_all_connections(self, delete_from_db: bool = True) -> None:
         """
         Removes all the terminal connections
         """
         for graphic_item, _ in self._hosting_connections.items():
-            self.editor.remove_element(graphic_object=graphic_item, device=graphic_item.api_object)
+            self.editor.remove_element(graphic_object=graphic_item,
+                                       device=graphic_item.api_object,
+                                       delete_from_db=delete_from_db)
 
         self._hosting_connections.clear()
 

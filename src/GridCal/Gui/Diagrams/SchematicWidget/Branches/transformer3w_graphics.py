@@ -448,12 +448,12 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.winding_circles[i].setPen(QPen(color, self.pen_width, self.style))
         self.terminals[i].setPen(QPen(color, self.pen_width, self.style))
 
-    def delete_all_connections(self):
+    def delete_all_connections(self, delete_from_db: bool = True):
         """
         Delete all bus connections
         """
         for t in self.terminals:
-            t.remove_all_connections()
+            t.remove_all_connections(delete_from_db=delete_from_db)
 
         for c in self.connection_lines:
             self.editor.remove_from_scene(c)
@@ -470,7 +470,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             ok = True
 
         if ok:
-            self.delete_all_connections()
+            self.delete_all_connections(delete_from_db=True)
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def edit(self):

@@ -11,6 +11,7 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
                                                    FONT_SCALE, EMERGENCY)
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
@@ -412,11 +413,9 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         ra5.setIcon(ra5_icon)
         ra5.triggered.connect(self.assign_status_to_profile)
 
-        ra3 = menu.addAction('Delete all the connections')
-        del2_icon = QIcon()
-        del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
-        ra3.setIcon(del2_icon)
-        ra3.triggered.connect(self.delete_all_connections)
+        add_menu_entry(menu, text='Delete all the connections',
+                       icon_path=":/Icons/icons/delete_conn.svg",
+                       function_ptr=lambda: self.delete_all_connections(ask=True, delete_from_db=True))
 
         da = menu.addAction('Delete')
         del_icon = QIcon()
@@ -482,11 +481,18 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         self.editor.set_active_status_to_profile(self.api_object)
 
-    def delete_all_connections(self) -> None:
+    def delete_all_connections(self, ask: bool, delete_from_db: bool) -> None:
         """
         Delete all bus connections
         """
-        self._terminal.remove_all_connections()
+        if ask:
+            ok = yes_no_question('Are you sure that you want to remove this busbar',
+                                 'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
+        else:
+            ok = True
+
+        if ok:
+            self._terminal.remove_all_connections(delete_from_db=delete_from_db)
 
     def remove(self, ask: bool = True) -> None:
         """
@@ -499,11 +505,6 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             ok = True
 
         if ok:
-            self.delete_all_connections()
-
-            for g in self.shunt_children:
-                self.editor.remove_from_scene(g.nexus)
-
             self.editor.remove_element(device=self.api_object, graphic_object=self)
 
     def update_color(self):

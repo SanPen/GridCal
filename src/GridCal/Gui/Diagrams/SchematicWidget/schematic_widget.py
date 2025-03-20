@@ -971,7 +971,7 @@ class SchematicWidget(BaseDiagramWidget):
                 if isinstance(graphic_object,
                               (BusGraphicItem, CnGraphicItem,
                                BusBarGraphicItem, FluidNodeGraphicItem)):
-                    # graphic_object.delete_all_connections()
+
                     for g in graphic_object.shunt_children:
                         self.diagram_scene.removeItem(g.nexus)
 
@@ -983,7 +983,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         Delete device from the diagram registry
         :param device: EditableDevice
-        :param propagate: Propagate the delete to other diagrams?
+        :param propagate: Propagate the delete action to other diagrams?
         """
         self.diagram.delete_device(device=device)
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
@@ -1006,23 +1006,16 @@ class SchematicWidget(BaseDiagramWidget):
         :param delete_from_db: Delete the element also from the database?
         """
 
-        if device is not None:
+        if graphic_object is not None and device is not None:
+
+            # NOTE: This function already deleted from the database and other diagrams
             self.delete_diagram_element(device=device, propagate=delete_from_db)
-
-            if delete_from_db:
-                try:
-                    self.circuit.delete_element(obj=device)
-                except ValueError as e:
-                    print("SchamaticWidget.remove_element", e)
-
-        elif graphic_object is not None:
 
             if isinstance(graphic_object,
                           (BusGraphicItem, CnGraphicItem,
                            BusBarGraphicItem, FluidNodeGraphicItem)):
-                graphic_object.delete_all_connections()
+                graphic_object.delete_all_connections(ask=False, delete_from_db=delete_from_db)
 
-            self.remove_from_scene(graphic_object)
         else:
             warn(f"Graphic object {graphic_object} and device {device} are none")
 
