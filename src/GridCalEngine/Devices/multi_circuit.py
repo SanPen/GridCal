@@ -1997,12 +1997,15 @@ class MultiCircuit(Assets):
         return logger.error_count() == 0, logger
 
     def differentiate_circuits(self, base_grid: "MultiCircuit",
-                               detailed_profile_comparison: bool = True) -> Tuple[bool, Logger, "MultiCircuit"]:
+                               detailed_profile_comparison: bool = True,
+                               force_second_pass: bool = False) -> Tuple[bool, Logger, "MultiCircuit"]:
         """
         Compare this circuit with another circuits for equality
         :param base_grid: MultiCircuit used as comparison base
         :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
-        :return: equal?, Logger with the comparison information, Multicircuit with the elements that have changed
+        :param force_second_pass: if true, the base grid is inspected for elements that it contains that
+                                  this grid doesn't (deletions)
+        :return: equal?, Logger with the comparison information, MultiCircuit with the elements that have changed
         """
         logger = Logger()
 
@@ -2023,6 +2026,10 @@ class MultiCircuit(Assets):
                              device_class="snapshot time",
                              value=str(base_grid.get_snapshot_time_unix),
                              expected_value=self.get_snapshot_time_unix)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Pass 1: compare this grid with the base to discover added and modified elements
+        # --------------------------------------------------------------------------------------------------------------
 
         # get a dictionary of all the elements of the other circuit
         base_elements_dict, dict_ok = base_grid.get_all_elements_dict(logger=logger)
@@ -2120,6 +2127,37 @@ class MultiCircuit(Assets):
                 logger.add_info(msg="Device added in the diff circuit",
                                 device_class=new_element.device_type.value,
                                 device_property=new_element.name, )
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Pass 2: compare base with this grid to discover deleted elements
+        # only relevant if both grids have the same idtag
+        # --------------------------------------------------------------------------------------------------------------
+        if self.idtag == base_grid.idtag or force_second_pass:
+
+            # get a dictionary of all the elements of the other circuit
+            here_elements_dict, dict_ok = base_grid.get_all_elements_dict(logger=logger)
+
+            if not dict_ok:
+                return True, logger, dgrid
+
+            for base_elm in base_grid.items():
+
+                # try to search for the counterpart in the base circuit
+                elm_from_here = here_elements_dict.get(base_elm.idtag, None)
+
+                if elm_from_here is None:
+                    # not found in here, it was deleted
+
+                    new_element = base_elm.copy(forced_new_idtag=False)
+                    new_element.action = ActionType.Delete
+                    dgrid.add_element(obj=new_element)
+                    logger.add_info(msg="Device deleted in the diff circuit",
+                                    device_class=new_element.device_type.value,
+                                    device_property=new_element.name, )
+
+                else:
+                    # the element exists here, we already checked that
+                    pass
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger, dgrid
