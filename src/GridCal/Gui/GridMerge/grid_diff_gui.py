@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'grid_merge_gui.ui'
+## Form generated from reading UI file 'grid_diff_gui.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.7.2
 ##
@@ -65,14 +65,14 @@ class Ui_Dialog(object):
     # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Grid Merge", None))
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Grid Diff", None))
 #if QT_CONFIG(tooltip)
-        self.addButton.setToolTip(QCoreApplication.translate("Dialog", u"The elements of the grid will be added with new idtags. This is useful in the case you want to compose a new grid from grids that are the same.", None))
+        self.addButton.setToolTip(QCoreApplication.translate("Dialog", u"Open the base circuit to compare with", None))
 #endif // QT_CONFIG(tooltip)
-        self.addButton.setText(QCoreApplication.translate("Dialog", u"Add", None))
+        self.addButton.setText(QCoreApplication.translate("Dialog", u"Open base", None))
 #if QT_CONFIG(tooltip)
-        self.acceptButton.setToolTip(QCoreApplication.translate("Dialog", u"Aply the selected changes", None))
+        self.acceptButton.setToolTip(QCoreApplication.translate("Dialog", u"Save the differentiated grid", None))
 #endif // QT_CONFIG(tooltip)
-        self.acceptButton.setText(QCoreApplication.translate("Dialog", u"Merge", None))
+        self.acceptButton.setText(QCoreApplication.translate("Dialog", u"Save diff", None))
     # retranslateUi
 

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Grid Merge</string>
+   <string>Grid Diff</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -47,10 +47,10 @@
       <item>
        <widget class="QPushButton" name="addButton">
         <property name="toolTip">
-         <string>The elements of the grid will be added with new idtags. This is useful in the case you want to compose a new grid from grids that are the same.</string>
+         <string>Open the base circuit to compare with</string>
         </property>
         <property name="text">
-         <string>Add</string>
+         <string>Open base</string>
         </property>
        </widget>
       </item>
@@ -70,10 +70,10 @@
       <item>
        <widget class="QPushButton" name="acceptButton">
         <property name="toolTip">
-         <string>Aply the selected changes</string>
+         <string>Save the differentiated grid</string>
         </property>
         <property name="text">
-         <string>Merge</string>
+         <string>Save diff</string>
         </property>
        </widget>
       </item>

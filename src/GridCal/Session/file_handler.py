@@ -44,7 +44,7 @@ class FileOpenThread(QThread):
 
         self.circuit: Union[MultiCircuit, None] = None
 
-        self.options = options
+        self.options = options if options is not None else FileOpenOptions()
 
         self.cgmes_circuit: Union[CgmesCircuit, None] = None
 

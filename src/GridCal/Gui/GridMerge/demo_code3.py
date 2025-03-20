@@ -5,7 +5,7 @@
 import os
 import sys
 from PySide6 import QtWidgets
-from GridCal.Gui.GridMerge.grid_merge import GridMergeDialogue
+from GridCal.Gui.GridMerge.grid_diff import GridDiffDialogue
 import GridCalEngine.api as gce
 
 
@@ -33,7 +33,9 @@ print()
 
 
 app = QtWidgets.QApplication(sys.argv)
-window = GridMergeDialogue(original, diff)
+window = GridDiffDialogue(original)
+window._diff = diff
+window.build_tree()
 
 # window.resize(int(1.61 * 700.0), int(600.0))  # golden ratio
 window.show()
