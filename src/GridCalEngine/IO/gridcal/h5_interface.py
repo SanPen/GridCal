@@ -21,7 +21,7 @@ def save_h5(circuit: MultiCircuit, file_path, compression_opts=5, text_func=None
     """
     logger = Logger()
 
-    dfs = gather_model_as_data_frames(circuit=circuit, logger=logger)
+    dfs = gather_model_as_data_frames(circuit=circuit, logger=logger, legacy=True)
 
     n = len(dfs)
     i = 0

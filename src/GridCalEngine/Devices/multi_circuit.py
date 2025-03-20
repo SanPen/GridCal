@@ -185,6 +185,35 @@ class MultiCircuit(Assets):
         # logger of events
         self.logger: Logger = Logger()
 
+    def to_dict(self):
+        """
+        Create grid configuration data
+        :return:
+        """
+        return {
+            'name': self.name,
+            'comments': self.comments,
+            'model_version': self.model_version,
+            'user_name': self.user_name,
+            'Sbase': self.Sbase,
+            'fBase': self.fBase,
+            'idtag': self.idtag,
+        }
+
+    def parse(self, data: Dict[str, str | int | float]):
+        """
+        Parse grid configuration data
+        :param data:
+        :return:
+        """
+        self.name = data.get("name", self.name)
+        self.comments = data.get("comments", self.comments)
+        self.model_version = data.get("model_version", self.model_version)
+        self.user_name = data.get("user_name", self.user_name)
+        self.Sbase = data.get("Sbase", self.Sbase)
+        self.fBase = data.get("fBase", self.fBase)
+        self.idtag = data.get("idtag", self.idtag)
+
     def __str__(self):
         return str(self.name)
 
@@ -1996,13 +2025,16 @@ class MultiCircuit(Assets):
                              expected_value=self.get_snapshot_time_unix)
 
         # get a dictionary of all the elements of the other circuit
-        base_elements_dict, dict_ok = base_grid.get_all_elements_dict()
+        base_elements_dict, dict_ok = base_grid.get_all_elements_dict(logger=logger)
 
-        for elm_from_here in self.items():  # for every device...
+        if not dict_ok:
+            return True, logger, dgrid
+
+        for new_elm in self.items():  # for every device...
             action = ActionType.NoAction
 
             # try to search for the counterpart in the base circuit
-            elm_from_base = base_elements_dict.get(elm_from_here.idtag, None)
+            elm_from_base = base_elements_dict.get(new_elm.idtag, None)
 
             if elm_from_base is None:
                 # not found in the base, add it
@@ -2082,7 +2114,7 @@ class MultiCircuit(Assets):
                 #                     action = ActionType.Modify
 
             if action != ActionType.NoAction:
-                new_element = elm_from_here.copy(forced_new_idtag=False)
+                new_element = new_elm.copy(forced_new_idtag=False)
                 new_element.action = action
                 dgrid.add_element(obj=new_element)
                 logger.add_info(msg="Device added in the diff circuit",

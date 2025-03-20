@@ -543,6 +543,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
         self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
         self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+        self.ui.grid_idtag_label.setText('idtag. ' + str(self.circuit.idtag))
         self.ui.user_name_label.setText('User: ' + str(self.circuit.user_name))
         if self.open_file_thread_object is not None:
             if isinstance(self.open_file_thread_object.file_name, str):

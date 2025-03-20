@@ -4264,16 +4264,27 @@ class Ui_mainWindow(object):
         self.frame_77.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout_11 = QGridLayout(self.frame_77)
         self.gridLayout_11.setObjectName(u"gridLayout_11")
-        self.user_name_label = QLabel(self.frame_77)
-        self.user_name_label.setObjectName(u"user_name_label")
-        self.user_name_label.setFont(font1)
-
-        self.gridLayout_11.addWidget(self.user_name_label, 5, 0, 1, 2)
-
         self.raw_export_version_comboBox = QComboBox(self.frame_77)
         self.raw_export_version_comboBox.setObjectName(u"raw_export_version_comboBox")
 
-        self.gridLayout_11.addWidget(self.raw_export_version_comboBox, 10, 1, 1, 1)
+        self.gridLayout_11.addWidget(self.raw_export_version_comboBox, 11, 1, 1, 1)
+
+        self.line_28 = QFrame(self.frame_77)
+        self.line_28.setObjectName(u"line_28")
+        palette42 = QPalette()
+        palette42.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette42.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette42.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_28.setPalette(palette42)
+        self.line_28.setFrameShadow(QFrame.Shadow.Plain)
+        self.line_28.setLineWidth(4)
+        self.line_28.setFrameShape(QFrame.Shape.HLine)
+
+        self.gridLayout_11.addWidget(self.line_28, 1, 0, 1, 2)
+
+        self.verticalSpacer_20 = QSpacerItem(20, 436, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_11.addItem(self.verticalSpacer_20, 12, 1, 1, 1)
 
         self.file_information_label = QLabel(self.frame_77)
         self.file_information_label.setObjectName(u"file_information_label")
@@ -4283,25 +4294,22 @@ class Ui_mainWindow(object):
 
         self.gridLayout_11.addWidget(self.file_information_label, 3, 0, 1, 2)
 
-        self.label_145 = QLabel(self.frame_77)
-        self.label_145.setObjectName(u"label_145")
-        self.label_145.setMinimumSize(QSize(24, 24))
-        self.label_145.setMaximumSize(QSize(24, 24))
-        self.label_145.setPixmap(QPixmap(u":/Icons/icons/new2c.svg"))
-        self.label_145.setScaledContents(True)
+        self.label_131 = QLabel(self.frame_77)
+        self.label_131.setObjectName(u"label_131")
+        palette43 = QPalette()
+        palette43.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette43.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
+        palette43.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_131.setPalette(palette43)
+        self.label_131.setFont(font4)
 
-        self.gridLayout_11.addWidget(self.label_145, 8, 0, 1, 1)
+        self.gridLayout_11.addWidget(self.label_131, 9, 1, 1, 1)
 
-        self.label_115 = QLabel(self.frame_77)
-        self.label_115.setObjectName(u"label_115")
-        palette42 = QPalette()
-        palette42.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette42.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
-        palette42.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_115.setPalette(palette42)
-        self.label_115.setFont(font4)
+        self.saveResultsCheckBox = QCheckBox(self.frame_77)
+        self.saveResultsCheckBox.setObjectName(u"saveResultsCheckBox")
+        self.saveResultsCheckBox.setFont(font1)
 
-        self.gridLayout_11.addWidget(self.label_115, 0, 1, 1, 1)
+        self.gridLayout_11.addWidget(self.saveResultsCheckBox, 7, 0, 1, 2)
 
         self.model_version_label = QLabel(self.frame_77)
         self.model_version_label.setObjectName(u"model_version_label")
@@ -4309,46 +4317,55 @@ class Ui_mainWindow(object):
 
         self.gridLayout_11.addWidget(self.model_version_label, 4, 0, 1, 2)
 
-        self.line_33 = QFrame(self.frame_77)
-        self.line_33.setObjectName(u"line_33")
-        palette43 = QPalette()
-        palette43.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette43.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette43.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_33.setPalette(palette43)
-        self.line_33.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_33.setLineWidth(4)
-        self.line_33.setFrameShape(QFrame.Shape.HLine)
+        self.label_145 = QLabel(self.frame_77)
+        self.label_145.setObjectName(u"label_145")
+        self.label_145.setMinimumSize(QSize(24, 24))
+        self.label_145.setMaximumSize(QSize(24, 24))
+        self.label_145.setPixmap(QPixmap(u":/Icons/icons/new2c.svg"))
+        self.label_145.setScaledContents(True)
 
-        self.gridLayout_11.addWidget(self.line_33, 9, 0, 1, 2)
-
-        self.saveResultsCheckBox = QCheckBox(self.frame_77)
-        self.saveResultsCheckBox.setObjectName(u"saveResultsCheckBox")
-        self.saveResultsCheckBox.setFont(font1)
-
-        self.gridLayout_11.addWidget(self.saveResultsCheckBox, 6, 0, 1, 2)
+        self.gridLayout_11.addWidget(self.label_145, 9, 0, 1, 1)
 
         self.label_155 = QLabel(self.frame_77)
         self.label_155.setObjectName(u"label_155")
 
-        self.gridLayout_11.addWidget(self.label_155, 7, 0, 1, 1)
+        self.gridLayout_11.addWidget(self.label_155, 8, 0, 1, 1)
 
-        self.line_28 = QFrame(self.frame_77)
-        self.line_28.setObjectName(u"line_28")
+        self.line_33 = QFrame(self.frame_77)
+        self.line_33.setObjectName(u"line_33")
         palette44 = QPalette()
         palette44.setBrush(QPalette.Active, QPalette.WindowText, brush3)
         palette44.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
         palette44.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_28.setPalette(palette44)
-        self.line_28.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_28.setLineWidth(4)
-        self.line_28.setFrameShape(QFrame.Shape.HLine)
+        self.line_33.setPalette(palette44)
+        self.line_33.setFrameShadow(QFrame.Shadow.Plain)
+        self.line_33.setLineWidth(4)
+        self.line_33.setFrameShape(QFrame.Shape.HLine)
 
-        self.gridLayout_11.addWidget(self.line_28, 1, 0, 1, 2)
+        self.gridLayout_11.addWidget(self.line_33, 10, 0, 1, 2)
 
-        self.verticalSpacer_20 = QSpacerItem(20, 436, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.label_112 = QLabel(self.frame_77)
+        self.label_112.setObjectName(u"label_112")
+        self.label_112.setFont(font1)
 
-        self.gridLayout_11.addItem(self.verticalSpacer_20, 11, 1, 1, 1)
+        self.gridLayout_11.addWidget(self.label_112, 11, 0, 1, 1)
+
+        self.label_39 = QLabel(self.frame_77)
+        self.label_39.setObjectName(u"label_39")
+        self.label_39.setFont(font1)
+
+        self.gridLayout_11.addWidget(self.label_39, 2, 0, 1, 2)
+
+        self.label_115 = QLabel(self.frame_77)
+        self.label_115.setObjectName(u"label_115")
+        palette45 = QPalette()
+        palette45.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette45.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
+        palette45.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_115.setPalette(palette45)
+        self.label_115.setFont(font4)
+
+        self.gridLayout_11.addWidget(self.label_115, 0, 1, 1, 1)
 
         self.label_136 = QLabel(self.frame_77)
         self.label_136.setObjectName(u"label_136")
@@ -4359,28 +4376,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_11.addWidget(self.label_136, 0, 0, 1, 1)
 
-        self.label_131 = QLabel(self.frame_77)
-        self.label_131.setObjectName(u"label_131")
-        palette45 = QPalette()
-        palette45.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette45.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
-        palette45.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_131.setPalette(palette45)
-        self.label_131.setFont(font4)
+        self.user_name_label = QLabel(self.frame_77)
+        self.user_name_label.setObjectName(u"user_name_label")
+        self.user_name_label.setFont(font1)
 
-        self.gridLayout_11.addWidget(self.label_131, 8, 1, 1, 1)
+        self.gridLayout_11.addWidget(self.user_name_label, 5, 0, 1, 2)
 
-        self.label_112 = QLabel(self.frame_77)
-        self.label_112.setObjectName(u"label_112")
-        self.label_112.setFont(font1)
+        self.grid_idtag_label = QLabel(self.frame_77)
+        self.grid_idtag_label.setObjectName(u"grid_idtag_label")
+        self.grid_idtag_label.setFont(font1)
 
-        self.gridLayout_11.addWidget(self.label_112, 10, 0, 1, 1)
-
-        self.label_39 = QLabel(self.frame_77)
-        self.label_39.setObjectName(u"label_39")
-        self.label_39.setFont(font1)
-
-        self.gridLayout_11.addWidget(self.label_39, 2, 0, 1, 2)
+        self.gridLayout_11.addWidget(self.grid_idtag_label, 6, 0, 1, 2)
 
 
         self.horizontalLayout_40.addWidget(self.frame_77)
@@ -5883,20 +5889,21 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.file_tab.setToolTip(QCoreApplication.translate("mainWindow", u"File settings", None))
 #endif // QT_CONFIG(tooltip)
-        self.user_name_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.file_information_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
-        self.label_145.setText("")
-        self.label_115.setText(QCoreApplication.translate("mainWindow", u"File Information", None))
-        self.model_version_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.label_131.setText(QCoreApplication.translate("mainWindow", u"Raw files", None))
 #if QT_CONFIG(tooltip)
         self.saveResultsCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the results are stored inside the gridcal file in a compressed format.", None))
 #endif // QT_CONFIG(tooltip)
         self.saveResultsCheckBox.setText(QCoreApplication.translate("mainWindow", u"Save results in .gridcal files", None))
+        self.model_version_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.label_145.setText("")
         self.label_155.setText("")
-        self.label_136.setText("")
-        self.label_131.setText(QCoreApplication.translate("mainWindow", u"Raw files", None))
         self.label_112.setText(QCoreApplication.translate("mainWindow", u"Export version", None))
         self.label_39.setText(QCoreApplication.translate("mainWindow", u"File path", None))
+        self.label_115.setText(QCoreApplication.translate("mainWindow", u"File Information", None))
+        self.label_136.setText("")
+        self.user_name_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.grid_idtag_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.label_134.setText(QCoreApplication.translate("mainWindow", u"CGMES", None))
         self.label_102.setText("")
         self.label_139.setText(QCoreApplication.translate("mainWindow", u"Profiles to export", None))

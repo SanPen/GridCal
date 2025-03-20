@@ -834,6 +834,7 @@ class IoMain(ConfigurationMain):
         self.stuff_running_now.remove('file_save')
 
         self.ui.model_version_label.setText('Model v. ' + str(self.circuit.model_version))
+        self.ui.grid_idtag_label.setText('idtag. ' + str(self.circuit.idtag))
 
         # get the session tree structure
         session_data_dict = self.save_file_thread_object.get_session_tree()
@@ -878,6 +879,7 @@ class IoMain(ConfigurationMain):
             self.ui.sbase_doubleSpinBox.setValue(self.circuit.Sbase)
             self.ui.fbase_doubleSpinBox.setValue(self.circuit.fBase)
             self.ui.model_version_label.setText(f"Model v. {self.circuit.model_version}")
+            self.ui.grid_idtag_label.setText('idtag. ' + str(self.circuit.idtag))
 
             # set circuit comments
             self.ui.comments_textEdit.setText("Grid generated randomly using the RPGM algorithm.")

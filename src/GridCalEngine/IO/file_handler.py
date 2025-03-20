@@ -133,7 +133,7 @@ class FileOpenOptions:
                  cgmes_map_areas_like_raw: bool = False,
                  try_to_map_dc_to_hvdc_line: bool = True,
                  crash_on_errors: bool = True,
-                 adjust_taps_to_discrete_positions: bool = False,):
+                 adjust_taps_to_discrete_positions: bool = False, ):
         """
 
         :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
@@ -225,7 +225,8 @@ class FileOpen:
                     looks_like_ucte = False
 
             if looks_like_cgmes:
-                data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
+                data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func,
+                                              logger=self.cgmes_logger)
                 data_parser.load_files(files=self.file_name)
                 self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
                                                   cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
@@ -554,7 +555,7 @@ class FileSave:
         logger = Logger()
 
         dfs = gather_model_as_data_frames(self.circuit,
-        logger=logger,
+                                          logger=logger,
                                           legacy=False)
 
         model_data = gather_model_as_jsons(self.circuit)
@@ -579,7 +580,7 @@ class FileSave:
 
         logger = Logger()
 
-        dfs = gather_model_as_data_frames(self.circuit, logger=logger)
+        dfs = gather_model_as_data_frames(self.circuit, logger=logger, legacy=True)
 
         save_data_frames_to_sqlite(dfs,
                                    file_path=self.file_name,
