@@ -2071,7 +2071,7 @@ class MultiCircuit(Assets):
         if self.idtag == base_grid.idtag or force_second_pass:
 
             # get a dictionary of all the elements of the other circuit
-            here_elements_dict, dict_ok = base_grid.get_all_elements_dict(logger=logger)
+            here_elements_dict, dict_ok = self.get_all_elements_dict(logger=logger)
 
             if not dict_ok:
                 return True, logger, dgrid
