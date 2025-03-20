@@ -34,3 +34,33 @@ def test_tower_composition():
     assert np.isclose(X0, 1.1989736994044684, atol=1e-4)
     assert np.isclose(R1, 1.485081882395359, atol=1e-4)
     assert np.isclose(X1, 0.3613207070253497, atol=1e-4)
+
+def test_tower_composition2():
+    """
+    Explicar ejemplo libro Acha
+    R = 0.1363 ohm/km
+    :return:
+    """
+    tower = gce.OverheadLineType(name="Tower")
+
+    wire = gce.Wire(name="AWG SLD",
+                    gmr=0.001603,
+                    r=1.485077,
+                    x=0.0,
+                    max_current=0.11)
+
+    tower.add_wire_relationship(wire=wire, xpos=0.0, ypos=7.0, phase=1)
+    tower.add_wire_relationship(wire=wire, xpos=0.4, ypos=7.0, phase=2)
+    tower.add_wire_relationship(wire=wire, xpos=0.8, ypos=7.0, phase=3)
+
+    tower.compute()
+
+    R1, X1, B1 = tower.get_sequence_values(circuit_idx=0, seq=1)
+    R0, X0, B0 = tower.get_sequence_values(circuit_idx=0, seq=0)
+    print(f"R0: {R0}, X0: {X0}")
+    print(f"R1: {R1}, X1: {X1}")
+
+    assert np.isclose(R0, 1.5892070972018013, atol=1e-4)
+    assert np.isclose(X0, 1.1989736994044684, atol=1e-4)
+    assert np.isclose(R1, 1.485081882395359, atol=1e-4)
+    assert np.isclose(X1, 0.3613207070253497, atol=1e-4)
