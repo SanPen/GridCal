@@ -20,7 +20,7 @@ from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
                            QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
                            QContextMenuEvent)
-from PySide6.QtWidgets import (QGraphicsView, QMessageBox, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, BRANCH_TYPES
@@ -389,10 +389,10 @@ class SchematicWidget(BaseDiagramWidget):
         self.displacement = QPoint()
         self.startPos: Union[QPoint, None] = None
 
-        # for vecinity diagram porpuses
+        # for vicinity diagram purposes
         self.root_bus: Union[Bus, None] = None
 
-        # for graphics dev porpuses
+        # for graphics dev purposes
         # self.pos_label = QGraphicsTextItem()
         # self.add_to_scene(self.pos_label)
 
@@ -400,7 +400,7 @@ class SchematicWidget(BaseDiagramWidget):
             self.draw()
 
         # -------------------------------------------------------------------------------------------------
-        # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
+        # Note: Do not declare any variable beyond here, as it may not be considered if draw is called :/
 
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
@@ -517,7 +517,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         self.editor_graphics_view.scale(1.0 / scale_factor, 1.0 / scale_factor)
 
-    def create_bus_graphics(self, bus: Bus, x: int, y: int, h: int, w: int,
+    def create_bus_graphics(self, bus: Bus, x: float, y: float, h: int, w: int,
                             draw_labels: bool = True, r: float = 0.0) -> BusGraphicItem:
         """
         create the Bus graphics
@@ -527,6 +527,7 @@ class SchematicWidget(BaseDiagramWidget):
         :param h: height (px)
         :param w: width (px)
         :param draw_labels: Draw labels?
+        :param r: rotation angle (deg)
         :return: BusGraphicItem
         """
 
@@ -3311,7 +3312,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         ACTIVE['color'] = QColor(255, 255, 255, 255)  # white
         ACTIVE['text'] = QColor(255, 255, 255, 255)  # white
-        ACTIVE['backgound'] = QColor(0, 0, 0, 255)  # black
+        ACTIVE['background'] = QColor(0, 0, 0, 255)  # black
         self.recolour_mode()
 
     def set_light_mode(self) -> None:
@@ -3321,7 +3322,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         ACTIVE['color'] = QColor(0, 0, 0, 255)  # black
         ACTIVE['text'] = QColor(0, 0, 0, 255)  # black
-        ACTIVE['backgound'] = QColor(255, 255, 255, 255)  # white
+        ACTIVE['background'] = QColor(255, 255, 255, 255)  # white
         self.recolour_mode()
 
     def colour_results(self,
@@ -4693,12 +4694,14 @@ def make_vicinity_diagram(circuit: MultiCircuit,
 
 def make_diagram_from_buses(circuit: MultiCircuit,
                             buses: List[Bus] | Set[Bus],
+                            name='Diagram from selection',
                             prog_func: Union[Callable, None] = None,
                             text_func: Union[Callable, None] = None):
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
     :param buses: List of Bus
+    :param name: name of the diagram
     :param prog_func:
     :param text_func:
     :return:
@@ -4730,6 +4733,6 @@ def make_diagram_from_buses(circuit: MultiCircuit,
                                          explode_factor=1.0,
                                          prog_func=prog_func,
                                          text_func=text_func,
-                                         name='Diagram from selection')
+                                         name=name)
 
     return diagram

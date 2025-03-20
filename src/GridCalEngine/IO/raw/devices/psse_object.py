@@ -7,7 +7,6 @@ import uuid as uuidlib
 from typing import List, Dict, TypeVar, Any
 from GridCalEngine.IO.base.units import Unit
 from GridCalEngine.IO.raw.devices.psse_property import PsseProperty
-from GridCalEngine.basic_structures import Logger
 
 
 def uuid_from_seed(seed: str):
@@ -173,7 +172,7 @@ class RawObject:
             return data
         elif len(data) < n:
             diff = n - len(data)
-            extra = [0] * diff
+            extra = [0 for _ in range(diff)]
             return data + extra
         elif len(data) > n:
             return [data[i] for i in range(n)]

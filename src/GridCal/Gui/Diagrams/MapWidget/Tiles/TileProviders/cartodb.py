@@ -23,8 +23,9 @@
 """
 A tile source that serves OpenStreetMap tiles from server(s).
 """
+from __future__ import  annotations
 import math
-from typing import Tuple
+from typing import Tuple, List
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 
@@ -33,7 +34,7 @@ class CartoDbTiles(Tiles):
 
     def __init__(self, tiles_dir='open_street_map_tiles',
                  http_proxy=None,
-                 tile_servers=None,
+                 tile_servers: List[str] | None = None,
                  name: str = 'Carto positron'):
         """
         Override the base class for these tiles.
@@ -62,6 +63,27 @@ class CartoDbTiles(Tiles):
         # get tile information into instance
         self.level = min(self.levels)
         self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y = self.GetInfo(self.level)
+
+    def copy(self) -> "CartoDbTiles":
+        """
+        Copy of this object
+        :return:
+        """
+        # cpy = super().copy()
+        # cpy.__class__ == CartoDbTiles
+        # cpy: CartoDbTiles = cpy
+        # cpy.level = self.level
+        # cpy.num_tiles_x = self.num_tiles_x
+        # cpy.num_tiles_y = self.num_tiles_y
+        # cpy.ppd_x = self.ppd_x
+        # cpy.ppd_y = self.ppd_y
+
+        cpy = CartoDbTiles(tiles_dir=self.tiles_dir,
+                           http_proxy=self.http_proxy,
+                           tile_servers=self.servers.copy(),
+                           name=self.tile_set_name)
+
+        return cpy
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """

@@ -337,7 +337,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                        function_ptr=self.move_to_api_coordinates)
 
         add_menu_entry(menu=menu,
-                       text="Remove from schematic",
+                       text="Remove from schematic only",
                        icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove_function_from_schematic)
 
@@ -404,22 +404,21 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
     def remove_function_from_schematic(self) -> None:
         """
-        Function to be called when Action 1 is selected.
+        Removes the substation from the schematic only. The substation will remain in the database.
         """
-        ok = yes_no_question(f"Remove substation {self.api_object.name}?",
-                             "Remove substation graphics")
+        ok = yes_no_question(f"Remove substation {self.api_object.name} from the schematic only? It will remain in the database.",
+                             "Remove substation from schematic")
 
         if ok:
             self.editor.remove_substation(substation=self, delete_from_db=False)
 
     def remove_function_from_schematic_and_db(self) -> None:
         """
-
-        :return:
+        Removes the substation from both the schematic and the database. This action cannot be undone.
         """
 
-        ok = yes_no_question(f"Remove substation {self.api_object.name} from the map and the database?",
-                             "Remove substation graphics and database item")
+        ok = yes_no_question(f"Remove substation {self.api_object.name} from both the schematic and the database? This action cannot be undone.",
+                             "Remove substation from schematic and database")
 
         if ok:
             self.editor.remove_substation(substation=self, delete_from_db=True)
@@ -454,11 +453,18 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         if dlg.is_accepted:
 
             deleted_api_objs: List[Substation] = list()
-
+            
+            # Collect all codes to merge
+            merged_codes = ""
+            
             for i in dlg.selected_indices:
 
                 se_graphics = selected[i]
-
+                if merged_codes == "":
+                    merged_codes = se_graphics.api_object.code
+                else:
+                    merged_codes = merged_codes + ',' + se_graphics.api_object.code
+                
                 deleted_api_objs.append(se_graphics.api_object)
 
                 if se_graphics != self:
@@ -466,6 +472,15 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                     self.editor.remove_substation(substation=se_graphics,
                                                   delete_from_db=True,
                                                   delete_connections=False)
+            
+            # Update the code of the base substation
+            self.api_object.code = merged_codes  # Needed?
+            
+            # Find the base substation in the circuit's collection and update it
+            for i, substation in enumerate(self.editor.circuit._substations):
+                if substation == self.api_object:
+                    self.editor.circuit._substations[i].code = merged_codes
+                    break
 
             # re-index the stuff pointing at deleted api elements to this api object
             for vl in self.editor.circuit.voltage_levels:
@@ -515,11 +530,11 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
         if inpt.is_accepted:
             kv = inpt.value
-            vl = VoltageLevel(name=f'{kv}KV @ {self.api_object.name}',
+            vl = VoltageLevel(name=f'{self.api_object.name} @{kv} kV VL',
                               Vnom=kv,
                               substation=self.api_object)
 
-            bus = Bus(name=f"Bus {self.api_object.name}",
+            bus = Bus(name=f"{self.api_object.name} @{kv} kV bus",
                       Vnom=kv,
                       substation=self.api_object,
                       voltage_level=vl)

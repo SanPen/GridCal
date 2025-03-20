@@ -210,7 +210,7 @@ class GeneratorQCurveEditor(QDialog):
 
         self.buttons_layout.addWidget(self.add_row_button)
         # self.buttons_layout.addWidget(self.sort_button)
-        self.buttons_layout.addSpacerItem(QSpacerItem(40, 30, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.buttons_layout.addSpacerItem(QSpacerItem(40, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         self.buttons_layout.addWidget(self.del_button)
 
         self.l_layout.addWidget(self.table_view)

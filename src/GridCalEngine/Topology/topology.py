@@ -453,6 +453,7 @@ def sum_per_bus_cx(nbus: int, bus_indices: IntVec, magnitude: CxVec) -> CxVec:
         res[bus_indices[i]] += magnitude[i]
     return res
 
+
 @nb.njit(cache=True)
 def sum_per_bus_bool(nbus: int, bus_indices: IntVec, magnitude: BoolVec) -> BoolVec:
     """
@@ -468,6 +469,7 @@ def sum_per_bus_bool(nbus: int, bus_indices: IntVec, magnitude: BoolVec) -> Bool
         res[bus_indices[i]] += magnitude[i]
     return res
 
+
 @nb.njit(cache=True)
 def dev_per_bus(nbus: int, bus_indices: IntVec) -> IntVec:
     """
@@ -480,22 +482,3 @@ def dev_per_bus(nbus: int, bus_indices: IntVec) -> IntVec:
     for i in range(len(bus_indices)):
         res[bus_indices[i]] += 1
     return res
-
-
-def accept_line_connection(V1: float, V2: float, branch_connection_voltage_tolerance=0.1) -> float:
-    """
-    This function checks if a line can be connected between 2 voltages
-    :param V1: Voltage 1
-    :param V2: Voltage 2
-    :param branch_connection_voltage_tolerance:
-    :return: Can be connected?
-    """
-    if V2 > 0:
-        per = V1 / V2
-
-        if per < (1.0 - branch_connection_voltage_tolerance):
-            return False
-        else:
-            return True
-    else:
-        return V1 == V2

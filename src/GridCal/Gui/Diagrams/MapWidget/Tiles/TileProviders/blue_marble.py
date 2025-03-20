@@ -34,7 +34,10 @@ class BlueMarbleTiles(Tiles):
     An object to source internet tiles for pySlip.
     """
 
-    def __init__(self, tiles_dir='blue_marble_tiles', http_proxy=None, name: str = 'Blue Marble'):
+    def __init__(self,
+                 tiles_dir='blue_marble_tiles',
+                 http_proxy=None,
+                 name: str = 'Blue Marble'):
         """
         Override the base class for these tiles.
 
@@ -57,6 +60,18 @@ class BlueMarbleTiles(Tiles):
                          max_server_requests=2,
                          http_proxy=http_proxy,
                          attribution="© NASA Blue Marble, © OpenStreetMap contributors")
+
+    def copy(self) -> "BlueMarbleTiles":
+        """
+        Copy of this object
+        :return:
+        """
+
+        cpy = BlueMarbleTiles(tiles_dir=self.tiles_dir,
+                              http_proxy=self.http_proxy,
+                              name=self.tile_set_name)
+
+        return cpy
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.

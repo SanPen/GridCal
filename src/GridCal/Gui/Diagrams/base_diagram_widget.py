@@ -14,14 +14,12 @@ from PySide6.QtWidgets import QListView, QTableView, QVBoxLayout, QHBoxLayout, Q
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
-from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Simulations import (PowerFlowTimeSeriesResults, LinearAnalysisTimeSeriesResults,
                                        ContingencyAnalysisTimeSeriesResults, OptimalPowerFlowTimeSeriesResults,
                                        StochasticPowerFlowResults)
@@ -29,7 +27,7 @@ from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.basic_structures import Logger, Mat
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import SimulationTypes, ResultTypes
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 

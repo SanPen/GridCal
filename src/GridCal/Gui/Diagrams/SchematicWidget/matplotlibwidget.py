@@ -39,7 +39,8 @@ class MplCanvas(FigureCanvas):
             self.ax = self.fig.add_subplot(111, axisbg='white')
 
         FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Policy.Expanding,
+                                   QtWidgets.QSizePolicy.Policy.Expanding)
         FigureCanvas.updateGeometry(self)
 
         scale = 1.2
@@ -68,7 +69,7 @@ class MplCanvas(FigureCanvas):
         """
         self.fig.subplots_adjust(left=0, bottom=0, right=1, top=0.9, wspace=0, hspace=0)
 
-    def zoom_factory(self, ax, base_scale=1.2):
+    def zoom_factory(self, ax: plt.Axes, base_scale=1.2):
         """
         Mouse zoom handler
         """

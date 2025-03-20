@@ -216,10 +216,10 @@ class HandleItem(QGraphicsEllipseItem):
 
         self.callback = callback
 
-        self.setBrush(Qt.red)
+        self.setBrush(Qt.GlobalColor.red)
         self.setFlag(self.GraphicsItemFlag.ItemIsMovable, True)
         self.setFlag(self.GraphicsItemFlag.ItemSendsScenePositionChanges, True)
-        self.setCursor(QCursor(Qt.SizeFDiagCursor))
+        self.setCursor(QCursor(Qt.CursorShape.SizeFDiagCursor))
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any):
         """
@@ -262,13 +262,13 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         """
 
         QGraphicsEllipseItem.__init__(self, QRectF(-6.0, -6.0, h, w), parent)
-        self.setCursor(QCursor(Qt.CrossCursor))
+        self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
 
         # Properties:
         self.color = ACTIVE['color']
         self.pen_width = 2
         self.style = ACTIVE['style']
-        self.setBrush(Qt.darkGray)
+        self.setBrush(Qt.GlobalColor.darkGray)
         self.setPen(QPen(self.color, self.pen_width, self.style))
 
         # terminal parent object
@@ -305,34 +305,34 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         return self.rect().height()
 
     @property
-    def x(self) -> int:
+    def x(self) -> float:
         """
         x position
         """
         return self.pos().x()
 
     @property
-    def y(self) -> int:
+    def y(self) -> float:
         """
         y position
         """
         return self.pos().y()
 
     @property
-    def xc(self) -> int:
+    def xc(self) -> float:
         """
         x-center
         :return:
         """
-        return self.pos().x() - self.w / 2
+        return self.pos().x() - self.w / 2.0
 
     @property
-    def yc(self) -> int:
+    def yc(self) -> float:
         """
         Y-center
         :return:
         """
-        return self.pos().y() - self.h / 2
+        return self.pos().y() - self.h / 2.0
 
     def add_hosting_connection(self,
                                graphic_obj: LineGraphicTemplateItem,

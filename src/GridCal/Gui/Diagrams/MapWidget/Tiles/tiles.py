@@ -55,8 +55,6 @@ class Tiles(BaseTiles):
     A tile object to source server tiles for the widget.
     """
 
-
-
     def __init__(self,
                  tile_set_name: str,
                  tile_set_short_name: str,
@@ -109,8 +107,6 @@ class Tiles(BaseTiles):
             level_dir = os.path.join(tiles_dir, '%d' % level)
             if not os.path.isdir(level_dir):
                 os.makedirs(level_dir)
-
-
 
         # save params not saved in super()
         self.servers = servers
@@ -224,6 +220,26 @@ class Tiles(BaseTiles):
                                     refresh_tiles_after_days=60)
                 self.workers.append(worker)
                 worker.start()
+
+    # def copy(self) -> "Tiles":
+    #     """
+    #     Perform a copy of the Tiles object.
+    #     :return:
+    #     """
+    #     return Tiles(tile_set_name=self.tile_set_name,
+    #              tile_set_short_name=self.tile_set_short_name,
+    #              tile_set_version=self.tile_set_version,
+    #              levels=self.levels.copy(),
+    #              tile_width=self.tile_width,
+    #              tile_height=self.tile_height,
+    #              tiles_dir=self.tiles_dir,
+    #              max_lru=self.max_lru,
+    #              servers=self.servers.copy(),
+    #              url_path=self.url_path,
+    #              max_server_requests=self.max_requests,
+    #              http_proxy=self.http_proxy,
+    #              re_fetch_days=self.refresh_tiles_after_days,
+    #              attribution=self.attribution_string)
 
     def UseLevel(self, level):
         """

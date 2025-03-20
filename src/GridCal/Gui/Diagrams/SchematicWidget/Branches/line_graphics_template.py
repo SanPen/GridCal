@@ -369,9 +369,6 @@ class ArrowHead(QGraphicsPolygonItem):
         """
         Set color and style
         :param color: QColor instance
-        :param w: width
-        :param style: PenStyle instance
-        :return:
         """
         self.setBrush(color)
         self.label.setDefaultTextColor(color)

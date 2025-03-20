@@ -11,23 +11,23 @@ import math
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from PySide6.QtWidgets import QGraphicsItem, QMessageBox
+from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton
 from collections.abc import Callable
-from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
+from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool,
+                            QEventLoop)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import CheckListDialogue
+from GridCal.Gui.general_dialogues import CheckListDialogue, ElementsDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
-from GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
-from GridCalEngine.Topology.topology import accept_line_connection
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
@@ -54,6 +54,7 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
+from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.messages import error_msg, info_msg
 
 if TYPE_CHECKING:
@@ -62,6 +63,7 @@ if TYPE_CHECKING:
 MAP_BRANCH_GRAPHIC_TYPES = Union[
     MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine
 ]
+
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -92,7 +94,7 @@ class MapLibraryModel(QStandardItemModel):
         """
         Items model to host the draggable icons
         """
-        QStandardItemModel.__init__(self)
+        super().__init__()
 
         self.setColumnCount(1)
 
@@ -166,6 +168,45 @@ class MapLibraryModel(QStandardItemModel):
         return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
+class SelectionDialog(QDialog):
+    """
+    # Create a non-modal dialog that will stay on top but allow interaction with the map
+    """
+
+    def __init__(self, branch: MAP_BRANCH_GRAPHIC_TYPES, vnom: float, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Waiting for Selection")
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+
+        layout = QVBoxLayout()
+
+        # Add instructions
+        instruction_label = QLabel(f"Click on a substation to reconnect branch {branch.api_object.name}")
+        instruction_label.setWordWrap(True)
+        layout.addWidget(instruction_label)
+
+        # Add more detailed instructions
+        detail_label = QLabel(f"The substation should have a compatible voltage level ({vnom} kV)")
+        detail_label.setWordWrap(True)
+        layout.addWidget(detail_label)
+
+        # Add a status label that will be updated
+        self.status_label = QLabel("Waiting for selection...")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+
+        # Add a cancel button
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.reject)
+        layout.addWidget(cancel_button)
+
+        self.setLayout(layout)
+        self.resize(300, 200)
+
+    def update_status(self, text):
+        self.status_label.setText(text)
+
+
 class GridMapWidget(BaseDiagramWidget):
     """
     GridMapWidget
@@ -195,17 +236,18 @@ class GridMapWidget(BaseDiagramWidget):
         :param call_new_substation_diagram_func: function pointer to call on new_substation (optional)
         """
 
-        BaseDiagramWidget.__init__(self,
-                                   gui=gui,
-                                   circuit=circuit,
-                                   diagram=MapDiagram(name=name,
-                                                      tile_source=tile_src.tile_set_name,
-                                                      start_level=start_level,
-                                                      longitude=longitude,
-                                                      latitude=latitude) if diagram is None else diagram,
-                                   library_model=MapLibraryModel(),
-                                   time_index=None,
-                                   call_delete_db_element_func=call_delete_db_element_func)
+        super().__init__(
+            gui=gui,
+            circuit=circuit,
+            diagram=MapDiagram(name=name,
+                               tile_source=tile_src.tile_set_name,
+                               start_level=start_level,
+                               longitude=longitude,
+                               latitude=latitude) if diagram is None else diagram,
+            library_model=MapLibraryModel(),
+            time_index=None,
+            call_delete_db_element_func=call_delete_db_element_func
+        )
 
         # declare the map
         self.map = MapWidget(parent=self,
@@ -278,6 +320,40 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [(elm.api_object, elm) for elm in self.map.diagram_scene.selectedItems()]
 
+    
+    def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine, 
+                                                                  MapDcLine,
+                                                                  MapHvdcLine,
+                                                                  MapFluidPathLine)]]:
+            """
+            Get only selected line segments from the scene
+            
+            :return: List of (Line, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)) tuples
+            """
+            selected_line_segments = []
+            for item in self.map.diagram_scene.selectedItems():
+                if (hasattr(item, 'api_object') and hasattr(item, 'container')
+                    and isinstance(item.container, 
+                                (MapAcLine, 
+                                MapDcLine, 
+                                MapHvdcLine, 
+                                MapFluidPathLine))):
+                    selected_line_segments.append((item.api_object, item.container))
+            return selected_line_segments
+
+    def get_selected_substations_tup(self) -> List[Tuple[Substation, SubstationGraphicItem]]:
+            """
+            Get only selected substations from the scene
+            
+            :return: List of (Substation, SubstationGraphicItem) tuples
+            """
+            selected_substations = []
+            for item in self.map.diagram_scene.selectedItems():
+                if hasattr(item, 'api_object') and isinstance(item, SubstationGraphicItem):
+                    selected_substations.append((item.api_object, item))
+            return selected_substations
+
+
     def add_to_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
         Add item to the diagram and the diagram scene
@@ -323,20 +399,6 @@ class GridMapWidget(BaseDiagramWidget):
                 self.remove_branch_graphic(line=graphic_object, delete_from_db=delete_from_db)
 
         self.delete_diagram_element(device=device, propagate=delete_from_db)
-
-        # if device is not None:
-        #     self.delete_diagram_element(device=device, propagate=delete_from_db)
-        #
-        # if graphic_object is not None:
-        #
-        #     if isinstance(graphic_object,
-        #                   SubstationGraphicItem):
-        #         self.remove_substation(substation=graphic_object,
-        #                                delete_from_db=delete_from_db)
-        #
-        #     self.remove_from_scene(graphic_object)
-        # else:
-        #     warn(f"Graphic object {graphic_object} and device {device} are none")
 
         self.object_editor_table.setModel(None)
 
@@ -449,9 +511,6 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [s for s in self.map.view.selected_items() if isinstance(s, SubstationGraphicItem)]
 
-    # def get_selected(self):
-    #     return self.map.get_selected()
-
     def create_new_line_wizard(self):
         """
         Create a new line in the map with dialogues
@@ -482,7 +541,7 @@ class GridMapWidget(BaseDiagramWidget):
                     self.circuit.add_line(new_line)
                 else:
                     error_msg(text="The nominal voltage of the two connecting substations is not the same :(",
-                                   title="Create new line")
+                              title="Create new line")
                     return None
             else:
                 error_msg(text="Some of the buses was None :(", title="Create new line")
@@ -502,147 +561,124 @@ class GridMapWidget(BaseDiagramWidget):
                           delete_from_db: bool = False,
                           delete_connections: bool = True):
         """
-
-        :param substation:
-        :param delete_from_db:
-        :param delete_connections:
-        :return:
+        Remove a substation from the schematic and optionally from the database
+        
+        :param substation: Substation graphic item to remove
+        :param delete_from_db: Delete from the database too?
+        :param delete_connections: True always except for when merging substations
+        :return: None
         """
-        sub = self.graphics_manager.delete_device(substation.api_object)
+        # Store the API object before deleting the graphic
+        api_object = substation.api_object
+
+        # Get all buses connected to this substation
+        substation_buses = [bus for bus in self.circuit.buses if bus.substation == api_object]
+        
+        # Get all voltage levels associated with this substation
+        voltage_levels = [vl for vl in self.circuit.voltage_levels if vl.substation == api_object]
+
+        # voltage_levels = api_object.voltage_levels
+
+        devs = []
+        # find associated Branches in reverse order
+        for obj in substation_buses:
+            for branch_list in self.circuit.get_branch_lists():
+                for i in range(len(branch_list) - 1, -1, -1):
+                    if branch_list[i].bus_from == obj:
+                        devs.append(branch_list[i])
+                    elif branch_list[i].bus_to == obj:
+                        devs.append(branch_list[i])
+
+        # find the associated injection devices
+            for inj_list in self.circuit.get_injection_devices_lists():
+                for i in range(len(inj_list) - 1, -1, -1):
+                    if inj_list[i].bus == obj:
+                        devs.append(inj_list[i])
+
+        # Show all devices that will be disconnected
+        title = f"Devices to be {'deleted' if delete_connections else 'disconnected'} from {api_object.name}"
+        self.show_devices_to_disconnect_dialog(
+            devs,
+            substation_buses, 
+            voltage_levels, 
+            title
+        )
+
+        # Remove from graphics manager and scene
+        sub = self.graphics_manager.delete_device(api_object)
         self.map.diagram_scene.removeItem(sub)
 
+        # Find and delete all lines connected to the substation
+        for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
+            for elm in self.graphics_manager.get_device_type_list(tpe):
+                if elm.api_object.get_substation_from() == api_object or elm.api_object.get_substation_to() == api_object:
+                    self.graphics_manager.delete_device(elm.api_object)
+                    for segment in elm.segments_list:
+                        self.map.diagram_scene.removeItem(segment)
+
+        # Finally, delete from the database if requested
         if delete_from_db:
-            self.circuit.delete_substation(obj=sub)
+            # Delete buses associated with this substation
+            for bus in substation_buses:
+                self.circuit.delete_bus(bus, delete_associated=True)
+                
+            # Delete voltage levels associated with this substation
+            for vl in voltage_levels:
+                self.circuit.delete_voltage_level(vl)
+                
+            # Delete the substation itself
+            self.circuit.delete_substation(obj=api_object)
 
-        if delete_connections:
-            # Find all branches connected to this substation
-            connected_branches = []
-            br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
-
-            for tpe in br_types:
-                elms = self.graphics_manager.get_device_type_list(tpe)
-                for elm in elms:
-                    if (elm.api_object.get_substation_from() == substation.api_object
-                            or elm.api_object.get_substation_to() == substation.api_object):
-                        connected_branches.append(elm)
+    def show_devices_to_disconnect_dialog(self, 
+                                         devices: List[ALL_DEV_TYPES],
+                                         buses: List[Bus],
+                                         voltage_levels: List[VoltageLevel],
+                                         dialog_title: str):
+        """
+        Show a dialog with the list of all devices that will be disconnected
+        
+        :param devices: List of devices to be disconnected
+        :param buses: List of buses associated with the substation
+        :param voltage_levels: List of voltage levels associated with the substation
+        :param dialog_title: Title for the dialog
+        """
+        from GridCal.Gui.general_dialogues import ElementsDialogue
+        from GridCalEngine.Devices.Parents.editable_device import GCProp
+        
+        # Combine all devices
+        all_devices = devices + buses + voltage_levels
+        
+        if not all_devices:
+            info_msg('No devices to disconnect', dialog_title)
+            return
             
-            # If there are connected branches, ask the user if they want to reconnect them
-            if len(connected_branches) > 0:
-                # Create a list of branch names for the message
-                branch_names = [branch.api_object.name for branch in connected_branches]
-                branch_list_text = "\n- " + "\n- ".join(branch_names)
-                
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Question)
-                msg.setText(f"The substation {substation.api_object.name} has "
-                            f"the following connected branches:{branch_list_text}")
-                msg.setInformativeText("Do you want me to try to reconnect "
-                                       "these branches to the closest substations?")
-                msg.setWindowTitle("Reconnect Branches")
-                msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-                result = msg.exec()
-                
-                if result == QMessageBox.StandardButton.Yes:
-                    # Find all other substations to consider as reconnection candidates
-                    other_substations = []
-                    for sub_graphic in self.graphics_manager.get_device_type_list(DeviceType.SubstationDevice):
-                        if sub_graphic.api_object != substation.api_object:
-                            other_substations.append(sub_graphic)
-                    
-                    # Process each connected branch
-                    for branch in connected_branches:
-                        # Determine if this branch connects from or to the substation being removed
-                        connects_from = branch.api_object.get_substation_from() == substation.api_object
-                        
-                        # Find the closest substation with a compatible voltage level
-                        closest_sub = None
-                        min_distance = 1e20  # Initialize with a large value
-                        
-                        # Get the voltage of the bus that's not being removed
-                        if connects_from:
-                            vnom = branch.api_object.bus_to.Vnom
-                        else:  # If not in the from side, it is in the to
-                            vnom = branch.api_object.bus_from.Vnom
-                        
-                        for sub_graphic in other_substations:
-                            # Skip the substation being removed
-                            # if sub_graphic.api_object == substation.api_object:
-                            #     continue
-                            
-                            # Calculate distance
-                            distance = haversine_distance(
-                                substation.lat, substation.lon,
-                                sub_graphic.lat, sub_graphic.lon
-                            )
-                            
-                            # Check if this substation has a compatible voltage level
-                            has_compatible_vl = False
-                            suitable_bus = None
-                            
-                            for bus in self.circuit.get_substation_buses(substation=sub_graphic.api_object):
-                                if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
-                                    has_compatible_vl = True
-                                    suitable_bus = bus
-                                    break
-                            
-                            if has_compatible_vl and distance < min_distance:
-                                min_distance = distance
-                                closest_sub = (sub_graphic, suitable_bus)
-                        
-                        # If we found a suitable substation, update the branch
-                        if closest_sub is not None:
-                            sub_graphic, suitable_bus = closest_sub
-                            
-                            # Check if this would create a line connecting to the same substation at both ends
-                            other_end_substation = None
-                            if connects_from:
-                                other_end_substation = branch.api_object.get_substation_to()
-                            else:
-                                other_end_substation = branch.api_object.get_substation_from()
-                            
-                            # If reconnecting would create a line with the same substation at both ends, remove the line
-                            if other_end_substation == sub_graphic.api_object:
-                                # Remove the branch instead of reconnecting it
-                                self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
-                                
-                                # Inform the user
-                                info_msg = QMessageBox()
-                                info_msg.setIcon(QMessageBox.Icon.Information)
-                                info_msg.setText(f"Branch {branch.api_object.name} removed")
-                                info_msg.setInformativeText(f"Reconnecting would have created a line connecting the same substation to itself.")
-                                info_msg.setWindowTitle("Branch Removed")
-                                info_msg.exec()
-                            else:
-                                # Update the branch connection
-                                if connects_from:
-                                    branch.api_object.bus_from = suitable_bus
-                                    # Update the line container's from_substation
-                                    branch.from_substation = sub_graphic
-                                else:
-                                    branch.api_object.bus_to = suitable_bus
-                                    # Update the line container's to_substation
-                                    branch.to_substation = sub_graphic
-                                
-                                # Redraw the branch to update its visual representation
-                                branch.draw_all()
-                                
-                                # Inform the user
-                                info_msg = QMessageBox()
-                                info_msg.setIcon(QMessageBox.Icon.Information)
-                                info_msg.setText(f"Branch {branch.api_object.name} reconnected")
-                                info_msg.setInformativeText(f"Connected to substation {sub_graphic.api_object.name}")
-                                info_msg.setWindowTitle("Branch Reconnected")
-                                info_msg.exec()
-                        else:
-                            # If no suitable substation found, remove the branch
-                            self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
-                else:
-                    # User chose not to reconnect, so remove all connected branches
-                    for branch in connected_branches:
-                        self.remove_branch_graphic(line=branch, delete_from_db=delete_from_db)
-        else:
-            br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
-
+        # Create custom properties for name, type, and ID tag
+        name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name', 
+                           display=True, editable=False)
+        
+        type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type', 
+                           display=True, editable=False)
+        
+        idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag', 
+                           display=True, editable=False)
+        
+        custom_props = [name_prop, type_prop, idtag_prop]
+        
+        # Create and show the dialog
+        dialog = ElementsDialogue(name=dialog_title, elements=all_devices)
+        
+        # Replace the model with our custom one that only shows name, type, and idtag
+        model = ObjectsModel(objects=all_devices,
+                            time_index=None,
+                            property_list=custom_props,
+                            parent=dialog.objects_table,
+                            editable=False)
+        
+        dialog.objects_table.setModel(model)
+        
+        # Make the dialog modal so the user must acknowledge it before continuing
+        dialog.setModal(True)
+        dialog.exec()
 
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """
@@ -968,12 +1004,12 @@ class GridMapWidget(BaseDiagramWidget):
 
             for vl_template in dlg.get_voltage_levels():
                 # substation_graphics.add_voltage_level()
-                vl = VoltageLevel(name=f"{se_object.name} @{kv}KV VL",
+                vl = VoltageLevel(name=f"{se_object.name} @{vl_template.voltage} kV VL",
                                   Vnom=vl_template.voltage,
                                   substation=se_object)
                 self.circuit.add_voltage_level(vl)
 
-                bus = Bus(name=f"{se_object.name} @{kv}KV bus",
+                bus = Bus(name=f"{se_object.name} @{vl_template.voltage} kV bus",
                           Vnom=vl_template.voltage,
                           substation=se_object,
                           voltage_level=vl)
@@ -1096,7 +1132,6 @@ class GridMapWidget(BaseDiagramWidget):
             lat /= n
             lon /= n
             self.map.pan_position(latitude=lat, longitude=lon)
-
 
     def colour_results(self,
                        Sbus: CxVec,
@@ -1486,162 +1521,157 @@ class GridMapWidget(BaseDiagramWidget):
         The original line is removed.
         """
         # Get selected items
-        selected_items = self.get_selected()
-        
+        # selected_items = self.get_selected()
+
         # Find the line and substation in the selection
-        selected_line = None
-        selected_substation = None
-        
-        for api_obj, graphic_obj in selected_items:
-            if isinstance(api_obj, Line) and isinstance(graphic_obj, MapLineSegment):
-                selected_line = (api_obj, graphic_obj)
-            elif isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
-                selected_substation = (api_obj, graphic_obj)
-        
-        # Check if we have both a line and a substation selected
-        if selected_line is None or selected_substation is None:
+        selected_lines = self.get_selected_line_segments_tup()
+        selected_substations = self.get_selected_substations_tup()
+
+        if len(selected_lines) != 1 or len(selected_substations) != 1:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Icon.Information)
             msg.setText("Please select exactly one line and one substation.")
             msg.setWindowTitle("Selection Error")
             msg.exec()
             return
-        
+
         # Get the API objects
-        line_api, line_graphic = selected_line
-        substation_api, substation_graphic = selected_substation
-        
+        line_api, line_graphic = selected_lines[0]
+        substation_api, substation_graphic = selected_substations[0]
+
         # Get the original line container to access its properties
-        original_line_container = line_graphic.container
-        
+        # original_line_container = line_graphic.container
+        original_line_container = line_graphic
+
         # Get the original buses
         bus_from = line_api.bus_from
         bus_to = line_api.bus_to
-        
+
         # Find a suitable bus in the selected substation
         # First, check if the substation already has a voltage level with the same voltage as the line
         vnom = line_api.get_max_bus_nominal_voltage()
         suitable_bus = None
-        
+
         # Look for a bus in the substation with matching voltage
         for bus in self.circuit.get_substation_buses(substation=substation_api):
             if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
                 suitable_bus = bus
                 break
-        
+
         # If no suitable bus found, create a new voltage level and bus
         if suitable_bus is None:
             # Find or create a voltage level with the appropriate voltage
             voltage_level = None
+
             for vl in substation_api.voltage_levels:
                 if abs(vl.nominal_voltage - vnom) < 0.01:
                     voltage_level = vl
                     break
-            
+
             if voltage_level is None:
                 # Create a new voltage level
                 voltage_level_name = f"{substation_api.name} {vnom} kV"
-                voltage_level = VoltageLevel(name=voltage_level_name, 
-                                            substation=substation_api,
-                                            nominal_voltage=vnom)
+                voltage_level = VoltageLevel(name=voltage_level_name,
+                                             substation=substation_api,
+                                             Vnom=vnom)
                 self.circuit.add_voltage_level(voltage_level)
-                
+
                 # Add the voltage level graphic
                 vl_graphic = self.add_api_voltage_level(
                     substation_graphics=substation_graphic,
                     api_object=voltage_level
                 )
-            
+
             # Create a new bus in the substation
             new_bus_name = f"{substation_api.name} {vnom} kV Bus"
             suitable_bus = Bus(name=new_bus_name,
-                             Vnom=vnom,
-                             vmin=bus_from.Vmin,  # Use the same limits as the original bus
-                             vmax=bus_from.Vmax,
-                             voltage_level=voltage_level,
-                             substation=substation_api,
-                             area=bus_from.area,
-                             zone=bus_from.zone,
-                             country=bus_from.country)
-            
+                               Vnom=vnom,
+                               vmin=bus_from.Vmin,  # Use the same limits as the original bus
+                               vmax=bus_from.Vmax,
+                               voltage_level=voltage_level,
+                               substation=substation_api,
+                               area=bus_from.area,
+                               zone=bus_from.zone,
+                               country=bus_from.country)
+
             # Add the new bus to the circuit
             self.circuit.add_bus(suitable_bus)
-        
+
         # Step 1: Collect all waypoints of the original line
         waypoints = []
-        
+
         # Add the "from" substation
         substation_from_graphics = self.graphics_manager.query(elm=line_api.get_substation_from())
         if substation_from_graphics is not None:
             waypoints.append((substation_from_graphics.lat, substation_from_graphics.lon))
-        
+
         # Add all intermediate points
         for node in original_line_container.nodes_list:
             waypoints.append((node.lat, node.lon))
-        
+
         # Add the "to" substation
         substation_to_graphics = self.graphics_manager.query(elm=line_api.get_substation_to())
         if substation_to_graphics is not None:
             waypoints.append((substation_to_graphics.lat, substation_to_graphics.lon))
-        
+
         # Step 2: Find the closest segment to the selected substation
         substation_lat = substation_api.latitude
         substation_lon = substation_api.longitude
-        
+
         min_distance = float('inf')
         closest_segment_idx = 0
         closest_point = (0, 0)
-        
+
         for i in range(len(waypoints) - 1):
             lat1, lon1 = waypoints[i]
             lat2, lon2 = waypoints[i + 1]
-            
+
             # Find the closest point on this segment to the substation
             point, distance = self._closest_point_on_segment(
                 lat1, lon1, lat2, lon2, substation_lat, substation_lon
             )
-            
+
             if distance < min_distance:
                 min_distance = distance
                 closest_segment_idx = i
                 closest_point = point
-        
+
         # Step 3: Calculate the lengths of the two new segments
         length1 = 0.0
         length2 = 0.0
-        
+
         # Calculate length of first segment (from original start to insertion point)
         for i in range(closest_segment_idx):
             lat1, lon1 = waypoints[i]
             lat2, lon2 = waypoints[i + 1]
             length1 += haversine_distance(lat1, lon1, lat2, lon2)
-        
+
         # Add distance from last waypoint to insertion point
         lat1, lon1 = waypoints[closest_segment_idx]
         lat2, lon2 = closest_point
         length1 += haversine_distance(lat1, lon1, lat2, lon2)
-        
+
         # Calculate length of second segment (from insertion point to original end)
         # First, add distance from insertion point to next waypoint
         lat1, lon1 = closest_point
         lat2, lon2 = waypoints[closest_segment_idx + 1]
         length2 += haversine_distance(lat1, lon1, lat2, lon2)
-        
+
         # Add remaining segments
         for i in range(closest_segment_idx + 1, len(waypoints) - 1):
             lat1, lon1 = waypoints[i]
             lat2, lon2 = waypoints[i + 1]
             length2 += haversine_distance(lat1, lon1, lat2, lon2)
-        
+
         # Step 4: Calculate the proportion of each segment
         total_length = length1 + length2
         ratio1 = length1 / total_length
         ratio2 = length2 / total_length
-        
+
         # Step 5: Create the new lines with the correct properties from the start
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
-        
+
         # Handle the code property - it might be a list of strings
         if hasattr(line_api, 'code') and line_api.code is not None:
             if isinstance(line_api.code, list):
@@ -1650,25 +1680,25 @@ class GridMapWidget(BaseDiagramWidget):
                 line1_code = f"{line_api.code}_1"
         else:
             line1_code = ""
-            
+
         line1 = Line(name=line1_name,
-                    bus_from=bus_from,
-                    bus_to=suitable_bus,
-                    code=line1_code,
-                    r=line_api.R * ratio1,  # Set impedance proportional to length
-                    x=line_api.X * ratio1,
-                    b=line_api.B * ratio1,
-                    r0=line_api.R0 * ratio1,
-                    x0=line_api.X0 * ratio1,
-                    b0=line_api.B0 * ratio1,
-                    r2=line_api.R2 * ratio1,
-                    x2=line_api.X2 * ratio1,
-                    b2=line_api.B2 * ratio1,
-                    length=length1,  # Set the actual calculated length
-                    rate=line_api.rate,
-                    contingency_factor=line_api.contingency_factor,
-                    protection_rating_factor=line_api.protection_rating_factor)
-        
+                     bus_from=bus_from,
+                     bus_to=suitable_bus,
+                     code=line1_code,
+                     r=line_api.R * ratio1,  # Set impedance proportional to length
+                     x=line_api.X * ratio1,
+                     b=line_api.B * ratio1,
+                     r0=line_api.R0 * ratio1,
+                     x0=line_api.X0 * ratio1,
+                     b0=line_api.B0 * ratio1,
+                     r2=line_api.R2 * ratio1,
+                     x2=line_api.X2 * ratio1,
+                     b2=line_api.B2 * ratio1,
+                     length=length1,  # Set the actual calculated length
+                     rate=line_api.rate,
+                     contingency_factor=line_api.contingency_factor,
+                     protection_rating_factor=line_api.protection_rating_factor)
+
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
             line1.color = line_api.color
@@ -1676,17 +1706,17 @@ class GridMapWidget(BaseDiagramWidget):
             line1.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
         if hasattr(line_api, 'active'):
             line1.active = line_api.active
-            
+
         # Preserve waypoints for line 1 (from start to insertion point)
         # Add all waypoints from the original line up to the closest segment
         for i in range(closest_segment_idx):
             if i < len(original_line_container.nodes_list):
                 node = original_line_container.nodes_list[i]
                 line1.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
-            
+
         # Add the insertion point (closest point to the substation) as the last waypoint
         closest_lat, closest_lon = closest_point
-        
+
         # Check if the closest point is very close to an existing waypoint
         # If so, we'll use that waypoint instead of adding a new one
         is_duplicate = False
@@ -1695,52 +1725,56 @@ class GridMapWidget(BaseDiagramWidget):
             if haversine_distance(closest_lat, closest_lon, node.lat, node.lon) < 0.01:  # 10 meters threshold
                 is_duplicate = True
                 closest_lat, closest_lon = node.lat, node.lon
-        
+
         # Only add the insertion point if it's not a duplicate
+        bearing_to_substation = 0.0  # initialize to zero
+        perpendicular_bearing = 0.0  # initialize to zero
+        R = 6371.0  # Earth's radius in km
+        offset_distance = 0.0  # initialize to zero
         if not is_duplicate:
             # Add an offset (5% of segment length) to the waypoint for line 1 to prevent visual overlap
             # Calculate a bearing from the closest point to the substation
             bearing_to_substation = math.atan2(
-                math.sin(math.radians(substation_lon) - math.radians(closest_lon)) * math.cos(math.radians(substation_lat)),
-                math.cos(math.radians(closest_lat)) * math.sin(math.radians(substation_lat)) - 
-                math.sin(math.radians(closest_lat)) * math.cos(math.radians(substation_lat)) * 
+                math.sin(math.radians(substation_lon) - math.radians(closest_lon)) * math.cos(
+                    math.radians(substation_lat)),
+                math.cos(math.radians(closest_lat)) * math.sin(math.radians(substation_lat)) -
+                math.sin(math.radians(closest_lat)) * math.cos(math.radians(substation_lat)) *
                 math.cos(math.radians(substation_lon) - math.radians(closest_lon))
             )
-            
+
             # Calculate a perpendicular bearing (90 degrees offset)
-            perpendicular_bearing = bearing_to_substation + math.pi/2
-            
+            perpendicular_bearing = bearing_to_substation + math.pi / 2
+
             # Calculate the segment length
             segment_length = haversine_distance(
-                waypoints[closest_segment_idx][0], 
-                waypoints[closest_segment_idx][1], 
-                waypoints[closest_segment_idx + 1][0], 
+                waypoints[closest_segment_idx][0],
+                waypoints[closest_segment_idx][1],
+                waypoints[closest_segment_idx + 1][0],
                 waypoints[closest_segment_idx + 1][1]
             )
-            
+
             # Distance to offset (5% of segment length)
             offset_distance = segment_length * 0.05
-            
+
             # Calculate the offset point for line 1 (perpendicular to the bearing to substation)
-            R = 6371.0  # Earth's radius in km
             offset_lat1 = math.asin(
-                math.sin(math.radians(closest_lat)) * math.cos(offset_distance/R) + 
-                math.cos(math.radians(closest_lat)) * math.sin(offset_distance/R) * math.cos(perpendicular_bearing)
+                math.sin(math.radians(closest_lat)) * math.cos(offset_distance / R) +
+                math.cos(math.radians(closest_lat)) * math.sin(offset_distance / R) * math.cos(perpendicular_bearing)
             )
             offset_lon1 = math.radians(closest_lon) + math.atan2(
-                math.sin(perpendicular_bearing) * math.sin(offset_distance/R) * math.cos(math.radians(closest_lat)),
-                math.cos(offset_distance/R) - math.sin(math.radians(closest_lat)) * math.sin(offset_lat1)
+                math.sin(perpendicular_bearing) * math.sin(offset_distance / R) * math.cos(math.radians(closest_lat)),
+                math.cos(offset_distance / R) - math.sin(math.radians(closest_lat)) * math.sin(offset_lat1)
             )
-            
+
             offset_lat1 = math.degrees(offset_lat1)
             offset_lon1 = math.degrees(offset_lon1)
-            
+
             # Add the offset point to line 1
             line1.locations.add_location(lat=offset_lat1, long=offset_lon1, alt=0.0)
-        
+
         # Line 2: from new_bus to original bus_to
         line2_name = f"{line_api.name}_2"
-        
+
         # Handle the code property for line 2
         if hasattr(line_api, 'code') and line_api.code is not None:
             if isinstance(line_api.code, list):
@@ -1749,25 +1783,25 @@ class GridMapWidget(BaseDiagramWidget):
                 line2_code = f"{line_api.code}_2"
         else:
             line2_code = ""
-            
+
         line2 = Line(name=line2_name,
-                    bus_from=suitable_bus,
-                    bus_to=bus_to,
-                    code=line2_code,
-                    r=line_api.R * ratio2,  # Set impedance proportional to length
-                    x=line_api.X * ratio2,
-                    b=line_api.B * ratio2,
-                    r0=line_api.R0 * ratio2,
-                    x0=line_api.X0 * ratio2,
-                    b0=line_api.B0 * ratio2,
-                    r2=line_api.R2 * ratio2,
-                    x2=line_api.X2 * ratio2,
-                    b2=line_api.B2 * ratio2,
-                    length=length2,  # Set the actual calculated length
-                    rate=line_api.rate,
-                    contingency_factor=line_api.contingency_factor,
-                    protection_rating_factor=line_api.protection_rating_factor)
-                    
+                     bus_from=suitable_bus,
+                     bus_to=bus_to,
+                     code=line2_code,
+                     r=line_api.R * ratio2,  # Set impedance proportional to length
+                     x=line_api.X * ratio2,
+                     b=line_api.B * ratio2,
+                     r0=line_api.R0 * ratio2,
+                     x0=line_api.X0 * ratio2,
+                     b0=line_api.B0 * ratio2,
+                     r2=line_api.R2 * ratio2,
+                     x2=line_api.X2 * ratio2,
+                     b2=line_api.B2 * ratio2,
+                     length=length2,  # Set the actual calculated length
+                     rate=line_api.rate,
+                     contingency_factor=line_api.contingency_factor,
+                     protection_rating_factor=line_api.protection_rating_factor)
+
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
             line2.color = line_api.color
@@ -1775,67 +1809,68 @@ class GridMapWidget(BaseDiagramWidget):
             line2.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
         if hasattr(line_api, 'active'):
             line2.active = line_api.active
-            
+
         # Preserve waypoints for line 2 (from insertion point to end)
         # Add the insertion point as the first waypoint with a small offset
         if not is_duplicate:
             # Calculate the offset point for line 2 (opposite direction from line 1)
             opposite_bearing = perpendicular_bearing + math.pi  # 180 degrees from the first offset
-            
-            offset_lat2 = math.asin(
-                math.sin(math.radians(closest_lat)) * math.cos(offset_distance/R) + 
-                math.cos(math.radians(closest_lat)) * math.sin(offset_distance/R) * math.cos(opposite_bearing)
+
+            offset_lat2 = math.asin( 
+                math.sin(math.radians(closest_lat)) * math.cos(offset_distance / R) +
+                math.cos(math.radians(closest_lat)) * math.sin(offset_distance / R) * math.cos(opposite_bearing)
             )
             offset_lon2 = math.radians(closest_lon) + math.atan2(
-                math.sin(opposite_bearing) * math.sin(offset_distance/R) * math.cos(math.radians(closest_lat)),
-                math.cos(offset_distance/R) - math.sin(math.radians(closest_lat)) * math.sin(offset_lat2)
+                math.sin(opposite_bearing) * math.sin(offset_distance / R) * math.cos(math.radians(closest_lat)),
+                math.cos(offset_distance / R) - math.sin(math.radians(closest_lat)) * math.sin(offset_lat2)
             )
-            
+
             offset_lat2 = math.degrees(offset_lat2)
             offset_lon2 = math.degrees(offset_lon2)
-            
+
             # Add the offset point to line 2
             line2.locations.add_location(lat=offset_lat2, long=offset_lon2, alt=0.0)
-        
+
         # Add all remaining waypoints from the original line
         for i in range(closest_segment_idx + 1, len(original_line_container.nodes_list)):
             node = original_line_container.nodes_list[i]
             line2.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
-        
+
         # Add the new lines to the circuit
         self.circuit.add_line(line1)
         self.circuit.add_line(line2)
-        
+
         # Add the new lines to the map
         line1_graphic = self.add_api_line(line1)
         line2_graphic = self.add_api_line(line2)
-        
+
         # Get the branch width and arrow size from the general diagram settings
         branch_width = self.diagram.min_branch_width
         arrow_size = self.diagram.arrow_size
-        
+
         # If we have segments in the original line, use their width and arrow size
         if original_line_container and original_line_container.segments_list:
             if len(original_line_container.segments_list) > 0:
                 segment = original_line_container.segments_list[0]
-                branch_width = segment.width
-                arrow_size = segment._arrow_size
-        
+                branch_width = segment.get_width()
+                arrow_size = segment.get_arrow_size()
+
         # Apply the same width and arrow size to the new lines
         line1_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
-        
+
         # Remove the original line
         self.remove_branch_graphic(line=line_graphic, delete_from_db=True)
-        
+
         # Notify the user
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)
         msg.setText(f"Line {line_api.name} has been split and connected to substation {substation_api.name}.")
-        msg.setInformativeText(f"Line 1 ({line1.name}): {length1:.2f} km\nLine 2 ({line2.name}): {length2:.2f} km\n\nImpedance parameters have been set proportionally based on the actual lengths.")
+        msg.setInformativeText(
+            f"Line 1 ({line1.name}): {length1:.2f} km\nLine 2 ({line2.name}): {length2:.2f} km\n\nImpedance parameters have been set proportionally based on the actual lengths.")
         msg.setWindowTitle("Operation Successful")
         msg.exec()
-        
+
     def _closest_point_on_segment(self, lat1, lon1, lat2, lon2, lat3, lon3):
         """
         Find the closest point on a line segment to a given point using geographic coordinates.
@@ -1851,11 +1886,11 @@ class GridMapWidget(BaseDiagramWidget):
             closest_lon = (lon1 + lon2) / 2
             distance = haversine_distance(closest_lat, closest_lon, lat3, lon3)
             return (closest_lat, closest_lon), distance
-        
+
         # Calculate distances to the endpoints
         dist_to_p1 = haversine_distance(lat1, lon1, lat3, lon3)
         dist_to_p2 = haversine_distance(lat2, lon2, lat3, lon3)
-        
+
         # Convert to radians for spherical calculations
         lat1_rad = math.radians(lat1)
         lon1_rad = math.radians(lon1)
@@ -1863,42 +1898,44 @@ class GridMapWidget(BaseDiagramWidget):
         lon2_rad = math.radians(lon2)
         lat3_rad = math.radians(lat3)
         lon3_rad = math.radians(lon3)
-        
+
         # Earth's radius in km
         R = 6371.0
-        
+
         # Calculate the bearing from point 1 to point 2
         y = math.sin(lon2_rad - lon1_rad) * math.cos(lat2_rad)
-        x = math.cos(lat1_rad) * math.sin(lat2_rad) - math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(lon2_rad - lon1_rad)
+        x = math.cos(lat1_rad) * math.sin(lat2_rad) - math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(
+            lon2_rad - lon1_rad)
         bearing_1_to_2 = math.atan2(y, x)
-        
+
         # Calculate the bearing from point 1 to point 3
         y = math.sin(lon3_rad - lon1_rad) * math.cos(lat3_rad)
-        x = math.cos(lat1_rad) * math.sin(lat3_rad) - math.sin(lat1_rad) * math.cos(lat3_rad) * math.cos(lon3_rad - lon1_rad)
+        x = math.cos(lat1_rad) * math.sin(lat3_rad) - math.sin(lat1_rad) * math.cos(lat3_rad) * math.cos(
+            lon3_rad - lon1_rad)
         bearing_1_to_3 = math.atan2(y, x)
-        
+
         # Calculate the angular distance from point 1 to point 3
         angular_dist_1_to_3 = math.acos(
-            math.sin(lat1_rad) * math.sin(lat3_rad) + 
+            math.sin(lat1_rad) * math.sin(lat3_rad) +
             math.cos(lat1_rad) * math.cos(lat3_rad) * math.cos(lon3_rad - lon1_rad)
         )
-        
+
         # Calculate the cross-track distance (perpendicular distance to the great circle path)
         cross_track_dist = math.asin(
             math.sin(angular_dist_1_to_3) * math.sin(bearing_1_to_3 - bearing_1_to_2)
         )
-        
+
         # Calculate the along-track distance (distance from point 1 to the closest point)
         along_track_dist = math.acos(
             math.cos(angular_dist_1_to_3) / math.cos(cross_track_dist)
         )
-        
+
         # Calculate the total distance of the segment
         segment_dist_rad = math.acos(
-            math.sin(lat1_rad) * math.sin(lat2_rad) + 
+            math.sin(lat1_rad) * math.sin(lat2_rad) +
             math.cos(lat1_rad) * math.cos(lat2_rad) * math.cos(lon2_rad - lon1_rad)
         )
-        
+
         # Check if the closest point is on the segment
         if along_track_dist > segment_dist_rad:
             # Closest point is beyond point 2
@@ -1910,123 +1947,124 @@ class GridMapWidget(BaseDiagramWidget):
             # Closest point is on the segment
             # Calculate the position of the closest point
             closest_lat_rad = math.asin(
-                math.sin(lat1_rad) * math.cos(along_track_dist) + 
+                math.sin(lat1_rad) * math.cos(along_track_dist) +
                 math.cos(lat1_rad) * math.sin(along_track_dist) * math.cos(bearing_1_to_2)
             )
-            
+
             closest_lon_rad = lon1_rad + math.atan2(
                 math.sin(bearing_1_to_2) * math.sin(along_track_dist) * math.cos(lat1_rad),
                 math.cos(along_track_dist) - math.sin(lat1_rad) * math.sin(closest_lat_rad)
             )
-            
+
             closest_lat = math.degrees(closest_lat_rad)
             closest_lon = math.degrees(closest_lon_rad)
-            
+
             # Calculate the distance from point 3 to the closest point
             distance = R * math.acos(
-                math.sin(lat3_rad) * math.sin(closest_lat_rad) + 
+                math.sin(lat3_rad) * math.sin(closest_lat_rad) +
                 math.cos(lat3_rad) * math.cos(closest_lat_rad) * math.cos(closest_lon_rad - lon3_rad)
             )
-            
+
             return (closest_lat, closest_lon), distance
 
     def create_t_joint_to_substation(self):
         """
-        Create a T-joint connection between a selected line and a selected substation.
-        This creates a new substation at the closest point on the line to the selected substation,
-        splits the original line into two segments, and creates a new line connecting the two substations.
+        Create a T-joint connection between a line and a selected substation using a selected waypoint.
+        This replaces the waypoint with a new substation, splits the original line into two segments,
+        and creates a new line connecting the selected substation to the new substation at the waypoint.
+        
+        The user only needs to select a waypoint and a substation. The line is automatically determined
+        from the waypoint.
         """
         # Get selected items
         selected_items = self.get_selected()
-        
-        # Find the line and substation in the selection
-        selected_line = None
+
+        # Find the substation and waypoint in the selection
         selected_substation = None
-        
+        selected_waypoint = None
+
         for api_obj, graphic_obj in selected_items:
-            if isinstance(api_obj, Line) and isinstance(graphic_obj, MapLineSegment):
-                selected_line = (api_obj, graphic_obj)
-            elif isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
+            if isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
                 selected_substation = (api_obj, graphic_obj)
-        
-        # Check if we have both a line and a substation selected
-        if selected_line is None or selected_substation is None:
+            elif isinstance(graphic_obj, LineLocationGraphicItem):
+                selected_waypoint = graphic_obj
+
+        # Check if we have a substation and a waypoint selected
+        if selected_substation is None or selected_waypoint is None:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Please select exactly one line and one substation.")
+            msg.setText("Please select one substation and one waypoint.")
             msg.setWindowTitle("Selection Error")
             msg.exec()
             return
-        
+
+        # Get the line container from the waypoint
+        original_line_container = selected_waypoint.line_container
+
+        if original_line_container is None:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Could not determine which line the waypoint belongs to.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+
+        # Get the line API object
+        line_api = original_line_container.api_object
+
+        if not isinstance(line_api, Line):
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("The waypoint must belong to a line.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+
         # Get the API objects
-        line_api, line_graphic = selected_line
         substation_api, substation_graphic = selected_substation
-        
-        # Get the original line container to access its properties
-        original_line_container = line_graphic.container
-        
-        # Step 1: Collect all waypoints of the original line
-        waypoints = []
-        
-        # Add the "from" substation
-        substation_from_graphics = self.graphics_manager.query(elm=line_api.get_substation_from())
-        if substation_from_graphics is not None:
-            waypoints.append((substation_from_graphics.lat, substation_from_graphics.lon))
-        
-        # Add all intermediate points
-        for node in original_line_container.nodes_list:
-            waypoints.append((node.lat, node.lon))
-        
-        # Add the "to" substation
-        substation_to_graphics = self.graphics_manager.query(elm=line_api.get_substation_to())
-        if substation_to_graphics is not None:
-            waypoints.append((substation_to_graphics.lat, substation_to_graphics.lon))
-        
-        # Step 2: Find the closest segment to the selected substation
-        substation_lat = substation_api.latitude
-        substation_lon = substation_api.longitude
-        
-        min_distance = float('inf')
-        closest_segment_idx = 0
-        closest_point = (0, 0)
-        
-        for i in range(len(waypoints) - 1):
-            lat1, lon1 = waypoints[i]
-            lat2, lon2 = waypoints[i + 1]
-            
-            # Find the closest point on this segment to the substation
-            point, distance = self._closest_point_on_segment(
-                lat1, lon1, lat2, lon2, substation_lat, substation_lon
-            )
-            
-            if distance < min_distance:
-                min_distance = distance
-                closest_segment_idx = i
-                closest_point = point
-        
-        # Step 3: Create a new substation at the closest point
-        closest_lat, closest_lon = closest_point
+
+        # Get the waypoint coordinates
+        waypoint_lat = selected_waypoint.lat
+        waypoint_lon = selected_waypoint.lon
+
+        # Find the index of the selected waypoint in the nodes list
+        waypoint_idx = -1
+        for i, node in enumerate(original_line_container.nodes_list):
+            if node == selected_waypoint:
+                waypoint_idx = i
+                break
+
+        if waypoint_idx == -1:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Selected waypoint not found in the line's waypoints.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+
+        # Step 1: Create a new substation at the waypoint location
         new_substation_name = f"{line_api.name}_Junction"
-        
+
         # Create the new substation
         new_substation = Substation(name=new_substation_name,
-                                   code=f"{line_api.code}_Junction" if hasattr(line_api, 'code') and line_api.code else "",
-                                   latitude=closest_lat,
-                                   longitude=closest_lon)
-        
+                                    code=f"{line_api.code}_Junction" if hasattr(line_api,
+                                                                                'code') and line_api.code else "",
+                                    latitude=waypoint_lat,
+                                    longitude=waypoint_lon)
+
         self.circuit.add_substation(obj=new_substation)
-        new_substation_graphic = self.add_api_substation(api_object=new_substation, lat=closest_lat, lon=closest_lon)
-        
-        # Step 4: Find a suitable bus in the selected substation and create a matching one in the new substation
+        new_substation_graphic = self.add_api_substation(api_object=new_substation, lat=waypoint_lat, lon=waypoint_lon)
+
+        # Step 2: Find a suitable bus in the selected substation and create a matching one in the new substation
         vnom = line_api.get_max_bus_nominal_voltage()
         suitable_bus_in_selected = None
-        
+
         # Look for a bus in the selected substation with matching voltage
         for bus in self.circuit.get_substation_buses(substation=substation_api):
             if abs(bus.Vnom - vnom) < 0.01:  # Small tolerance for voltage comparison
                 suitable_bus_in_selected = bus
                 break
-        
+
         # If no suitable bus found, create a new voltage level and bus in the selected substation
         if suitable_bus_in_selected is None:
             # Find or create a voltage level with the appropriate voltage in the selected substation
@@ -2035,94 +2073,101 @@ class GridMapWidget(BaseDiagramWidget):
                 if abs(vl.nominal_voltage - vnom) < 0.01:
                     voltage_level_in_selected = vl
                     break
-            
+
             if voltage_level_in_selected is None:
                 # Create a new voltage level
                 voltage_level_name = f"{substation_api.name} {vnom} kV"
-                voltage_level_in_selected = VoltageLevel(name=voltage_level_name, 
-                                                        substation=substation_api,
-                                                        nominal_voltage=vnom)
+                voltage_level_in_selected = VoltageLevel(name=voltage_level_name,
+                                                         substation=substation_api,
+                                                         Vnom=vnom)
                 self.circuit.add_voltage_level(voltage_level_in_selected)
-                
+
                 # Add the voltage level graphic
                 vl_graphic = self.add_api_voltage_level(
                     substation_graphics=substation_graphic,
                     api_object=voltage_level_in_selected
                 )
-            
+
             # Create a new bus in the selected substation
             bus_name = f"{substation_api.name} {vnom} kV Bus"
             suitable_bus_in_selected = Bus(name=bus_name,
-                                         Vnom=vnom,
-                                         vmin=0.9,
-                                         vmax=1.1,
-                                         voltage_level=voltage_level_in_selected,
-                                         substation=substation_api)
-            
+                                           Vnom=vnom,
+                                           vmin=0.9,
+                                           vmax=1.1,
+                                           voltage_level=voltage_level_in_selected,
+                                           substation=substation_api)
+
             # Add the new bus to the circuit
             self.circuit.add_bus(suitable_bus_in_selected)
-        
+
         # Create a voltage level and bus in the new substation
         voltage_level_in_new = VoltageLevel(name=f"{new_substation.name} {vnom} kV",
-                                           substation=new_substation,
-                                           Vnom=vnom)
+                                            substation=new_substation,
+                                            Vnom=vnom)
         self.circuit.add_voltage_level(voltage_level_in_new)
-        
+
         # Add the voltage level graphic
         vl_graphic = self.add_api_voltage_level(
             substation_graphics=new_substation_graphic,
             api_object=voltage_level_in_new
         )
-        
+
         # Create a new bus in the new substation
         new_bus = Bus(name=f"{new_substation.name} {vnom} kV Bus",
-                     Vnom=vnom,
-                     vmin=suitable_bus_in_selected.Vmin,
-                     vmax=suitable_bus_in_selected.Vmax,
-                     voltage_level=voltage_level_in_new,
-                     substation=new_substation,
-                     area=suitable_bus_in_selected.area,
-                     zone=suitable_bus_in_selected.zone,
-                     country=suitable_bus_in_selected.country)
-        
+                      Vnom=vnom,
+                      vmin=suitable_bus_in_selected.Vmin,
+                      vmax=suitable_bus_in_selected.Vmax,
+                      voltage_level=voltage_level_in_new,
+                      substation=new_substation,
+                      area=suitable_bus_in_selected.area,
+                      zone=suitable_bus_in_selected.zone,
+                      country=suitable_bus_in_selected.country)
+
         # Add the new bus to the circuit
         self.circuit.add_bus(new_bus)
-        
-        # Step 5: Calculate the lengths of the segments
-        # Calculate length of first segment (from original start to junction point)
+
+        # Step 3: Calculate the lengths of the segments
+        # Collect all waypoints of the original line
+        waypoints = []
+
+        # Add the "from" substation
+        substation_from_graphics = self.graphics_manager.query(elm=line_api.get_substation_from())
+        if substation_from_graphics is not None:
+            waypoints.append((substation_from_graphics.lat, substation_from_graphics.lon))
+
+        # Add all intermediate points
+        for node in original_line_container.nodes_list:
+            waypoints.append((node.lat, node.lon))
+
+        # Add the "to" substation
+        substation_to_graphics = self.graphics_manager.query(elm=line_api.get_substation_to())
+        if substation_to_graphics is not None:
+            waypoints.append((substation_to_graphics.lat, substation_to_graphics.lon))
+
+        # Calculate length of first segment (from original start to waypoint)
         length1 = 0.0
-        for i in range(closest_segment_idx):
-            lat1, lon1 = waypoints[i]
-            lat2, lon2 = waypoints[i + 1]
-            length1 += haversine_distance(lat1, lon1, lat2, lon2)
-        
-        # Add distance from last waypoint to junction point
-        lat1, lon1 = waypoints[closest_segment_idx]
-        lat2, lon2 = closest_point
-        length1 += haversine_distance(lat1, lon1, lat2, lon2)
-        
-        # Calculate length of second segment (from junction point to original end)
+        for i in range(waypoint_idx + 1):
+            if i < len(waypoints) - 1:
+                lat1, lon1 = waypoints[i]
+                lat2, lon2 = waypoints[i + 1]
+                length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+        # Calculate length of second segment (from waypoint to original end)
         length2 = 0.0
-        # First, add distance from junction point to next waypoint
-        lat1, lon1 = closest_point
-        lat2, lon2 = waypoints[closest_segment_idx + 1]
-        length2 += haversine_distance(lat1, lon1, lat2, lon2)
-        
-        # Add remaining segments
-        for i in range(closest_segment_idx + 1, len(waypoints) - 1):
+        for i in range(waypoint_idx + 1, len(waypoints) - 1):
             lat1, lon1 = waypoints[i]
             lat2, lon2 = waypoints[i + 1]
             length2 += haversine_distance(lat1, lon1, lat2, lon2)
-        
+
         # Calculate the proportion of each segment
         total_length = length1 + length2
         ratio1 = length1 / total_length
         ratio2 = length2 / total_length
-        
-        # Step 6: Create the two new line segments that replace the original line
+
+        # Step 4: Create the two new line segments that replace the original line
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
-        
+
         # Handle the code property - it might be a list of strings
         if hasattr(line_api, 'code') and line_api.code is not None:
             if isinstance(line_api.code, list):
@@ -2131,25 +2176,25 @@ class GridMapWidget(BaseDiagramWidget):
                 line1_code = f"{line_api.code}_1"
         else:
             line1_code = ""
-            
+
         line1 = Line(name=line1_name,
-                    bus_from=line_api.bus_from,
-                    bus_to=new_bus,
-                    code=line1_code,
-                    r=line_api.R * ratio1,  # Set impedance proportional to length
-                    x=line_api.X * ratio1,
-                    b=line_api.B * ratio1,
-                    r0=line_api.R0 * ratio1,
-                    x0=line_api.X0 * ratio1,
-                    b0=line_api.B0 * ratio1,
-                    r2=line_api.R2 * ratio1,
-                    x2=line_api.X2 * ratio1,
-                    b2=line_api.B2 * ratio1,
-                    length=length1,  # Set the actual calculated length
-                    rate=line_api.rate,
-                    contingency_factor=line_api.contingency_factor,
-                    protection_rating_factor=line_api.protection_rating_factor)
-        
+                     bus_from=line_api.bus_from,
+                     bus_to=new_bus,
+                     code=line1_code,
+                     r=line_api.R * ratio1,  # Set impedance proportional to length
+                     x=line_api.X * ratio1,
+                     b=line_api.B * ratio1,
+                     r0=line_api.R0 * ratio1,
+                     x0=line_api.X0 * ratio1,
+                     b0=line_api.B0 * ratio1,
+                     r2=line_api.R2 * ratio1,
+                     x2=line_api.X2 * ratio1,
+                     b2=line_api.B2 * ratio1,
+                     length=length1,  # Set the actual calculated length
+                     rate=line_api.rate,
+                     contingency_factor=line_api.contingency_factor,
+                     protection_rating_factor=line_api.protection_rating_factor)
+
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
             line1.color = line_api.color
@@ -2157,17 +2202,17 @@ class GridMapWidget(BaseDiagramWidget):
             line1.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
         if hasattr(line_api, 'active'):
             line1.active = line_api.active
-            
-        # Preserve waypoints for line 1 (from start to junction point)
-        # Add all waypoints from the original line up to the closest segment
-        for i in range(closest_segment_idx + 1):
+
+        # Preserve waypoints for line 1 (from start to waypoint)
+        # Add all waypoints from the original line up to the waypoint
+        for i in range(waypoint_idx):
             if i < len(original_line_container.nodes_list):
                 node = original_line_container.nodes_list[i]
                 line1.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
-        
+
         # Line 2: from new_bus to original bus_to
         line2_name = f"{line_api.name}_2"
-        
+
         # Handle the code property for line 2
         if hasattr(line_api, 'code') and line_api.code is not None:
             if isinstance(line_api.code, list):
@@ -2176,25 +2221,25 @@ class GridMapWidget(BaseDiagramWidget):
                 line2_code = f"{line_api.code}_2"
         else:
             line2_code = ""
-            
+
         line2 = Line(name=line2_name,
-                    bus_from=new_bus,
-                    bus_to=line_api.bus_to,
-                    code=line2_code,
-                    r=line_api.R * ratio2,  # Set impedance proportional to length
-                    x=line_api.X * ratio2,
-                    b=line_api.B * ratio2,
-                    r0=line_api.R0 * ratio2,
-                    x0=line_api.X0 * ratio2,
-                    b0=line_api.B0 * ratio2,
-                    r2=line_api.R2 * ratio2,
-                    x2=line_api.X2 * ratio2,
-                    b2=line_api.B2 * ratio2,
-                    length=length2,  # Set the actual calculated length
-                    rate=line_api.rate,
-                    contingency_factor=line_api.contingency_factor,
-                    protection_rating_factor=line_api.protection_rating_factor)
-                    
+                     bus_from=new_bus,
+                     bus_to=line_api.bus_to,
+                     code=line2_code,
+                     r=line_api.R * ratio2,  # Set impedance proportional to length
+                     x=line_api.X * ratio2,
+                     b=line_api.B * ratio2,
+                     r0=line_api.R0 * ratio2,
+                     x0=line_api.X0 * ratio2,
+                     b0=line_api.B0 * ratio2,
+                     r2=line_api.R2 * ratio2,
+                     x2=line_api.X2 * ratio2,
+                     b2=line_api.B2 * ratio2,
+                     length=length2,  # Set the actual calculated length
+                     rate=line_api.rate,
+                     contingency_factor=line_api.contingency_factor,
+                     protection_rating_factor=line_api.protection_rating_factor)
+
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
             line2.color = line_api.color
@@ -2202,37 +2247,37 @@ class GridMapWidget(BaseDiagramWidget):
             line2.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
         if hasattr(line_api, 'active'):
             line2.active = line_api.active
-        
-        # Preserve waypoints for line 2 (from junction point to end)
-        # Add all remaining waypoints from the original line starting from the next segment
-        for i in range(closest_segment_idx + 1, len(original_line_container.nodes_list)):
+
+        # Preserve waypoints for line 2 (from waypoint to end)
+        # Add all remaining waypoints from the original line after the waypoint
+        for i in range(waypoint_idx + 1, len(original_line_container.nodes_list)):
             node = original_line_container.nodes_list[i]
             line2.locations.add_location(lat=node.lat, long=node.lon, alt=0.0)
-        
-        # Step 7: Create a new line connecting the selected substation to the new junction substation
+
+        # Step 5: Create a new line connecting the selected substation to the new junction substation
         connection_line_name = f"{substation_api.name}_to_{new_substation.name}"
-        
+
         # Calculate the distance between the two substations
-        distance = haversine_distance(substation_lat, substation_lon, closest_lat, closest_lon)
-        
+        distance = haversine_distance(substation_api.latitude, substation_api.longitude, waypoint_lat, waypoint_lon)
+
         # Create the new connection line
         connection_line = Line(name=connection_line_name,
-                              bus_from=suitable_bus_in_selected,
-                              bus_to=new_bus,
-                              r=line_api.R * (distance / line_api.length),  # Scale impedance based on distance
-                              x=line_api.X * (distance / line_api.length),
-                              b=line_api.B * (distance / line_api.length),
-                              r0=line_api.R0 * (distance / line_api.length),
-                              x0=line_api.X0 * (distance / line_api.length),
-                              b0=line_api.B0 * (distance / line_api.length),
-                              r2=line_api.R2 * (distance / line_api.length),
-                              x2=line_api.X2 * (distance / line_api.length),
-                              b2=line_api.B2 * (distance / line_api.length),
-                              length=distance,
-                              rate=line_api.rate,
-                              contingency_factor=line_api.contingency_factor,
-                              protection_rating_factor=line_api.protection_rating_factor)
-        
+                               bus_from=suitable_bus_in_selected,
+                               bus_to=new_bus,
+                               r=line_api.R * (distance / line_api.length),
+                               x=line_api.X * (distance / line_api.length),
+                               b=line_api.B * (distance / line_api.length),
+                               r0=line_api.R0 * (distance / line_api.length),
+                               x0=line_api.X0 * (distance / line_api.length),
+                               b0=line_api.B0 * (distance / line_api.length),
+                               r2=line_api.R2 * (distance / line_api.length),
+                               x2=line_api.X2 * (distance / line_api.length),
+                               b2=line_api.B2 * (distance / line_api.length),
+                               length=distance,
+                               rate=line_api.rate,
+                               contingency_factor=line_api.contingency_factor,
+                               protection_rating_factor=line_api.protection_rating_factor)
+
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
             connection_line.color = line_api.color
@@ -2240,43 +2285,47 @@ class GridMapWidget(BaseDiagramWidget):
             connection_line.tags = line_api.tags.copy() if isinstance(line_api.tags, list) else line_api.tags
         if hasattr(line_api, 'active'):
             connection_line.active = line_api.active
-        
+
         # No waypoints needed for the connection line - it will go directly from one substation to the other
-        
+
         # Add the new lines to the circuit
         self.circuit.add_line(line1)
         self.circuit.add_line(line2)
         self.circuit.add_line(connection_line)
-        
+
         # Add the new lines to the map
         line1_graphic = self.add_api_line(line1)
         line2_graphic = self.add_api_line(line2)
         connection_line_graphic = self.add_api_line(connection_line)
-        
+
         # Get the branch width and arrow size from the general diagram settings
         branch_width = self.diagram.min_branch_width
         arrow_size = self.diagram.arrow_size
-        
+
         # If we have segments in the original line, use their width and arrow size
         if original_line_container and original_line_container.segments_list:
             if len(original_line_container.segments_list) > 0:
                 segment = original_line_container.segments_list[0]
-                branch_width = segment.width
-                arrow_size = segment._arrow_size
-        
+                branch_width = segment.get_width()
+                arrow_size = segment.get_arrow_size()
+
         # Apply the same width and arrow size to the new lines
         line1_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
-        
+
+        # Explicitly remove the waypoint graphic from the scene to prevent artifact
+        self.map.diagram_scene.removeItem(selected_waypoint)
+
         # Remove the original line
-        self.remove_branch_graphic(line=line_graphic, delete_from_db=True)
-        
+        self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
+
         # Notify the user
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)
         msg.setText(f"T-joint connection created between {substation_api.name} and {line_api.name}.")
-        msg.setInformativeText(f"New substation '{new_substation.name}' created at the closest point on the line.\nOriginal line split into two segments:\n- {line1.name}: {length1:.2f} km\n- {line2.name}: {length2:.2f} km\nNew connection line: {distance:.2f} km")
+        msg.setInformativeText(
+            f"Waypoint replaced with new substation '{new_substation.name}'.\nOriginal line split into two segments:\n- {line1.name}: {length1:.2f} km\n- {line2.name}: {length2:.2f} km\nNew connection line: {distance:.2f} km")
         msg.setWindowTitle("Operation Successful")
         msg.exec()
 
@@ -2472,7 +2521,7 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
     """
 
     # get all Branches
-    all_branches = circuit.get_branches() + circuit.get_switches()
+    all_branches = circuit.lines + circuit.dc_lines + circuit.hvdc_lines
 
     # create a pool of buses that belong to the substations
     # store the bus objects and their level from the root
@@ -2528,7 +2577,7 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
         else:
             raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
-    return (list(substations_extended), list(voltage_levels), lines, dc_lines, hvdc_lines)
+    return list(substations_extended), list(voltage_levels), lines, dc_lines, hvdc_lines
 
 
 def make_diagram_from_substations(circuit: MultiCircuit,
@@ -2543,7 +2592,8 @@ def make_diagram_from_substations(circuit: MultiCircuit,
                                   arrow_size=20,
                                   palette: Colormaps = Colormaps.GridCal,
                                   default_bus_voltage: float = 10,
-                                  expand_outside: bool = True):
+                                  expand_outside: bool = True,
+                                  name="Map diagram"):
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
@@ -2558,7 +2608,8 @@ def make_diagram_from_substations(circuit: MultiCircuit,
     :param arrow_size: arrow size
     :param palette: Colormaps
     :param default_bus_voltage: default bus voltage
-    :param expand_outside: whether to expand outside of the given references using the branches
+    :param expand_outside: whether to expand outside the given references using the branches
+    :param name: Name of the diagram
     :return:
     """
 
@@ -2579,7 +2630,7 @@ def make_diagram_from_substations(circuit: MultiCircuit,
         fluid_paths=list(),
         prog_func=prog_func,
         text_func=text_func,
-        name='Map diagram',
+        name=name,
         use_flow_based_width=use_flow_based_width,
         min_branch_width=min_branch_width,
         max_branch_width=max_branch_width,

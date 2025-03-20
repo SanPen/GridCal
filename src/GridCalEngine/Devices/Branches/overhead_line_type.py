@@ -216,10 +216,17 @@ class ListOfWires:
 
 class OverheadLineType(EditableDevice):
 
-    def __init__(self, name='Tower', idtag: str | None = None):
+    def __init__(self, name='Tower', idtag: str | None = None,
+                 Vnom: float = 1.0,
+                 earth_resistivity: float = 100,
+                 frequency: float = 50):
         """
         Overhead line editor
         :param name: name
+        :param idtag:
+        :param Vnom: Nominal voltage (kV)
+        :param earth_resistivity: Earth resistivity (ohm/m3)
+        :param frequency: system frequency (Hz)
         """
         super().__init__(name=name,
                          idtag=idtag,
@@ -230,11 +237,11 @@ class OverheadLineType(EditableDevice):
         self.wires_in_tower: ListOfWires = ListOfWires()
 
         # nominal voltage
-        self.Vnom = 1.0  # kV
+        self.Vnom = Vnom  # kV
 
-        self.earth_resistivity = 100  # ohm/m3
+        self.earth_resistivity = earth_resistivity  # ohm/m3
 
-        self.frequency = 50  # Hz
+        self.frequency = frequency  # Hz
 
         # current rating of the tower in kA
         self.Imax = 0.0
@@ -274,15 +281,35 @@ class OverheadLineType(EditableDevice):
         self.register(key='wires_in_tower', units='', tpe=SubObjectType.ListOfWires, definition='List of wires',
                       editable=False, display=False)
 
-    def get_ys(self, circuit_idx: int):
-        k = (3*circuit_idx) + np.array([0, 1, 2])
-        z = self.z_abc[np.ix_(k, k)]
+    def get_ys(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
+        """
+        get the series admittance matrix in p.u. (total)
+        :param circuit_idx: Circuit index (starting by 0)
+        :param Sbase: Base power (MVA)
+        :param length: Line length (km)
+        :param Vnom: Nominal voltage (kV)
+        :return: Series admittance in p.u.
+        """
+        Zbase = (Vnom * Vnom) / Sbase
+
+        k = (3 * circuit_idx) + np.array([0, 1, 2])
+        z = self.z_abc[np.ix_(k, k)] * length / Zbase
         y = np.linalg.inv(z)
         return y
 
-    def get_ysh(self, circuit_idx: int):
-        k = (3*circuit_idx) + np.array([0, 1, 2])
-        y = self.y_abc[np.ix_(k, k)]
+    def get_ysh(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
+        """
+        get the shunt admittance matrix in p.u. (total)
+        :param circuit_idx: Circuit index (starting by 0)
+        :param Sbase: Base power (MVA)
+        :param length: Line length (km)
+        :param Vnom: Nominal voltage (kV)
+        :return: Shunt admittance in p.u.
+        """
+        Zbase = (Vnom * Vnom) / Sbase
+        Ybase = 1 / Zbase
+        k = (3 * circuit_idx) + np.array([0, 1, 2])
+        y = self.y_abc[np.ix_(k, k)] * length * -1e6 / Ybase
         return y
 
     def add_wire_relationship(self, wire: Wire,
@@ -487,19 +514,20 @@ class OverheadLineType(EditableDevice):
         Bsh1 = self.y_seq[a1, a1].imag * 1e6 # uS/km (for the GUI)
         return R1, X1, Bsh1
 
-    def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False):
+    def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False, Vnom: float | None = None):
         """
         Get the sequence values of the template
         :param Sbase: Base power in MVA
         :param length: Length of the line
         :param circuit_index: index of the circuit
         :param round_vals: Boolean to round parameter values
+        :param Vnom: nominal voltage for the per unit calculation (kV)
         :return: Line parameters and rate
         """
 
-        Vn = self.Vnom  # kV
-        Zbase = (Vn * Vn) / Sbase  # Ohm
-        Ybase = 1 / Zbase  # S
+        Vn = self.Vnom if Vnom is None else Vnom
+        Zbase = (Vn * Vn) / Sbase
+        Ybase = 1 / Zbase
 
         a0 = 3 * circuit_index
         R0 = self.z_seq[a0, a0].real # Ohm/km
