@@ -2202,7 +2202,7 @@ class MultiCircuit(Assets):
                        cn_set: Set[dev.ConnectivityNode],
                        logger: Logger) -> None:
         """
-        Clean the branch refferences
+        Clean the branch references
         :param nt: number of time steps
         :param bus_set: Set of Buses
         :param cn_set: Set of connectivity nodes
@@ -2243,25 +2243,11 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="cn_to")
 
-                all_bus_from_prof_none = True
-                all_bus_to_prof_none = True
-                for t_idx in range(nt):
-                    if elm.bus_from_prof[t_idx] is not None:
-                        if elm.bus_from_prof[t_idx] not in bus_set:
-                            elm.bus_from_prof[t_idx] = None
-                        else:
-                            all_bus_from_prof_none = False
-
-                    if elm.bus_to_prof[t_idx] is not None:
-                        if elm.bus_to_prof[t_idx] not in bus_set:
-                            elm.bus_to_prof[t_idx] = None
-                        else:
-                            all_bus_to_prof_none = False
-
                 # if the element is topologically isolated, delete it
-                if (all_bus_from_prof_none and all_bus_to_prof_none
-                        and elm.bus_from is None and elm.bus_to is None
-                        and elm.cn_from is None and elm.cn_to is None):
+                if (elm.bus_from is None
+                        and elm.bus_to is None
+                        and elm.cn_from is None
+                        and elm.cn_to is None):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
@@ -2301,16 +2287,8 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="cn")
 
-                all_bus_prof_none = True
-                for t_idx in range(nt):
-                    if elm.bus_prof[t_idx] is not None:
-                        if elm.bus_prof[t_idx] not in bus_set:
-                            elm.bus_prof[t_idx] = None
-                        else:
-                            all_bus_prof_none = False
-
                 # if the element is topologically isolated, delete it
-                if all_bus_prof_none and elm.bus is None and elm.cn is None:
+                if elm.bus is None and elm.cn is None:
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
