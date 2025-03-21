@@ -474,7 +474,7 @@ class LinearMultiContingencies:
         # for each contingency group
         for ic, contingency_group in enumerate(self.contingency_groups_used):
 
-            contingency_indices = self.contingency_indices_list[ic]
+            contingency_indices: ContingencyIndices = self.contingency_indices_list[ic]
 
             if len(contingency_indices.branch_contingency_indices) > 1:
 

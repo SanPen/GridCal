@@ -88,8 +88,9 @@ def linear_contingency_analysis(grid: MultiCircuit,
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
 
         if multi_contingency.has_injection_contingencies():
-            cnt = grid.contingencies
-            injections = nc.set_linear_con_or_ra_status(event_list=cnt)
+            contingency_group = grid.contingency_groups[ic]
+            contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
+            injections = nc.set_linear_con_or_ra_status(event_list=contingencies)
         else:
             injections = None
 
