@@ -659,6 +659,7 @@ class NumericalCircuit:
                             structure.active[idx] = int(not bool(cnt.value))
                         else:
                             structure.active[idx] = int(cnt.value)
+
                     elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                         if revert:
                             structure.p[idx] /= float(cnt.value / 100.0)

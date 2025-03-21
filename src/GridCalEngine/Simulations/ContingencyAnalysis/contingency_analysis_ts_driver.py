@@ -119,7 +119,7 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             else:
                 t_prob = 1.0/len(self.time_indices)
 
-            res_t = cdriver.run_at(t=t, t_prob=t_prob)
+            res_t = cdriver.run_at(t_idx=int(t), t_prob=t_prob)
 
             results.S[it, :] = res_t.Sbus.real.max(axis=0)
 

@@ -22,16 +22,16 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                    options: ContingencyAnalysisOptions,
                                    linear_multiple_contingencies: LinearMultiContingencies,
                                    calling_class: ContingencyAnalysisDriver,
-                                   t: Union[None, int] = None,
+                                   t_idx: Union[None, int] = None,
                                    t_prob: float = 1.0,
-                                   logger: Logger | None = None,) -> ContingencyAnalysisResults:
+                                   logger: Logger | None = None, ) -> ContingencyAnalysisResults:
     """
     Run a contingency analysis using the power flow options
     :param grid: MultiCircuit
     :param options: ContingencyAnalysisOptions
     :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
-    :param t: time index, if None the snapshot is used
+    :param t_idx: time index, if None the snapshot is used
     :param t_prob: probability of te time
     :param logger: logging object
     :return: returns the results (ContingencyAnalysisResults)
@@ -40,7 +40,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         logger = Logger()
 
     # set the numerical circuit
-    nc = compile_numerical_circuit_at(grid, t_idx=t)
+    nc = compile_numerical_circuit_at(grid, t_idx=t_idx)
 
     if options.pf_options is None:
         pf_opts = PowerFlowOptions(solver_type=SolverType.DC,
@@ -61,8 +61,6 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                          con_names=linear_multiple_contingencies.get_contingency_group_names())
 
     # get contingency groups dictionary
-    cg_dict = grid.get_contingency_group_dict()
-    calc_branches = grid.get_branches_wo_hvdc()
     mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
 
     # run 0
@@ -93,13 +91,13 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
 
         # get the group's contingencies
-        contingencies = cg_dict[contingency_group.idtag]
+        contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
 
         # set the status
         nc.set_con_or_ra_status(contingencies)
 
         # report progress
-        if t is None and calling_class is not None:
+        if t_idx is None and calling_class is not None:
             calling_class.report_text(f'Contingency group: {contingency_group.name}')
             calling_class.report_progress2(ic, len(linear_multiple_contingencies.contingency_groups_used) * 100)
 
@@ -115,7 +113,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         results.voltage[ic, :] = pf_res.voltage
         multi_contingency = linear_multiple_contingencies.multi_contingencies[ic] if options.use_srap else None
 
-        results.report.analyze(t=t,
+        results.report.analyze(t=t_idx,
                                t_prob=t_prob,
                                mon_idx=mon_idx,
                                nc=nc,

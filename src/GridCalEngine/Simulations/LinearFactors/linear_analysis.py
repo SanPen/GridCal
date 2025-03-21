@@ -442,6 +442,10 @@ class LinearMultiContingencies:
         # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
+    @property
+    def contingency_group_dict(self) -> Dict[str, List[Contingency]]:
+        return self.__contingency_group_dict
+
     def get_contingency_group_names(self) -> List[str]:
         """
         Returns a list of the names of the used contingency groups

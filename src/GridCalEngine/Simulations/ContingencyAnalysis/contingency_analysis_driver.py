@@ -87,10 +87,10 @@ class ContingencyAnalysisDriver(DriverTemplate):
         else:
             return list()
 
-    def run_at(self, t: int = None, t_prob: float = 1.0) -> ContingencyAnalysisResults:
+    def run_at(self, t_idx: int = None, t_prob: float = 1.0) -> ContingencyAnalysisResults:
         """
         Run the contingency at a time point
-        :param t: index for any time series index, None for the snapshot
+        :param t_idx: index for any time series index, None for the snapshot
         :param t_prob: probability of te time
         :return: ContingencyAnalysisResults
         """
@@ -114,7 +114,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     options=self.options,
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
-                    t=t,
+                    t_idx=t_idx,
                     t_prob=t_prob,
                     logger=self.logger
                 )
@@ -125,7 +125,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     options=self.options,
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
-                    t=t,
+                    t=t_idx,
                     t_prob=t_prob,
                     logger=self.logger
                 )
@@ -135,7 +135,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     grid=self.grid,
                     options=self.options,
                     calling_class=self,
-                    t=t,
+                    t=t_idx,
                     t_prob=t_prob
                 )
             elif self.options.contingency_method == ContingencyMethod.OptimalPowerFlow:
@@ -145,7 +145,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     opf_options=None,  # TODO: finalize this
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
-                    t=t,
+                    t=t_idx,
                     t_prob=t_prob,
                     logger=self.logger
                 )
@@ -171,5 +171,5 @@ class ContingencyAnalysisDriver(DriverTemplate):
         :return:
         """
         self.tic()
-        self.run_at(t=None)
+        self.run_at(t_idx=None)
         self.toc()
