@@ -17,6 +17,7 @@ fname = '/home/santi/Documentos/GitHub/GridCal/Grids_and_profiles/grids/IEEE 14.
 
 grid = FileOpen(fname).is_open()
 
+# TODO: Outdated...
 nc = grid.compile_snapshot()
 inputs = nc.compute()[0]  # pick the first island
 

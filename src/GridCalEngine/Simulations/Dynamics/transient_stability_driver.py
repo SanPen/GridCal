@@ -8,6 +8,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from GridCalEngine.Simulations.Dynamics.dynamic_modules import dynamic_simulation
 from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 
 ########################################################################################################################
 # Transient stability
@@ -73,8 +74,8 @@ class TransientStability(DriverTemplate):
         self.report_text('Running transient stability...')
 
         # print('Compiling...', end='')
-        numerical_circuit = self.grid.compile_snapshot()
-        calculation_inputs = numerical_circuit.compute()
+        numerical_circuit =  compile_numerical_circuit_at(self.grid, t_idx=None)
+        calculation_inputs = numerical_circuit.split_into_islands()
 
         for calculation_input in calculation_inputs:
 

@@ -77,8 +77,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         linear_multiple_contingencies.compute(lodf=linear_analysis.LODF,
                                               ptdf=linear_analysis.PTDF,
                                               ptdf_threshold=options.lin_options.ptdf_threshold,
-                                              lodf_threshold=options.lin_options.lodf_threshold,
-                                              prepare_for_srap=options.use_srap)
+                                              lodf_threshold=options.lin_options.lodf_threshold)
 
         PTDF = linear_analysis.PTDF
 

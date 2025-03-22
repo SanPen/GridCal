@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import List, Tuple, Dict, Union
+from enum import Enum
 import numba as nb
 import numpy as np
 import pandas as pd
@@ -304,6 +305,18 @@ def check_arr(arr: Vec | IntVec | BoolVec | CxVec,
         return 1
 
 
+class DataStructType(Enum):
+    BUSDATA = 1
+    BRANCHDATA = 2
+    HVDCDATA = 3
+    GENERATORDATA = 4
+    BATTERYDATA = 5
+    LOADDATA = 6
+    SHUNTDATA = 7
+    VSCDATA = 8
+    NOSTRUCT = 0
+
+
 class NumericalCircuit:
     """
     Class storing the calculation information of the devices
@@ -448,6 +461,11 @@ class NumericalCircuit:
 
         self.__topology_performed = False
 
+        # map to relate the elements idtag to their structures
+        # used during contingency analysis to modify the structures active, etc...
+        # based on the device idtag
+        self.structs_idtag_dict: Dict[str, Tuple[DataStructType, int]] = dict()
+
     def propagate_bus_result(self, bus_magnitude: Vec | CxVec):
         """
         This function applies the __bus_map_arr to a calculated magnitude to
@@ -580,41 +598,54 @@ class NumericalCircuit:
         nc.fluid_pump_data = self.fluid_pump_data.copy()
         nc.fluid_p2x_data = self.fluid_p2x_data.copy()
         nc.fluid_path_data = self.fluid_path_data.copy()
+        nc.structs_idtag_dict = self.structs_idtag_dict.copy()
         nc.consolidate_information()
 
         return nc
 
-    def get_structures_list(self) -> List[ALL_STRUCTS]:
+    def init_idtags_dict(self):
         """
-        Get a list of the structures inside the NumericalCircuit
+        Initialize the internal structure for idtags querying
         :return:
         """
-        return [self.bus_data,
-                self.generator_data,
-                self.battery_data,
-                self.load_data,
-                self.shunt_data,
-                self.passive_branch_data,
-                self.hvdc_data,
-                self.fluid_node_data,
-                self.fluid_turbine_data,
-                self.fluid_pump_data,
-                self.fluid_p2x_data,
-                self.fluid_path_data]
+        self.structs_idtag_dict.clear()
 
-    def get_structs_idtag_dict(self) -> Dict[str, Tuple[ALL_STRUCTS, int]]:
+        for i, idtag in enumerate(self.passive_branch_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.BRANCHDATA, i)
+
+        for i, idtag in enumerate(self.generator_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.GENERATORDATA, i)
+
+        for i, idtag in enumerate(self.hvdc_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.HVDCDATA, i)
+
+        for i, idtag in enumerate(self.battery_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.BATTERYDATA, i)
+
+        for i, idtag in enumerate(self.shunt_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.SHUNTDATA, i)
+
+        for i, idtag in enumerate(self.load_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.LOADDATA, i)
+
+        for i, idtag in enumerate(self.vsc_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.VSCDATA, i)
+
+        for i, idtag in enumerate(self.bus_data.idtag):
+            self.structs_idtag_dict[str(idtag)] = (DataStructType.BUSDATA, i)
+
+    def query_idtag(self, idtag: str) -> Tuple[DataStructType, int]:
         """
-        Get a dictionary to map idtags to the structure they belong and the index
-        :return: Dictionary relating an idtag to the structure and the index in it (Dict[idtag] -> (structure, index))
+        Query the structure and index where an idtag exists
+        :param idtag: idtag
+        :return: DataStructType, integer position
         """
-        structs_dict: Dict[str, Tuple[ALL_STRUCTS, int]] = dict()
+        # lazy initialization in case we forgot...
+        if len(self.structs_idtag_dict) == 0:
+            if self.bus_data.nbus > 0 or self.passive_branch_data.nelm > 0:
+                self.init_idtags_dict()
 
-        for struct_elm in self.get_structures_list():
-
-            for i, idtag in enumerate(struct_elm.idtag):
-                structs_dict[idtag] = (struct_elm, i)
-
-        return structs_dict
+        return self.structs_idtag_dict.get(idtag, (DataStructType.NOSTRUCT, 0))
 
     def set_investments_status(self, investments_list: List[Investment], status: int) -> None:
         """
@@ -622,102 +653,191 @@ class NumericalCircuit:
         :param investments_list: list of investments
         :param status: status to set in the internal structures
         """
-        structs_dict = self.get_structs_idtag_dict()
 
         for inv in investments_list:
 
-            # search the investment device
-            structure, idx = structs_dict.get(inv.device_idtag, (None, 0))
+            structure, idx = self.query_idtag(inv.device_idtag)
 
-            if structure is not None:
-                structure.active[idx] = status
-            else:
+            if structure == DataStructType.NOSTRUCT:
                 raise Exception('Could not find the idtag, is this a programming bug?')
+
+            elif structure == DataStructType.BRANCHDATA:
+                self.passive_branch_data.active[idx] = status
+
+            elif structure == DataStructType.GENERATORDATA:
+                self.generator_data.active[idx] = status
+
+            elif structure == DataStructType.HVDCDATA:
+                self.hvdc_data.active[idx] = status
+
+            elif structure == DataStructType.BUSDATA:
+                self.bus_data.active[idx] = status
+
+            elif structure == DataStructType.BATTERYDATA:
+                self.battery_data.active[idx] = status
+
+            elif structure == DataStructType.LOADDATA:
+                self.load_data.active[idx] = status
+
+            elif structure == DataStructType.SHUNTDATA:
+                self.shunt_data.active[idx] = status
+
+            elif structure == DataStructType.VSCDATA:
+                self.vsc_data.active[idx] = status
 
     def set_con_or_ra_status(self,
                              event_list: List[Contingency | RemedialAction],
-                             revert: bool = False):
+                             revert: bool = False) -> Vec:
         """
         Set the status of a list of contingencies or remedial actions
         :param event_list: list of contingencies and or remedial actions
         :param revert: if false, the contingencies are applied, else they are reversed
+        :return: vector of power injection increments
         """
 
-        structs_dict = self.get_structs_idtag_dict()
+        # vector of power injection increments
+        inj_increment = np.zeros(self.nbus)
 
         # apply the contingencies
         for cnt in event_list:
 
-            if isinstance(cnt, (Contingency, RemedialAction)):
+            structure, idx = self.query_idtag(cnt.device_idtag)
 
-                # search the investment device
-                structure, idx = structs_dict.get(cnt.device_idtag, (None, 0))
+            if structure == DataStructType.NOSTRUCT:
+                raise Exception('Could not find the idtag, is this a programming bug?')
 
-                if structure is not None:
-                    if cnt.prop == ContingencyOperationTypes.Active:
-                        if revert:
-                            structure.active[idx] = int(not bool(cnt.value))
-                        else:
-                            structure.active[idx] = int(cnt.value)
+            elif structure == DataStructType.BRANCHDATA:
 
-                    elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
-                        if revert:
-                            structure.p[idx] /= float(cnt.value / 100.0)
-                        else:
-                            structure.p[idx] *= float(cnt.value / 100.0)
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.passive_branch_data.active[idx] = int(not bool(cnt.value))
                     else:
-                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+                        self.passive_branch_data.active[idx] = int(cnt.value)
                 else:
-                    print(f'contingency device not found {cnt.name} {cnt.idtag}')
-            else:
-                raise Exception(f"The object {cnt} is not a Contingency or a remedial action")
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
 
-    def set_linear_con_or_ra_status(self,
-                                    event_list: List[Contingency | RemedialAction],
-                                    revert: bool = False):
-        """
-        Set the status of a list of contingencies or remedial actions
-        :param event_list: list of contingencies and or remedial actions
-        :param revert: if false, the contingencies are applied, else they are reversed
-        """
-        structs_dict = self.get_structs_idtag_dict()
+            elif structure == DataStructType.GENERATORDATA:
 
-        injections = np.zeros(self.nbus)
-        # apply the contingencies
-        for cnt in event_list:
-
-            if isinstance(cnt, (Contingency, RemedialAction)):
-
-                # search the investment device
-                structure, idx = structs_dict.get(cnt.device_idtag, (None, 0))
-
-                if structure is not None:
-                    if cnt.prop == ContingencyOperationTypes.Active:
-                        if revert:
-                            structure.active[idx] = int(not bool(cnt.value))
-                        else:
-                            structure.active[idx] = int(cnt.value)
-
-                    elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
-                        # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
-                        assert not isinstance(structure, HvdcData)  # TODO Arreglar esto
-                        dev_injections = np.zeros(structure.size())
-                        dev_injections[idx] -= structure.p[idx]
-                        if revert:
-                            structure.p[idx] /= float(cnt.value / 100.0)
-                        else:
-                            structure.p[idx] *= float(cnt.value / 100.0)
-                        dev_injections[idx] += structure.p[idx]
-                        injections += structure.get_array_per_bus(dev_injections)
-
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.generator_data.active[idx] = int(not bool(cnt.value))
                     else:
-                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
-                else:
-                    print(f'contingency device not found {cnt.name} {cnt.idtag}')
-            else:
-                raise Exception(f"The object {cnt} is not a Contingency or a remedial action")
+                        self.generator_data.active[idx] = int(cnt.value)
 
-        return injections
+                elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
+
+                    inj_increment[self.generator_data.bus_idx[idx]] -= self.generator_data.p[idx]
+
+                    if revert:
+                        self.generator_data.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        self.generator_data.p[idx] *= float(cnt.value / 100.0)
+
+                    inj_increment[self.generator_data.bus_idx[idx]] += self.generator_data.p[idx]
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+            elif structure == DataStructType.HVDCDATA:
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.hvdc_data.active[idx] = int(not bool(cnt.value))
+                    else:
+                        self.hvdc_data.active[idx] = int(cnt.value)
+
+                elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
+
+                    inj_increment[self.hvdc_data.F[idx]] += self.hvdc_data.Pset[idx]
+                    inj_increment[self.hvdc_data.T[idx]] -= self.hvdc_data.Pset[idx]
+
+                    if revert:
+                        self.hvdc_data.Pset[idx] /= float(cnt.value / 100.0)
+                    else:
+                        self.hvdc_data.Pset[idx] *= float(cnt.value / 100.0)
+
+                    inj_increment[self.hvdc_data.F[idx]] -= self.hvdc_data.Pset[idx]
+                    inj_increment[self.hvdc_data.T[idx]] += self.hvdc_data.Pset[idx]
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+            elif structure == DataStructType.BUSDATA:
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.bus_data.active[idx] = int(not bool(cnt.value))
+                    else:
+                        self.bus_data.active[idx] = int(cnt.value)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+            elif structure == DataStructType.BATTERYDATA:
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.battery_data.active[idx] = int(not bool(cnt.value))
+                    else:
+                        self.battery_data.active[idx] = int(cnt.value)
+
+                elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
+
+                    inj_increment[self.battery_data.bus_idx[idx]] -= self.battery_data.p[idx]
+
+                    if revert:
+                        self.battery_data.p[idx] /= float(cnt.value / 100.0)
+                    else:
+                        self.battery_data.p[idx] *= float(cnt.value / 100.0)
+
+                    inj_increment[self.battery_data.bus_idx[idx]] += self.battery_data.p[idx]
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+            elif structure == DataStructType.LOADDATA:
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.load_data.active[idx] = int(not bool(cnt.value))
+                    else:
+                        self.load_data.active[idx] = int(cnt.value)
+
+                elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
+
+                    inj_increment[self.load_data.bus_idx[idx]] -= self.load_data.S[idx].real
+
+                    if revert:
+                        self.load_data.S[idx] /= float(cnt.value / 100.0)
+                    else:
+                        self.load_data.S[idx] *= float(cnt.value / 100.0)
+
+                    inj_increment[self.load_data.bus_idx[idx]] += self.load_data.S[idx].real
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+            elif structure == DataStructType.SHUNTDATA:
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.shunt_data.active[idx] = int(not bool(cnt.value))
+                    else:
+                        self.shunt_data.active[idx] = int(cnt.value)
+
+                elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
+
+                    inj_increment[self.shunt_data.bus_idx[idx]] -= self.shunt_data.Y[idx].real
+
+                    if revert:
+                        self.shunt_data.Y[idx] /= float(cnt.value / 100.0)
+                    else:
+                        self.shunt_data.Y[idx] *= float(cnt.value / 100.0)
+
+                    inj_increment[self.shunt_data.bus_idx[idx]] += self.shunt_data.Y[idx].real
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+            elif structure == DataStructType.VSCDATA:
+                if cnt.prop == ContingencyOperationTypes.Active:
+                    if revert:
+                        self.vsc_data.active[idx] = int(not bool(cnt.value))
+                    else:
+                        self.vsc_data.active[idx] = int(cnt.value)
+                else:
+                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+
+        return inj_increment
 
     def get_simulation_indices(self, Sbus: CxVec | None = None,
                                bus_types: IntVec | None = None,

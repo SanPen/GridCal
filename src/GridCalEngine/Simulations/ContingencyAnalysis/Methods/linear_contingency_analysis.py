@@ -60,8 +60,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
     linear_multiple_contingencies.compute(lodf=linear_analysis.LODF,
                                           ptdf=linear_analysis.PTDF,
                                           ptdf_threshold=options.lin_options.ptdf_threshold,
-                                          lodf_threshold=options.lin_options.lodf_threshold,
-                                          prepare_for_srap=options.use_srap)
+                                          lodf_threshold=options.lin_options.lodf_threshold)
 
     # get the contingency branch indices
     mon_idx = nc.passive_branch_data.get_monitor_enabled_indices()
@@ -90,7 +89,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
         if multi_contingency.has_injection_contingencies():
             contingency_group = grid.contingency_groups[ic]
             contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
-            injections = nc.set_linear_con_or_ra_status(event_list=contingencies)
+            # injections = nc.set_linear_con_or_ra_status(event_list=contingencies)
+            injections = nc.set_con_or_ra_status(event_list=contingencies)
         else:
             injections = None
 

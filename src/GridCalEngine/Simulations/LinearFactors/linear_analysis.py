@@ -457,15 +457,13 @@ class LinearMultiContingencies:
                 lodf: Mat,
                 ptdf: Mat,
                 ptdf_threshold: float = 0.0001,
-                lodf_threshold: float = 0.0001,
-                prepare_for_srap: bool = False) -> None:
+                lodf_threshold: float = 0.0001) -> None:
         """
         Make the LODF with any contingency combination using the declared contingency objects
         :param lodf: original LODF matrix (nbr, nbr)
         :param ptdf: original PTDF matrix (nbr, nbus)
         :param ptdf_threshold: threshold to discard values
         :param lodf_threshold: Threshold for LODF conversion to sparse
-        :param prepare_for_srap:
         :return: None
         """
 
