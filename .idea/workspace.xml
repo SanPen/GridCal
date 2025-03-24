@@ -28,11 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="I have written all the units for the variables of &quot;get_values&quot; and &quot;get_sequence_values&quot; functions.">
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/Function_Test_Tower_Composition.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Test tower composition">
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/SeriesImpedance.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/ShuntAdmittance.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_tower_composition.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_tower_composition.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Function_Test_Tower_Composition.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Function_Test_Tower_Composition.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -167,10 +167,13 @@
     "Python tests.pytest in test_ac_opf.py.executor": "Run",
     "Python tests.pytest in test_basic.py.executor": "Run",
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Debug",
+    "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
+    "Python.Function_Test_Tower_Composition.executor": "Run",
     "Python.GridCalMain.executor": "Run",
+    "Python.SeriesImpedance.executor": "Run",
+    "Python.ShuntAdmittance.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.circuit_to_optimods.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
@@ -1870,7 +1873,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="572" />
+    <option name="localTasksCounter" value="573" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1916,7 +1919,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="exclude not simulatable grids" />
     <MESSAGE value="latitude and longitude as float" />
     <MESSAGE value="added converged condition without retrying pf option" />
     <MESSAGE value="5.3.5" />
@@ -1941,7 +1943,8 @@
     <MESSAGE value="Merged" />
     <MESSAGE value="Changes: Initialize circuit at zero, fix errors related to overhead line template." />
     <MESSAGE value="I have written all the units for the variables of &quot;get_values&quot; and &quot;get_sequence_values&quot; functions." />
-    <option name="LAST_COMMIT_MESSAGE" value="I have written all the units for the variables of &quot;get_values&quot; and &quot;get_sequence_values&quot; functions." />
+    <MESSAGE value="Test tower composition" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test tower composition" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2237,8 +2240,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/three_phase/Function_Test_Tower_Composition.py</url>
-          <line>36</line>
-          <option name="timeStamp" value="2456" />
+          <line>58</line>
+          <option name="timeStamp" value="2454" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
