@@ -12,11 +12,6 @@ from GridCal.Gui.GridMerge.grid_merge_gui import Ui_Dialog
 from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import ActionType
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
-
-
-
 
 
 class GridMergeDialogue(QtWidgets.QDialog):
@@ -79,7 +74,6 @@ class GridMergeDialogue(QtWidgets.QDialog):
         """
         if item.parent() is None:  # Root item
 
-
             if item.parent() is None:
                 # the item is a parent
                 idtag = item.text(3)
@@ -107,7 +101,6 @@ class GridMergeDialogue(QtWidgets.QDialog):
                 prop.selected_to_merge = item.checkState(0) == Qt.CheckState.Checked
 
                 print(f"prop: {elm.name}.{prop_name}.selected_to_merge={prop.selected_to_merge}")
-
 
     def set_diff(self, diff: MultiCircuit):
         """
