@@ -18,7 +18,7 @@ def test_add_stuff_roundtrip() -> None:
     # gce.save_file(original, os.path.join("data", "grids", "IEEE57.gridcal"))  # it may fail if new properties are added, just save the original file
 
     grid1 = gce.open_file(filename=os.path.join("data", "grids", "IEEE57.gridcal"))  # we modify this one in place
-
+    grid1.buses[3].Vmax += 0.001
     # add stuff
     lynn_original = gce.open_file(filename=os.path.join("data", "grids", "lynn5node.gridcal"))
     lynn_original.delete_profiles()
@@ -37,3 +37,60 @@ def test_add_stuff_roundtrip() -> None:
         comp_logger.print()
 
     assert ok_compare
+
+
+
+def test_grid_modifications() -> None:
+    """
+    This test does the following:
+    We open IEEE14 as if we were modifying the grid in two different computers.
+    We add stuff, delete stuff and modify stuff, including some colisions when editting.
+    We compute the difference between the modified grids and the base, and we merge
+    We should get a file with the independent modifications, and some sort of message for colliding modifications
+    """
+    original = gce.open_file(filename=os.path.join("data", "grids", "case14.m"), )  # we use this for diff
+    # gce.save_file(original, os.path.join("data", "grids", "IEEE57.gridcal"))  # it may fail if new properties are added, just save the original file
+
+    grid1 = gce.open_file(filename=os.path.join("data", "grids", "case14.m"))  # we modify this one in place, in PC1
+    grid2 = gce.open_file(filename=os.path.join("data", "grids", "case14.m"))  # we modify this one in place, in PC2
+    grid1.snapshot_time = original.snapshot_time
+    grid2.snapshot_time = original.snapshot_time
+    # add stuff
+
+    busPC1 = gce.Bus(name='Bus_addedPC1', Vnom=0.0)
+    busPC2 = gce.Bus(name='Bus_addedPC2', Vnom=0.0)
+
+    linePC1 = gce.Line(name='AddedLinePC1', bus_from=busPC1, bus_to=grid1.buses[5])
+
+    grid1.add_bus(busPC1)
+    grid2.add_bus(busPC2)
+    grid1.add_line(linePC1)
+
+    # Modify stuff
+
+    grid1.loads[8].bus = busPC1
+    grid2.lines[15].bus_from = busPC2
+
+    # drop stuff
+
+    grid1.delete_bus(obj=grid1.buses[11], delete_associated=True)
+
+
+    # calculate the difference of the modified grid with the original
+    ok_diff1, diff_logger1, diff1 = grid1.differentiate_circuits(base_grid=original)
+    ok_diff2, diff_logger2, diff2 = grid2.differentiate_circuits(base_grid=original)
+
+    merge_logger1 = original.merge_circuit(diff1)
+    merge_logger2 = original.merge_circuit(diff2)
+
+    gce.save_file(grid=original, filename=os.path.join("data", "grids", "case14_mergediffs.gridcal"), )
+
+
+    # the calculated difference should be equal to the grid we added
+    # ok_compare, comp_logger = diff1.compare_circuits(grid2=lynn_original, skip_internals=True)
+    #
+    # if not ok_compare:
+    #     comp_logger.print()
+    #
+    # assert ok_compare
+    return
