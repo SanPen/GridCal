@@ -2122,13 +2122,19 @@ class MultiCircuit(Assets):
 
         logger = Logger()
 
+        all_elms_base_dict, ok = self.get_all_elements_dict(logger=logger)
+        if not ok:
+            return logger
+
         # add profiles if required
         if self.time_profile is not None:
             new_grid.time_profile = self.time_profile
             new_grid.ensure_profiles_exist()
 
         for new_elm in new_grid.items():
-            self.add_or_replace_object(api_obj=new_elm, logger=logger)
+            self.merge_object(api_obj=new_elm,
+                              all_elms_base_dict=all_elms_base_dict,
+                              logger=logger)
 
         return logger
 

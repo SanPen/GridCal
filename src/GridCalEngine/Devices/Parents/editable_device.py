@@ -124,6 +124,8 @@ class GCProp:
 
         self.old_names = old_names if old_names is not None else list()
 
+        self.selected_to_merge = True  # only applicable if we want to apply the value of this property on merge
+
     def has_profile(self) -> bool:
         """
         Check if this property has an associated profile
@@ -217,6 +219,7 @@ class EditableDevice:
         self.comment: str = comment
 
         self.action: ActionType = ActionType.NoAction
+        self.selected_to_merge = True
 
         # list of registered properties. This is supremely useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()

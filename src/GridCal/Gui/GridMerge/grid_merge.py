@@ -16,17 +16,7 @@ from GridCalEngine.enumerations import ActionType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
-def handle_item_changed(item: QtWidgets.QTreeWidgetItem, column: int):
-    """
 
-    :param item:
-    :param column: THis must be here because this is an event handler
-    :return:
-    """
-    if item.parent() is None:  # Root item
-        state = item.checkState(0)
-        for i in range(item.childCount()):
-            item.child(i).setCheckState(0, state)
 
 
 class GridMergeDialogue(QtWidgets.QDialog):
@@ -52,12 +42,19 @@ class GridMergeDialogue(QtWidgets.QDialog):
 
         self._base_grid: MultiCircuit = grid
 
-        self._diff: MultiCircuit = diff
-
         self.all_elms_base_dict, ok = self._base_grid.get_all_elements_dict(logger=self.logger)
 
         if not ok:
             dlg = LogsDialogue('The base circuit has duplicated idtags and cannot be merged :(', self.logger)
+            dlg.exec()
+            return
+
+        self._diff: MultiCircuit = diff
+
+        self.diff_objects_dict, ok2 = self._diff.get_all_elements_dict(logger=self.logger)
+
+        if not ok2:
+            dlg = LogsDialogue('The diff circuit has duplicated idtags and cannot be merged :(', self.logger)
             dlg.exec()
             return
 
@@ -67,11 +64,50 @@ class GridMergeDialogue(QtWidgets.QDialog):
         self.merged_grid: bool = False
 
         # tree item changes
-        self.ui.treeWidget.itemChanged.connect(handle_item_changed)
+        self.ui.treeWidget.itemChanged.connect(self.handle_item_changed)
 
         self.ui.acceptButton.clicked.connect(self.merge_grid)
 
         self.ui.addButton.clicked.connect(self.add_grid)
+
+    def handle_item_changed(self, item: QtWidgets.QTreeWidgetItem, column: int):
+        """
+
+        :param item:
+        :param column: THis must be here because this is an event handler
+        :return:
+        """
+        if item.parent() is None:  # Root item
+
+
+            if item.parent() is None:
+                # the item is a parent
+                idtag = item.text(3)
+                elm = self.diff_objects_dict.get(idtag)
+
+                # set the "selected to merge" thing from the first column
+                elm.selected_to_merge = item.checkState(0) == Qt.CheckState.Checked
+
+                # set the check status of the children to the same as the parent
+                state = item.checkState(0)
+                for i in range(item.childCount()):
+                    item.child(i).setCheckState(0, state)
+
+                print(f"obj: {elm.name}.selected_to_merge={elm.selected_to_merge}")
+
+            else:
+                # if it is a child, then it represents the property of an object
+                parent_item = item.parent()
+                idtag = parent_item.text(3)
+                elm = self.diff_objects_dict.get(idtag)
+                prop_name = item.text(4)
+                prop = elm.get_property_by_name(prop_name=prop_name)
+
+                # we want to mark each property as selectable or not
+                prop.selected_to_merge = item.checkState(0) == Qt.CheckState.Checked
+
+                print(f"prop: {elm.name}.{prop_name}.selected_to_merge={prop.selected_to_merge}")
+
 
     def set_diff(self, diff: MultiCircuit):
         """
@@ -100,62 +136,7 @@ class GridMergeDialogue(QtWidgets.QDialog):
         :return:
         """
 
-        # logger = Logger()
-        #
-        # # add profiles if required
-        # if self.time_profile is not None:
-        #     new_grid.time_profile = self.time_profile
-        #     new_grid.ensure_profiles_exist()
-        #
-        # for new_elm in new_grid.items():
-        #     self.add_or_replace_object(api_obj=new_elm, logger=logger)
-        #
-        # return logger
-
-
-
-        objects_dict, ok2 = self._diff.get_all_elements_dict(logger=self.logger)
-        if not ok2:
-            dlg = LogsDialogue('The diff circuit has duplicated idtags and cannot be merged :(', self.logger)
-            dlg.exec()
-            return
-
-        for i in range(self.ui.treeWidget.topLevelItemCount()):
-
-            tree_item = self.ui.treeWidget.topLevelItem(i)
-
-            # ["Grid", "Object type", "action", "idtag", "name", "property", "value", "new value"]
-            idtag = tree_item.text(3)
-            elm: ALL_DEV_TYPES = objects_dict.get(idtag, None)
-            selected = tree_item.checkState(0) == Qt.CheckState.Checked
-
-            if elm is not None and selected:
-
-                if elm.action == ActionType.Add:
-                    self._base_grid.add_element(obj=elm)
-
-                elif elm.action == ActionType.Delete:
-
-                    elm_from_base = self.all_elms_base_dict.get(idtag, None)
-                    if elm_from_base is not None:
-                        self._base_grid.delete_element(obj=elm_from_base)
-
-                elif elm.action == ActionType.Modify:
-
-                    elm_from_base = self.all_elms_base_dict.get(idtag, None)
-
-                    if elm_from_base is not None:
-
-                        for j in range(tree_item.childCount()):
-
-                            child_item = tree_item.child(j)
-                            if child_item.checkState(0) == Qt.CheckState.Checked:
-                                prop_name = child_item.text(0)
-                                prop = elm.get_property_by_name(prop_name)
-
-                                value = elm.get_property_value(prop=prop, t_idx=None)
-
-                                elm_from_base.set_property_value(prop=prop, value=value, t_idx=None)
+        self._base_grid.merge_circuit(new_grid=self._diff)
 
         # Done
         self.added_grid: bool = False

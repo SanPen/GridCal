@@ -12,7 +12,7 @@ from GridCalEngine.basic_structures import IntVec, StrVec
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Devices.Parents.editable_device import GCPROP_TYPES
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ActionType
 from GridCalEngine.basic_structures import Logger, ListSet
 from GridCalEngine.data_logger import DataLogger
 
@@ -5862,41 +5862,52 @@ class Assets:
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
-    def add_or_replace_object(self, api_obj: ALL_DEV_TYPES, logger: Logger) -> bool:
+    def merge_object(self,
+                     api_obj: ALL_DEV_TYPES,
+                     all_elms_base_dict: Dict[str, ALL_DEV_TYPES],
+                     logger: Logger) -> bool:
         """
-        Add or replace an object based on the UUID
-        :param api_obj: Any asset
+        Add, Delete or Modify an object based on the UUID
+        :param api_obj: Any asset (from a diff presumably)
+        :param all_elms_base_dict: All elements dict from the base circuit (idtag-> object)
         :param logger: Logger object
         :return: replaced?
         """
 
-        object_type_list: List[ALL_DEV_TYPES] = self.get_elements_by_type(device_type=api_obj.device_type)
+        elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
 
-        found = False
-        found_idx = -1
-        for i, obj in enumerate(object_type_list):
-            if obj.idtag == api_obj.idtag:
-                found = True
-                found_idx = i
-                break
-
-        if found:
-            # replace
-            object_type_list[found_idx] = api_obj
-
-            logger.add_info("Element replaced",
-                            device_class=api_obj.device_type.value,
-                            device=api_obj.name)
-
+        if elm_from_base is None:
+            return False
         else:
-            # add
-            self.add_element(obj=api_obj)
 
-            logger.add_info("Element added",
-                            device_class=api_obj.device_type.value,
-                            device=api_obj.name)
+            if api_obj.selected_to_merge:
 
-        return found
+                if api_obj.action == ActionType.Add:
+                    self.add_element(obj=api_obj)
+
+                elif api_obj.action == ActionType.Delete:
+
+                    elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
+                    if elm_from_base is not None:
+                        self.delete_element(obj=elm_from_base)
+
+                elif api_obj.action == ActionType.Modify:
+
+                    elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
+
+                    if elm_from_base is not None:
+
+                        for prop in api_obj.property_list:
+                            if prop.selected_to_merge:
+                                val = api_obj.get_property_value(prop=prop, t_idx=None)
+                                elm_from_base.set_property_value(prop=prop, value=val, t_idx=None)
+
+                elif api_obj.action == ActionType.NoAction:
+                    pass
+
+                return True
+            else:
+                return False
 
     def get_all_elements_iter(self) -> Generator[ALL_DEV_TYPES, None, None]:
         """
