@@ -298,7 +298,6 @@ class MultiCircuit(Assets):
                 'windings',
                 'series_reactances',
                 'buses',
-
                 'loads',
                 'generators',
                 'external_grids',
@@ -307,7 +306,6 @@ class MultiCircuit(Assets):
                 'static_generators',
                 'current_injections',
                 'controllable_shunts',
-
                 'connectivity_nodes',
                 'bus_bars',
                 'overhead_line_types',
@@ -2050,7 +2048,7 @@ class MultiCircuit(Assets):
             else:
                 # check differences
                 action, changed_props = elm_from_base.compare(
-                    other=elm_from_base,
+                    other=new_elm,
                     logger=logger,
                     detailed_profile_comparison=detailed_profile_comparison,
                     nt=nt
