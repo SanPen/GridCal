@@ -5876,38 +5876,46 @@ class Assets:
 
         elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
 
-        if elm_from_base is None:
-            return False
-        else:
+        # if elm_from_base is None:
+        #     return False
+        # else:
 
-            if api_obj.selected_to_merge:
+        if api_obj.selected_to_merge:
 
-                if api_obj.action == ActionType.Add:
-                    self.add_element(obj=api_obj)
+            if api_obj.action == ActionType.Add:
+                self.add_element(obj=api_obj)
 
-                elif api_obj.action == ActionType.Delete:
+            elif api_obj.action == ActionType.Delete:
 
-                    elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
-                    if elm_from_base is not None:
+                elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
+                if elm_from_base is not None:
+                    if elm_from_base.device_type == DeviceType.BusDevice:
+                        self.delete_bus(obj=elm_from_base, delete_associated=False)
+                    else:
                         self.delete_element(obj=elm_from_base)
 
-                elif api_obj.action == ActionType.Modify:
 
-                    elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
+            elif api_obj.action == ActionType.Modify:
 
-                    if elm_from_base is not None:
+                elm_from_base = all_elms_base_dict.get(api_obj.idtag, None)
 
-                        for prop in api_obj.property_list:
-                            if prop.selected_to_merge:
-                                val = api_obj.get_property_value(prop=prop, t_idx=None)
-                                elm_from_base.set_property_value(prop=prop, value=val, t_idx=None)
+                if elm_from_base is not None:
 
-                elif api_obj.action == ActionType.NoAction:
-                    pass
+                    for prop in api_obj.property_list:
+                        if prop.selected_to_merge:
+                            val = api_obj.get_property_value(prop=prop, t_idx=None)
+                            elm_from_base.set_property_value(prop=prop, value=val, t_idx=None)
+                else:
+                    self.add_element(obj=api_obj)
 
-                return True
-            else:
-                return False
+
+            elif api_obj.action == ActionType.NoAction:
+                pass
+
+            return True
+
+        else:
+            return False
 
     def get_all_elements_iter(self) -> Generator[ALL_DEV_TYPES, None, None]:
         """
