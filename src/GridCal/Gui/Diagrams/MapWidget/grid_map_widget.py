@@ -1095,6 +1095,13 @@ class GridMapWidget(BaseDiagramWidget):
             for key, elm_graphics in graphics_dict.items():
                 elm_graphics.set_width_scale(width=branch_width, arrow_width=arrow_width)
 
+        # Rescale LineLocations:
+        graphics_dict = self.graphics_manager.get_device_type_dict(device_type=DeviceType.LineLocation)
+
+        for key, elm_graphics in graphics_dict.items():
+            elm_graphics.resize(new_radius=branch_width)
+
+
         # rescale substations (this is super-fast)
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
         for se_key, elm_graphics in data.items():
