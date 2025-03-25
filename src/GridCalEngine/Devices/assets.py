@@ -4782,6 +4782,13 @@ class Assets:
         """
         return self.get_branch_names(add_vsc=True, add_hvdc=False, add_switch=False)
 
+    def get_branch_names_wo_hvdc_w_switch(self) -> StrVec:
+        """
+        Get all branch names without HVDC devices
+        :return: StrVec
+        """
+        return self.get_branch_names(add_vsc=True, add_hvdc=False, add_switch=True)
+
     def get_branch_names_wo_vsc_hvdc(self) -> StrVec:
         """
         Get all branch names without VSC nor HVDC devices
