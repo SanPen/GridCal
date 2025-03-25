@@ -7,7 +7,7 @@ from __future__ import annotations
 import os
 import string
 import sys
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 from random import randint
 from enum import Enum
 from difflib import SequenceMatcher
@@ -23,6 +23,50 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.Parents.editable_device import uuid2idtag
 from GridCalEngine.basic_structures import Mat, BoolVec
 
+
+def try_parse_dates(date_series: pd.Series, formats: Optional[List[str]] = None) -> pd.Series:
+    """
+    Tries to parse a pandas Series of strings into datetime using a list of common formats.
+
+    Parameters:
+    - date_series (pd.Series): The input series of date strings.
+    - formats (List[str], optional): List of datetime formats to try. If None, defaults to common ones.
+
+    Returns:
+    - pd.Series: A pandas Series of parsed datetime objects (or original strings if none matched).
+    """
+    if formats is None:
+        formats = [
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%d-%m %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+            "%Y-%d-%m %H:%M",
+            "%d/%m/%Y %H:%M",
+            "%m/%d/%Y %H:%M",
+            "%d-%m-%Y",
+            "%m-%d-%Y",
+            "%Y/%m/%d",
+            "%Y.%m.%d",
+            "%d.%m.%Y",
+            "%Y%m%dT%H%M%S",
+            "%Y-%m-%d",
+        ]
+
+    for fmt in formats:
+        try:
+            parsed = pd.to_datetime(date_series, format=fmt, errors='raise')
+            print(f"Succeeded with format {fmt}")
+            return parsed
+        except (ValueError, TypeError):
+            continue
+
+    # Try letting pandas infer if none of the formats matched
+    try:
+        parsed = pd.to_datetime(date_series, errors='raise')
+        return parsed
+    except Exception:
+        print("Failed to parse dates using all known formats.")
+        return date_series  # Return as is if nothing worked
 
 class MultiplierType(Enum):
     """
@@ -749,7 +793,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             profiles[i_obj] = vals
 
-        time_profile = self.original_data_frame.index
+        # try to recognize the time
+        time_profile = try_parse_dates(self.original_data_frame.index)
 
         return np.array(profiles).transpose(), time_profile, zeroed
 

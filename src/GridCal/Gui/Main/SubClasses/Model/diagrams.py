@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Callable
 
 import networkx as nx
 import numpy as np
@@ -54,7 +54,7 @@ class VideoExportWorker(QtCore.QThread):
 
     def __init__(self, filename, diagram: SchematicWidget | GridMapWidget,
                  fps: int, start_idx: int, end_idx: int, current_study: str,
-                 grid_colour_function):
+                 grid_colour_function: Callable[[Union[SchematicWidget, GridMapWidget], str, int, bool], None], ):
         """
 
         :param filename:
@@ -73,7 +73,7 @@ class VideoExportWorker(QtCore.QThread):
         self.start_idx = start_idx
         self.end_idx = end_idx
         self.current_study = current_study
-        self.grid_colour_function = grid_colour_function
+        self.grid_colour_function: Callable[[SchematicWidget | GridMapWidget, str, int, bool], None] = grid_colour_function
 
         self.logger = Logger()
 
@@ -87,7 +87,7 @@ class VideoExportWorker(QtCore.QThread):
 
         # paint and capture
         for t_idx in range(self.start_idx, self.end_idx):
-            self.grid_colour_function(diagram=self.diagram,
+            self.grid_colour_function(diagram_widget=self.diagram,
                                       current_study=self.current_study,
                                       t_idx=t_idx,
                                       allow_popups=False)
