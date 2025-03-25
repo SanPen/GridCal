@@ -4803,6 +4803,13 @@ class Assets:
         """
         return self.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=False)
 
+    def get_branch_number_wo_hvdc_w_switch(self) -> int:
+        """
+        return the number of Branches (with no HVDC)
+        :return: number
+        """
+        return self.get_branch_number(add_vsc=True, add_hvdc=False, add_switch=True)
+
     def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
         """
         Iterator all the real branch objects.

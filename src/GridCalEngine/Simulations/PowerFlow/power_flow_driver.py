@@ -51,7 +51,7 @@ class PowerFlowDriver(DriverTemplate):
         self.opf_results: Union[OptimalPowerFlowResults, None] = opf_results
 
         self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                        m=self.grid.get_branch_number_wo_hvdc(),
+                                        m=self.grid.get_branch_number_wo_hvdc_w_switch(),
                                         n_hvdc=self.grid.get_hvdc_number(),
                                         n_vsc=self.grid.get_vsc_number(),
                                         n_gen=self.grid.get_generation_like_number(),
