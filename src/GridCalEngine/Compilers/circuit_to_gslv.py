@@ -567,16 +567,15 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
         nt=n_time,
         active=elm.active,
         P=elm.P,
-        Vset=elm.Vset,
+        vset=elm.Vset,
         Pmin=elm.Pmin,
         Pmax=elm.Pmax,
         Qmin=elm.Qmin,
         Qmax=elm.Qmax,
         Snom=elm.Snom,
-        controllable_default=elm.is_controlled,
-        dispatchable_default=elm.enabled_dispatch,
         is_controlled=elm.is_controlled,
-        q_points=elm.q_curve.get_data().tolist()
+        enabled_dispatch=elm.enabled_dispatch,
+        # q_points=elm.q_curve.get_data().tolist()
     )
 
     gen.bus = bus_dict[elm.bus.idtag]
@@ -741,20 +740,22 @@ def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     :param time_indices:
     :return:
     """
-    lne = pg.Line(idtag=elm.idtag,
-                  code=str(elm.code),
-                  name=elm.name,
-                  calc_node_from=bus_dict[elm.bus_from.idtag],
-                  calc_node_to=bus_dict[elm.bus_to.idtag],
-                  nt=n_time,
-                  length=elm.length,
-                  rate=elm.rate,
-                  active_default=elm.active,
-                  r=elm.R,
-                  x=elm.X,
-                  b=elm.B,
-                  monitor_loading_default=elm.monitor_loading,
-                  monitor_contingency_default=elm.contingency_enabled)
+    lne = pg.Line(
+        idtag=elm.idtag,
+        code=str(elm.code),
+        name=elm.name,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        nt=n_time,
+        length=elm.length,
+        rate=elm.rate if elm.rate > 0 else 9999,
+        active=elm.active,
+        r=elm.R,
+        x=elm.X,
+        b=elm.B,
+        monitor_loading=elm.monitor_loading,
+        contingency_enabled=elm.contingency_enabled
+    )
 
     if use_time_series:
         lne.active = (elm.active_prof.astype(BINT)
@@ -775,7 +776,8 @@ def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
                              if time_indices is None
                              else elm.Cost_prof.toarray()[time_indices])
     else:
-        lne.setAllOverloadCost(elm.Cost)
+        #lne.setAllOverloadCost(elm.Cost)
+        pass
 
     return lne
 
@@ -819,21 +821,21 @@ def convert_transformer(elm: dev.Transformer2W, bus_dict: Dict[str, "pg.Bus"], n
     tr2 = pg.Transformer2W(idtag=elm.idtag,
                            code=str(elm.code),
                            name=elm.name,
-                           calc_node_from=bus_dict[elm.bus_from.idtag],
-                           calc_node_to=bus_dict[elm.bus_to.idtag],
+                           bus_from=bus_dict[elm.bus_from.idtag],
+                           bus_to=bus_dict[elm.bus_to.idtag],
                            nt=n_time,
-                           Vhigh=elm.HV,
-                           Vlow=elm.LV,
-                           rate=elm.rate,
-                           active_default=elm.active,
+                           HV=elm.HV,
+                           LV=elm.LV,
+                           rate=elm.rate if elm.rate > 0 else 9999,
+                           active=elm.active,
                            r=elm.R,
                            x=elm.X,
                            g=elm.G,
                            b=elm.B,
-                           monitor_loading_default=elm.monitor_loading,
-                           monitor_contingency_default=elm.contingency_enabled,
-                           tap=elm.tap_module,
-                           phase=elm.tap_phase)
+                           monitor_loading=elm.monitor_loading,
+                           contingency_enabled=elm.contingency_enabled,
+                           tap_module=elm.tap_module,
+                           tap_phase=elm.tap_phase)
 
     tr2.tap_phase_min = elm.tap_phase_min
     tr2.tap_phase_max = elm.tap_phase_max
@@ -853,7 +855,8 @@ def convert_transformer(elm: dev.Transformer2W, bus_dict: Dict[str, "pg.Bus"], n
             time_indices]
         tr2.overload_cost = elm.Cost_prof.toarray()
     else:
-        tr2.setAllOverloadCost(elm.Cost)
+        #tr2.setAllOverloadCost(elm.Cost)
+        pass
 
     # ctrl_dict = {
     #     TransformerControlType.fixed: pg.BranchControlModes.Fixed,
