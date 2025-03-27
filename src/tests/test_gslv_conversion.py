@@ -278,7 +278,7 @@ def test_gslv_compatibility_ts():
             br.rate = 9999.0
 
     grid_gslv, (bus_dict, area_dict, zone_dict) = to_gslv(circuit=grid_gc,
-                                                          use_time_series=False,
+                                                          use_time_series=True,
                                                           time_indices=None,
                                                           override_branch_controls=False,
                                                           opf_results=None)

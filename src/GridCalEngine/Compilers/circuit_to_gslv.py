@@ -114,7 +114,7 @@ def convert_tap_phase_control_mode_lst(data: List[TapPhaseControl]) -> List["pg.
     return [tap_phase_control_mode_dict[val] for val in data]
 
 
-def fill_profile(gslv_profile: "pg.Profiledouble" | "pg.Profilebool" | "pg.Profileint" | "pg.Profileuint",
+def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint",
                  gc_profile: Profile,
                  use_time_series: bool,
                  time_indices: Union[IntVec, None],
@@ -142,7 +142,9 @@ def fill_profile(gslv_profile: "pg.Profiledouble" | "pg.Profilebool" | "pg.Profi
                     data = gc_profile.sparse_array.get_map()
 
                 # we pick all the profile
-                gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+                if len(data) > 0:
+                    gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+
             else:
                 assert len(time_indices) == n_time
 
@@ -389,31 +391,40 @@ def add_investments(circuit: MultiCircuit,
     return d
 
 
-def convert_bus(bus: dev.Bus, n_time: int,
+def convert_bus(elm: dev.Bus, n_time: int,
                 area_dict: Dict[dev.Area, "pg.Area"],
                 time_indices: IntVec,
                 use_time_series: bool) -> "pg.Bus":
-    elm = pg.Bus(idtag=bus.idtag,
-                 code=str(bus.code),
-                 name=bus.name,
-                 nt=n_time,
-                 is_slack=bus.is_slack,
-                 is_dc=bus.is_dc,
-                 Vnom=bus.Vnom,
-                 vmin=bus.Vmin,
-                 vmax=bus.Vmax,
-                 angle_min=bus.angle_min,
-                 angle_max=bus.angle_max,
-                 area=area_dict.get(bus.area, None))
+    """
 
-    if use_time_series and n_time > 1:
-        elm.active = (bus.active_prof.astype(BINT)
-                      if time_indices is None
-                      else bus.active_prof.astype(BINT)[time_indices])
-    else:
-        elm.set_active_val(int(bus.active))
+    :param elm:
+    :param n_time:
+    :param area_dict:
+    :param time_indices:
+    :param use_time_series:
+    :return:
+    """
+    bus = pg.Bus(nt=n_time,
+                 name=elm.name,
+                 idtag=elm.idtag,
+                 code=str(elm.code),
+                 is_slack=elm.is_slack,
+                 is_dc=elm.is_dc,
+                 Vnom=elm.Vnom,
+                 vmin=elm.Vmin,
+                 vmax=elm.Vmax,
+                 angle_min=elm.angle_min,
+                 angle_max=elm.angle_max,
+                 area=area_dict.get(elm.area, None))
 
-    return elm
+    fill_profile(gslv_profile=bus.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
+
+    return bus
 
 
 def add_buses(circuit: MultiCircuit,
@@ -442,7 +453,7 @@ def add_buses(circuit: MultiCircuit,
     bus_dict: Dict[str, "pg.Bus"] = dict()
 
     for i, bus in enumerate(circuit.buses):
-        elm = convert_bus(bus=bus, n_time=n_time,
+        elm = convert_bus(elm=bus, n_time=n_time,
                           area_dict=area_dict,
                           use_time_series=use_time_series,
                           time_indices=time_indices)
