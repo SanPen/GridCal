@@ -15,7 +15,7 @@ from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, ContingencyMethod,
-                                        BuildStatus)
+                                        BuildStatus, BranchGroupTypes)
 import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -78,6 +78,12 @@ try:
     hvdc_control_mode_dict = {
         HvdcControlType.type_0_free: pg.HvdcControlType.type_0_free,
         HvdcControlType.type_1_Pset: pg.HvdcControlType.type_1_Pset,
+    }
+
+    group_type_dict = {
+        BranchGroupTypes.GenericGroup: pg.BranchGroupTypes.GenericGroup,
+        BranchGroupTypes.TransformerGroup: pg.BranchGroupTypes.TransformerGroup,
+        BranchGroupTypes.LineSegmentsGroup: pg.BranchGroupTypes.LineSegmentsGroup,
     }
 
 except ImportError as e:
@@ -327,6 +333,93 @@ def add_countries(circuit: MultiCircuit,
 
     return d
 
+
+def convert_municipality(country: dev.Municipality) -> "pg.Municipality":
+    """
+
+    :param country:
+    :return:
+    """
+    return pg.Municipality(idtag=country.idtag, code=str(country.code), name=country.name)
+
+
+def add_municipalities(circuit: MultiCircuit,
+                       gslv_grid: "pg.MultiCircuit") -> Dict[dev.Country, "pg.Country"]:
+    """
+    Add GSLV countries
+    :param circuit: GridCal circuit
+    :param gslv_grid: GSLV Circuit
+    :return: Dictionary [GridCal country] -> GSLV country
+    """
+    d = dict()
+
+    for i, municipality in enumerate(circuit.municipalities):
+        elm = convert_municipality(municipality)
+        gslv_grid.add_municipality(elm)
+        d[municipality] = elm
+
+    return d
+
+
+def convert_region(country: dev.Municipality) -> "pg.Municipality":
+    """
+
+    :param country:
+    :return:
+    """
+    return pg.Municipality(idtag=country.idtag, code=str(country.code), name=country.name)
+
+
+def add_regions(circuit: MultiCircuit,
+                gslv_grid: "pg.MultiCircuit") -> Dict[dev.Country, "pg.Country"]:
+    """
+    Add GSLV countries
+    :param circuit: GridCal circuit
+    :param gslv_grid: GSLV Circuit
+    :return: Dictionary [GridCal country] -> GSLV country
+    """
+    d = dict()
+
+    for i, municipality in enumerate(circuit.regions):
+        elm = convert_region(municipality)
+        gslv_grid.add_region(elm)
+        d[municipality] = elm
+
+    return d
+
+
+def convert_branch_group(country: dev.BranchGroup) -> "pg.BranchGroup":
+    """
+
+    :param country:
+    :return:
+    """
+    return pg.BranchGroup(
+        idtag=country.idtag,
+        code=str(country.code),
+        name=country.name,
+        group_type=group_type_dict[country.group_type]
+    )
+
+
+def add_branch_groups(circuit: MultiCircuit,
+                      gslv_grid: "pg.MultiCircuit") -> Dict[dev.BranchGroup, "pg.BranchGroup"]:
+    """
+    Add GSLV countries
+    :param circuit: GridCal circuit
+    :param gslv_grid: GSLV Circuit
+    :return: Dictionary [GridCal country] -> GSLV country
+    """
+    d = dict()
+
+    for i, branch_group in enumerate(circuit.branch_groups):
+        elm = convert_branch_group(branch_group)
+        gslv_grid.add_branch_group(elm)
+        d[branch_group] = elm
+
+    return d
+
+
 def convert_substation(se: dev.Substation, n_time: int) -> "pg.Substation":
     """
 
@@ -424,9 +517,9 @@ def add_contingency_groups(circuit: MultiCircuit,
     d = dict()
 
     for i, elm in enumerate(circuit.get_contingency_groups()):
-        dev = convert_contingency_groups(elm)
-        gslv_grid.add_contingency_group(dev)
-        d[elm] = dev
+        cg = convert_contingency_groups(elm)
+        gslv_grid.add_contingency_group(cg)
+        d[elm] = cg
 
     return d
 
@@ -466,11 +559,11 @@ def add_contingencies(circuit: MultiCircuit,
     d = dict()
 
     for i, elm in enumerate(circuit.contingencies):
-        dev = convert_contingencies(elm=elm, n_time=n_time, groups_dict=groups_dict[elm.group])
-
-        gslv_grid.add_contingency(dev)
-
-        d[elm] = dev
+        con = convert_contingencies(elm=elm,
+                                    n_time=n_time,
+                                    groups_dict=groups_dict[elm.group])
+        gslv_grid.add_contingency(con)
+        d[elm] = con
 
     return d
 
@@ -497,15 +590,17 @@ def add_investment_groups(circuit: MultiCircuit, gslv_grid: "pg.MultiCircuit"):
     d = dict()
 
     for i, elm in enumerate(circuit.investments_groups):
-        dev = convert_investment_group(elm)
-        gslv_grid.add_investment_group(dev)
-        d[elm] = dev
+        ig = convert_investment_group(elm)
+        gslv_grid.add_investment_group(ig)
+        d[elm] = ig
 
     return d
 
 
-def convert_investment(elm: dev.Investment,
-                       groups_dict: Dict[dev.InvestmentsGroup, "pg.InvestmentGroup"]) -> "pg.Investment":
+def convert_investment(
+        elm: dev.Investment,
+        groups_dict: Dict[dev.InvestmentsGroup, "pg.InvestmentGroup"]
+) -> "pg.Investment":
     """
 
     :param elm:
@@ -518,7 +613,8 @@ def convert_investment(elm: dev.Investment,
                          device_idtag=elm.device_idtag,
                          group=groups_dict[elm.group],
                          CAPEX=elm.CAPEX,
-                         OPEX=elm.OPEX)
+                         OPEX=elm.OPEX,
+                         status=elm.status, )
 
 
 def add_investments(circuit: MultiCircuit,
@@ -534,9 +630,67 @@ def add_investments(circuit: MultiCircuit,
     d = dict()
 
     for i, elm in enumerate(circuit.investments):
-        dev = convert_investment(elm, groups_dict=groups_dict[elm.group])
-        gslv_grid.add_investment(dev)
-        d[elm] = dev
+        investment = convert_investment(elm, groups_dict=groups_dict[elm.group])
+        gslv_grid.add_investment(investment)
+        d[elm] = investment
+
+    return d
+
+
+def convert_facility(elm: dev.Facility) -> "pg.Facility":
+    """
+
+    :param elm:
+    :return:
+    """
+    return pg.Facility(idtag=elm.idtag,
+                       code=str(elm.code),
+                       name=elm.name)
+
+
+def add_facilities(circuit: MultiCircuit,
+                   gslv_grid: "pg.MultiCircuit"):
+    """
+
+    :param circuit:
+    :param gslv_grid:
+    :return:
+    """
+    d = dict()
+
+    for i, elm in enumerate(circuit.facilities):
+        facility = convert_facility(elm)
+        gslv_grid.add_facility(facility)
+        d[elm] = facility
+
+    return d
+
+
+def convert_modelling_authority(elm: dev.ModellingAuthority) -> "pg.ModellingAuthority":
+    """
+
+    :param elm:
+    :return:
+    """
+    return pg.ModellingAuthority(idtag=elm.idtag,
+                                 code=str(elm.code),
+                                 name=elm.name)
+
+
+def add_modelling_authorities(circuit: MultiCircuit,
+                              gslv_grid: "pg.MultiCircuit") -> Dict[dev.ModellingAuthority, "pg.ModellingAuthority"]:
+    """
+
+    :param circuit:
+    :param gslv_grid:
+    :return:
+    """
+    d = dict()
+
+    for i, elm in enumerate(circuit.modelling_authorities):
+        ma = convert_modelling_authority(elm)
+        gslv_grid.add_modelling_authority(ma)
+        d[elm] = ma
 
     return d
 
@@ -1178,13 +1332,17 @@ def add_battery_data(circuit: MultiCircuit,
         gslv_grid.add_battery(batt)
 
 
-def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
+def convert_line(elm: dev.Line,
+                 n_time: int,
+                 bus_dict: Dict[str, "pg.Bus"],
+                 branch_groups_dict: Dict[dev.BranchGroup, "pg.BranchGroup"],
                  use_time_series: bool, time_indices: IntVec | None = None, ) -> "pg.Line":
     """
 
     :param elm:
-    :param bus_dict:
     :param n_time:
+    :param bus_dict:
+    :param branch_groups_dict:
     :param use_time_series:
     :param time_indices:
     :return:
@@ -1203,8 +1361,10 @@ def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
         x=elm.X,
         b=elm.B,
         monitor_loading=elm.monitor_loading,
-        contingency_enabled=elm.contingency_enabled
+        contingency_enabled=elm.contingency_enabled,
     )
+
+    lne.group = branch_groups_dict.get(elm.group, None)
 
     fill_profile(gslv_profile=lne.active,
                  gc_profile=elm.active_prof,
@@ -1240,6 +1400,7 @@ def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
 def add_lines(circuit: MultiCircuit,
               gslv_grid: "pg.MultiCircuit",
               bus_dict: Dict[str, "pg.Bus"],
+              branch_groups_dict: Dict[dev.BranchGroup, "pg.BranchGroup"],
               time_series: bool,
               n_time: int = 1,
               time_indices: Union[IntVec, None] = None):
@@ -1249,24 +1410,33 @@ def add_lines(circuit: MultiCircuit,
     :param gslv_grid: GSLV circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to GSLV bus object
+    :param branch_groups_dict: dictionary of converted branch groups
     :param n_time: number of time steps
     :param time_indices: Array of time indices
     """
 
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
-        lne = convert_line(elm=elm, bus_dict=bus_dict, n_time=n_time,
-                           use_time_series=time_series, time_indices=time_indices)
+        lne = convert_line(elm=elm,
+                           bus_dict=bus_dict,
+                           branch_groups_dict=branch_groups_dict,
+                           n_time=n_time,
+                           use_time_series=time_series,
+                           time_indices=time_indices)
         gslv_grid.add_line(lne)
 
 
-def convert_transformer(elm: dev.Transformer2W, bus_dict: Dict[str, "pg.Bus"], n_time: int,
+def convert_transformer(elm: dev.Transformer2W,
+                        bus_dict: Dict[str, "pg.Bus"],
+                        branch_groups_dict: Dict[dev.BranchGroup, "pg.BranchGroup"],
+                        n_time: int,
                         use_time_series: bool, time_indices: IntVec | None,
                         override_controls: bool) -> "pg.Transformer2W":
     """
 
     :param elm:
     :param bus_dict:
+    :param branch_groups_dict:
     :param n_time:
     :param use_time_series:
     :param time_indices:
@@ -1388,6 +1558,7 @@ def convert_transformer(elm: dev.Transformer2W, bus_dict: Dict[str, "pg.Bus"], n
 def add_transformers(circuit: MultiCircuit,
                      gslv_grid: "pg.MultiCircuit",
                      bus_dict: Dict[str, "pg.Bus"],
+                     branch_groups_dict: Dict[dev.BranchGroup, "pg.BranchGroup"],
                      time_series: bool,
                      n_time: int = 1,
                      time_indices: Union[IntVec, None] = None,
@@ -1398,14 +1569,19 @@ def add_transformers(circuit: MultiCircuit,
     :param gslv_grid: GSLV circuit
     :param time_series: compile the time series from GridCal? otherwise just the snapshot
     :param bus_dict: dictionary of bus id to GSLV bus object
+    :param branch_groups_dict: dictionary of branch grous converetd
     :param n_time: number of time steps
     :param time_indices: Array of time indices
     :param override_controls: If true the controls are set to Fix
     """
 
     for i, elm in enumerate(circuit.transformers2w):
-        tr2 = convert_transformer(elm=elm, bus_dict=bus_dict, n_time=n_time,
-                                  use_time_series=time_series, time_indices=time_indices,
+        tr2 = convert_transformer(elm=elm,
+                                  bus_dict=bus_dict,
+                                  branch_groups_dict=branch_groups_dict,
+                                  n_time=n_time,
+                                  use_time_series=time_series,
+                                  time_indices=time_indices,
                                   override_controls=override_controls)
         gslv_grid.add_transformer(tr2)
 
@@ -1774,14 +1950,31 @@ def to_gslv(circuit: MultiCircuit,
     else:
         n_time = len(time_indices)
 
-    pg_grid = pg.MultiCircuit(name=circuit.name, nt=n_time)
-    # pg_grid.idtag = circuit.idtag
+    pg_grid = pg.MultiCircuit(name=circuit.name,
+                              nt=n_time,
+                              Sbase=circuit.Sbase,
+                              fBase=circuit.fBase,
+                              idtag=circuit.idtag)
 
     area_dict = add_areas(circuit=circuit, gslv_grid=pg_grid)
+
     zone_dict = add_zones(circuit=circuit, gslv_grid=pg_grid)
+
     substation_dict = add_substations(circuit=circuit, gslv_grid=pg_grid, n_time=n_time)
+
     voltage_level_dict = add_voltage_levels(circuit=circuit, gslv_grid=pg_grid, substations_dict=substation_dict)
+
     country_dict = add_countries(circuit=circuit, gslv_grid=pg_grid)
+
+    facility_dict = add_facilities(circuit=circuit, gslv_grid=pg_grid)
+
+    modelling_authorities_dict = add_modelling_authorities(circuit=circuit, gslv_grid=pg_grid)
+
+    branch_groups_dict = add_branch_groups(circuit=circuit, gslv_grid=pg_grid)
+
+    municipalities_dict = add_municipalities(circuit=circuit, gslv_grid=pg_grid)
+
+    regions_dict = add_regions(circuit=circuit, gslv_grid=pg_grid)
 
     con_groups_dict = add_contingency_groups(circuit=circuit, gslv_grid=pg_grid)
 
@@ -1856,6 +2049,7 @@ def to_gslv(circuit: MultiCircuit,
         circuit=circuit,
         gslv_grid=pg_grid,
         bus_dict=bus_dict,
+        branch_groups_dict=branch_groups_dict,
         time_series=use_time_series,
         n_time=n_time,
         time_indices=time_indices
@@ -1865,6 +2059,7 @@ def to_gslv(circuit: MultiCircuit,
         circuit=circuit,
         gslv_grid=pg_grid,
         bus_dict=bus_dict,
+        branch_groups_dict=branch_groups_dict,
         time_series=use_time_series,
         n_time=n_time,
         time_indices=time_indices,
