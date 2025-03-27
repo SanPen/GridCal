@@ -60,6 +60,14 @@ except ImportError as e:
 # numpy integer type for GSLV's uword
 BINT = np.ulonglong
 
+build_status_dict = {
+    BuildStatus.Planned: pg.BuildStatus.Planned,
+    BuildStatus.Commissioned: pg.BuildStatus.Commissioned,
+    BuildStatus.Candidate: pg.BuildStatus.Candidate,
+    BuildStatus.Decommissioned: pg.BuildStatus.Decommissioned,
+    BuildStatus.PlannedDecommission: pg.BuildStatus.PlannedDecommission,
+}
+
 
 def get_gslv_mip_solvers_list() -> List[str]:
     """
@@ -364,13 +372,6 @@ def convert_load(k: int, elm: dev.Load, bus_dict: Dict[str, "pg.Bus"], n_time: i
     Invoked with: kwargs: idtag='1d19d20c90924be7928e0fbb61aa699f', code='2_1', name='2_1', calc_node=BUS 2, nt=1, P=21.7, Q=12.7, build_status=Commissioned
 
     """
-    build_status_dict = {
-        BuildStatus.Planned: pg.BuildStatus.Planned,
-        BuildStatus.Commissioned: pg.BuildStatus.Commissioned,
-        BuildStatus.Candidate: pg.BuildStatus.Candidate,
-        BuildStatus.Decommissioned: pg.BuildStatus.Decommissioned,
-        BuildStatus.PlannedDecommission: pg.BuildStatus.PlannedDecommission,
-    }
 
     load = pg.Load(
         nt=n_time,
@@ -409,7 +410,7 @@ def convert_load(k: int, elm: dev.Load, bus_dict: Dict[str, "pg.Bus"], n_time: i
         load.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
     else:
         load.set_active_val(int(elm.active))
-        load.setAllCost1(elm.Cost)
+        # load.setAllCost1(elm.Cost)
 
     return load
 
@@ -421,7 +422,7 @@ def add_loads(circuit: MultiCircuit,
               n_time=1,
               time_indices: IntVec | None = None,
               opf_results: OptimalPowerFlowResults | None = None,
-              build_status_dict: Dict[BuildStatus, "pg.BuildStatus"] | None = None,):
+              build_status_dict: Dict[BuildStatus, "pg.BuildStatus"] | None = None, ):
     """
 
     :param circuit: GridCal circuit
@@ -462,8 +463,8 @@ def convert_static_generator(elm: dev.StaticGenerator, bus_dict: Dict[str, "pg.B
         pe_inj.Q = elm.Q_prof.toarray() if time_indices is None else elm.Q_prof.toarray()[time_indices]
         pe_inj.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
     else:
-        pe_inj.active = np.ones(n_time, dtype=BINT) * int(elm.active)
-        pe_inj.setAllCost1(elm.Cost)
+        pe_inj.set_active_val(int(elm.active))
+        # pe_inj.setAllCost1(elm.Cost)
 
     return pe_inj
 
@@ -491,16 +492,26 @@ def add_static_generators(circuit: MultiCircuit, gslv_grid: "pg.MultiCircuit",
 
 def convert_shunt(elm: dev.Shunt, bus_dict: Dict[str, "pg.Bus"], n_time: int,
                   use_time_series: bool, time_indices: IntVec | None = None, ) -> "pg.Shunt":
+    """
+
+    :param elm:
+    :param bus_dict:
+    :param n_time:
+    :param use_time_series:
+    :param time_indices:
+    :return:
+    """
     sh = pg.Shunt(
+        nt=n_time,
+        name=elm.name,
         idtag=elm.idtag,
         code=str(elm.code),
-        name=elm.name,
-        calc_node=bus_dict[elm.bus.idtag],
-        nt=n_time,
         G=elm.G,
         B=elm.B,
-        build_status=elm.build_status,
+        build_status=build_status_dict[elm.build_status],
     )
+
+    sh.bus = bus_dict[elm.bus.idtag]
 
     if use_time_series:
         sh.active = (elm.active_prof.astype(BINT)
@@ -509,7 +520,7 @@ def convert_shunt(elm: dev.Shunt, bus_dict: Dict[str, "pg.Bus"], n_time: int,
         sh.G = elm.G_prof.toarray() if time_indices is None else elm.G_prof.toarray()[time_indices]
         sh.B = elm.B_prof.toarray() if time_indices is None else elm.B_prof.toarray()[time_indices]
     else:
-        sh.active = np.ones(n_time, dtype=BINT) * int(elm.active)
+        sh.set_active_val(int(elm.active))
 
     return sh
 
@@ -550,21 +561,24 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
     :param opf_results:
     :return:
     """
-    gen = pg.Generator(idtag=elm.idtag,
-                       name=elm.name,
-                       calc_node=bus_dict[elm.bus.idtag],
-                       nt=n_time,
-                       P=elm.P,
-                       Vset=elm.Vset,
-                       Pmin=elm.Pmin,
-                       Pmax=elm.Pmax,
-                       Qmin=elm.Qmin,
-                       Qmax=elm.Qmax,
-                       Snom=elm.Snom,
-                       controllable_default=BINT(elm.is_controlled),
-                       dispatchable_default=BINT(elm.enabled_dispatch),
-                       is_controlled=elm.is_controlled,
-                       q_points=elm.q_curve.get_data())
+    gen = pg.Generator(
+        idtag=elm.idtag,
+        name=elm.name,
+        nt=n_time,
+        active=elm.active,
+        P=elm.P,
+        vset=elm.Vset,
+        Pmin=elm.Pmin,
+        Pmax=elm.Pmax,
+        Qmin=elm.Qmin,
+        Qmax=elm.Qmax,
+        Snom=elm.Snom,
+        is_controlled=elm.is_controlled,
+        enabled_dispatch=elm.enabled_dispatch,
+        # q_points=elm.q_curve.get_data().tolist()
+    )
+
+    gen.bus = bus_dict[elm.bus.idtag]
 
     if use_time_series:
 
@@ -583,17 +597,16 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
         gen.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
         gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
     else:
-        gen.active = np.ones(n_time, dtype=BINT) * int(elm.active)
+        gen.set_active_val(int(elm.active))
 
         if opf_results is None:
-            gen.P = np.full(n_time, elm.P, dtype=float)
+            gen.set_P_val(elm.P)
         else:
-            gen.P = np.full(n_time, opf_results.generator_power[k] - opf_results.generator_shedding[k], dtype=float)
+            gen.set_P_val(opf_results.generator_power[k] - opf_results.generator_shedding[k])
 
-        gen.Vset = np.ones(n_time, dtype=float) * elm.Vset
-        gen.setAllCost0(elm.Cost0)
-        gen.setAllCost1(elm.Cost)
-        gen.setAllCost2(elm.Cost2)
+        # gen.setAllCost0(elm.Cost0)
+        # gen.setAllCost1(elm.Cost)
+        # gen.setAllCost2(elm.Cost2)
 
     return gen
 
@@ -727,20 +740,22 @@ def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     :param time_indices:
     :return:
     """
-    lne = pg.Line(idtag=elm.idtag,
-                  code=str(elm.code),
-                  name=elm.name,
-                  calc_node_from=bus_dict[elm.bus_from.idtag],
-                  calc_node_to=bus_dict[elm.bus_to.idtag],
-                  nt=n_time,
-                  length=elm.length,
-                  rate=elm.rate,
-                  active_default=elm.active,
-                  r=elm.R,
-                  x=elm.X,
-                  b=elm.B,
-                  monitor_loading_default=elm.monitor_loading,
-                  monitor_contingency_default=elm.contingency_enabled)
+    lne = pg.Line(
+        idtag=elm.idtag,
+        code=str(elm.code),
+        name=elm.name,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        nt=n_time,
+        length=elm.length,
+        rate=elm.rate if elm.rate > 0 else 9999,
+        active=elm.active,
+        r=elm.R,
+        x=elm.X,
+        b=elm.B,
+        monitor_loading=elm.monitor_loading,
+        contingency_enabled=elm.contingency_enabled
+    )
 
     if use_time_series:
         lne.active = (elm.active_prof.astype(BINT)
@@ -761,7 +776,8 @@ def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
                              if time_indices is None
                              else elm.Cost_prof.toarray()[time_indices])
     else:
-        lne.setAllOverloadCost(elm.Cost)
+        #lne.setAllOverloadCost(elm.Cost)
+        pass
 
     return lne
 
@@ -805,21 +821,21 @@ def convert_transformer(elm: dev.Transformer2W, bus_dict: Dict[str, "pg.Bus"], n
     tr2 = pg.Transformer2W(idtag=elm.idtag,
                            code=str(elm.code),
                            name=elm.name,
-                           calc_node_from=bus_dict[elm.bus_from.idtag],
-                           calc_node_to=bus_dict[elm.bus_to.idtag],
+                           bus_from=bus_dict[elm.bus_from.idtag],
+                           bus_to=bus_dict[elm.bus_to.idtag],
                            nt=n_time,
-                           Vhigh=elm.HV,
-                           Vlow=elm.LV,
-                           rate=elm.rate,
-                           active_default=elm.active,
+                           HV=elm.HV,
+                           LV=elm.LV,
+                           rate=elm.rate if elm.rate > 0 else 9999,
+                           active=elm.active,
                            r=elm.R,
                            x=elm.X,
                            g=elm.G,
                            b=elm.B,
-                           monitor_loading_default=elm.monitor_loading,
-                           monitor_contingency_default=elm.contingency_enabled,
-                           tap=elm.tap_module,
-                           phase=elm.tap_phase)
+                           monitor_loading=elm.monitor_loading,
+                           contingency_enabled=elm.contingency_enabled,
+                           tap_module=elm.tap_module,
+                           tap_phase=elm.tap_phase)
 
     tr2.tap_phase_min = elm.tap_phase_min
     tr2.tap_phase_max = elm.tap_phase_max
@@ -839,7 +855,8 @@ def convert_transformer(elm: dev.Transformer2W, bus_dict: Dict[str, "pg.Bus"], n
             time_indices]
         tr2.overload_cost = elm.Cost_prof.toarray()
     else:
-        tr2.setAllOverloadCost(elm.Cost)
+        #tr2.setAllOverloadCost(elm.Cost)
+        pass
 
     # ctrl_dict = {
     #     TransformerControlType.fixed: pg.BranchControlModes.Fixed,
