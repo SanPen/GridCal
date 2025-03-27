@@ -135,6 +135,21 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
         print()
 
+    def update_database_position(self) -> None:
+        """
+        This function updates the position of this graphical element in the database
+        """
+        real_position = self.pos()
+        center_point = self.get_pos()
+
+        self.lat, self.lon = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
+                                                    y=center_point.y() + real_position.y())
+
+        # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
+
+        self.api_object.lat = self.lat
+        self.api_object.long = self.lon
+
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
@@ -166,6 +181,7 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.update_position_at_the_diagram()
+        self.update_database_position()
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
