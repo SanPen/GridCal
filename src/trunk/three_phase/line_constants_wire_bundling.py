@@ -439,6 +439,53 @@ def kron_reduction(mat, keep, embed):
 
     return Zaa - Zag.dot(np.linalg.inv(Zgg)).dot(Zga)
 
+
+def wire_bundling_shunt(phases_set, primitive, phases_vector):
+    """
+    Algorithm to bundle wires per phase for a shunt admittance matrix
+    :param phases_set: set of phases (list with unique occurrences of each phase values, i.e. [0, 1, 2, 3])
+    :param primitive: Primitive matrix to reduce by bundling wires
+    :param phases_vector: Vector that contains the phase of each wire
+    :return: reduced primitive matrix, corresponding phases
+    """
+    # Convert phases_vector to numpy array to ensure consistent type handling
+    phases_vector = np.array(phases_vector)
+    
+    # Create a new empty matrix
+    nph = len(phases_set)
+    bundled_matrix = np.zeros((nph, nph), dtype=primitive.dtype)
+    
+    for r_idx, phase_r in enumerate(phases_set):
+        # get the row indices
+        r_indices = np.where(phases_vector == phase_r)[0]
+        
+        if len(r_indices) == 0:
+            print(f"Warning: No wires found for phase {phase_r}")
+            continue
+        
+        # get the column indices
+        for c_idx, phase_c in enumerate(phases_set):
+            c_indices = np.where(phases_vector == phase_c)[0]
+            
+            if len(c_indices) == 0:
+                print(f"Warning: No wires found for phase {phase_c}")
+                continue
+            
+            # Calculate the bundled admittance for this phase pair
+            total_admittance = 0.0
+            for r_wire in r_indices:
+                for c_wire in c_indices:
+                    total_admittance += primitive[r_wire, c_wire]
+            
+            # Store the total admittance in the bundled matrix
+            bundled_matrix[r_idx, c_idx] = total_admittance
+    
+    # Create a phases vector for the bundled matrix
+    bundled_phases = np.array(list(phases_set))
+    
+    return bundled_matrix, bundled_phases
+
+
 def wire_bundling(phases_set, primitive, phases_vector):
     """
     Algorithm to bundle wires per phase
@@ -486,7 +533,8 @@ def wire_bundling(phases_set, primitive, phases_vector):
 
     return primitive, phases_vector
 
-# Example
+"""
+# 12 conductors
 bundle = 0.46  # [m]
 Rdc = 0.1363  # [Ohm/km]
 r_ext = 10.5e-3  # [m]
@@ -500,7 +548,6 @@ Xa = -12.65
 Xb = 0
 Xc = 12.65
 
-# Overhead line parameters (Single circuit tower with an overhead earth wire)
 line_dict = {
     'mode': 'carson',
     'f': 50,  # Nominal frequency [Hz]
@@ -536,8 +583,116 @@ print(Zreduced)
 
 # Admittance matrix
 Yprimitive, n_p, n_e = calc_Y_matrix(line_dict)
-Yreduced, phases_vector = wire_bundling([1,2,3], Yprimitive, [1,1,1,1,2,2,2,2,3,3,3,3])
+Yreduced, phases_vector = wire_bundling_shunt([1,2,3], Yprimitive, [1,1,1,1,2,2,2,2,3,3,3,3])
 
 print()
 print()
 print(Yreduced * 1e6)
+"""
+
+
+
+
+"""
+# 3 conductors
+bundle = 0.46  # [m]
+Rdc = 0.1363  # [Ohm/km]
+r_ext = 10.5e-3  # [m]
+r_int = 4.5e-3  # [m]
+
+Ya = 27.5
+Yb = 27.5
+Yc = 27.5
+
+Xa = -12.65
+Xb = 0
+Xc = 12.65
+
+# Overhead line parameters (Single circuit tower with an overhead earth wire)
+line_dict = {
+    'mode': 'carson', # carson or dubanton
+    'f': 50,  # Nominal frequency [Hz]
+    'rho': 100,  # Earth resistivity [Ohm.m]
+    'phase_h': [27.5, 27.5, 27.5],  # Phase conductor heights [m]
+    'phase_x': [-12.65, 0, 12.65],  # Phase conductor x-axis coordinates [m]
+    'phase_cond': ['tube', 'tube', 'tube'],  # Phase conductor types ('tube' or 'solid')
+    'phase_R': [0.1363, 0.1363, 0.1363],  # Phase conductor AC resistances [Ohm/km]
+    'phase_r': [0.0105, 0.0105, 0.0105],  # Phase conductor radi [m]
+    'phase_q': [0.0045, 0.0045, 0.0045],  # Phase conductor inner tube radii [m]
+    'earth_h': [],  # Earth conductor heights [m]
+    'earth_x': [],  # Earth conductor x-axis coordinates [m]
+    'earth_cond': [],  # Earth conductor types ('tube' or 'solid')
+    'earth_R': [],  # Earth conductor AC resistances [Ohm/km]
+    'earth_r': [],  # Earth conductor radi [m]
+    'earth_q': []  # Earth conductor inner tube radii [m]
+}
+
+# Impedance matrix
+Zprimitive, n_p, n_e = calc_Z_matrix(line_dict)
+Zreduced, phases_vector = wire_bundling([1,2,3], Zprimitive, [1,2,3])
+
+print()
+print()
+print(Zreduced)
+
+# Admittance matrix
+Yprimitive, n_p, n_e = calc_Y_matrix(line_dict)
+Yreduced, phases_vector = wire_bundling_shunt([1,2,3], Yprimitive, [1,2,3])
+
+print()
+print()
+print(Yreduced * 1e6)
+"""
+
+# """
+# 6 conductors
+bundle = 0.4  # [m]
+Rdc = 0.0857  # [Ohm/km]
+r_ext = 25.38e-3 / 2 # [m]
+r_int = 8.46e-3 / 2 # [m]
+
+Ya = 19.5
+Yb = 19.5
+Yc = 19.5
+
+Xa = -9
+Xb = 0
+Xc = 9
+
+line_dict = {
+    'mode': 'carson',
+    'f': 50,  # Nominal frequency [Hz]
+    'rho': 100,  # Earth resistivity [Ohm.m]
+    'phase_h': [Ya, Ya, Yb, Yb, Yc, Yc],  # Phase conductor heights [m]
+    'phase_x': [Xa - bundle / 2, Xa + bundle / 2, Xb - bundle / 2, Xb + bundle / 2, Xc - bundle / 2, Xc + bundle / 2],  # Phase conductor x-axis coordinates [m]
+    'phase_cond': ['tube', 'tube', 'tube', 'tube', 'tube', 'tube'],
+    # Phase conductor types ('tube' or 'solid')
+    'phase_R': [Rdc, Rdc, Rdc, Rdc, Rdc, Rdc],  # Phase conductor resistances [Ohm/km]
+    'phase_r': [r_ext, r_ext, r_ext, r_ext, r_ext, r_ext],
+    # Phase conductor radi [m]
+    'phase_q': [r_int, r_int, r_int, r_int, r_int, r_int],
+    # Phase conductor inner tube radii [m]
+    'earth_h': [],  # Earth conductor heights [m]
+    'earth_x': [],  # Earth conductor x-axis coordinates [m]
+    'earth_cond': [],  # Earth conductor types ('tube' or 'solid')
+    'earth_R': [],  # Earth conductor AC resistances [Ohm/km]
+    'earth_r': [],  # Earth conductor radi [m]
+    'earth_q': []  # Earth conductor inner tube radii [m]
+}
+
+# Impedance matrix
+Zprimitive, n_p, n_e = calc_Z_matrix(line_dict)
+Zreduced, phases_vector = wire_bundling([1,2,3], Zprimitive, [1,1,2,2,3,3])
+
+print()
+print()
+print(Zreduced)
+
+# Admittance matrix
+Yprimitive, n_p, n_e = calc_Y_matrix(line_dict)
+Yreduced, phases_vector = wire_bundling_shunt([1,2,3], Yprimitive, [1,1,2,2,3,3])
+
+print()
+print()
+print(Yreduced * 1e6)
+# """
