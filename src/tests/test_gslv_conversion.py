@@ -8,7 +8,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.Compilers.circuit_to_gslv import GSLV_AVAILABLE, pg, to_gslv
 
 
-def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
+def CheckArr(arr, arr_expected, tol: float, name: str, test: str, verbose=False):
     """
 
     :param arr:
@@ -16,6 +16,7 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
     :param tol:
     :param name:
     :param test:
+    :param verbose:
     :return:
     """
     if arr.shape != arr_expected.shape:
@@ -23,7 +24,8 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
         return 1
 
     if np.allclose(arr, arr_expected, atol=tol):
-        print('ok:', name, test)
+        if verbose:
+            print('ok:', name, test)
         return 0
     else:
         diff = arr - arr_expected
@@ -46,7 +48,7 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: gce.NumericalCircuit, tol:
     errors += CheckArr(nc_gslv.passive_branch_data.T, nc_gc.passive_branch_data.T, tol,
                        'BranchData', 'T')
     errors += CheckArr(nc_gslv.passive_branch_data.active, nc_gc.passive_branch_data.active, tol,
-                       'BranchData','active')
+                       'BranchData', 'active')
 
     errors += CheckArr(nc_gslv.passive_branch_data.R, nc_gc.passive_branch_data.R, tol, 'BranchData', 'r')
     errors += CheckArr(nc_gslv.passive_branch_data.X, nc_gc.passive_branch_data.X, tol, 'BranchData', 'x')
@@ -55,13 +57,13 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: gce.NumericalCircuit, tol:
     errors += CheckArr(nc_gslv.passive_branch_data.rates, nc_gc.passive_branch_data.rates, tol,
                        'BranchData', 'rates')
     errors += CheckArr(nc_gslv.passive_branch_data.virtual_tap_f, nc_gc.passive_branch_data.virtual_tap_f, tol,
-                       'BranchData',  'vtap_f')
+                       'BranchData', 'vtap_f')
     errors += CheckArr(nc_gslv.passive_branch_data.virtual_tap_t, nc_gc.passive_branch_data.virtual_tap_t, tol,
                        'BranchData',
                        'vtap_t')
 
     errors += CheckArr(nc_gslv.active_branch_data.tap_module, nc_gc.active_branch_data.tap_module, tol,
-                       'BranchData','tap_module')
+                       'BranchData', 'tap_module')
     errors += CheckArr(nc_gslv.active_branch_data.tap_angle, nc_gc.active_branch_data.tap_angle, tol,
                        'BranchData', 'tap_angle')
 
@@ -78,21 +80,23 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: gce.NumericalCircuit, tol:
     # CheckArr(tpes, nc_gc.bus_data.bus_types, tol, 'BusData', 'types')
 
     # generator data
+    errors += CheckArr(nc_gslv.generator_data.bus_idx, nc_gc.generator_data.bus_idx, tol, 'GenData', 'bus_idx')
     errors += CheckArr(nc_gslv.generator_data.active, nc_gc.generator_data.active, tol, 'GenData', 'active')
     errors += CheckArr(nc_gslv.generator_data.p, nc_gc.generator_data.p, tol, 'GenData', 'P')
-    # CheckArr(nc_newton.generator_data.pf, nc_gc.generator_data.generator_pf[g_idx], tol, 'GenData', 'Pf')
+    errors += CheckArr(nc_gslv.generator_data.pf, nc_gc.generator_data.pf, tol, 'GenData', 'Pf')
     errors += CheckArr(nc_gslv.generator_data.v, nc_gc.generator_data.v, tol, 'GenData', 'v')
     errors += CheckArr(nc_gslv.generator_data.qmin, nc_gc.generator_data.qmin, tol, 'GenData', 'qmin')
     errors += CheckArr(nc_gslv.generator_data.qmax, nc_gc.generator_data.qmax, tol, 'GenData', 'qmax')
 
     # load data
-    errors += CheckArr(nc_gslv.load_data.active, nc_gc.load_data.active.astype(int), tol,
-                       'LoadData', 'active')
+    errors += CheckArr(nc_gslv.load_data.bus_idx, nc_gc.load_data.bus_idx, tol, 'LoadData', 'bus_idx')
+    errors += CheckArr(nc_gslv.load_data.active, nc_gc.load_data.active.astype(int), tol, 'LoadData', 'active')
     errors += CheckArr(nc_gslv.load_data.S, nc_gc.load_data.S, tol, 'LoadData', 'S')
     errors += CheckArr(nc_gslv.load_data.I, nc_gc.load_data.I, tol, 'LoadData', 'I')
     errors += CheckArr(nc_gslv.load_data.Y, nc_gc.load_data.Y, tol, 'LoadData', 'Y')
 
     # shunt
+    errors += CheckArr(nc_gslv.shunt_data.bus_idx, nc_gc.shunt_data.bus_idx, tol, 'ShuntData', 'bus_idx')
     errors += CheckArr(nc_gslv.shunt_data.active, nc_gc.shunt_data.active, tol, 'ShuntData', 'active')
     errors += CheckArr(nc_gslv.shunt_data.Y, nc_gc.shunt_data.Y, tol, 'ShuntData', 'Y')
 
@@ -106,7 +110,7 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: gce.NumericalCircuit, tol:
     gslv_adm = nc_gslv.get_admittance_matrices(gslv_conn)
 
     gc_inj = nc_gc.get_power_injections()
-    gc_types = nc_gc.get_simulation_indices(gslv_inj)
+    gc_types = nc_gc.get_simulation_indices(gc_inj)
     gc_conn = nc_gc.get_connectivity_matrices()
     gc_adm = nc_gc.get_admittance_matrices()
 
@@ -149,11 +153,11 @@ def compare_inputs(grid_gslv: "pg.MultiCircuit", grid_gc: gce.MultiCircuit, tol=
     # ------------------------------------------------------------------------------------------------------------------
 
     if t_idx is None:
-        nc_gslv = pg.compile(grid_gslv, pg.Logger(), t_idx=0)
-        nc_gc = gce.compile_numerical_circuit_at(grid_gc, t_idx=None)
+        nc_gslv = pg.compile(grid=grid_gslv, logger=pg.Logger(), t_idx=0)
+        nc_gc = gce.compile_numerical_circuit_at(circuit=grid_gc, t_idx=None)
     else:
-        nc_gslv = pg.compile(grid_gslv, pg.Logger(), t_idx=t_idx)
-        nc_gc = gce.compile_numerical_circuit_at(grid_gc, t_idx=t_idx)
+        nc_gslv = pg.compile(grid=grid_gslv, logger=pg.Logger(), t_idx=t_idx)
+        nc_gc = gce.compile_numerical_circuit_at(circuit=grid_gc, t_idx=t_idx)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare base data
@@ -227,15 +231,22 @@ def test_gslv_compatibility():
     ]
 
     for f1 in files:
-
         fname = os.path.join('data', 'grids', 'RAW', f1)
 
+        print(f"Testing: {fname}")
+
         grid_gc = gce.open_file(filename=fname)
-        grid_gslv = to_gslv(circuit=grid_gc,
-                            use_time_series=False,
-                            time_indices=None,
-                            override_branch_controls=False,
-                            opf_results=None)
+
+        # correct zero rates
+        for br in grid_gc.get_branches():
+            if br.rate <= 0:
+                br.rate = 9999.0
+
+        grid_gslv, (bus_dict, area_dict, zone_dict) = to_gslv(circuit=grid_gc,
+                                                              use_time_series=False,
+                                                              time_indices=None,
+                                                              override_branch_controls=False,
+                                                              opf_results=None)
 
         errors = compare_inputs(grid_gslv=grid_gslv,
                                 grid_gc=grid_gc,
@@ -243,3 +254,45 @@ def test_gslv_compatibility():
                                 t_idx=None)
 
         assert errors == 0
+
+
+def test_gslv_compatibility_ts():
+    """
+
+    :return:
+    """
+
+    if not GSLV_AVAILABLE:
+        return
+
+
+    fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
+
+    print(f"Testing: {fname}")
+
+    grid_gc = gce.open_file(filename=fname)
+
+    # correct zero rates
+    for br in grid_gc.get_branches():
+        if br.rate <= 0:
+            br.rate = 9999.0
+
+    grid_gslv, (bus_dict, area_dict, zone_dict) = to_gslv(circuit=grid_gc,
+                                                          use_time_series=True,
+                                                          time_indices=None,
+                                                          override_branch_controls=False,
+                                                          opf_results=None)
+
+    for t_idx in range(grid_gc.get_time_number()):
+        print("Time step:", t_idx)
+        errors = compare_inputs(grid_gslv=grid_gslv,
+                                grid_gc=grid_gc,
+                                tol=1e-6,
+                                t_idx=t_idx)
+
+        assert errors == 0
+
+
+if __name__ == '__main__':
+    # test_gslv_compatibility()
+    test_gslv_compatibility_ts()
