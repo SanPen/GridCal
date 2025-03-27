@@ -258,23 +258,33 @@ class MapLineSegment(QGraphicsLineItem):
         # Check if a substation is selected
         selected_items = self.editor.get_selected()
         has_substation = False
+        counter = 0
 
         for api_obj, _ in selected_items:
             if hasattr(api_obj, 'device_type') and api_obj.device_type == DeviceType.SubstationDevice:
                 has_substation = True
-                break
+                counter += 1
 
         # Add the split line to substation option if a substation is selected
         if has_substation:
-            add_menu_entry(menu=menu,
-                           text="Split line to selected substation (In-Out)",
-                           function_ptr=self.editor.split_line_to_substation,
-                           icon_path=":/Icons/icons/divide.svg")
+            if counter == 1:
+                add_menu_entry(menu=menu,
+                               text="Split line to selected substation (In-Out)",
+                               function_ptr=self.editor.split_line_to_substation,
+                               icon_path=":/Icons/icons/divide.svg")
 
-            add_menu_entry(menu=menu,
-                           text="Connect line to selected substation (T-joint)",
-                           function_ptr=self.editor.create_t_joint_to_substation,
-                           icon_path=":/Icons/icons/divide.svg")
+                add_menu_entry(menu=menu,
+                               text="Connect line to selected substation (T-joint)",
+                               function_ptr=self.editor.create_t_joint_to_substation,
+                               icon_path=":/Icons/icons/divide.svg")
+            elif counter == 2:
+
+                add_menu_entry(menu=menu,
+                               text="Change substation connection of the line",
+                               function_ptr=self.editor.change_line_connection,
+                               icon_path=":/Icons/icons/divide.svg")  # TODO: Think what icon can work well
+            else:
+                pass
 
         add_menu_entry(menu=menu,
                        text="Plot profiles",

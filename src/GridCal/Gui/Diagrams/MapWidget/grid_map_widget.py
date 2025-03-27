@@ -2336,6 +2336,115 @@ class GridMapWidget(BaseDiagramWidget):
         msg.setWindowTitle("Operation Successful")
         msg.exec()
 
+    def change_line_connection(self):
+
+        selected_lines = self.get_selected_line_segments_tup()
+        selected_substations = self.get_selected_substations_tup()
+
+        if len(selected_lines) != 1 or len(selected_substations) != 2:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Please select exactly one line and two substations.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+
+        # Get the API objects
+        line_api, line_graphic = selected_lines[0]
+        substation_api_1, substation_graphic_1 = selected_substations[0]
+        substation_api_2, substation_graphic_2 = selected_substations[1]
+
+        # Get the original buses
+        bus_from = line_api.bus_from
+        bus_from_idtag_0 = bus_from.idtag
+        bus_to = line_api.bus_to
+        bus_to_idtag_0 = bus_to.idtag
+
+
+        buses1 = self.circuit.get_substation_buses(substation=substation_api_1)
+        buses2 = self.circuit.get_substation_buses(substation=substation_api_2)
+
+        if substation_api_1.idtag == bus_from.substation.idtag:
+            removed_substation = substation_api_1.name
+            added_substation = substation_api_2.name
+            for bus in buses2:
+                if bus.Vnom == bus_from.Vnom:
+                    line_api.bus_from = bus
+                    break
+            if bus_from_idtag_0 == line_api.bus_from.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+        elif substation_api_1.idtag == bus_to.substation.idtag:
+            removed_substation = substation_api_1.name
+            added_substation = substation_api_2.name
+            for bus in buses2:
+                if bus.Vnom == bus_to.Vnom:
+                    line_api.bus_to = bus
+                    break
+            if bus_to_idtag_0 == line_api.bus_to.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+
+        elif substation_api_2.idtag == bus_from.substation.idtag:
+            removed_substation = substation_api_2.name
+            added_substation = substation_api_1.name
+            for bus in buses1:
+                if bus.Vnom == bus_from.Vnom:
+                    line_api.bus_from = bus
+                    break
+            if bus_from_idtag_0 == line_api.bus_from.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+        elif substation_api_2.idtag == bus_to.substation.idtag:
+            removed_substation = substation_api_2.name
+            added_substation = substation_api_1.name
+            for bus in buses1:
+                if bus.Vnom == bus_to.Vnom:
+                    line_api.bus_to = bus
+                    break
+            if bus_to_idtag_0 == line_api.bus_to.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("None of the selected substations are related to the line.")
+            msg.setWindowTitle("No Action")
+            msg.exec()
+            return
+
+
+        # Remove past graphic item and add the new one
+
+        self.remove_branch_graphic(line=line_graphic, delete_from_db=False)
+        self.add_api_line(api_object=line_api)
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(f"Line {line_api.name} had its connection to substation {removed_substation} changed to substation "
+                    f"{added_substation}.")
+        msg.setWindowTitle("Operation Successful")
+        msg.exec()
 
 def generate_map_diagram(
         substations: List[Substation],
