@@ -562,11 +562,12 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
     :return:
     """
     gen = pg.Generator(
-        idtag=elm.idtag,
-        name=elm.name,
         nt=n_time,
+        name=elm.name,
+        idtag=elm.idtag,
         active=elm.active,
         P=elm.P,
+        power_factor=elm.Pf,
         vset=elm.Vset,
         Pmin=elm.Pmin,
         Pmax=elm.Pmax,
@@ -575,7 +576,8 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
         Snom=elm.Snom,
         is_controlled=elm.is_controlled,
         enabled_dispatch=elm.enabled_dispatch,
-        # q_points=elm.q_curve.get_data().tolist()
+        q_points=elm.q_curve.get_data().tolist(),
+        use_reactive_power_curve=elm.use_reactive_power_curve
     )
 
     gen.bus = bus_dict[elm.bus.idtag]
@@ -598,6 +600,7 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
         gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
     else:
         gen.set_active_val(int(elm.active))
+        # gen.set_pf_val(elm.Pf)
 
         if opf_results is None:
             gen.set_P_val(elm.P)
