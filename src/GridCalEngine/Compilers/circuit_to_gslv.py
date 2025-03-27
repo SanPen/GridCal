@@ -75,6 +75,11 @@ try:
         TapPhaseControl.Pt: pg.TapPhaseControl.Pt,
     }
 
+    hvdc_control_mode_dict = {
+        HvdcControlType.type_0_free: pg.HvdcControlType.type_0_free,
+        HvdcControlType.type_1_Pset: pg.HvdcControlType.type_1_Pset,
+    }
+
 except ImportError as e:
     pg = None
     GSLV_AVAILABLE = False
@@ -82,9 +87,6 @@ except ImportError as e:
     build_status_dict = dict()
     tap_module_control_mode_dict = dict()
     tap_phase_control_mode_dict = dict()
-
-# numpy integer type for GSLV's uword
-BINT = np.ulonglong
 
 
 def get_gslv_mip_solvers_list() -> List[str]:
@@ -99,18 +101,38 @@ def get_gslv_mip_solvers_list() -> List[str]:
 
 
 def convert_tap_module_control_mode_dict(data: Dict[int, TapModuleControl]) -> Dict[int, "pg.TapModuleControl"]:
+    """
+    Function to convert a dictionary of TapModuleControl modes to pg.TapModuleControl modes
+    :param data:
+    :return:
+    """
     return {i: tap_module_control_mode_dict[val] for i, val in data.items()}
 
 
 def convert_tap_module_control_mode_lst(data: List[TapModuleControl]) -> List["pg.TapModuleControl"]:
+    """
+    Function to convert a list of TapModuleControl modes to pg.TapModuleControl modes
+    :param data:
+    :return:
+    """
     return [tap_module_control_mode_dict[val] for val in data]
 
 
 def convert_tap_phase_control_mode_dict(data: Dict[int, TapPhaseControl]) -> Dict[int, "pg.TapPhaseControl"]:
+    """
+    Function to convert a dictionary of TapPhaseControl modes to pg.TapPhaseControl modes
+    :param data:
+    :return:
+    """
     return {i: tap_phase_control_mode_dict[val] for i, val in data.items()}
 
 
 def convert_tap_phase_control_mode_lst(data: List[TapPhaseControl]) -> List["pg.TapPhaseControl"]:
+    """
+    Function to convert a list of TapPhaseControl modes to pg.TapPhaseControl modes
+    :param data:
+    :return:
+    """
     return [tap_phase_control_mode_dict[val] for val in data]
 
 
@@ -253,6 +275,11 @@ def add_areas(circuit: MultiCircuit,
 
 
 def convert_zone(zone: dev.Zone) -> "pg.Zone":
+    """
+
+    :param zone:
+    :return:
+    """
     return pg.Zone(idtag=zone.idtag, code=str(zone.code), name=zone.name)
 
 
@@ -274,7 +301,112 @@ def add_zones(circuit: MultiCircuit,
     return d
 
 
+def convert_country(country: dev.Country) -> "pg.Country":
+    """
+
+    :param country:
+    :return:
+    """
+    return pg.Country(idtag=country.idtag, code=str(country.code), name=country.name)
+
+
+def add_countries(circuit: MultiCircuit,
+                  gslv_grid: "pg.MultiCircuit") -> Dict[dev.Country, "pg.Country"]:
+    """
+    Add GSLV countries
+    :param circuit: GridCal circuit
+    :param gslv_grid: GSLV Circuit
+    :return: Dictionary [GridCal country] -> GSLV country
+    """
+    d = dict()
+
+    for i, country in enumerate(circuit.countries):
+        elm = convert_country(country)
+        gslv_grid.add_country(elm)
+        d[country] = elm
+
+    return d
+
+def convert_substation(se: dev.Substation, n_time: int) -> "pg.Substation":
+    """
+
+    :param se:
+    :param n_time:
+    :return:
+    """
+    return pg.Substation(
+        nt=n_time,
+        idtag=se.idtag,
+        code=str(se.code),
+        name=se.name
+    )
+
+
+def add_substations(circuit: MultiCircuit,
+                    gslv_grid: "pg.MultiCircuit",
+                    n_time: int) -> Dict[dev.Substation, "pg.Substation"]:
+    """
+    Add GSLV substations
+    :param circuit: GridCal circuit
+    :param gslv_grid: GSLV Circuit
+    :param n_time: number of time steps
+    :return: Dictionary [GridCal Zone] -> GSLV Zone
+    """
+    d = dict()
+
+    for i, se in enumerate(circuit.substations):
+        elm = convert_substation(se, n_time=n_time)
+        gslv_grid.add_substation(elm)
+        d[se] = elm
+
+    return d
+
+
+def convert_voltage_level(elm: dev.VoltageLevel,
+                          substations_dict: Dict[dev.Substation, "pg.Substation"]) -> "pg.VoltageLevel":
+    """
+
+    :param elm:
+    :param substations_dict:
+    :return:
+    """
+    return pg.VoltageLevel(
+        idtag=elm.idtag,
+        code=str(elm.code),
+        name=elm.name,
+        Vnom=elm.Vnom,
+        substation=substations_dict.get(elm.substation, None)
+    )
+
+
+def add_voltage_levels(
+        circuit: MultiCircuit,
+        gslv_grid: "pg.MultiCircuit",
+        substations_dict: Dict[dev.Substation, "pg.Substation"]
+) -> Dict[dev.VoltageLevel, "pg.VoltageLevel"]:
+    """
+    Add GSLV substations
+    :param circuit: GridCal circuit
+    :param gslv_grid: GSLV Circuit
+    :param substations_dict: substations mapping dictionary
+    :return: Dictionary [GridCal Zone] -> GSLV Zone
+    """
+    d = dict()
+
+    for i, vl in enumerate(circuit.voltage_levels):
+        elm = convert_voltage_level(vl, substations_dict=substations_dict)
+        gslv_grid.add_voltage_level(elm)
+        d[vl] = elm
+
+    return d
+
+
 def convert_contingency_groups(elm: dev.ContingencyGroup) -> "pg.ContingencyGroup":
+    """
+
+    :param elm:
+    :return:
+    """
     return pg.ContingencyGroup(idtag=elm.idtag,
                                code=str(elm.code),
                                name=elm.name,
@@ -302,6 +434,13 @@ def add_contingency_groups(circuit: MultiCircuit,
 def convert_contingencies(elm: dev.Contingency,
                           n_time: int,
                           groups_dict: Dict[dev.ContingencyGroup, "pg.ContingencyGroup"]) -> "pg.Contingency":
+    """
+
+    :param elm:
+    :param n_time:
+    :param groups_dict:
+    :return:
+    """
     return pg.Contingency(idtag=elm.idtag,
                           code=str(elm.code),
                           name=elm.name,
@@ -337,6 +476,11 @@ def add_contingencies(circuit: MultiCircuit,
 
 
 def convert_investment_group(elm: dev.InvestmentsGroup) -> "pg.InvestmentGroup":
+    """
+
+    :param elm:
+    :return:
+    """
     return pg.InvestmentGroup(idtag=elm.idtag,
                               code=str(elm.code),
                               name=elm.name,
@@ -362,6 +506,12 @@ def add_investment_groups(circuit: MultiCircuit, gslv_grid: "pg.MultiCircuit"):
 
 def convert_investment(elm: dev.Investment,
                        groups_dict: Dict[dev.InvestmentsGroup, "pg.InvestmentGroup"]) -> "pg.Investment":
+    """
+
+    :param elm:
+    :param groups_dict:
+    :return:
+    """
     return pg.Investment(idtag=elm.idtag,
                          code=str(elm.code),
                          name=elm.name,
@@ -393,6 +543,10 @@ def add_investments(circuit: MultiCircuit,
 
 def convert_bus(elm: dev.Bus, n_time: int,
                 area_dict: Dict[dev.Area, "pg.Area"],
+                zone_dict: Dict[dev.Zone, "pg.Zone"],
+                substation_dict: Dict[dev.Substation, "pg.Substation"],
+                voltage_level_dict: Dict[dev.VoltageLevel, "pg.VoltageLevel"],
+                country_dict: Dict[dev.Country, "pg.Country"],
                 time_indices: IntVec,
                 use_time_series: bool) -> "pg.Bus":
     """
@@ -400,6 +554,10 @@ def convert_bus(elm: dev.Bus, n_time: int,
     :param elm:
     :param n_time:
     :param area_dict:
+    :param zone_dict:
+    :param substation_dict:
+    :param voltage_level_dict:
+    :param country_dict:
     :param time_indices:
     :param use_time_series:
     :return:
@@ -408,14 +566,29 @@ def convert_bus(elm: dev.Bus, n_time: int,
                  name=elm.name,
                  idtag=elm.idtag,
                  code=str(elm.code),
-                 is_slack=elm.is_slack,
-                 is_dc=elm.is_dc,
                  Vnom=elm.Vnom,
                  vmin=elm.Vmin,
                  vmax=elm.Vmax,
                  angle_min=elm.angle_min,
                  angle_max=elm.angle_max,
-                 area=area_dict.get(elm.area, None))
+                 r_fault=elm.r_fault,
+                 x_fault=elm.x_fault,
+                 active_default=elm.active,
+
+                 is_slack=elm.is_slack,
+                 is_dc=elm.is_dc,
+                 is_internal=elm.internal,
+
+                 area=area_dict.get(elm.area, None),
+                 zone=zone_dict.get(elm.zone, None),
+                 substation=substation_dict.get(elm.substation, None),
+                 voltage_level=voltage_level_dict.get(elm.substation, None),
+                 country=country_dict.get(elm.country, None),
+                 latitude=elm.latitude,
+                 longitude=elm.longitude,
+                 Vm0=elm.Vm0,
+                 Va0=elm.Va0,
+                 )
 
     fill_profile(gslv_profile=bus.active,
                  gc_profile=elm.active_prof,
@@ -427,12 +600,18 @@ def convert_bus(elm: dev.Bus, n_time: int,
     return bus
 
 
-def add_buses(circuit: MultiCircuit,
-              gslv_grid: "pg.MultiCircuit",
-              use_time_series: bool,
-              n_time: int = 1,
-              time_indices: Union[IntVec, None] = None,
-              area_dict: Dict[dev.Area, "pg.Area"] = None) -> Dict[str, "pg.Bus"]:
+def add_buses(
+        circuit: MultiCircuit,
+        gslv_grid: "pg.MultiCircuit",
+        area_dict: Dict[dev.Area, "pg.Area"],
+        zone_dict: Dict[dev.Zone, "pg.Zone"],
+        substation_dict: Dict[dev.Substation, "pg.Substation"],
+        voltage_level_dict: Dict[dev.VoltageLevel, "pg.VoltageLevel"],
+        country_dict: Dict[dev.Country, "pg.Country"],
+        use_time_series: bool,
+        n_time: int = 1,
+        time_indices: Union[IntVec, None] = None,
+) -> Dict[str, "pg.Bus"]:
     """
     Convert the buses to GSLV buses
     :param circuit: GridCal circuit
@@ -441,6 +620,10 @@ def add_buses(circuit: MultiCircuit,
     :param n_time: number of time steps
     :param time_indices: Array of time indices
     :param area_dict: Area object translation dictionary
+    :param zone_dict: Zone object translation dictionary
+    :param substation_dict: Substation object translation dictionary
+    :param voltage_level_dict: Voltage level object translation dictionary
+    :param country_dict: Country object translation dictionary
     :return: bus dictionary buses[uuid] -> Bus
     """
 
@@ -455,6 +638,10 @@ def add_buses(circuit: MultiCircuit,
     for i, bus in enumerate(circuit.buses):
         elm = convert_bus(elm=bus, n_time=n_time,
                           area_dict=area_dict,
+                          zone_dict=zone_dict,
+                          substation_dict=substation_dict,
+                          voltage_level_dict=voltage_level_dict,
+                          country_dict=country_dict,
                           use_time_series=use_time_series,
                           time_indices=time_indices)
 
@@ -584,7 +771,6 @@ def add_loads(circuit: MultiCircuit,
     :param n_time: number of time steps
     :param time_indices:
     :param opf_results:
-    :param build_status_dict:
     :return:
     """
     devices = circuit.get_loads()
@@ -595,8 +781,21 @@ def add_loads(circuit: MultiCircuit,
         gslv_grid.add_load(load)
 
 
-def convert_static_generator(elm: dev.StaticGenerator, bus_dict: Dict[str, "pg.Bus"], n_time: int,
-                             use_time_series: bool, time_indices: IntVec | None = None, ) -> "pg.StaticGenerator":
+def convert_static_generator(elm: dev.StaticGenerator,
+                             bus_dict: Dict[str, "pg.Bus"],
+                             n_time: int,
+                             use_time_series: bool,
+                             time_indices: IntVec | None = None, ) -> "pg.StaticGenerator":
+    """
+
+    :param elm:
+    :param bus_dict:
+    :param n_time:
+    :param use_time_series:
+    :param time_indices:
+    :return:
+    """
+
     pe_inj = pg.StaticGenerator(
         idtag=elm.idtag,
         code=str(elm.code),
@@ -1211,17 +1410,22 @@ def add_transformers(circuit: MultiCircuit,
         gslv_grid.add_transformer(tr2)
 
 
-def convert_transformer3w(elm: dev.Transformer3W, bus_dict: Dict[str, "pg.Bus"], n_time: int,
-                          use_time_series: bool, time_indices: IntVec | None,
+def convert_transformer3w(elm: dev.Transformer3W,
+                          bus_dict: Dict[str, "pg.Bus"],
+                          n_time: int,
+                          use_time_series: bool,
+                          time_indices: IntVec | None,
                           override_controls: bool) -> "pg.Transformer3W":
-    # ctrl_dict = {
-    #     TransformerControlType.fixed: pg.BranchControlModes.Fixed,
-    #     TransformerControlType.Pf: pg.BranchControlModes.BranchPt,
-    #     TransformerControlType.Qt: pg.BranchControlModes.BranchQt,
-    #     TransformerControlType.PtQt: pg.BranchControlModes.BranchPt,
-    #     TransformerControlType.V: pg.BranchControlModes.BranchVt,
-    #     TransformerControlType.PtV: pg.BranchControlModes.BranchPt,
-    # }
+    """
+
+    :param elm:
+    :param bus_dict:
+    :param n_time:
+    :param use_time_series:
+    :param time_indices:
+    :param override_controls:
+    :return:
+    """
 
     tr3 = pg.Transformer3W(idtag=elm.idtag,
                            code=str(elm.code),
@@ -1272,7 +1476,7 @@ def add_transformers3w(circuit: MultiCircuit,
                                     override_controls=override_controls)
 
         # because the central bus was added already, do not add it here
-        gslv_grid.add_transformer_3w(tr3, add_central_node=False)
+        gslv_grid.add_transformer_3w(tr3)
 
 
 def convert_vsc(elm: dev.VSC, bus_dict: Dict[str, "pg.Bus"], n_time: int,
@@ -1301,16 +1505,33 @@ def convert_vsc(elm: dev.VSC, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     vsc.setAllMonitorloading(elm.monitor_loading)
     vsc.setAllContingencyenabled(elm.contingency_enabled)
 
-    if use_time_series:
-        vsc.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
-            time_indices]
-        vsc.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
-        contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
-        vsc.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-        vsc.overload_cost = elm.Cost_prof.toarray()
-    else:
-        vsc.setAllRates(elm.rate)
-        vsc.setAllOverloadCost(elm.Cost)
+    fill_profile(gslv_profile=vsc.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
+
+    fill_profile(gslv_profile=vsc.rate,
+                 gc_profile=elm.rate_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.rate)
+
+    fill_profile(gslv_profile=vsc.contingency_factor,
+                 gc_profile=elm.contingency_factor_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.contingency_factor)
+
+    fill_profile(gslv_profile=vsc.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
 
     return vsc
 
@@ -1360,18 +1581,33 @@ def convert_dc_line(elm: dev.DcLine, bus_dict: Dict[str, "pg.Bus"], n_time: int,
                     monitor_contingency_default=elm.contingency_enabled
                     )
 
-    if use_time_series:
-        lne.active = (elm.active_prof.astype(BINT)
-                      if time_indices is None
-                      else elm.active_prof.astype(BINT)[time_indices])
+    fill_profile(gslv_profile=lne.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
 
-        lne.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
+    fill_profile(gslv_profile=lne.rate,
+                 gc_profile=elm.rate_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.rate)
 
-        contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
-        lne.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-        lne.overload_cost = elm.Cost_prof.toarray()
-    else:
-        lne.setAllOverloadCost(elm.Cost)
+    fill_profile(gslv_profile=lne.contingency_factor,
+                 gc_profile=elm.contingency_factor_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.contingency_factor)
+
+    fill_profile(gslv_profile=lne.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
 
     return lne
 
@@ -1409,8 +1645,6 @@ def convert_hvdc_line(elm: dev.HvdcLine, bus_dict: Dict[str, "pg.Bus"], n_time: 
     :param time_indices:
     :return:
     """
-    cmode_dict = {HvdcControlType.type_0_free: pg.HvdcControlType.HvdcControlAngleDroop,
-                  HvdcControlType.type_1_Pset: pg.HvdcControlType.HvdcControlPfix}
 
     hvdc = pg.HvdcLine(idtag=elm.idtag,
                        code=str(elm.code),
@@ -1435,29 +1669,63 @@ def convert_hvdc_line(elm: dev.HvdcLine, bus_dict: Dict[str, "pg.Bus"], n_time: 
                        max_firing_angle_f=elm.max_firing_angle_f,
                        min_firing_angle_t=elm.min_firing_angle_t,
                        max_firing_angle_t=elm.max_firing_angle_t,
-                       control_mode=cmode_dict[elm.control_mode])
+                       control_mode=hvdc_control_mode_dict[elm.control_mode])
 
-    # hvdc.monitor_loading = elm.monitor_loading
-    # hvdc.contingency_enabled = elm.contingency_enabled
+    fill_profile(gslv_profile=hvdc.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
 
-    if use_time_series:
-        hvdc.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
-            time_indices]
-        hvdc.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
-        hvdc.Vf = elm.Vset_f_prof.toarray() if time_indices is None else elm.Vset_f_prof.toarray()[time_indices]
-        hvdc.Vt = elm.Vset_t_prof.toarray() if time_indices is None else elm.Vset_t_prof.toarray()[time_indices]
+    fill_profile(gslv_profile=hvdc.Vset_f,
+                 gc_profile=elm.Vset_f_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Vset_f)
 
-        contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
-        hvdc.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
+    fill_profile(gslv_profile=hvdc.Vset_f,
+                 gc_profile=elm.Vset_f_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Vset_f)
 
-        hvdc.angle_droop = (elm.angle_droop_prof.toarray() if time_indices is None else
-                            elm.angle_droop_prof.toarray()[time_indices])
-        hvdc.overload_cost = elm.Cost_prof.toarray()
-    else:
-        hvdc.contingency_rates = elm.rate * elm.contingency_factor
-        hvdc.angle_droop = elm.angle_droop
-        hvdc.setAllOverloadCost(elm.Cost)
-        hvdc.setAllControlMode(cmode_dict[elm.control_mode])
+    fill_profile(gslv_profile=hvdc.Vset_t,
+                 gc_profile=elm.Vset_t_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Vset_t)
+
+    fill_profile(gslv_profile=hvdc.angle_droop,
+                 gc_profile=elm.angle_droop_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.angle_droop)
+
+    fill_profile(gslv_profile=hvdc.rate,
+                 gc_profile=elm.rate_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.rate)
+
+    fill_profile(gslv_profile=hvdc.contingency_factor,
+                 gc_profile=elm.contingency_factor_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.contingency_factor)
+
+    fill_profile(gslv_profile=hvdc.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
 
     return hvdc
 
@@ -1509,16 +1777,11 @@ def to_gslv(circuit: MultiCircuit,
     pg_grid = pg.MultiCircuit(name=circuit.name, nt=n_time)
     # pg_grid.idtag = circuit.idtag
 
-    build_status_dict = {
-        BuildStatus.Planned: pg.BuildStatus.Planned,
-        BuildStatus.Commissioned: pg.BuildStatus.Commissioned,
-        BuildStatus.Candidate: pg.BuildStatus.Candidate,
-        BuildStatus.Decommissioned: pg.BuildStatus.Decommissioned,
-        BuildStatus.PlannedDecommission: pg.BuildStatus.PlannedDecommission,
-    }
-
     area_dict = add_areas(circuit=circuit, gslv_grid=pg_grid)
     zone_dict = add_zones(circuit=circuit, gslv_grid=pg_grid)
+    substation_dict = add_substations(circuit=circuit, gslv_grid=pg_grid, n_time=n_time)
+    voltage_level_dict = add_voltage_levels(circuit=circuit, gslv_grid=pg_grid, substations_dict=substation_dict)
+    country_dict = add_countries(circuit=circuit, gslv_grid=pg_grid)
 
     con_groups_dict = add_contingency_groups(circuit=circuit, gslv_grid=pg_grid)
 
@@ -1534,7 +1797,11 @@ def to_gslv(circuit: MultiCircuit,
         use_time_series=use_time_series,
         n_time=n_time,
         time_indices=time_indices,
-        area_dict=area_dict
+        area_dict=area_dict,
+        zone_dict=zone_dict,
+        substation_dict=substation_dict,
+        voltage_level_dict=voltage_level_dict,
+        country_dict=country_dict,
     )
 
     add_loads(
