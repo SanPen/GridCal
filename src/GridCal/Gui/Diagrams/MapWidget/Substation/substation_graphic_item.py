@@ -11,9 +11,11 @@ from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.gui_functions import add_menu_entry
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
+from GridCal.Gui.object_model import ObjectsModel
 
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
 from GridCalEngine.Devices.Substation.substation import Substation
@@ -406,8 +408,9 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         """
         Removes the substation from the schematic only. The substation will remain in the database.
         """
-        ok = yes_no_question(f"Remove substation {self.api_object.name} from the schematic only? It will remain in the database.",
-                             "Remove substation from schematic")
+        ok = yes_no_question(
+            f"Remove substation {self.api_object.name} from the schematic only? It will remain in the database.",
+            "Remove substation from schematic")
 
         if ok:
             self.editor.remove_substation(substation=self, delete_from_db=False)
@@ -417,11 +420,101 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         Removes the substation from both the schematic and the database. This action cannot be undone.
         """
 
-        ok = yes_no_question(f"Remove substation {self.api_object.name} from both the schematic and the database? This action cannot be undone.",
-                             "Remove substation from schematic and database")
+        # Store the API object before deleting the graphic
+        api_object = self.api_object
+
+        # Get all buses connected to this substation
+        substation_buses = [bus for bus in self.editor.circuit.buses if bus.substation == api_object]
+
+        # Get all voltage levels associated with this substation
+        voltage_levels = [vl for vl in self.editor.circuit.voltage_levels if vl.substation == api_object]
+
+        # voltage_levels = api_object.voltage_levels
+
+        delete_connections = True  # TODO: This option was defaulted, no input was given from the GUI
+
+        devs = []
+        # find associated Branches in reverse order
+        for obj in substation_buses:
+            for branch_list in self.editor.circuit.get_branch_lists():
+                for i in range(len(branch_list) - 1, -1, -1):
+                    if branch_list[i].bus_from == obj:
+                        devs.append(branch_list[i])
+                    elif branch_list[i].bus_to == obj:
+                        devs.append(branch_list[i])
+
+            # find the associated injection devices
+            for inj_list in self.editor.circuit.get_injection_devices_lists():
+                for i in range(len(inj_list) - 1, -1, -1):
+                    if inj_list[i].bus == obj:
+                        devs.append(inj_list[i])
+
+        # Show all devices that will be disconnected
+        title = f"Devices to be {'deleted' if delete_connections else 'disconnected'} from {api_object.name}"
+
+        self.show_devices_to_disconnect_dialog(devices=devs, buses=substation_buses,
+                                               voltage_levels=voltage_levels, dialog_title=title)
+
+        ok = yes_no_question(
+            f"Remove substation {self.api_object.name} from both the schematic and the database? This action cannot be undone.",
+            "Remove substation from schematic and database")
 
         if ok:
-            self.editor.remove_substation(substation=self, delete_from_db=True)
+            self.editor.remove_substation(api_object=api_object, substation_buses=substation_buses,
+                                          voltage_levels=voltage_levels, delete_from_db=True)
+
+    def show_devices_to_disconnect_dialog(self,
+                                          devices: List[ALL_DEV_TYPES],
+                                          buses: List[Bus],
+                                          voltage_levels: List[VoltageLevel],
+                                          dialog_title: str):
+        """
+        Show a dialog with the list of all devices that will be disconnected
+
+        :param devices: List of devices to be disconnected
+        :param buses: List of buses associated with the substation
+        :param voltage_levels: List of voltage levels associated with the substation
+        :param dialog_title: Title for the dialog
+        """
+        from GridCal.Gui.general_dialogues import ElementsDialogue
+        from GridCalEngine.Devices.Parents.editable_device import GCProp
+
+        # Combine all devices
+        all_devices = devices + buses + voltage_levels
+
+        if not all_devices:
+            info_msg('No devices to disconnect', dialog_title)
+            return
+
+        # Create custom properties for name, type, and ID tag
+        name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name',
+                           display=True, editable=False)
+
+        type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type',
+                           display=True, editable=False)
+
+        idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag',
+                            display=True, editable=False)
+
+        custom_props = [name_prop, type_prop, idtag_prop]
+
+        # Create and show the dialog
+        dialog = ElementsDialogue(name=dialog_title, elements=all_devices)
+
+        # Replace the model with our custom one that only shows name, type, and idtag
+        model = ObjectsModel(objects=all_devices,
+                             time_index=None,
+                             property_list=custom_props,
+                             parent=dialog.objects_table,
+                             editable=False)
+
+        dialog.objects_table.setModel(model)
+
+        # Make the dialog modal so the user must acknowledge it before continuing
+        dialog.setModal(True)
+        dialog.exec()
+
+
 
     def move_to_api_coordinates(self):
         """
@@ -453,10 +546,10 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         if dlg.is_accepted:
 
             deleted_api_objs: List[Substation] = list()
-            
+
             # Collect all codes to merge
             merged_codes = ""
-            
+
             for i in dlg.selected_indices:
 
                 se_graphics = selected[i]
@@ -464,7 +557,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                     merged_codes = se_graphics.api_object.code
                 else:
                     merged_codes = merged_codes + ',' + se_graphics.api_object.code
-                
+
                 deleted_api_objs.append(se_graphics.api_object)
 
                 if se_graphics != self:
@@ -472,10 +565,10 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                     self.editor.remove_substation(substation=se_graphics,
                                                   delete_from_db=True,
                                                   delete_connections=False)
-            
+
             # Update the code of the base substation
             self.api_object.code = merged_codes  # Needed?
-            
+
             # Find the base substation in the circuit's collection and update it
             for i, substation in enumerate(self.editor.circuit._substations):
                 if substation == self.api_object:
@@ -598,5 +691,3 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         # https://maps.google.com/?q=<lat>,<lng>
         url = f"https://www.google.com/maps/?q={self.lat},{self.lon}"
         webbrowser.open(url)
-
-
