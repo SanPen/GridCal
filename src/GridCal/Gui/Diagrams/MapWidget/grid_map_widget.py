@@ -696,6 +696,8 @@ class GridMapWidget(BaseDiagramWidget):
             for seg in lin.segments_list:
                 self.map.diagram_scene.removeItem(seg)
 
+            for lineloc in lin.nodes_list:
+                self.map.diagram_scene.removeItem(lineloc)
     def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
         """
         Delete the selected items from the diagram
