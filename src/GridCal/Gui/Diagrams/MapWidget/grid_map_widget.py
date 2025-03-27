@@ -557,52 +557,20 @@ class GridMapWidget(BaseDiagramWidget):
         self.map.diagram_scene.removeItem(nod)
 
     def remove_substation(self,
-                          substation: SubstationGraphicItem,
-                          delete_from_db: bool = False,
-                          delete_connections: bool = True):
+                          api_object: Substation,
+                          substation_buses: List[Bus],
+                          voltage_levels: List[VoltageLevel],
+                          delete_from_db: bool = False):
         """
-        Remove a substation from the schematic and optionally from the database
-        
-        :param substation: Substation graphic item to remove
-        :param delete_from_db: Delete from the database too?
-        :param delete_connections: True always except for when merging substations
-        :return: None
+
+
+        :param api_object: Substation object from the MultiCircuit
+        :param substation_buses: List of buses associated to this substation
+        :param voltage_levels:  List of voltage levels associated to this substation
+        :param delete_from_db: Does it remove the objects from the Database too (bool)
+
+
         """
-        # Store the API object before deleting the graphic
-        api_object = substation.api_object
-
-        # Get all buses connected to this substation
-        substation_buses = [bus for bus in self.circuit.buses if bus.substation == api_object]
-        
-        # Get all voltage levels associated with this substation
-        voltage_levels = [vl for vl in self.circuit.voltage_levels if vl.substation == api_object]
-
-        # voltage_levels = api_object.voltage_levels
-
-        devs = []
-        # find associated Branches in reverse order
-        for obj in substation_buses:
-            for branch_list in self.circuit.get_branch_lists():
-                for i in range(len(branch_list) - 1, -1, -1):
-                    if branch_list[i].bus_from == obj:
-                        devs.append(branch_list[i])
-                    elif branch_list[i].bus_to == obj:
-                        devs.append(branch_list[i])
-
-        # find the associated injection devices
-            for inj_list in self.circuit.get_injection_devices_lists():
-                for i in range(len(inj_list) - 1, -1, -1):
-                    if inj_list[i].bus == obj:
-                        devs.append(inj_list[i])
-
-        # Show all devices that will be disconnected
-        title = f"Devices to be {'deleted' if delete_connections else 'disconnected'} from {api_object.name}"
-        self.show_devices_to_disconnect_dialog(
-            devs,
-            substation_buses, 
-            voltage_levels, 
-            title
-        )
 
         # Remove from graphics manager and scene
         sub = self.graphics_manager.delete_device(api_object)
@@ -615,6 +583,8 @@ class GridMapWidget(BaseDiagramWidget):
                     self.graphics_manager.delete_device(elm.api_object)
                     for segment in elm.segments_list:
                         self.map.diagram_scene.removeItem(segment)
+                    for lineloc in elm.nodes_list:
+                        self.map.diagram_scene.removeItem(lineloc)
 
         # Finally, delete from the database if requested
         if delete_from_db:
@@ -696,6 +666,8 @@ class GridMapWidget(BaseDiagramWidget):
             for seg in lin.segments_list:
                 self.map.diagram_scene.removeItem(seg)
 
+            for lineloc in lin.nodes_list:
+                self.map.diagram_scene.removeItem(lineloc)
     def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
         """
         Delete the selected items from the diagram
@@ -2336,6 +2308,115 @@ class GridMapWidget(BaseDiagramWidget):
         msg.setWindowTitle("Operation Successful")
         msg.exec()
 
+    def change_line_connection(self):
+
+        selected_lines = self.get_selected_line_segments_tup()
+        selected_substations = self.get_selected_substations_tup()
+
+        if len(selected_lines) != 1 or len(selected_substations) != 2:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("Please select exactly one line and two substations.")
+            msg.setWindowTitle("Selection Error")
+            msg.exec()
+            return
+
+        # Get the API objects
+        line_api, line_graphic = selected_lines[0]
+        substation_api_1, substation_graphic_1 = selected_substations[0]
+        substation_api_2, substation_graphic_2 = selected_substations[1]
+
+        # Get the original buses
+        bus_from = line_api.bus_from
+        bus_from_idtag_0 = bus_from.idtag
+        bus_to = line_api.bus_to
+        bus_to_idtag_0 = bus_to.idtag
+
+
+        buses1 = self.circuit.get_substation_buses(substation=substation_api_1)
+        buses2 = self.circuit.get_substation_buses(substation=substation_api_2)
+
+        if substation_api_1.idtag == bus_from.substation.idtag:
+            removed_substation = substation_api_1.name
+            added_substation = substation_api_2.name
+            for bus in buses2:
+                if bus.Vnom == bus_from.Vnom:
+                    line_api.bus_from = bus
+                    break
+            if bus_from_idtag_0 == line_api.bus_from.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+        elif substation_api_1.idtag == bus_to.substation.idtag:
+            removed_substation = substation_api_1.name
+            added_substation = substation_api_2.name
+            for bus in buses2:
+                if bus.Vnom == bus_to.Vnom:
+                    line_api.bus_to = bus
+                    break
+            if bus_to_idtag_0 == line_api.bus_to.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+
+        elif substation_api_2.idtag == bus_from.substation.idtag:
+            removed_substation = substation_api_2.name
+            added_substation = substation_api_1.name
+            for bus in buses1:
+                if bus.Vnom == bus_from.Vnom:
+                    line_api.bus_from = bus
+                    break
+            if bus_from_idtag_0 == line_api.bus_from.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+        elif substation_api_2.idtag == bus_to.substation.idtag:
+            removed_substation = substation_api_2.name
+            added_substation = substation_api_1.name
+            for bus in buses1:
+                if bus.Vnom == bus_to.Vnom:
+                    line_api.bus_to = bus
+                    break
+            if bus_to_idtag_0 == line_api.bus_to.idtag:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The new substation did not have any valid bus to connect the line.")
+                msg.setWindowTitle("No valid bus")
+                msg.exec()
+                return
+
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText("None of the selected substations are related to the line.")
+            msg.setWindowTitle("No Action")
+            msg.exec()
+            return
+
+
+        # Remove past graphic item and add the new one
+
+        self.remove_branch_graphic(line=line_graphic, delete_from_db=False)
+        self.add_api_line(api_object=line_api)
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(f"Line {line_api.name} had its connection to substation {removed_substation} changed to substation "
+                    f"{added_substation}.")
+        msg.setWindowTitle("Operation Successful")
+        msg.exec()
 
 def generate_map_diagram(
         substations: List[Substation],
