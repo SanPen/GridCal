@@ -154,10 +154,10 @@ def compare_inputs(grid_gslv: "pg.MultiCircuit", grid_gc: gce.MultiCircuit, tol=
 
     if t_idx is None:
         nc_gslv = pg.compile(grid=grid_gslv, logger=pg.Logger(), t_idx=0)
-        nc_gc = gce.compile_numerical_circuit_at(grid_gc, t_idx=None)
+        nc_gc = gce.compile_numerical_circuit_at(circuit=grid_gc, t_idx=None)
     else:
         nc_gslv = pg.compile(grid=grid_gslv, logger=pg.Logger(), t_idx=t_idx)
-        nc_gc = gce.compile_numerical_circuit_at(grid_gc, t_idx=t_idx)
+        nc_gc = gce.compile_numerical_circuit_at(circuit=grid_gc, t_idx=t_idx)
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare base data
@@ -248,8 +248,6 @@ def test_gslv_compatibility():
                                                               override_branch_controls=False,
                                                               opf_results=None)
 
-        # grid_gslv = pg.read_file("/Users/santi/Git/eRoots/gslv/python_scripts/IEEE14.gridcal")
-
         errors = compare_inputs(grid_gslv=grid_gslv,
                                 grid_gc=grid_gc,
                                 tol=1e-6,
@@ -257,5 +255,44 @@ def test_gslv_compatibility():
 
         assert errors == 0
 
-    if __name__ == '__main__':
-        test_gslv_compatibility()
+
+def test_gslv_compatibility_ts():
+    """
+
+    :return:
+    """
+
+    if not GSLV_AVAILABLE:
+        return
+
+
+    fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
+
+    print(f"Testing: {fname}")
+
+    grid_gc = gce.open_file(filename=fname)
+
+    # correct zero rates
+    for br in grid_gc.get_branches():
+        if br.rate <= 0:
+            br.rate = 9999.0
+
+    grid_gslv, (bus_dict, area_dict, zone_dict) = to_gslv(circuit=grid_gc,
+                                                          use_time_series=False,
+                                                          time_indices=None,
+                                                          override_branch_controls=False,
+                                                          opf_results=None)
+
+    for t_idx in range(grid_gc.get_time_number()):
+        print("Time step:", t_idx)
+        errors = compare_inputs(grid_gslv=grid_gslv,
+                                grid_gc=grid_gc,
+                                tol=1e-6,
+                                t_idx=t_idx)
+
+        assert errors == 0
+
+
+if __name__ == '__main__':
+    # test_gslv_compatibility()
+    test_gslv_compatibility_ts()

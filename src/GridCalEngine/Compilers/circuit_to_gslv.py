@@ -9,7 +9,9 @@ import numpy as np
 from typing import List, Dict, Union, TYPE_CHECKING
 
 import GridCalEngine
+from GridCalEngine import TapModuleControl, TapPhaseControl
 from GridCalEngine.basic_structures import IntVec, Vec
+from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, ContingencyMethod,
@@ -68,6 +70,19 @@ build_status_dict = {
     BuildStatus.PlannedDecommission: pg.BuildStatus.PlannedDecommission,
 }
 
+tap_module_control_mode_dict = {
+    TapModuleControl.fixed: pg.TapModuleControl.fixed,
+    TapModuleControl.Qf: pg.TapModuleControl.Qf,
+    TapModuleControl.Qt: pg.TapModuleControl.Qt,
+    TapModuleControl.Vm: pg.TapModuleControl.Vm,
+}
+
+tap_phase_control_mode_dict = {
+    TapPhaseControl.fixed: pg.TapPhaseControl.fixed,
+    TapPhaseControl.Pf: pg.TapPhaseControl.Pf,
+    TapPhaseControl.Pt: pg.TapPhaseControl.Pt,
+}
+
 
 def get_gslv_mip_solvers_list() -> List[str]:
     """
@@ -80,27 +95,130 @@ def get_gslv_mip_solvers_list() -> List[str]:
         return list()
 
 
-def get_final_profile(time_series: bool,
-                      time_indices: Union[IntVec, None],
-                      profile: Union[IntVec, Vec, None],
-                      ntime=1,
-                      default_val=0,
-                      dtype=float) -> Union[Vec, IntVec]:
+def convert_tap_module_control_mode_dict(data: Dict[int, TapModuleControl]) -> Dict[int, "pg.TapModuleControl"]:
+    return {i: tap_module_control_mode_dict[val] for i, val in data.items()}
+
+
+def convert_tap_module_control_mode_lst(data: List[TapModuleControl]) -> List["pg.TapModuleControl"]:
+    return [tap_module_control_mode_dict[val] for val in data]
+
+def convert_tap_phase_control_mode_dict(data: Dict[int, TapPhaseControl]) -> Dict[int, "pg.TapPhaseControl"]:
+    return {i: tap_phase_control_mode_dict[val] for i, val in data.items()}
+
+
+def convert_tap_phase_control_mode_lst(data: List[TapPhaseControl]) -> List["pg.TapPhaseControl"]:
+    return [tap_phase_control_mode_dict[val] for val in data]
+
+
+def fill_profile(gslv_profile: "pg.Profiledouble" | "pg.Profilebool" | "pg.Profileint" | "pg.Profileuint",
+                 gc_profile: Profile,
+                 use_time_series: bool,
+                 time_indices: Union[IntVec, None],
+                 n_time: int = 1,
+                 default_val: int | float | bool | TapPhaseControl | TapModuleControl = 0) -> None:
     """
     Generates a default time series
-    :param time_series: use time series?
+    :param gslv_profile: Profile from gslv to fill in
+    :param gc_profile: Profile from gridcal to convert
+    :param use_time_series: use time series?
     :param time_indices: time series indices if any (optional)
-    :param profile: Profile array (must be provided if time_series = True
-    :param ntime: (if time_series = False) number of time steps
+    :param n_time: number of time steps
     :param default_val: Default value
-    :param dtype: data type (float, int, etc...)
-    :return: Profile array
     """
 
-    if time_series:
-        return profile if time_indices is None else profile[time_indices]
+    if use_time_series:
+        if gc_profile.is_sparse:
+            if time_indices is None:
+
+                if isinstance(default_val, TapPhaseControl):
+                    data = convert_tap_phase_control_mode_dict(data=gc_profile.sparse_array.get_map())
+                elif isinstance(default_val, TapModuleControl):
+                    data = convert_tap_module_control_mode_dict(data=gc_profile.sparse_array.get_map())
+                else:
+                    data = gc_profile.sparse_array.get_map()
+
+                # we pick all the profile
+                gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+            else:
+                assert len(time_indices) == n_time
+
+
+
+                # we need a sliced version
+                sp_arr2 = gc_profile.sparse_array.slice(time_indices)
+
+                if isinstance(default_val, TapPhaseControl):
+                    data = convert_tap_phase_control_mode_dict(data=sp_arr2.get_map())
+                elif isinstance(default_val, TapModuleControl):
+                    data = convert_tap_module_control_mode_dict(data=sp_arr2.get_map())
+                else:
+                    data = sp_arr2.get_map()
+
+                gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+
+        else:
+            if time_indices is None:
+                # we pick all the profile
+
+                if isinstance(default_val, TapPhaseControl):
+                    data = convert_tap_phase_control_mode_lst(data=gc_profile.dense_array)
+                elif isinstance(default_val, TapModuleControl):
+                    data = convert_tap_module_control_mode_dict(data=gc_profile.dense_array)
+                else:
+                    data = gc_profile.dense_array
+
+                gslv_profile.init_dense(data)
+
+            else:
+                assert len(time_indices) == n_time
+                # we need a sliced version
+                if isinstance(default_val, TapPhaseControl):
+                    data = convert_tap_phase_control_mode_lst(data=gc_profile.dense_array[time_indices])
+                elif isinstance(default_val, TapModuleControl):
+                    data = convert_tap_module_control_mode_dict(data=gc_profile.dense_array[time_indices])
+                else:
+                    data = gc_profile.dense_array[time_indices]
+
+                gslv_profile.init_dense(data)
+
     else:
-        return np.full(ntime, default_val, dtype=dtype)
+        if isinstance(default_val, TapPhaseControl):
+            gslv_profile.fill(tap_phase_control_mode_dict[default_val])
+
+        elif isinstance(default_val, TapModuleControl):
+            gslv_profile.fill(tap_module_control_mode_dict[default_val])
+
+        else:
+            gslv_profile.fill(default_val)
+
+
+def fill_profile_with_array(gslv_profile: "pg.Profiledouble",
+                            arr: Vec,
+                            use_time_series: bool,
+                            time_indices: Union[IntVec, None],
+                            n_time=1,
+                            default_val=0) -> None:
+    """
+    Generates a default time series
+    :param gslv_profile: Profile from gslv to fill in
+    :param arr:  array to fill in
+    :param use_time_series: use time series?
+    :param time_indices: time series indices if any (optional)
+    :param n_time: number of time steps
+    :param default_val: Default value
+    """
+
+    if use_time_series:
+        if time_indices is None:
+            # we pick all the profile
+            gslv_profile.init_dense(arr)
+        else:
+            assert len(time_indices) == n_time
+            # we need a sliced version
+            gslv_profile.init_dense(arr[time_indices])
+
+    else:
+        gslv_profile.fill(default_val)
 
 
 def convert_area(area: dev.Area) -> "pg.Area":
@@ -348,31 +466,6 @@ def convert_load(k: int, elm: dev.Load, bus_dict: Dict[str, "pg.Bus"], n_time: i
     :return:
     """
 
-    """
-    TypeError: __init__(): incompatible constructor arguments. The following argument types are supported:
-    pygslv.Load(
-    nt: int, 
-    name: str = 'Load', 
-    idtag: str = '', 
-    code: str = '', 
-    G: float = 0.0, 
-    B: float = 0.0, 
-    Ir: float = 0.0,
-    Ii: float = 0.0, 
-    P: float = 0.0, 
-    Q: float = 0.0, 
-    Cost: float = 1200.0, 
-    active: bool = True, 
-    mttf: float = 0.0, 
-    mttr: float = 0.0, 
-    capex: float = 0.0, 
-    opex: float = 0.0, 
-    build_status: pygslv.BuildStatus = <BuildStatus.Commissioned: 0>)
-       
-    Invoked with: kwargs: idtag='1d19d20c90924be7928e0fbb61aa699f', code='2_1', name='2_1', calc_node=BUS 2, nt=1, P=21.7, Q=12.7, build_status=Commissioned
-
-    """
-
     load = pg.Load(
         nt=n_time,
         name=elm.name,
@@ -395,22 +488,69 @@ def convert_load(k: int, elm: dev.Load, bus_dict: Dict[str, "pg.Bus"], n_time: i
 
     load.bus = bus_dict[elm.bus.idtag]
 
-    if use_time_series:
-        load.active = (elm.active_prof.astype(BINT)
-                       if time_indices is None
-                       else elm.active_prof.astype(BINT)[time_indices])
+    fill_profile(gslv_profile=load.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
 
-        if opf_results is None:
-            P = elm.P_prof.toarray()
-        else:
-            P = elm.P_prof.toarray() - opf_results.load_shedding[:, k]
-
-        load.P = P if time_indices is None else P[time_indices]
-        load.Q = elm.Q_prof.toarray() if time_indices is None else elm.Q_prof.toarray()[time_indices]
-        load.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
+    if opf_results is None:
+        fill_profile(gslv_profile=load.P,
+                     gc_profile=elm.P_prof,
+                     use_time_series=use_time_series,
+                     time_indices=time_indices,
+                     n_time=n_time,
+                     default_val=elm.P)
     else:
-        load.set_active_val(int(elm.active))
-        # load.setAllCost1(elm.Cost)
+        fill_profile_with_array(gslv_profile=load.P,
+                                arr=elm.P_prof.toarray() - opf_results.load_shedding[:, k],
+                                use_time_series=use_time_series,
+                                time_indices=time_indices,
+                                n_time=n_time,
+                                default_val=elm.P)
+
+    fill_profile(gslv_profile=load.Q,
+                 gc_profile=elm.Q_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Q)
+
+    fill_profile(gslv_profile=load.G,
+                 gc_profile=elm.G_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.G)
+
+    fill_profile(gslv_profile=load.B,
+                 gc_profile=elm.B_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.B)
+
+    fill_profile(gslv_profile=load.Ir,
+                 gc_profile=elm.Ir_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Ir)
+
+    fill_profile(gslv_profile=load.Ii,
+                 gc_profile=elm.Ii_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Ii)
+
+    fill_profile(gslv_profile=load.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
 
     return load
 
@@ -421,8 +561,7 @@ def add_loads(circuit: MultiCircuit,
               use_time_series: bool,
               n_time=1,
               time_indices: IntVec | None = None,
-              opf_results: OptimalPowerFlowResults | None = None,
-              build_status_dict: Dict[BuildStatus, "pg.BuildStatus"] | None = None, ):
+              opf_results: OptimalPowerFlowResults | None = None):
     """
 
     :param circuit: GridCal circuit
@@ -456,15 +595,33 @@ def convert_static_generator(elm: dev.StaticGenerator, bus_dict: Dict[str, "pg.B
         build_status=elm.build_status,
     )
 
-    if use_time_series:
-        pe_inj.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
-            time_indices]
-        pe_inj.P = elm.P_prof.toarray() if time_indices is None else elm.P_prof.toarray()[time_indices]
-        pe_inj.Q = elm.Q_prof.toarray() if time_indices is None else elm.Q_prof.toarray()[time_indices]
-        pe_inj.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
-    else:
-        pe_inj.set_active_val(int(elm.active))
-        # pe_inj.setAllCost1(elm.Cost)
+    fill_profile(gslv_profile=pe_inj.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
+
+    fill_profile(gslv_profile=pe_inj.P,
+                 gc_profile=elm.P_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.P)
+
+    fill_profile(gslv_profile=pe_inj.Q,
+                 gc_profile=elm.Q_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Q)
+
+    fill_profile(gslv_profile=pe_inj.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
 
     return pe_inj
 
@@ -513,14 +670,33 @@ def convert_shunt(elm: dev.Shunt, bus_dict: Dict[str, "pg.Bus"], n_time: int,
 
     sh.bus = bus_dict[elm.bus.idtag]
 
-    if use_time_series:
-        sh.active = (elm.active_prof.astype(BINT)
-                     if time_indices is None
-                     else elm.active_prof.astype(BINT)[time_indices])
-        sh.G = elm.G_prof.toarray() if time_indices is None else elm.G_prof.toarray()[time_indices]
-        sh.B = elm.B_prof.toarray() if time_indices is None else elm.B_prof.toarray()[time_indices]
-    else:
-        sh.set_active_val(int(elm.active))
+    fill_profile(gslv_profile=sh.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
+
+    fill_profile(gslv_profile=sh.G,
+                 gc_profile=elm.G_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.G)
+
+    fill_profile(gslv_profile=sh.B,
+                 gc_profile=elm.B_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.B)
+
+    fill_profile(gslv_profile=sh.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
 
     return sh
 
@@ -582,34 +758,62 @@ def convert_generator(k: int, elm: dev.Generator, bus_dict: Dict[str, "pg.Bus"],
 
     gen.bus = bus_dict[elm.bus.idtag]
 
-    if use_time_series:
+    fill_profile(gslv_profile=gen.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
 
-        gen.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
-            time_indices]
-
-        if opf_results is None:
-            P = elm.P_prof.toarray()
-        else:
-            P = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
-
-        gen.P = P if time_indices is None else P[time_indices]
-
-        gen.Vset = elm.Vset_prof.toarray() if time_indices is None else elm.Vset_prof.toarray()[time_indices]
-        gen.cost_0 = elm.Cost0_prof.toarray() if time_indices is None else elm.Cost0_prof.toarray()[time_indices]
-        gen.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
-        gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
+    if opf_results is None:
+        fill_profile(gslv_profile=gen.P,
+                     gc_profile=elm.P_prof,
+                     use_time_series=use_time_series,
+                     time_indices=time_indices,
+                     n_time=n_time,
+                     default_val=elm.P)
     else:
-        gen.set_active_val(int(elm.active))
-        # gen.set_pf_val(elm.Pf)
+        fill_profile_with_array(gslv_profile=gen.P,
+                                arr=opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k],
+                                use_time_series=use_time_series,
+                                time_indices=time_indices,
+                                n_time=n_time,
+                                default_val=elm.P)
 
-        if opf_results is None:
-            gen.set_P_val(elm.P)
-        else:
-            gen.set_P_val(opf_results.generator_power[k] - opf_results.generator_shedding[k])
+    fill_profile(gslv_profile=gen.Pf,
+                 gc_profile=elm.Pf_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Pf)
 
-        # gen.setAllCost0(elm.Cost0)
-        # gen.setAllCost1(elm.Cost)
-        # gen.setAllCost2(elm.Cost2)
+    fill_profile(gslv_profile=gen.Vset,
+                 gc_profile=elm.Vset_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Vset)
+
+    fill_profile(gslv_profile=gen.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
+
+    fill_profile(gslv_profile=gen.Cost0,
+                 gc_profile=elm.Cost0_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost0)
+
+    fill_profile(gslv_profile=gen.Cost2,
+                 gc_profile=elm.Cost2_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost2)
 
     return gen
 
@@ -655,52 +859,82 @@ def convert_battery(k: int, elm: dev.Battery, bus_dict: Dict[str, "pg.Bus"], n_t
     :param opf_results:
     :return:
     """
-    gen = pg.Battery(idtag=elm.idtag,
+    gen = pg.Battery(nt=n_time,
                      name=elm.name,
-                     calc_node=bus_dict[elm.bus.idtag],
-                     nt=n_time,
-                     nominal_energy=elm.Enom,
+                     idtag=elm.idtag,
                      P=elm.P,
-                     Vset=elm.Vset,
-                     soc_max=elm.max_soc,
-                     soc_min=elm.min_soc,
+                     power_factor=elm.Pf,
+                     vset=elm.Vset,
+                     max_soc=elm.max_soc,
+                     min_soc=elm.min_soc,
                      Qmin=elm.Qmin,
                      Qmax=elm.Qmax,
                      Pmin=elm.Pmin,
                      Pmax=elm.Pmax,
                      Snom=elm.Snom,
+                     Enom=elm.Enom,
                      charge_efficiency=elm.charge_efficiency,
                      discharge_efficiency=elm.discharge_efficiency,
                      is_controlled=elm.is_controlled, )
 
-    if use_time_series:
-        gen.active = elm.active_prof.astype(BINT) if time_indices is None else elm.active_prof.astype(BINT)[
-            time_indices]
+    gen.bus = bus_dict[elm.bus.idtag]
 
-        if opf_results is None:
-            P = elm.P_prof.toarray()
-        else:
-            P = opf_results.generator_power[:, k] - opf_results.generator_shedding[:, k]
+    fill_profile(gslv_profile=gen.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
 
-        gen.P = P if time_indices is None else P[time_indices]
-
-        # gen.P = elm.P_prof if time_indices is None else elm.P_prof[time_indices]
-        gen.Vset = elm.Vset_prof.toarray() if time_indices is None else elm.Vset_prof.toarray()[time_indices]
-        gen.cost_0 = elm.Cost0_prof.toarray() if time_indices is None else elm.Cost0_prof.toarray()[time_indices]
-        gen.cost_1 = elm.Cost_prof.toarray() if time_indices is None else elm.Cost_prof.toarray()[time_indices]
-        gen.cost_2 = elm.Cost2_prof.toarray() if time_indices is None else elm.Cost2_prof.toarray()[time_indices]
+    if opf_results is None:
+        fill_profile(gslv_profile=gen.P,
+                     gc_profile=elm.P_prof,
+                     use_time_series=use_time_series,
+                     time_indices=time_indices,
+                     n_time=n_time,
+                     default_val=elm.P)
     else:
-        gen.active = np.ones(n_time, dtype=BINT) * int(elm.active)
+        fill_profile_with_array(gslv_profile=gen.P,
+                                arr=opf_results.battery_power[:, k],
+                                use_time_series=use_time_series,
+                                time_indices=time_indices,
+                                n_time=n_time,
+                                default_val=elm.P)
 
-        if opf_results is None:
-            gen.P = np.full(n_time, elm.P, dtype=float)
-        else:
-            gen.P = np.full(n_time, opf_results.battery_power[k], dtype=float)
+    fill_profile(gslv_profile=gen.Pf,
+                 gc_profile=elm.Pf_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Pf)
 
-        gen.Vset = np.ones(n_time, dtype=float) * elm.Vset
-        gen.setAllCost0(elm.Cost0)
-        gen.setAllCost1(elm.Cost)
-        gen.setAllCost2(elm.Cost2)
+    fill_profile(gslv_profile=gen.Vset,
+                 gc_profile=elm.Vset_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Vset)
+
+    fill_profile(gslv_profile=gen.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
+
+    fill_profile(gslv_profile=gen.Cost0,
+                 gc_profile=elm.Cost0_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost0)
+
+    fill_profile(gslv_profile=gen.Cost2,
+                 gc_profile=elm.Cost2_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost2)
 
     return gen
 
@@ -760,37 +994,43 @@ def convert_line(elm: dev.Line, bus_dict: Dict[str, "pg.Bus"], n_time: int,
         contingency_enabled=elm.contingency_enabled
     )
 
-    if use_time_series:
-        lne.active = (elm.active_prof.astype(BINT)
-                      if time_indices is None
-                      else elm.active_prof.astype(BINT)[time_indices])
+    fill_profile(gslv_profile=lne.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
 
-        lne.rates = (elm.rate_prof.toarray()
-                     if time_indices is None
-                     else elm.rate_prof.toarray()[time_indices])
+    fill_profile(gslv_profile=lne.rate,
+                 gc_profile=elm.rate_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.rate)
 
-        contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
+    fill_profile(gslv_profile=lne.contingency_factor,
+                 gc_profile=elm.contingency_factor_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.contingency_factor)
 
-        lne.contingency_rates = (contingency_rates
-                                 if time_indices is None
-                                 else contingency_rates[time_indices])
-
-        lne.overload_cost = (elm.Cost_prof.toarray()
-                             if time_indices is None
-                             else elm.Cost_prof.toarray()[time_indices])
-    else:
-        #lne.setAllOverloadCost(elm.Cost)
-        pass
+    fill_profile(gslv_profile=lne.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
 
     return lne
 
 
-def add_line(circuit: MultiCircuit,
-             gslv_grid: "pg.MultiCircuit",
-             bus_dict: Dict[str, "pg.Bus"],
-             time_series: bool,
-             n_time: int = 1,
-             time_indices: Union[IntVec, None] = None):
+def add_lines(circuit: MultiCircuit,
+              gslv_grid: "pg.MultiCircuit",
+              bus_dict: Dict[str, "pg.Bus"],
+              time_series: bool,
+              n_time: int = 1,
+              time_indices: Union[IntVec, None] = None):
     """
 
     :param circuit: GridCal circuit
@@ -845,30 +1085,82 @@ def convert_transformer(elm: dev.Transformer2W, bus_dict: Dict[str, "pg.Bus"], n
     tr2.tap_module_min = elm.tap_module_min
     tr2.tap_module_max = elm.tap_module_max
 
-    if use_time_series:
-        contingency_rates = elm.rate_prof.toarray() * elm.contingency_factor
-        active_prof = elm.active_prof.astype(BINT)
+    fill_profile(gslv_profile=tr2.active,
+                 gc_profile=elm.active_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.active)
 
-        tr2.active = active_prof if time_indices is None else active_prof[time_indices]
-        tr2.rates = elm.rate_prof.toarray() if time_indices is None else elm.rate_prof.toarray()[time_indices]
-        tr2.contingency_rates = contingency_rates if time_indices is None else contingency_rates[time_indices]
-        tr2.tap = elm.tap_module_prof.toarray() if time_indices is None else elm.tap_module_prof.toarray()[
-            time_indices]
-        tr2.phase = elm.tap_phase_prof.toarray() if time_indices is None else elm.tap_phase_prof.toarray()[
-            time_indices]
-        tr2.overload_cost = elm.Cost_prof.toarray()
-    else:
-        #tr2.setAllOverloadCost(elm.Cost)
-        pass
+    fill_profile(gslv_profile=tr2.rate,
+                 gc_profile=elm.rate_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.rate)
 
-    # ctrl_dict = {
-    #     TransformerControlType.fixed: pg.BranchControlModes.Fixed,
-    #     TransformerControlType.Pf: pg.BranchControlModes.BranchPt,
-    #     TransformerControlType.Qt: pg.BranchControlModes.BranchQt,
-    #     TransformerControlType.PtQt: pg.BranchControlModes.BranchPt,
-    #     TransformerControlType.V: pg.BranchControlModes.BranchVt,
-    #     TransformerControlType.PtV: pg.BranchControlModes.BranchPt,
-    # }
+    fill_profile(gslv_profile=tr2.contingency_factor,
+                 gc_profile=elm.contingency_factor_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.contingency_factor)
+
+    fill_profile(gslv_profile=tr2.cost,
+                 gc_profile=elm.Cost_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Cost)
+
+    fill_profile(gslv_profile=tr2.Pset,
+                 gc_profile=elm.Pset_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Pset)
+
+    fill_profile(gslv_profile=tr2.Qset,
+                 gc_profile=elm.Qset_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.Qset)
+
+    fill_profile(gslv_profile=tr2.vset,
+                 gc_profile=elm.vset_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.vset)
+
+    fill_profile(gslv_profile=tr2.tap_phase,
+                 gc_profile=elm.tap_phase_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.tap_phase)
+
+    fill_profile(gslv_profile=tr2.tap_phase_control_mode,
+                 gc_profile=elm.tap_phase_control_mode_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.tap_phase_control_mode)
+
+    fill_profile(gslv_profile=tr2.tap_module,
+                 gc_profile=elm.tap_module_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.tap_module)
+
+    fill_profile(gslv_profile=tr2.tap_module_control_mode,
+                 gc_profile=elm.tap_module_control_mode_prof,
+                 use_time_series=use_time_series,
+                 time_indices=time_indices,
+                 n_time=n_time,
+                 default_val=elm.tap_module_control_mode)
 
     # control vars
     if override_controls:
@@ -1239,7 +1531,6 @@ def to_gslv(circuit: MultiCircuit,
         use_time_series=use_time_series,
         n_time=n_time,
         time_indices=time_indices,
-        build_status_dict=build_status_dict
     )
 
     add_static_generators(
@@ -1281,7 +1572,7 @@ def to_gslv(circuit: MultiCircuit,
         opf_results=opf_results
     )
 
-    add_line(
+    add_lines(
         circuit=circuit,
         gslv_grid=pg_grid,
         bus_dict=bus_dict,
