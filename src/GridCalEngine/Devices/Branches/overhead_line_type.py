@@ -246,7 +246,7 @@ class OverheadLineType(EditableDevice):
         # current rating of the tower in kA
         self.Imax = 0.0
 
-        # impedances
+        # impedances [Ohm/km]
         self.z_abcn = None
         self.z_phases_abcn = None
         self.z_abc = None
@@ -254,6 +254,7 @@ class OverheadLineType(EditableDevice):
         self.z_seq = None
         self.z_0123 = None
 
+        # admittances [S/km]
         self.y_abcn = None
         self.y_phases_abcn = None
         self.y_abc = None

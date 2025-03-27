@@ -28,7 +28,9 @@ p = 1 / np.sqrt(1j * w * mu_0 * conductivity) # Complex Depth Beneath [m]
 
 r_ext = 10.5e-3 # Conductor external radius [m]
 gmr = r_ext * np.exp(-1/4) # Geometrical Mean Radius [m]
+
 gmr_eq = (gmr * d_bundle * np.sqrt(2) * d_bundle * d_bundle)**(1/4) # Equivalent GMR [m]
+print(gmr_eq)
 
 # Self Impedances [Ohm/m]
 Zaa = R/n + 1j * w * mu_0 / (2*np.pi) * np.log(2*(ha+p)/gmr_eq)
@@ -70,6 +72,7 @@ P[1,2] = Pbc
 P[2,1] = Pbc
 P[0,2] = Pca
 P[2,0] = Pca
+print('\nP =\n', P)
 Y = 1j * w * 2 * np.pi * epsilon_0 * np.linalg.inv(P) # Admittance Matrix [S/m]
 Y = Y * 1e9 # Admittance Matrix [uS/km]
 print('\nY =\n', Y)

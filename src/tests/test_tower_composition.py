@@ -29,16 +29,14 @@ def test_tower_composition():
     R0, X0, B0 = tower.get_sequence_values(circuit_idx=0, seq=0)
     print(f"R0: {R0}, X0: {X0}")
     print(f"R1: {R1}, X1: {X1}")
-
     assert np.isclose(R0, 1.5892070972018013, atol=1e-4)
     assert np.isclose(X0, 1.1989736994044684, atol=1e-4)
     assert np.isclose(R1, 1.485081882395359, atol=1e-4)
     assert np.isclose(X1, 0.3613207070253497, atol=1e-4)
 
-def test_tower_composition2():
+def test_tower_composition_2():
     """
-    Explicar ejemplo libro Acha
-    R = 0.1363 ohm/km
+    This test performs the tower composition of the distribution grid demo
     :return:
     """
     tower = gce.OverheadLineType(name="Tower")
@@ -55,11 +53,9 @@ def test_tower_composition2():
 
     tower.compute()
 
-    R1, X1, B1 = tower.get_sequence_values(circuit_idx=0, seq=1)
-    R0, X0, B0 = tower.get_sequence_values(circuit_idx=0, seq=0)
+    R1, X1, B1, R0, X0, B0, rate = tower.get_values(Sbase=1, length=1, circuit_index=0)
     print(f"R0: {R0}, X0: {X0}")
     print(f"R1: {R1}, X1: {X1}")
-
     assert np.isclose(R0, 1.5892070972018013, atol=1e-4)
     assert np.isclose(X0, 1.1989736994044684, atol=1e-4)
     assert np.isclose(R1, 1.485081882395359, atol=1e-4)
