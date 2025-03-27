@@ -54,34 +54,37 @@ try:
             warnings.warn(f"Recommended version for GSLV is {GSLV_RECOMMENDED_VERSION} "
                           f"instead of {GSLV_VERSION}")
 
+    build_status_dict = {
+        BuildStatus.Planned: pg.BuildStatus.Planned,
+        BuildStatus.Commissioned: pg.BuildStatus.Commissioned,
+        BuildStatus.Candidate: pg.BuildStatus.Candidate,
+        BuildStatus.Decommissioned: pg.BuildStatus.Decommissioned,
+        BuildStatus.PlannedDecommission: pg.BuildStatus.PlannedDecommission,
+    }
+
+    tap_module_control_mode_dict = {
+        TapModuleControl.fixed: pg.TapModuleControl.fixed,
+        TapModuleControl.Qf: pg.TapModuleControl.Qf,
+        TapModuleControl.Qt: pg.TapModuleControl.Qt,
+        TapModuleControl.Vm: pg.TapModuleControl.Vm,
+    }
+
+    tap_phase_control_mode_dict = {
+        TapPhaseControl.fixed: pg.TapPhaseControl.fixed,
+        TapPhaseControl.Pf: pg.TapPhaseControl.Pf,
+        TapPhaseControl.Pt: pg.TapPhaseControl.Pt,
+    }
+
 except ImportError as e:
     pg = None
     GSLV_AVAILABLE = False
     GSLV_VERSION = ''
+    build_status_dict = dict()
+    tap_module_control_mode_dict = dict()
+    tap_phase_control_mode_dict = dict()
 
 # numpy integer type for GSLV's uword
 BINT = np.ulonglong
-
-build_status_dict = {
-    BuildStatus.Planned: pg.BuildStatus.Planned,
-    BuildStatus.Commissioned: pg.BuildStatus.Commissioned,
-    BuildStatus.Candidate: pg.BuildStatus.Candidate,
-    BuildStatus.Decommissioned: pg.BuildStatus.Decommissioned,
-    BuildStatus.PlannedDecommission: pg.BuildStatus.PlannedDecommission,
-}
-
-tap_module_control_mode_dict = {
-    TapModuleControl.fixed: pg.TapModuleControl.fixed,
-    TapModuleControl.Qf: pg.TapModuleControl.Qf,
-    TapModuleControl.Qt: pg.TapModuleControl.Qt,
-    TapModuleControl.Vm: pg.TapModuleControl.Vm,
-}
-
-tap_phase_control_mode_dict = {
-    TapPhaseControl.fixed: pg.TapPhaseControl.fixed,
-    TapPhaseControl.Pf: pg.TapPhaseControl.Pf,
-    TapPhaseControl.Pt: pg.TapPhaseControl.Pt,
-}
 
 
 def get_gslv_mip_solvers_list() -> List[str]:
@@ -101,6 +104,7 @@ def convert_tap_module_control_mode_dict(data: Dict[int, TapModuleControl]) -> D
 
 def convert_tap_module_control_mode_lst(data: List[TapModuleControl]) -> List["pg.TapModuleControl"]:
     return [tap_module_control_mode_dict[val] for val in data]
+
 
 def convert_tap_phase_control_mode_dict(data: Dict[int, TapPhaseControl]) -> Dict[int, "pg.TapPhaseControl"]:
     return {i: tap_phase_control_mode_dict[val] for i, val in data.items()}
@@ -141,8 +145,6 @@ def fill_profile(gslv_profile: "pg.Profiledouble" | "pg.Profilebool" | "pg.Profi
                 gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
             else:
                 assert len(time_indices) == n_time
-
-
 
                 # we need a sliced version
                 sp_arr2 = gc_profile.sparse_array.slice(time_indices)
