@@ -12,23 +12,26 @@ class Wire(EditableDevice):
     This class represents a wire (an actual wire)
     to compose towers
     """
+
     def __init__(self, name='', idtag: Union[str, None] = None,
-                 gmr: float = 0.01, r: float = 0.01, x: float = 0.0,
+                 r: float = 0.01,
                  max_current: float = 1.0,
                  stranding: str = "",
                  material: str = "",
                  diameter: float = 0.0,
+                 diameter_internal: float = 0.0,
+                 is_tube: bool = False,
                  code: str = ""):
         """
         Wire definition
         :param name: Name of the wire type
-        :param gmr: Geometric Mean Radius (m)
         :param r: Resistance per unit length (Ohm / km)
-        :param x: Reactance per unit length (Ohm / km)
         :param max_current: Maximum current of the conductor in (kA)
         :param stranding: Stranding of the wire type
         :param material: Material of the wire type
-        :param diameter: Diameter of the wire type
+        :param diameter: Diameter of the wire type (m)
+        :param diameter_internal: Internal diameter (in case of tubular conductor) (m)
+        :param is_tube: Whether the wire is a tubular conductor
         :param code: Code of the wire type
         """
 
@@ -42,18 +45,19 @@ class Wire(EditableDevice):
         self._stranding = str(stranding)
         self._material = str(material)
         self.diameter = float(diameter)
+        self.diameter_internal = float(diameter_internal)
+        self.is_tube = bool(is_tube)
+
         self.R = float(r)
-        self.X = float(x)
-        self.GMR = float(gmr)
         self.max_current = float(max_current)
 
         self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor', old_names=['r'])
-        self.register(key='X', units='Ohm/km', tpe=float, definition='reactance of the conductor', old_names=['x'])
-        self.register(key='GMR', units='m', tpe=float, definition='Geometric Mean Radius of the conductor', old_names=['gmr'])
+        self.register(key='diameter', units='cm', tpe=float, definition='Diameter of wire')
+        self.register(key='diameter_internal', units='m', tpe=float, definition='Internal radius of the conductor')
+        self.register(key='is_tube', units='', tpe=bool, definition='Is it a tubular conductor?')
         self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
         self.register(key='stranding', tpe=str, definition='Stranding of wire')
         self.register(key='material', tpe=str, definition='Material of wire')
-        self.register(key='diameter', units='cm', tpe=float, definition='Diameter of wire')
 
     @property
     def stranding(self) -> str:

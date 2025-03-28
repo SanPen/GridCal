@@ -410,7 +410,7 @@ class OverheadLineType(EditableDevice):
             if wire_i.ypos != 0.0:
                 all_y_zero = False
 
-            if wire_i.wire.GMR < 0:
+            if wire_i.wire.diameter < 0:
                 logger.add('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
                 return False
 
@@ -479,7 +479,7 @@ class OverheadLineType(EditableDevice):
                  self.y_phases_abcn,
                  self.y_abc,
                  self.y_phases_abc,
-                 self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+                 self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency)
 
                 # compute the tower rating in kA
                 self.Imax = self.compute_rating()
@@ -600,57 +600,6 @@ def get_D_ij(xi, yi, xj, yj):
     return sqrt((xi - xj) ** 2 + (yi + yj) ** 2)
 
 
-def z_ii(r_i, x_i, h_i, gmr_i, f, rho):
-    """
-    Self impedance
-    Formula 4.3 from ATP-EMTP theory book
-    :param r_i: wire resistance
-    :param x_i: wire reactance
-    :param h_i: wire vertical position (m)
-    :param gmr_i: wire geometric mean radius (m)
-    :param f: system frequency (Hz)
-    :param rho: earth resistivity (Ohm / m^3)
-    :return: self impedance in Ohm / m
-    """
-    w = 2 * pi * f  # rad
-
-    mu_0 = 4 * pi * 1e-4  # H/Km
-
-    mu_0_2pi = 2e-4  # H/Km
-
-    p = sqrt(rho / (1j * w * mu_0))
-
-    z = r_i + 1j * (w * mu_0_2pi * log((2 * (h_i + p)) / gmr_i) + x_i)
-
-    return z
-
-
-def z_ij(x_i, x_j, h_i, h_j, d_ij, f, rho):
-    """
-    Mutual impedance
-    Formula 4.4 from ATP-EMTP theory book
-    :param x_i: wire i horizontal position (m)
-    :param x_j: wire j horizontal position (m)
-    :param h_i: wire i vertical position (m)
-    :param h_j: wire j vertical position (m)
-    :param d_ij: Distance module between the wires i and j
-    :param f: system frequency (Hz)
-    :param rho: earth resistivity (Ohm / m^3)
-    :return: mutual impedance in Ohm / m
-    """
-    w = 2 * pi * f  # rad
-
-    mu_0 = 4 * pi * 1e-4  # H/Km
-
-    mu_0_2pi = 2e-4  # H/Km
-
-    p = sqrt(rho / (1j * w * mu_0))
-
-    z = 1j * w * mu_0_2pi * log(sqrt(pow(h_i + h_j + 2 * p, 2) + pow(x_i - x_j, 2)) / d_ij)
-
-    return z
-
-
 def abc_2_seq(mat):
     """
     Convert ABC to sequence components
@@ -746,12 +695,269 @@ def wire_bundling(phases_set: List[int], primitive: Mat, phases_vector: IntVec):
     return primitive, phases_vector
 
 
-def calc_z_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
+def calc_L_int(is_tube, r, q):
+    """
+    Calculates internal inductance of solid or tubular conductor
+    Note that calculations assume uniform current distribution in the conductor,
+    thus conductor stranding is not taken into account.
+
+    Usage:
+        L_int = calc_L_int(type, r, q)
+
+    where:
+       type is 'solid' or 'tube'
+        r is the radius of the conductor [m]
+        q is the radius of the inner tube [m]
+
+    Returns:
+        L_int the internal inductance of the conductor [H/m]
+    """
+    mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
+
+    if is_tube:
+        # Tubular conductor internal inductance [H/m]
+        L_int = (mu_0 / 2 / np.pi * (q ** 4 / (r ** 2 - q ** 2) ** 2 * np.log(r / q)
+                                     - (3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2))))
+
+    else:
+        # Solid conductor internal inductance [H/m]
+        L_int = mu_0 / 8 / np.pi
+
+    return L_int
+
+
+def calc_GMR(is_tube: bool, r: float, q: float):
+    """
+    Calculates geometric mean radius (GMR) of solid or tubular conductor
+    Note that calculations assume uniform current distribution in the conductor, thus conductor stranding is not taken into account.
+
+    :param is_tube:
+    :param r: radius of the conductor [m]
+    :param q: radius of the inner tube [m] (only relevant for tubes)
+    :return: GMR the geometric mean radius [m]
+    """
+
+    if is_tube:
+        # Tubular conductor GMR [m]
+        GMR = (r * np.exp((3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2))
+                          - q ** 4 / (r ** 2 - q ** 2) ** 2 * np.log(r / q)))
+
+    else:
+        # Solid conductor GMR [m]
+        GMR = r * np.exp(-0.25)
+
+    return GMR
+
+
+def carsons(is_self: bool, h_i: float, h_k: float, x_ik: float, f: float, rho: float, err_tol: float = 1e-6):
+    """
+    Calculates Carson's earth return correction factors Rp and Xp for both self and mutual terms.
+    The number of terms evaluated in the infinite loop is based on convergence to the desired error tolerance.
+
+    Usage:
+        Rp, Xp = carsons(type, h_i, h_k, x_ik, f, rho, err_tol)
+
+    where   type is 'self' or 'mutual'
+            h_i is the height of conductor i above ground (m)
+            h_k is the height of conductor k above ground (m)
+            x_ik is the horizontal distance between conductors i and k (m)
+            f is the frequency (Hz)
+            rho is the earth resistivity (Ohm.m)
+            err_tol is the error tolerance for the calculation (default = 1e-6)
+
+    Returns:
+            Rp, Xp the Carson earth return correction factors (in Ohm/km)
+    """
+    # Geometrical calculations - See Figure 4.4. of EMTP Theory Book
+    if is_self:
+        D = 2 * h_i  # Distance between conductor i and its image [m]
+        cos_phi = 1
+        sin_phi = 0
+        phi = 0
+    else:
+        D = np.sqrt((h_i + h_k) ** 2 + x_ik ** 2)  # Distance between conductor i and image of conductor k [m]
+        cos_phi = (h_i + h_k) / D
+        sin_phi = x_ik / D
+        phi = np.arccos(cos_phi)
+
+    # Initialise parameters
+    i = 1
+    err = 1
+    sgn = 1
+
+    # Initial values and constants for calculation
+    omega = 2 * np.pi * f
+    a = 4 * np.pi * np.sqrt(5) * 1e-4 * D * np.sqrt(f / rho)  # Equation 4.10 EMTP
+    acosphi = a * cos_phi
+    asinphi = a * sin_phi
+    b = np.array([np.sqrt(2) / 6, 1 / 16])  # Equation 4.12 EMTP
+    c = np.array([0, 1.3659315])
+    d = np.pi / 4 * b
+
+    # First two terms of carson correction factor
+    Rp = np.pi / 8 - b[0] * acosphi
+    Xp = 0.5 * (0.6159315 - np.log(a)) + b[0] * acosphi
+
+    # Loop through carson coefficient terms starting with i = 2
+    while (err > err_tol):
+        term = np.mod(i, 4)
+        # Check sign for b term
+        if term == 0:
+            sgn = -1 * sgn
+
+        # Calculate coefficients
+        bi = b[i - 1] * sgn / ((i + 1) * (i + 3))
+        ci = c[i - 1] + 1 / (i + 1) + 1 / (i + 3)
+        di = np.pi / 4 * bi
+        b = np.append(b, bi)
+        c = np.append(c, ci)
+        d = np.append(d, di)
+
+        # Recursively calculate powers of acosphi and asinphi
+        acosphi_prev = acosphi
+        asinphi_prev = asinphi
+        acosphi = (acosphi_prev * cos_phi - asinphi_prev * sin_phi) * a
+        asinphi = (acosphi_prev * sin_phi + asinphi_prev * cos_phi) * a
+
+        Rp_prev = Rp
+        Xp_prev = Xp
+
+        # First term
+        if term == 0:
+            Rp = Rp - bi * acosphi
+            Xp = Xp + bi * acosphi
+
+        # Second term
+        elif term == 1:
+            Rp = Rp + bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
+            Xp = Xp - di * acosphi
+
+        # Third term
+        elif term == 1:
+            Rp = Rp + bi * acosphi
+            Xp = Xp + bi * acosphi
+
+        # Fourth term
+        else:
+            Rp = Rp - di * acosphi
+            Xp = Xp - bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
+
+        i = 1
+        err = np.sqrt((Rp - Rp_prev) ** 2 + (Xp - Xp_prev) ** 2)
+
+    Rp = 4 * omega * 1e-04 * Rp
+    Xp = 4 * omega * 1e-04 * Xp
+
+    return Rp, Xp
+
+
+def calc_z_ii(R_int, is_tube, r_outer, r_inner, y_i, f, rho, err_tol=1e-6, use_dubanton_aprox: bool = False):
+    """
+    Calculates self impedance term [Ohm/km]
+    NOTE: No allowance has been made for skin effects
+    :param R_int:  AC conductor resistance [Ohm/km]
+    :param is_tube: is it a tube conductor? otherwise is solid
+    :param r_outer: radius of the conductor [m]
+    :param r_inner: radius of the inner tube [m]
+    :param y_i: height of conductor i above ground [m]
+    :param f: frequency [Hz]
+    :param rho: earth resistivity [Ohm.m]
+    :param err_tol: error tolerance for the calculation (default = 1e-6)
+    :param use_dubanton_aprox: Use dubanton's approximation (default = False)
+    :return: self impedance term of line impedance matrix [Ohm/km]
+    """
+
+    if use_dubanton_aprox:
+
+        # Dubanton's approximation
+
+        w = 2 * pi * f  # rad
+
+        mu_0 = 4 * pi * 1e-4  # H/Km
+
+        mu_0_2pi = 2e-4  # H/Km
+
+        p = sqrt(rho / (1j * w * mu_0))
+
+        gmr_i = calc_GMR(is_tube=is_tube, r=r_outer, q=r_inner)
+
+        z = R_int + 1j * (w * mu_0_2pi * log((2 * (y_i + p)) / gmr_i))
+
+    else:
+
+        # Carson's "exact" equations
+
+        # Constants
+        omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
+        mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
+
+        # Calculate internal conductor reactance (in Ohm/km)
+        X_int = 1000 * omega * calc_L_int(is_tube, r_outer, r_inner)
+
+        # Calculate geometrical reactance (in Ohm/km) - Equation 4.15 EMTP
+        X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(2 * y_i / r_outer)
+
+        # Calculate Carson's correction factors (in Ohm/km)
+        Rp, Xp = carsons(True, y_i, 0, 0, f, rho, err_tol)
+
+        z = complex(R_int + Rp, X_int + X_geo + Xp)
+
+    return z
+
+
+def calc_z_ij(y_i, y_j, x_i, x_j, f, rho, err_tol=1e-6, use_dubanton_aprox: bool = False):
+    """
+    Calculates mutual impedance term [Ohm/km]
+    :param y_i: height of conductor i above ground [m]
+    :param y_j: height of conductor j above ground [m]
+    :param x_i: x position of the conductor i [m]
+    :param x_j: x position of the conductor j [m]
+    :param f: frequency [Hz]
+    :param rho: earth resistivity [ohm·m]
+    :param err_tol: error tolerance for the calculation (default = 1e-6)
+    :param use_dubanton_aprox: Use dubanton's approximation (default = False)
+    :return:self impedance term of line impedance matrix (Ohm/km)
+    """
+    if use_dubanton_aprox:
+        w = 2 * pi * f  # rad
+
+        mu_0 = 4 * pi * 1e-4  # H/Km
+
+        mu_0_2pi = 2e-4  # H/Km
+
+        p = sqrt(rho / (1j * w * mu_0))
+
+        d_ij = get_d_ij(x_i, y_i, x_j, y_j)
+
+        z = 1j * w * mu_0_2pi * log(sqrt(pow(y_i + y_j + 2 * p, 2) + pow(x_i - x_j, 2)) / d_ij)
+
+    else:
+        # Constants
+        omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
+        mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
+        # See Figure 4.4. EMTP
+        x_ij = abs(x_i - x_j)
+        D = np.sqrt((y_i + y_j) ** 2 + x_ij ** 2)  # Distance between conductor i and image of conductor k [m]
+        d = np.sqrt((y_i - y_j) ** 2 + x_ij ** 2)  # Distance between conductors i and k [m]
+
+        # Calculate geometrical mutual reactance (in Ohm/km)
+        X_geo = 1000 * omega * mu_0 / 2 / np.pi * np.log(D / d)
+
+        # Calculate Carson's correction factors (in Ohm/km)
+        Rp, Xp = carsons(False, y_i, y_j, x_ij, f, rho, err_tol)
+
+        z = complex(Rp, X_geo + Xp)
+
+    return z
+
+
+def calc_z_matrix(wires_in_tower: ListOfWires, f: float = 50, rho: float = 100, use_dubanton_aprox: bool = False):
     """
     Impedance matrix
     :param wires_in_tower: WireInTower
     :param f: system frequency (Hz)
     :param rho: earth resistivity
+    :param use_dubanton_aprox: Use dubanton's approximation (default = False)
     :return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C
     """
 
@@ -766,25 +972,32 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     for i, wire_i in enumerate(wires_in_tower.data):
 
         # self impedance
-        z_prim[i, i] = z_ii(r_i=wire_i.wire.R,
-                            x_i=wire_i.wire.X,
-                            h_i=wire_i.ypos,
-                            gmr_i=wire_i.wire.GMR,
-                            f=f,
-                            rho=rho)
+        z_prim[i, i] = calc_z_ii(R_int=wire_i.wire.R,
+                                 is_tube=wire_i.wire.is_tube,
+                                 r_outer=wire_i.wire.diameter / 2.0,
+                                 r_inner=wire_i.wire.diameter_internal / 2.0,
+                                 y_i=wire_i.ypos + 1e-12,
+                                 f=f,
+                                 rho=rho,
+                                 err_tol=1e-6,
+                                 use_dubanton_aprox=use_dubanton_aprox)
 
         # mutual impedances
         for j, wire_j in enumerate(wires_in_tower.data):
 
             if i != j:
-                #  mutual impedance
-                d_ij = get_d_ij(wire_i.xpos, wire_i.ypos, wire_j.xpos, wire_j.ypos)
 
-                z_prim[i, j] = z_ij(x_i=wire_i.xpos, x_j=wire_j.xpos,
-                                    h_i=wire_i.ypos + 1e-12, h_j=wire_j.ypos + 1e-12,
-                                    d_ij=d_ij, f=f, rho=rho)
+                # Carson's equations
+                z_prim[i, j] = calc_z_ij(y_i=wire_i.ypos + 1e-12,
+                                         y_j=wire_j.ypos + 1e-12,
+                                         x_i=wire_i.xpos,
+                                         x_j=wire_j.xpos,
+                                         f=f,
+                                         rho=rho,
+                                         err_tol=1e-6,
+                                         use_dubanton_aprox=use_dubanton_aprox)
             else:
-                # they are the same wire and it is already accounted in the self impedance
+                # they are the same wire, and it is already accounted in the self impedance
                 pass
 
         # account for the phase
@@ -799,7 +1012,9 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     phases_set.sort(reverse=True)
 
     # wire bundling
-    z_abcn, phases_abcn = wire_bundling(phases_set=phases_set, primitive=z_abcn, phases_vector=phases_abcn)
+    z_abcn, phases_abcn = wire_bundling(phases_set=phases_set,
+                                        primitive=z_abcn,
+                                        phases_vector=phases_abcn)
 
     # kron - reduction to Zabc
     a = np.where(phases_abcn != 0)[0]
@@ -812,18 +1027,14 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     # compute the sequence components
     z_seq = abc_2_seq(z_abc)
 
-    # Ordered abc matrices
-    # z_0123 = z_abcn[np.ix_(phases_abcn, phases_abcn)]
-
     return z_abcn, phases_abcn, z_abc, phases_abc, z_seq
 
 
-def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
+def calc_y_matrix(wires_in_tower: ListOfWires, f: float = 50):
     """
     Impedance matrix
     :param wires_in_tower: ListOfWires
     :param f: system frequency (Hz)
-    :param rho: earth resistivity
     :return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C
     """
 
@@ -838,7 +1049,8 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     # 1 / (2 * pi * e0) in Km/F
     e_air = 1.00058986
     e_0 = 8.854187817e-9  # F/Km
-    e = e_0 * e_air
+    w = 2 * pi * f  # Nominal angular frequency [rad/s]
+    e = e_0  # * e_air
     one_two_pi_e0 = 1 / (2 * pi * e)  # Km/F
 
     phases_abcn = np.zeros(n, dtype=int)
@@ -846,8 +1058,9 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     for i, wire_i in enumerate(wires_in_tower.data):
 
         # self impedance
-        if wire_i.ypos > 0:
-            p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / (wire_i.wire.GMR + 1e-12))
+        if wire_i.ypos > 0.0:
+            r = wire_i.wire.diameter / 2.0 + 1e-12  # external radius
+            p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / r)
         else:
             p_prim[i, i] = 0
             print(wire_i.name, 'has y=0 !')
@@ -864,7 +1077,7 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
                 p_prim[i, j] = one_two_pi_e0 * log(D_ij / d_ij)
 
             else:
-                # they are the same wire and it is already accounted in the self impedance
+                # they are the same wire, and it is already accounted in the self impedance
                 pass
 
         # account for the phase
@@ -879,7 +1092,9 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     phases_set.sort(reverse=True)
 
     # wire bundling
-    p_abcn, phases_abcn = wire_bundling(phases_set=phases_set, primitive=p_abcn, phases_vector=phases_abcn)
+    p_abcn, phases_abcn = wire_bundling(phases_set=phases_set,
+                                        primitive=p_abcn,
+                                        phases_vector=phases_abcn)
 
     # kron - reduction to Zabc
     a = np.where(phases_abcn != 0)[0]
@@ -890,14 +1105,11 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f=50, rho=100):
     phases_abc = phases_abcn[a]
 
     # compute the admittance matrices
-    w = 2 * pi * f
-    y_abcn = 1j * w * np.linalg.inv(p_abcn)
-    y_abc = 1j * w * np.linalg.inv(p_abc)
+
+    y_abcn = 1j * w * np.linalg.inv(p_abcn)  # [S/km]
+    y_abc = 1j * w * np.linalg.inv(p_abc)  # [S/km]
 
     # compute the sequence components
-    y_seq = abc_2_seq(y_abc)
-
-    # Ordered abc matrices
-    # y_0123 = y_abcn[np.ix_(phases_abcn, phases_abcn)]
+    y_seq = abc_2_seq(y_abc)  # [S/km]
 
     return y_abcn, phases_abcn, y_abc, phases_abc, y_seq

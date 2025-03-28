@@ -102,7 +102,7 @@ class WiresTable(QtCore.QAbstractTableModel):
                 elif index.column() == 1:
                     return str(wire.R)
                 elif index.column() == 2:
-                    return str(wire.GMR)
+                    return str(wire.r_ext)
                 elif index.column() == 3:
                     return str(wire.max_current)
 

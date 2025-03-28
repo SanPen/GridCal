@@ -559,7 +559,7 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
                         ypos = dft['ypos'].values[i]
                         phase = dft['phase'].values[i]
 
-                        wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
+                        wire = dev.Wire(name=name, r_ext=gmr, r=r, x=x)
                         obj.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
 
                 circuit.add_overhead_line(obj)
@@ -1021,7 +1021,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                         ypos = dft['ypos'].values[i]
                         phase = dft['phase'].values[i]
 
-                        wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
+                        wire = dev.Wire(name=name, r_ext=gmr, r=r, x=x)
                         obj.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
 
                 circuit.add_overhead_line(obj)

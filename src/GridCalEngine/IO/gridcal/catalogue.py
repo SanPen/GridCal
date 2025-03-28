@@ -74,7 +74,7 @@ def get_wires_catalogue_df(grid: MultiCircuit):
             'Stranding': elm.stranding,
             'Material': elm.material,
             'Diameter [cm]': elm.diameter,
-            'GMR [m]': elm.GMR,
+            'GMR [m]': elm.r_ext,
             'R [Ohm/km]': elm.R,
             'Rating [kA]': elm.max_current
         })
@@ -162,7 +162,7 @@ def parse_wire_types(df: pd.DataFrame) -> List[Wire]:
                    stranding=item.get('Stranding',""),
                    material=item.get('Material',""),
                    diameter=item.get('Diameter [cm]',0.0),
-                   gmr=item.get('GMR [m]',0.01),
+                   r_ext=item.get('GMR [m]', 0.01),
                    r=item.get('R [Ohm/km]',0.01),
                    x=item.get("X [Ohm/km]",0.0),
                    max_current=item.get('Rating [kA]',1.0))

@@ -18,7 +18,7 @@ def test_add_stuff_roundtrip() -> None:
     # gce.save_file(original, os.path.join("data", "grids", "IEEE57.gridcal"))  # it may fail if new properties are added, just save the original file
 
     grid1 = gce.open_file(filename=os.path.join("data", "grids", "IEEE57.gridcal"))  # we modify this one in place
-    grid1.loads[0].bus = grid1.buses[5]
+
     # add stuff
     lynn_original = gce.open_file(filename=os.path.join("data", "grids", "lynn5node.gridcal"))
     lynn_original.delete_profiles()

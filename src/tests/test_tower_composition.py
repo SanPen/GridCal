@@ -6,22 +6,50 @@ import numpy as np
 import GridCalEngine.api as gce
 
 
-def test_tower_composition():
+def test_acha():
     """
-    This test performs the tower composition of the distribution grid demo
+
+    # 3 conductors
+    bundle = 0.46  # [m]
+    Rdc = 0.1363  # [Ohm/km]
+    r_ext = 10.5e-3  # [m]
+    r_int = 4.5e-3  # [m]
+
+    Ya = 27.5
+    Yb = 27.5
+    Yc = 27.5
+
+    Xa = -12.65
+    Xb = 0
+    Xc = 12.65
+
+    # Overhead line parameters (Single circuit tower with an overhead earth wire)
+
     :return:
     """
     tower = gce.OverheadLineType(name="Tower")
 
-    wire = gce.Wire(name="AWG SLD",
-                    gmr=0.001603,
-                    r=1.485077,
-                    x=0.0,
-                    max_current=0.11)
+    wire = gce.Wire(name="Panther 30/7 ACSR",
+                    diameter=21e-3,
+                    diameter_internal=9e-3,
+                    is_tube=True,
+                    r=0.1363,
+                    max_current=1)
 
-    tower.add_wire_relationship(wire=wire, xpos=0.0, ypos=7.0, phase=1)
-    tower.add_wire_relationship(wire=wire, xpos=0.4, ypos=7.0, phase=2)
-    tower.add_wire_relationship(wire=wire, xpos=0.8, ypos=7.0, phase=3)
+    tower.add_wire_relationship(wire=wire, xpos=-12.65 - 0.23, ypos=27.5 + 0.23, phase=1)
+    tower.add_wire_relationship(wire=wire, xpos=-12.65 + 0.23, ypos=27.5 + 0.23, phase=1)
+    tower.add_wire_relationship(wire=wire, xpos=-12.65 - 0.23, ypos=27.5 - 0.23, phase=1)
+    tower.add_wire_relationship(wire=wire, xpos=-12.65 + 0.23, ypos=27.5 - 0.23, phase=1)
+
+    tower.add_wire_relationship(wire=wire, xpos=0 - 0.23, ypos=27.5 + 0.23, phase=2)
+    tower.add_wire_relationship(wire=wire, xpos=0 + 0.23, ypos=27.5 + 0.23, phase=2)
+    tower.add_wire_relationship(wire=wire, xpos=0 - 0.23, ypos=27.5 - 0.23, phase=2)
+    tower.add_wire_relationship(wire=wire, xpos=0 + 0.23, ypos=27.5 - 0.23, phase=2)
+
+    tower.add_wire_relationship(wire=wire, xpos=12.65 - 0.23, ypos=27.5 + 0.23, phase=3)
+    tower.add_wire_relationship(wire=wire, xpos=12.65 + 0.23, ypos=27.5 + 0.23, phase=3)
+    tower.add_wire_relationship(wire=wire, xpos=12.65 - 0.23, ypos=27.5 - 0.23, phase=3)
+    tower.add_wire_relationship(wire=wire, xpos=12.65 + 0.23, ypos=27.5 - 0.23, phase=3)
 
     tower.compute()
 
@@ -30,7 +58,20 @@ def test_tower_composition():
     print(f"R0: {R0}, X0: {X0}")
     print(f"R1: {R1}, X1: {X1}")
 
-    assert np.isclose(R0, 1.5892070972018013, atol=1e-4)
-    assert np.isclose(X0, 1.1989736994044684, atol=1e-4)
-    assert np.isclose(R1, 1.485081882395359, atol=1e-4)
-    assert np.isclose(X1, 0.3613207070253497, atol=1e-4)
+    Z = tower.z_abcn
+    print("Z [ohm/km] =\n", Z)
+
+    Ysh = tower.y_abcn * 1e6 # pass from S/km to uS/km
+    print("Y [uS/km] =\n", Ysh)
+
+    Z_expected = np.array([[0.08034301 + 0.53832056j, 0.04625667 + 0.27333481j, 0.04622869 + 0.22981391j],
+                           [0.04624575 + 0.27333481j, 0.08034882 + 0.53830903j, 0.04625667 + 0.27333481j],
+                           [0.04618743 + 0.22981395j, 0.04624575 + 0.27333481j, 0.08034301 + 0.53832056j]])
+
+    # in [uS/km]
+    Ysh_expected = np.array([[0. + 3.35962813j, 0. - 0.80958316j, 0. - 0.30514186j],
+                             [0. - 0.80958316j, 0. + 3.52714236j, 0. - 0.80958316j],
+                             [0. - 0.30514186j, 0. - 0.80958316j, 0. + 3.35962813j]])
+
+    assert np.allclose(Z, Z_expected, atol=1e-4)
+    assert np.allclose(Ysh, Ysh_expected)
