@@ -36,7 +36,7 @@ from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.Simulations.driver_handler import create_driver
+from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
@@ -1682,7 +1682,7 @@ class SimulationsMain(TimeEventsMain):
                         QtGui.QGuiApplication.processEvents()
 
                         #  compose the base power
-                        Sbase = pf_results.Sbus / self.circuit.Sbase
+                        Sbase: CxVec = pf_results.Sbus / self.circuit.Sbase
 
                         base_overload_number = len(np.where(np.abs(pf_results.loading) > 1)[0])
 
@@ -1713,14 +1713,18 @@ class SimulationsMain(TimeEventsMain):
                             self.LOCK()
 
                             nc_start = compile_numerical_circuit_at(circuit=self.circuit, t_idx=start_idx)
+                            Sbus_init = nc_start.get_power_injections_pu()
+
                             nc_end = compile_numerical_circuit_at(circuit=self.circuit, t_idx=start_idx)
+                            Sbus_end = nc_end.get_power_injections_pu()
+
                             pf_drv_start = sim.PowerFlowDriver(grid=self.circuit, options=pf_options)
                             pf_drv_start.run()
 
                             # get the power Injections array to get the initial and end points
-                            vc_inputs = sim.ContinuationPowerFlowInput(Sbase=nc_start.Sbus,
+                            vc_inputs = sim.ContinuationPowerFlowInput(Sbase=Sbus_init,
                                                                        Vbase=pf_drv_start.results.voltage,
-                                                                       Starget=nc_end.Sbus)
+                                                                       Starget=Sbus_end)
 
                             pf_options = self.get_selected_power_flow_options()
 
@@ -1755,10 +1759,8 @@ class SimulationsMain(TimeEventsMain):
             self.remove_simulation(SimulationTypes.ContinuationPowerFlow_run)
 
             if results.voltages is not None:
-                if results.voltages.shape[0] > 0:
-                    self.update_available_results()
-
-                    self.colour_diagrams()
+                self.update_available_results()
+                self.colour_diagrams()
             else:
                 info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:

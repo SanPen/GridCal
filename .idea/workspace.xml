@@ -28,20 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved gslv conversion">
-      <change afterPath="$PROJECT_DIR$/src/trunk/line_parameters/overhead_line_calcs.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Modified to calculate the overhead lines with the carson equations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/wire.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/wire.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/excel_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/excel_interface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/IEEE57.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/IEEE57.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_grid_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_grid_diff.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_tower_composition.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_tower_composition.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -253,7 +243,7 @@
       <recent name="D:\SIROCO\GridCal\doc\rst_source\figures\Diagrams" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest for test_grid_diff.test_add_stuff_roundtrip">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -765,8 +755,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest for test_grid_diff.test_add_stuff_roundtrip" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest for test_grid_diff.test_add_stuff_roundtrip" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in test_tower_composition.py" />
         <item itemvalue="Python tests.pytest for test_tower_composition.test_tower_composition" />
@@ -1600,7 +1590,7 @@
       <workItem from="1743080048150" duration="5353000" />
       <workItem from="1743099194816" duration="6256000" />
       <workItem from="1743146459845" duration="881000" />
-      <workItem from="1743161152309" duration="10258000" />
+      <workItem from="1743161152309" duration="11683000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1945,7 +1935,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="633" />
+    <option name="localTasksCounter" value="634" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1991,7 +1981,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Removed sequence values from the OverheadLineType because an overhead line may have more than 1 circuit" />
     <MESSAGE value="Removed TowerBuilderGUI parent" />
     <MESSAGE value="Fixed Create bus vicinity diagram from substation not working&#10;Added open_street_view for buses too" />
     <MESSAGE value="Improved the diagram naming when creating maps and diagrams from groups such as substations or regions" />
@@ -2016,7 +2005,8 @@
     <MESSAGE value="Working gslv time series conversion" />
     <MESSAGE value="Added gslv substations, voltage levels and country conversions" />
     <MESSAGE value="Improved gslv conversion" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved gslv conversion" />
+    <MESSAGE value="Modified to calculate the overhead lines with the carson equations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Modified to calculate the overhead lines with the carson equations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2266,16 +2256,6 @@
           <option name="timeStamp" value="2448" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/levenberg_marquadt_fx.py</url>
-          <line>146</line>
-          <option name="timeStamp" value="2452" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/levenberg_marquadt_fx.py</url>
-          <line>143</line>
-          <option name="timeStamp" value="2453" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_handler.py</url>
           <line>145</line>
           <option name="timeStamp" value="2465" />
@@ -2460,6 +2440,16 @@
           <line>1014</line>
           <option name="timeStamp" value="2559" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>1792</line>
+          <option name="timeStamp" value="2565" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>1768</line>
+          <option name="timeStamp" value="2568" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -2551,7 +2541,7 @@
     <SUITE FILE_PATH="coverage/GridCal$jacobian_based_acdc_power_flow__1_.coverage" NAME="jacobian_based_acdc_power_flow (1) Coverage Results" MODIFIED="1609455735388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_grid_diff_test_add_stuff_roundtrip.coverage" NAME="pytest for test_grid_diff.test_add_stuff_roundtrip Coverage Results" MODIFIED="1743177817309" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1743176561254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1743179217829" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power.coverage" NAME="branch_power Coverage Results" MODIFIED="1659016478801" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />
