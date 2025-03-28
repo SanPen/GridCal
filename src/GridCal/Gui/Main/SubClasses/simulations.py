@@ -6,11 +6,9 @@ from __future__ import annotations
 
 import os
 import datetime
-import asyncio
-import functools
 import numpy as np
 from collections import OrderedDict
-from typing import List, Tuple, Dict, Union, Any
+from typing import List, Tuple, Dict, Union
 
 # GUI imports
 from PySide6 import QtGui, QtWidgets

@@ -73,7 +73,8 @@ class VideoExportWorker(QtCore.QThread):
         self.start_idx = start_idx
         self.end_idx = end_idx
         self.current_study = current_study
-        self.grid_colour_function: Callable[[SchematicWidget | GridMapWidget, str, int, bool], None] = grid_colour_function
+        self.grid_colour_function: Callable[
+            [SchematicWidget | GridMapWidget, str, int, bool], None] = grid_colour_function
 
         self.logger = Logger()
 
@@ -87,10 +88,12 @@ class VideoExportWorker(QtCore.QThread):
 
         # paint and capture
         for t_idx in range(self.start_idx, self.end_idx):
-            self.grid_colour_function(diagram_widget=self.diagram,
-                                      current_study=self.current_study,
-                                      t_idx=t_idx,
-                                      allow_popups=False)
+            self.grid_colour_function(
+                self.diagram,  # diagram
+                self.current_study,  # current_study
+                t_idx,  # t_idx
+                False  # allow_popups
+            )
 
             self.diagram.capture_video_frame(w=w, h=h, logger=self.logger)
 
