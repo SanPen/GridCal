@@ -6,7 +6,7 @@ from __future__ import annotations
 import os.path
 import warnings
 import numpy as np
-from typing import List, Dict, Union, TYPE_CHECKING
+from typing import List, Dict, Union, Tuple, TYPE_CHECKING
 
 import GridCalEngine
 from GridCalEngine import TapModuleControl, TapPhaseControl
@@ -14,7 +14,7 @@ from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
-                                        ZonalGrouping, MIPSolvers, ContingencyMethod,
+                                        ZonalGrouping, MIPSolvers, ContingencyMethod, ContingencyOperationTypes,
                                         BuildStatus, BranchGroupTypes)
 import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -86,6 +86,11 @@ try:
         BranchGroupTypes.LineSegmentsGroup: pg.BranchGroupTypes.LineSegmentsGroup,
     }
 
+    contingency_ops_type_dict = {
+        ContingencyOperationTypes.Active: pg.ContingencyOperationTypes.Active,
+        ContingencyOperationTypes.PowerPercentage: pg.ContingencyOperationTypes.PowerPercentage,
+    }
+
 except ImportError as e:
     pg = None
     GSLV_AVAILABLE = False
@@ -93,6 +98,7 @@ except ImportError as e:
     build_status_dict = dict()
     tap_module_control_mode_dict = dict()
     tap_phase_control_mode_dict = dict()
+    contingency_ops_type_dict = dict()
 
 
 def get_gslv_mip_solvers_list() -> List[str]:
@@ -534,12 +540,14 @@ def convert_contingencies(elm: dev.Contingency,
     :param groups_dict:
     :return:
     """
+
+
+
     return pg.Contingency(idtag=elm.idtag,
-                          code=str(elm.code),
-                          name=elm.name,
-                          nt=n_time,
                           device_idtag=elm.device_idtag,
-                          prop=elm.prop,
+                          name=elm.name,
+                          code=str(elm.code),
+                          prop=contingency_ops_type_dict[elm.prop],
                           value=elm.value,
                           group=groups_dict[elm.group])
 
@@ -561,7 +569,7 @@ def add_contingencies(circuit: MultiCircuit,
     for i, elm in enumerate(circuit.contingencies):
         con = convert_contingencies(elm=elm,
                                     n_time=n_time,
-                                    groups_dict=groups_dict[elm.group])
+                                    groups_dict=groups_dict)
         gslv_grid.add_contingency(con)
         d[elm] = con
 
@@ -580,7 +588,8 @@ def convert_investment_group(elm: dev.InvestmentsGroup) -> "pg.InvestmentGroup":
                               category=elm.category)
 
 
-def add_investment_groups(circuit: MultiCircuit, gslv_grid: "pg.MultiCircuit"):
+def add_investment_groups(circuit: MultiCircuit,
+                          gslv_grid: "pg.MultiCircuit") -> Dict[dev.InvestmentsGroup, "pg.InvestmentGroup"]:
     """
 
     :param circuit:
@@ -649,7 +658,7 @@ def convert_facility(elm: dev.Facility) -> "pg.Facility":
 
 
 def add_facilities(circuit: MultiCircuit,
-                   gslv_grid: "pg.MultiCircuit"):
+                   gslv_grid: "pg.MultiCircuit") -> Dict[dev.Facility, "pg.Facility"]:
     """
 
     :param circuit:
@@ -1928,11 +1937,33 @@ def add_hvdcs(circuit: MultiCircuit,
         gslv_grid.add_hvdc_line(hvdc)
 
 
+class GslvDicts:
+
+    def __init__(self):
+        self.area_dict: Dict[dev.Area, "pg.Area"] = dict()
+
+        self.zone_dict: Dict[dev.Zone, "pg.Zone"] = dict()
+
+        self.substation_dict: Dict[dev.Substation, "pg.Substation"] = dict()
+
+        self.voltage_level_dict: Dict[dev.VoltageLevel, "pg.VoltageLevel"] = dict()
+
+        self.country_dict: Dict[dev.Country, "pg.Country"] = dict()
+
+        self.facility_dict: Dict[dev.Facility, "pg.Facility"] = dict()
+
+        self.regions_dict: Dict[dev.Country, "pg.Country"] = dict()
+
+        self.con_groups_dict: Dict[dev.ContingencyGroup, "pg.ContingencyGroup"] = dict()
+
+        self.inv_groups_dict: Dict[dev.InvestmentsGroup, "pg.InvestmentGroup"] = dict()
+
+
 def to_gslv(circuit: MultiCircuit,
             use_time_series: bool,
             time_indices: Union[IntVec, None] = None,
             override_branch_controls=False,
-            opf_results: Union[None, OptimalPowerFlowResults] = None):
+            opf_results: Union[None, OptimalPowerFlowResults] = None) -> Tuple["pg.MultiCircuit", GslvDicts]:
     """
     Convert GridCal circuit to GSLV
     :param circuit: MultiCircuit
@@ -1942,6 +1973,8 @@ def to_gslv(circuit: MultiCircuit,
     :param opf_results:
     :return: pg.MultiCircuit instance
     """
+
+    dicts = GslvDicts()
 
     if time_indices is None:
         n_time = circuit.get_time_number() if use_time_series else 1
@@ -1956,33 +1989,34 @@ def to_gslv(circuit: MultiCircuit,
                               fBase=circuit.fBase,
                               idtag=circuit.idtag)
 
-    area_dict = add_areas(circuit=circuit, gslv_grid=pg_grid)
+    dicts.area_dict = add_areas(circuit=circuit, gslv_grid=pg_grid)
 
-    zone_dict = add_zones(circuit=circuit, gslv_grid=pg_grid)
+    dicts.zone_dict = add_zones(circuit=circuit, gslv_grid=pg_grid)
 
-    substation_dict = add_substations(circuit=circuit, gslv_grid=pg_grid, n_time=n_time)
+    dicts.substation_dict = add_substations(circuit=circuit, gslv_grid=pg_grid, n_time=n_time)
 
-    voltage_level_dict = add_voltage_levels(circuit=circuit, gslv_grid=pg_grid, substations_dict=substation_dict)
+    dicts.voltage_level_dict = add_voltage_levels(circuit=circuit, gslv_grid=pg_grid,
+                                                  substations_dict=dicts.substation_dict)
 
-    country_dict = add_countries(circuit=circuit, gslv_grid=pg_grid)
+    dicts.country_dict = add_countries(circuit=circuit, gslv_grid=pg_grid)
 
-    facility_dict = add_facilities(circuit=circuit, gslv_grid=pg_grid)
+    dicts.facility_dict = add_facilities(circuit=circuit, gslv_grid=pg_grid)
 
-    modelling_authorities_dict = add_modelling_authorities(circuit=circuit, gslv_grid=pg_grid)
+    dicts.modelling_authorities_dict = add_modelling_authorities(circuit=circuit, gslv_grid=pg_grid)
 
-    branch_groups_dict = add_branch_groups(circuit=circuit, gslv_grid=pg_grid)
+    dicts.branch_groups_dict = add_branch_groups(circuit=circuit, gslv_grid=pg_grid)
 
-    municipalities_dict = add_municipalities(circuit=circuit, gslv_grid=pg_grid)
+    dicts.municipalities_dict = add_municipalities(circuit=circuit, gslv_grid=pg_grid)
 
-    regions_dict = add_regions(circuit=circuit, gslv_grid=pg_grid)
+    dicts.regions_dict = add_regions(circuit=circuit, gslv_grid=pg_grid)
 
-    con_groups_dict = add_contingency_groups(circuit=circuit, gslv_grid=pg_grid)
+    dicts.con_groups_dict = add_contingency_groups(circuit=circuit, gslv_grid=pg_grid)
 
-    add_contingencies(circuit=circuit, gslv_grid=pg_grid, n_time=n_time, groups_dict=con_groups_dict)
+    add_contingencies(circuit=circuit, gslv_grid=pg_grid, n_time=n_time, groups_dict=dicts.con_groups_dict)
 
-    inv_groups_dict = add_investment_groups(circuit=circuit, gslv_grid=pg_grid)
+    dicts.inv_groups_dict = add_investment_groups(circuit=circuit, gslv_grid=pg_grid)
 
-    add_investments(circuit=circuit, gslv_grid=pg_grid, groups_dict=inv_groups_dict)
+    add_investments(circuit=circuit, gslv_grid=pg_grid, groups_dict=dicts.inv_groups_dict)
 
     bus_dict = add_buses(
         circuit=circuit,
@@ -1990,11 +2024,11 @@ def to_gslv(circuit: MultiCircuit,
         use_time_series=use_time_series,
         n_time=n_time,
         time_indices=time_indices,
-        area_dict=area_dict,
-        zone_dict=zone_dict,
-        substation_dict=substation_dict,
-        voltage_level_dict=voltage_level_dict,
-        country_dict=country_dict,
+        area_dict=dicts.area_dict,
+        zone_dict=dicts.zone_dict,
+        substation_dict=dicts.substation_dict,
+        voltage_level_dict=dicts.voltage_level_dict,
+        country_dict=dicts.country_dict,
     )
 
     add_loads(
@@ -2049,7 +2083,7 @@ def to_gslv(circuit: MultiCircuit,
         circuit=circuit,
         gslv_grid=pg_grid,
         bus_dict=bus_dict,
-        branch_groups_dict=branch_groups_dict,
+        branch_groups_dict=dicts.branch_groups_dict,
         time_series=use_time_series,
         n_time=n_time,
         time_indices=time_indices
@@ -2059,7 +2093,7 @@ def to_gslv(circuit: MultiCircuit,
         circuit=circuit,
         gslv_grid=pg_grid,
         bus_dict=bus_dict,
-        branch_groups_dict=branch_groups_dict,
+        branch_groups_dict=dicts.branch_groups_dict,
         time_series=use_time_series,
         n_time=n_time,
         time_indices=time_indices,
@@ -2103,9 +2137,7 @@ def to_gslv(circuit: MultiCircuit,
         time_indices=time_indices
     )
 
-    # pg.FileHandler().save(npaCircuit, circuit.name + "_circuit.GSLV")
-
-    return pg_grid, (bus_dict, area_dict, zone_dict)
+    return pg_grid, dicts
 
 
 class FakeAdmittances:
@@ -2229,7 +2261,7 @@ def get_gslv_pf_options(opt: PowerFlowOptions) -> "pg.PowerFlowOptions":
                    SolverType.IWAMOTO: pg.SolverType.IWAMOTO,
                    SolverType.LM: pg.SolverType.LM,
                    SolverType.LACPF: pg.SolverType.LACPF,
-                   SolverType.FASTDECOUPLED: pg.SolverType.FD
+                   SolverType.FASTDECOUPLED: pg.SolverType.FASTDECOUPLED
                    }
 
     if opt.solver_type in solver_dict.keys():
@@ -2252,16 +2284,51 @@ def get_gslv_pf_options(opt: PowerFlowOptions) -> "pg.PowerFlowOptions":
     mu0: float = 1.0
     """
 
-    return pg.PowerFlowOptions(solver_type=solver_type,
-                               retry_with_other_methods=opt.retry_with_other_methods,
-                               verbose=opt.verbose,
-                               initialize_with_existing_solution=opt.use_stored_guess,
-                               tolerance=opt.tolerance,
-                               max_iter=opt.max_iter,
-                               control_q_mode=opt.control_Q,
-                               distributed_slack=opt.distributed_slack,
-                               correction_parameter=0.5,
-                               mu0=opt.trust_radius)
+    """
+    solver_type: pygslv.SolverType = <SolverType.NR: 0>, 
+    retry_with_other_methods: bool = True, 
+    verbose: int = 0, 
+    initialize_with_existing_solution: bool = False, 
+    tolerance: float = 1e-06, 
+    max_iter: int = 25, 
+    max_outer_loop_iter: int = 100, 
+    control_Q: bool = True, 
+    control_taps_modules: bool = True, 
+    control_taps_phase: bool = True, 
+    control_remote_voltage: bool = True, 
+    orthogonalize_controls: bool = True, 
+    apply_temperature_correction: bool = True, 
+    branch_impedance_tolerance_mode: pygslv.BranchImpedanceMode = <BranchImpedanceMode.Specified: 0>, 
+    distributed_slack: bool = False, 
+    ignore_single_node_islands: bool = False, 
+    trust_radius: float = 1.0, 
+    backtracking_parameter: float = 0.05, 
+    use_stored_guess: bool = False, 
+    generate_report: bool = False)
+
+    """
+
+    return pg.PowerFlowOptions(
+        solver_type=solver_type,
+        retry_with_other_methods=opt.retry_with_other_methods,
+        verbose=opt.verbose,
+        initialize_with_existing_solution=opt.use_stored_guess,
+        tolerance=opt.tolerance,
+        max_iter=opt.max_iter,
+        control_Q=opt.control_Q,
+        control_taps_modules=opt.control_taps_modules,
+        control_taps_phase=opt.control_taps_phase,
+        control_remote_voltage=opt.control_remote_voltage,
+        orthogonalize_controls=opt.orthogonalize_controls,
+        apply_temperature_correction=opt.orthogonalize_controls,
+        branch_impedance_tolerance_mode=pg.BranchImpedanceMode.Specified,
+        distributed_slack=opt.distributed_slack,
+        ignore_single_node_islands=opt.ignore_single_node_islands,
+        trust_radius=opt.trust_radius,
+        backtracking_parameter=opt.backtracking_parameter,
+        use_stored_guess=opt.use_stored_guess,
+        generate_report=opt.generate_report
+    )
 
 
 def gslv_pf(circuit: MultiCircuit,

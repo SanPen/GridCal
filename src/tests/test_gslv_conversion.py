@@ -242,11 +242,11 @@ def test_gslv_compatibility():
             if br.rate <= 0:
                 br.rate = 9999.0
 
-        grid_gslv, (bus_dict, area_dict, zone_dict) = to_gslv(circuit=grid_gc,
-                                                              use_time_series=False,
-                                                              time_indices=None,
-                                                              override_branch_controls=False,
-                                                              opf_results=None)
+        grid_gslv, gslv_dict = to_gslv(circuit=grid_gc,
+                                       use_time_series=False,
+                                       time_indices=None,
+                                       override_branch_controls=False,
+                                       opf_results=None)
 
         errors = compare_inputs(grid_gslv=grid_gslv,
                                 grid_gc=grid_gc,
@@ -265,7 +265,6 @@ def test_gslv_compatibility_ts():
     if not GSLV_AVAILABLE:
         return
 
-
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
 
     print(f"Testing: {fname}")
@@ -277,11 +276,11 @@ def test_gslv_compatibility_ts():
         if br.rate <= 0:
             br.rate = 9999.0
 
-    grid_gslv, (bus_dict, area_dict, zone_dict) = to_gslv(circuit=grid_gc,
-                                                          use_time_series=True,
-                                                          time_indices=None,
-                                                          override_branch_controls=False,
-                                                          opf_results=None)
+    grid_gslv, gslv_dict = to_gslv(circuit=grid_gc,
+                                   use_time_series=True,
+                                   time_indices=None,
+                                   override_branch_controls=False,
+                                   opf_results=None)
 
     for t_idx in range(grid_gc.get_time_number()):
         print("Time step:", t_idx)
@@ -293,6 +292,26 @@ def test_gslv_compatibility_ts():
         assert errors == 0
 
 
+def test_power_flow_ts():
+
+    if not GSLV_AVAILABLE:
+        return
+
+    grid = gce.open_file(filename=os.path.join('data', 'grids', 'IEEE39_1W.gridcal'))
+
+    options = gce.PowerFlowOptions(verbose=False,
+                                   )
+
+    drv = gce.PowerFlowTimeSeriesDriver(grid=grid,
+                                        options=options,
+                                        engine=gce.EngineType.GSLV)
+
+    drv.run()
+
+    res = drv.results
+
+
 if __name__ == '__main__':
     # test_gslv_compatibility()
-    test_gslv_compatibility_ts()
+    # test_gslv_compatibility_ts()
+    test_power_flow_ts()
