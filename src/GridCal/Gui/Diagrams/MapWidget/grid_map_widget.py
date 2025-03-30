@@ -1410,11 +1410,20 @@ class GridMapWidget(BaseDiagramWidget):
         """
         Consolidate the graphic elements' x, y coordinates into the API DB values
         """
-        graphics: List[SubstationGraphicItem] = self.graphics_manager.get_device_type_list(
+        graphics_substations: List[SubstationGraphicItem] = self.graphics_manager.get_device_type_list(
             device_type=DeviceType.SubstationDevice)
-        for gelm in graphics:
+        graphics_linelocations: List[LineLocationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.LineLocation)
+
+        for gelm in graphics_substations:
+
             gelm.api_object.latitude = gelm.lat
             gelm.api_object.longitude = gelm.lon
+
+        for gelm in graphics_linelocations:
+
+            gelm.api_object.lat = gelm.lat
+            gelm.api_object.long = gelm.lon
 
     def plot_substation(self, i: int, api_object: Substation):
         """
