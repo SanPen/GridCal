@@ -1675,6 +1675,14 @@ class GridMapWidget(BaseDiagramWidget):
                      contingency_factor=line_api.contingency_factor,
                      protection_rating_factor=line_api.protection_rating_factor)
 
+        # Copy other properties from the original line
+        if hasattr(line_api, 'color'):
+            line1.color = line_api.color
+
+        # Copy other properties from the original line
+        if hasattr(line_api, 'color'):
+            line2.color = line_api.color
+
         # Preserve waypoints for line 1 (from start to insertion point)
         # Add all waypoints from the original line up to the closest segment
         for i in range(1, closest_segment_idx + 1):  
