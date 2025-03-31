@@ -75,3 +75,48 @@ def test_acha():
 
     assert np.allclose(Z, Z_expected, atol=1e-4)
     assert np.allclose(Ysh, Ysh_expected)
+
+
+def test_rating():
+    """
+    test according to:
+    https://gobiernoabierto.navarra.es/sites/default/files/7._proyecto_laat_400_kv_sc_set_labradas_set_la_serna_compressed.pdf
+    Single circuit, 400 kV
+    Duplex wire
+    :return:
+    """
+
+    # PRYSALAC: Media y Alta Tensión Líneas Aéreas de Energía
+    # Cuerda desnuda de
+    # Aluminio AceroPRYSALAC
+    # Distribución y Transmisión
+    # wire = gce.Wire(name="CURLEW", diameter=3.162/100.0, r=0.0542, max_current=1.047, material="ACSR")
+    wire = gce.Wire(
+        name="485-AL1/63-ST1A",
+        code="LA 545 CARDINAL",
+        diameter=30.42/1000,
+        r=0.0587,  # 0.0571
+        max_current=0.89786,
+        material="ACSR")
+
+    tower = gce.OverheadLineType(name="400 kV single circuit duplex")
+    tower.Vnom = 400
+    tower.earth_resistivity = 200
+
+    # duplex wires A
+    tower.add_wire_relationship(wire=wire, xpos=-9.8, ypos=22.5, phase=1)
+    tower.add_wire_relationship(wire=wire, xpos=-10.2, ypos=22.5, phase=1)
+
+    # duplex wires B
+    tower.add_wire_relationship(wire=wire, xpos=-0.2, ypos=26.1, phase=2)
+    tower.add_wire_relationship(wire=wire, xpos=0.2, ypos=26.1, phase=2)
+
+    # duplex wires C
+    tower.add_wire_relationship(wire=wire, xpos=9.8, ypos=22.5, phase=3)
+    tower.add_wire_relationship(wire=wire, xpos=10.2, ypos=22.5, phase=3)
+
+    tower.compute()
+
+    expected_rate = 1.8 # kA
+
+    assert np.isclose(tower.Imax[0], expected_rate, atol=0.1)

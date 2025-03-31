@@ -34,7 +34,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.wires_table = WiresTable(self)
 
         # create the tower driver
-        self.tower_driver = TowerModel(self, edit_callback=self.compute, tower=tower)
+        self.tower_driver = TowerModel(edit_callback=self.compute, tower=tower)
 
         if wires_catalogue is not None:
             for wire in wires_catalogue:

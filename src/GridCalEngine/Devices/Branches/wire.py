@@ -5,6 +5,7 @@
 
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from trunk.misc.refferences_example import Circuit
 
 
 class Wire(EditableDevice):
@@ -52,7 +53,7 @@ class Wire(EditableDevice):
         self.max_current = float(max_current)
 
         self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor', old_names=['r'])
-        self.register(key='diameter', units='cm', tpe=float, definition='Diameter of wire')
+        self.register(key='diameter', units='m', tpe=float, definition='Diameter of wire', old_names=['GMR', 'gmr'])
         self.register(key='diameter_internal', units='m', tpe=float, definition='Internal radius of the conductor')
         self.register(key='is_tube', units='', tpe=bool, definition='Is it a tubular conductor?')
         self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
@@ -82,3 +83,5 @@ class Wire(EditableDevice):
     @material.setter
     def material(self, value: str):
         self._material = str(value)
+
+

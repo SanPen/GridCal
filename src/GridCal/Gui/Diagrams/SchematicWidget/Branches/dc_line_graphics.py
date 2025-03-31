@@ -86,7 +86,7 @@ class DcLineEditor(QDialog):
                             R = self.current_template.R
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            I = self.current_template.Imax
+                            I = self.current_template.Imax[0]
                             R, X1, B1 = self.current_template.get_sequence_values(0, 1)
 
                     except:
@@ -200,7 +200,7 @@ class DcLineEditor(QDialog):
         elif isinstance(template, OverheadLineType):
             R1, X1, B1 = template.get_sequence_values(0, 1)
 
-            self.i_spinner.setValue(template.Imax)
+            self.i_spinner.setValue(template.Imax[0])
             self.r_spinner.setValue(R1)
 
             self.selected_template = template

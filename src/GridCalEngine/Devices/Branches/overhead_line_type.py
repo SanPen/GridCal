@@ -9,7 +9,7 @@ import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
 
-from GridCalEngine.basic_structures import Logger, Mat, IntVec
+from GridCalEngine.basic_structures import Logger, Mat, IntVec, Vec, CxMat
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Branches.wire import Wire
 from GridCalEngine.enumerations import SubObjectType
@@ -23,6 +23,16 @@ Typical values of earth
 100 Ω/m3 - Resistivity of average damp earth 
 1000 Ω/m3 - Resistivity of dry earth 
 """
+
+
+def phase2circuit(phase: int) -> int:
+    """
+    Convert a phase to a circuit number
+    :param phase: phase index, starting at 1 to n (i.e. phase 5, would be B from circuit 2)
+    :return: circuit number starting by 1
+    """
+    k = int((phase - 1) / 3)
+    return k + 1
 
 
 class WireInTower:
@@ -78,8 +88,7 @@ class WireInTower:
         :param phase:
         :return: None
         """
-        k = int((phase - 1) / 3)
-        n_circuit = k + 1
+        n_circuit = phase2circuit(phase)
 
         if phase == 0:
             self._phase = phase
@@ -244,42 +253,93 @@ class OverheadLineType(EditableDevice):
         self.frequency = frequency  # Hz
 
         # current rating of the tower in kA
-        self.Imax = 0.0
+        self._Imax: Vec | None = None
 
         # impedances
-        self.z_abcn = None
-        self.z_phases_abcn = None
-        self.z_abc = None
-        self.z_phases_abc = None
-        self.z_seq = None
-        self.z_0123 = None
+        self._z_abcn: CxMat | None = None
+        self._z_phases_abcn: CxMat | None = None
+        self._z_abc: CxMat | None = None
+        self._z_phases_abc: CxMat | None = None
+        self._z_seq: CxMat | None = None
+        self._z_0123: CxMat | None = None
 
-        self.y_abcn = None
-        self.y_phases_abcn = None
-        self.y_abc = None
-        self.y_phases_abc = None
-        self.y_seq = None
-        self.y_0123 = None
-
-        # wire properties for edition (do not confuse with the properties of this very object...)
-        self.header = ['Wire', 'X (m)', 'Y (m)', 'Phase', "Circuit Index", "Phase name"]
-        self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'circuit_index', 5: 'phase_type'}
-        self.converter = {0: str, 1: float, 2: float, 3: int, 4: int, 5: str}
-        self.editable_wire = [False, True, True, True, False, False]
+        self._y_abcn: CxMat | None = None
+        self._y_phases_abcn: CxMat | None = None
+        self._y_abc: CxMat | None = None
+        self._y_phases_abc: CxMat | None = None
+        self._y_seq: CxMat | None = None
+        self._y_0123: CxMat | None = None
 
         self.register(key='earth_resistivity', units='Ohm/m3', tpe=float, definition='Earth resistivity')
         self.register(key='frequency', units='Hz', tpe=float, definition='Frequency')
-        # self.register(key='R1', units='Ohm/Km', tpe=float, definition='Positive sequence resistance')
-        # self.register(key='X1', units='Ohm/Km', tpe=float, definition='Positive sequence reactance')
-        # self.register(key='Bsh1', units='uS/Km', tpe=float, definition='Positive sequence shunt susceptance')
-        # self.register(key='R0', units='Ohm/Km', tpe=float, definition='Zero-sequence resistance')
-        # self.register(key='X0', units='Ohm/Km', tpe=float, definition='Zero sequence reactance')
-        # self.register(key='Bsh0', units='uS/Km', tpe=float, definition='Zero sequence shunt susceptance')
-        self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
+        self.register(key='wires_in_tower', units='', tpe=SubObjectType.ListOfWires,
+                      definition='List of wires', editable=False, display=False)
 
-        self.register(key='wires_in_tower', units='', tpe=SubObjectType.ListOfWires, definition='List of wires',
-                      editable=False, display=False)
+    @property
+    def n_circuits(self) -> int:
+        """
+        Get the number of circuits
+        :return:
+        """
+        n_circuit = 0
+        for wit in self.wires_in_tower.data:
+            c = phase2circuit(wit.phase)
+            n_circuit = max(n_circuit, c)
+        return n_circuit
+
+    @property
+    def Imax(self) -> Vec | None:
+        """Current rating of the tower in kA."""
+        return self._Imax
+
+    @property
+    def z_abcn(self) -> CxMat | None:
+        return self._z_abcn
+
+    @property
+    def z_phases_abcn(self) -> CxMat | None:
+        return self._z_phases_abcn
+
+    @property
+    def z_abc(self) -> CxMat | None:
+        return self._z_abc
+
+    @property
+    def z_phases_abc(self) -> CxMat | None:
+        return self._z_phases_abc
+
+    @property
+    def z_seq(self) -> CxMat | None:
+        return self._z_seq
+
+    @property
+    def z_0123(self) -> CxMat | None:
+        return self._z_0123
+
+    @property
+    def y_abcn(self) -> CxMat | None:
+        return self._y_abcn
+
+    @property
+    def y_phases_abcn(self) -> CxMat | None:
+        return self._y_phases_abcn
+
+    @property
+    def y_abc(self) -> CxMat | None:
+        return self._y_abc
+
+    @property
+    def y_phases_abc(self) -> CxMat | None:
+        return self._y_phases_abc
+
+    @property
+    def y_seq(self) -> CxMat | None:
+        return self._y_seq
+
+    @property
+    def y_0123(self) -> CxMat | None:
+        return self._y_0123
 
     def get_ys(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
         """
@@ -325,42 +385,6 @@ class OverheadLineType(EditableDevice):
         """
         w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
         self.wires_in_tower.append(w)
-
-    # def z_series(self):
-    #     """
-    #     positive sequence series impedance in Ohm per unit of length
-    #     """
-    #     return self.R1 + 1j * self.X1
-    #
-    # def z0_series(self):
-    #     """
-    #     zero sequence series impedance in Ohm per unit of length
-    #     """
-    #     return self.R0 + 1j * self.X0
-    #
-    # def z2_series(self):
-    #     """
-    #     negative sequence series impedance in Ohm per unit of length
-    #     """
-    #     return self.R0 + 1j * self.X0
-    #
-    # def y_shunt(self):
-    #     """
-    #     positive sequence shunt admittance in S per unit of length
-    #     """
-    #     return 1j * self.Bsh1
-    #
-    # def y0_shunt(self):
-    #     """
-    #     zero sequence shunt admittance in S per unit of length
-    #     """
-    #     return 1j * self.Bsh0
-    #
-    # def y2_shunt(self):
-    #     """
-    #     negative sequence shunt admittance in S per unit of length
-    #     """
-    #     return 1j * self.Bsh0
 
     def plot(self, ax=None):
         """
@@ -449,11 +473,14 @@ class OverheadLineType(EditableDevice):
     def compute_rating(self):
         """
         Compute the sum of the wires max current in A
-        :return: max current (I) of the tower in A
+        :return: vector of max current (I) of the circuits in A
         """
-        r = 0
+        r = np.zeros(self.n_circuits, dtype=float)
         for wit in self.wires_in_tower.data:
-            r += wit.wire.max_current
+            c = phase2circuit(wit.phase) - 1  # circuits are 1 based
+            r[c] += wit.wire.max_current
+
+        r /= 3  # divide every rating by 3
 
         return r
 
@@ -468,21 +495,21 @@ class OverheadLineType(EditableDevice):
         if all_ok:
             try:
                 # Impedances
-                (self.z_abcn,
-                 self.z_phases_abcn,
-                 self.z_abc,
-                 self.z_phases_abc,
-                 self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+                (self._z_abcn,
+                 self._z_phases_abcn,
+                 self._z_abc,
+                 self._z_phases_abc,
+                 self._z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
                 # Admittances
-                (self.y_abcn,
-                 self.y_phases_abcn,
-                 self.y_abc,
-                 self.y_phases_abc,
-                 self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency)
+                (self._y_abcn,
+                 self._y_phases_abcn,
+                 self._y_abc,
+                 self._y_phases_abc,
+                 self._y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency)
 
                 # compute the tower rating in kA
-                self.Imax = self.compute_rating()
+                self._Imax = self.compute_rating()
 
             except np.linalg.LinAlgError as e:
                 print(e)
@@ -567,7 +594,7 @@ class OverheadLineType(EditableDevice):
         y2 = 1j * Bsh0 * length * -1e6 / Ybase
 
         # get the rating in MVA = kA * kV
-        rate = self.Imax * Vn * np.sqrt(3)
+        rate = self.Imax[circuit_index] * Vn * np.sqrt(3)
 
         return R1, X1, B1, R0, X0, B0, rate
 
