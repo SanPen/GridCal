@@ -646,8 +646,7 @@ class ObjectsTableMain(DiagramsMain):
                                              circuit=self.circuit,
                                              diagram=diagram,
                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                             time_index=self.get_diagram_slider_index(),
-                                             call_delete_db_element_func=self.call_delete_db_element)
+                                             time_index=self.get_diagram_slider_index())
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
                                                 diagram=diagram)
@@ -693,8 +692,6 @@ class ObjectsTableMain(DiagramsMain):
                 name=diagram.name,
                 circuit=self.circuit,
                 diagram=diagram,
-                call_delete_db_element_func=self.call_delete_db_element,
-                call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation
             )
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,

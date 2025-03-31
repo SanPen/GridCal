@@ -20,7 +20,7 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandard
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import CheckListDialogue, ElementsDialogue
+from GridCal.Gui.general_dialogues import CheckListDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
@@ -59,11 +59,11 @@ from GridCal.Gui.messages import error_msg, info_msg
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
+    from GridCal.Gui.Main.GridCalMain import GridCalMainGUI
 
 MAP_BRANCH_GRAPHIC_TYPES = Union[
     MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine
 ]
-
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -213,16 +213,14 @@ class GridMapWidget(BaseDiagramWidget):
     """
 
     def __init__(self,
-                 gui: DiagramsMain,
+                 gui: GridCalMainGUI | DiagramsMain,
                  tile_src: Tiles,
                  start_level: int,
                  longitude: float,
                  latitude: float,
                  name: str,
                  circuit: MultiCircuit,
-                 diagram: Union[None, MapDiagram] = None,
-                 call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None,
-                 call_new_substation_diagram_func: Callable[[List[Substation]], None] = None, ):
+                 diagram: Union[None, MapDiagram] = None):
         """
         GridMapWidget
         :param tile_src: Tiles instance
@@ -232,8 +230,6 @@ class GridMapWidget(BaseDiagramWidget):
         :param name: Name of the diagram
         :param circuit: MultiCircuit instance
         :param diagram: Diagram instance (optional)
-        :param call_delete_db_element_func: function pointer to call on delete (optional)
-        :param call_new_substation_diagram_func: function pointer to call on new_substation (optional)
         """
 
         super().__init__(
@@ -246,7 +242,6 @@ class GridMapWidget(BaseDiagramWidget):
                                latitude=latitude) if diagram is None else diagram,
             library_model=MapLibraryModel(),
             time_index=None,
-            call_delete_db_element_func=call_delete_db_element_func
         )
 
         # declare the map
@@ -259,9 +254,6 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Any representation on the map must be done after this Goto Function
         self.map.go_to_level_and_position(level=6, longitude=longitude, latitude=latitude)
-
-        # function pointer to call for a new substation diagram
-        self.call_new_substation_diagram_func = call_new_substation_diagram_func
 
         # pool of runnable tasks that work best done asynch with a runnable
         self.thread_pool = QThreadPool()
@@ -293,8 +285,7 @@ class GridMapWidget(BaseDiagramWidget):
             self.remove_from_scene(graphic_object)
 
         if propagate:
-            if self.call_delete_db_element_func is not None:
-                self.call_delete_db_element_func(self, device)
+            self.gui.call_delete_db_element(caller=self, api_obj=device)
 
     @property
     def name(self):
@@ -320,39 +311,37 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [(elm.api_object, elm) for elm in self.map.diagram_scene.selectedItems()]
 
-    
-    def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine, 
+    def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine,
                                                                   MapDcLine,
                                                                   MapHvdcLine,
                                                                   MapFluidPathLine)]]:
-            """
-            Get only selected line segments from the scene
-            
-            :return: List of (Line, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)) tuples
-            """
-            selected_line_segments = []
-            for item in self.map.diagram_scene.selectedItems():
-                if (hasattr(item, 'api_object') and hasattr(item, 'container')
-                    and isinstance(item.container, 
-                                (MapAcLine, 
-                                MapDcLine, 
-                                MapHvdcLine, 
-                                MapFluidPathLine))):
-                    selected_line_segments.append((item.api_object, item.container))
-            return selected_line_segments
+        """
+        Get only selected line segments from the scene
+
+        :return: List of (Line, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)) tuples
+        """
+        selected_line_segments = []
+        for item in self.map.diagram_scene.selectedItems():
+            if (hasattr(item, 'api_object') and hasattr(item, 'container')
+                    and isinstance(item.container,
+                                   (MapAcLine,
+                                    MapDcLine,
+                                    MapHvdcLine,
+                                    MapFluidPathLine))):
+                selected_line_segments.append((item.api_object, item.container))
+        return selected_line_segments
 
     def get_selected_substations_tup(self) -> List[Tuple[Substation, SubstationGraphicItem]]:
-            """
-            Get only selected substations from the scene
-            
-            :return: List of (Substation, SubstationGraphicItem) tuples
-            """
-            selected_substations = []
-            for item in self.map.diagram_scene.selectedItems():
-                if hasattr(item, 'api_object') and isinstance(item, SubstationGraphicItem):
-                    selected_substations.append((item.api_object, item))
-            return selected_substations
+        """
+        Get only selected substations from the scene
 
+        :return: List of (Substation, SubstationGraphicItem) tuples
+        """
+        selected_substations = []
+        for item in self.map.diagram_scene.selectedItems():
+            if hasattr(item, 'api_object') and isinstance(item, SubstationGraphicItem):
+                selected_substations.append((item.api_object, item))
+        return selected_substations
 
     def add_to_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
@@ -563,13 +552,10 @@ class GridMapWidget(BaseDiagramWidget):
                           delete_from_db: bool = False):
         """
 
-
         :param api_object: Substation object from the MultiCircuit
         :param substation_buses: List of buses associated to this substation
         :param voltage_levels:  List of voltage levels associated to this substation
         :param delete_from_db: Does it remove the objects from the Database too (bool)
-
-
         """
 
         # Remove from graphics manager and scene
@@ -591,19 +577,19 @@ class GridMapWidget(BaseDiagramWidget):
             # Delete buses associated with this substation
             for bus in substation_buses:
                 self.circuit.delete_bus(bus, delete_associated=True)
-                
+
             # Delete voltage levels associated with this substation
             for vl in voltage_levels:
                 self.circuit.delete_voltage_level(vl)
-                
+
             # Delete the substation itself
             self.circuit.delete_substation(obj=api_object)
 
-    def show_devices_to_disconnect_dialog(self, 
-                                         devices: List[ALL_DEV_TYPES],
-                                         buses: List[Bus],
-                                         voltage_levels: List[VoltageLevel],
-                                         dialog_title: str):
+    def show_devices_to_disconnect_dialog(self,
+                                          devices: List[ALL_DEV_TYPES],
+                                          buses: List[Bus],
+                                          voltage_levels: List[VoltageLevel],
+                                          dialog_title: str):
         """
         Show a dialog with the list of all devices that will be disconnected
         
@@ -614,38 +600,38 @@ class GridMapWidget(BaseDiagramWidget):
         """
         from GridCal.Gui.general_dialogues import ElementsDialogue
         from GridCalEngine.Devices.Parents.editable_device import GCProp
-        
+
         # Combine all devices
         all_devices = devices + buses + voltage_levels
-        
+
         if not all_devices:
             info_msg('No devices to disconnect', dialog_title)
             return
-            
+
         # Create custom properties for name, type, and ID tag
-        name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name', 
+        name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name',
                            display=True, editable=False)
-        
-        type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type', 
+
+        type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type',
                            display=True, editable=False)
-        
-        idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag', 
-                           display=True, editable=False)
-        
+
+        idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag',
+                            display=True, editable=False)
+
         custom_props = [name_prop, type_prop, idtag_prop]
-        
+
         # Create and show the dialog
         dialog = ElementsDialogue(name=dialog_title, elements=all_devices)
-        
+
         # Replace the model with our custom one that only shows name, type, and idtag
         model = ObjectsModel(objects=all_devices,
-                            time_index=None,
-                            property_list=custom_props,
-                            parent=dialog.objects_table,
-                            editable=False)
-        
+                             time_index=None,
+                             property_list=custom_props,
+                             parent=dialog.objects_table,
+                             editable=False)
+
         dialog.objects_table.setModel(model)
-        
+
         # Make the dialog modal so the user must acknowledge it before continuing
         dialog.setModal(True)
         dialog.exec()
@@ -668,6 +654,7 @@ class GridMapWidget(BaseDiagramWidget):
 
             for lineloc in lin.nodes_list:
                 self.map.diagram_scene.removeItem(lineloc)
+
     def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
         """
         Delete the selected items from the diagram
@@ -1073,7 +1060,6 @@ class GridMapWidget(BaseDiagramWidget):
         for key, elm_graphics in graphics_dict.items():
             elm_graphics.resize(new_radius=branch_width)
 
-
         # rescale substations (this is super-fast)
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
         for se_key, elm_graphics in data.items():
@@ -1261,7 +1247,6 @@ class GridMapWidget(BaseDiagramWidget):
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
 
-
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
                             Sf=Sf[i] if Sf is not None else None,
@@ -1335,7 +1320,6 @@ class GridMapWidget(BaseDiagramWidget):
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
 
-
         if fluid_path_flow is not None:
 
             if self.circuit.get_fluid_paths_number() == len(fluid_path_flow):
@@ -1375,10 +1359,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param substation:
         :return:
         """
-        if self.call_new_substation_diagram_func is not None:
-            self.call_new_substation_diagram_func([substation])
-        else:
-            print("call_new_substation_diagram_func is None :( ")
+        self.gui.new_bus_branch_diagram_from_substation([substation])
 
     def copy(self) -> "GridMapWidget":
         """
@@ -1400,8 +1381,6 @@ class GridMapWidget(BaseDiagramWidget):
             name=self.diagram.name,
             circuit=self.circuit,
             diagram=self.diagram,
-            call_new_substation_diagram_func=self.call_new_substation_diagram_func,
-            call_delete_db_element_func=self.call_delete_db_element_func
         )
 
     def consolidate_coordinates(self):
@@ -1414,12 +1393,10 @@ class GridMapWidget(BaseDiagramWidget):
             device_type=DeviceType.LineLocation)
 
         for gelm in graphics_substations:
-
             gelm.api_object.latitude = gelm.lat
             gelm.api_object.longitude = gelm.lon
 
         for gelm in graphics_linelocations:
-
             gelm.api_object.lat = gelm.lat
             gelm.api_object.long = gelm.lon
 
@@ -1544,7 +1521,8 @@ class GridMapWidget(BaseDiagramWidget):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Icon.Warning)
             msg.setText(f"No suitable voltage level ({vnom:.2f} kV) found in substation \"{substation_api.name}\".")
-            msg.setInformativeText("The line cannot be connected. Please ensure the target substation has a bus with a matching nominal voltage.")
+            msg.setInformativeText(
+                "The line cannot be connected. Please ensure the target substation has a bus with a matching nominal voltage.")
             msg.setWindowTitle("Connection Error")
             msg.exec()
             return
@@ -1692,7 +1670,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Preserve waypoints for line 1 (from start to insertion point)
         # Add all waypoints from the original line up to the closest segment
-        for i in range(1, closest_segment_idx + 1):  
+        for i in range(1, closest_segment_idx + 1):
             line1.locations.add_location(lat=waypoints[i][0], long=waypoints[i][1], alt=0.0)
 
         # --- Assign offset waypoints --- 
@@ -1725,8 +1703,9 @@ class GridMapWidget(BaseDiagramWidget):
         line1.update_length()
         line2.update_length()
 
-        self.notify(f'{line1.name} ({line1.length:.3f}km) and {line2.name} ({line2.length:.3f}km) created. {line_api.name} removed.')
-
+        self.gui.show_info_toast(
+            f'{line1.name} ({line1.length:.3f}km) and {line2.name} ({line2.length:.3f}km) created. {line_api.name} removed.'
+        )
 
     def _closest_point_on_segment(self, lat1, lon1, lat2, lon2, lat3, lon3):
         """
@@ -1926,9 +1905,9 @@ class GridMapWidget(BaseDiagramWidget):
         if suitable_bus_in_selected is None:
             # Find or create a voltage level with the appropriate voltage in the selected substation
             voltage_level_in_selected = None
-            for vl in substation_api.voltage_levels:
-                if abs(vl.nominal_voltage - vnom) < 0.01:
-                    voltage_level_in_selected = vl
+            for vl_graphic in substation_graphic.voltage_level_graphics:
+                if abs(vl_graphic.api_object.Vnom - vnom) < 0.01:
+                    voltage_level_in_selected = vl_graphic.api_object
                     break
 
             if voltage_level_in_selected is None:
@@ -2210,7 +2189,6 @@ class GridMapWidget(BaseDiagramWidget):
         bus_to = line_api.bus_to
         bus_to_idtag_0 = bus_to.idtag
 
-
         buses1 = self.circuit.get_substation_buses(substation=substation_api_1)
         buses2 = self.circuit.get_substation_buses(substation=substation_api_2)
 
@@ -2283,7 +2261,6 @@ class GridMapWidget(BaseDiagramWidget):
             msg.exec()
             return
 
-
         # Remove past graphic item and add the new one
 
         self.remove_branch_graphic(line=line_graphic, delete_from_db=False)
@@ -2295,6 +2272,7 @@ class GridMapWidget(BaseDiagramWidget):
                     f"{added_substation}.")
         msg.setWindowTitle("Operation Successful")
         msg.exec()
+
 
 def generate_map_diagram(
         substations: List[Substation],

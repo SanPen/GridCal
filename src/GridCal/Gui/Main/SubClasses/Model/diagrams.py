@@ -1494,8 +1494,7 @@ class DiagramsMain(CompiledArraysMain):
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                          time_index=self.get_diagram_slider_index(),
-                                         prefer_node_breaker=False,
-                                         call_delete_db_element_func=self.call_delete_db_element)
+                                         prefer_node_breaker=False)
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -1581,8 +1580,7 @@ class DiagramsMain(CompiledArraysMain):
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                          time_index=self.get_diagram_slider_index(),
-                                         prefer_node_breaker=prefer_node_breaker,
-                                         call_delete_db_element_func=self.call_delete_db_element)
+                                         prefer_node_breaker=prefer_node_breaker)
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -1619,8 +1617,7 @@ class DiagramsMain(CompiledArraysMain):
                                          circuit=self.circuit,
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                         time_index=self.get_diagram_slider_index(),
-                                         call_delete_db_element_func=self.call_delete_db_element)
+                                         time_index=self.get_diagram_slider_index())
 
                 self.add_diagram_widget_and_diagram(diagram_widget=widget, diagram=diagram)
                 self.set_diagrams_list_view()
@@ -1720,8 +1717,7 @@ class DiagramsMain(CompiledArraysMain):
                                                              circuit=self.circuit,
                                                              diagram=diagram,
                                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                             time_index=self.get_diagram_slider_index(),
-                                                             call_delete_db_element_func=self.call_delete_db_element)
+                                                             time_index=self.get_diagram_slider_index())
 
                             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
                                                                 diagram=diagram)
@@ -1745,8 +1741,7 @@ class DiagramsMain(CompiledArraysMain):
                                              circuit=self.circuit,
                                              diagram=diagram,
                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                             time_index=self.get_diagram_slider_index(),
-                                             call_delete_db_element_func=self.call_delete_db_element)
+                                             time_index=self.get_diagram_slider_index())
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
             self.set_diagrams_list_view()
@@ -1780,8 +1775,7 @@ class DiagramsMain(CompiledArraysMain):
                 circuit=self.circuit,
                 diagram=diagram,
                 default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                time_index=self.get_diagram_slider_index(),
-                call_delete_db_element_func=self.call_delete_db_element
+                time_index=self.get_diagram_slider_index()
             )
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
@@ -1809,8 +1803,7 @@ class DiagramsMain(CompiledArraysMain):
                                                  circuit=self.circuit,
                                                  diagram=diagram,
                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                 time_index=self.get_diagram_slider_index(),
-                                                 call_delete_db_element_func=self.call_delete_db_element)
+                                                 time_index=self.get_diagram_slider_index())
 
                 diagram_widget.setStretchFactor(1, 10)
                 diagram_widget.center_nodes()
@@ -1830,9 +1823,7 @@ class DiagramsMain(CompiledArraysMain):
                     latitude=diagram.latitude,
                     name=diagram.name,
                     circuit=self.circuit,
-                    diagram=diagram,
-                    call_delete_db_element_func=self.call_delete_db_element,
-                    call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation
+                    diagram=diagram
                 )
 
                 # map_widget.go_to_level_and_position(5, -15.41, 40.11)
@@ -1899,9 +1890,7 @@ class DiagramsMain(CompiledArraysMain):
                                    latitude=diagram.latitude,
                                    name=diagram.name,
                                    circuit=self.circuit,
-                                   diagram=diagram,
-                                   call_delete_db_element_func=self.call_delete_db_element,
-                                   call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation)
+                                   diagram=diagram)
 
         self.add_diagram_widget_and_diagram(diagram_widget=map_widget, diagram=diagram)
         self.set_diagrams_list_view()

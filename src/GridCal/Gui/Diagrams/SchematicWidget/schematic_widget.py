@@ -73,6 +73,7 @@ from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_questi
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
+    from GridCal.Gui.Main.GridCalMain import GridCalMainGUI
 
 BRANCH_GRAPHICS = Union[
     LineGraphicItem,
@@ -328,13 +329,12 @@ class SchematicWidget(BaseDiagramWidget):
     """
 
     def __init__(self,
-                 gui: DiagramsMain,
+                 gui: GridCalMainGUI | DiagramsMain,
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, None],
                  default_bus_voltage: float = 10.0,
                  time_index: Union[None, int] = None,
-                 prefer_node_breaker: bool = False,
-                 call_delete_db_element_func: Callable[["SchematicWidget", ALL_DEV_TYPES], None] = None):
+                 prefer_node_breaker: bool = False):
         """
         Creates the Diagram Editor (DiagramEditorWidget)
         :param circuit: Circuit that is handling
@@ -349,8 +349,7 @@ class SchematicWidget(BaseDiagramWidget):
                                    circuit=circuit,
                                    diagram=diagram,
                                    library_model=SchematicLibraryModel(),
-                                   time_index=time_index,
-                                   call_delete_db_element_func=call_delete_db_element_func)
+                                   time_index=time_index)
 
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = SchematicScene(parent=self)  # scene to add to the QGraphicsView
@@ -992,8 +991,7 @@ class SchematicWidget(BaseDiagramWidget):
             self.remove_from_scene(graphic_object)
 
         if propagate:
-            if self.call_delete_db_element_func is not None:
-                self.call_delete_db_element_func(self, device)
+            self.gui.call_delete_db_element(caller=self, api_obj=device)
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
@@ -4389,7 +4387,6 @@ class SchematicWidget(BaseDiagramWidget):
             default_bus_voltage=self.default_bus_voltage,
             time_index=self.get_time_index(),
             prefer_node_breaker=self.prefer_node_breaker,
-            call_delete_db_element_func=self.call_delete_db_element_func
         )
 
     def consolidate_coordinates(self):

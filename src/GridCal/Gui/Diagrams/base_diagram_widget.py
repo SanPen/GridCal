@@ -36,9 +36,10 @@ from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.object_model import ObjectsModel
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget
-    from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel, SchematicWidget
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel
+    from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
+    from GridCal.Gui.Main.GridCalMain import GridCalMainGUI
 
 
 def change_font_size(obj, font_size: int):
@@ -138,19 +139,16 @@ class BaseDiagramWidget(QSplitter):
     """
 
     def __init__(self,
-                 gui: DiagramsMain,
+                 gui: GridCalMainGUI | DiagramsMain,
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, MapDiagram],
                  library_model: Union[MapLibraryModel, SchematicLibraryModel],
-                 time_index: Union[None, int] = None,
-                 call_delete_db_element_func: Callable[
-                     [Union[GridMapWidget, SchematicWidget], ALL_DEV_TYPES], None] = None):
+                 time_index: Union[None, int] = None):
         """
         Constructor
         :param circuit:
         :param diagram:
         :param time_index:
-        :param call_delete_db_element_func:
         """
         QSplitter.__init__(self)
 
@@ -216,10 +214,6 @@ class BaseDiagramWidget(QSplitter):
 
         # logger
         self.logger: Logger = Logger()
-
-        # This function is meant to be a master delete function that is passed to each diagram
-        # so that when a diagram deletes an element, the element is deleted in all other diagrams
-        self.call_delete_db_element_func = call_delete_db_element_func
 
         self.results_dictionary: Dict[SimulationTypes, DRIVER_OBJECTS] = dict()
 
