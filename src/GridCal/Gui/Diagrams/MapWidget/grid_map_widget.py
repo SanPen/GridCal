@@ -1192,20 +1192,19 @@ class GridMapWidget(BaseDiagramWidget):
         # voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
 
-        nbus = self.circuit.get_bus_number()
-
-        longitudes = np.zeros(nbus)
-        latitudes = np.zeros(nbus)
-        nodes_dict = dict()
-        for i, bus in enumerate(self.circuit.buses):
-
-            # try to find the diagram object of the DB object
-            graphic_object = self.graphics_manager.query(bus)
-
-            if graphic_object:
-                longitudes[i] = bus.longitude
-                latitudes[i] = bus.latitude
-                nodes_dict[bus.name] = (bus.latitude, bus.longitude)
+        # nbus = self.circuit.get_bus_number()
+        # longitudes = np.zeros(nbus)
+        # latitudes = np.zeros(nbus)
+        # nodes_dict = dict()
+        # for i, bus in enumerate(self.circuit.buses):
+        #
+        #     # try to find the diagram object of the DB object
+        #     graphic_object = self.graphics_manager.query(bus)
+        #
+        #     if graphic_object:
+        #         longitudes[i] = bus.longitude
+        #         latitudes[i] = bus.latitude
+        #         nodes_dict[bus.name] = (bus.latitude, bus.longitude)
 
         arrow_size = self.diagram.arrow_size  # self.get_arrow_scale()
 
@@ -1256,12 +1255,12 @@ class GridMapWidget(BaseDiagramWidget):
                     style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
-                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
-                    else:
-                        weight = self.get_branch_width()
+                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1)
+                        )
+                        graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
+
 
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
@@ -1319,8 +1318,7 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1)
                         )
-                    else:
-                        weight = self.get_branch_width()
+                        graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
 
                     tooltip = str(i) + ': ' + graphic_object.api_object.name
                     tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
@@ -1336,7 +1334,7 @@ class GridMapWidget(BaseDiagramWidget):
                         graphic_object.set_arrows_with_hvdc_power(Pf=float(hvdc_Pf[i]), Pt=-hvdc_Pf[i])
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
+
 
         if fluid_path_flow is not None:
 
