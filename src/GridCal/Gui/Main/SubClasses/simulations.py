@@ -958,7 +958,7 @@ class SimulationsMain(TimeEventsMain):
                                  text_func=self.ui.progress_label.setText)
 
             else:
-                warning_msg('Another simulation of the same type is running...')
+                self.show_warning_toast('Another simulation of the same type is running...')
         else:
             pass
 
@@ -1116,7 +1116,7 @@ class SimulationsMain(TimeEventsMain):
                                  prog_func=self.ui.progressBar.setValue,
                                  text_func=self.ui.progress_label.setText)
             else:
-                warning_msg('Another PTDF is being executed now...')
+                self.show_warning_toast('Another PTDF is being executed now...')
         else:
             pass
 
@@ -1138,7 +1138,7 @@ class SimulationsMain(TimeEventsMain):
             self.update_available_results()
             self.colour_diagrams()
         else:
-            error_msg('Something went wrong, There are no PTDF results.')
+            self.show_warning_toast('Something went wrong, There are no PTDF results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1171,7 +1171,7 @@ class SimulationsMain(TimeEventsMain):
                 else:
                     warning_msg('Another PTDF time series is being executed now...')
             else:
-                warning_msg('There are no time series...')
+                self.show_warning_toast('There are no time series...')
 
     def post_linear_analysis_ts(self):
         """
@@ -1196,10 +1196,10 @@ class SimulationsMain(TimeEventsMain):
             if results.S.shape[0] > 0:
                 self.colour_diagrams()
             else:
-                info_msg('Cannot colour because the PTDF results have zero time steps :/')
+                self.show_warning_toast('Cannot colour because the PTDF results have zero time steps :/')
 
         else:
-            error_msg('Something went wrong, There are no PTDF Time series results.')
+            self.show_warning_toast('Something went wrong, There are no PTDF Time series results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1254,10 +1254,10 @@ class SimulationsMain(TimeEventsMain):
                                      prog_func=self.ui.progressBar.setValue,
                                      text_func=self.ui.progress_label.setText)
                 else:
-                    warning_msg('Another contingency analysis is being executed now...')
+                    self.show_warning_toast('Another contingency analysis is being executed now...')
 
             else:
-                warning_msg('There are no contingency groups declared...')
+                self.show_warning_toast('There are no contingency groups declared...')
         else:
             pass
 
@@ -1280,7 +1280,7 @@ class SimulationsMain(TimeEventsMain):
 
             self.colour_diagrams()
         else:
-            error_msg('Something went wrong, There are no contingency analysis results.')
+            self.show_error_toast('Something went wrong, There are no contingency analysis results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1312,12 +1312,12 @@ class SimulationsMain(TimeEventsMain):
                                          prog_func=self.ui.progressBar.setValue,
                                          text_func=self.ui.progress_label.setText)
                     else:
-                        warning_msg('Another LODF is being executed now...')
+                        self.show_warning_toast('Another LODF is being executed now...')
                 else:
-                    warning_msg('There are no time series...')
+                    self.show_warning_toast('There are no time series...')
 
             else:
-                warning_msg('There are no contingency groups declared...')
+                self.show_warning_toast('There are no contingency groups declared...')
 
         else:
             pass
@@ -1344,7 +1344,7 @@ class SimulationsMain(TimeEventsMain):
 
             self.colour_diagrams()
         else:
-            error_msg('Something went wrong, There are no contingency time series results.')
+            self.show_error_toast('Something went wrong, There are no contingency time series results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1383,7 +1383,7 @@ class SimulationsMain(TimeEventsMain):
                         Pf_hvdc = pf_results.Pf_hvdc.real
                         use_provided_flows = True
                     else:
-                        warning_msg('There were no power flow values available. Linear flows will be used.')
+                        self.show_warning_toast('There were no power flow values available. Linear flows will be used.')
                         use_provided_flows = False
                         Pf_hvdc = None
                         Pf = None
@@ -1432,7 +1432,7 @@ class SimulationsMain(TimeEventsMain):
                 self.LOCK()
 
             else:
-                warning_msg('Another contingency analysis is being executed now...')
+                self.show_warning_toast('Another contingency analysis is being executed now...')
 
         else:
             pass
@@ -1455,7 +1455,7 @@ class SimulationsMain(TimeEventsMain):
             self.update_available_results()
             self.colour_diagrams()
         else:
-            error_msg('Something went wrong, There are no ATC results.')
+            self.show_error_toast('Something went wrong, There are no ATC results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1550,9 +1550,9 @@ class SimulationsMain(TimeEventsMain):
                     self.LOCK()
 
                 else:
-                    warning_msg('Another ATC time series is being executed now...')
+                    self.show_warning_toast('Another ATC time series is being executed now...')
             else:
-                error_msg('There are no time series!')
+                self.show_warning_toast('There are no time series!')
         else:
             pass
 
@@ -1577,7 +1577,7 @@ class SimulationsMain(TimeEventsMain):
             self.update_available_results()
             self.colour_diagrams()
         else:
-            error_msg('Something went wrong, There are no ATC time series results.')
+            self.show_error_toast('Something went wrong, There are no ATC time series results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1736,9 +1736,9 @@ class SimulationsMain(TimeEventsMain):
                                              prog_func=self.ui.progressBar.setValue,
                                              text_func=self.ui.progress_label.setText)
                         else:
-                            info_msg('Check the selected start and finnish time series indices.')
+                            self.show_warning_toast('Check the selected start and finnish time series indices.')
                 else:
-                    warning_msg('Another voltage collapse simulation is running...')
+                    self.show_warning_toast('Another voltage collapse simulation is running...')
             else:
                 info_msg('Run a power flow simulation first.\n'
                          'The results are needed to initialize this simulation.')
@@ -1762,7 +1762,7 @@ class SimulationsMain(TimeEventsMain):
             else:
                 info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
         else:
-            error_msg('Something went wrong, There are no voltage stability results.')
+            self.show_error_toast('Something went wrong, There are no voltage stability results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1801,9 +1801,9 @@ class SimulationsMain(TimeEventsMain):
                                      text_func=self.ui.progress_label.setText)
 
                 else:
-                    warning_msg('There are no time series.', 'Time series')
+                    self.show_warning_toast('There are no time series.')
             else:
-                warning_msg('Another time series power flow is being executed now...')
+                self.show_warning_toast('Another time series power flow is being executed now...')
         else:
             pass
 
@@ -1827,7 +1827,7 @@ class SimulationsMain(TimeEventsMain):
             self.colour_diagrams()
 
         else:
-            warning_msg('No results for the time series simulation.')
+            self.show_warning_toast('No results for the time series simulation.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -1869,10 +1869,10 @@ class SimulationsMain(TimeEventsMain):
                                      prog_func=self.ui.progressBar.setValue,
                                      text_func=self.ui.progress_label.setText)
                 else:
-                    warning_msg('There are no time series.')
+                    self.show_warning_toast('There are no time series.')
 
             else:
-                warning_msg('Another Monte Carlo simulation is running...')
+                self.show_warning_toast('Another Monte Carlo simulation is running...')
 
         else:
             pass
@@ -2034,7 +2034,7 @@ class SimulationsMain(TimeEventsMain):
                                  text_func=self.ui.progress_label.setText)
 
             else:
-                warning_msg('Another OPF is being run...')
+                self.show_warning_toast('Another OPF is being run...')
         else:
             pass
 
@@ -2098,10 +2098,10 @@ class SimulationsMain(TimeEventsMain):
                                          text_func=self.ui.progress_label.setText)
 
                 else:
-                    warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
+                    self.show_warning_toast('There are no time series...')
 
             else:
-                warning_msg('Another OPF time series is running already...')
+                self.show_warning_toast('Another OPF time series is running already...')
 
         else:
             pass
@@ -2162,7 +2162,7 @@ class SimulationsMain(TimeEventsMain):
                              '\nRun OPF time series to be able to copy the value to the time series object.')
 
             else:
-                warning_msg('There are no time series.\nLoad time series are needed for this simulation.')
+                self.show_warning_toast('There are no time series...')
         else:
             pass
 
@@ -2242,7 +2242,7 @@ class SimulationsMain(TimeEventsMain):
                                      text_func=self.ui.progress_label.setText)
 
             else:
-                warning_msg('Another OPF is being run...')
+                self.show_warning_toast('Another OPF is being run...')
         else:
             pass
 
@@ -2293,7 +2293,7 @@ class SimulationsMain(TimeEventsMain):
                                      text_func=self.ui.progress_label.setText)
 
             else:
-                warning_msg('Another Optimal NCT time series is being run...')
+                self.show_warning_toast('Another Optimal NCT time series is being run...')
         else:
             pass
 
@@ -2347,7 +2347,7 @@ class SimulationsMain(TimeEventsMain):
                                  text_func=self.ui.progress_label.setText)
 
             else:
-                error_msg('There are no PTDF results :/')
+                self.show_error_toast('There are no PTDF results :/')
 
         else:
             # delete the markers
@@ -2405,7 +2405,7 @@ class SimulationsMain(TimeEventsMain):
                                  text_func=self.ui.progress_label.setText)
 
             else:
-                warning_msg('Another inputs analysis is being run...')
+                self.show_warning_toast('Another inputs analysis is being run...')
         else:
             pass
 
@@ -2501,7 +2501,7 @@ class SimulationsMain(TimeEventsMain):
             sigma_driver.run()
 
             if not sigma_driver.results.converged:
-                error_msg("Sigma coefficients did not converge :(")
+                self.show_error_toast("Sigma coefficients did not converge :(")
 
             self.sigma_dialogue = SigmaAnalysisGUI(parent=self,
                                                    results=sigma_driver.results,
@@ -2574,7 +2574,7 @@ class SimulationsMain(TimeEventsMain):
                     self.LOCK()
 
                 else:
-                    warning_msg('Another contingency analysis is being executed now...')
+                    self.show_warning_toast('Another contingency analysis is being executed now...')
             else:
                 warning_msg("There are no investment groups, "
                             "you need to create some so that GridCal can evaluate them ;)")
@@ -2598,7 +2598,7 @@ class SimulationsMain(TimeEventsMain):
             self.update_available_results()
             self.colour_diagrams()
         else:
-            error_msg('Something went wrong, There are no investments evaluation results.')
+            self.show_error_toast('Something went wrong, There are no investments evaluation results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -2624,7 +2624,7 @@ class SimulationsMain(TimeEventsMain):
                     return clustering_results
             else:
                 # no results ...
-                warning_msg("There are no clustering results.")
+                self.show_warning_toast("There are no clustering results.")
                 self.ui.actionUse_clustering.setChecked(False)
                 return None
 
@@ -2664,7 +2664,7 @@ class SimulationsMain(TimeEventsMain):
                                 title="Clustering")
 
             else:
-                warning_msg('Another clustering is being executed now...')
+                self.show_warning_toast('Another clustering is being executed now...')
         else:
             pass
 
@@ -2682,7 +2682,7 @@ class SimulationsMain(TimeEventsMain):
 
             self.update_available_results()
         else:
-            error_msg('Something went wrong, There are no power short circuit results.')
+            self.show_error_toast('Something went wrong, There are no power short circuit results.')
 
         if not self.session.is_anything_running():
             self.UNLOCK()
@@ -2722,7 +2722,7 @@ class SimulationsMain(TimeEventsMain):
                              text_func=self.ui.progress_label.setText)
 
         else:
-            warning_msg('Another simulation of the same type is running...')
+            self.show_warning_toast('Another simulation of the same type is running...')
 
     def post_topology_processor(self):
         """
@@ -2760,7 +2760,7 @@ class SimulationsMain(TimeEventsMain):
                     return None
             else:
                 # no results ...
-                warning_msg("There are no clustering results.")
+                self.show_warning_toast("There are no clustering results.")
                 self.ui.actionUse_clustering.setChecked(False)
                 return None
 
@@ -2830,7 +2830,7 @@ class SimulationsMain(TimeEventsMain):
                                      text_func=self.ui.progress_label.setText)
 
             else:
-                warning_msg('Another OPF time series is running already...')
+                self.show_warning_toast('Another OPF time series is running already...')
 
         else:
             pass

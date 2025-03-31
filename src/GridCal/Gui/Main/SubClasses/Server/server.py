@@ -92,7 +92,7 @@ class ServerMain(BaseMainGui):
                 except json.decoder.JSONDecodeError as e:
                     print(e)
                     self.save_server_config()
-                    print("Server config file was erroneous, wrote a new one")
+                    self.show_error_toast("Server config file was erroneous, wrote a new one")
 
     def server_start_stop(self):
         """
@@ -131,7 +131,7 @@ class ServerMain(BaseMainGui):
         """
         if not self.server_driver.is_running():
             if self.server_driver.logger.has_logs():
-                warning_msg(text="Could not connect to the server", title="Server connection")
+                self.show_warning_toast(message="Could not connect to the server")
                 self.ui.actionEnable_server_mode.setChecked(False)
 
     def get_results(self):
@@ -152,4 +152,4 @@ class ServerMain(BaseMainGui):
                                                 api_key="",
                                                 local_filename=job.id_tag + '.results')
 
-        print("Done")
+        self.show_info_toast("results received!")

@@ -7,6 +7,7 @@ class ToastWidget(QWidget):
     def __init__(self, parent: QWidget,
         message: str,
         duration: int = 2000,
+        toast_type: str = "gridcal",
         max_width: Optional[int] = None,
         offset_y: int = 0,
         position_top: bool = False,
@@ -28,16 +29,32 @@ class ToastWidget(QWidget):
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        self.setStyleSheet("""
-            QLabel {
-                background-color: rgba(16, 191, 137, 160);
-                color: white;
-                padding: 8px 12px;
-                border-radius: 10px;
-                font-size: 12pt;
-            }
-        """)
+        background_color = {
+            "gridcal": "rgba(16, 191, 137, 160)",   # gridcal color
+            "info": "rgba(46, 204, 113, 220)",  # green
+            "warning": "rgba(241, 196, 15, 220)",  # yellow
+            "error": "rgba(231, 76, 60, 220)"  # red
+        }.get(toast_type, "rgba(50, 50, 50, 220)")  # fallback
+
+        text_color = {
+            "gridcal": "white",
+            "info": "white",
+            "warning": "black",
+            "error": "white"
+        }.get(toast_type, "white")
+
+        self.setStyleSheet(f"""
+                    QLabel {{
+                        background-color: {background_color};
+                        color: {text_color};
+                        padding: 8px 12px;
+                        border-radius: 10px;
+                        font-size: 12pt;
+                    }}
+                """)
+
 
         layout: QVBoxLayout = QVBoxLayout(self)
         label: QLabel = QLabel(message)
@@ -110,17 +127,19 @@ class ToastManager:
         self.position_top: bool = position_top
         self.active_toasts: List[ToastWidget] = []
 
-    def show_toast(self, message: str, duration: int = 2000) -> None:
+    def show_toast(self, message: str, duration: int = 2000, toast_type: str = "gridcal") -> None:
         """
         Show toast
         :param message: Message to display
         :param duration: duration in ms
+        :param toast_type: type of toast (gridcal, info, error, warning)
         """
         offset_y: int = sum(toast.height() + 10 for toast in self.active_toasts)
         toast: ToastWidget = ToastWidget(
             parent=self.parent,
             message=message,
             duration=duration,
+            toast_type=toast_type,
             offset_y=offset_y,
             position_top=self.position_top,
             on_close=self.remove_toast

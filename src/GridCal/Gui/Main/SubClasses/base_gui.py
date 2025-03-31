@@ -140,7 +140,7 @@ class BaseMainGui(QMainWindow):
         self.current_boundary_set: str = ""
 
         # toast manager
-        self.toast_manager = ToastManager(parent=self, position_top=True)
+        self.toast_manager = ToastManager(parent=self, position_top=False)
 
         # threads ------------------------------------------------------------------------------------------------------
         self.painter = None
@@ -787,8 +787,32 @@ class BaseMainGui(QMainWindow):
 
     def show_toast(self, message: str, duration: int = 2000):
         """
-        Show toast
+        Show generic toast
         :param message: Message to display
         :param duration: duration in ms
         """
-        self.toast_manager.show_toast(message=message, duration=duration)
+        self.toast_manager.show_toast(message=message, duration=duration, toast_type="gridcal")
+
+    def show_error_toast(self, message: str, duration: int = 2000):
+        """
+        Show error toast
+        :param message: Message to display
+        :param duration: duration in ms
+        """
+        self.toast_manager.show_toast(message=message, duration=duration, toast_type="error")
+
+    def show_warning_toast(self, message: str, duration: int = 2000):
+        """
+        Show warning toast
+        :param message: Message to display
+        :param duration: duration in ms
+        """
+        self.toast_manager.show_toast(message=message, duration=duration, toast_type="warning")
+
+    def show_info_toast(self, message: str, duration: int = 2000):
+        """
+        Show info toast
+        :param message: Message to display
+        :param duration: duration in ms
+        """
+        self.toast_manager.show_toast(message=message, duration=duration, toast_type="info")
