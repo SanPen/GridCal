@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import List, Dict
+from warnings import warn
 import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
@@ -311,6 +312,8 @@ class OverheadLineType(EditableDevice):
 
     @property
     def z_seq(self) -> CxMat | None:
+        if self._z_seq:
+            self.compute()
         return self._z_seq
 
     @property
@@ -535,11 +538,17 @@ class OverheadLineType(EditableDevice):
         :param seq: Sequence number (0, 1, 2)
         :return: R1 [Ohm], X1[Ohm] and Bsh1 [S]
         """
-        a1 = 3 * circuit_idx + seq
-        R1 = self.z_seq[a1, a1].real
-        X1 = self.z_seq[a1, a1].imag
-        Bsh1 = self.y_seq[a1, a1].imag * 1e6
-        return R1, X1, Bsh1
+        self.compute()
+        if self.z_seq is not None and self.y_seq is not None:
+            a1 = 3 * circuit_idx + seq
+            R1 = self.z_seq[a1, a1].real
+            X1 = self.z_seq[a1, a1].imag
+            Bsh1 = self.y_seq[a1, a1].imag * 1e6
+            I_kA = self.Imax[circuit_idx]
+            return R1, X1, Bsh1, I_kA
+        else:
+            warn(f"{self.name} tower is incorrect :(")
+            return 0.0, 1e-20, 0.0
 
     def get_values(self, Sbase, length, circuit_index: int = 1, round_vals: bool = False, Vnom: float | None = None):
         """

@@ -258,6 +258,11 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
         self.ui.redraw_pushButton.clicked.connect(self.redraw_current_diagram)
 
+        self.ui.preset1_pushButton.clicked.connect(self.preset_1)
+        self.ui.preset2_pushButton.clicked.connect(self.preset_2)
+        self.ui.preset3_pushButton.clicked.connect(self.preset_3)
+        self.ui.preset4_pushButton.clicked.connect(self.preset_4)
+
         # list clicks
         self.ui.diagramsListView.clicked.connect(self.set_selected_diagram_on_click)
 
@@ -1603,22 +1608,31 @@ class DiagramsMain(CompiledArraysMain):
         """
         Add a bus-branch diagram of a particular selection of objects
         """
-        diagram_widget = self.get_selected_diagram_widget()
+        widget = self.get_selected_diagram_widget()
 
-        if diagram_widget:
+        if widget:
 
-            if isinstance(diagram_widget, SchematicWidget):
-                diagram = diagram_widget.create_schematic_from_selection()
+            if isinstance(widget, SchematicWidget):
+                diagram = widget.create_schematic_from_selection()
 
-                diagram_widget = SchematicWidget(gui=self,
-                                                 circuit=self.circuit,
-                                                 diagram=diagram,
-                                                 default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                 time_index=self.get_diagram_slider_index(),
-                                                 call_delete_db_element_func=self.call_delete_db_element)
+                widget = SchematicWidget(gui=self,
+                                         circuit=self.circuit,
+                                         diagram=diagram,
+                                         default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                         time_index=self.get_diagram_slider_index(),
+                                         call_delete_db_element_func=self.call_delete_db_element)
 
-                self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
+                self.add_diagram_widget_and_diagram(diagram_widget=widget, diagram=diagram)
                 self.set_diagrams_list_view()
+
+            elif isinstance(widget, GridMapWidget):
+                substation_graphics = widget.get_selected_substations()
+
+                substations = list()
+                for graphic_obj in substation_graphics:
+                    substations.append(graphic_obj.api_object)
+
+                self.new_bus_branch_diagram_from_substation(substations=substations)
 
     def add_bus_vicinity_diagram_from_model(self):
         """
@@ -1737,32 +1751,48 @@ class DiagramsMain(CompiledArraysMain):
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
             self.set_diagrams_list_view()
 
-    def new_bus_branch_diagram_from_substation(self, substation: dev.Substation):
+    def new_bus_branch_diagram_from_substation(self, substations: List[dev.Substation]):
         """
         Add a bus-branch diagram of a particular selection of objects
         """
 
-        buses = self.circuit.get_substation_buses(substation=substation)
+        if len(substations) == 0:
+            info_msg(text="No substations selected. PLese select some substations",
+                     title="Substations schematic")
+            return
+
+        buses = list()
+        for substation in substations:
+            buses += self.circuit.get_substation_buses(substation=substation)
 
         if len(buses):
-            diagram = make_vicinity_diagram(circuit=self.circuit,
-                                            root_bus=buses[0],
-                                            max_level=2,
-                                            prog_func=None,
-                                            text_func=None)
+            diagram = make_vicinity_diagram(
+                circuit=self.circuit,
+                root_bus=buses[0],
+                max_level=2,
+                prog_func=None,
+                text_func=None,
+                name=substations[0].name if len(substations) == 1 else "substations diagram"
+            )
 
-            diagram_widget = SchematicWidget(gui=self,
-                                             circuit=self.circuit,
-                                             diagram=diagram,
-                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                             time_index=self.get_diagram_slider_index(),
-                                             call_delete_db_element_func=self.call_delete_db_element)
+            diagram_widget = SchematicWidget(
+                gui=self,
+                circuit=self.circuit,
+                diagram=diagram,
+                default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                time_index=self.get_diagram_slider_index(),
+                call_delete_db_element_func=self.call_delete_db_element
+            )
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
             self.set_diagrams_list_view()
         else:
-            info_msg(text=f"No buses were found associated with the substation {substation.name}",
-                     title="New schematic from substation")
+            if len(substations) == 1:
+                info_msg(text=f"No buses were found associated with the substation {substations[0].name}",
+                         title="New schematic from substation")
+            else:
+                info_msg(text=f"No buses were found associated with the substations",
+                         title="New schematic from substation")
 
     def create_circuit_stored_diagrams(self):
         """
@@ -2663,3 +2693,43 @@ class DiagramsMain(CompiledArraysMain):
 
             if dlg.exec():
                 diagram_widget.rotate(dlg.value)
+
+    def preset_1(self):
+        """
+        Country sizes
+        """
+        self.ui.min_node_size_spinBox.setValue(5)
+        self.ui.max_node_size_spinBox.setValue(20)
+        self.ui.min_branch_size_spinBox.setValue(5)
+        self.ui.max_branch_size_spinBox.setValue(20)
+        self.ui.arrow_size_size_spinBox.setValue(7)
+
+    def preset_2(self):
+        """
+        Region sizes
+        """
+        self.ui.min_node_size_spinBox.setValue(1)
+        self.ui.max_node_size_spinBox.setValue(2)
+        self.ui.min_branch_size_spinBox.setValue(1)
+        self.ui.max_branch_size_spinBox.setValue(2)
+        self.ui.arrow_size_size_spinBox.setValue(2)
+
+    def preset_3(self):
+        """
+        Municipality sizes
+        """
+        self.ui.min_node_size_spinBox.setValue(0.1)
+        self.ui.max_node_size_spinBox.setValue(0.2)
+        self.ui.min_branch_size_spinBox.setValue(0.01)
+        self.ui.max_branch_size_spinBox.setValue(0.02)
+        self.ui.arrow_size_size_spinBox.setValue(0.015)
+
+    def preset_4(self):
+        """
+        Street sizes
+        """
+        self.ui.min_node_size_spinBox.setValue(0.01)
+        self.ui.max_node_size_spinBox.setValue(0.02)
+        self.ui.min_branch_size_spinBox.setValue(0.001)
+        self.ui.max_branch_size_spinBox.setValue(0.002)
+        self.ui.arrow_size_size_spinBox.setValue(0.0015)

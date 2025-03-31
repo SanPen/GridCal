@@ -4643,7 +4643,8 @@ def make_vicinity_diagram(circuit: MultiCircuit,
                           root_bus: Bus,
                           max_level: int = 1,
                           prog_func: Union[Callable, None] = None,
-                          text_func: Union[Callable, None] = None):
+                          text_func: Union[Callable, None] = None,
+                          name: str = ""):
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
@@ -4662,25 +4663,27 @@ def make_vicinity_diagram(circuit: MultiCircuit,
      fluid_nodes, fluid_paths) = get_devices_to_expand(circuit=circuit, buses=[root_bus], max_level=max_level)
 
     # Draw schematic subset
-    diagram = generate_schematic_diagram(buses=list(buses),
-                                         busbars=busbars,
-                                         connecivity_nodes=cns,
-                                         lines=lines,
-                                         dc_lines=dc_lines,
-                                         transformers2w=transformers2w,
-                                         transformers3w=transformers3w,
-                                         windings=windings,
-                                         hvdc_lines=hvdc_lines,
-                                         vsc_devices=vsc_converters,
-                                         upfc_devices=upfc_devices,
-                                         series_reactances=series_reactances,
-                                         switches=switches,
-                                         fluid_nodes=list(fluid_nodes),
-                                         fluid_paths=fluid_paths,
-                                         explode_factor=1.0,
-                                         prog_func=prog_func,
-                                         text_func=text_func,
-                                         name=root_bus.name + 'vicinity')
+    diagram = generate_schematic_diagram(
+        buses=list(buses),
+        busbars=busbars,
+        connecivity_nodes=cns,
+        lines=lines,
+        dc_lines=dc_lines,
+        transformers2w=transformers2w,
+        transformers3w=transformers3w,
+        windings=windings,
+        hvdc_lines=hvdc_lines,
+        vsc_devices=vsc_converters,
+        upfc_devices=upfc_devices,
+        series_reactances=series_reactances,
+        switches=switches,
+        fluid_nodes=list(fluid_nodes),
+        fluid_paths=fluid_paths,
+        explode_factor=1.0,
+        prog_func=prog_func,
+        text_func=text_func,
+        name=root_bus.name + 'vicinity' if len(name) == 0 else name
+    )
 
     return diagram
 

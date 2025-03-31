@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog
 from GridCal.Gui.gui_functions import get_list_model, add_menu_entry
+from GridCal.Gui.messages import warning_msg
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCalEngine.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Devices.Branches.dc_line import DcLine
@@ -86,8 +87,12 @@ class DcLineEditor(QDialog):
                             R = self.current_template.R
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            I = self.current_template.Imax[0]
-                            R, X1, B1 = self.current_template.get_sequence_values(0, 1)
+                            if self.current_template.check():
+                                I = self.current_template.Imax[0]
+                                R, X1, B1, I_kA = self.current_template.get_sequence_values(0, 1)
+                            else:
+                                warning_msg(text=f"The template {self.current_template.name} contains errors",
+                                            title="Load template")
 
                     except:
                         pass
@@ -198,12 +203,17 @@ class DcLineEditor(QDialog):
             self.selected_template = template
 
         elif isinstance(template, OverheadLineType):
-            R1, X1, B1 = template.get_sequence_values(0, 1)
+            if self.current_template.check():
+                R, X1, B1, I_kA = self.current_template.get_sequence_values(circuit_idx=0, seq=1)
+                self.i_spinner.setValue(I_kA)
+                self.r_spinner.setValue(R)
 
-            self.i_spinner.setValue(template.Imax[0])
-            self.r_spinner.setValue(R1)
+                self.selected_template = template
+            else:
+                warning_msg(text=f"The template {self.current_template.name} contains errors",
+                            title="Load template")
 
-            self.selected_template = template
+
 
     def load_template_btn_click(self):
         """

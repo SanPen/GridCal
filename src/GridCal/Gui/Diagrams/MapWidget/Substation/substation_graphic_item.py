@@ -349,7 +349,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                        function_ptr=self.remove_function_from_schematic_and_db)
 
         add_menu_entry(menu=menu,
-                       text="Show diagram",
+                       text="Substation diagram",
                        icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.new_substation_diagram)
 

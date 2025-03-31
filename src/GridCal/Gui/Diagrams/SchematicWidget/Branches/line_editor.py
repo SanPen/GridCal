@@ -7,6 +7,7 @@ from __future__ import annotations
 import numpy as np
 
 from typing import Union, List
+from GridCal.Gui.messages import warning_msg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox, QCheckBox
 from GridCal.Gui.gui_functions import get_list_model
@@ -105,12 +106,20 @@ class LineEditor(QDialog):
                             b_us = self.current_template.B
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            R1, X1, Bsh1 = self.current_template.get_sequence_values(circuit_idx=self.line.circuit_idx,
-                                                                                     seq=1)
-                            I_KA = self.current_template.Imax[self.line.circuit_idx]
-                            r_ohm = R1
-                            x_ohm = X1
-                            b_us = Bsh1
+
+                            if self.current_template.check():
+                                R1, X1, Bsh1, I_kA = self.current_template.get_sequence_values(
+                                    circuit_idx=self.line.circuit_idx,
+                                    seq=1
+                                )
+                                r_ohm = R1
+                                x_ohm = X1
+                                b_us = Bsh1
+                            else:
+                                warning_msg(text=f"The template {self.current_template.name} contains errors",
+                                            title="Load template")
+
+
 
                     except ValueError:
                         pass
@@ -257,11 +266,18 @@ class LineEditor(QDialog):
             self.selected_template = template
 
         elif isinstance(template, OverheadLineType):
-            R1, X1, Bsh1 = template.get_sequence_values(circuit_idx=self.line.circuit_idx, seq=1)
-            self.i_spinner.setValue(template.Imax[self.line.circuit_idx])
-            self.r_spinner.setValue(R1)
-            self.x_spinner.setValue(X1)
-            self.b_spinner.setValue(Bsh1)
+            if self.current_template.check():
+                R1, X1, Bsh1, I_kA = self.current_template.get_sequence_values(
+                    circuit_idx=self.line.circuit_idx,
+                    seq=1
+                )
+                self.i_spinner.setValue(I_kA)
+                self.r_spinner.setValue(R1)
+                self.x_spinner.setValue(X1)
+                self.b_spinner.setValue(Bsh1)
+            else:
+                warning_msg(text=f"The template {self.current_template.name} contains errors",
+                            title="Load template")
 
             self.selected_template = template
 

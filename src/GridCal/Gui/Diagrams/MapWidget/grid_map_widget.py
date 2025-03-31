@@ -222,7 +222,7 @@ class GridMapWidget(BaseDiagramWidget):
                  circuit: MultiCircuit,
                  diagram: Union[None, MapDiagram] = None,
                  call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None,
-                 call_new_substation_diagram_func: Callable[[Substation], None] = None, ):
+                 call_new_substation_diagram_func: Callable[[List[Substation]], None] = None, ):
         """
         GridMapWidget
         :param tile_src: Tiles instance
@@ -1378,7 +1378,7 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
         if self.call_new_substation_diagram_func is not None:
-            self.call_new_substation_diagram_func(substation)
+            self.call_new_substation_diagram_func([substation])
         else:
             print("call_new_substation_diagram_func is None :( ")
 
