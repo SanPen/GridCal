@@ -79,7 +79,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             fixable_err.fix(logger=logger,
                             fix_ts=self.ui.fixTimeSeriesCheckBox.isChecked())
 
-        if len(logger) > 0:
+        if logger.has_logs():
             dlg = LogsDialogue("Fixed issues", logger)
             dlg.setModal(True)
             dlg.exec()

@@ -2381,54 +2381,56 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults") ->
     :param res: GSLV's PowerFlowResults instance
     :return: PowerFlowResults instance
     """
-    results = PowerFlowResults(n=grid.get_bus_number(),
-                               m=grid.get_branch_number_wo_hvdc(),
-                               n_hvdc=grid.get_hvdc_number(),
-                               n_vsc=grid.get_vsc_number(),
-                               n_gen=grid.get_generators_number(),
-                               n_batt=grid.get_batteries_number(),
-                               n_sh=grid.get_shunt_like_device_number(),
-                               bus_names=res.bus_names,
-                               branch_names=res.branch_names,
-                               hvdc_names=res.hvdc_names,
-                               vsc_names=grid.get_vsc_names(),
-                               gen_names=grid.get_generator_names(),
-                               batt_names=grid.get_battery_names(),
-                               sh_names=grid.get_shunt_like_devices_names(),
-                               bus_types=res.bus_types)
+    results = PowerFlowResults(
+        n=grid.get_bus_number(),
+        m=grid.get_branch_number_wo_hvdc(),
+        n_hvdc=grid.get_hvdc_number(),
+        n_vsc=grid.get_vsc_number(),
+        n_gen=grid.get_generators_number(),
+        n_batt=grid.get_batteries_number(),
+        n_sh=grid.get_shunt_like_device_number(),
+        bus_names=grid.get_bus_names(),
+        branch_names=grid.get_branch_names(add_switch=True),
+        hvdc_names=grid.get_hvdc_names(),
+        vsc_names=grid.get_vsc_names(),
+        gen_names=grid.get_generator_names(),
+        batt_names=grid.get_battery_names(),
+        sh_names=grid.get_shunt_like_devices_names(),
+        bus_types=np.ones(grid.get_bus_number(), dtype=int)
+    )
 
     results.voltage = res.voltage[0, :]
-    results.Sbus = res.Scalc[0, :]
+    results.Sbus = res.S[0, :]
     results.Sf = res.Sf[0, :]
     results.St = res.St[0, :]
-    results.loading = res.Loading[0, :]
-    results.losses = res.Losses[0, :]
+    results.loading = res.loading[0, :]
+    results.losses = res.losses[0, :]
     # results.Vbranch = res.Vbranch[0, :]
     # results.If = res.If[0, :]
     # results.It = res.It[0, :]
-    results.Beq = res.Beq[0, :]
+    # results.Beq = res.Beq[0, :]
     results.m = res.tap_module[0, :]
     results.tap_angle = res.tap_angle[0, :]
-    results.F = res.F
-    results.T = res.T
-    results.hvdc_F = res.hvdc_F
-    results.hvdc_T = res.hvdc_T
-    results.Pf_hvdc = res.hvdc_Pf[0, :]
-    results.Pt_hvdc = res.hvdc_Pt[0, :]
-    results.loading_hvdc = res.hvdc_loading[0, :]
-    results.losses_hvdc = res.hvdc_losses[0, :]
-    results.bus_area_indices = grid.get_bus_area_indices()
+    # results.F = res.F
+    # results.T = res.T
+    # results.hvdc_F = res.hvdc_F[0, :]
+    # results.hvdc_T = res.hvdc_T[0, :]
+    results.Pf_hvdc = res.Pf_hvdc[0, :]
+    results.Pt_hvdc = res.Pt_hvdc[0, :]
+    results.loading_hvdc = res.loading_hvdc[0, :]
+    results.losses_hvdc = res.losses_hvdc[0, :]
+    # results.bus_area_indices = grid.get_bus_area_indices()
     # results.area_names = [a.name for a in grid.areas]
     # results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists
 
-    for rep in res.stats[0]:
-        report = ConvergenceReport()
-        for i in range(len(rep.converged)):
-            report.add(method=rep.solver[i].name,
-                       converged=rep.converged[i],
-                       error=rep.norm_f[i],
-                       elapsed=rep.elapsed[i],
-                       iterations=rep.iterations[i])
-            results.convergence_reports.append(report)
+    # for rep in res.stats[0]:
+    #     report = ConvergenceReport()
+    #     for i in range(len(rep.converged)):
+    #         report.add(method=rep.solver[i].name,
+    #                    converged=rep.converged[i],
+    #                    error=rep.norm_f[i],
+    #                    elapsed=rep.elapsed[i],
+    #                    iterations=rep.iterations[i])
+    #         results.convergence_reports.append(report)
 
     return results

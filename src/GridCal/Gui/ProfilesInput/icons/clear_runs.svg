@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="clear_runs.svg"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)">
+  <metadata
+     id="metadata12">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="963"
+     inkscape:window-height="753"
+     id="namedview8"
+     showgrid="false"
+     inkscape:zoom="1.7383042"
+     inkscape:cx="28.919447"
+     inkscape:cy="-67.163857"
+     inkscape:window-x="173"
+     inkscape:window-y="201"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg6"
+     inkscape:document-rotation="0" />
+  <path
+     sodipodi:nodetypes="csscc"
+     id="path836"
+     d="m 6.2346543,22.700042 c 7.7159037,2.037933 15.1042447,-2.016672 16.7611707,-0.582958 0,0 5.484116,2.679027 6.127844,5.302337 0.855518,3.486391 -5.305974,14.009468 -5.305974,14.009468 C 11.746956,38.027462 7.0322016,31.259994 6.2346543,22.700042 Z"
+     style="fill:#e6e6e6;stroke:#808080;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  <path
+     sodipodi:nodetypes="csccc"
+     id="path838"
+     d="M 25.637402,23.588184 41.85822,7.750306 c 0.767688,-0.749564 2.438884,0.876482 1.782516,1.614332 L 27.467472,24.948699 Z"
+     style="fill:#808080;stroke:#808080;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  <path
+     id="path840"
+     d="M 28.501261,30.871441 18.215729,22.482094"
+     style="fill:none;stroke:#808080;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+</svg>

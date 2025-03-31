@@ -146,6 +146,30 @@ class ToastManager:
         )
         self.active_toasts.append(toast)
 
+    def show_error_toast(self, message: str, duration: int = 2000):
+        """
+        Show error toast
+        :param message: Message to display
+        :param duration: duration in ms
+        """
+        self.show_toast(message=message, duration=duration, toast_type="error")
+
+    def show_warning_toast(self, message: str, duration: int = 2000):
+        """
+        Show warning toast
+        :param message: Message to display
+        :param duration: duration in ms
+        """
+        self.show_toast(message=message, duration=duration, toast_type="warning")
+
+    def show_info_toast(self, message: str, duration: int = 2000):
+        """
+        Show info toast
+        :param message: Message to display
+        :param duration: duration in ms
+        """
+        self.show_toast(message=message, duration=duration, toast_type="info")
+
     def remove_toast(self, toast: ToastWidget) -> None:
         """
         Remove toast

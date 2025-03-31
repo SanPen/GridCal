@@ -101,20 +101,32 @@ class CoordinatesInputAssociations(QtCore.QAbstractTableModel):
 
         self.__headers = ['Name', 'Code', 'x', 'y', 'latitude', 'longitude']
 
+    def update(self):
+        """
+        update table
+        """
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
+
     def append(self, val: CoordinatesInputAssociation):
         self.__values.append(val)
+        self.update()
 
     def set_x_at(self, idx, value):
         self.__values[idx].x = value
+        self.update()
 
     def set_y_at(self, idx, value):
         self.__values[idx].y = value
+        self.update()
 
     def set_latitude_at(self, idx, value):
         self.__values[idx].latitude = value
+        self.update()
 
     def set_longitude_at(self, idx, value):
         self.__values[idx].longitude = value
+        self.update()
 
     def get_name_at(self, idx):
         return self.__values[idx].name
@@ -139,6 +151,7 @@ class CoordinatesInputAssociations(QtCore.QAbstractTableModel):
         self.__values[idx].y = 0
         self.__values[idx].latitude = 0
         self.__values[idx].longitude = 0
+        self.update()
 
     def rowCount(self, parent=None):
         return len(self.__values)
@@ -149,7 +162,6 @@ class CoordinatesInputAssociations(QtCore.QAbstractTableModel):
     def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                # return self.formatter(self._data[index.row(), index.column()])
                 return str(self.__values[index.row()].get_at(index.column()))
         return None
 
@@ -394,7 +406,7 @@ class CoordinatesInputGUI(QtWidgets.QDialog):
                 for hdr in duplicate_hdr:
                     logger.add_error("Duplicated header", device=hdr)
 
-                logs_dialogue = LogsDialogue(name="Duplictaed headers", logger=logger, expand_all=True)
+                logs_dialogue = LogsDialogue(name="Duplicated headers", logger=logger, expand_all=True)
                 logs_dialogue.exec()
 
                 # filter the headers

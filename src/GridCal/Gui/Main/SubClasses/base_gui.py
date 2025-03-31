@@ -799,7 +799,7 @@ class BaseMainGui(QMainWindow):
         :param message: Message to display
         :param duration: duration in ms
         """
-        self.toast_manager.show_toast(message=message, duration=duration, toast_type="error")
+        self.toast_manager.show_error_toast(message=message, duration=duration)
 
     def show_warning_toast(self, message: str, duration: int = 2000):
         """
@@ -807,7 +807,7 @@ class BaseMainGui(QMainWindow):
         :param message: Message to display
         :param duration: duration in ms
         """
-        self.toast_manager.show_toast(message=message, duration=duration, toast_type="warning")
+        self.toast_manager.show_warning_toast(message=message, duration=duration)
 
     def show_info_toast(self, message: str, duration: int = 2000):
         """
@@ -815,4 +815,4 @@ class BaseMainGui(QMainWindow):
         :param message: Message to display
         :param duration: duration in ms
         """
-        self.toast_manager.show_toast(message=message, duration=duration, toast_type="info")
+        self.toast_manager.show_info_toast(message=message, duration=duration)

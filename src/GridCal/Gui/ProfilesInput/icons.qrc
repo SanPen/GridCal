@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/plot.svg</file>
+    <file>icons/clear_runs.svg</file>
     <file>icons/plus.svg</file>
     <file>icons/delete3.svg</file>
     <file>icons/transform.svg</file>

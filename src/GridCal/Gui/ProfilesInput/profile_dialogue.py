@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import os
 import string
-import sys
 from typing import Tuple, List, Optional
 from random import randint
 from enum import Enum
@@ -14,17 +13,26 @@ from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
-from GridCal.Gui.pandas_model import PandasModel
+import matplotlib
+
+matplotlib.use('QtAgg')  # Or 'Qt5Agg' — depending on your matplotlib version
+
+from matplotlib import pyplot as plt
+
+from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Gui.ProfilesInput.profiles_from_data_gui import Ui_Dialog
 from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
-from GridCal.Gui.messages import error_msg
+from GridCal.Gui.messages import error_msg, info_msg
+from GridCal.Gui.toast_widget import ToastManager
+from GridCalEngine import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.Devices.Parents.editable_device import uuid2idtag
-from GridCalEngine.basic_structures import Mat, BoolVec
+from GridCalEngine.Devices.Parents.editable_device import uuid2idtag, GCProp
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.basic_structures import Mat, BoolVec, Logger
 
 
-def try_parse_dates(date_series: pd.Series, formats: Optional[List[str]] = None) -> pd.Series:
+def try_parse_dates(date_series: pd.Series, formats: Optional[List[str]] = None) -> Tuple[pd.Series, str, bool]:
     """
     Tries to parse a pandas Series of strings into datetime using a list of common formats.
 
@@ -56,17 +64,18 @@ def try_parse_dates(date_series: pd.Series, formats: Optional[List[str]] = None)
         try:
             parsed = pd.to_datetime(date_series, format=fmt, errors='raise')
             print(f"Succeeded with format {fmt}")
-            return parsed
+            return parsed, f"Succeeded with format {fmt}", True
         except (ValueError, TypeError):
             continue
 
     # Try letting pandas infer if none of the formats matched
     try:
         parsed = pd.to_datetime(date_series, errors='raise')
-        return parsed
+        return parsed, f"Succeeded parsing time", True
     except Exception:
         print("Failed to parse dates using all known formats.")
-        return date_series  # Return as is if nothing worked
+        return date_series, "Failed to parse dates using all known formats.", False  # Return as is if nothing worked
+
 
 class MultiplierType(Enum):
     """
@@ -151,6 +160,13 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
 
         self.__headers = ['Name', 'Code', 'Idtag', 'Profile', 'Scale', 'Multiplier']
 
+    def update(self):
+        """
+        update table
+        """
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
+
     def append(self, val: ProfileAssociation):
         """
 
@@ -158,6 +174,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         :return:
         """
         self.__values.append(val)
+        self.update()
 
     def set_profile_at(self, idx: int, profile_name: str) -> None:
         """
@@ -167,6 +184,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         :return:
         """
         self.__values[idx].profile_name = profile_name
+        self.update()
 
     def set_scale_at(self, idx: int, value: float) -> None:
         """
@@ -176,6 +194,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         :return:
         """
         self.__values[idx].scale = value
+        self.update()
 
     def set_multiplier_at(self, idx: int, value: float) -> None:
         """
@@ -185,6 +204,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         :return:
         """
         self.__values[idx].multiplier = value
+        self.update()
 
     def get_profile_at(self, idx: int) -> str:
         """
@@ -219,6 +239,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         self.__values[idx].profile_name = ''
         self.__values[idx].scale = 1
         self.__values[idx].multiplier = 1
+        self.update()
 
     def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
@@ -245,7 +266,6 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         """
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                # return self.formatter(self._data[index.row(), index.column()])
                 return str(self.__values[index.row()].get_at(index.column()))
         return None
 
@@ -361,34 +381,42 @@ class ProfileInputGUI(QtWidgets.QDialog):
     ProfileInputGUI
     """
 
-    def __init__(self, parent=None, list_of_objects: List[ALL_DEV_TYPES] = None, magnitudes: List[str] = None):
+    def __init__(self,
+                 parent: QtWidgets.QWidget,
+                 circuit: MultiCircuit,
+                 dev_type: DeviceType,
+                 objects: List[ALL_DEV_TYPES],
+                 magnitude: str):
         """
 
         :param parent:
-        :param list_of_objects: List of objects to which set a profile to
-        :param magnitudes: Property of the objects to which set the pandas DataFrame
+        :param circuit: MultiCircuit object
+        :param dev_type: DeviceType of the objects
+        :param objects: List of objects to which set a profile to
+        :param magnitude: Property of the objects to which set the pandas DataFrame
         """
         QtWidgets.QDialog.__init__(self, parent)
 
-        if list_of_objects is None:
-            list_of_objects = list()
-
-        if magnitudes is None:
-            magnitudes = ['']
-
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.setWindowTitle('Profiles import dialogue')
+
+        self.toast_manager = ToastManager(parent=self, position_top=False)
 
         self.project_directory: str | None = None
 
-        self.magnitudes = magnitudes
+        self.circuit = circuit
+        self.magnitude = magnitude
+        self.dev_type = dev_type
+        self.prop: GCProp = objects[0].get_property_by_name(magnitude)
+        self.objects: List[ALL_DEV_TYPES] = objects
+
+        self.setWindowTitle(f'Profiles import for {dev_type.value}.{magnitude} [{self.prop.tpe}]')
 
         # results
         self.data: Mat | None = None
         self.time: pd.DatetimeIndex | None = None
-        self.zeroed: BoolVec = None  # array to know which profiles are only zeros
-        self.normalized: bool = False
+
+        self.was_accepted = False
 
         # units
         self.units = dict()
@@ -414,19 +442,12 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.units_combobox.addItems(relevant_units)
         self.ui.units_combobox.setCurrentIndex(2)
 
-        # setup the plot widget
-        self.ui.plotwidget.canvas.ax.clear()
-        self.ui.plotwidget.canvas.draw()
-
-        # initialize the objectives list
-        self.objects = list_of_objects
-
         # initialize associations
         self.also_reactive_power = False
 
         # create the table model
         self.associations = ProfileAssociations()
-        for elm in list_of_objects:
+        for elm in self.objects:
             self.associations.append(ProfileAssociation(elm=elm))
 
         self.display_associations()
@@ -443,6 +464,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.nameTransformationComboBox.setModel(get_list_model(list(self.transformations.keys())))
 
         self.original_data_frame: pd.DataFrame | None = None
+        self.fig = None
 
         self.ui.autolink_slider.setValue(100)  # Set slider to max value
 
@@ -460,11 +482,10 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.doit_button.clicked.connect(self.do_it)
         self.ui.clear_selection_button.clicked.connect(self.clear_selection)
         self.ui.transformNamesPushButton.clicked.connect(self.transform_names)
+        self.ui.plotButton.clicked.connect(self.plot_selected)
 
         # double click
-        self.ui.sources_list.doubleClicked.connect(self.sources_list_double_click)
         self.ui.assignation_table.doubleClicked.connect(self.assignation_table_double_click)
-        self.ui.tableView.doubleClicked.connect(self.print_profile)
 
     def get_multiplier(self) -> float:
         """
@@ -494,21 +515,24 @@ class ProfileInputGUI(QtWidgets.QDialog):
             # Depending on the extension load the file
             if file_extension == '.csv':
                 try:
-                    self.original_data_frame = pd.read_csv(filename,
-                                                           index_col=0,
-                                                           # dtype=float,  # do not use if dates are expected
-                                                           dayfirst=True)
+                    df = pd.read_csv(filename,
+                                     index_col=0,
+                                     # dtype=float,  # do not use if dates are expected
+                                     dayfirst=True)
+                    # try to assign
+                    self.assign_origin_df(df=df)
+
                 except ValueError as e:
                     error_msg(text=str(e), title="Value error loading CSV file")
                     return
 
                 except UnicodeDecodeError:
                     try:
-                        self.original_data_frame = pd.read_csv(filename,
-                                                               index_col=0,
-                                                               encoding='windows-1252',
-                                                               # dtype=float,  # do not use if dates are expected
-                                                               dayfirst=True)
+                        df = pd.read_csv(filename, index_col=0, encoding='windows-1252')
+
+                        # try to assign
+                        self.assign_origin_df(df=df)
+
                     except Exception as e:
                         error_msg(str(e), title="Error")
                         return
@@ -521,9 +545,10 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 sheet_index = self.excel_dialogue.excel_sheet
 
                 if sheet_index is not None:
+                    df = pd.read_excel(filename, sheet_name=sheet_index, index_col=0)
 
-                    self.original_data_frame = pd.read_excel(filename, sheet_name=sheet_index, index_col=0)
-
+                    # try to assign
+                    self.assign_origin_df(df=df)
                 else:
                     return
 
@@ -531,47 +556,162 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 error_msg(text="Could not open:\n" + filename, title="File open")
                 return
 
-            # try to format the data
-            try:
-                self.original_data_frame = self.original_data_frame.astype(float)
-            except Exception as e:
+    def try_format_the_source_data(self, df: pd.DataFrame = None) -> Tuple[pd.DataFrame, bool, Logger]:
+        """
+        This function heavily checks the data imported for invalid stuff
+        :return: corrected DataFrame if possible, all_ok?, logger
+        """
+        logger = Logger()
+        all_ok = True
+        len_prof = df.shape[0]
+        if self.circuit.has_time_series:
+            if len_prof != len(self.circuit.time_profile) and len(self.circuit.time_profile) > 0:
+                logger.add_error(msg="Profile length does not match",
+                                 value=len_prof,
+                                 expected_value=self.circuit.get_time_number())
+                all_ok = False
+            else:
+                # try to recognize the time
+                time_array, msg, ok = try_parse_dates(df.index)
 
-                # run the diagnostic
-                for i in range(self.original_data_frame.shape[0]):
-                    for j in range(self.original_data_frame.shape[1]):
-                        try:
-                            a = float(self.original_data_frame.values[i, j])
-                        except Exception as e2:
-                            print(f"{e2}: not a float value ({i}, {j}: {self.original_data_frame.values[i, j]})")
+                if not ok:
+                    logger.add_error(msg="Imported dates are garbage. "
+                                         "Use a proper format like day/month/year hour:minute:second",
+                                     value=len_prof,
+                                     expected_value=self.circuit.get_time_number())
+                    all_ok = False
+                else:
+                    self.time = time_array
+        else:
+            self.time = self.circuit.time_profile
 
-                error_msg('The format of the data is not recognized. Only int or float values are allowed')
-                return
+        if all_ok:
 
             # correct the column names
-            cols = [str(x).strip() for x in self.original_data_frame.columns.values]
-            self.original_data_frame.columns = cols
+            cols = [str(x).strip() for x in df.columns.values]
+            df.columns = cols
 
-            # replace NaN
-            self.original_data_frame.fillna(0, inplace=True)
+            # try to format the data as we want it
+            if self.prop.tpe == float:
+
+                if df.dtypes.apply(lambda dt: np.issubdtype(dt, np.number)).all():
+
+                    try:
+                        df = df.astype(float)
+                    except Exception as e:
+
+                        # run the diagnostic
+                        for i in range(df.shape[0]):
+                            for j in range(df.shape[1]):
+                                try:
+                                    a = float(df.values[i, j])
+                                except Exception as e2:
+                                    logger.add_error(msg=f"{e2}", value=df.values[i, j])
+
+                        all_ok = False
+
+                        logger.add_error(msg=f"Could not convert all data to float")
+
+                    # replace NaN
+                    try:
+                        df.fillna(0, inplace=True)
+                    except ValueError as e:
+                        logger.add_error(msg=f"Could not replace NaN")
+                else:
+                    all_ok = False
+                    logger.add_error(msg=f"We are expecting float, but the data doesn't seem to be that")
+
+            elif self.prop.tpe == int:
+
+                if df.dtypes.apply(lambda dt: np.issubdtype(dt, np.number)).all():
+
+                    try:
+                        df = df.astype(int)
+                    except Exception as e:
+
+                        logger.add_error(msg=f"Could not convert all data to int")
+
+                        # run the diagnostic
+                        for i in range(df.shape[0]):
+                            for j in range(df.shape[1]):
+                                try:
+                                    a = int(df.values[i, j])
+                                except Exception as e2:
+                                    logger.add_error(msg=f"{e2}", value=df.values[i, j])
+
+                        all_ok = False
+                else:
+                    all_ok = False
+                    logger.add_error(msg=f"We are expecting int, but the data doesn't seem to be that")
+
+            elif self.prop.tpe == bool:
+
+                if df.dtypes.apply(lambda dt: np.issubdtype(dt, np.bool)).all():
+                    try:
+                        df = df.astype(bool)
+                    except Exception as e:
+
+                        logger.add_error(msg=f"Could not convert all data to bool")
+
+                        # run the diagnostic
+                        for i in range(df.shape[0]):
+                            for j in range(df.shape[1]):
+                                try:
+                                    a = bool(df.values[i, j])
+                                except Exception as e2:
+                                    logger.add_error(msg=f"{e2}", value=df.values[i, j])
+
+                        all_ok = False
+                else:
+                    all_ok = False
+                    logger.add_error(msg=f"We are expecting bool, but the data doesn't seem to be that")
+
+        return df, all_ok, logger
+
+    def assign_origin_df(self, df: pd.DataFrame):
+        """
+        Try to assign the loaded data
+        :param df: DataFrame
+        """
+        df, all_ok, logger = self.try_format_the_source_data(df=df)
+
+        if all_ok:
+            self.original_data_frame = df
 
             # set the profile names list
             self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values],
                                           dtype=object)
-            self.display_profiles()
 
-    def sources_list_double_click(self):
+            self.ui.sources_list.setModel(get_list_model(self.profile_names))
+
+            self.toast_manager.show_info_toast("Profiles loaded for assigning...")
+
+        else:
+            if logger.has_logs():
+                dlg = LogsDialogue("Import issues", logger)
+                dlg.setModal(True)
+                dlg.exec()
+
+    def plot_selected(self):
         """
-        When an item in the sources list is double clicked, plot the series
-        :return:
+        Plot the selected profile
         """
         if self.original_data_frame is not None:
-            idx = self.ui.sources_list.selectedIndexes()[0].row()
-
-            col_name = self.original_data_frame.columns[idx]
-
-            self.ui.plotwidget.canvas.ax.clear()
-            self.original_data_frame[col_name].plot(ax=self.ui.plotwidget.canvas.ax)
-            self.ui.plotwidget.canvas.draw()
+            if len(self.ui.sources_list.selectedIndexes()) > 0:
+                idx = self.ui.sources_list.selectedIndexes()[0].row()
+                col_name = self.original_data_frame.columns[idx]
+                try:
+                    plt.ion()
+                    self.fig = plt.Figure(figsize=(8, 6))
+                    ax = self.fig.add_subplot(111)
+                    self.original_data_frame[col_name].plot(ax=ax)
+                    plt.show()
+                except TypeError as e:
+                    self.toast_manager.show_error_toast(str(e))
+            else:
+                self.toast_manager.show_warning_toast("No profile selected :/")
+        else:
+            self.toast_manager.show_warning_toast("No data loaded :/")
 
     def display_associations(self) -> None:
         """
@@ -580,29 +720,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         self.ui.assignation_table.setModel(self.associations)
         self.ui.assignation_table.repaint()
-
-    def display_profiles(self) -> None:
-        """
-
-        :return:
-        """
-        # set the loaded data_frame to the GUI
-        model = PandasModel(self.original_data_frame)
-        self.ui.tableView.setModel(model)
-        self.ui.sources_list.setModel(get_list_model(self.profile_names))
-
-    def print_profile(self):
-        """
-        prints the profile clicked on the table
-        @return:
-        """
-        if self.original_data_frame is not None:
-            idx = self.ui.tableView.selectedIndexes()[0].column()
-            name = self.profile_names[idx]
-            if idx >= 0:
-                self.ui.plotwidget.canvas.ax.clear()
-                self.original_data_frame[name].plot(ax=self.ui.plotwidget.canvas.ax)
-                self.ui.plotwidget.canvas.draw()
 
     def make_association(self, source_idx: int, obj_idx: int, scale: float = 1.0, mult: float = 1.0) -> None:
         """
@@ -753,7 +870,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             self.display_associations()
 
-    def get_profiles_data(self) -> Tuple[Mat | None, pd.DatetimeIndex | None, BoolVec | None]:
+    def get_profiles_data(self) -> Tuple[Mat | None, BoolVec | None]:
         """
         Return ths assigned profiles
         @return:
@@ -762,13 +879,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
 
         if self.original_data_frame is None:
-            return None, None, None
+            return None, None
 
         n_obj = len(self.objects)
         rows_o, cols_o = np.shape(self.original_data_frame)
 
         profiles = [None] * n_obj
-        zeroed = [False] * n_obj  # array to know which profiles are only zeros
+        zeroed = np.zeros(n_obj, dtype=bool)  # array to know which profiles are only zeros
 
         for i_obj in range(n_obj):
 
@@ -793,10 +910,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             profiles[i_obj] = vals
 
-        # try to recognize the time
-        time_profile = try_parse_dates(self.original_data_frame.index)
-
-        return np.array(profiles).transpose(), time_profile, zeroed
+        return np.array(profiles).transpose(), zeroed
 
     def clear_selection(self):
         """
@@ -826,7 +940,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
                         else:
                             self.profile_names[i] = vals[0] + '_' + vals[3] + '_' + vals[6]
                 self.original_data_frame.columns = self.profile_names
-                self.display_profiles()
 
             if mode == StringSubstitutions.PSSeBusGenerator:
 
@@ -836,13 +949,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
                         if len(vals) == 3:
                             self.profile_names[i] = vals[0] + '_1'
                 self.original_data_frame.columns = self.profile_names
-                self.display_profiles()
 
             elif mode == StringSubstitutions.PSSeBusLoad:
                 for i, name in enumerate(self.profile_names):
                     self.profile_names[i] = name + '_1'
                 self.original_data_frame.columns = self.profile_names
-                self.display_profiles()
 
     def has_profile(self, i: int) -> bool:
         """
@@ -857,29 +968,46 @@ class ProfileInputGUI(QtWidgets.QDialog):
         Close. The data has to be queried later to the object by the parent by calling get_association_data
         """
 
-        # Generate profiles
-        self.data, self.time, self.zeroed = self.get_profiles_data()
-        self.normalized = self.ui.normalized_checkBox.isChecked()
+        if self.time is not None:
 
-        if self.normalized:
-            for i in range(self.data.shape[1]):
-                mx = self.data[:, i].max()
-                if mx != 0.0:
-                    self.data[:, i] /= mx  # divide each series by the maximum
-            self.data = np.nan_to_num(self.data)  # set nan to zero
+            # Generate profiles
+            self.data, zeroed = self.get_profiles_data()
 
-        self.close()
+            if self.prop.tpe == float:
+                normalized = self.ui.normalized_checkBox.isChecked()
+            else:
+                normalized = False
 
+            # if there are no profiles, set the loaded one
+            if self.circuit.time_profile is None:
+                self.circuit.format_profiles(self.time)
+            else:
+                if self.circuit.get_time_number() == 0:
+                    self.circuit.format_profiles(self.time)
 
-if __name__ == "__main__":
-    class TestObj:
-        def __init__(self, name, code):
-            self.name = name
-            self.code = code
+            # Assign profiles
+            for i, elm in enumerate(self.objects):
+                if not zeroed[i]:
 
+                    if normalized:
+                        arr = self.data[:, i]
+                        mx = arr.max()
+                        if mx != 0.0:
+                            arr /= mx  # divide each series by the maximum of itself
 
-    app = QtWidgets.QApplication(sys.argv)
-    window = ProfileInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
-    window.resize(1.61 * 700.0, 600.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec())
+                        base_value = elm.get_snapshot_value_by_name(self.magnitude)
+                        data = arr * base_value
+                    else:
+                        data = self.data[:, i]
+
+                    # assign the profile to the object
+                    elm.set_profile_array(magnitude=self.magnitude, arr=data)
+                else:
+                    pass
+
+            self.was_accepted = True
+            self.close()
+        else:
+            self.was_accepted = False
+            info_msg(text="No time profile.\nConsider loading a valid source of data.",
+                     title="No time profile")

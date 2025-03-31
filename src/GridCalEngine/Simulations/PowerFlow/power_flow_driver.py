@@ -174,21 +174,7 @@ class PowerFlowDriver(DriverTemplate):
 
             res = gslv_pf(circuit=self.grid, pf_opt=self.options, time_series=False)
 
-            self.results = PowerFlowResults(n=self.grid.get_bus_number(),
-                                            m=self.grid.get_branch_number_wo_hvdc(),
-                                            n_hvdc=self.grid.get_hvdc_number(),
-                                            n_vsc=self.grid.get_vsc_number(),
-                                            n_gen=self.grid.get_generators_number(),
-                                            n_batt=self.grid.get_batteries_number(),
-                                            n_sh=self.grid.get_shunt_like_device_number(),
-                                            bus_names=res.bus_names,
-                                            branch_names=res.branch_names,
-                                            hvdc_names=res.hvdc_names,
-                                            vsc_names=self.grid.get_vsc_names(),
-                                            gen_names=self.grid.get_generator_names(),
-                                            batt_names=self.grid.get_battery_names(),
-                                            sh_names=self.grid.get_shunt_like_devices_names(),
-                                            bus_types=res.bus_types)
+
 
             self.results = translate_gslv_pf_results(self.grid, res)
             self.results.area_names = [a.name for a in self.grid.areas]

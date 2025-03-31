@@ -116,53 +116,31 @@ class TimeEventsMain(ObjectsTableMain):
         dev_type_text = self.get_db_object_selected_type()
 
         if dev_type_text is not None:
-            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
-
             idx = self.ui.device_type_magnitude_comboBox.currentIndex()
-            magnitude = magnitudes[idx]
 
+            magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
             dev_type = self.circuit.device_type_name_dict[dev_type_text]
             objects: List[ALL_DEV_TYPES] = self.circuit.get_elements_by_type(dev_type)
+            magnitude = magnitudes[idx]
 
-            if len(objects) > 0:
+            if len(objects) > 0 and idx > -1:
                 self.profile_input_dialogue = ProfileInputGUI(parent=self,
-                                                              list_of_objects=objects,
-                                                              magnitudes=[magnitude])
+                                                              circuit=self.circuit,
+                                                              dev_type=dev_type,
+                                                              objects=objects,
+                                                              magnitude=magnitude)
 
                 self.profile_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
                 self.profile_input_dialogue.exec()  # exec leaves the parent on hold
 
-                if self.profile_input_dialogue.time is not None:
+                # Note: the ProfileInputGUI will handle the profile assigning
 
-                    # if there are no profiles:
-                    if self.circuit.time_profile is None:
-                        self.circuit.format_profiles(self.profile_input_dialogue.time)
-
-                    elif len(self.profile_input_dialogue.time) != len(self.circuit.time_profile):
-                        warning_msg("The imported profile length does not match the existing one.\n"
-                                    "Delete the existing profiles before continuing.\n"
-                                    "The import action will not be performed")
-                        return False
-
-                    # Assign profiles
-                    for i, elm in enumerate(objects):
-                        if not self.profile_input_dialogue.zeroed[i]:
-
-                            if self.profile_input_dialogue.normalized:
-                                base_value = elm.get_snapshot_value_by_name(magnitude)
-                                data = self.profile_input_dialogue.data[:, i] * base_value
-                            else:
-                                data = self.profile_input_dialogue.data[:, i]
-
-                            # assign the profile to the object
-                            elm.set_profile_array(magnitude=magnitude, arr=data)
-                        else:
-                            pass
+                if self.profile_input_dialogue.was_accepted:
 
                     # set up sliders
-                    # self.set_up_profile_sliders()
                     self.update_date_dependent_combos()
                     self.display_profiles()
+                    self.show_info_toast("Profiles imported", duration=3000)
 
                     # ask to update active profile when magnitude is P for generators and loads
                     if len(objects) > 0:
@@ -174,6 +152,7 @@ class TimeEventsMain(ObjectsTableMain):
 
                                 if dlg.correct_active_profile.isChecked():
                                     self.fix_generators_active_based_on_the_power(ask_before=False)
+                                    self.show_info_toast("Generators active status set")
 
                                 if dlg.set_non_dispatchable.isChecked():
                                     for i, elm in enumerate(objects):
@@ -183,19 +162,25 @@ class TimeEventsMain(ObjectsTableMain):
                                         else:
                                             elm.enabled_dispatch = True
 
+                                    self.show_info_toast("Generators dispatchable status set")
+
                             elif objects[0].device_type == DeviceType.LoadDevice:
                                 ok1 = yes_no_question("Do you want to correct the loads active profile "
                                                       "based on the active power profile?",
                                                       "Match")
                                 if ok1:
                                     self.fix_loads_active_based_on_the_power(ask_before=False)
+                                    self.show_info_toast("Loads active status set")
 
+                    else:
+                        # the dialogue was closed
+                        self.show_warning_toast("No profiles imported...")
                 else:
-                    pass  # the dialogue was closed
+                    # the dialogue was closed
+                    self.show_warning_toast("No profiles imported...")
 
             else:
-                warning_msg("There are no objects to which to assign a profile. "
-                            "\nYou need to load or create a grid!")
+                self.show_error_toast("There are no objects...", duration=3000)
 
     def modify_profiles(self, operation='+'):
         """
@@ -478,6 +463,7 @@ class TimeEventsMain(ObjectsTableMain):
         if idx > -1:
             self.circuit.set_state(t=idx)
             self.get_circuit_snapshot_datetime()
+            self.show_info_toast("Profile value set to the snapshot")
         else:
             info_msg('Select a time series step to copy to the snapshot', 'Set snapshot')
 
