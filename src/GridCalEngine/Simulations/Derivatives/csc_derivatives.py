@@ -696,7 +696,7 @@ def dSt_dV_csc(Yt, V, F, T) -> Tuple[CxCSC, CxCSC]:
 
 
 @njit()
-def dSf_dVm_csc(nbus, br_indices, bus_indices, yff, yft, V, F, T) -> CxCSC:
+def dSf_dVm_csc(nbus, br_indices, bus_indices, yff, yft, Vm, Va, F, T) -> CxCSC:
     """
     dSf_dVm[br_indices, bus_indices]
     checked agins matpower derivatives
@@ -727,22 +727,22 @@ def dSf_dVm_csc(nbus, br_indices, bus_indices, yff, yft, V, F, T) -> CxCSC:
         t = T[k]
         f_idx = j_lookup[f]
         t_idx = j_lookup[t]
-        Vm_f = np.abs(V[f])
-        Vm_t = np.abs(V[t])
-        th_f = np.angle(V[f])
-        th_t = np.angle(V[t])
-        ea = np.exp((th_f - th_t) * 1.0j)
+        # Vm_f = np.abs(Vm[f])
+        # Vm_t = np.abs(Vm[t])
+        # th_f = np.angle(Va[f])
+        # th_t = np.angle(Va[t])
+        ea = np.exp((Va[f] - Va[t]) * 1.0j)
 
         # from side
         if f_idx >= 0:
-            Tx[nnz] = 2.0 * Vm_f * np.conj(yff[k]) + Vm_t * np.conj(yft[k]) * ea
+            Tx[nnz] = 2.0 * Vm[f] * np.conj(yff[k]) + Vm[t] * np.conj(yft[k]) * ea
             Ti[nnz] = k_counter
             Tj[nnz] = f_idx
             nnz += 1
 
         # to side
         if t_idx >= 0:
-            Tx[nnz] = Vm_f * np.conj(yft[k]) * ea
+            Tx[nnz] = Vm[f] * np.conj(yft[k]) * ea
             Ti[nnz] = k_counter
             Tj[nnz] = t_idx
             nnz += 1
@@ -898,13 +898,12 @@ def dPfdp_dVm_csc(nbus, br_indices, bus_indices, yff, yft, kdp, V, F, T) -> CSC:
 
 
 @njit()
-def dSf_dVa_csc(nbus, br_indices, bus_indices, yff, yft, V, F, T) -> CxCSC:
+def dSf_dVa_csc(nbus, br_indices, bus_indices, yft, V, F, T) -> CxCSC:
     """
 
     :param nbus: number of buses
     :param br_indices:
     :param bus_indices:
-    :param yff:
     :param yft:
     :param V:
     :param F:
@@ -913,7 +912,7 @@ def dSf_dVa_csc(nbus, br_indices, bus_indices, yff, yft, V, F, T) -> CxCSC:
     """
     n_row = len(br_indices)
     n_cols = len(bus_indices)
-    max_nnz = len(yff) * 2
+    max_nnz = len(yft) * 2
     mat = CxCSC(n_row, n_cols, max_nnz, False)
     Tx = np.empty(max_nnz, dtype=np.complex128)
     Ti = np.empty(max_nnz, dtype=np.int32)
@@ -928,13 +927,14 @@ def dSf_dVa_csc(nbus, br_indices, bus_indices, yff, yft, V, F, T) -> CxCSC:
         t = T[k]
         f_idx = j_lookup[f]
         t_idx = j_lookup[t]
-        Vm_f = np.abs(V[f])
-        Vm_t = np.abs(V[t])
-        th_f = np.angle(V[f])
-        th_t = np.angle(V[t])
-        ea = np.exp((th_f - th_t) * 1.0j)
 
-        if f_idx >= 0 or t_idx >= 0:
+        if f_idx >= 0 and t_idx >= 0:
+            Vm_f = np.abs(V[f])
+            Vm_t = np.abs(V[t])
+            th_f = np.angle(V[f])
+            th_t = np.angle(V[t])
+            ea = np.exp((th_f - th_t) * 1.0j)
+
             val = Vm_f * Vm_t * np.conj(yft[k]) * ea * 1.0j
 
             # from side
@@ -1031,7 +1031,7 @@ def dSf_dVa_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, y
 
 
 @njit()
-def dSt_dVm_csc(nbus, br_indices, bus_indices, ytt, ytf, V, F, T) -> CxCSC:
+def dSt_dVm_csc(nbus, br_indices, bus_indices, ytt, ytf, Vm, Va, F, T) -> CxCSC:
     """
 
     :param nbus
@@ -1039,7 +1039,8 @@ def dSt_dVm_csc(nbus, br_indices, bus_indices, ytt, ytf, V, F, T) -> CxCSC:
     :param bus_indices:
     :param ytt:
     :param ytf:
-    :param V:
+    :param Vm:
+    :param Va:
     :param F:
     :param T:
     :return:
@@ -1061,22 +1062,22 @@ def dSt_dVm_csc(nbus, br_indices, bus_indices, ytt, ytf, V, F, T) -> CxCSC:
         t = T[k]
         f_idx = j_lookup[f]
         t_idx = j_lookup[t]
-        Vm_f = np.abs(V[f])
-        Vm_t = np.abs(V[t])
-        th_f = np.angle(V[f])
-        th_t = np.angle(V[t])
-        ea = np.exp((th_f - th_t) * 1.0j)
+        # Vm_f = np.abs(V[f])
+        # Vm_t = np.abs(V[t])
+        # th_f = np.angle(V[f])
+        # th_t = np.angle(V[t])
+        ea = np.exp((Va[f] - Va[t]) * 1.0j)
 
         # from side
         if f_idx >= 0:
-            Tx[nnz] = Vm_t * np.conj(ytf[k]) * ea
+            Tx[nnz] = Vm[t] * np.conj(ytf[k]) * ea
             Ti[nnz] = k_counter
             Tj[nnz] = f_idx
             nnz += 1
 
         # to side
         if t_idx >= 0:
-            Tx[nnz] = 2 * Vm_t * np.conj(ytt[k]) + Vm_f * np.conj(ytf[k]) * ea
+            Tx[nnz] = 2 * Vm[t] * np.conj(ytt[k]) + Vm[f] * np.conj(ytf[k]) * ea
             Ti[nnz] = k_counter
             Tj[nnz] = t_idx
             nnz += 1
@@ -1813,13 +1814,13 @@ def derivatives_ma_csc_numba(nbus, nbr, iXxma, F, T, Ys, kconv, tap, tap_module,
 
 # original one
 @njit()
-def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: CxVec,
+def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: Vec,
                  kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
     :param nbus:
-    :param bus_indices:
-    :param m_indices:
+    :param bus_indices: bus indices involved
+    :param m_indices: branch indices where m is controlled
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
@@ -1979,7 +1980,7 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
             f = F[k]
             t = T[k]
 
-            YttB = Ys[k] + 1j * ((Bc[k] / 2.0))
+            YttB = Ys[k] + 1j * (Bc[k] / 2.0)
 
             # Partials of Ytt, Yff, Yft and Ytf w.r.t.ma
             dyff_dma = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))

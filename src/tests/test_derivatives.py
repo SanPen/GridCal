@@ -67,7 +67,8 @@ def check_dSf_dVm(dSf_dVm1, br_idx, bus_idx, nc: NumericalCircuit):
                                    bus_indices=bus_idx,
                                    yff=adm.yff,
                                    yft=adm.yft,
-                                   V=nc.bus_data.Vbus,
+                                   Vm=np.abs(nc.bus_data.Vbus),
+                                   Va=np.angle(nc.bus_data.Vbus),
                                    F=nc.passive_branch_data.F,
                                    T=nc.passive_branch_data.T)
 
@@ -93,7 +94,6 @@ def check_dSf_dVa(dSf_dVa1, br_idx, bus_idx, nc: NumericalCircuit):
     dSf_dVa2 = cscdiff.dSf_dVa_csc(nbus=nc.nbus,
                                    br_indices=br_idx,
                                    bus_indices=bus_idx,
-                                   yff=adm.yff,
                                    yft=adm.yft,
                                    V=nc.bus_data.Vbus,
                                    F=nc.passive_branch_data.F,
@@ -123,7 +123,8 @@ def check_dSt_dVm(dSt_dVm1, br_idx, bus_idx, nc: NumericalCircuit):
                                    bus_indices=bus_idx,
                                    ytt=adm.ytt,
                                    ytf=adm.ytf,
-                                   V=nc.bus_data.Vbus,
+                                   Vm=np.abs(nc.bus_data.Vbus),
+                                   Va=np.angle(nc.bus_data.Vbus),
                                    F=nc.passive_branch_data.F,
                                    T=nc.passive_branch_data.T)
 

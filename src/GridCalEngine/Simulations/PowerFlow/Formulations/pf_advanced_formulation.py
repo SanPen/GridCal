@@ -47,6 +47,7 @@ def adv_jacobian(nbus: int,
                  Bc: Vec,
                  V: CxVec,
                  Vm: Vec,
+                 Va: Vec,
                  Ybus_x: CxVec,
                  Ybus_p: IntVec,
                  Ybus_i: IntVec,
@@ -77,6 +78,7 @@ def adv_jacobian(nbus: int,
     :param Bc: Total changing susceptance
     :param V:
     :param Vm:
+    :param Va:
     :param Ybus_x:
     :param Ybus_p:
     :param Ybus_i:
@@ -93,17 +95,17 @@ def adv_jacobian(nbus: int,
 
     dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dva)
     dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dva)
-    dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dva, yff, yft, V, F, T).real
-    dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dva, yff, yft, V, F, T).imag
+    dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dva, yft, V, F, T).real
+    dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dva, yft, V, F, T).imag
     dPt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dPt, idx_dva, ytf, V, F, T).real
     dQt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dQt, idx_dva, ytf, V, F, T).imag
 
     dP_dVm__ = sp_slice(dS_dVm.real, idx_dP, idx_dvm)
     dQ_dVm__ = sp_slice(dS_dVm.imag, idx_dQ, idx_dvm)
-    dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dvm, yff, yft, V, F, T).real
-    dQf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dQf, idx_dvm, yff, yft, V, F, T).imag
-    dPt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dPt, idx_dvm, ytt, ytf, V, F, T).real
-    dQt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dQt, idx_dvm, ytt, ytf, V, F, T).imag
+    dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dvm, yff, yft, Vm, Va, F, T).real
+    dQf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dQf, idx_dvm, yff, yft, Vm, Va, F, T).imag
+    dPt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dPt, idx_dvm, ytt, ytf, Vm, Va, F, T).real
+    dQt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dQt, idx_dvm, ytt, ytf, Vm, Va, F, T).imag
 
     dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V).real
     dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V).imag
@@ -836,6 +838,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                              Bc=self.nc.passive_branch_data.B,
                              V=self.V,
                              Vm=self.Vm,
+                             Va=self.Va,
                              Ybus_x=self.adm.Ybus.data,
                              Ybus_p=self.adm.Ybus.indptr,
                              Ybus_i=self.adm.Ybus.indices,
