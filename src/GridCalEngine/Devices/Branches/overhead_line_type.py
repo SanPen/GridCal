@@ -312,8 +312,6 @@ class OverheadLineType(EditableDevice):
 
     @property
     def z_seq(self) -> CxMat | None:
-        if self._z_seq:
-            self.compute()
         return self._z_seq
 
     @property
