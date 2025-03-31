@@ -30,8 +30,8 @@ def test_acha():
     tower = gce.OverheadLineType(name="Tower")
 
     wire = gce.Wire(name="Panther 30/7 ACSR",
-                    diameter=21e-3,
-                    diameter_internal=9e-3,
+                    diameter=21.0,
+                    diameter_internal=9.0,
                     is_tube=True,
                     r=0.1363,
                     max_current=1)
@@ -94,7 +94,7 @@ def test_rating():
     wire = gce.Wire(
         name="485-AL1/63-ST1A",
         code="LA 545 CARDINAL",
-        diameter=30.42/1000,
+        diameter=30.42,
         r=0.0587,  # 0.0571
         max_current=0.89786,
         material="ACSR")

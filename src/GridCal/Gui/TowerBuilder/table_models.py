@@ -31,7 +31,7 @@ class WiresTable(QtCore.QAbstractTableModel):
 
         QtCore.QAbstractTableModel.__init__(self, parent)
 
-        self.header = ['Name', 'R (Ohm/km)', 'Diameter (m)', 'max current (kA)']
+        self.header = ['Name', 'R (Ohm/km)', 'Diameter (mm)', 'max current (kA)']
 
         self.converter = {0: str, 1: float, 2: float, 3: float}
 

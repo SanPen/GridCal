@@ -1001,8 +1001,8 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f: float = 50, rho: float = 100, 
         # self impedance
         z_prim[i, i] = calc_z_ii(R_int=wire_i.wire.R,
                                  is_tube=wire_i.wire.is_tube,
-                                 r_outer=wire_i.wire.diameter / 2.0,
-                                 r_inner=wire_i.wire.diameter_internal / 2.0,
+                                 r_outer=wire_i.wire.diameter / 2000.0,
+                                 r_inner=wire_i.wire.diameter_internal / 2000.0,
                                  y_i=wire_i.ypos + 1e-12,
                                  f=f,
                                  rho=rho,
@@ -1086,7 +1086,7 @@ def calc_y_matrix(wires_in_tower: ListOfWires, f: float = 50):
 
         # self impedance
         if wire_i.ypos > 0.0:
-            r = wire_i.wire.diameter / 2.0 + 1e-12  # external radius
+            r = wire_i.wire.diameter / 2000.0 + 1e-12  # external radius in m
             p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / r)
         else:
             p_prim[i, i] = 0

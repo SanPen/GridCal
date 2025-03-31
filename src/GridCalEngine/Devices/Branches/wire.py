@@ -5,7 +5,6 @@
 
 from typing import Union
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
-from trunk.misc.refferences_example import Circuit
 
 
 class Wire(EditableDevice):
@@ -30,8 +29,8 @@ class Wire(EditableDevice):
         :param max_current: Maximum current of the conductor in (kA)
         :param stranding: Stranding of the wire type
         :param material: Material of the wire type
-        :param diameter: Diameter of the wire type (m)
-        :param diameter_internal: Internal diameter (in case of tubular conductor) (m)
+        :param diameter: Diameter of the wire type (mm)
+        :param diameter_internal: Internal diameter (in case of tubular conductor) (mm)
         :param is_tube: Whether the wire is a tubular conductor
         :param code: Code of the wire type
         """
@@ -45,16 +44,15 @@ class Wire(EditableDevice):
         # self.wire_name = name
         self._stranding = str(stranding)
         self._material = str(material)
-        self.diameter = float(diameter)
-        self.diameter_internal = float(diameter_internal)
-        self.is_tube = bool(is_tube)
-
-        self.R = float(r)
-        self.max_current = float(max_current)
+        self._diameter = float(diameter)
+        self._diameter_internal = float(diameter_internal)
+        self._is_tube = bool(is_tube)
+        self._R = float(r)
+        self._max_current = float(max_current)
 
         self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor', old_names=['r'])
-        self.register(key='diameter', units='m', tpe=float, definition='Diameter of wire', old_names=['GMR', 'gmr'])
-        self.register(key='diameter_internal', units='m', tpe=float, definition='Internal radius of the conductor')
+        self.register(key='diameter', units='mm', tpe=float, definition='Diameter of wire', old_names=['GMR', 'gmr'])
+        self.register(key='diameter_internal', units='mm', tpe=float, definition='Internal radius of the conductor')
         self.register(key='is_tube', units='', tpe=bool, definition='Is it a tubular conductor?')
         self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
         self.register(key='stranding', tpe=str, definition='Stranding of wire')
@@ -84,4 +82,42 @@ class Wire(EditableDevice):
     def material(self, value: str):
         self._material = str(value)
 
+    @property
+    def diameter(self) -> float:
+        return self._diameter
 
+    @diameter.setter
+    def diameter(self, value: float) -> None:
+        self._diameter = float(value)
+
+    @property
+    def diameter_internal(self) -> float:
+        return self._diameter_internal
+
+    @diameter_internal.setter
+    def diameter_internal(self, value: float) -> None:
+        self._diameter_internal = float(value)
+
+    @property
+    def is_tube(self) -> bool:
+        return self._is_tube
+
+    @is_tube.setter
+    def is_tube(self, value: bool) -> None:
+        self._is_tube = bool(value)
+
+    @property
+    def R(self) -> float:
+        return self._R
+
+    @R.setter
+    def R(self, value: float) -> None:
+        self._R = float(value)
+
+    @property
+    def max_current(self) -> float:
+        return self._max_current
+
+    @max_current.setter
+    def max_current(self, value: float) -> None:
+        self._max_current = float(value)
