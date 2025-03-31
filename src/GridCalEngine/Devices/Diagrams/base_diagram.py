@@ -400,7 +400,7 @@ class BaseDiagram:
 
         node_devices = list()  # buses + fluid nodes
 
-        # Add buses, cn, busbars ---------------------------------------------------------------------------------------
+        # Add buses, cn, bus-bars --------------------------------------------------------------------------------------
         node_count = 0
         graph_node_dictionary = dict()
 

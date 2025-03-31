@@ -468,7 +468,7 @@ class ConfigurationMain(ResultsMain):
         :param fcn: some PluginFunction
         """
 
-        # call the main fuinction of the plugin
+        # call the main function of the plugin
         ret = fcn.get_pointer_lambda(gui_instance=self)()
 
         if fcn.call_gui and ret is not None:

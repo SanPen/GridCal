@@ -2010,6 +2010,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.max_branch_size_spinBox.setValue(widget.diagram.max_branch_width)
         self.ui.min_node_size_spinBox.setValue(widget.diagram.min_bus_width)
         self.ui.max_node_size_spinBox.setValue(widget.diagram.max_bus_width)
+        self.ui.arrow_size_size_spinBox.setValue(widget.diagram.arrow_size)
         self.ui.palette_comboBox.setCurrentIndex(self.cmap_index_dict.get(widget.diagram.palette, 0))
 
         if isinstance(widget, GridMapWidget):

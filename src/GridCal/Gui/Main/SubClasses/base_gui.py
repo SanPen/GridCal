@@ -51,6 +51,7 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
 from GridCal.Gui.python_console import PythonConsole
+from GridCal.Gui.toast_widget import ToastManager
 
 
 def terminate_thread(thread):
@@ -137,6 +138,9 @@ class BaseMainGui(QMainWindow):
         self.project_directory = os.path.expanduser("~")
 
         self.current_boundary_set: str = ""
+
+        # toast manager
+        self.toast_manager = ToastManager(parent=self, position_top=True)
 
         # threads ------------------------------------------------------------------------------------------------------
         self.painter = None
@@ -780,3 +784,11 @@ class BaseMainGui(QMainWindow):
         self.console.add_var('app', self)
         self.console.add_var('circuit', self.circuit)
         self.console.add_var('user_folder', get_create_gridcal_folder)
+
+    def show_toast(self, message: str, duration: int = 2000):
+        """
+        Show toast
+        :param message: Message to display
+        :param duration: duration in ms
+        """
+        self.toast_manager.show_toast(message=message, duration=duration)

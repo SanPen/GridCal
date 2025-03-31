@@ -1034,7 +1034,7 @@ class Ui_mainWindow(object):
         self.arrow_size_size_spinBox.setMinimum(0.000100000000000)
         self.arrow_size_size_spinBox.setMaximum(9999.000000000000000)
         self.arrow_size_size_spinBox.setSingleStep(0.100000000000000)
-        self.arrow_size_size_spinBox.setValue(20.000000000000000)
+        self.arrow_size_size_spinBox.setValue(1.000000000000000)
 
         self.gridLayout_32.addWidget(self.arrow_size_size_spinBox, 4, 1, 1, 2)
 
