@@ -181,7 +181,7 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.update_position_at_the_diagram()
-        self.update_database_position()
+        # self.update_database_position()
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
