@@ -2912,3 +2912,5 @@ class SimulationsMain(TimeEventsMain):
             self.colour_diagrams()
 
             self._remote_jobs.pop(driver_idtag)
+
+            self.show_info_toast(f"Remote results received!")

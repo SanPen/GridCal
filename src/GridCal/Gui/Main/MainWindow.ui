@@ -1271,21 +1271,6 @@
                                </property>
                               </widget>
                              </item>
-                             <item row="5" column="3" colspan="2">
-                              <widget class="QPushButton" name="redraw_pushButton">
-                               <property name="font">
-                                <font>
-                                 <pointsize>8</pointsize>
-                                </font>
-                               </property>
-                               <property name="toolTip">
-                                <string>Redraw the map or schematic with the new parameters</string>
-                               </property>
-                               <property name="text">
-                                <string>redraw</string>
-                               </property>
-                              </widget>
-                             </item>
                              <item row="1" column="3">
                               <widget class="QPushButton" name="preset3_pushButton">
                                <property name="font">
@@ -1328,6 +1313,21 @@
                                </property>
                                <property name="checked">
                                 <bool>false</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="5" column="2" colspan="3">
+                              <widget class="QPushButton" name="redraw_pushButton">
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="toolTip">
+                                <string>Redraw the map or schematic with the new parameters</string>
+                               </property>
+                               <property name="text">
+                                <string>redraw</string>
                                </property>
                               </widget>
                              </item>

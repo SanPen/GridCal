@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import os
-import asyncio
 from typing import Union, List, Callable
 import pandas as pd
 from PySide6 import QtWidgets
@@ -28,7 +27,6 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
@@ -359,11 +357,13 @@ class IoMain(ConfigurationMain):
                         # if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
                         #     # create schematic
                         #     self.add_complete_bus_branch_diagram()
-                        info_msg(text="The circuit has too many buses for an efficient diagram."
-                                      "You can create diagrams and maps for parts of the circuit "
-                                      "(or even the complete circuit) by going into the database "
-                                      "and creating diagrams from there",
-                                 title="The grid is quite big...")
+                        # info_msg(text="The circuit has too many buses for an efficient diagram."
+                        #               "You can create diagrams and maps for parts of the circuit "
+                        #               "(or even the complete circuit) by going into the database "
+                        #               "and creating diagrams from there",
+                        #          title="The grid is quite big...")
+                        self.show_info_toast("The grid is quite big, no diagram is automatically created",
+                                             duration=5000)
 
                     else:
                         # create schematic

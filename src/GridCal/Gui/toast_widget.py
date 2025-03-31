@@ -1,5 +1,5 @@
 from typing import Optional, Callable, List
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QApplication, QPushButton
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PySide6.QtCore import QTimer, Qt, QPoint
 
 
@@ -158,28 +158,3 @@ class ToastManager:
             for t in self.active_toasts:
                 t.update_offset(offset_y)
                 offset_y += t.height() + 10
-
-
-# Example usage
-if __name__ == "__main__":
-    app: QApplication = QApplication([])
-
-    main_win: QWidget = QWidget()
-    main_win.setWindowTitle("Stacked Toast Demo")
-    main_win.setFixedSize(400, 300)
-
-    layout_: QVBoxLayout = QVBoxLayout(main_win)
-
-    toast_manager_bottom = ToastManager(main_win, position_top=False)
-    toast_manager_top = ToastManager(main_win, position_top=True)
-
-    btn_bottom: QPushButton = QPushButton("Show Bottom Toast")
-    btn_bottom.clicked.connect(lambda: toast_manager_bottom.show_toast("Bottom Toast Message"))
-    layout_.addWidget(btn_bottom)
-
-    btn_top: QPushButton = QPushButton("Show Top Toast")
-    btn_top.clicked.connect(lambda: toast_manager_top.show_toast("Top Toast Message"))
-    layout_.addWidget(btn_top)
-
-    main_win.show()
-    app.exec()

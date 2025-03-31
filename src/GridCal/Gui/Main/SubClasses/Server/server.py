@@ -27,7 +27,9 @@ class ServerMain(BaseMainGui):
 
         # Server driver
         self.server_driver: ServerDriver = ServerDriver(url="", port=0, pwd="")
+        self.server_driver.connected_signal.connect(self.server_connected)
         self.server_driver.done_signal.connect(self.post_start_stop_server)  # connect the post function
+
         self.ui.server_tableView.setModel(self.server_driver.data_model)
 
         # menu
@@ -131,8 +133,16 @@ class ServerMain(BaseMainGui):
         """
         if not self.server_driver.is_running():
             if self.server_driver.logger.has_logs():
-                self.show_warning_toast(message="Could not connect to the server")
+                self.show_error_toast(message="Could not connect to the server :/")
                 self.ui.actionEnable_server_mode.setChecked(False)
+
+    def server_connected(self):
+        """
+        Called upon server connection
+        :return:
+        """
+        self.show_info_toast(message="Connected!")
+
 
     def get_results(self):
         """

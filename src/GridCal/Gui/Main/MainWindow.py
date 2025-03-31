@@ -1049,12 +1049,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_32.addWidget(self.max_branch_size_spinBox, 3, 3, 1, 2)
 
-        self.redraw_pushButton = QPushButton(self.frame_24)
-        self.redraw_pushButton.setObjectName(u"redraw_pushButton")
-        self.redraw_pushButton.setFont(font2)
-
-        self.gridLayout_32.addWidget(self.redraw_pushButton, 5, 3, 1, 2)
-
         self.preset3_pushButton = QPushButton(self.frame_24)
         self.preset3_pushButton.setObjectName(u"preset3_pushButton")
         self.preset3_pushButton.setFont(font2)
@@ -1073,6 +1067,12 @@ class Ui_mainWindow(object):
         self.branch_width_based_on_flow_checkBox.setChecked(False)
 
         self.gridLayout_32.addWidget(self.branch_width_based_on_flow_checkBox, 5, 0, 1, 2)
+
+        self.redraw_pushButton = QPushButton(self.frame_24)
+        self.redraw_pushButton.setObjectName(u"redraw_pushButton")
+        self.redraw_pushButton.setFont(font2)
+
+        self.gridLayout_32.addWidget(self.redraw_pushButton, 5, 2, 1, 3)
 
 
         self.gridLayout.addWidget(self.frame_24, 3, 0, 1, 2)
@@ -5273,10 +5273,6 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.max_branch_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
 #if QT_CONFIG(tooltip)
-        self.redraw_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Redraw the map or schematic with the new parameters", None))
-#endif // QT_CONFIG(tooltip)
-        self.redraw_pushButton.setText(QCoreApplication.translate("mainWindow", u"redraw", None))
-#if QT_CONFIG(tooltip)
         self.preset3_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Apply municipality meaningful sizes", None))
 #endif // QT_CONFIG(tooltip)
         self.preset3_pushButton.setText(QCoreApplication.translate("mainWindow", u"Municipality", None))
@@ -5285,6 +5281,10 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.preset4_pushButton.setText(QCoreApplication.translate("mainWindow", u"Street", None))
         self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
+#if QT_CONFIG(tooltip)
+        self.redraw_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Redraw the map or schematic with the new parameters", None))
+#endif // QT_CONFIG(tooltip)
+        self.redraw_pushButton.setText(QCoreApplication.translate("mainWindow", u"redraw", None))
         self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Settings", None))
         self.schematic_step_label.setText(QCoreApplication.translate("mainWindow", u"Snapshot", None))
 #if QT_CONFIG(tooltip)
