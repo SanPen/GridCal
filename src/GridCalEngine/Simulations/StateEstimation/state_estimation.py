@@ -281,7 +281,7 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
 
     # form the sub-mismatch vectors
 
-    # pack the mismatch vector
+    # pack the mismatch vector (calculated estimates in per-unit)
     h = np.r_[
         Sf[inputs.pf_idx].real,
         S[inputs.p_idx].real,
@@ -291,7 +291,7 @@ def Jacobian_SE(Ybus, Yf, Yt, V, f, t, inputs, pvpq):
         np.abs(V[inputs.vm_m_idx])
     ]
 
-    return H, h, S
+    return H, h, S # Return Sbus in pu
 
 
 def solve_se_lm(nc: NumericalCircuit,
@@ -320,10 +320,27 @@ def solve_se_lm(nc: NumericalCircuit,
     n = Ybus.shape[0]
     V = np.ones(n, dtype=complex)
 
-    # pick the measurements and uncertainties
-    z, sigma = se_input.get_measurements_and_deviations()
+    # pick the measurements and uncertainties (initially in physical units: MW, MVAr, A, pu V)
+    z_phys, sigma_phys = se_input.get_measurements_and_deviations()
 
-    # compute the weights matrix
+    # Convert power measurements and sigmas to per-unit
+    z = np.copy(z_phys)
+    sigma = np.copy(sigma_phys)
+    Sbase = nc.Sbase
+    
+    # Determine indices for power measurements based on the order in get_measurements_and_deviations
+    pf_end = len(se_input.pf_value)
+    p_end = pf_end + len(se_input.p_idx)
+    qf_end = p_end + len(se_input.qf_value)
+    q_end = qf_end + len(se_input.q_idx)
+    
+    # Scale Pf, P, Qf, Q measurements in z
+    z[0:q_end] /= Sbase
+    
+    # Scale Pf, P, Qf, Q sigmas
+    sigma[0:q_end] /= Sbase
+
+    # compute the weights matrix using per-unit sigma
     W = csc_matrix(np.diag(1.0 / np.power(sigma, 2.0)))
 
     # Levenberg-Marquardt method
@@ -345,7 +362,7 @@ def solve_se_lm(nc: NumericalCircuit,
 
     while not converged and iter_ < max_iter:
 
-        # measurements error
+        # measurements error (in per-unit)
         dz = z - h
 
         # System matrix

@@ -22,14 +22,16 @@ def test_3_node() -> None:
     br3 = Line(bus_from=b2, bus_to=b3, name='Br3', r=0.03, x=0.08)
 
     # add measurements
-    grid.add_pf_measurement(PfMeasurement(0.888, 0.008, br1))
-    grid.add_pf_measurement(PfMeasurement(1.173, 0.008, br2))
+    Sb = grid.Sbase
 
-    grid.add_qf_measurement(QfMeasurement(0.568, 0.008, br1))
-    grid.add_qf_measurement(QfMeasurement(0.663, 0.008, br2))
+    grid.add_pf_measurement(PfMeasurement(0.888 * Sb, 0.008 * Sb, br1))
+    grid.add_pf_measurement(PfMeasurement(1.173 * Sb, 0.008 * Sb, br2))
 
-    grid.add_pi_measurement(PiMeasurement(-0.501, 0.01, b2))
-    grid.add_qi_measurement(QiMeasurement(-0.286, 0.01, b2))
+    grid.add_qf_measurement(QfMeasurement(0.568 * Sb, 0.008 * Sb, br1))
+    grid.add_qf_measurement(QfMeasurement(0.663 * Sb, 0.008 * Sb, br2))
+
+    grid.add_pi_measurement(PiMeasurement(-0.501 * Sb, 0.01 * Sb, b2))
+    grid.add_qi_measurement(QiMeasurement(-0.286 * Sb, 0.01 * Sb, b2))
 
     grid.add_vm_measurement(VmMeasurement(1.006, 0.004, b1))
     grid.add_vm_measurement(VmMeasurement(0.968, 0.004, b2))
