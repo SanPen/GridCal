@@ -229,7 +229,11 @@ def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
         )
 
         # return server response
-        return response.json()
+        try:
+            return response.json(), True
+        except requests.exceptions.JSONDecodeError as e:
+            print("requests.exceptions.JSONDecodeError: ", e)
+            return response.text, False
     else:
         print(f"Requests not available due to an error on import")
 

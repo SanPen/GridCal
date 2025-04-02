@@ -26,7 +26,7 @@ class ServerMain(BaseMainGui):
         BaseMainGui.__init__(self, parent=parent)
 
         # Server driver
-        self.server_driver: ServerDriver = ServerDriver(url="", port=0, pwd="")
+        self.server_driver: ServerDriver = ServerDriver(url="", port=0, pwd="", secure=False)
         self.server_driver.connected_signal.connect(self.server_connected)
         self.server_driver.done_signal.connect(self.post_start_stop_server)  # connect the post function
 
@@ -61,7 +61,8 @@ class ServerMain(BaseMainGui):
         return {"url": self.ui.server_url_lineEdit.text(),
                 "port": self.ui.server_port_spinBox.value(),
                 "user": "",
-                "pwd": self.ui.server_pwd_lineEdit.text()}
+                "pwd": self.ui.server_pwd_lineEdit.text(),
+                "secure": self.ui.secureServerConnectionCheckBox.isChecked(),}
 
     def save_server_config(self):
         """
@@ -81,6 +82,7 @@ class ServerMain(BaseMainGui):
         self.ui.server_port_spinBox.setValue(data.get("port", 8080))
         # "user": "",
         self.ui.server_pwd_lineEdit.setText(data.get("pwd", "1234"))
+        self.ui.secureServerConnectionCheckBox.setChecked(data.get("secure", True))
 
     def load_server_config(self) -> None:
         """
@@ -107,6 +109,7 @@ class ServerMain(BaseMainGui):
             self.server_driver.set_values(url=self.ui.server_url_lineEdit.text().strip(),
                                           port=self.ui.server_port_spinBox.value(),
                                           pwd=self.ui.server_pwd_lineEdit.text().strip(),
+                                          secure=self.ui.secureServerConnectionCheckBox.isChecked(),
                                           status_func=self.ui.server_status_label.setText)
 
             # save the last server config

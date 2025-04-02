@@ -179,7 +179,6 @@ class ConfigurationMain(ResultsMain):
                 }
             },
             "linear": {
-
                 "ptdf_threshold": self.ui.ptdf_threshold_doubleSpinBox,
                 "lodf_threshold": self.ui.lodf_threshold_doubleSpinBox
             },
