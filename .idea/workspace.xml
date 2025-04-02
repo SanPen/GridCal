@@ -28,18 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Test tower composition">
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/EMTP.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/Panther_Cable.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/Saved_Line.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/line_constants.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/line_constants_bundle.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/line_constants_wire_bundling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Carson impedance calculation">
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/Nordic_Grid.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_tower_composition.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_tower_composition.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Function_Test_Tower_Composition.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Function_Test_Tower_Composition.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +71,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -182,6 +173,7 @@
     "Python.ExecuteGridCal.executor": "Run",
     "Python.Function_Test_Tower_Composition.executor": "Run",
     "Python.GridCalMain.executor": "Run",
+    "Python.Nordic_Grid.executor": "Debug",
     "Python.Panther_Cable.executor": "Run",
     "Python.Saved_Line.executor": "Debug",
     "Python.SeriesImpedance.executor": "Run",
@@ -196,7 +188,7 @@
     "Python.python_console.executor": "Run",
     "Python.raw_imp_exp_test.executor": "Run",
     "Python.readme_checks.executor": "Run",
-    "Python.test_power_flow.executor": "Run",
+    "Python.test_power_flow.executor": "Debug",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
     "Python.update_gui_file.executor": "Run",
     "Python.upload_to_pypi.executor": "Run",
@@ -204,7 +196,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "#331 on #343__extend__objects__for__3__phase",
+    "git-widget-placeholder": "#352 on #343__extend__objects__for__3__phase",
     "last_opened_file_path": "C:/Users/alexb/OneDrive/eRoots/GridCal/src/trunk/three_phase",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -751,11 +743,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests in line_constants.py" />
-        <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true" />
+        <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.Python tests in line_constants.py" />
+        <item itemvalue="Python.upload_to_pypi" />
+        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -2181,11 +2173,6 @@
           <option name="timeStamp" value="2387" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py</url>
-          <line>436</line>
-          <option name="timeStamp" value="2406" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/ucte/ucte_to_gridcal.py</url>
           <line>234</line>
           <option name="timeStamp" value="2407" />
@@ -2256,9 +2243,9 @@
           <option name="timeStamp" value="2462" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>4</line>
-          <option name="timeStamp" value="2463" />
+          <url>file://$PROJECT_DIR$/src/trunk/three_phase/Nordic_Grid.py</url>
+          <line>7</line>
+          <option name="timeStamp" value="2464" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
