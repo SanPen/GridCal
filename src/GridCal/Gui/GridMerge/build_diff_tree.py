@@ -95,8 +95,8 @@ def populate_tree(tree_widget, base: MultiCircuit, diff: MultiCircuit,
 
                     child_item = QtWidgets.QTreeWidgetItem(
                         parent_item,
-                        [f"{elm.device_type.value}", "Mod", f"{elm.idtag}", f"{elm.name}",
-                         prop.name, str(base_val), str(new_val)]
+                        [f"{diff_name}", f"{elm.device_type.value}", "Mod", f"{elm.idtag}", 
+                         f"{elm.name}", prop.name, str(base_val), str(new_val)]
                     )
                     child_item.setCheckState(0, Qt.CheckState.Unchecked)
 
