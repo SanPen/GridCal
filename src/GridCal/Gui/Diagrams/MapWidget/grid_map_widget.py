@@ -2472,7 +2472,7 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
     bus_pool = [(b, 0) for b in circuit.buses if b.substation in substations]
 
     voltage_levels = set()
-    substations_extended = set()
+    substations_extended = set(substations)
     selected_branches = set()
 
     while len(bus_pool) > 0:
@@ -2482,7 +2482,8 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
 
         if bus.voltage_level is not None:
             voltage_levels.add(bus.voltage_level)
-            substations_extended.add(bus.substation)
+            if bus.substation not in substations_extended:
+                substations_extended.add(bus.substation)
 
         if level < max_level:
 
