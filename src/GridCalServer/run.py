@@ -82,6 +82,12 @@ if __name__ == "__main__":
                         help="Path to the certificate file that the server generates")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host IP address")
     parser.add_argument("--port", type=int, default=8001, help="Port to run the server on")
+    parser.add_argument("--secure", type=bool, default=True, help="Use https?")
+    parser.add_argument("--master", type=bool, default=True, help="Use https?")
+    parser.add_argument("--master_host", type=str, default="0.0.0.0", help="URL of the master instance")
+    parser.add_argument("--master_port", type=int, default=80, help="Port of the master instance")
+    parser.add_argument("--user", type=str, default="", help="username")
+    parser.add_argument("--pwd", type=str, default="", help="Password")
 
     # Parse arguments
     args = parser.parse_args()
@@ -89,5 +95,11 @@ if __name__ == "__main__":
     # Call the start_server function with the parsed arguments
     start_server(key_file_name=args.key_fname,
                  cert_file_name=args.cert_fname,
-                 master_host=args.host,
-                 master_port=args.port)
+                 port=args.port,
+                 domain=args.host,
+                 master_host=args.master_host,
+                 master_port=args.master_port,
+                 secure=args.secure,
+                 is_master=args.master,
+                 username=args.user,
+                 password=args.pwd)
