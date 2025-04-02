@@ -148,6 +148,10 @@ class StateEstimation(DriverTemplate):
 
             self.results.convergence_reports.append(report)
 
+            # Scale power results from per-unit to MVA before applying
+            island_sbase = island.Sbase
+            solution.Scalc *= island_sbase
+
             self.results.apply_from_island(
                 results=solution,
                 b_idx=island.bus_data.original_idx,

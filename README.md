@@ -1274,6 +1274,8 @@ An easier alternative to contribute is to use the GridCal objects and functions 
 in a script-like fashion. Again, if that meets the functional and quality standards that we impose, 
 we'll take care of the integration.
 
+Contributions like a typo fixes must be addressed via issues since we don't allow those as pull requests.
+
 All contributions must come with testing.
 
 ## Contact

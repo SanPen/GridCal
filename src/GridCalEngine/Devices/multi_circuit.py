@@ -2019,11 +2019,21 @@ class MultiCircuit(Assets):
         else:
             nt = self.get_time_number()
 
-        if self.snapshot_time != base_grid.snapshot_time:
+        if (self.snapshot_time.second != base_grid.snapshot_time.second or
+            self.snapshot_time.minute != base_grid.snapshot_time.minute or
+            self.snapshot_time.hour != base_grid.snapshot_time.hour or
+            self.snapshot_time.day != base_grid.snapshot_time.day or 
+            self.snapshot_time.month != base_grid.snapshot_time.month or
+            self.snapshot_time.year != base_grid.snapshot_time.year):
             logger.add_error(msg="Different snapshot times",
                              device_class="snapshot time",
                              value=str(base_grid.get_snapshot_time_unix),
                              expected_value=self.get_snapshot_time_unix)
+        # if self.snapshot_time != base_grid.snapshot_time:
+        #     logger.add_error(msg="Different snapshot times",
+        #                      device_class="snapshot time",
+        #                      value=str(base_grid.get_snapshot_time_unix),
+        #                      expected_value=self.get_snapshot_time_unix)
 
         # --------------------------------------------------------------------------------------------------------------
         # Pass 1: compare this grid with the base to discover added and modified elements

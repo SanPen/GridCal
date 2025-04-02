@@ -4603,6 +4603,11 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_8.addWidget(self.server_pwd_lineEdit)
 
+        self.secureServerConnectionCheckBox = QCheckBox(self.frame_2)
+        self.secureServerConnectionCheckBox.setObjectName(u"secureServerConnectionCheckBox")
+
+        self.horizontalLayout_8.addWidget(self.secureServerConnectionCheckBox)
+
         self.horizontalSpacer_7 = QSpacerItem(304, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer_7)
@@ -6030,6 +6035,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.server_pwd_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Type here the GridCal server password (ask your IT team)", None))
 #endif // QT_CONFIG(tooltip)
+        self.secureServerConnectionCheckBox.setText(QCoreApplication.translate("mainWindow", u"Secure", None))
         self.server_status_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Server", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.SettingsTab), QCoreApplication.translate("mainWindow", u"Settings", None))

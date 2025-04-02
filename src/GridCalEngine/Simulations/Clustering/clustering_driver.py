@@ -20,7 +20,7 @@ class ClusteringDriver(DriverTemplate):
     def __init__(self, grid: MultiCircuit, options: ClusteringAnalysisOptions):
         """
         Clustering analysis driver constructor
-        :param grid: Multicircuit instance
+        :param grid: MultiCircuit instance
         :param options: ClusteringAnalysisOptions
         """
         DriverTemplate.__init__(self, grid=grid)

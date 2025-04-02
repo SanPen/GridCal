@@ -147,7 +147,8 @@ class ServerDriver(QThread):
     sync_event = Signal()
     items_processed_event = Signal()
 
-    def __init__(self, url: str, port: int, pwd: str, sleep_time: int = 2, status_func: Callable[[str], None] = None):
+    def __init__(self, url: str, port: int, pwd: str, sleep_time: int = 2, status_func: Callable[[str], None] = None,
+                 secure: bool = False):
         """
         Constructor
         :param url: Server URL
@@ -163,6 +164,7 @@ class ServerDriver(QThread):
         self.pwd = pwd
         self.sleep_time = sleep_time
         self.status_func: Callable[[str], None] = status_func
+        self.secure = secure
         self.__running__ = False
 
         self.logger = Logger()
@@ -175,19 +177,23 @@ class ServerDriver(QThread):
         self.__cancel__ = False
         self.__pause__ = False
 
-    def set_values(self, url: str, port: int, pwd: str, sleep_time: int = 2, status_func: Callable[[str], None] = None):
+    def set_values(self, url: str, port: int, pwd: str, sleep_time: int = 2,
+                   secure: bool = False,
+                   status_func: Callable[[str], None] = None):
         """
         Set the values
         :param url: Server URL
         :param port: Server port
         :param pwd: Server password
         :param sleep_time: Sleep time (s)
+        :param secure: Use https?
         :param status_func: a text function pointer
         """
         self.url = url
         self.port = port
         self.pwd = pwd
         self.sleep_time = sleep_time
+        self.secure = secure
         self.status_func: Callable[[str], None] = status_func
         self.__running__ = False
         self.logger = Logger()
@@ -206,7 +212,10 @@ class ServerDriver(QThread):
         Base URL of the service
         :return:
         """
-        return f"https://{self.url}:{self.port}"
+        if self.secure:
+            return f"https://{self.url}:{self.port}"
+        else:
+            return f"http://{self.url}:{self.port}"
 
     def get_certificate_path(self):
 
@@ -504,9 +513,15 @@ class RemoteJobDriver(QThread):
         model_data = gather_model_as_jsons_for_communication(circuit=self.grid, instruction=self.instruction)
 
         try:
-            response = send_json_data(json_data=model_data,
-                                      endpoint_url=websocket_url,
-                                      certificate=self.certificate_path)
+            response, ok = send_json_data(json_data=model_data,
+                                          endpoint_url=websocket_url,
+                                          certificate=self.certificate_path)
+
+            if not ok:
+                response_text = response
+                self.logger.add_error("Response error", value=response_text)
+                response = None
+
         except requests.exceptions.ConnectionError as e:
             warn(str(e))
             response = None
@@ -515,7 +530,6 @@ class RemoteJobDriver(QThread):
         if response is not None:
 
             success = response.get("success", False)
-
 
             if success:
                 results_data = response["results"]
