@@ -6,7 +6,8 @@ from __future__ import annotations
 import webbrowser
 from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
-from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsRectItem
+from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsRectItem, \
+    QMessageBox
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
@@ -20,10 +21,12 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
+from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
+from GridCal.Gui.Diagrams import SchematicWidget
+from GridCal.Gui.Diagrams.SchematicWidget import schematic_widget
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
-    from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 
 
 class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
@@ -108,7 +111,8 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         :param se: other SubstationGraphicItem
         """
         self._callbacks += se._callbacks
-        self.voltage_level_graphics += se.voltage_level_graphics
+        for vl_graphic in se.voltage_level_graphics:
+            self.voltage_level_graphics.append(vl_graphic)
 
     def set_size(self, r: float):
         """
@@ -514,8 +518,6 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         dialog.setModal(True)
         dialog.exec()
 
-
-
     def move_to_api_coordinates(self):
         """
         Function to move the graphics to the Database location
@@ -544,7 +546,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         dlg.exec()
 
         if dlg.is_accepted:
-
+            selected_buses = []
             deleted_api_objs: List[Substation] = list()
 
             # Collect all codes to merge
@@ -556,15 +558,18 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                 if merged_codes == "":
                     merged_codes = se_graphics.api_object.code
                 else:
-                    merged_codes = merged_codes + ',' + se_graphics.api_object.code
+                    if se_graphics.api_object.code != "":
+                        merged_codes = merged_codes + ',' + se_graphics.api_object.code
 
                 deleted_api_objs.append(se_graphics.api_object)
 
                 if se_graphics != self:
                     self.merge(se=se_graphics)
-                    self.editor.remove_substation(substation=se_graphics,
-                                                  delete_from_db=True,
-                                                  delete_connections=False)
+                    sub = self.editor.graphics_manager.delete_device(se_graphics.api_object)
+                    self.editor.map.diagram_scene.removeItem(sub)
+                    # self.editor.remove_substation(substation=se_graphics,
+                    #                               delete_from_db=True,
+                    #                               delete_connections=False)
 
             # Update the code of the base substation
             self.api_object.code = merged_codes  # Needed?
@@ -578,11 +583,14 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
             # re-index the stuff pointing at deleted api elements to this api object
             for vl in self.editor.circuit.voltage_levels:
                 if vl.substation in deleted_api_objs:
+                    print(f'{vl.substation.name} changed to {self.api_object.name} for {vl.name}')
                     vl.substation = self.api_object
 
             for bus in self.editor.circuit.buses:
                 if bus.substation in deleted_api_objs:
+                    print(f'{bus.substation.name} changed to {self.api_object.name} for {bus.name}')
                     bus.substation = self.api_object
+                    selected_buses.append(bus)
 
             # remove connections that are from and to the same substation
             for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
@@ -590,7 +598,42 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                     if elm.api_object.get_substation_from() == elm.api_object.get_substation_to():
                         self.editor.remove_branch_graphic(elm, delete_from_db=True)
 
-        self.update_position_at_the_diagram()  # always update
+            for substation in deleted_api_objs:
+                if substation == self.api_object:
+                    pass
+                else:
+                    self.editor.circuit.delete_substation(obj=substation)
+
+            self.update_position_at_the_diagram()  # always update
+
+            if len(selected_buses):
+                ok = yes_no_question(f"Do you want to create a schematic diagram for substation "
+                                     f"{self.api_object.name} to perform the desired connections?",
+                                     "Create substation schematic")
+
+                if ok:
+                    diagram = schematic_widget.make_diagram_from_buses(circuit=self.editor.circuit,
+                                                                       buses=selected_buses,
+                                                                       name=self.api_object.name + " diagram")
+
+                    diagram_widget = schematic_widget.SchematicWidget(gui=self.editor.gui,
+                                                                      circuit=self.editor.circuit,
+                                                                      diagram=diagram,
+                                                                      default_bus_voltage=self.editor.gui.ui.defaultBusVoltageSpinBox.value(),
+                                                                      time_index=self.editor.gui.get_diagram_slider_index())
+
+                    self.editor.gui.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                                   diagram=diagram)
+                    self.editor.gui.set_diagrams_list_view()
+                else:
+                    return
+            else:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Information)
+                msg.setText("The substation merged have no associated buses. No schematic can be produced.")
+                msg.setWindowTitle("Merging information")
+                msg.exec()
+                return
 
     def new_substation_diagram(self):
         """
