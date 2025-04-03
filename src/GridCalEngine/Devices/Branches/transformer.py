@@ -399,7 +399,8 @@ class Transformer2W(ControllableBranchParent):
 
         return errors
 
-    def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float, round_vals: bool=False):
+    def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float,
+                               round_vals: bool=False) -> "Transformer2W":
         """
         Fill R, X, G, B from the short circuit study values
         :param Pcu: copper_losses (kW)

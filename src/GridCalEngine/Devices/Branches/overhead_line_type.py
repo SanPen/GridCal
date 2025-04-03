@@ -598,7 +598,7 @@ class OverheadLineType(EditableDevice):
             B0 = y0.imag
 
         z2 = (R0 + 1j * X0) * length / Zbase
-        y2 = 1j * Bsh0 * length * -1e6 / Ybase
+        y2 = 1j * Bsh0 * length * 1e-6 / Ybase
 
         # get the rating in MVA = kA * kV
         rate = self.Imax[circuit_index] * Vn * np.sqrt(3)

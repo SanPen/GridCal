@@ -551,7 +551,7 @@ class Line(BranchParent):
         return elm
 
     def fill_design_properties(self, r_ohm: float, x_ohm: float, c_nf: float, length: float,
-                               Imax: float, freq: float, Sbase: float, apply_to_profile: bool = True, ):
+                               Imax: float, freq: float, Sbase: float, apply_to_profile: bool = True, ) -> "Line":
         """
         Fill R, X, B from not-in-per-unit parameters
         :param r_ohm: Resistance per km in OHM/km
