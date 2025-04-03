@@ -117,6 +117,15 @@ def test_rating():
 
     tower.compute()
 
-    expected_rate = 1.8 # kA
+    expected_rate = 1.8  # kA
+
+    bus1 = gce.Bus(name="Bus 1", Vnom=400)
+    bus2 = gce.Bus(name="Bus 2", Vnom=400)
+    line = gce.Line(name="Line", bus_from=bus1, bus_to=bus2, length=0.5)
+
+    line.apply_template(tower, 100, 50)
 
     assert np.isclose(tower.Imax[0], expected_rate, atol=0.1)
+    assert np.isclose(line.R, 9.1744e-6, atol=1e-6)
+    assert np.isclose(line.X, 0.0001031, atol=1e-6)
+    assert np.isclose(line.B, 0.0027729, atol=1e-6)
