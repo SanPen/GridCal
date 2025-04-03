@@ -2472,7 +2472,7 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
     bus_pool = [(b, 0) for b in circuit.buses if b.substation in substations]
 
     voltage_levels = set()
-    substations_extended = set(substations)
+    substations_extended = set()
     selected_branches = set()
 
     while len(bus_pool) > 0:
@@ -2522,7 +2522,13 @@ def get_devices_to_expand(circuit: MultiCircuit, substations: List[Substation], 
         else:
             raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
-    return list(substations_extended), list(voltage_levels), lines, dc_lines, hvdc_lines
+    list_substations_extended = list(substations_extended)
+
+    for substation in substations:
+        if substation not in list_substations_extended:
+            list_substations_extended.append(substation)
+
+    return list_substations_extended, list(voltage_levels), lines, dc_lines, hvdc_lines
 
 
 def make_diagram_from_substations(circuit: MultiCircuit,

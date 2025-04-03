@@ -22,7 +22,6 @@ from GridCalEngine.Devices import VoltageLevel
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams import SchematicWidget
 from GridCal.Gui.Diagrams.SchematicWidget import schematic_widget
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -112,7 +111,9 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         """
         self._callbacks += se._callbacks
         for vl_graphic in se.voltage_level_graphics:
-            self.voltage_level_graphics.append(vl_graphic)
+            self.register_voltage_level(vl=vl_graphic.get_copy(new_parent=self))
+
+        self.sort_voltage_levels()
 
     def set_size(self, r: float):
         """
@@ -241,6 +242,23 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                                            longitude=long,
                                            graphic_object=self)
 
+    def refresh(self, pos: QPointF):
+        """
+        This function refreshes the x, y coordinates of the graphic item
+        Returns:
+
+        """
+
+        x = pos.x() - self.rect().width() / 2
+        y = pos.y() - self.rect().height() / 2
+        self.setRect(x, y, self.rect().width(), self.rect().height())
+        self.set_callbacks(pos.x(), pos.y())
+
+        for vl_graphics in self.voltage_level_graphics:
+            vl_graphics.center_on_substation()
+
+        self.update_position_at_the_diagram()  # always update
+
     def get_center_pos(self) -> QPointF:
         """
         Get the center position
@@ -258,22 +276,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         if self.hovered:
             # super().mouseMoveEvent(event)
             pos = self.mapToParent(event.pos())
-            x = pos.x() - self.rect().width() / 2
-            y = pos.y() - self.rect().height() / 2
-            self.setRect(x, y, self.rect().width(), self.rect().height())
-            self.set_callbacks(pos.x(), pos.y())
-
-            for vl_graphics in self.voltage_level_graphics:
-                vl_graphics.center_on_substation()
-
-            self.update_position_at_the_diagram()  # always update
-
-        # QGraphicsRectItem.mouseMoveEvent(self, event)
-        # pos = self.mapToParent(event.pos())
-        # x = pos.x() + self.rect().width() / 2
-        # y = pos.y() + self.rect().height() / 2
-        # self.set_callbacks(x, y)
-        # self.update_position_at_the_diagram()  # always update
+            self.refresh(pos=pos)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -417,7 +420,8 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
             "Remove substation from schematic")
 
         if ok:
-            self.editor.remove_substation(substation=self, delete_from_db=False)
+            self.editor.remove_substation(api_object=self.api_object, delete_from_db=False, substation_buses=[],
+                                          voltage_levels=[])
 
     def remove_function_from_schematic_and_db(self) -> None:
         """
@@ -604,36 +608,48 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                 else:
                     self.editor.circuit.delete_substation(obj=substation)
 
-            self.update_position_at_the_diagram()  # always update
+            self.refresh(pos=self.get_pos())  # always update
 
             if len(selected_buses):
-                ok = yes_no_question(f"Do you want to create a schematic diagram for substation "
-                                     f"{self.api_object.name} to perform the desired connections?",
-                                     "Create substation schematic")
 
-                if ok:
-                    diagram = schematic_widget.make_diagram_from_buses(circuit=self.editor.circuit,
-                                                                       buses=selected_buses,
-                                                                       name=self.api_object.name + " diagram")
+                dlg = CheckListDialogue(
+                    objects_list=[f'Create schematic diagram for the recipient substation {self.api_object.name}',
+                                  f'Unify buses and voltage levels with the same nominal voltage in recipient '
+                                  f'substation {self.api_object.name}'],
+                    title=f"Finishing merging proces in substation{self.api_object.name}"
+                )
+                dlg.setModal(True)
+                dlg.exec()
 
-                    diagram_widget = schematic_widget.SchematicWidget(gui=self.editor.gui,
-                                                                      circuit=self.editor.circuit,
-                                                                      diagram=diagram,
-                                                                      default_bus_voltage=self.editor.gui.ui.defaultBusVoltageSpinBox.value(),
-                                                                      time_index=self.editor.gui.get_diagram_slider_index())
 
-                    self.editor.gui.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
-                                                                   diagram=diagram)
-                    self.editor.gui.set_diagrams_list_view()
+                if dlg.accepted:
+                    for index in dlg.selected_indices:
+                        if index == 0:
+                            diagram = schematic_widget.make_diagram_from_buses(circuit=self.editor.circuit,
+                                                                               buses=selected_buses,
+                                                                               name=self.api_object.name + " diagram")
+
+                            diagram_widget = schematic_widget.SchematicWidget(gui=self.editor.gui,
+                                                                              circuit=self.editor.circuit,
+                                                                              diagram=diagram,
+                                                                              default_bus_voltage=self.editor.gui.ui.defaultBusVoltageSpinBox.value(),
+                                                                              time_index=self.editor.gui.get_diagram_slider_index())
+
+                            self.editor.gui.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                                           diagram=diagram)
+                            self.editor.gui.set_diagrams_list_view()
+                            self.editor.gui.set_diagram_widget(widget=diagram_widget)
+                        elif index == 1:
+                            pass
+                            #TODO: Merge items
                 else:
-                    return
+                    self.editor.gui.show_info_toast(
+                        message='Merge ended. There was no diagram produced. The buses and voltages were not unified.')
+
             else:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Information)
-                msg.setText("The substation merged have no associated buses. No schematic can be produced.")
-                msg.setWindowTitle("Merging information")
-                msg.exec()
-                return
+                self.editor.gui.show_info_toast(
+                    message='The substation merged have no associated buses. No schematic can be produced.')
+
 
     def new_substation_diagram(self):
         """
