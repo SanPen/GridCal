@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple, Union
-from numpy import sqrt, real, imag
+from numpy import sqrt
 from GridCalEngine.enumerations import TapChangerTypes
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger

@@ -35,13 +35,13 @@ grid9.add_load(bus6, gce.Load(name='Load 2', P=90, Q=30))
 grid9.add_load(bus8, gce.Load(name='Load 3', P=100, Q=35))
 
 # add Lines connecting the buses
-tr1 = gce.Transformer2W(bus_from=bus4,bus_to= bus1, name='T1', HV=230, LV=16.5, nominal_power=247.5, rate=247.5)
+tr1 = gce.Transformer2W(bus_from=bus4,bus_to= bus1, name='T1', HV=230, LV=16.5, nominal_power=247.5, rate=247.5, tap_phase=150*np.pi/180)
 tr1.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=14.3, Sbase=grid9.Sbase)
 
-tr2 = gce.Transformer2W(bus_from=bus7, bus_to=bus2, name='T2', HV=230, LV=18, nominal_power=192, rate=192)
+tr2 = gce.Transformer2W(bus_from=bus7, bus_to=bus2, name='T2', HV=230, LV=18, nominal_power=192, rate=192, tap_phase=150*np.pi/180)
 tr2.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=12.0, Sbase=grid9.Sbase)
 
-tr3 = gce.Transformer2W(bus_from=bus9, bus_to=bus3, name='T3', HV=230, LV=13.8, nominal_power=128, rate=128)
+tr3 = gce.Transformer2W(bus_from=bus9, bus_to=bus3, name='T3', HV=230, LV=13.8, nominal_power=128, rate=128, tap_phase=150*np.pi/180)
 tr3.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=7.5, Sbase=grid9.Sbase)
 
 grid9.add_transformer2w(tr1)  # 0.5236 => 30°#2.618
