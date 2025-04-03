@@ -574,10 +574,10 @@ class OverheadLineType(EditableDevice):
         Bsh1 = self.y_seq[a1, a1].imag * 1e6
 
         z1 = (R1 + 1j * X1) * length / Zbase
-        y1 = 1j * Bsh1 * length * -1e6 / Ybase
+        y1 = 1j * Bsh1 * length * 1e-6 / Ybase
 
         z0 = (R0 + 1j * X0) * length / Zbase
-        y0 = 1j * Bsh0 * length * -1e6 / Ybase
+        y0 = 1j * Bsh0 * length * 1e-6 / Ybase
 
         if round_vals:
             R1 = np.round(z1.real, 6)
