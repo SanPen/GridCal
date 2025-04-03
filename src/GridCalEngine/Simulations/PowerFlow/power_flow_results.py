@@ -308,7 +308,7 @@ class PowerFlowResults(ResultsTemplate):
         :param nc:
         :return:
         """
-        rates = nc.Rates
+        rates = nc.passive_branch_data.rates
         self.loading = self.Sf / (rates + 1e-9)
 
     @property
@@ -437,7 +437,7 @@ class PowerFlowResults(ResultsTemplate):
     def get_bus_df(self) -> pd.DataFrame:
         """
         Get a DataFrame with the buses results
-        :return: DataFrame
+        :return: DataFrame, Vm in p.u., Va in deg, P in MW, Q in MVAr
         """
         return pd.DataFrame(data={'Vm': np.abs(self.voltage),
                                   'Va': np.angle(self.voltage, deg=True),
@@ -448,7 +448,7 @@ class PowerFlowResults(ResultsTemplate):
     def get_branch_df(self) -> pd.DataFrame:
         """
         Get a DataFrame with the branches results
-        :return: DataFrame
+        :return: DataFrame, Pf in MW, Qf in MVAr, Pt in MW, Qt in MVAr, loading in %, Ploss in MW, Qloss in MVAr
         """
         return pd.DataFrame(data={'Pf': self.Sf.real,
                                   'Qf': self.Sf.imag,
@@ -462,9 +462,9 @@ class PowerFlowResults(ResultsTemplate):
 
     def mdl(self, result_type: ResultTypes) -> ResultsTable:
         """
-
-        :param result_type:
-        :return:
+        get the ResultsTable model
+        :param result_type: ResultTypes
+        :return: ResultsTable instance
         """
 
         if result_type == ResultTypes.BusVoltageModule:

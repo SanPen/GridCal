@@ -107,7 +107,7 @@ def test_psse_conversion() -> None:
 
     b1 = Bus(Vnom=Vlv)
     b2 = Bus(Vnom=Vhv)
-    tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
+    tr3 = Transformer2W(bus_from=b1, bus_to=b2, nominal_power=Sn, HV=Vhv, LV=Vlv, rate=Sn)
 
     tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe, I0=I0, Vsc=Vsc, Sbase=Sbase, round_vals=True)
 
@@ -153,7 +153,7 @@ def test_psse_conversion2() -> None:
 
     b1 = Bus(Vnom=Vlv)
     b2 = Bus(Vnom=Vhv)
-    tr3 = Transformer2W(bus_from=b1, bus_to=b2, rate=Sn, HV=Vhv, LV=Vlv)
+    tr3 = Transformer2W(bus_from=b1, bus_to=b2, nominal_power=Sn, HV=Vhv, LV=Vlv, rate=Sn)
 
     tr3.fill_design_properties(Pcu=Pcu, Pfe=Pfe, I0=I0, Vsc=Vsc, Sbase=Sbase, round_vals=True)
 

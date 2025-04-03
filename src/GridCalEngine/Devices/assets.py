@@ -586,7 +586,7 @@ class Assets:
         """
         return self._lines
 
-    def add_line(self, obj: dev.Line, logger: Union[Logger, DataLogger] = Logger()):
+    def add_line(self, obj: dev.Line, logger: Union[Logger, DataLogger] = Logger()) -> dev.Line:
         """
         Add a line object
         :param obj: Line instance
@@ -696,7 +696,7 @@ class Assets:
         """
         return [elm.name for elm in self._transformers2w]
 
-    def add_transformer2w(self, obj: dev.Transformer2W):
+    def add_transformer2w(self, obj: dev.Transformer2W) -> dev.Transformer2W:
         """
         Add a transformer object
         :param obj: Transformer2W instance
@@ -705,6 +705,7 @@ class Assets:
         if self.time_profile is not None:
             obj.ensure_profiles_exist(self.time_profile)
         self._transformers2w.append(obj)
+        return obj
 
     def delete_transformer2w(self, obj: dev.Transformer2W):
         """

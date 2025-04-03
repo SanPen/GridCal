@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import numpy as np
-from typing import Tuple, Union, List
+from typing import Tuple
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -410,9 +410,20 @@ class Transformer2W(ControllableBranchParent):
         :param round_vals: round the values?
         :return: self pointer
         """
+
+        if self.Sn > 0:
+            nominal_power = self.Sn
+        else:
+            if self.rate > 0:
+                nominal_power = self.rate
+                print(f"{self.name}: Using rate to set compute the impedances...please fill a valid nominal power")
+            else:
+                nominal_power = 1.0
+                print(f"{self.name}: Using 1 to set compute the impedances...please fill a valid nominal power")
+
         tpe = TransformerType(hv_nominal_voltage=self.HV,
                               lv_nominal_voltage=self.LV,
-                              nominal_power=self.rate,
+                              nominal_power=nominal_power,
                               copper_losses=Pcu,
                               iron_losses=Pfe,
                               no_load_current=I0,
@@ -420,6 +431,11 @@ class Transformer2W(ControllableBranchParent):
                               gr_hv1=0.5,
                               gx_hv1=0.5,
                               name='type from ' + self.name)
+
+        self.Pcu = Pcu
+        self.Pfe = Pfe
+        self.I0 = I0
+        self.Vsc = Vsc
 
         z_series, y_shunt = tpe.get_impedances(VH=self.HV, VL=self.LV, Sbase=Sbase)
 
