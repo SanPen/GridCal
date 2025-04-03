@@ -149,6 +149,18 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
                                            longitude=long,
                                            graphic_object=self)
 
+    def get_copy(self, new_parent: SubstationGraphicItem):
+        """
+        Returns a copy of the VoltageLevelGraphicItem with a different parent
+        :param new_parent: New Substation Graphic item parent
+        :return: Copy of the VL Grpahic Item with new parent.
+        """
+        return VoltageLevelGraphicItem(parent=new_parent, editor=new_parent.editor, api_object=self.api_object,
+                                       r=self.radius / self.api_object.Vnom / 0.01, draw_labels=self.draw_labels)
+
+
+
+
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
