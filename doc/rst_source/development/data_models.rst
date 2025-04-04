@@ -4253,7 +4253,7 @@ RawTransformer
     ANSTAR         float       deg    The bus voltage phase angle at the center star point.              
     WINDV1         float              Winding 1 off-nominal turns ratio or other stuff                   
     NOMV1          float       kV     Winding 1 voltage base in kV or other stuff                        
-    ANG1           int         deg    Winding 1 phase shift angle in degrees.                            
+    ANG1           float       deg    Winding 1 phase shift angle in degrees.                            
     COD1           int                Winding 1 control mode.                                            
     CONT1          int                Control bus for the winding 1.                                     
     NODE1          int                A node number of bus CONT1.                                        
@@ -4265,7 +4265,7 @@ RawTransformer
     TAB1           int                Winding 1  number  of  a  transformer  impedance  correction  table
     CR1            float       p.u.   Winding 1 load drop compensation resistance                        
     CX1            float       p.u.   Winding 1 load drop compensation reactance                         
-    CNXA1          int                                                                                   
+    CNXA1          float                                                                                 
     RATE1_1        float       MVA    Winding rating 1                                                   
     RATE1_2        float       MVA    Winding rating 2                                                   
     RATE1_3        float       MVA    Winding rating 3                                                   
@@ -4280,7 +4280,7 @@ RawTransformer
     RATE1_12       float       MVA    Winding rating 12                                                  
     WINDV2         float              Winding 2 off-nominal turns ratio or other stuff                   
     NOMV2          float       kV     Winding 2 voltage base in kV or other stuff                        
-    ANG2           int         deg    Winding 2 phase shift angle in degrees.                            
+    ANG2           float       deg    Winding 2 phase shift angle in degrees.                            
     COD2           int                Winding 2 control mode.                                            
     CONT2          int                Control bus for the winding 2.                                     
     NODE2          int                A node number of bus CONT1.                                        
@@ -4292,7 +4292,7 @@ RawTransformer
     TAB2           int                Winding 2 number  of  a  transformer  impedance  correction  table 
     CR2            float       p.u.   Winding 2 load drop compensation resistance                        
     CX2            float       p.u.   Winding 1 load drop compensation reactance                         
-    CNXA2          int                                                                                   
+    CNXA2          float                                                                                 
     RATE2_1        float       MVA    Winding rating                                                     
     RATE2_2        float       MVA    Winding rating                                                     
     RATE2_3        float       MVA    Winding rating                                                     
@@ -4307,7 +4307,7 @@ RawTransformer
     RATE2_12       float       MVA    Winding rating                                                     
     WINDV3         float              Winding 3 off-nominal turns ratio or other stuff                   
     NOMV3          float       kV     Winding 3 voltage base in kV or other stuff                        
-    ANG3           int         deg    Winding 3 phase shift angle in degrees.                            
+    ANG3           float       deg    Winding 3 phase shift angle in degrees.                            
     COD3           int                Winding 3 control mode.                                            
     CONT3          int                Control bus for the winding 3                                      
     NODE3          int                A node number of bus CONT3.                                        
@@ -4319,7 +4319,7 @@ RawTransformer
     TAB3           int                Winding 1 number of a transformer impedance correction table       
     CR3            float       p.u.   Winding 3 load drop compensation resistance                        
     CX3            float       p.u.   Winding 3 load drop compensation reactance                         
-    CNXA3          int                                                                                   
+    CNXA3          float                                                                                 
     RATE3_1        float       MVA    Winding 3 rating 1                                                 
     RATE3_2        float       MVA    Winding 3 rating 2                                                 
     RATE3_3        float       MVA    Winding 3 rating 3                                                 
@@ -4492,7 +4492,7 @@ Area
     comment    str                    False                 User comment                                            False               
     longitude  float            deg   False                 longitude.                                              False               
     latitude   float            deg   False                 latitude.                                               False               
-    color      str                    False                 Color to paint the SE in the map diagram                False               
+    color      str                    False                 Color to paint the element in the map diagram           False               
     =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
@@ -4501,66 +4501,67 @@ Battery
 
 .. table::
 
-    ========================  ===================  ======  =========  =========  ==========================================================================  ===========  =======
-              name                class_type        unit   mandatory  max_chars                                 descriptions                                 has_profile  comment
-    ========================  ===================  ======  =========  =========  ==========================================================================  ===========  =======
-    idtag                     str                          False                 Unique ID                                                                   False               
-    name                      str                          False                 Name of the device.                                                         False               
-    code                      str                          False                 Secondary ID                                                                False               
-    action                    enum ActionType              False                 Object action to perform. Only used for model merging.                      False               
-    comment                   str                          False                 User comment                                                                False               
-    modelling_authority       Modelling Authority          False                 Modelling authority of this asset                                           False               
-    bus                       Bus                          False                 Connection bus                                                              False               
-    cn                        Connectivity Node            False                 Connection connectivity node                                                False               
-    active                    bool                         False                 Is the load active?                                                         True                
-    mttf                      float                h       False                 Mean time to failure                                                        False               
-    mttr                      float                h       False                 Mean time to recovery                                                       False               
-    capex                     float                e/MW    False                 Cost of investment. Used in expansion planning.                             False               
-    opex                      float                e/MWh   False                 Cost of operation. Used in expansion planning.                              False               
-    build_status              enum BuildStatus             False                 Branch build status. Used in expansion planning.                            False               
-    Cost                      float                e/MWh   False                 Cost of not served energy. Used in OPF.                                     True                
-    facility                  Facility                     False                 Facility where this is located                                              False               
-    technologies              AssociationsList     p.u.    False                 List of technologies                                                        False               
-    scalable                  bool                         False                 Is the load scalable?                                                       False               
-    control_bus               Bus                          False                 Control bus                                                                 True                
-    control_cn                Connectivity Node            False                 Control connectivity node                                                   False               
-    P                         float                MW      False                 Active power                                                                True                
-    Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          True                
-    Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          True                
-    srap_enabled              bool                         False                 Is the unit available for SRAP participation?                               True                
-    is_controlled             bool                         False                 Is this generator voltage-controlled?                                       False               
-    Pf                        float                        False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
-    Vset                      float                p.u.    False                 Set voltage. This is used for controlled generators.                        True                
-    Snom                      float                MVA     False                 Nominal power.                                                              False               
-    Qmin                      float                MVAr    False                 Minimum reactive power.                                                     True                
-    Qmax                      float                MVAr    False                 Maximum reactive power.                                                     True                
-    use_reactive_power_curve  bool                         False                 Use the reactive power capability curve?                                    False               
-    q_curve                   Generator Q curve    MVAr    False                 Capability curve data (double click on the generator to edit)               False               
-    R1                        float                p.u.    False                 Total positive sequence resistance.                                         False               
-    X1                        float                p.u.    False                 Total positive sequence reactance.                                          False               
-    R0                        float                p.u.    False                 Total zero sequence resistance.                                             False               
-    X0                        float                p.u.    False                 Total zero sequence reactance.                                              False               
-    R2                        float                p.u.    False                 Total negative sequence resistance.                                         False               
-    X2                        float                p.u.    False                 Total negative sequence reactance.                                          False               
-    Cost2                     float                e/MWh²  False                 Generation quadratic cost. Used in OPF.                                     True                
-    Cost0                     float                e/h     False                 Generation constant cost. Used in OPF.                                      True                
-    StartupCost               float                e/h     False                 Generation start-up cost. Used in OPF.                                      False               
-    ShutdownCost              float                e/h     False                 Generation shut-down cost. Used in OPF.                                     False               
-    MinTimeUp                 float                h       False                 Minimum time that the generator has to be on when started. Used in OPF.     False               
-    MinTimeDown               float                h       False                 Minimum time that the generator has to be off when shut down. Used in OPF.  False               
-    RampUp                    float                MW/h    False                 Maximum amount of generation increase per hour.                             False               
-    RampDown                  float                MW/h    False                 Maximum amount of generation decrease per hour.                             False               
-    enabled_dispatch          bool                         False                 Enabled for dispatch? Used in OPF.                                          False               
-    emissions                 AssociationsList     t/MWh   False                 List of emissions                                                           False               
-    fuels                     AssociationsList     t/MWh   False                 List of fuels                                                               False               
-    Enom                      float                MWh     False                 Nominal energy capacity.                                                    False               
-    max_soc                   float                p.u.    False                 Minimum state of charge.                                                    False               
-    min_soc                   float                p.u.    False                 Maximum state of charge.                                                    False               
-    soc_0                     float                p.u.    False                 Initial state of charge.                                                    False               
-    charge_efficiency         float                p.u.    False                 Charging efficiency.                                                        False               
-    discharge_efficiency      float                p.u.    False                 Discharge efficiency.                                                       False               
-    discharge_per_cycle       float                p.u.    False                                                                                             False               
-    ========================  ===================  ======  =========  =========  ==========================================================================  ===========  =======
+    ========================  ===================  =======  =========  =========  ==========================================================================  ===========  =======
+              name                class_type        unit    mandatory  max_chars                                 descriptions                                 has_profile  comment
+    ========================  ===================  =======  =========  =========  ==========================================================================  ===========  =======
+    idtag                     str                           False                 Unique ID                                                                   False               
+    name                      str                           False                 Name of the device.                                                         False               
+    code                      str                           False                 Secondary ID                                                                False               
+    action                    enum ActionType               False                 Object action to perform. Only used for model merging.                      False               
+    comment                   str                           False                 User comment                                                                False               
+    modelling_authority       Modelling Authority           False                 Modelling authority of this asset                                           False               
+    bus                       Bus                           False                 Connection bus                                                              False               
+    cn                        Connectivity Node             False                 Connection connectivity node                                                False               
+    active                    bool                          False                 Is the load active?                                                         True                
+    mttf                      float                h        False                 Mean time to failure                                                        False               
+    mttr                      float                h        False                 Mean time to recovery                                                       False               
+    capex                     float                e/MW     False                 Cost of investment. Used in expansion planning.                             False               
+    opex                      float                e/MWh    False                 Cost of operation. Used in expansion planning.                              False               
+    build_status              enum BuildStatus              False                 Branch build status. Used in expansion planning.                            False               
+    Cost                      float                e/MWh    False                 Cost of not served energy. Used in OPF.                                     True                
+    facility                  Facility                      False                 Facility where this is located                                              False               
+    technologies              AssociationsList     p.u.     False                 List of technologies                                                        False               
+    scalable                  bool                          False                 Is the injection scalable?                                                  False               
+    use_kw                    bool                          False                 Consider the injections in kW and kVAr?                                     False               
+    control_bus               Bus                           False                 Control bus                                                                 True                
+    control_cn                Connectivity Node             False                 Control connectivity node                                                   False               
+    P                         float                MW       False                 Active power                                                                True                
+    Pmin                      float                MW       False                 Minimum active power. Used in OPF.                                          True                
+    Pmax                      float                MW       False                 Maximum active power. Used in OPF.                                          True                
+    srap_enabled              bool                          False                 Is the unit available for SRAP participation?                               True                
+    is_controlled             bool                          False                 Is this generator voltage-controlled?                                       False               
+    Pf                        float                         False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
+    Vset                      float                p.u.     False                 Set voltage. This is used for controlled generators.                        True                
+    Snom                      float                MVA      False                 Nominal power.                                                              False               
+    Qmin                      float                MVAr     False                 Minimum reactive power.                                                     True                
+    Qmax                      float                MVAr     False                 Maximum reactive power.                                                     True                
+    use_reactive_power_curve  bool                          False                 Use the reactive power capability curve?                                    False               
+    q_curve                   Generator Q curve    MVAr     False                 Capability curve data (double click on the generator to edit)               False               
+    R1                        float                p.u.     False                 Total positive sequence resistance.                                         False               
+    X1                        float                p.u.     False                 Total positive sequence reactance.                                          False               
+    R0                        float                p.u.     False                 Total zero sequence resistance.                                             False               
+    X0                        float                p.u.     False                 Total zero sequence reactance.                                              False               
+    R2                        float                p.u.     False                 Total negative sequence resistance.                                         False               
+    X2                        float                p.u.     False                 Total negative sequence reactance.                                          False               
+    Cost2                     float                e/MW²/h  False                 Generation quadratic cost. Used in OPF.                                     True                
+    Cost0                     float                e/h      False                 Generation constant cost. Used in OPF.                                      True                
+    StartupCost               float                e/h      False                 Generation start-up cost. Used in OPF.                                      False               
+    ShutdownCost              float                e/h      False                 Generation shut-down cost. Used in OPF.                                     False               
+    MinTimeUp                 float                h        False                 Minimum time that the generator has to be on when started. Used in OPF.     False               
+    MinTimeDown               float                h        False                 Minimum time that the generator has to be off when shut down. Used in OPF.  False               
+    RampUp                    float                MW/h     False                 Maximum amount of generation increase per hour.                             False               
+    RampDown                  float                MW/h     False                 Maximum amount of generation decrease per hour.                             False               
+    enabled_dispatch          bool                          False                 Enabled for dispatch? Used in OPF.                                          False               
+    emissions                 AssociationsList     t/MWh    False                 List of emissions                                                           False               
+    fuels                     AssociationsList     t/MWh    False                 List of fuels                                                               False               
+    Enom                      float                MWh      False                 Nominal energy capacity.                                                    False               
+    max_soc                   float                p.u.     False                 Minimum state of charge.                                                    False               
+    min_soc                   float                p.u.     False                 Maximum state of charge.                                                    False               
+    soc_0                     float                p.u.     False                 Initial state of charge.                                                    False               
+    charge_efficiency         float                p.u.     False                 Charging efficiency.                                                        False               
+    discharge_efficiency      float                p.u.     False                 Discharge efficiency.                                                       False               
+    discharge_per_cycle       float                p.u.     False                                                                                             False               
+    ========================  ===================  =======  =========  =========  ==========================================================================  ===========  =======
 
 
 Branch
@@ -4594,6 +4595,9 @@ Branch
     capex                     float                e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                           False               
     opex                      float                e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                            False               
     group                     Branch group                False                 Group where this branch belongs                                                                                                                                                                                                           False               
+    ys                        Admittance Matrix    p.u.   False                 Series admittance matrix of the branch                                                                                                                                                                                                    False               
+    ysh                       Admittance Matrix    p.u.   False                 Shunt admittance matrix of the branch                                                                                                                                                                                                     False               
+    color                     str                         False                 Color to paint the element in the map diagram                                                                                                                                                                                             False               
     R                         float                p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                       False               
     X                         float                p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                        False               
     B                         float                p.u.   False                 Total positive sequence shunt susceptance.                                                                                                                                                                                                False               
@@ -4670,6 +4674,11 @@ Bus
     voltage_level        Voltage level                False                 Voltage level of the bus.                                                                        False               
     longitude            float                deg     False                 longitude of the bus.                                                                            False               
     latitude             float                deg     False                 latitude of the bus.                                                                             False               
+    ph_a                 bool                         False                 Has phase A?                                                                                     False               
+    ph_b                 bool                         False                 Has phase B?                                                                                     False               
+    ph_c                 bool                         False                 Has phase C?                                                                                     False               
+    ph_n                 bool                         False                 Has phase N?                                                                                     False               
+    is_grounded          bool                         False                 Is this bus neutral grounded?.                                                                   False               
     ===================  ===================  ======  =========  =========  ===============================================================================================  ===========  =======
 
 
@@ -4707,7 +4716,7 @@ Community
     comment    str                    False                 User comment                                                               False               
     longitude  float            deg   False                 longitude.                                                                 False               
     latitude   float            deg   False                 latitude.                                                                  False               
-    color      str                    False                 Color to paint the SE in the map diagram                                   False               
+    color      str                    False                 Color to paint the element in the map diagram                              False               
     country    Country                False                 Substation country, altenativelly this can be obtained from the community  False               
     =========  ===============  ====  =========  =========  =========================================================================  ===========  =======
 
@@ -4796,7 +4805,8 @@ ControllableShunt
     Cost                 float                e/MWh         False                 Cost of not served energy. Used in OPF.                                True                
     facility             Facility                           False                 Facility where this is located                                         False               
     technologies         AssociationsList     p.u.          False                 List of technologies                                                   False               
-    scalable             bool                               False                 Is the load scalable?                                                  False               
+    scalable             bool                               False                 Is the injection scalable?                                             False               
+    use_kw               bool                               False                 Consider the injections in kW and kVAr?                                False               
     G                    float                MW            False                 Active power                                                           True                
     B                    float                MVAr          False                 Reactive power                                                         True                
     G0                   float                MW            False                 Zero sequence active power of the impedance component at V=1.0 p.u.    True                
@@ -4804,6 +4814,10 @@ ControllableShunt
     is_nonlinear         bool                               False                 Is non-linear?                                                         False               
     g_steps              Array                MW@v=1p.u.    False                 Conductance steps                                                      False               
     b_steps              Array                MVAr@v=1p.u.  False                 Susceptance steps                                                      False               
+    Gmax                 float                MW            False                 Maximum conductance                                                    False               
+    Gmin                 float                MW            False                 Minimum conductance                                                    False               
+    Bmax                 float                MVAr          False                 Maximum susceptance                                                    False               
+    Bmin                 float                MVAr          False                 Minimum susceptance                                                    False               
     active_steps         Array                              False                 steps active?                                                          False               
     step                 int                                False                 Device step position (0~N-1)                                           True                
     Vset                 float                p.u.          False                 Set voltage. This is used for controlled shunts.                       True                
@@ -4825,7 +4839,7 @@ Country
     comment    str                    False                 User comment                                            False               
     longitude  float            deg   False                 longitude.                                              False               
     latitude   float            deg   False                 latitude.                                               False               
-    color      str                    False                 Color to paint the SE in the map diagram                False               
+    color      str                    False                 Color to paint the element in the map diagram           False               
     =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
@@ -4854,7 +4868,8 @@ CurrentInjection
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                 True                
     facility             Facility                    False                 Facility where this is located                          False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                    False               
-    scalable             bool                        False                 Is the load scalable?                                   False               
+    scalable             bool                        False                 Is the injection scalable?                              False               
+    use_kw               bool                        False                 Consider the injections in kW and kVAr?                 False               
     Ir                   float                MW     False                 Active power of the current component at V=1.0 p.u.     True                
     Ii                   float                MVAr   False                 Reactive power of the current component at V=1.0 p.u.   True                
     ===================  ===================  =====  =========  =========  ======================================================  ===========  =======
@@ -4891,6 +4906,9 @@ DcLine
     capex                     float                e/MW   False                 Cost of investment. Used in expansion planning.                                                                              False               
     opex                      float                e/MWh  False                 Cost of operation. Used in expansion planning.                                                                               False               
     group                     Branch group                False                 Group where this branch belongs                                                                                              False               
+    ys                        Admittance Matrix    p.u.   False                 Series admittance matrix of the branch                                                                                       False               
+    ysh                       Admittance Matrix    p.u.   False                 Shunt admittance matrix of the branch                                                                                        False               
+    color                     str                         False                 Color to paint the element in the map diagram                                                                                False               
     R                         float                p.u.   False                 Total positive sequence resistance.                                                                                          False               
     length                    float                km     False                 Length of the line (not used for calculation)                                                                                False               
     r_fault                   float                p.u.   False                 Resistance of the mid-line fault.Used in short circuit studies.                                                              False               
@@ -4943,7 +4961,8 @@ ExternalGrid
     Cost                   float                  e/MWh    False                 Cost of not served energy. Used in OPF.                                    True                
     facility               Facility                        False                 Facility where this is located                                             False               
     technologies           AssociationsList       p.u.     False                 List of technologies                                                       False               
-    scalable               bool                            False                 Is the load scalable?                                                      False               
+    scalable               bool                            False                 Is the injection scalable?                                                 False               
+    use_kw                 bool                            False                 Consider the injections in kW and kVAr?                                    False               
     P                      float                  MW       False                 Active power                                                               True                
     Q                      float                  MVAr     False                 Reactive power                                                             True                
     mode                   enum ExternalGridMode           False                 Operation mode of the external grid (voltage or load)                      False               
@@ -4968,7 +4987,7 @@ Facility
     comment    str                    False                 User comment                                            False               
     longitude  float            deg   False                 longitude.                                              False               
     latitude   float            deg   False                 latitude.                                               False               
-    color      str                    False                 Color to paint the SE in the map diagram                False               
+    color      str                    False                 Color to paint the element in the map diagram           False               
     =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
@@ -5117,59 +5136,60 @@ Generator
 
 .. table::
 
-    ========================  ===================  ======  =========  =========  ==========================================================================  ===========  =======
-              name                class_type        unit   mandatory  max_chars                                 descriptions                                 has_profile  comment
-    ========================  ===================  ======  =========  =========  ==========================================================================  ===========  =======
-    idtag                     str                          False                 Unique ID                                                                   False               
-    name                      str                          False                 Name of the device.                                                         False               
-    code                      str                          False                 Secondary ID                                                                False               
-    action                    enum ActionType              False                 Object action to perform. Only used for model merging.                      False               
-    comment                   str                          False                 User comment                                                                False               
-    modelling_authority       Modelling Authority          False                 Modelling authority of this asset                                           False               
-    bus                       Bus                          False                 Connection bus                                                              False               
-    cn                        Connectivity Node            False                 Connection connectivity node                                                False               
-    active                    bool                         False                 Is the load active?                                                         True                
-    mttf                      float                h       False                 Mean time to failure                                                        False               
-    mttr                      float                h       False                 Mean time to recovery                                                       False               
-    capex                     float                e/MW    False                 Cost of investment. Used in expansion planning.                             False               
-    opex                      float                e/MWh   False                 Cost of operation. Used in expansion planning.                              False               
-    build_status              enum BuildStatus             False                 Branch build status. Used in expansion planning.                            False               
-    Cost                      float                e/MWh   False                 Cost of not served energy. Used in OPF.                                     True                
-    facility                  Facility                     False                 Facility where this is located                                              False               
-    technologies              AssociationsList     p.u.    False                 List of technologies                                                        False               
-    scalable                  bool                         False                 Is the load scalable?                                                       False               
-    control_bus               Bus                          False                 Control bus                                                                 True                
-    control_cn                Connectivity Node            False                 Control connectivity node                                                   False               
-    P                         float                MW      False                 Active power                                                                True                
-    Pmin                      float                MW      False                 Minimum active power. Used in OPF.                                          True                
-    Pmax                      float                MW      False                 Maximum active power. Used in OPF.                                          True                
-    srap_enabled              bool                         False                 Is the unit available for SRAP participation?                               True                
-    is_controlled             bool                         False                 Is this generator voltage-controlled?                                       False               
-    Pf                        float                        False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
-    Vset                      float                p.u.    False                 Set voltage. This is used for controlled generators.                        True                
-    Snom                      float                MVA     False                 Nominal power.                                                              False               
-    Qmin                      float                MVAr    False                 Minimum reactive power.                                                     True                
-    Qmax                      float                MVAr    False                 Maximum reactive power.                                                     True                
-    use_reactive_power_curve  bool                         False                 Use the reactive power capability curve?                                    False               
-    q_curve                   Generator Q curve    MVAr    False                 Capability curve data (double click on the generator to edit)               False               
-    R1                        float                p.u.    False                 Total positive sequence resistance.                                         False               
-    X1                        float                p.u.    False                 Total positive sequence reactance.                                          False               
-    R0                        float                p.u.    False                 Total zero sequence resistance.                                             False               
-    X0                        float                p.u.    False                 Total zero sequence reactance.                                              False               
-    R2                        float                p.u.    False                 Total negative sequence resistance.                                         False               
-    X2                        float                p.u.    False                 Total negative sequence reactance.                                          False               
-    Cost2                     float                e/MWh²  False                 Generation quadratic cost. Used in OPF.                                     True                
-    Cost0                     float                e/h     False                 Generation constant cost. Used in OPF.                                      True                
-    StartupCost               float                e/h     False                 Generation start-up cost. Used in OPF.                                      False               
-    ShutdownCost              float                e/h     False                 Generation shut-down cost. Used in OPF.                                     False               
-    MinTimeUp                 float                h       False                 Minimum time that the generator has to be on when started. Used in OPF.     False               
-    MinTimeDown               float                h       False                 Minimum time that the generator has to be off when shut down. Used in OPF.  False               
-    RampUp                    float                MW/h    False                 Maximum amount of generation increase per hour.                             False               
-    RampDown                  float                MW/h    False                 Maximum amount of generation decrease per hour.                             False               
-    enabled_dispatch          bool                         False                 Enabled for dispatch? Used in OPF.                                          False               
-    emissions                 AssociationsList     t/MWh   False                 List of emissions                                                           False               
-    fuels                     AssociationsList     t/MWh   False                 List of fuels                                                               False               
-    ========================  ===================  ======  =========  =========  ==========================================================================  ===========  =======
+    ========================  ===================  =======  =========  =========  ==========================================================================  ===========  =======
+              name                class_type        unit    mandatory  max_chars                                 descriptions                                 has_profile  comment
+    ========================  ===================  =======  =========  =========  ==========================================================================  ===========  =======
+    idtag                     str                           False                 Unique ID                                                                   False               
+    name                      str                           False                 Name of the device.                                                         False               
+    code                      str                           False                 Secondary ID                                                                False               
+    action                    enum ActionType               False                 Object action to perform. Only used for model merging.                      False               
+    comment                   str                           False                 User comment                                                                False               
+    modelling_authority       Modelling Authority           False                 Modelling authority of this asset                                           False               
+    bus                       Bus                           False                 Connection bus                                                              False               
+    cn                        Connectivity Node             False                 Connection connectivity node                                                False               
+    active                    bool                          False                 Is the load active?                                                         True                
+    mttf                      float                h        False                 Mean time to failure                                                        False               
+    mttr                      float                h        False                 Mean time to recovery                                                       False               
+    capex                     float                e/MW     False                 Cost of investment. Used in expansion planning.                             False               
+    opex                      float                e/MWh    False                 Cost of operation. Used in expansion planning.                              False               
+    build_status              enum BuildStatus              False                 Branch build status. Used in expansion planning.                            False               
+    Cost                      float                e/MWh    False                 Cost of not served energy. Used in OPF.                                     True                
+    facility                  Facility                      False                 Facility where this is located                                              False               
+    technologies              AssociationsList     p.u.     False                 List of technologies                                                        False               
+    scalable                  bool                          False                 Is the injection scalable?                                                  False               
+    use_kw                    bool                          False                 Consider the injections in kW and kVAr?                                     False               
+    control_bus               Bus                           False                 Control bus                                                                 True                
+    control_cn                Connectivity Node             False                 Control connectivity node                                                   False               
+    P                         float                MW       False                 Active power                                                                True                
+    Pmin                      float                MW       False                 Minimum active power. Used in OPF.                                          True                
+    Pmax                      float                MW       False                 Maximum active power. Used in OPF.                                          True                
+    srap_enabled              bool                          False                 Is the unit available for SRAP participation?                               True                
+    is_controlled             bool                          False                 Is this generator voltage-controlled?                                       False               
+    Pf                        float                         False                 Power factor (cos(phi)). This is used for non-controlled generators.        True                
+    Vset                      float                p.u.     False                 Set voltage. This is used for controlled generators.                        True                
+    Snom                      float                MVA      False                 Nominal power.                                                              False               
+    Qmin                      float                MVAr     False                 Minimum reactive power.                                                     True                
+    Qmax                      float                MVAr     False                 Maximum reactive power.                                                     True                
+    use_reactive_power_curve  bool                          False                 Use the reactive power capability curve?                                    False               
+    q_curve                   Generator Q curve    MVAr     False                 Capability curve data (double click on the generator to edit)               False               
+    R1                        float                p.u.     False                 Total positive sequence resistance.                                         False               
+    X1                        float                p.u.     False                 Total positive sequence reactance.                                          False               
+    R0                        float                p.u.     False                 Total zero sequence resistance.                                             False               
+    X0                        float                p.u.     False                 Total zero sequence reactance.                                              False               
+    R2                        float                p.u.     False                 Total negative sequence resistance.                                         False               
+    X2                        float                p.u.     False                 Total negative sequence reactance.                                          False               
+    Cost2                     float                e/MW²/h  False                 Generation quadratic cost. Used in OPF.                                     True                
+    Cost0                     float                e/h      False                 Generation constant cost. Used in OPF.                                      True                
+    StartupCost               float                e/h      False                 Generation start-up cost. Used in OPF.                                      False               
+    ShutdownCost              float                e/h      False                 Generation shut-down cost. Used in OPF.                                     False               
+    MinTimeUp                 float                h        False                 Minimum time that the generator has to be on when started. Used in OPF.     False               
+    MinTimeDown               float                h        False                 Minimum time that the generator has to be off when shut down. Used in OPF.  False               
+    RampUp                    float                MW/h     False                 Maximum amount of generation increase per hour.                             False               
+    RampDown                  float                MW/h     False                 Maximum amount of generation decrease per hour.                             False               
+    enabled_dispatch          bool                          False                 Enabled for dispatch? Used in OPF.                                          False               
+    emissions                 AssociationsList     t/MWh    False                 List of emissions                                                           False               
+    fuels                     AssociationsList     t/MWh    False                 List of fuels                                                               False               
+    ========================  ===================  =======  =========  =========  ==========================================================================  ===========  =======
 
 
 HvdcLine
@@ -5203,6 +5223,9 @@ HvdcLine
     capex                     float                 e/MW    False                 Cost of investment. Used in expansion planning.                                    False               
     opex                      float                 e/MWh   False                 Cost of operation. Used in expansion planning.                                     False               
     group                     Branch group                  False                 Group where this branch belongs                                                    False               
+    ys                        Admittance Matrix     p.u.    False                 Series admittance matrix of the branch                                             False               
+    ysh                       Admittance Matrix     p.u.    False                 Shunt admittance matrix of the branch                                              False               
+    color                     str                           False                 Color to paint the element in the map diagram                                      False               
     dispatchable              bool                          False                 Is the line power optimizable?                                                     False               
     control_mode              enum HvdcControlType  -       False                 Control type.                                                                      False               
     Pset                      float                 MW      False                 Set power flow.                                                                    True                
@@ -5263,55 +5286,59 @@ Line
 
 .. table::
 
-    ===============================  ===================  =====  =========  =========  ========================================================================================================================================================================================================================================  ===========  =======
-                 name                    class_type       unit   mandatory  max_chars                                                                                                                descriptions                                                                                                                has_profile  comment
-    ===============================  ===================  =====  =========  =========  ========================================================================================================================================================================================================================================  ===========  =======
-    idtag                            str                         False                 Unique ID                                                                                                                                                                                                                                 False               
-    name                             str                         False                 Name of the device.                                                                                                                                                                                                                       False               
-    code                             str                         False                 Secondary ID                                                                                                                                                                                                                              False               
-    action                           enum ActionType             False                 Object action to perform. Only used for model merging.                                                                                                                                                                                    False               
-    comment                          str                         False                 User comment                                                                                                                                                                                                                              False               
-    modelling_authority              Modelling Authority         False                 Modelling authority of this asset                                                                                                                                                                                                         False               
-    bus_from                         Bus                         False                 Name of the bus at the "from" side                                                                                                                                                                                                        False               
-    bus_to                           Bus                         False                 Name of the bus at the "to" side                                                                                                                                                                                                          False               
-    cn_from                          Connectivity Node           False                 Name of the connectivity node at the "from" side                                                                                                                                                                                          False               
-    cn_to                            Connectivity Node           False                 Name of the connectivity node at the "to" side                                                                                                                                                                                            False               
-    active                           bool                        False                 Is active?                                                                                                                                                                                                                                True                
-    reducible                        bool                        False                 Is the branch to be reduced by the topology preprocessor?                                                                                                                                                                                 False               
-    rate                             float                MVA    False                 Thermal rating power                                                                                                                                                                                                                      True                
-    contingency_factor               float                p.u.   False                 Rating multiplier for contingencies                                                                                                                                                                                                       True                
-    protection_rating_factor         float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                                                                                                                                         True                
-    monitor_loading                  bool                        False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                          False               
-    mttf                             float                h      False                 Mean time to failure                                                                                                                                                                                                                      False               
-    mttr                             float                h      False                 Mean time to repair                                                                                                                                                                                                                       False               
-    Cost                             float                e/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                            True                
-    build_status                     enum BuildStatus            False                 Branch build status. Used in expansion planning.                                                                                                                                                                                          False               
-    capex                            float                e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                           False               
-    opex                             float                e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                            False               
-    group                            Branch group                False                 Group where this branch belongs                                                                                                                                                                                                           False               
-    R                                float                p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                       False               
-    X                                float                p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                        False               
-    B                                float                p.u.   False                 Total positive sequence shunt susceptance.                                                                                                                                                                                                False               
-    R0                               float                p.u.   False                 Total zero sequence resistance.                                                                                                                                                                                                           False               
-    X0                               float                p.u.   False                 Total zero sequence reactance.                                                                                                                                                                                                            False               
-    B0                               float                p.u.   False                 Total zero sequence shunt susceptance.                                                                                                                                                                                                    False               
-    R2                               float                p.u.   False                 Total negative sequence resistance.                                                                                                                                                                                                       False               
-    X2                               float                p.u.   False                 Total negative sequence reactance.                                                                                                                                                                                                        False               
-    B2                               float                p.u.   False                 Total negative sequence shunt susceptance.                                                                                                                                                                                                False               
-    tolerance                        float                %      False                 Tolerance expected for the impedance values % is expected for transformers0% for lines.                                                                                                                                                   False               
-    length                           float                km     False                 Length of the line (not used for calculation)                                                                                                                                                                                             False               
-    temp_base                        float                ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                 False               
-    temp_oper                        float                ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                        True                
-    alpha                            float                1/ºC   False                 Thermal coefficient to modify R,around a reference temperatureusing a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330  False               
-    r_fault                          float                p.u.   False                 Resistance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                           False               
-    x_fault                          float                p.u.   False                 Reactance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                            False               
-    fault_pos                        float                p.u.   False                 Per-unit positioning of the fault:0 would be at the "from" side,1 would be at the "to" side,therefore 0.5 is at the middle.                                                                                                               False               
-    template                         Any line template           False                                                                                                                                                                                                                                                           False               
-    locations                        Line locations              False                                                                                                                                                                                                                                                           False               
-    possible_tower_types             AssociationsList            False                 Possible overhead line types (>1 to denote association), - to denote no association                                                                                                                                                       False               
-    possible_underground_line_types  AssociationsList            False                 Possible underground line types (>1 to denote association), - to denote no association                                                                                                                                                    False               
-    possible_sequence_line_types     AssociationsList            False                 Possible sequence line types (>1 to denote association), - to denote no association                                                                                                                                                       False               
-    ===============================  ===================  =====  =========  =========  ========================================================================================================================================================================================================================================  ===========  =======
+    ===============================  ===================  =====  =========  =========  =========================================================================================================================================================================================================================================  ===========  =======
+                 name                    class_type       unit   mandatory  max_chars                                                                                                                descriptions                                                                                                                 has_profile  comment
+    ===============================  ===================  =====  =========  =========  =========================================================================================================================================================================================================================================  ===========  =======
+    idtag                            str                         False                 Unique ID                                                                                                                                                                                                                                  False               
+    name                             str                         False                 Name of the device.                                                                                                                                                                                                                        False               
+    code                             str                         False                 Secondary ID                                                                                                                                                                                                                               False               
+    action                           enum ActionType             False                 Object action to perform. Only used for model merging.                                                                                                                                                                                     False               
+    comment                          str                         False                 User comment                                                                                                                                                                                                                               False               
+    modelling_authority              Modelling Authority         False                 Modelling authority of this asset                                                                                                                                                                                                          False               
+    bus_from                         Bus                         False                 Name of the bus at the "from" side                                                                                                                                                                                                         False               
+    bus_to                           Bus                         False                 Name of the bus at the "to" side                                                                                                                                                                                                           False               
+    cn_from                          Connectivity Node           False                 Name of the connectivity node at the "from" side                                                                                                                                                                                           False               
+    cn_to                            Connectivity Node           False                 Name of the connectivity node at the "to" side                                                                                                                                                                                             False               
+    active                           bool                        False                 Is active?                                                                                                                                                                                                                                 True                
+    reducible                        bool                        False                 Is the branch to be reduced by the topology preprocessor?                                                                                                                                                                                  False               
+    rate                             float                MVA    False                 Thermal rating power                                                                                                                                                                                                                       True                
+    contingency_factor               float                p.u.   False                 Rating multiplier for contingencies                                                                                                                                                                                                        True                
+    protection_rating_factor         float                p.u.   False                 Rating multiplier that indicates the maximum flow before the protections tripping                                                                                                                                                          True                
+    monitor_loading                  bool                        False                 Monitor this device loading for OPF, NTC or contingency studies.                                                                                                                                                                           False               
+    mttf                             float                h      False                 Mean time to failure                                                                                                                                                                                                                       False               
+    mttr                             float                h      False                 Mean time to repair                                                                                                                                                                                                                        False               
+    Cost                             float                e/MWh  False                 Cost of overloads. Used in OPF                                                                                                                                                                                                             True                
+    build_status                     enum BuildStatus            False                 Branch build status. Used in expansion planning.                                                                                                                                                                                           False               
+    capex                            float                e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                            False               
+    opex                             float                e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                             False               
+    group                            Branch group                False                 Group where this branch belongs                                                                                                                                                                                                            False               
+    ys                               Admittance Matrix    p.u.   False                 Series admittance matrix of the branch                                                                                                                                                                                                     False               
+    ysh                              Admittance Matrix    p.u.   False                 Shunt admittance matrix of the branch                                                                                                                                                                                                      False               
+    color                            str                         False                 Color to paint the element in the map diagram                                                                                                                                                                                              False               
+    R                                float                p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                        False               
+    X                                float                p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                         False               
+    B                                float                p.u.   False                 Total positive sequence shunt susceptance.                                                                                                                                                                                                 False               
+    R0                               float                p.u.   False                 Total zero sequence resistance.                                                                                                                                                                                                            False               
+    X0                               float                p.u.   False                 Total zero sequence reactance.                                                                                                                                                                                                             False               
+    B0                               float                p.u.   False                 Total zero sequence shunt susceptance.                                                                                                                                                                                                     False               
+    R2                               float                p.u.   False                 Total negative sequence resistance.                                                                                                                                                                                                        False               
+    X2                               float                p.u.   False                 Total negative sequence reactance.                                                                                                                                                                                                         False               
+    B2                               float                p.u.   False                 Total negative sequence shunt susceptance.                                                                                                                                                                                                 False               
+    tolerance                        float                %      False                 Tolerance expected for the impedance values % is expected for transformers0% for lines.                                                                                                                                                    False               
+    circuit_idx                      int                         False                 Circuit index, used for multiple circuits sharing towers (starts at zero)                                                                                                                                                                  False               
+    length                           float                km     False                 Length of the line (not used for calculation)                                                                                                                                                                                              False               
+    temp_base                        float                ºC     False                 Base temperature at which R was measured.                                                                                                                                                                                                  False               
+    temp_oper                        float                ºC     False                 Operation temperature to modify R.                                                                                                                                                                                                         True                
+    alpha                            float                1/ºC   False                 Thermal coefficient to modify R,around a reference temperature using a linear approximation.For example:Copper @ 20ºC: 0.004041,Copper @ 75ºC: 0.00323,Annealed copper @ 20ºC: 0.00393,Aluminum @ 20ºC: 0.004308,Aluminum @ 75ºC: 0.00330  False               
+    r_fault                          float                p.u.   False                 Resistance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                            False               
+    x_fault                          float                p.u.   False                 Reactance of the mid-line fault.Used in short circuit studies.                                                                                                                                                                             False               
+    fault_pos                        float                p.u.   False                 Per-unit positioning of the fault:0 would be at the "from" side,1 would be at the "to" side,therefore 0.5 is at the middle.                                                                                                                False               
+    template                         Any line template           False                                                                                                                                                                                                                                                            False               
+    locations                        Line locations              False                                                                                                                                                                                                                                                            False               
+    possible_tower_types             AssociationsList            False                 Possible overhead line types (>1 to denote association), - to denote no association                                                                                                                                                        False               
+    possible_underground_line_types  AssociationsList            False                 Possible underground line types (>1 to denote association), - to denote no association                                                                                                                                                     False               
+    possible_sequence_line_types     AssociationsList            False                 Possible sequence line types (>1 to denote association), - to denote no association                                                                                                                                                        False               
+    ===============================  ===================  =====  =========  =========  =========================================================================================================================================================================================================================================  ===========  =======
 
 
 Load
@@ -5339,7 +5366,8 @@ Load
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                  True                
     facility             Facility                    False                 Facility where this is located                           False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                     False               
-    scalable             bool                        False                 Is the load scalable?                                    False               
+    scalable             bool                        False                 Is the injection scalable?                               False               
+    use_kw               bool                        False                 Consider the injections in kW and kVAr?                  False               
     P                    float                MW     False                 Active power                                             True                
     Q                    float                MVAr   False                 Reactive power                                           True                
     Ir                   float                MW     False                 Active power of the current component at V=1.0 p.u.      True                
@@ -5380,7 +5408,7 @@ Municipality
     comment    str                    False                 User comment                                                                 False               
     longitude  float            deg   False                 longitude.                                                                   False               
     latitude   float            deg   False                 latitude.                                                                    False               
-    color      str                    False                 Color to paint the SE in the map diagram                                     False               
+    color      str                    False                 Color to paint the element in the map diagram                                False               
     region     Region                 False                 Substation region, altenativelly this can be obtained from the municipality  False               
     =========  ===============  ====  =========  =========  ===========================================================================  ===========  =======
 
@@ -5400,14 +5428,8 @@ OverheadLineType
     comment            str                      False                 User comment                                            False               
     earth_resistivity  float            Ohm/m3  False                 Earth resistivity                                       False               
     frequency          float            Hz      False                 Frequency                                               False               
-    R1                 float            Ohm/Km  False                 Positive sequence resistance                            False               
-    X1                 float            Ohm/Km  False                 Positive sequence reactance                             False               
-    Bsh1               float            uS/Km   False                 Positive sequence shunt susceptance                     False               
-    R0                 float            Ohm/Km  False                 Zero-sequence resistance                                False               
-    X0                 float            Ohm/Km  False                 Zero sequence reactance                                 False               
-    Bsh0               float            uS/Km   False                 Zero sequence shunt susceptance                         False               
-    Imax               float            kA      False                 Current rating of the tower                             False               
     Vnom               float            kV      False                 Voltage rating of the line                              False               
+    wires_in_tower     ListOfWires              False                 List of wires                                           False               
     =================  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
@@ -5426,7 +5448,7 @@ Region
     comment    str                    False                 User comment                                                              False               
     longitude  float            deg   False                 longitude.                                                                False               
     latitude   float            deg   False                 latitude.                                                                 False               
-    color      str                    False                 Color to paint the SE in the map diagram                                  False               
+    color      str                    False                 Color to paint the element in the map diagram                             False               
     community  Community              False                 Substation community, altenativelly this can be obtained from the region  False               
     =========  ===============  ====  =========  =========  ========================================================================  ===========  =======
 
@@ -5474,23 +5496,26 @@ SequenceLineType
 
 .. table::
 
-    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
-     name      class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
-    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
-    idtag    str                      False                 Unique ID                                               False               
-    name     str                      False                 Name of the device.                                     False               
-    code     str                      False                 Secondary ID                                            False               
-    action   enum ActionType          False                 Object action to perform. Only used for model merging.  False               
-    comment  str                      False                 User comment                                            False               
-    Imax     float            kA      False                 Current rating of the line                              False               
-    Vnom     float            kV      False                 Voltage rating of the line                              False               
-    R        float            Ohm/km  False                 Positive-sequence resistance per km                     False               
-    X        float            Ohm/km  False                 Positive-sequence reactance per km                      False               
-    B        float            uS/km   False                 Positive-sequence shunt susceptance per km              False               
-    R0       float            Ohm/km  False                 Zero-sequence resistance per km                         False               
-    X0       float            Ohm/km  False                 Zero-sequence reactance per km                          False               
-    B0       float            uS/km   False                 Zero-sequence shunt susceptance per km                  False               
-    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
+    ===============  ===============  ======  =========  =========  ======================================================  ===========  =======
+         name          class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    ===============  ===============  ======  =========  =========  ======================================================  ===========  =======
+    idtag            str                      False                 Unique ID                                               False               
+    name             str                      False                 Name of the device.                                     False               
+    code             str                      False                 Secondary ID                                            False               
+    action           enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment          str                      False                 User comment                                            False               
+    Imax             float            kA      False                 Current rating of the line                              False               
+    Vnom             float            kV      False                 Voltage rating of the line                              False               
+    R                float            Ohm/km  False                 Positive-sequence resistance per km                     False               
+    X                float            Ohm/km  False                 Positive-sequence reactance per km                      False               
+    B                float            uS/km   False                 Positive-sequence shunt susceptance per km              False               
+    R0               float            Ohm/km  False                 Zero-sequence resistance per km                         False               
+    X0               float            Ohm/km  False                 Zero-sequence reactance per km                          False               
+    B0               float            uS/km   False                 Zero-sequence shunt susceptance per km                  False               
+    Cnf              float            nF/km   False                 Positive-sequence shunt conductance per km              False               
+    Cnf0             float            nF/km   False                 Zero-sequence shunt conductance per km                  False               
+    use_conductance  bool                     False                 Use conductance? else the susceptance is used           False               
+    ===============  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
 SeriesReactance
@@ -5524,6 +5549,9 @@ SeriesReactance
     capex                     float                e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                           False               
     opex                      float                e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                            False               
     group                     Branch group                False                 Group where this branch belongs                                                                                                                                                                                                           False               
+    ys                        Admittance Matrix    p.u.   False                 Series admittance matrix of the branch                                                                                                                                                                                                    False               
+    ysh                       Admittance Matrix    p.u.   False                 Shunt admittance matrix of the branch                                                                                                                                                                                                     False               
+    color                     str                         False                 Color to paint the element in the map diagram                                                                                                                                                                                             False               
     R                         float                p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                       False               
     X                         float                p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                        False               
     R0                        float                p.u.   False                 Total zero sequence resistance.                                                                                                                                                                                                           False               
@@ -5565,7 +5593,8 @@ Shunt
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                                True                
     facility             Facility                    False                 Facility where this is located                                         False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                                   False               
-    scalable             bool                        False                 Is the load scalable?                                                  False               
+    scalable             bool                        False                 Is the injection scalable?                                             False               
+    use_kw               bool                        False                 Consider the injections in kW and kVAr?                                False               
     G                    float                MW     False                 Active power                                                           True                
     B                    float                MVAr   False                 Reactive power                                                         True                
     G0                   float                MW     False                 Zero sequence active power of the impedance component at V=1.0 p.u.    True                
@@ -5598,7 +5627,8 @@ StaticGenerator
     Cost                 float                e/MWh  False                 Cost of not served energy. Used in OPF.                 True                
     facility             Facility                    False                 Facility where this is located                          False               
     technologies         AssociationsList     p.u.   False                 List of technologies                                    False               
-    scalable             bool                        False                 Is the load scalable?                                   False               
+    scalable             bool                        False                 Is the injection scalable?                              False               
+    use_kw               bool                        False                 Consider the injections in kW and kVAr?                 False               
     P                    float                MW     False                 Active power                                            True                
     Q                    float                MVAr   False                 Reactive power                                          True                
     ===================  ===================  =====  =========  =========  ======================================================  ===========  =======
@@ -5609,29 +5639,30 @@ Substation
 
 .. table::
 
-    =================  ===============  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
-          name           class_type     unit   mandatory  max_chars                                                                                                           descriptions                                                                                                           has_profile  comment
-    =================  ===============  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
-    idtag              str                     False                 Unique ID                                                                                                                                                                                                                       False               
-    name               str                     False                 Name of the device.                                                                                                                                                                                                             False               
-    code               str                     False                 Secondary ID                                                                                                                                                                                                                    False               
-    action             enum ActionType         False                 Object action to perform. Only used for model merging.                                                                                                                                                                          False               
-    comment            str                     False                 User comment                                                                                                                                                                                                                    False               
-    longitude          float            deg    False                 longitude.                                                                                                                                                                                                                      False               
-    latitude           float            deg    False                 latitude.                                                                                                                                                                                                                       False               
-    color              str                     False                 Color to paint the SE in the map diagram                                                                                                                                                                                        False               
-    area               Area                    False                 Substation area, altenativelly this can be obtained from the zone                                                                                                                                                               False               
-    zone               Zone                    False                 Substation area                                                                                                                                                                                                                 False               
-    country            Country                 False                 Substation country, altenativelly this can be obtained from the community                                                                                                                                                       False               
-    community          Community               False                 Substation community, altenativelly this can be obtained from the region                                                                                                                                                        False               
-    region             Region                  False                 Substation region, altenativelly this can be obtained from the municipality                                                                                                                                                     False               
-    municipality       Municipality            False                 Substation municipality                                                                                                                                                                                                         False               
-    address            str                     False                 Substation address                                                                                                                                                                                                              False               
-    irradiation        float            W/m^2  False                 Substation solar irradiation                                                                                                                                                                                                    True                
-    temperature        float            ºC     False                 Substation temperature                                                                                                                                                                                                          True                
-    wind_speed         float            m/s    False                 Substation wind speed at 80m above the ground                                                                                                                                                                                   True                
-    terrain_roughness  float                   False                 This value is ised for wind speed extrapolation. Typical values: Not rough (sand, snow, sea): 0~0.02 Slightly rough (grass, cereal field): 0.02~0.2 Rough (forest, small houses): 1.0~1.5 Very rough (Large buildings):1.0~4.0  False               
-    =================  ===============  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
+    ===================  ===================  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
+           name              class_type       unit   mandatory  max_chars                                                                                                           descriptions                                                                                                           has_profile  comment
+    ===================  ===================  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
+    idtag                str                         False                 Unique ID                                                                                                                                                                                                                       False               
+    name                 str                         False                 Name of the device.                                                                                                                                                                                                             False               
+    code                 str                         False                 Secondary ID                                                                                                                                                                                                                    False               
+    action               enum ActionType             False                 Object action to perform. Only used for model merging.                                                                                                                                                                          False               
+    comment              str                         False                 User comment                                                                                                                                                                                                                    False               
+    longitude            float                deg    False                 longitude.                                                                                                                                                                                                                      False               
+    latitude             float                deg    False                 latitude.                                                                                                                                                                                                                       False               
+    color                str                         False                 Color to paint the element in the map diagram                                                                                                                                                                                   False               
+    area                 Area                        False                 Substation area, altenativelly this can be obtained from the zone                                                                                                                                                               False               
+    zone                 Zone                        False                 Substation area                                                                                                                                                                                                                 False               
+    country              Country                     False                 Substation country, altenativelly this can be obtained from the community                                                                                                                                                       False               
+    community            Community                   False                 Substation community, altenativelly this can be obtained from the region                                                                                                                                                        False               
+    region               Region                      False                 Substation region, altenativelly this can be obtained from the municipality                                                                                                                                                     False               
+    municipality         Municipality                False                 Substation municipality                                                                                                                                                                                                         False               
+    modelling_authority  Modelling Authority         False                 Modelling authority of this asset                                                                                                                                                                                               False               
+    address              str                         False                 Substation address                                                                                                                                                                                                              False               
+    irradiation          float                W/m^2  False                 Substation solar irradiation                                                                                                                                                                                                    True                
+    temperature          float                ºC     False                 Substation temperature                                                                                                                                                                                                          True                
+    wind_speed           float                m/s    False                 Substation wind speed at 80m above the ground                                                                                                                                                                                   True                
+    terrain_roughness    float                       False                 This value is ised for wind speed extrapolation. Typical values: Not rough (sand, snow, sea): 0~0.02 Slightly rough (grass, cereal field): 0.02~0.2 Rough (forest, small houses): 1.0~1.5 Very rough (Large buildings):1.0~4.0  False               
+    ===================  ===================  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
 
 
 Switch
@@ -5665,6 +5696,9 @@ Switch
     capex                     float                e/MW   False                 Cost of investment. Used in expansion planning.                                    False               
     opex                      float                e/MWh  False                 Cost of operation. Used in expansion planning.                                     False               
     group                     Branch group                False                 Group where this branch belongs                                                    False               
+    ys                        Admittance Matrix    p.u.   False                 Series admittance matrix of the branch                                             False               
+    ysh                       Admittance Matrix    p.u.   False                 Shunt admittance matrix of the branch                                              False               
+    color                     str                         False                 Color to paint the element in the map diagram                                      False               
     R                         float                pu     False                 Positive-sequence resistance                                                       False               
     X                         float                pu     False                 Positive-sequence reactance                                                        False               
     retained                  bool                        False                 Switch is retained                                                                 False               
@@ -5724,6 +5758,9 @@ Transformer2W
     capex                       float                    e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                            False               
     opex                        float                    e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                             False               
     group                       Branch group                    False                 Group where this branch belongs                                                                                                                                                                                                            False               
+    ys                          Admittance Matrix        p.u.   False                 Series admittance matrix of the branch                                                                                                                                                                                                     False               
+    ysh                         Admittance Matrix        p.u.   False                 Shunt admittance matrix of the branch                                                                                                                                                                                                      False               
+    color                       str                             False                 Color to paint the element in the map diagram                                                                                                                                                                                              False               
     R                           float                    p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                        False               
     X                           float                    p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                         False               
     G                           float                    p.u.   False                 Total positive sequence shunt conductance.                                                                                                                                                                                                 False               
@@ -5881,6 +5918,9 @@ UPFC
     capex                     float                e/MW   False                 Cost of investment. Used in expansion planning.                                    False               
     opex                      float                e/MWh  False                 Cost of operation. Used in expansion planning.                                     False               
     group                     Branch group                False                 Group where this branch belongs                                                    False               
+    ys                        Admittance Matrix    p.u.   False                 Series admittance matrix of the branch                                             False               
+    ysh                       Admittance Matrix    p.u.   False                 Shunt admittance matrix of the branch                                              False               
+    color                     str                         False                 Color to paint the element in the map diagram                                      False               
     R                         float                p.u.   False                 Series positive sequence resistance.                                               False               
     X                         float                p.u.   False                 Series positive sequence reactance.                                                False               
     Rsh                       float                p.u.   False                 Shunt positive sequence resistance.                                                False               
@@ -5954,6 +5994,9 @@ VSC
     capex                     float                      e/MW       False                 Cost of investment. Used in expansion planning.                                    False               
     opex                      float                      e/MWh      False                 Cost of operation. Used in expansion planning.                                     False               
     group                     Branch group                          False                 Group where this branch belongs                                                    False               
+    ys                        Admittance Matrix          p.u.       False                 Series admittance matrix of the branch                                             False               
+    ysh                       Admittance Matrix          p.u.       False                 Shunt admittance matrix of the branch                                              False               
+    color                     str                                   False                 Color to paint the element in the map diagram                                      False               
     alpha1                    float                                 False                 Losses constant parameter (IEC 62751-2 loss Correction).                           False               
     alpha2                    float                                 False                 Losses linear parameter (IEC 62751-2 loss Correction).                             False               
     alpha3                    float                                 False                 Losses quadratic parameter (IEC 62751-2 loss Correction).                          False               
@@ -6017,6 +6060,9 @@ Winding
     capex                       float                    e/MW   False                 Cost of investment. Used in expansion planning.                                                                                                                                                                                            False               
     opex                        float                    e/MWh  False                 Cost of operation. Used in expansion planning.                                                                                                                                                                                             False               
     group                       Branch group                    False                 Group where this branch belongs                                                                                                                                                                                                            False               
+    ys                          Admittance Matrix        p.u.   False                 Series admittance matrix of the branch                                                                                                                                                                                                     False               
+    ysh                         Admittance Matrix        p.u.   False                 Shunt admittance matrix of the branch                                                                                                                                                                                                      False               
+    color                       str                             False                 Color to paint the element in the map diagram                                                                                                                                                                                              False               
     R                           float                    p.u.   False                 Total positive sequence resistance.                                                                                                                                                                                                        False               
     X                           float                    p.u.   False                 Total positive sequence reactance.                                                                                                                                                                                                         False               
     G                           float                    p.u.   False                 Total positive sequence shunt conductance.                                                                                                                                                                                                 False               
@@ -6065,22 +6111,22 @@ Wire
 
 .. table::
 
-    ===========  ===============  ======  =========  =========  ======================================================  ===========  =======
-       name        class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
-    ===========  ===============  ======  =========  =========  ======================================================  ===========  =======
-    idtag        str                      False                 Unique ID                                               False               
-    name         str                      False                 Name of the device.                                     False               
-    code         str                      False                 Secondary ID                                            False               
-    action       enum ActionType          False                 Object action to perform. Only used for model merging.  False               
-    comment      str                      False                 User comment                                            False               
-    R            float            Ohm/km  False                 resistance of the conductor                             False               
-    X            float            Ohm/km  False                 reactance of the conductor                              False               
-    GMR          float            m       False                 Geometric Mean Radius of the conductor                  False               
-    max_current  float            kA      False                 Maximum current of the conductor                        False               
-    stranding    str                      False                 Stranding of wire                                       False               
-    material     str                      False                 Material of wire                                        False               
-    diameter     float            cm      False                 Diameter of wire                                        False               
-    ===========  ===============  ======  =========  =========  ======================================================  ===========  =======
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
+          name           class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
+    idtag              str                      False                 Unique ID                                               False               
+    name               str                      False                 Name of the device.                                     False               
+    code               str                      False                 Secondary ID                                            False               
+    action             enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment            str                      False                 User comment                                            False               
+    R                  float            Ohm/km  False                 resistance of the conductor                             False               
+    diameter           float            mm      False                 Diameter of wire                                        False               
+    diameter_internal  float            mm      False                 Internal radius of the conductor                        False               
+    is_tube            bool                     False                 Is it a tubular conductor?                              False               
+    max_current        float            kA      False                 Maximum current of the conductor                        False               
+    stranding          str                      False                 Stranding of wire                                       False               
+    material           str                      False                 Material of wire                                        False               
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
 Zone
@@ -6098,7 +6144,7 @@ Zone
     comment    str                    False                 User comment                                            False               
     longitude  float            deg   False                 longitude.                                              False               
     latitude   float            deg   False                 latitude.                                               False               
-    color      str                    False                 Color to paint the SE in the map diagram                False               
+    color      str                    False                 Color to paint the element in the map diagram           False               
     area       Area                   False                 Area of this zone.                                      False               
     =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
