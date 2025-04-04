@@ -623,25 +623,44 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
 
                 if dlg.accepted:
-                    for index in dlg.selected_indices:
-                        if index == 0:
-                            diagram = schematic_widget.make_diagram_from_buses(circuit=self.editor.circuit,
-                                                                               buses=selected_buses,
-                                                                               name=self.api_object.name + " diagram")
 
-                            diagram_widget = schematic_widget.SchematicWidget(gui=self.editor.gui,
-                                                                              circuit=self.editor.circuit,
-                                                                              diagram=diagram,
-                                                                              default_bus_voltage=self.editor.gui.ui.defaultBusVoltageSpinBox.value(),
-                                                                              time_index=self.editor.gui.get_diagram_slider_index())
+                    if 1 in dlg.selected_indices:
+                        recipient_buses = {}
+                        removed_buses = []
+                        for bus in self.editor.circuit.get_substation_buses(substation=self.api_object):
+                            if bus.Vnom not in recipient_buses.keys():
+                                recipient_buses[bus.Vnom] = bus
+                            else:
+                                removed_buses.append(bus)
+                                selected_buses.remove(bus)
+                                self.editor.graphics_manager.delete_device(device=bus.voltage_level)
 
-                            self.editor.gui.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
-                                                                           diagram=diagram)
-                            self.editor.gui.set_diagrams_list_view()
-                            self.editor.gui.set_diagram_widget(widget=diagram_widget)
-                        elif index == 1:
-                            pass
-                            #TODO: Merge items
+                        for line in self.editor.circuit.lines:
+                            if line.bus_from in removed_buses:
+                                line.bus_from = recipient_buses[line.bus_from.Vnom]
+                            if line.bus_to in removed_buses:
+                                line.bus_to = recipient_buses[line.bus_to.Vnom]
+
+                        for bus in removed_buses:
+                            self.editor.circuit.delete_bus(obj=bus, delete_associated=False)
+                            self.editor.circuit.delete_voltage_level(obj=bus.voltage_level)
+
+                    if 0 in dlg.selected_indices:
+                        diagram = schematic_widget.make_diagram_from_buses(circuit=self.editor.circuit,
+                                                                           buses=selected_buses,
+                                                                           name=self.api_object.name + " diagram")
+
+                        diagram_widget = schematic_widget.SchematicWidget(gui=self.editor.gui,
+                                                                          circuit=self.editor.circuit,
+                                                                          diagram=diagram,
+                                                                          default_bus_voltage=self.editor.gui.ui.defaultBusVoltageSpinBox.value(),
+                                                                          time_index=self.editor.gui.get_diagram_slider_index())
+
+                        self.editor.gui.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
+                                                                       diagram=diagram)
+                        self.editor.gui.set_diagrams_list_view()
+                        self.editor.gui.set_diagram_widget(widget=diagram_widget)
+
                 else:
                     self.editor.gui.show_info_toast(
                         message='Merge ended. There was no diagram produced. The buses and voltages were not unified.')
