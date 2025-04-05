@@ -1,7 +1,7 @@
 import os
 import GridCalEngine.api as gce
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, run_nonlinear_opf
-
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import (run_nonlinear_opf, 
+                                                                   run_nonlinear_scopf)
 
 def case_v0() -> None:
     """
@@ -43,12 +43,16 @@ def case_v0() -> None:
        
         # Run cases without and with slacks for the contingency
         base_sol_cont = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options)
-        slack_sol_cont = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options)
+        slack_sol_cont = run_nonlinear_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options)
         print(f"Base OPF loading: {base_sol_cont.loading}")
+        print(f"Base generators production: {base_sol_cont.Pg}")
+        print(f"Base error: {base_sol_cont.error}")
+
         print(f"Slacks OPF loading: {slack_sol_cont.loading}")
-        print(f"Generators production: {base_sol_cont.Pg}")
         print(f"Line slacks F: {slack_sol_cont.sl_sf}")
         print(f"Line slacks T: {slack_sol_cont.sl_st}")
+        print(f"Slack generators production: {slack_sol_cont.Pg}")
+        print(f"Slack error: {slack_sol_cont.error}")
 
         # Reactivate the line in the main grid object for the next iteration
         grid.lines[i].active = True
