@@ -43,10 +43,12 @@ def case_v0() -> None:
        
         # Run cases without and with slacks for the contingency
         base_sol_cont = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options)
-        # slack_sol_cont = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options)
+        slack_sol_cont = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options)
         print(f"Base OPF loading: {base_sol_cont.loading}")
-        # print(f"Slacks OPF loading: {slack_sol_cont.loading}")
+        print(f"Slacks OPF loading: {slack_sol_cont.loading}")
         print(f"Generators production: {base_sol_cont.Pg}")
+        print(f"Line slacks F: {slack_sol_cont.sl_sf}")
+        print(f"Line slacks T: {slack_sol_cont.sl_st}")
 
         # Reactivate the line in the main grid object for the next iteration
         grid.lines[i].active = True
