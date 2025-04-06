@@ -1810,13 +1810,15 @@ def case_v0() -> None:
                                                     acopf_mode=AcOpfMode.ACOPFslacks)
 
     # Run the base case
-    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options)
+    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, 
+                                         opf_options=opf_base_options, pf_init=True)
 
     print()
     print(f"--- Base case ---")
     print(f"Base OPF loading {acopf_results.loading} .")
     print(f"Voltage magnitudes: {acopf_results.Vm}")
     print(f"Generators production: {acopf_results.Pg}")
+    print(f"Error: {acopf_results.error}")
 
     # Loop through N lines by recompiling the nc (faster way if using cont.?) 
     W_k_vec = []
@@ -1831,8 +1833,10 @@ def case_v0() -> None:
         # Deactivate the line in the main grid object
         grid.lines[i].active = False
        
-        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
-                                             mp_results=acopf_results)
+        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options,
+                                                               opf_options=opf_slack_options,
+                                                               pf_init=True,
+                                                               mp_results=acopf_results)
 
         if W_k > 2.4:
             W_k_vec.append(W_k)
@@ -1861,7 +1865,8 @@ def case_v0() -> None:
     # Run the MP with information from the SPs
     print("--- Feeding SPs info to MP ---")
     acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
-                                         W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j)
+                                         pf_init=True,
+                                         W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j_vec)
 
     print(f"Voltage magnitudes: {acopf_results.Vm}")
     print(f"Final loading: {acopf_results.loading}")
@@ -1879,8 +1884,10 @@ def case_v0() -> None:
         # Deactivate the line in the main grid object
         grid.lines[i].active = False
        
-        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
-                                             mp_results=acopf_results)
+        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, 
+                                                               opf_options=opf_slack_options,
+                                                               pf_init=True,
+                                                               mp_results=acopf_results)
 
         if W_k > 1e-3:
             W_k_vec.append(W_k)
