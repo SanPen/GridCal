@@ -1016,8 +1016,8 @@ def scopf_subproblem(nc: NumericalCircuit,
     W_k = result.structs.f
 
     # Select only the entries of Z_k also present in the MP, hence no slacks
-    # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
-    Z_k_init = result.mu @ result.structs.Hx
+    Z_k_init = result.lam @ result.structs.Gx - result.mu @ result.structs.Hx
+    # Z_k_init = result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
     Z_k = Z_k_init[non_slack_idx]
 
