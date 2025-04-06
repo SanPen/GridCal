@@ -493,8 +493,10 @@ class NonlinearOPFResults:
             self.nodal_capacity[ncap_idx] = other.nodal_capacity
 
         if acopf_mode == AcOpfMode.ACOPFslacks:
-            self.sl_sf[il_idx] = other.sl_sf
-            self.sl_st[il_idx] = other.sl_st
+            # self.sl_sf[il_idx] = other.sl_sf
+            # self.sl_st[il_idx] = other.sl_st
+            self.sl_sf[br_idx] = other.sl_sf
+            self.sl_st[br_idx] = other.sl_st
             self.sl_vmax[bus_idx] = other.sl_vmax
             self.sl_vmin[bus_idx] = other.sl_vmin
         self.error: float = 0.0
@@ -1750,60 +1752,12 @@ def case_v0() -> None:
                                                     ips_iterations=50,
                                                     acopf_mode=AcOpfMode.ACOPFslacks)
 
-    # Run base case first
-    nc = compile_numerical_circuit_at(circuit=grid, logger=Logger())
-    # split into islands, but considering the HVDC lines as actual links
-    islands = nc.split_into_islands(ignore_single_node_islands=True,
-                                    consider_hvdc_as_island_links=True)
-
-    for i, island in enumerate(islands):
-
-        # 1. Run the island MP
-
-        # create and initialize results
-        acopf_results = NonlinearOPFResults()
-        acopf_results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
-                        nhvdc=nc.nhvdc, ncap=0)
-        
-        Sbus_pf = nc.bus_data.installed_power
-        voltage_pf = nc.bus_data.Vbus
-
-        acopf_island_res = ac_optimal_power_flow(nc=island,
-                                           opf_options=opf_base_options,
-                                           pf_options=pf_options,
-                                           Sbus_pf=Sbus_pf[island.bus_data.original_idx],
-                                           voltage_pf=voltage_pf[island.bus_data.original_idx],
-                                           optimize_nodal_capacity=None,
-                                           nodal_capacity_sign=None,
-                                           capacity_nodes_idx=None,
-                                           logger=Logger())
-
-        acopf_results.merge(other=acopf_island_res,
-                      bus_idx=island.bus_data.original_idx,
-                      br_idx=island.passive_branch_data.original_idx,
-                      il_idx=island.passive_branch_data.get_monitor_enabled_indices(),
-                      gen_idx=island.generator_data.original_idx,
-                      hvdc_idx=island.hvdc_data.original_idx,
-                      ncap_idx=None,
-                      contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
-                      acopf_mode=opf_base_options.acopf_mode)
-
-        if i > 0:
-            acopf_results.error = max(acopf_results.error, acopf_island_res.error)
-            acopf_results.iterations = max(acopf_results.iterations, acopf_island_res.iterations)
-            acopf_results.converged = acopf_results.converged and acopf_island_res.converged if i > 0 else acopf_island_res.converged
-        else:
-            acopf_results.error = acopf_island_res.error
-            acopf_results.iterations = acopf_island_res.iterations
-            acopf_results.converged = acopf_island_res.converged
-
-    # base_sol_base = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options)
-    # slack_sol_base = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options)
+    # Run the base case
+    acopf_results = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options)
 
     print()
     print(f"--- Base case ---")
     print(f"Base OPF loading {acopf_results.loading} .")
-    # print(f"Slacks OPF loading {slack_sol_base.loading} .")
     print(f"Generators production: {acopf_results.Pg}")
 
     # Loop through N lines by recompiling the nc (faster way if using cont.?) 
@@ -1815,18 +1769,19 @@ def case_v0() -> None:
         grid.lines[i].active = False
        
         # Run cases without and with slacks for the contingency
-        base_sol_cont = run_nonlinear_scopf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
-                                            mp_results=acopf_results)
+        # base_sol_cont = run_nonlinear_scopf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
+        #                                     mp_results=acopf_results)
+        # print(f"Base OPF loading: {base_sol_cont.loading}")
+        # print(f"Base generators production: {base_sol_cont.Pg}")
+        # print(f"Base error: {base_sol_cont.error}")
+
         slack_sol_cont = run_nonlinear_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
                                              mp_results=acopf_results)
-        print(f"Base OPF loading: {base_sol_cont.loading}")
-        print(f"Base generators production: {base_sol_cont.Pg}")
-        print(f"Base error: {base_sol_cont.error}")
 
-        print(f"Slacks OPF loading: {slack_sol_cont.loading}")
+        print(f"Branch loading: {slack_sol_cont.loading}")
         print(f"Line slacks F: {slack_sol_cont.sl_sf}")
         print(f"Line slacks T: {slack_sol_cont.sl_st}")
-        print(f"Slack generators production: {slack_sol_cont.Pg}")
+        print(f"Generators P: {slack_sol_cont.Pg}")
         print(f"Slack error: {slack_sol_cont.error}")
 
         # Reactivate the line in the main grid object for the next iteration
