@@ -135,7 +135,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
                                          contingency_groups_used=self.options.contingency_groups_used,
-                                         unit_Commitment=self.options.unit_commitment,
+                                         unit_commitment=self.options.unit_commitment,
                                          ramp_constraints=False,
                                          all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,

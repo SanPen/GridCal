@@ -91,13 +91,15 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                                                    ResultTypes.GeneratorCost,
                                                                                    ResultTypes.GeneratorProducing,
                                                                                    ResultTypes.GeneratorStartingUp,
-                                                                                   ResultTypes.GeneratorShuttingDown
+                                                                                   ResultTypes.GeneratorShuttingDown,
+                                                                                   ResultTypes.GeneratorInvested,
                                                                                    ],
 
                                                     ResultTypes.ShuntResults: [ResultTypes.ShuntReactivePower],
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower,
-                                                                                 ResultTypes.BatteryEnergy],
+                                                                                 ResultTypes.BatteryEnergy,
+                                                                                 ResultTypes.BatteryInvested,],
 
                                                     ResultTypes.LoadResults: [ResultTypes.LoadShedding],
 
@@ -175,11 +177,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.generator_producing = np.zeros((nt, ngen), dtype=bool)
         self.generator_starting_up = np.zeros((nt, ngen), dtype=bool)
         self.generator_shutting_down = np.zeros((nt, ngen), dtype=bool)
+        self.generator_invested = np.zeros((nt, ngen), dtype=bool)
 
         self.shunt_like_reactive_power = np.zeros((nt, nsh), dtype=float)
 
         self.battery_power = np.zeros((nt, nbat), dtype=float)
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
+        self.battery_invested = np.zeros((nt, nbat), dtype=bool)
 
         self.fluid_node_current_level = np.zeros((nt, n_fluid_node), dtype=float)
         self.fluid_node_flow_in = np.zeros((nt, n_fluid_node), dtype=float)
@@ -244,6 +248,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='generator_producing', tpe=Mat)
         self.register(name='generator_starting_up', tpe=Mat)
         self.register(name='generator_shutting_down', tpe=Mat)
+        self.register(name='generator_invested', tpe=Mat)
 
         self.register(name='shunt_like_reactive_power', tpe=Mat)
 
@@ -261,7 +266,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         :param nc:
         """
-        rates = nc.Rates.T
+        rates = nc.passive_branch_data.rates.T
         self.loading = self.Sf / (rates + 1e-9)
 
     def set_at(self, t, res: OptimalPowerFlowResults):
@@ -632,6 +637,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 xlabel='',
                                 units='')
 
+        elif result_type == ResultTypes.GeneratorInvested:
+
+            return ResultsTable(data=self.generator_invested,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=str(result_type.value),
+                                ylabel='',
+                                xlabel='',
+                                units='')
+
         elif result_type == ResultTypes.ShuntReactivePower:
 
             return ResultsTable(data=self.shunt_like_reactive_power,
@@ -659,6 +676,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.BatteryEnergy:
 
             return ResultsTable(data=self.battery_energy,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.battery_names,
+                                cols_device_type=DeviceType.BatteryDevice,
+                                title=str(result_type.value),
+                                ylabel='(MWh)',
+                                xlabel='',
+                                units='(MWh)')
+
+        elif result_type == ResultTypes.BatteryInvested:
+
+            return ResultsTable(data=self.battery_invested,
                                 index=pd.to_datetime(self.time_array),
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.battery_names,

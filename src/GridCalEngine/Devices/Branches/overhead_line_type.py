@@ -478,8 +478,9 @@ class OverheadLineType(EditableDevice):
         """
         r = np.zeros(self.n_circuits, dtype=float)
         for wit in self.wires_in_tower.data:
-            c = phase2circuit(wit.phase) - 1  # circuits are 1 based
-            r[c] += wit.wire.max_current
+            if wit.phase > 0:  # disregard the neutral wires
+                c = phase2circuit(wit.phase) - 1  # circuits are 1 based
+                r[c] += wit.wire.max_current
 
         r /= 3  # divide every rating by 3
 

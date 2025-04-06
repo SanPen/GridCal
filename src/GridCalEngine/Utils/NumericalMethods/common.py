@@ -116,26 +116,6 @@ class ConvexMethodResult:
         print("Elapsed:\t", self.elapsed, 's')
 
 
-# def find_closest_number(arr: Vec, target: float) -> Tuple[int, float]:
-#     """
-#     Find the closest number that exists in array
-#     :param arr: Array to be searched
-#     :param target: Value to search for
-#     :return: index in the array, Closes adjusted or truncated value
-#     """
-#     idx: int = np.searchsorted(a=arr, v=target, side='left')
-#     if idx == 0:
-#         return idx, arr[0]
-#     if idx == len(arr):
-#         return idx, arr[-1]
-#     before = arr[idx - 1]
-#     after = arr[idx]
-#     if after - target < target - before:
-#         return idx, after
-#     else:
-#         return idx - 1, before
-
-
 @nb.njit(cache=True)
 def find_closest_number(arr: Vec, target: float) -> Tuple[int, float]:
     """
@@ -195,6 +175,7 @@ def make_lookup(size: int, indices: IntVec) -> IntVec:
     lookup = np.full(size, -1, dtype=np.int32)
     lookup[indices] = np.arange(len(indices), dtype=np.int32)
     return lookup
+
 
 @nb.njit(cache=True)
 def make_complex(r: Vec, i: Vec) -> CxVec:

@@ -1329,9 +1329,13 @@ class ResultTypes(Enum):
     GeneratorProducing = 'Generator producing'
     GeneratorStartingUp = 'Generator starting up'
     GeneratorShuttingDown = 'Generator shutting down'
+    GeneratorInvested = 'Generator invested'
 
     BatteryReactivePower = 'Battery reactive power'
+    BatteryInvested = 'Battery invested'
+
     ShuntReactivePower = 'Shunt reactive power'
+
 
     BusVoltagePolarPlot = 'Voltage plot'
     BusNodalCapacity = "Nodal capacity"
