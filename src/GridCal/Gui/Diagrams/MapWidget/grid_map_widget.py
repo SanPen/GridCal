@@ -55,7 +55,7 @@ from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.object_model import ObjectsModel
-from GridCal.Gui.messages import error_msg, info_msg
+from GridCal.Gui.messages import error_msg, info_msg, yes_no_question
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -1400,6 +1400,23 @@ class GridMapWidget(BaseDiagramWidget):
             gelm.api_object.lat = gelm.lat
             gelm.api_object.long = gelm.lon
 
+        ok = yes_no_question(title='Update lengths?',
+                             text='Do you want to update lengths of lines? \n'
+                                  'IMPORTANT: This will take into account every movement of substation and line '
+                                  'locations. If you are unsure of the effects of this updating, click no and perform '
+                                  'the individual length update in a new map or in the specific line.')
+        if ok:
+            line_graphics_list = self.graphics_manager.graphic_dict[DeviceType.LineDevice]
+
+            for key, line_graphic in line_graphics_list.items():
+                line_graphic.calculate_total_length()
+
+            self.gui.show_info_toast(message='Line lengths UPDATED')
+
+
+        else:
+            self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
     def plot_substation(self, i: int, api_object: Substation):
         """
         Plot branch results
@@ -2264,7 +2281,8 @@ class GridMapWidget(BaseDiagramWidget):
         # Remove past graphic item and add the new one
 
         self.remove_branch_graphic(line=line_graphic, delete_from_db=False)
-        self.add_api_line(api_object=line_api)
+        line = self.add_api_line(api_object=line_api)
+        line.calculate_total_length()
 
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)

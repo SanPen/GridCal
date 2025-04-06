@@ -638,8 +638,13 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                         for line in self.editor.circuit.lines:
                             if line.bus_from in removed_buses:
                                 line.bus_from = recipient_buses[line.bus_from.Vnom]
+                                line_graphic = self.editor.graphics_manager.query(elm=line)
+                                line_graphic.calculate_total_length()
+
                             if line.bus_to in removed_buses:
                                 line.bus_to = recipient_buses[line.bus_to.Vnom]
+                                line_graphic = self.editor.graphics_manager.query(elm=line)
+                                line_graphic.calculate_total_length()
 
                         for bus in removed_buses:
                             self.editor.circuit.delete_bus(obj=bus, delete_associated=False)

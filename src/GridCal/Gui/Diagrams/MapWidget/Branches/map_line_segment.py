@@ -282,7 +282,7 @@ class MapLineSegment(QGraphicsLineItem):
                 add_menu_entry(menu=menu,
                                text="Change substation connection of the line",
                                function_ptr=self.editor.change_line_connection,
-                               icon_path=":/Icons/icons/divide.svg")  # TODO: Think what icon can work well
+                               icon_path=":/Icons/icons/move_bus.svg")
             else:
                 pass
 
@@ -509,10 +509,8 @@ class MapLineSegment(QGraphicsLineItem):
         total_length = self.container.calculate_total_length()
 
         # Show a message with the calculated length
-        from PySide6.QtWidgets import QMessageBox
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Information)
-        msg.setText(f"Line length calculated: {total_length:.2f} km")
-        msg.setInformativeText(f"The length property of line '{self.api_object.name}' has been updated.")
-        msg.setWindowTitle("Length Calculation")
-        msg.exec()
+        self.editor.gui.show_info_toast(
+            message=f"Line length calculated: {total_length:.2f} km. The length property of line "
+                    f"{self.api_object.name} has been updated.")
+
+

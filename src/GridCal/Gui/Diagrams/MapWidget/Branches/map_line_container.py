@@ -496,7 +496,8 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
     def calculate_total_length(self) -> float:
         """
         Calculate the total length of the line by summing the distances between all waypoints
-        using the haversine formula, and update the line's length property. Issue #23
+        using the haversine formula, and update the line's length property. The coordiates used are the
+        ones from the api_object, not the graphic objects, in order to avoid undesired recalculations. Issue #23
         
         :return: Total length in kilometers
         """
@@ -508,17 +509,18 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         # Add the substation from
         substation_from = self.substation_from()
         if substation_from is not None:
-            connection_points.append((substation_from.lat, substation_from.lon))
-        
+            connection_points.append((substation_from.api_object.latitude, substation_from.api_object.longitude))
+
         # Add all intermediate points
         for node in self.nodes_list:
-            connection_points.append((node.lat, node.lon))
+            connection_points.append((node.api_object.lat, node.api_object.long))
         
         # Add the substation to
         substation_to = self.substation_to()
+
         if substation_to is not None:
-            connection_points.append((substation_to.lat, substation_to.lon))
-        
+            connection_points.append((substation_to.api_object.latitude, substation_to.api_object.longitude))
+
         # Calculate total length by summing distances between consecutive points
         total_length = 0.0
         for i in range(len(connection_points) - 1):
