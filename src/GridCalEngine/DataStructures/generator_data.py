@@ -69,6 +69,7 @@ class GeneratorData:
         self.min_time_down: Vec = np.zeros(nelm, dtype=float)
 
         self.capex: Vec = np.zeros(nelm, dtype=float)
+        self.discount_rate: Vec = np.zeros(nelm, dtype=float)
         self.is_candidate: BoolVec = np.zeros(nelm, dtype=bool)
 
         self.original_idx = np.zeros(nelm, dtype=int)
@@ -142,6 +143,7 @@ class GeneratorData:
         data.min_time_down = self.min_time_down[elm_idx]
 
         data.capex = self.capex[elm_idx]
+        data.discount_rate = self.discount_rate[elm_idx]
         data.is_candidate = self.is_candidate[elm_idx]
 
         data.original_idx = elm_idx
@@ -218,6 +220,7 @@ class GeneratorData:
         data.min_time_down = self.min_time_down.copy()
 
         data.capex = self.capex.copy()
+        data.discount_rate = self.discount_rate.copy()
         data.is_candidate = self.is_candidate.copy()
 
         data.original_idx = self.original_idx

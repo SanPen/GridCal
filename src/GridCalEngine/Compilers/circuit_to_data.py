@@ -2124,6 +2124,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
         for investment in circuit.investments:
 
+
+
             # search in generators
             data = gen_dict.get(investment.device_idtag, None)
             if data is not None:
@@ -2133,6 +2135,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                     nc.generator_data.capex[idx] = investment.CAPEX
 
                 nc.generator_data.is_candidate[idx] = True
+                nc.generator_data.discount_rate[idx] = investment.group.discount_rate
             else:
 
                 # search in batteries
@@ -2144,6 +2147,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                         nc.battery_data.capex[idx] = investment.CAPEX
 
                     nc.battery_data.is_candidate[idx] = True
+                    nc.battery_data.discount_rate[idx] = investment.group.discount_rate
                 else:
                     logger.add_error("Could not find investment device", value=investment.device_idtag)
 

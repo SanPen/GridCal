@@ -694,6 +694,9 @@ def add_linear_generation_formulation(t: Union[int, None],
     else:
         id_gen_nonvd = []
 
+    year = time_array[t].year - time_array[0].year
+
+
     # add generation stuff
     for k in range(gen_data_t.nelm):
 
@@ -779,11 +782,14 @@ def add_linear_generation_formulation(t: Union[int, None],
 
                 # Generation Expansion Planning
                 if gen_data_t.is_candidate[k] and generation_expansion_planning:
+
+                    money_factor = np.power(1.0 + gen_data_t.discount_rate[k] / 100.0, year)
+
                     # declare the investment binary
                     gen_vars.invested[t, k] = prob.add_int(lb=0, ub=1, name=join("Ig_", [t, k]))
 
                     # add the investment cost to the objective
-                    f_obj += gen_vars.invested[t, k] * (gen_data_t.pmax[k] / Sbase) * gen_data_t.capex[k]
+                    f_obj += gen_vars.invested[t, k] * (gen_data_t.pmax[k] / Sbase) * gen_data_t.capex[k] * money_factor
 
                     if t > 0:
                         # installation persistence
