@@ -1951,6 +1951,7 @@ class SimulationsMain(TimeEventsMain):
         unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
         generate_report = self.ui.addOptimalPowerFlowReportCheckBox.isChecked()
         robust = self.ui.fixOpfCheckBox.isChecked()
+        generation_expansion_planning = self.ui.opfGEPCheckBox.isChecked()
 
         if self.ui.save_mip_checkBox.isChecked():
             folder = opf_file_path()
@@ -1995,6 +1996,7 @@ class SimulationsMain(TimeEventsMain):
                                               maximize_flows=maximize_flows,
                                               inter_aggregation_info=inter_aggregation_info,
                                               unit_commitment=unit_commitment,
+                                              generation_expansion_planning=generation_expansion_planning,
                                               export_model_fname=export_model_fname,
                                               generate_report=generate_report,
                                               ips_method=ips_method,

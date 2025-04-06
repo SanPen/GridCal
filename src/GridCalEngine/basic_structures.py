@@ -16,7 +16,7 @@ IntList = List[int]
 Numeric = Union[int, float, bool, complex]
 
 NumericVec = npt.NDArray[np.float64]
-DateVec = npt.NDArray[np.datetime64]
+DateVec = pd.DatetimeIndex
 IntVec = npt.NDArray[np.int_]
 BoolVec = npt.NDArray[np.bool_]
 Vec = npt.NDArray[np.float64]

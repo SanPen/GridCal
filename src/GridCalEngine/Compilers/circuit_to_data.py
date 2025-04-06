@@ -655,6 +655,7 @@ def fill_generator_parent(
     data.min_time_down[k] = elm.MinTimeDown
 
     data.dispatchable[k] = elm.enabled_dispatch
+    data.capex[k] = elm.capex
 
     data.snom[k] = elm.Snom
 
@@ -1913,6 +1914,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  control_taps_modules: bool = True,
                                  control_taps_phase: bool = True,
                                  control_remote_voltage: bool = True,
+                                 fill_gep: bool = False,
                                  logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
@@ -1927,6 +1929,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param control_taps_modules: control taps modules?
     :param control_taps_phase: control taps phase?
     :param control_remote_voltage: control remote voltage?
+    :param fill_gep: fill generation expansion planning parameters?
     :param logger: Logger instance
     :return: NumericalCircuit instance
     """
@@ -1935,7 +1938,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     time_series = t_idx is not None
 
     bus_voltage_used = np.zeros(circuit.get_bus_number(), dtype=bool)
-
+    ngen = circuit.get_generators_number()
+    nbatt = circuit.get_batteries_number()
     # declare the numerical circuit
     nc = NumericalCircuit(
         nbus=circuit.get_bus_number(),
@@ -1945,8 +1949,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         nhvdc=circuit.get_hvdc_number(),
         nvsc=circuit.get_vsc_number(),
         nload=circuit.get_load_like_device_number(),
-        ngen=circuit.get_generators_number(),
-        nbatt=circuit.get_batteries_number(),
+        ngen=ngen,
+        nbatt=nbatt,
         nshunt=circuit.get_shunt_like_device_number(),
         nfluidnode=circuit.get_fluid_nodes_number(),
         nfluidturbine=circuit.get_fluid_turbines_number(),
@@ -2110,6 +2114,38 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
             plant_dict=plant_dict,
             t_idx=t_idx
         )
+
+
+    if fill_gep:
+
+        # formulate the investment
+        gen_dict = {elm.idtag: (idx, elm) for idx, elm in enumerate(circuit.generators)}
+        batt_dict = {elm.idtag: (idx, elm) for idx, elm in enumerate(circuit.batteries)}
+
+        for investment in circuit.investments:
+
+            # search in generators
+            data = gen_dict.get(investment.device_idtag, None)
+            if data is not None:
+                idx, elm = data
+
+                if investment.CAPEX != 0.0:  # overwrite the base capex
+                    nc.generator_data.capex[idx] = investment.CAPEX
+
+                nc.generator_data.is_candidate[idx] = True
+            else:
+
+                # search in batteries
+                data = batt_dict.get(investment.device_idtag, None)
+                if data is not None:
+                    idx, elm = data
+
+                    if investment.CAPEX != 0.0:  # overwrite the base capex
+                        nc.battery_data.capex[idx] = investment.CAPEX
+
+                    nc.battery_data.is_candidate[idx] = True
+                else:
+                    logger.add_error("Could not find investment device", value=investment.device_idtag)
 
     nc.bus_dict = bus_dict
     nc.consolidate_information()

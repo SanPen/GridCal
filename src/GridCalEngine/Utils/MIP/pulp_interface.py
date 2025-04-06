@@ -370,12 +370,9 @@ class LpModel:
             return 0.0
 
         if isinstance(x, LpCst):
-            val = x.pi
-        else:
-            raise Exception("Unrecognized type {}".format(x))
-
-        if isinstance(val, float):
-            return val
+            return x.pi
+        elif isinstance(x, float):
+            return x
         else:
             return 0.0
 

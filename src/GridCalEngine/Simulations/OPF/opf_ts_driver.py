@@ -117,8 +117,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
                                          contingency_groups_used=self.options.contingency_groups_used,
-                                         unit_Commitment=self.options.unit_commitment,
+                                         unit_commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
+                                         generation_expansion_planning=self.options.generation_expansion_planning,
                                          all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
@@ -146,6 +147,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.generator_producing = opf_vars.gen_vars.producing
             self.results.generator_starting_up = opf_vars.gen_vars.starting_up
             self.results.generator_shutting_down = opf_vars.gen_vars.shedding
+            self.results.generator_invested = opf_vars.gen_vars.invested
 
             self.results.Sf = opf_vars.branch_vars.flows
             self.results.St = -opf_vars.branch_vars.flows
@@ -286,8 +288,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
                                          contingency_groups_used=self.options.contingency_groups_used,
-                                         unit_Commitment=self.options.unit_commitment,
+                                         unit_commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
+                                         generation_expansion_planning=self.options.generation_expansion_planning,
                                          all_generators_fixed=False,
                                          lodf_threshold=self.options.lodf_tolerance,
                                          maximize_inter_area_flow=self.options.maximize_flows,
@@ -314,6 +317,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.generator_producing[time_indices, :] = opf_vars.gen_vars.producing
             self.results.generator_starting_up[time_indices, :] = opf_vars.gen_vars.starting_up
             self.results.generator_shutting_down[time_indices, :] = opf_vars.gen_vars.shedding
+            self.results.generator_invested[time_indices, :] = opf_vars.gen_vars.invested
 
             self.results.Sf[time_indices, :] = opf_vars.branch_vars.flows
             self.results.St[time_indices, :] = -opf_vars.branch_vars.flows

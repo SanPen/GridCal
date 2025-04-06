@@ -556,9 +556,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qmax = Qmax
 
         # arrays for branch control types (nbr)
-        # self.tap_module_control_mode = nc.active_branch_data.tap_module_control_mode
-        # self.tap_controlled_buses = nc.active_branch_data.tap_phase_control_mode
-        # self.tap_phase_control_mode = nc.active_branch_data.tap_controlled_buses
         self.F = nc.passive_branch_data.F
         self.T = nc.passive_branch_data.T
 
@@ -636,8 +633,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
 
         # Controllable branches ----------------------------------------------------------------------------------------
-        ys = 1.0 / (nc.passive_branch_data.R
-                    + 1.0j * nc.passive_branch_data.X + 1e-20)  # series admittance
+        ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)  # series admittance
         bc2 = make_complex(nc.passive_branch_data.G, nc.passive_branch_data.B) / 2.0  # shunt admittance
         vtap_f = nc.passive_branch_data.virtual_tap_f
         vtap_t = nc.passive_branch_data.virtual_tap_t
@@ -2388,11 +2384,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff_ - yff0_) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft_ - yft0_))
         St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
 
-        # difference between the actual power and the power calculated with the passive term (initial admittance)
-        # AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        # AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
-        # AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
-
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,
@@ -2455,7 +2446,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
         St_vsc = make_complex(Pt_vsc, Qt_vsc)
-        # Scalc_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
@@ -2596,7 +2586,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     m_taps = self.nc.passive_branch_data.m_taps[k]
 
                     if self.options.orthogonalize_controls and m_taps is not None:
-                        _, self.m[i] = find_closest_number(arr=m_taps, target=self.m[i])
+                        _, self.m[i] = find_closest_number(arr=m_taps, target=float(self.m[i]))
 
                     if self.m[i] < self.nc.active_branch_data.tap_module_min[k]:
                         self.m[i] = self.nc.active_branch_data.tap_module_min[k]
@@ -2816,12 +2806,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc)
         St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc)
-        # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        # Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
-        # self.Scalc = Scalc  # needed for the Q control check to use
-
         self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
             nbus=self.nc.bus_data.nbus,
             F_br=self.F_cbr[self.cbr],
