@@ -1914,6 +1914,106 @@ def case_v0() -> None:
     return None
 
 
+def case_loop() -> None:
+    """
+    Simple 5 bus system from where to build the SCOPF, looping
+    :return:
+    """
+    # Load basic grid
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus4_v2.gridcal')
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
+    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
+    grid = FileOpen(file_path).open()
+
+    # Set options
+    pf_options = PowerFlowOptions(control_q=False)
+    opf_base_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
+                                                   ips_tolerance=1e-8,
+                                                   ips_iterations=50,
+                                                   acopf_mode=AcOpfMode.ACOPFstd)
+    opf_slack_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
+                                                    ips_tolerance=1e-8,
+                                                    ips_iterations=50,
+                                                    acopf_mode=AcOpfMode.ACOPFslacks)
+
+    # Run the base case
+    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, 
+                                         opf_options=opf_base_options, pf_init=True)
+
+    print()
+    print(f"--- Base case ---")
+    print(f"Base OPF loading {acopf_results.loading} .")
+    print(f"Voltage magnitudes: {acopf_results.Vm}")
+    print(f"Generators production: {acopf_results.Pg}")
+    print(f"Error: {acopf_results.error}")
+
+    print()
+    print("--- Starting loop with fixed number of repetitions, then breaking ---")
+
+    for klm in range(10):
+        print(f"General iteration {klm+1} of 10")
+
+        # Loop through N lines by recompiling the nc (faster way if using cont.?) 
+        W_k_vec = []
+        Z_k_vec = []
+        u_j_vec = []
+        prob_cont = []
+
+        for i, line_to_disable in enumerate(grid.lines):
+            print()
+            print(f"--- N-1 Line Contingency {i+1}: Deactivating '{line_to_disable.name}' ---")
+
+            # Deactivate the line in the main grid object
+            grid.lines[i].active = False
+        
+            slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options,
+                                                                opf_options=opf_slack_options,
+                                                                pf_init=True,
+                                                                mp_results=acopf_results)
+
+            # if W_k > 2.4:
+            if W_k > 1.0:
+                W_k_vec.append(W_k)
+                Z_k_vec.append(Z_k)
+                u_j_vec.append(u_j)
+                prob_cont.append(i)
+
+            print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
+            print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
+            print(f"Vmin slacks: {slack_sol_cont.sl_vmin}")
+            print(f"Branch loading: {slack_sol_cont.loading}")
+            print(f"Line slacks F: {slack_sol_cont.sl_sf}")
+            print(f"Line slacks T: {slack_sol_cont.sl_st}")
+            print(f"Generators P: {slack_sol_cont.Pg}")
+            print(f"Slack error: {slack_sol_cont.error}")
+
+            # Reactivate the line in the main grid object for the next iteration
+            grid.lines[i].active = True
+
+        print()
+        print("--- All contingencies processed ---")
+        print(f"Number of problematic SPs: {len(W_k_vec)}")
+        print(f"Problematic contingencies: {prob_cont}")
+        print()
+        if len(prob_cont) == 0:
+            break
+
+        # Run the MP with information from the SPs
+        print("--- Feeding SPs info to MP ---")
+        acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
+                                            pf_init=True,
+                                            W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j_vec)
+
+        print(f"Voltage magnitudes: {acopf_results.Vm}")
+        print(f"Final loading: {acopf_results.loading}")
+        print(f"Generators production: {acopf_results.Pg}")
+        print(f"Error: {acopf_results.error}")
+
+
+    return None
+
+
 if __name__ == '__main__':
-    case_v0()
+    # case_v0()
+    case_loop()
 
