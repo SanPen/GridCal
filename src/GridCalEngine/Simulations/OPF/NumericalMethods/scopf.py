@@ -1809,9 +1809,60 @@ def case_v0() -> None:
     print()
     print(f"--- Base case ---")
     print(f"Base OPF loading {acopf_results.loading} .")
+    print(f"Voltage magnitudes: {acopf_results.Vm}")
     print(f"Generators production: {acopf_results.Pg}")
 
     # Loop through N lines by recompiling the nc (faster way if using cont.?) 
+    W_k_vec = []
+    Z_k_vec = []
+    u_j_vec = []
+    prob_cont = []
+
+    for i, line_to_disable in enumerate(grid.lines):
+        print()
+        print(f"--- N-1 Line Contingency {i+1}: Deactivating '{line_to_disable.name}' ---")
+
+        # Deactivate the line in the main grid object
+        grid.lines[i].active = False
+       
+        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
+                                             mp_results=acopf_results)
+
+        if W_k > 1e-3:
+            W_k_vec.append(W_k)
+            Z_k_vec.append(Z_k)
+            u_j_vec.append(u_j)
+            prob_cont.append(i)
+
+        print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
+        print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
+        print(f"Vmin slacks: {slack_sol_cont.sl_vmin}")
+        print(f"Branch loading: {slack_sol_cont.loading}")
+        print(f"Line slacks F: {slack_sol_cont.sl_sf}")
+        print(f"Line slacks T: {slack_sol_cont.sl_st}")
+        print(f"Generators P: {slack_sol_cont.Pg}")
+        print(f"Slack error: {slack_sol_cont.error}")
+
+        # Reactivate the line in the main grid object for the next iteration
+        grid.lines[i].active = True
+
+    print()
+    print("--- All contingencies processed ---")
+    print(f"Number of problematic SPs: {len(W_k_vec)}")
+    print(f"Problematic contingencies: {prob_cont}")
+    print()
+
+    # Run the MP with information from the SPs
+    print("--- Feeding SPs info to MP ---")
+    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
+                                         W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j)
+
+    print(f"Voltage magnitudes: {acopf_results.Vm}")
+    print(f"Final loading: {acopf_results.loading}")
+    print(f"Generators production: {acopf_results.Pg}")
+    print(f"Error: {acopf_results.error}")
+
+     # Second loop through N lines by recompiling the nc (faster way if using cont.?) 
     W_k_vec = []
     Z_k_vec = []
     u_j_vec = []
@@ -1825,9 +1876,11 @@ def case_v0() -> None:
         slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
                                              mp_results=acopf_results)
 
-        W_k_vec.append(W_k)
-        Z_k_vec.append(Z_k)
-        u_j_vec.append(u_j)
+        if W_k > 1e-3:
+            W_k_vec.append(W_k)
+            Z_k_vec.append(Z_k)
+            u_j_vec.append(u_j)
+
         print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
         print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
         print(f"Vmin slacks: {slack_sol_cont.sl_vmin}")
@@ -1835,19 +1888,15 @@ def case_v0() -> None:
         print(f"Line slacks F: {slack_sol_cont.sl_sf}")
         print(f"Line slacks T: {slack_sol_cont.sl_st}")
         print(f"Generators P: {slack_sol_cont.Pg}")
-        print(f"Objective function: {slack_sol_cont.Pcost}")
         print(f"Slack error: {slack_sol_cont.error}")
 
         # Reactivate the line in the main grid object for the next iteration
         grid.lines[i].active = True
 
     print()
-    print("--- All contingencies processed ---")
-
-    # Run the MP with information from the SPs
-    print("--- Feeding SPs info to MP ---")
-    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
-                                         W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j)
+    print("--- All contingencies processed x2 ---")
+    print(f"Number of problematic SPs: {len(W_k_vec)}")
+    print()   
 
     return None
 

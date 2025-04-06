@@ -708,10 +708,10 @@ def eval_h_scopf(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: 
             W_k = W_k_vec[k]
             Z_k = Z_k_vec[k]
             u_j = u_j_vec[k]
-            h_scopf[k] = W_k + Z_k @ (x_new - u_j)
+            # h_scopf[k] = W_k + Z_k @ (x_new - u_j)  # Original
+            # Try variants to see if we catch the sign issue
+            h_scopf[k] = W_k + 1e5 * Z_k @ (x_new - u_j)
 
-        print(f"h_scopf: {h_scopf}")
-        print(f"x: {x_new}")
     else:
         h_scopf = []
 
@@ -1783,7 +1783,7 @@ def jacobians_and_hessians_scopf(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, C
                 HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
         if n_scopf > 0:
-            Hscopf = sp.hstack([Z_k_mat,
+            Hscopf = sp.hstack([1e5 * Z_k_mat,
                                 lil_matrix((n_scopf, NV - (2 * N + 2 * Ng)))])
         else:
             Hscopf = lil_matrix((0, NV))
