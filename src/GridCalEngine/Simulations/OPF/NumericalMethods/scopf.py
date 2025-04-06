@@ -7,7 +7,7 @@ import numpy as np
 import timeit
 import pandas as pd
 from scipy import sparse as sp
-from typing import Tuple
+from typing import Tuple, List
 from dataclasses import dataclass
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
@@ -18,10 +18,12 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import AcOpfMode, SolverType
 from typing import Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, CscMat
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
-                                                                               eval_g, eval_h,
-                                                                               jacobians_and_hessians)
+                                                                               eval_g, eval_h, 
+                                                                               eval_h_scopf,
+                                                                               jacobians_and_hessians,
+                                                                               jacobians_and_hessians_scopf)
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 
@@ -158,7 +160,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                 nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, Inom, V_U, V_L,
                                 P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                 k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
-                                acopf_mode) -> Tuple[IpsFunctionReturn, Vec]:
+                                W_k_vec, Z_k_vec, u_j_vec, acopf_mode) -> Tuple[IpsFunctionReturn, Vec]:
     """
     A function that computes the optimization model for a NumericalCircuit object and returns the values of the
     equations and their derivatives computed analyitically
@@ -209,6 +211,10 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param nig: Number of dispatchable generators
     :param Sg_undis: undispatchable complex power
     :param ctQ: Boolean that indicates if the Reactive control applies
+    :param W_k_vec: Vector of objective functions from the SPs
+    :param Z_k_vec: Vector of slopes from the SPs
+    :param u_j_vec: Vector of unknowns where the slopes for the SPs are applied
+    :param acopf_mode: Mode of the AC OPF
     :return: Object with all the model equations and derivatives stored
     """
 
@@ -255,14 +261,21 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     te_g = timeit.default_timer()
 
     ts_h = timeit.default_timer()
-    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
+    # H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
+    #                    Cg=Cg, Inom=Inom, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L,
+    #                    tapm_max=tapm_max,
+    #                    tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
+    #                    rates=rates, il=il, ig=ig, ctQ=ctQ,
+    #                    acopf_mode=acopf_mode)
+    H, Sf, St = eval_h_scopf(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
                        Cg=Cg, Inom=Inom, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L,
                        tapm_max=tapm_max,
                        tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
-                       rates=rates, il=il, ig=ig, ctQ=ctQ, acopf_mode=acopf_mode)
+                       rates=rates, il=il, ig=ig, ctQ=ctQ, W_k_vec=W_k_vec, Z_k_vec=Z_k_vec, u_j_vec=u_j_vec,
+                       acopf_mode=acopf_mode)
     te_h = timeit.default_timer()
 
-    fx, Gx, Hx, fxx, Gxx, Hxx, der_times = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf,
+    fx, Gx, Hx, fxx, Gxx, Hxx, der_times = jacobians_and_hessians_scopf(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf,
                                                                   Ct=Ct, Inom=Inom, Yf=Yf,
                                                                   Yt=Yt, Ybus=Ybus, Sbase=Sbase, mon_br_idx=il, ig=ig,
                                                                   slack=slack,
@@ -273,7 +286,9 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                                                   alltapt=alltapt, F_hvdc=fdc, T_hvdc=tdc, nsh=nsh,
                                                                   k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda,
                                                                   R=R, X=X,
-                                                                  F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
+                                                                  F=from_idx, T=to_idx, ctQ=ctQ,
+                                                                  Z_k_vec=Z_k_vec, 
+                                                                  acopf_mode=acopf_mode,
                                                                   compute_jac=compute_jac, compute_hess=compute_hess)
 
     times = np.r_[te_modadm - ts_modadm, te_f - ts_f, te_g - ts_g, te_h - ts_h, der_times]
@@ -680,6 +695,7 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     # Run with slack always in the subproblem 
     nsl = 2 * npq + 2 * n_br_mon
+
     # Slack relaxations for constraints
 
 
@@ -749,6 +765,11 @@ def scopf_subproblem(nc: NumericalCircuit,
     # number of variables
     NV = len(x0)
 
+    non_slack_idx = np.r_[np.arange(0, 2 * nbus + 2 * n_gen_disp), 
+                          np.arange(2 * nbus + 2 * n_gen_disp + nsl, NV)]
+
+    control_pqg_idx = np.r_[np.arange(2 * nbus, 2 * nbus + 2 * n_gen_disp)]
+
     loadtimeEnd = timeit.default_timer()
     times = np.array([])
     # print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
@@ -801,7 +822,7 @@ def scopf_subproblem(nc: NumericalCircuit,
                                                        tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                        alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
                                                        br_mon_idx, n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
-                                                       opf_options.ips_control_q_limits,
+                                                       opf_options.ips_control_q_limits, None, None, None,
                                                        opf_options.acopf_mode),
                                                   verbose=opf_options.verbose,
                                                   max_iter=opf_options.ips_iterations,
@@ -988,27 +1009,36 @@ def scopf_subproblem(nc: NumericalCircuit,
         if len(logger):
             logger.print()
 
-    # TODO: Return W_k, Z_k, u_j, where
+    # Output of the SCOPF: return W_k, Z_k, u_j, where
     # W_k = objective function of the SP
     # Z_k = lambda_k * dg_k/du_j + mu_k * dh_k/du_j
     # u_j = setpoints passed to the SP, they go in and out 
     W_k = result.structs.f
-    Z_k = result.lam.T @ result.structs.Gx + result.mu.T @ result.structs.Hx
-    # Then do Z_k @ (u - u_j)
-    u_j = var2x(Va=mp_results.Va,
-               Vm=mp_results.Vm,
-               Pg=mp_results.Pg,
-               Qg=mp_results.Qg,
-               sl_sf=mp_results.sl_sf,
-               sl_st=mp_results.sl_st,
-               sl_vmax=mp_results.sl_vmax,
-               sl_vmin=mp_results.sl_vmin,
-               slcap=mp_results.nodal_capacity,
-               tapm=mp_results.tap_module,
-               tapt=mp_results.tap_phase,
-               Pfdc=mp_results.hvdc_Pf)
 
-    return NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
+    # Select only the entries of Z_k also present in the MP, hence no slacks
+    Z_k_init = result.lam.T @ result.structs.Gx + result.mu.T @ result.structs.Hx
+    # Z_k = Z_k_init[control_pqg_idx]
+    Z_k = Z_k_init[non_slack_idx]
+
+    # Build full x vector
+    u_j_all = var2x(Va=Va,
+               Vm=Vm,
+               Pg=Pg,
+               Qg=Qg,
+               sl_sf=sl_sf,
+               sl_st=sl_st,
+               sl_vmax=sl_vmax,
+               sl_vmin=sl_vmin,
+               slcap=slcap,
+               tapm=tapm,
+               tapt=tapt,
+               Pfdc=Pfdc)
+
+    # Index to only include the control variables
+    # u_j = u_j_all[control_pqg_idx]
+    u_j = u_j_all[non_slack_idx]
+    
+    scopf_SP_results = NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
                                Sf=Sf, St=St, loading=loading,
                                Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
                                tap_module=tap_module, tap_phase=tap_phase,
@@ -1019,6 +1049,8 @@ def scopf_subproblem(nc: NumericalCircuit,
                                error=result.error,
                                converged=result.converged,
                                iterations=result.iterations)
+
+    return scopf_SP_results, W_k, Z_k, u_j
 
 
 def scopf_MP_OPF(nc: NumericalCircuit,
@@ -1033,7 +1065,10 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                           optimize_nodal_capacity: bool = False,
                           nodal_capacity_sign: float = 1.0,
                           capacity_nodes_idx: Union[IntVec, None] = None,
-                          logger: Logger = Logger()) -> NonlinearSCOPFResults:
+                          logger: Logger = Logger(),
+                          W_k_vec: Union[Vec, None] = None,
+                          Z_k_vec: Union[List[Vec], None] = None,
+                          u_j_vec: Union[List[Vec], None] = None) -> NonlinearSCOPFResults:
     """
 
     :param nc: NumericalCircuit
@@ -1196,6 +1231,11 @@ def scopf_MP_OPF(nc: NumericalCircuit,
     t_disp_hvdc = nc.hvdc_data.T[hvdc_disp_idx]
     P_hvdc_max = nc.hvdc_data.rates[hvdc_disp_idx]
 
+    if W_k_vec is not None:
+        n_cuts = len(W_k_vec)
+    else:
+        n_cuts = 0
+
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
@@ -1230,10 +1270,10 @@ def scopf_MP_OPF(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
     if opf_options.ips_control_q_limits:
-        NI = 2 * n_br_mon + 2 * npq + ngen + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
+        NI = 2 * n_br_mon + 2 * npq + ngen + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + n_cuts
     else:
         # No Reactive constraint (power curve)
-        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
+        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + n_cuts
 
     # ignore power from Z and I of the load
 
@@ -1332,7 +1372,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                                                        tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                        alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
                                                        br_mon_idx, n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
-                                                       opf_options.ips_control_q_limits,
+                                                       opf_options.ips_control_q_limits, W_k_vec, Z_k_vec, u_j_vec,
                                                        opf_options.acopf_mode),
                                                   verbose=opf_options.verbose,
                                                   max_iter=opf_options.ips_iterations,
@@ -1553,6 +1593,9 @@ def run_nonlinear_MP_opf(grid: MultiCircuit,
                       optimize_nodal_capacity: bool = False,
                       nodal_capacity_sign: float = 1.0,
                       capacity_nodes_idx: Union[IntVec, None] = None,
+                      W_k_vec: Union[Vec, None] = None,
+                      Z_k_vec: Union[List[Vec], None] = None,
+                      u_j_vec: Union[List[Vec], None] = None,
                       logger: Logger = Logger()) -> NonlinearSCOPFResults:
     """
     Run optimal power flow for a MultiCircuit
@@ -1619,7 +1662,10 @@ def run_nonlinear_MP_opf(grid: MultiCircuit,
                                            optimize_nodal_capacity=optimize_nodal_capacity,
                                            nodal_capacity_sign=nodal_capacity_sign,
                                            capacity_nodes_idx=capacity_nodes_idx_isl,
-                                           logger=logger)
+                                           logger=logger,
+                                           W_k_vec=W_k_vec,
+                                           Z_k_vec=Z_k_vec,
+                                           u_j_vec=u_j_vec)
 
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
@@ -1700,7 +1746,7 @@ def run_nonlinear_SP_scopf(grid: MultiCircuit,
         scopf_results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
                         nhvdc=nc.nhvdc, ncap=0)
 
-        scopf_island_res = scopf_subproblem(nc=island,
+        scopf_island_res, W_k, Z_k, u_j = scopf_subproblem(nc=island,
                                            opf_options=opf_options,
                                            debug=debug,
                                            use_autodiff=use_autodiff,
@@ -1733,7 +1779,7 @@ def run_nonlinear_SP_scopf(grid: MultiCircuit,
         scopf_results.Va = nc.propagate_bus_result(scopf_results.Va)
         scopf_results.Vm = nc.propagate_bus_result(scopf_results.Vm)
 
-    return scopf_results
+    return scopf_results, W_k, Z_k, u_j
 
 
 def case_v0() -> None:
@@ -1766,6 +1812,9 @@ def case_v0() -> None:
     print(f"Generators production: {acopf_results.Pg}")
 
     # Loop through N lines by recompiling the nc (faster way if using cont.?) 
+    W_k_vec = []
+    Z_k_vec = []
+    u_j_vec = []
     for i, line_to_disable in enumerate(grid.lines):
         print()
         print(f"--- N-1 Line Contingency {i+1}: Deactivating '{line_to_disable.name}' ---")
@@ -1773,9 +1822,12 @@ def case_v0() -> None:
         # Deactivate the line in the main grid object
         grid.lines[i].active = False
        
-        slack_sol_cont = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
+        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
                                              mp_results=acopf_results)
 
+        W_k_vec.append(W_k)
+        Z_k_vec.append(Z_k)
+        u_j_vec.append(u_j)
         print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
         print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
         print(f"Vmin slacks: {slack_sol_cont.sl_vmin}")
@@ -1791,6 +1843,12 @@ def case_v0() -> None:
 
     print()
     print("--- All contingencies processed ---")
+
+    # Run the MP with information from the SPs
+    print("--- Feeding SPs info to MP ---")
+    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
+                                         W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j)
+
     return None
 
 
