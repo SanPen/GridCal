@@ -70,6 +70,15 @@ def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem
         uvicorn.run(app,
                     host=host, port=port)
 
+def str2bool(value):
+    if isinstance(value, bool):
+        return value
+    if value.lower() in {'True', 'true', 't', 'yes', '1'}:
+        return True
+    elif value.lower() in {'False', 'false', 'f', 'no', '0'}:
+        return False
+    else:
+        raise argparse.ArgumentTypeError(f'Invalid boolean value: {value}')
 
 if __name__ == "__main__":
     # Initialize parser
@@ -82,8 +91,13 @@ if __name__ == "__main__":
                         help="Path to the certificate file that the server generates")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host IP address")
     parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
-    parser.add_argument("--secure", type=bool, default=True, help="Use https?")
-    parser.add_argument("--master", type=bool, default=True, help="Use https?")
+
+    parser.add_argument("--secure", type=str2bool,
+                        choices=[True, False], default=True, help="Use https?")
+
+    parser.add_argument("--master", type=str2bool,
+                        choices=[True, False], default=True, help="Use https?")
+
     parser.add_argument("--master_host", type=str, default="0.0.0.0", help="URL of the master instance")
     parser.add_argument("--master_port", type=int, default=80, help="Port of the master instance")
     parser.add_argument("--user", type=str, default="", help="username")
@@ -91,6 +105,9 @@ if __name__ == "__main__":
 
     # Parse arguments
     args = parser.parse_args()
+
+    print("Arguments:")
+    print('\n'.join(f'{k}: {v}' for k, v in vars(args).items()))
 
     # Call the start_server function with the parsed arguments
     start_server(key_file_name=args.key_fname,
