@@ -992,6 +992,21 @@ def scopf_subproblem(nc: NumericalCircuit,
     # W_k = objective function of the SP
     # Z_k = lambda_k * dg_k/du_j + mu_k * dh_k/du_j
     # u_j = setpoints passed to the SP, they go in and out 
+    W_k = result.structs.f
+    Z_k = result.lam.T @ result.structs.Gx + result.mu.T @ result.structs.Hx
+    # Then do Z_k @ (u - u_j)
+    u_j = var2x(Va=mp_results.Va,
+               Vm=mp_results.Vm,
+               Pg=mp_results.Pg,
+               Qg=mp_results.Qg,
+               sl_sf=mp_results.sl_sf,
+               sl_st=mp_results.sl_st,
+               sl_vmax=mp_results.sl_vmax,
+               sl_vmin=mp_results.sl_vmin,
+               slcap=mp_results.nodal_capacity,
+               tapm=mp_results.tap_module,
+               tapt=mp_results.tap_phase,
+               Pfdc=mp_results.hvdc_Pf)
 
     return NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
                                Sf=Sf, St=St, loading=loading,
