@@ -1175,7 +1175,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.vsc_pt_set = np.array(vsc_pt_set, dtype=float)
         self.vsc_qt_set = np.array(vsc_qt_set, dtype=float)
 
-
     def _analyze_vsc_controls_old(self) -> None:
         """
         Analyze the control branches and compute the indices
@@ -2544,6 +2543,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if update_controls and self._error < self._controls_tol:
             any_change = False
             branch_ctrl_change = False
+            m_fixed_idx = list()
+            tau_fixed_idx = list()
 
             # generator reactive power limits
             # condition to enter:
@@ -2588,7 +2589,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
             # update the tap module control
             if self.options.control_taps_modules:
-                m_changed_ind = list()
+
                 for i, k in enumerate(self.u_cbr_m):
 
                     # m_taps = self.nc.passive_branch_data.m_taps[i]
@@ -2599,7 +2600,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                     if self.m[i] < self.nc.active_branch_data.tap_module_min[k]:
                         self.m[i] = self.nc.active_branch_data.tap_module_min[k]
-                        m_changed_ind.append(i)
+                        m_fixed_idx.append(i)
 
                         # self.tap_module_control_mode[k] = TapModuleControl.fixed
                         self.nc.active_branch_data.tap_module_control_mode[k] = TapModuleControl.fixed
@@ -2610,9 +2611,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.m[i])
 
-                    if self.m[i] > self.nc.active_branch_data.tap_module_max[k]:
+                    elif self.m[i] > self.nc.active_branch_data.tap_module_max[k]:
                         self.m[i] = self.nc.active_branch_data.tap_module_max[k]
-                        m_changed_ind.append(i)
+                        m_fixed_idx.append(i)
 
                         # self.tap_module_control_mode[k] = TapModuleControl.fixed
                         self.nc.active_branch_data.tap_module_control_mode[k] = TapModuleControl.fixed
@@ -2623,12 +2624,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.m[i])
 
-                    if len(m_changed_ind) > 0:
-                        self.m = np.delete(self.m, m_changed_ind)
-
             # update the tap phase control
             if self.options.control_taps_phase:
-                t_changed_ind = list()
 
                 for i, k in enumerate(self.u_cbr_tau):
 
@@ -2639,7 +2636,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                     if self.tau[i] < self.nc.active_branch_data.tap_angle_min[k]:
                         self.tau[i] = self.nc.active_branch_data.tap_angle_min[k]
-                        t_changed_ind.append(i)
+                        tau_fixed_idx.append(i)
 
                         self.nc.active_branch_data.tap_phase_control_mode[k] = TapPhaseControl.fixed
                         self.nc.active_branch_data.tap_angle[k] = self.tau[i]
@@ -2649,9 +2646,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.tau[i])
 
-                    if self.tau[i] > self.nc.active_branch_data.tap_angle_max[k]:
+                    elif self.tau[i] > self.nc.active_branch_data.tap_angle_max[k]:
                         self.tau[i] = self.nc.active_branch_data.tap_angle_max[k]
-                        t_changed_ind.append(i)
+                        tau_fixed_idx.append(i)
 
                         self.nc.active_branch_data.tap_phase_control_mode[k] = TapPhaseControl.fixed
                         self.nc.active_branch_data.tap_angle[k] = self.tau[i]
@@ -2661,10 +2658,14 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.tau[i])
 
-                    if len(t_changed_ind) > 0:
-                        self.tau = np.delete(self.tau, t_changed_ind)
-
             if branch_ctrl_change:
+
+                if len(m_fixed_idx) > 0:
+                    self.m = np.delete(self.m, m_fixed_idx)
+
+                if len(tau_fixed_idx) > 0:
+                    self.tau = np.delete(self.tau, tau_fixed_idx)
+
                 self.bus_types = self.nc.bus_data.bus_types.copy()
                 self.is_p_controlled = self.nc.bus_data.is_p_controlled.copy()
                 self.is_q_controlled = self.nc.bus_data.is_q_controlled.copy()
@@ -2682,7 +2683,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # recompute the error based on the new Scalc and S0
                 self._f = self.fx()
 
-                # compute the rror
+                # compute the error
                 self._error = compute_fx_error(self._f)
 
         # converged?

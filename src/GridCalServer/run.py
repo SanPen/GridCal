@@ -81,7 +81,7 @@ if __name__ == "__main__":
     parser.add_argument("--cert_fname", type=str, default="cert.pem",
                         help="Path to the certificate file that the server generates")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host IP address")
-    parser.add_argument("--port", type=int, default=8001, help="Port to run the server on")
+    parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
     parser.add_argument("--secure", type=bool, default=True, help="Use https?")
     parser.add_argument("--master", type=bool, default=True, help="Use https?")
     parser.add_argument("--master_host", type=str, default="0.0.0.0", help="URL of the master instance")
