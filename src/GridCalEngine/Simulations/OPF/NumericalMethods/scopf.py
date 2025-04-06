@@ -1016,7 +1016,8 @@ def scopf_subproblem(nc: NumericalCircuit,
     W_k = result.structs.f
 
     # Select only the entries of Z_k also present in the MP, hence no slacks
-    Z_k_init = result.lam.T @ result.structs.Gx + result.mu.T @ result.structs.Hx
+    # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
+    Z_k_init = result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
     Z_k = Z_k_init[non_slack_idx]
 
@@ -1037,6 +1038,10 @@ def scopf_subproblem(nc: NumericalCircuit,
     # Index to only include the control variables
     # u_j = u_j_all[control_pqg_idx]
     u_j = u_j_all[non_slack_idx]
+
+    print(f"u_j: {u_j}")
+    print(f"W_k: {W_k}")
+    print(f"Z_k: {Z_k}")
     
     scopf_SP_results = NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
                                Sf=Sf, St=St, loading=loading,
@@ -1789,7 +1794,8 @@ def case_v0() -> None:
     """
     # Load basic grid
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus4_v2.gridcal')
-    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
+    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
     grid = FileOpen(file_path).open()
 
     # Set options
@@ -1828,7 +1834,7 @@ def case_v0() -> None:
         slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options, opf_options=opf_slack_options,
                                              mp_results=acopf_results)
 
-        if W_k > 1e-3:
+        if W_k > 2.4:
             W_k_vec.append(W_k)
             Z_k_vec.append(Z_k)
             u_j_vec.append(u_j)
