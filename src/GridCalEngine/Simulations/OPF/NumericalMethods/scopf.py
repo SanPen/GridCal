@@ -1923,6 +1923,7 @@ def case_loop() -> None:
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus4_v2.gridcal')
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
     file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v4.gridcal')
     grid = FileOpen(file_path).open()
 
     # Set options
