@@ -650,13 +650,21 @@ def scopf_subproblem(nc: NumericalCircuit,
     X = nc.passive_branch_data.X
 
     # Set costs to 0, to not have them in the objective function
-    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
-    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
-    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
+    # c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
+    # c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
+    # c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
 
-    c0n = nc.generator_data.cost_0[gen_nondisp_idx] * 0.0
-    c1n = nc.generator_data.cost_1[gen_nondisp_idx] * 0.0
-    c2n = nc.generator_data.cost_2[gen_nondisp_idx] * 0.0
+    # c0n = nc.generator_data.cost_0[gen_nondisp_idx] * 0.0
+    # c1n = nc.generator_data.cost_1[gen_nondisp_idx] * 0.0
+    # c2n = nc.generator_data.cost_2[gen_nondisp_idx] * 0.0
+
+    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
+    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
+    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
+
+    c0n = nc.generator_data.cost_0[gen_nondisp_idx] * 1.0
+    c1n = nc.generator_data.cost_1[gen_nondisp_idx] * 1.0
+    c2n = nc.generator_data.cost_2[gen_nondisp_idx] * 1.0
 
     # Transformer operational limits
     tapm_max = nc.active_branch_data.tap_module_max[k_m]
@@ -769,6 +777,7 @@ def scopf_subproblem(nc: NumericalCircuit,
                           np.arange(2 * nbus + 2 * n_gen_disp + nsl, NV)]
 
     control_pqg_idx = np.r_[np.arange(2 * nbus, 2 * nbus + 2 * n_gen_disp)]
+    control_pg_idx = np.r_[np.arange(2 * nbus, 2 * nbus + n_gen_disp)]
 
     loadtimeEnd = timeit.default_timer()
     times = np.array([])
@@ -1016,10 +1025,12 @@ def scopf_subproblem(nc: NumericalCircuit,
     W_k = result.structs.f
 
     # Select only the entries of Z_k also present in the MP, hence no slacks
-    Z_k_init = result.lam @ result.structs.Gx - result.mu @ result.structs.Hx
+    # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
+    Z_k_init = result.lam @ result.structs.Gx
     # Z_k_init = result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
-    Z_k = Z_k_init[non_slack_idx]
+    # Z_k = Z_k_init[non_slack_idx]
+    Z_k = Z_k_init[control_pg_idx]
 
     # Build full x vector
     u_j_all = var2x(Va=Va,
@@ -1037,7 +1048,8 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     # Index to only include the control variables
     # u_j = u_j_all[control_pqg_idx]
-    u_j = u_j_all[non_slack_idx]
+    # u_j = u_j_all[non_slack_idx]
+    u_j = u_j_all[control_pg_idx]
 
     print(f"u_j: {u_j}")
     print(f"W_k: {W_k}")
@@ -1796,6 +1808,7 @@ def case_v0() -> None:
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus4_v2.gridcal')
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
     file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v5.gridcal')
     grid = FileOpen(file_path).open()
 
     # Set options
@@ -1922,8 +1935,9 @@ def case_loop() -> None:
     # Load basic grid
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus4_v2.gridcal')
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
-    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v4.gridcal')
+    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v5.gridcal')
     grid = FileOpen(file_path).open()
 
     # Set options
@@ -1951,6 +1965,12 @@ def case_loop() -> None:
     print()
     print("--- Starting loop with fixed number of repetitions, then breaking ---")
 
+    # Store all SP unfeasible results, accumulating them?
+    # W_k_vec = []
+    # Z_k_vec = []
+    # u_j_vec = []
+    # prob_cont = []
+
     for klm in range(10):
         print(f"General iteration {klm+1} of 10")
 
@@ -1973,7 +1993,8 @@ def case_loop() -> None:
                                                                 mp_results=acopf_results)
 
             # if W_k > 2.4:
-            if W_k > 1.0:
+            # if W_k > 1.0:
+            if W_k > 0.2:
                 W_k_vec.append(W_k)
                 Z_k_vec.append(Z_k)
                 u_j_vec.append(u_j)
@@ -1993,7 +2014,7 @@ def case_loop() -> None:
 
         print()
         print("--- All contingencies processed ---")
-        print(f"Number of problematic SPs: {len(W_k_vec)}")
+        print(f"Number of problematic SPs: {len(prob_cont)}")
         print(f"Problematic contingencies: {prob_cont}")
         print()
         if len(prob_cont) == 0:
