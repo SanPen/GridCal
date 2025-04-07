@@ -569,13 +569,13 @@ def scopf_subproblem(nc: NumericalCircuit,
     slackgens = np.where(Cgen[slack, :].toarray() == 1)[1]
 
     # # Set all generator powers except for slack
-    Pg_max = mp_results.Pg
-    Pg_min = mp_results.Pg
+    Pg_max = np.copy(mp_results.Pg)
+    Pg_min = np.copy(mp_results.Pg)
 
     Pg_max[slackgens] = nc.generator_data.pmax[slackgens] / Sbase
     Pg_min[slackgens] = nc.generator_data.pmin[slackgens] / Sbase
 
-    # Give freedom to modify the Q
+    # Give freedom to modify the Q in the SP
     Qg_max = nc.generator_data.qmax / Sbase
     Qg_min = nc.generator_data.qmin / Sbase
 
@@ -1026,6 +1026,7 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     # Select only the entries of Z_k also present in the MP, hence no slacks
     # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
+    # Z_k_init = result.lam @ result.structs.Gx
     Z_k_init = result.lam @ result.structs.Gx
     # Z_k_init = result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
@@ -1937,7 +1938,8 @@ def case_loop() -> None:
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v4.gridcal')
-    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v5.gridcal')
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v5.gridcal')  # Hitting V lims
+    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v6.gridcal')  # Hitting V and S lims
     grid = FileOpen(file_path).open()
 
     # Set options
@@ -1959,7 +1961,8 @@ def case_loop() -> None:
     print(f"--- Base case ---")
     print(f"Base OPF loading {acopf_results.loading} .")
     print(f"Voltage magnitudes: {acopf_results.Vm}")
-    print(f"Generators production: {acopf_results.Pg}")
+    print(f"Generators P: {acopf_results.Pg}")
+    print(f"Generators Q: {acopf_results.Qg}")
     print(f"Error: {acopf_results.error}")
 
     print()
@@ -2007,6 +2010,7 @@ def case_loop() -> None:
             print(f"Line slacks F: {slack_sol_cont.sl_sf}")
             print(f"Line slacks T: {slack_sol_cont.sl_st}")
             print(f"Generators P: {slack_sol_cont.Pg}")
+            print(f"Generators Q: {slack_sol_cont.Qg}")
             print(f"Slack error: {slack_sol_cont.error}")
 
             # Reactivate the line in the main grid object for the next iteration
@@ -2028,7 +2032,8 @@ def case_loop() -> None:
 
         print(f"Voltage magnitudes: {acopf_results.Vm}")
         print(f"Final loading: {acopf_results.loading}")
-        print(f"Generators production: {acopf_results.Pg}")
+        print(f"Generators P: {acopf_results.Pg}")
+        print(f"Generators Q: {acopf_results.Qg}")
         print(f"Error: {acopf_results.error}")
 
 
