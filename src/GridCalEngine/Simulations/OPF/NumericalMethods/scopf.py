@@ -1941,7 +1941,8 @@ def case_loop() -> None:
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v5.gridcal')  # Hitting V lims
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v6.gridcal')  # Hitting V and S lims
     # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v7.gridcal')  # Hitting V and S lims
-    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v8.gridcal')  # Hitting V and S lims
+    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v8.gridcal')  # Hitting V and S lims
+    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v9.gridcal')  # Hitting V and S lims
     grid = FileOpen(file_path).open()
 
     # Set options
@@ -1999,7 +2000,7 @@ def case_loop() -> None:
                                                                 mp_results=acopf_results)
 
             # if W_k > 2.4:
-            if W_k > 0.018:  # does the job
+            if W_k > 0.005:  # does the job
                 W_k_vec.append(W_k)
                 Z_k_vec.append(Z_k)
                 u_j_vec.append(u_j)
