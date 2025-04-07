@@ -2590,6 +2590,12 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.orthogonalize_pf_controls_checkBox)
 
+        self.initialize_pf_angles_checkBox = QCheckBox(self.frame_36)
+        self.initialize_pf_angles_checkBox.setObjectName(u"initialize_pf_angles_checkBox")
+        self.initialize_pf_angles_checkBox.setFont(font1)
+
+        self.verticalLayout_4.addWidget(self.initialize_pf_angles_checkBox)
+
         self.label_54 = QLabel(self.frame_36)
         self.label_54.setObjectName(u"label_54")
 
@@ -5630,6 +5636,10 @@ class Ui_mainWindow(object):
         self.orthogonalize_pf_controls_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the controls are adjusted to their closest tap", None))
 #endif // QT_CONFIG(tooltip)
         self.orthogonalize_pf_controls_checkBox.setText(QCoreApplication.translate("mainWindow", u"Orthogonalize controls", None))
+#if QT_CONFIG(tooltip)
+        self.initialize_pf_angles_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the controls are adjusted to their closest tap", None))
+#endif // QT_CONFIG(tooltip)
+        self.initialize_pf_angles_checkBox.setText(QCoreApplication.translate("mainWindow", u"Initialize angles", None))
         self.label_54.setText("")
 #if QT_CONFIG(tooltip)
         self.temperature_correction_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Correct the branches resistance using the temperature", None))

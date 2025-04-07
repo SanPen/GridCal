@@ -4886,6 +4886,21 @@
                 </widget>
                </item>
                <item>
+                <widget class="QCheckBox" name="initialize_pf_angles_checkBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>If checked, the power flow solution is initialized with a linear (so called DC) power flow first</string>
+                 </property>
+                 <property name="text">
+                  <string>Initialize angles</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QLabel" name="label_54">
                  <property name="text">
                   <string/>

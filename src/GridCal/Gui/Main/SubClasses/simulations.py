@@ -729,7 +729,6 @@ class SimulationsMain(TimeEventsMain):
             verbose=self.ui.verbositySpinBox.value(),
             tolerance=tolerance,
             max_iter=self.ui.max_iterations_spinBox.value(),
-            max_outer_loop_iter=1000,
             control_q=self.ui.control_q_checkBox.isChecked(),
             control_taps_phase=self.ui.control_tap_phase_checkBox.isChecked(),
             control_taps_modules=self.ui.control_tap_modules_checkBox.isChecked(),
@@ -741,6 +740,7 @@ class SimulationsMain(TimeEventsMain):
             ignore_single_node_islands=self.ui.ignore_single_node_islands_checkBox.isChecked(),
             trust_radius=self.ui.muSpinBox.value(),
             use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
+            initialize_angles=self.ui.initialize_pf_angles_checkBox.isChecked(),
             generate_report=self.ui.addPowerFlowReportCheckBox.isChecked()
         )
 

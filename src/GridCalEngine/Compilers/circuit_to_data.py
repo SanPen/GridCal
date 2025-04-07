@@ -1075,6 +1075,14 @@ def fill_controllable_branch(
                                  value=elm.vset,
                                  expected_value=bus_data.Vbus[bus_idx])
 
+        # modify the voltage angle guess using the phase
+        if ctrl_data.tap_angle[ii] != 0:
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
+            Vm = abs(bus_data.Vbus[f])
+            Va = np.angle(bus_data.Vbus[f], deg=False)
+            bus_data.Vbus[f] = Vm * np.exp(1j * (Va + ctrl_data.tap_angle[ii]))
+
 
 def get_branch_data(
         data: PassiveBranchData,
