@@ -352,18 +352,6 @@
                           <property name="verticalSpacing">
                            <number>2</number>
                           </property>
-                          <item row="17" column="0">
-                           <widget class="QLabel" name="label_118">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Map tile provider</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="14" column="1">
                            <widget class="QComboBox" name="automatic_layout_comboBox">
                             <property name="font">
@@ -507,18 +495,6 @@
                             </property>
                            </widget>
                           </item>
-                          <item row="17" column="1">
-                           <widget class="QComboBox" name="tile_provider_comboBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="toolTip">
-                             <string>Map tile provides (map background)</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="12" column="1">
                            <widget class="QDoubleSpinBox" name="explosion_factor_doubleSpinBox">
                             <property name="font">
@@ -582,7 +558,7 @@
                                 <string/>
                                </property>
                                <property name="pixmap">
-                                <pixmap resource="icons.qrc">:/Icons/icons/schematic.svg</pixmap>
+                                <pixmap resource="icons.qrc">:/Icons/icons/map.svg</pixmap>
                                </property>
                                <property name="scaledContents">
                                 <bool>true</bool>
@@ -634,7 +610,7 @@
                                 </font>
                                </property>
                                <property name="text">
-                                <string>General</string>
+                                <string>Map</string>
                                </property>
                                <property name="alignment">
                                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -677,83 +653,6 @@
                              <property name="bottomMargin">
                               <number>0</number>
                              </property>
-                             <item>
-                              <widget class="QLabel" name="label_99">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>24</width>
-                                 <height>24</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>24</width>
-                                 <height>24</height>
-                                </size>
-                               </property>
-                               <property name="text">
-                                <string/>
-                               </property>
-                               <property name="pixmap">
-                                <pixmap resource="icons.qrc">:/Icons/icons/show_color_controls.svg</pixmap>
-                               </property>
-                               <property name="scaledContents">
-                                <bool>true</bool>
-                               </property>
-                              </widget>
-                             </item>
-                             <item>
-                              <widget class="QLabel" name="label_100">
-                               <property name="palette">
-                                <palette>
-                                 <active>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>85</red>
-                                     <green>87</green>
-                                     <blue>83</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </active>
-                                 <inactive>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>85</red>
-                                     <green>87</green>
-                                     <blue>83</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </inactive>
-                                 <disabled>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>190</red>
-                                     <green>190</green>
-                                     <blue>190</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </disabled>
-                                </palette>
-                               </property>
-                               <property name="font">
-                                <font>
-                                 <pointsize>11</pointsize>
-                                </font>
-                               </property>
-                               <property name="text">
-                                <string>Map</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
                             </layout>
                            </widget>
                           </item>
@@ -990,57 +889,6 @@
                               <number>0</number>
                              </property>
                              <item row="2" column="0">
-                              <widget class="QLabel" name="label">
-                               <property name="sizePolicy">
-                                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                                 <horstretch>0</horstretch>
-                                 <verstretch>0</verstretch>
-                                </sizepolicy>
-                               </property>
-                               <property name="font">
-                                <font>
-                                 <pointsize>8</pointsize>
-                                </font>
-                               </property>
-                               <property name="text">
-                                <string>Node size</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="1">
-                              <widget class="QPushButton" name="preset1_pushButton">
-                               <property name="font">
-                                <font>
-                                 <pointsize>8</pointsize>
-                                </font>
-                               </property>
-                               <property name="toolTip">
-                                <string>Apply country meaningful sizes</string>
-                               </property>
-                               <property name="text">
-                                <string>Country</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="3" column="0">
-                              <widget class="QLabel" name="label_14">
-                               <property name="sizePolicy">
-                                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                                 <horstretch>0</horstretch>
-                                 <verstretch>0</verstretch>
-                                </sizepolicy>
-                               </property>
-                               <property name="font">
-                                <font>
-                                 <pointsize>8</pointsize>
-                                </font>
-                               </property>
-                               <property name="text">
-                                <string>Branch size</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="0">
                               <widget class="QLabel" name="label_154">
                                <property name="sizePolicy">
                                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -1058,7 +906,7 @@
                                </property>
                               </widget>
                              </item>
-                             <item row="4" column="0">
+                             <item row="5" column="0">
                               <widget class="QLabel" name="label_113">
                                <property name="sizePolicy">
                                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -1076,52 +924,7 @@
                                </property>
                               </widget>
                              </item>
-                             <item row="0" column="0">
-                              <widget class="QLabel" name="label_43">
-                               <property name="sizePolicy">
-                                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                                 <horstretch>0</horstretch>
-                                 <verstretch>0</verstretch>
-                                </sizepolicy>
-                               </property>
-                               <property name="font">
-                                <font>
-                                 <pointsize>8</pointsize>
-                                </font>
-                               </property>
-                               <property name="text">
-                                <string>Palette</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="2">
-                              <widget class="QPushButton" name="preset2_pushButton">
-                               <property name="font">
-                                <font>
-                                 <pointsize>8</pointsize>
-                                </font>
-                               </property>
-                               <property name="toolTip">
-                                <string>Apply region meaningful sizes</string>
-                               </property>
-                               <property name="text">
-                                <string>Region</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="1" colspan="4">
-                              <widget class="QComboBox" name="palette_comboBox">
-                               <property name="font">
-                                <font>
-                                 <pointsize>8</pointsize>
-                                </font>
-                               </property>
-                               <property name="toolTip">
-                                <string>Select the colour palette</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="2" column="1" colspan="2">
+                             <item row="3" column="1" colspan="2">
                               <widget class="QDoubleSpinBox" name="min_node_size_spinBox">
                                <property name="font">
                                 <font>
@@ -1151,97 +954,67 @@
                                </property>
                               </widget>
                              </item>
-                             <item row="2" column="3" colspan="2">
-                              <widget class="QDoubleSpinBox" name="max_node_size_spinBox">
+                             <item row="4" column="0">
+                              <widget class="QLabel" name="label_14">
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="text">
+                                <string>Branch size</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="0" column="1" colspan="4">
+                              <widget class="QComboBox" name="palette_comboBox">
                                <property name="font">
                                 <font>
                                  <pointsize>8</pointsize>
                                 </font>
                                </property>
                                <property name="toolTip">
-                                <string>Maximum node / substation sizes</string>
-                               </property>
-                               <property name="suffix">
-                                <string> px</string>
-                               </property>
-                               <property name="decimals">
-                                <number>5</number>
-                               </property>
-                               <property name="minimum">
-                                <double>0.000100000000000</double>
-                               </property>
-                               <property name="maximum">
-                                <double>9999.000000000000000</double>
-                               </property>
-                               <property name="singleStep">
-                                <double>0.100000000000000</double>
-                               </property>
-                               <property name="value">
-                                <double>40.000000000000000</double>
+                                <string>Select the colour palette</string>
                                </property>
                               </widget>
                              </item>
-                             <item row="3" column="1" colspan="2">
-                              <widget class="QDoubleSpinBox" name="min_branch_size_spinBox">
+                             <item row="2" column="4">
+                              <widget class="QPushButton" name="preset4_pushButton">
                                <property name="font">
                                 <font>
                                  <pointsize>8</pointsize>
                                 </font>
                                </property>
                                <property name="toolTip">
-                                <string>Minimum branch sizes</string>
+                                <string>Apply street meaningful sizes</string>
                                </property>
-                               <property name="suffix">
-                                <string> px</string>
-                               </property>
-                               <property name="decimals">
-                                <number>5</number>
-                               </property>
-                               <property name="minimum">
-                                <double>0.000100000000000</double>
-                               </property>
-                               <property name="maximum">
-                                <double>9999.000000000000000</double>
-                               </property>
-                               <property name="singleStep">
-                                <double>0.100000000000000</double>
-                               </property>
-                               <property name="value">
-                                <double>1.000000000000000</double>
+                               <property name="text">
+                                <string>Street</string>
                                </property>
                               </widget>
                              </item>
-                             <item row="4" column="1" colspan="2">
-                              <widget class="QDoubleSpinBox" name="arrow_size_size_spinBox">
+                             <item row="6" column="2" colspan="3">
+                              <widget class="QPushButton" name="redraw_pushButton">
                                <property name="font">
                                 <font>
                                  <pointsize>8</pointsize>
                                 </font>
                                </property>
                                <property name="toolTip">
-                                <string>Branch arrow sizes</string>
+                                <string>Redraw the map or schematic with the new parameters</string>
                                </property>
-                               <property name="suffix">
-                                <string> px</string>
-                               </property>
-                               <property name="decimals">
-                                <number>5</number>
-                               </property>
-                               <property name="minimum">
-                                <double>0.000100000000000</double>
-                               </property>
-                               <property name="maximum">
-                                <double>9999.000000000000000</double>
-                               </property>
-                               <property name="singleStep">
-                                <double>0.100000000000000</double>
-                               </property>
-                               <property name="value">
-                                <double>1.000000000000000</double>
+                               <property name="text">
+                                <string>redraw</string>
                                </property>
                               </widget>
                              </item>
-                             <item row="3" column="3" colspan="2">
+                             <item row="4" column="3" colspan="2">
                               <widget class="QDoubleSpinBox" name="max_branch_size_spinBox">
                                <property name="font">
                                 <font>
@@ -1271,37 +1044,40 @@
                                </property>
                               </widget>
                              </item>
-                             <item row="1" column="3">
-                              <widget class="QPushButton" name="preset3_pushButton">
+                             <item row="2" column="1">
+                              <widget class="QPushButton" name="preset1_pushButton">
                                <property name="font">
                                 <font>
                                  <pointsize>8</pointsize>
                                 </font>
                                </property>
                                <property name="toolTip">
-                                <string>Apply municipality meaningful sizes</string>
+                                <string>Apply country meaningful sizes</string>
                                </property>
                                <property name="text">
-                                <string>Municipality</string>
+                                <string>Country</string>
                                </property>
                               </widget>
                              </item>
-                             <item row="1" column="4">
-                              <widget class="QPushButton" name="preset4_pushButton">
+                             <item row="3" column="0">
+                              <widget class="QLabel" name="label">
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
                                <property name="font">
                                 <font>
                                  <pointsize>8</pointsize>
                                 </font>
                                </property>
-                               <property name="toolTip">
-                                <string>Apply street meaningful sizes</string>
-                               </property>
                                <property name="text">
-                                <string>Street</string>
+                                <string>Node size</string>
                                </property>
                               </widget>
                              </item>
-                             <item row="5" column="0" colspan="2">
+                             <item row="6" column="0" colspan="2">
                               <widget class="QCheckBox" name="branch_width_based_on_flow_checkBox">
                                <property name="font">
                                 <font>
@@ -1316,18 +1092,165 @@
                                </property>
                               </widget>
                              </item>
-                             <item row="5" column="2" colspan="3">
-                              <widget class="QPushButton" name="redraw_pushButton">
+                             <item row="0" column="0">
+                              <widget class="QLabel" name="label_43">
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="text">
+                                <string>Palette</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="2" column="3">
+                              <widget class="QPushButton" name="preset3_pushButton">
                                <property name="font">
                                 <font>
                                  <pointsize>8</pointsize>
                                 </font>
                                </property>
                                <property name="toolTip">
-                                <string>Redraw the map or schematic with the new parameters</string>
+                                <string>Apply municipality meaningful sizes</string>
                                </property>
                                <property name="text">
-                                <string>redraw</string>
+                                <string>Municipality</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="3" column="3" colspan="2">
+                              <widget class="QDoubleSpinBox" name="max_node_size_spinBox">
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="toolTip">
+                                <string>Maximum node / substation sizes</string>
+                               </property>
+                               <property name="suffix">
+                                <string> px</string>
+                               </property>
+                               <property name="decimals">
+                                <number>5</number>
+                               </property>
+                               <property name="minimum">
+                                <double>0.000100000000000</double>
+                               </property>
+                               <property name="maximum">
+                                <double>9999.000000000000000</double>
+                               </property>
+                               <property name="singleStep">
+                                <double>0.100000000000000</double>
+                               </property>
+                               <property name="value">
+                                <double>40.000000000000000</double>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="2" column="2">
+                              <widget class="QPushButton" name="preset2_pushButton">
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="toolTip">
+                                <string>Apply region meaningful sizes</string>
+                               </property>
+                               <property name="text">
+                                <string>Region</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="5" column="1" colspan="2">
+                              <widget class="QDoubleSpinBox" name="arrow_size_size_spinBox">
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="toolTip">
+                                <string>Branch arrow sizes</string>
+                               </property>
+                               <property name="suffix">
+                                <string> px</string>
+                               </property>
+                               <property name="decimals">
+                                <number>5</number>
+                               </property>
+                               <property name="minimum">
+                                <double>0.000100000000000</double>
+                               </property>
+                               <property name="maximum">
+                                <double>9999.000000000000000</double>
+                               </property>
+                               <property name="singleStep">
+                                <double>0.100000000000000</double>
+                               </property>
+                               <property name="value">
+                                <double>1.000000000000000</double>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="4" column="1" colspan="2">
+                              <widget class="QDoubleSpinBox" name="min_branch_size_spinBox">
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="toolTip">
+                                <string>Minimum branch sizes</string>
+                               </property>
+                               <property name="suffix">
+                                <string> px</string>
+                               </property>
+                               <property name="decimals">
+                                <number>5</number>
+                               </property>
+                               <property name="minimum">
+                                <double>0.000100000000000</double>
+                               </property>
+                               <property name="maximum">
+                                <double>9999.000000000000000</double>
+                               </property>
+                               <property name="singleStep">
+                                <double>0.100000000000000</double>
+                               </property>
+                               <property name="value">
+                                <double>1.000000000000000</double>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="1" column="0">
+                              <widget class="QLabel" name="label_118">
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="text">
+                                <string>Map tile provider</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="1" column="1" colspan="4">
+                              <widget class="QComboBox" name="tile_provider_comboBox">
+                               <property name="font">
+                                <font>
+                                 <pointsize>8</pointsize>
+                                </font>
+                               </property>
+                               <property name="toolTip">
+                                <string>Map tile provides (map background)</string>
                                </property>
                               </widget>
                              </item>

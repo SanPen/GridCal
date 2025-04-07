@@ -210,6 +210,7 @@ class ConfigurationMain(ResultsMain):
                 "apply_temperature_correction": self.ui.temperature_correction_checkBox,
                 "apply_impedance_tolerances": self.ui.apply_impedance_tolerances_checkBox,
                 "add_pf_report": self.ui.addPowerFlowReportCheckBox,
+                "initialize_angles": self.ui.initialize_pf_angles_checkBox,
             },
             "optimal_power_flow": {
                 "method": self.ui.lpf_solver_comboBox,
