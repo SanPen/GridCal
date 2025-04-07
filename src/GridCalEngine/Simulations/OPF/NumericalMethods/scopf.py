@@ -1970,18 +1970,18 @@ def case_loop() -> None:
     print("--- Starting loop with fixed number of repetitions, then breaking ---")
 
     # Store all SP unfeasible results, accumulating them?
-    # W_k_vec = []
-    # Z_k_vec = []
-    # u_j_vec = []
-    # prob_cont = []
+    W_k_vec = []
+    Z_k_vec = []
+    u_j_vec = []
+    prob_cont = []
 
     for klm in range(10):
         print(f"General iteration {klm+1} of 10")
 
         # Loop through N lines by recompiling the nc (faster way if using cont.?) 
-        W_k_vec = []
-        Z_k_vec = []
-        u_j_vec = []
+        # W_k_vec = []
+        # Z_k_vec = []
+        # u_j_vec = []
         prob_cont = []
 
         for i, line_to_disable in enumerate(grid.lines):
@@ -1997,7 +1997,7 @@ def case_loop() -> None:
                                                                 mp_results=acopf_results)
 
             # if W_k > 2.4:
-            if W_k > 1.0:  # does the job
+            if W_k > 0.4:  # does the job
                 W_k_vec.append(W_k)
                 Z_k_vec.append(Z_k)
                 u_j_vec.append(u_j)
