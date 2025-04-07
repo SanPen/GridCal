@@ -67,10 +67,6 @@ def initialize_system():
         logging.info(f"GENCLS a = {system.models['GENCLS'].algeb_idx}")
         logging.info(f"GENCLS a = {system.models['GENCLS'].extalgeb_idx}")
 
-        logging.info(f"Bus a = {system.models['Bus'].vars_index}")
-        logging.info(f"ACLine a = {system.models['ACLine'].vars_index}")
-        logging.info(f"ExpLoad a = {system.models['ExpLoad'].vars_index}")
-        logging.info(f"GENCLS a = {system.models['GENCLS'].vars_index}")
 
 
 
