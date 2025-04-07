@@ -2021,6 +2021,7 @@ def case_loop() -> None:
         print(f"Number of problematic SPs: {len(prob_cont)}")
         print(f"Problematic contingencies: {prob_cont}")
         print()
+
         if len(prob_cont) == 0:
             break
 
