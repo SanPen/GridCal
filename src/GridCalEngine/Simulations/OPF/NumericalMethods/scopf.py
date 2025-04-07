@@ -1026,8 +1026,8 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     # Select only the entries of Z_k also present in the MP, hence no slacks
     # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
-    # Z_k_init = result.lam @ result.structs.Gx
-    Z_k_init = result.lam @ result.structs.Gx - result.mu @ result.structs.Hx
+    Z_k_init = result.lam @ result.structs.Gx
+    # Z_k_init = result.lam @ result.structs.Gx - result.mu @ result.structs.Hx
     # Z_k_init = result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
     # Z_k = Z_k_init[non_slack_idx]
@@ -2000,7 +2000,7 @@ def case_loop() -> None:
                                                                 mp_results=acopf_results)
 
             # if W_k > 2.4:
-            if W_k > 0.001:  # does the job
+            if W_k > 0.0001:  # does the job
                 W_k_vec.append(W_k)
                 Z_k_vec.append(Z_k)
                 u_j_vec.append(u_j)
