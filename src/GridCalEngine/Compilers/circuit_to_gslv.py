@@ -91,6 +91,12 @@ try:
         ContingencyOperationTypes.PowerPercentage: pg.ContingencyOperationTypes.PowerPercentage,
     }
 
+    contingency_method_dict = {
+        ContingencyMethod.PTDF: pg.ContingencyMethod.PTDF,
+        ContingencyMethod.PowerFlow: pg.ContingencyMethod.PowerFlow,
+        ContingencyMethod.HELM: pg.ContingencyMethod.HELM,
+    }
+
 except ImportError as e:
     pg = None
     GSLV_AVAILABLE = False
@@ -99,6 +105,7 @@ except ImportError as e:
     tap_module_control_mode_dict = dict()
     tap_phase_control_mode_dict = dict()
     contingency_ops_type_dict = dict()
+    contingency_method_dict = dict()
 
 
 def get_gslv_mip_solvers_list() -> List[str]:
@@ -540,8 +547,6 @@ def convert_contingencies(elm: dev.Contingency,
     :param groups_dict:
     :return:
     """
-
-
 
     return pg.Contingency(idtag=elm.idtag,
                           device_idtag=elm.device_idtag,
@@ -2434,3 +2439,66 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults") ->
     #         results.convergence_reports.append(report)
 
     return results
+
+
+def gslv_contingencies(circuit: MultiCircuit,
+                       con_opt: ContingencyAnalysisOptions,
+                       time_series: bool = False,
+                       time_indices: Union[IntVec, None] = None) -> "pg.ContingencyAnalysisResults":
+    """
+    GSLV power flow
+    :param circuit: MultiCircuit instance
+    :param pf_opt: Power Flow Options
+    :param time_series: Compile with GridCal time series?
+    :param time_indices: Array of time indices
+    :param opf_results: Instance of
+    :return: GSLV Power flow results object
+    """
+    override_branch_controls = not (con_opt.pf_options.control_taps_modules and con_opt.pf_options.control_taps_phase)
+
+    gslv_grid, _ = to_gslv(circuit,
+                           use_time_series=time_series,
+                           time_indices=None,
+                           override_branch_controls=override_branch_controls,
+                           opf_results=None)
+
+    con_opt_gslv = pg.ContingencyAnalysisOptions(
+        use_provided_flows=con_opt.use_provided_flows,
+        Pf=con_opt.Pf,
+        pf_options=get_gslv_pf_options(con_opt.pf_options),
+        lin_options=pg.LinearAnalysisOptions(
+            distributeSlack=con_opt.lin_options.distribute_slack,
+            correctValues=con_opt.lin_options.correct_values,
+            ptdfThreshold=con_opt.lin_options.ptdf_threshold,
+            lodfThreshold=con_opt.lin_options.lodf_threshold,
+        ),
+        use_srap=con_opt.use_srap,
+        srap_max_power=con_opt.srap_max_power,
+        srap_top_n=con_opt.srap_top_n,
+        srap_dead_band=con_opt.srap_deadband,
+        srap_rever_to_nominal_rating=con_opt.srap_rever_to_nominal_rating,
+        detailed_massive_report=con_opt.detailed_massive_report,
+        contingency_dead_band=con_opt.contingency_deadband,
+        contingency_method=contingency_method_dict[con_opt.contingency_method],
+    )
+
+    if time_series:
+        # it is already sliced to the relevant time indices
+        if time_indices is None:
+            time_indices = [i for i in range(circuit.get_time_number())]
+        else:
+            time_indices = list(time_indices)
+        n_threads = 0  # max threads
+    else:
+        time_indices = [0]
+        n_threads = 1
+
+    logger = pg.Logger()
+
+    res = pg.run_contingencies(grid=gslv_grid,
+                                  options=con_opt_gslv,
+                                  n_threads=n_threads,
+                                  time_indices=time_indices,
+                                  logger=logger)
+
+    return res
