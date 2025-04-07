@@ -5637,7 +5637,7 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.orthogonalize_pf_controls_checkBox.setText(QCoreApplication.translate("mainWindow", u"Orthogonalize controls", None))
 #if QT_CONFIG(tooltip)
-        self.initialize_pf_angles_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the controls are adjusted to their closest tap", None))
+        self.initialize_pf_angles_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the power flow solution is initialized with a linear (so called DC) power flow first", None))
 #endif // QT_CONFIG(tooltip)
         self.initialize_pf_angles_checkBox.setText(QCoreApplication.translate("mainWindow", u"Initialize angles", None))
         self.label_54.setText("")
