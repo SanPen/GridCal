@@ -1984,6 +1984,7 @@ def case_loop() -> None:
         # Z_k_vec = []
         # u_j_vec = []
         prob_cont = []
+        W_k_local = []
 
         for i, line_to_disable in enumerate(grid.lines):
             print()
@@ -1998,11 +1999,12 @@ def case_loop() -> None:
                                                                 mp_results=acopf_results)
 
             # if W_k > 2.4:
-            if W_k > 0.034:  # does the job
+            if W_k > 0.018:  # does the job
                 W_k_vec.append(W_k)
                 Z_k_vec.append(Z_k)
                 u_j_vec.append(u_j)
                 prob_cont.append(i)
+            W_k_local.append(W_k)
 
             print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
             print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
@@ -2021,6 +2023,7 @@ def case_loop() -> None:
         print("--- All contingencies processed ---")
         print(f"Number of problematic SPs: {len(prob_cont)}")
         print(f"Problematic contingencies: {prob_cont}")
+        print(f"Maximum W_k: {max(np.array(W_k_local))}")
         print()
 
         if len(prob_cont) == 0:
