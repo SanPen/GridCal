@@ -2002,9 +2002,12 @@ def case_loop() -> None:
                                                     ips_iterations=50,
                                                     acopf_mode=AcOpfMode.ACOPFslacks)
 
+    # nc.set_con_or_ra_status()
+    # TODO: nc.
+
     # Run the base case
     acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, 
-                                         opf_options=opf_base_options, pf_init=True)
+                                         opf_options=opf_slack_options, pf_init=True)
 
     print()
     print(f"--- Base case ---")
@@ -2018,10 +2021,9 @@ def case_loop() -> None:
     print("--- Starting loop with fixed number of repetitions, then breaking ---")
 
     # Store all SP unfeasible results, accumulating them?
-    W_k_vec = []
-    Z_k_vec = []
-    u_j_vec = []
-    prob_cont = []
+    W_k_vec = []  # vec
+    Z_k_vec = []  # list of vecs
+    u_j_vec = []  # list of vecs
 
     # Initialize tracking dictionary
     iteration_data = {
@@ -2049,6 +2051,7 @@ def case_loop() -> None:
             # Deactivate the line in the main grid object
             grid.lines[i].active = False
         
+            # TODO: try init with previous values
             slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options,
                                                                 opf_options=opf_slack_options,
                                                                 pf_init=True,
@@ -2081,7 +2084,7 @@ def case_loop() -> None:
         # Run the MP with information from the SPs
         print("--- Feeding SPs info to MP ---")
         acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, 
-                                            opf_options=opf_base_options,
+                                            opf_options=opf_slack_options,
                                             pf_init=True,
                                             W_k_vec=np.array(W_k_vec), 
                                             Z_k_vec=Z_k_vec, 
