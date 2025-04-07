@@ -26,6 +26,7 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x
                                                                                jacobians_and_hessians_scopf)
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+import matplotlib.pyplot as plt
 
 
 def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admittances, Cg, R, X, Sd, slack, from_idx,
@@ -1623,7 +1624,7 @@ def run_nonlinear_MP_opf(grid: MultiCircuit,
     :param t_idx: Time index
     :param debug: debug? when active the autodiff is activated
     :param use_autodiff: Use autodiff?
-    :param pf_init: Initialize with a power flow?
+    :param pf_init: Initialize with power flow
     :param Sbus_pf0: Sbus initial solution
     :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
@@ -1928,6 +1929,51 @@ def case_v0() -> None:
     return None
 
 
+def plot_scopf_progress(iteration_data):
+    """
+    Plot the evolution of various metrics across SCOPF iterations
+    :param iteration_data: Dictionary containing lists of metrics per iteration
+    """
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
+    
+    # Plot maximum W_k evolution
+    ax1.plot(iteration_data['max_wk'], 'b.-', label='Max W_k')
+    ax1.set_xlabel('Iteration')
+    ax1.set_ylabel('Maximum W_k Value')
+    ax1.set_title('Evolution of Maximum W_k')
+    ax1.grid(True)
+    ax1.legend()
+
+    # Plot number of violations
+    ax2.plot(iteration_data['num_violations'], 'r.-', label='Violations')
+    ax2.set_xlabel('Iteration')
+    ax2.set_ylabel('Number of Violations')
+    ax2.set_title('Number of Constraint Violations')
+    ax2.grid(True)
+    ax2.legend()
+
+    # Plot slack values statistics
+    ax3.plot(iteration_data['max_voltage_slack'], 'g.-', label='Max V Slack')
+    ax3.plot(iteration_data['avg_voltage_slack'], 'g--', label='Avg V Slack')
+    ax3.plot(iteration_data['max_flow_slack'], 'm.-', label='Max F Slack')
+    ax3.plot(iteration_data['avg_flow_slack'], 'm--', label='Avg F Slack')
+    ax3.set_xlabel('Iteration')
+    ax3.set_ylabel('Slack Values')
+    ax3.set_title('Evolution of Slack Values in Subproblems')
+    ax3.grid(True)
+    ax3.legend()
+
+    # Plot generation cost
+    ax4.plot(iteration_data['total_cost'], 'k.-', label='Cost')
+    ax4.set_xlabel('Iteration')
+    ax4.set_ylabel('Generation Cost')
+    ax4.set_title('Evolution of Generation Cost')
+    ax4.grid(True)
+    ax4.legend()
+
+    plt.tight_layout()
+    plt.show()
+
 def case_loop() -> None:
     """
     Simple 5 bus system from where to build the SCOPF, looping
@@ -1977,18 +2023,27 @@ def case_loop() -> None:
     u_j_vec = []
     prob_cont = []
 
-    for klm in range(20):
-        print(f"General iteration {klm+1} of 10")
+    # Initialize tracking dictionary
+    iteration_data = {
+        'max_wk': [],
+        'num_violations': [],
+        'max_voltage_slack': [],
+        'avg_voltage_slack': [],
+        'max_flow_slack': [],
+        'avg_flow_slack': [],
+        'total_cost': []
+    }
 
-        # Loop through N lines by recompiling the nc (faster way if using cont.?) 
-        # W_k_vec = []
-        # Z_k_vec = []
-        # u_j_vec = []
+    for klm in range(20):
+        print(f"General iteration {klm+1} of 20")
+
+        # Lists to store slack values from all subproblems in this iteration
+        v_slacks = []
+        f_slacks = []
         prob_cont = []
         W_k_local = []
 
         for i, line_to_disable in enumerate(grid.lines):
-            print()
             print(f"--- N-1 Line Contingency {i+1}: Deactivating '{line_to_disable.name}' ---")
 
             # Deactivate the line in the main grid object
@@ -1999,53 +2054,57 @@ def case_loop() -> None:
                                                                 pf_init=True,
                                                                 mp_results=acopf_results)
 
-            # if W_k > 2.4:
-            if W_k > 0.0001:  # does the job
+            # Store slack values from this subproblem
+            v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
+            f_slack = max(np.maximum(slack_sol_cont.sl_sf, slack_sol_cont.sl_st))
+            v_slacks.append(v_slack)
+            f_slacks.append(f_slack)
+
+            if W_k > 0.0001:
                 W_k_vec.append(W_k)
                 Z_k_vec.append(Z_k)
                 u_j_vec.append(u_j)
                 prob_cont.append(i)
             W_k_local.append(W_k)
 
-            if klm > 8:
-                print('J')
-
-            print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
-            print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
-            print(f"Vmin slacks: {slack_sol_cont.sl_vmin}")
-            print(f"Branch loading: {slack_sol_cont.loading}")
-            print(f"Line slacks F: {slack_sol_cont.sl_sf}")
-            print(f"Line slacks T: {slack_sol_cont.sl_st}")
-            print(f"Generators P: {slack_sol_cont.Pg}")
-            print(f"Generators Q: {slack_sol_cont.Qg}")
-            print(f"Slack error: {slack_sol_cont.error}")
-
-            # Reactivate the line in the main grid object for the next iteration
+            # Reactivate the line
             grid.lines[i].active = True
 
-        print()
-        print("--- All contingencies processed ---")
-        print(f"Number of problematic SPs: {len(prob_cont)}")
-        print(f"Problematic contingencies: {prob_cont}")
-        print(f"Maximum W_k: {max(np.array(W_k_local))}")
-        print(f"Number of loops: {klm}")
-        print()
+        # Store metrics for this iteration
+        iteration_data['max_wk'].append(max(np.array(W_k_local)))
+        iteration_data['num_violations'].append(len(prob_cont))
+        iteration_data['max_voltage_slack'].append(max(v_slacks) if v_slacks else 0)
+        iteration_data['avg_voltage_slack'].append(np.mean(v_slacks) if v_slacks else 0)
+        iteration_data['max_flow_slack'].append(max(f_slacks) if f_slacks else 0)
+        iteration_data['avg_flow_slack'].append(np.mean(f_slacks) if f_slacks else 0)
+        
+        # Run the MP with information from the SPs
+        print("--- Feeding SPs info to MP ---")
+        acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, 
+                                            opf_options=opf_base_options,
+                                            pf_init=True,
+                                            W_k_vec=np.array(W_k_vec), 
+                                            Z_k_vec=Z_k_vec, 
+                                            u_j_vec=u_j_vec)
+
+        # Store generation cost
+        total_cost = np.sum(acopf_results.Pcost)
+        iteration_data['total_cost'].append(total_cost)
+
+        # Print current iteration metrics
+        print(f"Maximum W_k: {iteration_data['max_wk'][-1]}")
+        print(f"Number of violations: {iteration_data['num_violations'][-1]}")
+        print(f"Maximum voltage slack: {iteration_data['max_voltage_slack'][-1]}")
+        print(f"Average voltage slack: {iteration_data['avg_voltage_slack'][-1]}")
+        print(f"Maximum flow slack: {iteration_data['max_flow_slack'][-1]}")
+        print(f"Average flow slack: {iteration_data['avg_flow_slack'][-1]}")
+        print(f"Total generation cost: {total_cost}")
 
         if len(prob_cont) == 0:
             break
 
-        # Run the MP with information from the SPs
-        print("--- Feeding SPs info to MP ---")
-        acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
-                                            pf_init=True,
-                                            W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j_vec)
-
-        print(f"Voltage magnitudes: {acopf_results.Vm}")
-        print(f"Final loading: {acopf_results.loading}")
-        print(f"Generators P: {acopf_results.Pg}")
-        print(f"Generators Q: {acopf_results.Qg}")
-        print(f"Error: {acopf_results.error}")
-
+    # Plot the results
+    plot_scopf_progress(iteration_data)
 
     return None
 
