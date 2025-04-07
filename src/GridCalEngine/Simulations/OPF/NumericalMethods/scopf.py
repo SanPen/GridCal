@@ -650,21 +650,21 @@ def scopf_subproblem(nc: NumericalCircuit,
     X = nc.passive_branch_data.X
 
     # Set costs to 0, to not have them in the objective function
-    # c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
-    # c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
-    # c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
+    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
+    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
+    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)] * 0.0
 
-    # c0n = nc.generator_data.cost_0[gen_nondisp_idx] * 0.0
-    # c1n = nc.generator_data.cost_1[gen_nondisp_idx] * 0.0
-    # c2n = nc.generator_data.cost_2[gen_nondisp_idx] * 0.0
+    c0n = nc.generator_data.cost_0[gen_nondisp_idx] * 0.0
+    c1n = nc.generator_data.cost_1[gen_nondisp_idx] * 0.0
+    c2n = nc.generator_data.cost_2[gen_nondisp_idx] * 0.0
 
-    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
-    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
-    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
+    # c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
+    # c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
+    # c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)] * 1.0
 
-    c0n = nc.generator_data.cost_0[gen_nondisp_idx] * 1.0
-    c1n = nc.generator_data.cost_1[gen_nondisp_idx] * 1.0
-    c2n = nc.generator_data.cost_2[gen_nondisp_idx] * 1.0
+    # c0n = nc.generator_data.cost_0[gen_nondisp_idx] * 1.0
+    # c1n = nc.generator_data.cost_1[gen_nondisp_idx] * 1.0
+    # c2n = nc.generator_data.cost_2[gen_nondisp_idx] * 1.0
 
     # Transformer operational limits
     tapm_max = nc.active_branch_data.tap_module_max[k_m]
@@ -1977,7 +1977,7 @@ def case_loop() -> None:
     u_j_vec = []
     prob_cont = []
 
-    for klm in range(10):
+    for klm in range(20):
         print(f"General iteration {klm+1} of 10")
 
         # Loop through N lines by recompiling the nc (faster way if using cont.?) 
@@ -2000,12 +2000,15 @@ def case_loop() -> None:
                                                                 mp_results=acopf_results)
 
             # if W_k > 2.4:
-            if W_k > 0.005:  # does the job
+            if W_k > 0.001:  # does the job
                 W_k_vec.append(W_k)
                 Z_k_vec.append(Z_k)
                 u_j_vec.append(u_j)
                 prob_cont.append(i)
             W_k_local.append(W_k)
+
+            if klm > 8:
+                print('J')
 
             print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
             print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
