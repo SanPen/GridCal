@@ -2028,6 +2028,7 @@ def case_loop() -> None:
         print(f"Number of problematic SPs: {len(prob_cont)}")
         print(f"Problematic contingencies: {prob_cont}")
         print(f"Maximum W_k: {max(np.array(W_k_local))}")
+        print(f"Number of loops: {klm}")
         print()
 
         if len(prob_cont) == 0:
