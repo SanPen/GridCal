@@ -116,3 +116,15 @@ resultsDF['V (kV)'] = resultsDF['Vm'] * np.array([bus.Vnom for bus in grid9.buse
 resultsDF['Va (rad)'] = np.deg2rad(resultsDF['Va'])
 
 print(resultsDF)
+
+logger = gce.save_cgmes_file(
+    grid=grid9,
+    filename="IEEE9.zip",
+    cgmes_boundary_set_path="../../tests/data/grids/CGMES_2_4_15/TestConfigurations_packageCASv2.0/FullGrid/CGMES_v2.4.15_FullGridTestConfiguration_BD_v1.zip",
+    cgmes_version=gce.CGMESVersions.v2_4_15,
+    pf_results=power_flow.results
+)
+
+if logger.has_logs():
+    logger.print()
+    logger.to_xlsx("ieee9_cgmes_logs.xlsx")
