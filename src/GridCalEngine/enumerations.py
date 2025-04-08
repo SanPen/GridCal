@@ -660,6 +660,7 @@ class WindingsConnection(Enum):
     SS = 'SS'
     SD = 'SD'
     DD = 'DD'
+    DG = 'DG'
 
     def __str__(self) -> str:
         return str(self.value)
