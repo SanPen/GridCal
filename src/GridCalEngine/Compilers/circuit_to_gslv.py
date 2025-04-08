@@ -8,7 +8,6 @@ import warnings
 import numpy as np
 from typing import List, Dict, Union, Tuple, TYPE_CHECKING
 
-import GridCalEngine
 from GridCalEngine import TapModuleControl, TapPhaseControl
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.profile import Profile
@@ -2490,9 +2489,9 @@ def gslv_contingencies(circuit: MultiCircuit,
     logger = pg.Logger()
 
     res = pg.run_contingencies(grid=gslv_grid,
-                                  options=con_opt_gslv,
-                                  n_threads=n_threads,
-                                  time_indices=time_indices,
-                                  logger=logger)
+                               options=con_opt_gslv,
+                               n_threads=n_threads,
+                               time_indices=time_indices,
+                               logger=logger)
 
     return res

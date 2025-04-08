@@ -13,6 +13,7 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, find_packages
 import os
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
+from GridCalEngine.Compilers.circuit_to_gslv import GSLV_RECOMMENDED_VERSION
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -81,10 +82,12 @@ dependencies = ['setuptools>=41.0.1',
                 "websockets",
                 "brotli",
                 "opencv-python>=4.10.0.84",
+
                 ]
 
 extras_require = {
-    'gch5 files': ["tables"]  # this is for h5 compatibility
+    'gch5 files': ["tables"],  # this is for h5 compatibility
+    'pygslv': ["pygslv>=" + GSLV_RECOMMENDED_VERSION]
 }
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
