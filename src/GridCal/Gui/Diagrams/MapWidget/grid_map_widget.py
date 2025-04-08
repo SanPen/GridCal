@@ -3,11 +3,14 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+import ast
 import os
 from typing import Union, List, Set, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
+import re
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -1717,8 +1720,9 @@ class GridMapWidget(BaseDiagramWidget):
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
 
         # Recalculate lengths based on new waypoints
-        line1.update_length()
-        line2.update_length()
+
+        line1_graphic.calculate_total_length()
+        line2_graphic.calculate_total_length()
 
         self.gui.show_info_toast(
             f'{line1.name} ({line1.length:.3f}km) and {line2.name} ({line2.length:.3f}km) created. {line_api.name} removed.'
@@ -1897,11 +1901,12 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Step 1: Create a new substation at the waypoint location
         new_substation_name = f"{line_api.name}_Junction"
+        code = ast.literal_eval(line_api.code)
+        new_code = [f"{subcode}_Junction" for subcode in code]
 
         # Create the new substation
         new_substation = Substation(name=new_substation_name,
-                                    code=f"{line_api.code}_Junction" if hasattr(line_api,
-                                                                                'code') and line_api.code else "",
+                                    code=new_code if hasattr(line_api, 'code') and line_api.code else "",
                                     latitude=waypoint_lat,
                                     longitude=waypoint_lon)
 
@@ -2021,12 +2026,14 @@ class GridMapWidget(BaseDiagramWidget):
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
 
+
         # Handle the code property - it might be a list of strings
         if hasattr(line_api, 'code') and line_api.code is not None:
-            if isinstance(line_api.code, list):
-                line1_code = [f"{code}_1" for code in line_api.code]
+            code = ast.literal_eval(line_api.code)
+            if isinstance(code, list):
+                line1_code = [f"{subcode}_1" for subcode in code]
             else:
-                line1_code = f"{line_api.code}_1"
+                line1_code = f"{code}_1"
         else:
             line1_code = ""
 
@@ -2068,10 +2075,11 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Handle the code property for line 2
         if hasattr(line_api, 'code') and line_api.code is not None:
-            if isinstance(line_api.code, list):
-                line2_code = [f"{code}_2" for code in line_api.code]
+            code = ast.literal_eval(line_api.code)
+            if isinstance(code, list):
+                line2_code = [f"{subcode}_2" for subcode in code]
             else:
-                line2_code = f"{line_api.code}_2"
+                line2_code = f"{code}_2"
         else:
             line2_code = ""
 
