@@ -1420,6 +1420,42 @@ class GridMapWidget(BaseDiagramWidget):
         else:
             self.gui.show_info_toast(message='Line lengths NOT UPDATED')
 
+    def reset_coordinates(self):
+        """
+        Consolidate the graphic elements' x, y coordinates into the API DB values
+        """
+        graphics_substations: List[SubstationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.SubstationDevice)
+        graphics_linelocations: List[LineLocationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.LineLocation)
+
+        for gelm in graphics_substations:
+            gelm.move_to_api_coordinates(question=False)
+
+        for gelm in graphics_linelocations:
+
+            gelm.move_to_api_coordinates(question=False)
+
+        # self.update()
+        # self.refresh()
+
+        # ok = yes_no_question(title='Update lengths?',
+        #                      text='Do you want to update lengths of lines? \n'
+        #                           'IMPORTANT: This will take into account the reseting of every substation and line  '
+        #                           'location. If you are unsure of the effects of this updating, click no and perform '
+        #                           'the individual length update in a new map or in the specific line.')
+        # if ok:
+        #     line_graphics_list = self.graphics_manager.graphic_dict[DeviceType.LineDevice]
+        #
+        #     for key, line_graphic in line_graphics_list.items():
+        #         line_graphic.calculate_total_length()
+
+        #     self.gui.show_info_toast(message='Line lengths UPDATED')
+        #
+        #
+        # else:
+        #     self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
     def plot_substation(self, i: int, api_object: Substation):
         """
         Plot branch results
@@ -2025,7 +2061,6 @@ class GridMapWidget(BaseDiagramWidget):
         # Step 4: Create the two new line segments that replace the original line
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
-
 
         # Handle the code property - it might be a list of strings
         if hasattr(line_api, 'code') and line_api.code is not None:

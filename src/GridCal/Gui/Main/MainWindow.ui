@@ -10202,7 +10202,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1182</width>
-     <height>20</height>
+     <height>33</height>
     </rect>
    </property>
    <property name="font">
@@ -10354,6 +10354,7 @@ QProgressBar::chunk{
     <addaction name="separator"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionConsolidate_diagram_coordinates"/>
+    <addaction name="actionReset_coordinates"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
@@ -12034,6 +12035,20 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Rotate</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionReset_coordinates">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/down.svg</normaloff>:/Icons/icons/down.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset diagram coordinates to database values</string>
    </property>
    <property name="font">
     <font>

@@ -252,6 +252,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionDisable_all_results_tags.triggered.connect(self.disable_all_results_tags)
         self.ui.actionEnable_all_results_tags.triggered.connect(self.enable_all_results_tags)
         self.ui.actionConsolidate_diagram_coordinates.triggered.connect(self.consolidate_diagram_coordinates)
+        self.ui.actionReset_coordinates.triggered.connect(self.reset_diagram_coordinates)
         self.ui.actionRotate.triggered.connect(self.rotate)
 
         # Buttons
@@ -2679,6 +2680,21 @@ class DiagramsMain(CompiledArraysMain):
                                  title="Consolidate diagram coordinates into the DB")
             if ok:
                 diagram_widget.consolidate_coordinates()
+
+    def reset_diagram_coordinates(self):
+        """
+        Reset the diagram coordinates using the DB
+        :return:
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+
+        if diagram_widget is not None:
+            ok = yes_no_question(text="The diagram coordinates will be reset to its database values. "
+                                      "Do you want to do this?",
+                                 title="Reset diagram coordinates using the DB")
+            if ok:
+                diagram_widget.reset_coordinates()
+                self.show_info_toast(message='Coordinates of substations and linelocations set to its database values.')
 
     def rotate(self):
         """
