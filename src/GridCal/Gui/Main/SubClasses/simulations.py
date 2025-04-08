@@ -13,6 +13,7 @@ from typing import List, Tuple, Dict, Union
 # GUI imports
 from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
+
 import GridCal.Gui.gui_functions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
@@ -729,7 +730,6 @@ class SimulationsMain(TimeEventsMain):
             verbose=self.ui.verbositySpinBox.value(),
             tolerance=tolerance,
             max_iter=self.ui.max_iterations_spinBox.value(),
-            max_outer_loop_iter=1000,
             control_q=self.ui.control_q_checkBox.isChecked(),
             control_taps_phase=self.ui.control_tap_phase_checkBox.isChecked(),
             control_taps_modules=self.ui.control_tap_modules_checkBox.isChecked(),
@@ -741,6 +741,7 @@ class SimulationsMain(TimeEventsMain):
             ignore_single_node_islands=self.ui.ignore_single_node_islands_checkBox.isChecked(),
             trust_radius=self.ui.muSpinBox.value(),
             use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
+            initialize_angles=self.ui.initialize_pf_angles_checkBox.isChecked(),
             generate_report=self.ui.addPowerFlowReportCheckBox.isChecked()
         )
 
@@ -977,6 +978,11 @@ class SimulationsMain(TimeEventsMain):
             self.remove_simulation(SimulationTypes.PowerFlow_run)
             self.update_available_results()
             self.colour_diagrams()
+
+            if results.converged:
+                self.show_info_toast("Power flow converged :)")
+            else:
+                self.show_warning_toast("Power flow not converged :/")
 
         else:
             warning_msg('There are no power flow results.\nIs there any slack bus or generator?', 'Power flow')
@@ -1760,7 +1766,8 @@ class SimulationsMain(TimeEventsMain):
                 self.update_available_results()
                 self.colour_diagrams()
             else:
-                info_msg('The voltage stability did not converge.\nIs this case already at the collapse limit?')
+                self.show_warning_toast('The voltage stability did not converge.\n'
+                                        'Is this case already at the collapse limit?', 5000)
         else:
             self.show_error_toast('Something went wrong, There are no voltage stability results.')
 
@@ -1966,11 +1973,11 @@ class SimulationsMain(TimeEventsMain):
             inter_aggregation_info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
             if len(inter_aggregation_info.lst_from) == 0:
-                error_msg('The area "from" has no buses!')
+                self.show_error_toast('The area "from" has no buses!', 5000)
                 return None
 
             if len(inter_aggregation_info.lst_to) == 0:
-                error_msg('The area "to" has no buses!')
+                self.show_error_toast('The area "to" has no buses!', 5000)
                 return None
         else:
             inter_aggregation_info = None
@@ -2050,11 +2057,14 @@ class SimulationsMain(TimeEventsMain):
 
             self.remove_simulation(SimulationTypes.OPF_run)
 
-            if not results.converged:
-                warning_msg('Some islands did not solve.\n'
-                            'Check that all Branches have rating and \n'
-                            'that the generator bounds are ok.\n'
-                            'You may also use the diagnostic tool (F8)', 'OPF')
+            if results.converged:
+                self.show_info_toast("Optimal power flow converged :)")
+            else:
+                self.show_warning_toast('Power flow not converged :/\n'
+                                        'Check that all Branches have rating and \n'
+                                        'that the generator bounds are ok.\n'
+                                        'You may also use the diagnostic tool (F8)',
+                                        duration=4000)
 
             self.update_available_results()
 
@@ -2732,8 +2742,6 @@ class SimulationsMain(TimeEventsMain):
         """
 
         self.remove_simulation(SimulationTypes.TopologyProcessor_run)
-        # self.update_available_results()
-        # self.colour_diagrams()
 
         if not self.session.is_anything_running():
             self.UNLOCK()

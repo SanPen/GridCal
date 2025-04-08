@@ -293,14 +293,12 @@ def test_gslv_compatibility_ts():
 
 
 def test_power_flow_ts():
-
     if not GSLV_AVAILABLE:
         return
 
     grid = gce.open_file(filename=os.path.join('data', 'grids', 'IEEE39_1W.gridcal'))
 
-    options = gce.PowerFlowOptions(verbose=False,
-                                   )
+    options = gce.PowerFlowOptions(verbose=False)
 
     drv = gce.PowerFlowTimeSeriesDriver(grid=grid,
                                         options=options,
@@ -311,7 +309,39 @@ def test_power_flow_ts():
     res = drv.results
 
 
+def test_contingencies_ts():
+    if not GSLV_AVAILABLE:
+        return
+
+    grid = gce.open_file(filename=os.path.join('data', 'grids', 'IEEE39_1W.gridcal'))
+
+    options = gce.ContingencyAnalysisOptions(
+        use_provided_flows=False,
+        Pf=None,
+        pf_options=gce.PowerFlowOptions(gce.SolverType.DC),
+        lin_options=gce.LinearAnalysisOptions(),
+        use_srap=False,
+        srap_max_power=1400.0,
+        srap_top_n=5,
+        srap_deadband=10,
+        srap_rever_to_nominal_rating=False,
+        detailed_massive_report=False,
+        contingency_deadband=0.0,
+        contingency_method=gce.ContingencyMethod.PowerFlow,
+        contingency_groups=grid.contingency_groups
+    )
+
+    drv = gce.ContingencyAnalysisTimeSeriesDriver(grid=grid,
+                                                  options=options,
+                                                  engine=gce.EngineType.GSLV)
+
+    drv.run()
+
+    res = drv.results
+
+
 if __name__ == '__main__':
     # test_gslv_compatibility()
     # test_gslv_compatibility_ts()
-    test_power_flow_ts()
+    # test_power_flow_ts()
+    test_contingencies_ts()

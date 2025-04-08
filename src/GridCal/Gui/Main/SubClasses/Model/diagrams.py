@@ -1723,6 +1723,14 @@ class DiagramsMain(CompiledArraysMain):
                                                                 diagram=diagram)
                             self.set_diagrams_list_view()
 
+                            self.show_info_toast(f"{diagram.name} added")
+                    else:
+                        self.show_error_toast(f"Could not find any bus")
+                else:
+                    self.show_error_toast(f"No elements selected")
+            else:
+                self.show_error_toast(f"No object selected")
+
     def new_bus_branch_diagram_from_bus(self, root_bus: dev.Bus):
         """
         Add a bus-branch diagram of a particular selection of objects
@@ -1745,6 +1753,7 @@ class DiagramsMain(CompiledArraysMain):
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
             self.set_diagrams_list_view()
+            self.show_info_toast(f"{diagram.name} added")
 
     def new_bus_branch_diagram_from_substation(self, substations: List[dev.Substation]):
         """
@@ -1780,6 +1789,8 @@ class DiagramsMain(CompiledArraysMain):
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
             self.set_diagrams_list_view()
+            self.show_info_toast(f"{diagram.name} added")
+
         else:
             if len(substations) == 1:
                 info_msg(text=f"No buses were found associated with the substation {substations[0].name}",
@@ -1895,6 +1906,7 @@ class DiagramsMain(CompiledArraysMain):
         self.add_diagram_widget_and_diagram(diagram_widget=map_widget, diagram=diagram)
         self.set_diagrams_list_view()
         self.set_diagram_widget(widget=map_widget)
+        self.show_info_toast(f"{diagram.name} added")
 
     def add_diagram_widget_and_diagram(self,
                                        diagram_widget: ALL_EDITORS,
@@ -2688,11 +2700,12 @@ class DiagramsMain(CompiledArraysMain):
         """
         Country sizes
         """
-        self.ui.min_node_size_spinBox.setValue(5)
-        self.ui.max_node_size_spinBox.setValue(20)
-        self.ui.min_branch_size_spinBox.setValue(5)
-        self.ui.max_branch_size_spinBox.setValue(20)
-        self.ui.arrow_size_size_spinBox.setValue(7)
+        self.ui.min_node_size_spinBox.setValue(2)
+        self.ui.max_node_size_spinBox.setValue(8)
+        self.ui.min_branch_size_spinBox.setValue(1)
+        self.ui.max_branch_size_spinBox.setValue(3)
+        self.ui.arrow_size_size_spinBox.setValue(1.5)
+        self.redraw_current_diagram()
 
     def preset_2(self):
         """
@@ -2700,9 +2713,10 @@ class DiagramsMain(CompiledArraysMain):
         """
         self.ui.min_node_size_spinBox.setValue(1)
         self.ui.max_node_size_spinBox.setValue(2)
-        self.ui.min_branch_size_spinBox.setValue(1)
-        self.ui.max_branch_size_spinBox.setValue(2)
-        self.ui.arrow_size_size_spinBox.setValue(2)
+        self.ui.min_branch_size_spinBox.setValue(0.1)
+        self.ui.max_branch_size_spinBox.setValue(0.2)
+        self.ui.arrow_size_size_spinBox.setValue(0.15)
+        self.redraw_current_diagram()
 
     def preset_3(self):
         """
@@ -2713,6 +2727,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.min_branch_size_spinBox.setValue(0.01)
         self.ui.max_branch_size_spinBox.setValue(0.02)
         self.ui.arrow_size_size_spinBox.setValue(0.015)
+        self.redraw_current_diagram()
 
     def preset_4(self):
         """
@@ -2723,3 +2738,4 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.min_branch_size_spinBox.setValue(0.001)
         self.ui.max_branch_size_spinBox.setValue(0.002)
         self.ui.arrow_size_size_spinBox.setValue(0.0015)
+        self.redraw_current_diagram()
