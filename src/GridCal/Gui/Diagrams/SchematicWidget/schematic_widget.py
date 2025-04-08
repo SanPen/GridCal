@@ -4408,6 +4408,21 @@ class SchematicWidget(BaseDiagramWidget):
             gelm.api_object.x = gelm.x()
             gelm.api_object.y = gelm.y()
 
+    def reset_coordinates(self):
+        graphics: List[BusGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusDevice)
+        for gelm in graphics:
+            gelm.x = gelm.api_object.x
+            gelm.y = gelm.api_object.y
+
+        graphics: List[BusBarGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusBarDevice)
+        for gelm in graphics:
+            gelm.x = gelm.api_object.x
+            gelm.y = gelm.api_object.y
+
+        graphics: List[CnGraphicItem] = self.graphics_manager.query(elm=DeviceType.ConnectivityNodeDevice)
+        for gelm in graphics:
+            gelm.x = gelm.api_object.x
+            gelm.y = gelm.api_object.y
 
 def generate_schematic_diagram(buses: List[Bus],
                                busbars: List[BusBar],
