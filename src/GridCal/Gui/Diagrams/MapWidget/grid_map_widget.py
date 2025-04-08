@@ -1720,8 +1720,9 @@ class GridMapWidget(BaseDiagramWidget):
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
 
         # Recalculate lengths based on new waypoints
-        line1.update_length()
-        line2.update_length()
+
+        line1_graphic.calculate_total_length()
+        line2_graphic.calculate_total_length()
 
         self.gui.show_info_toast(
             f'{line1.name} ({line1.length:.3f}km) and {line2.name} ({line2.length:.3f}km) created. {line_api.name} removed.'
