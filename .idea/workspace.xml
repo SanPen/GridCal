@@ -28,7 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.3.29">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -249,7 +252,7 @@
       <recent name="D:\SIROCO\GridCal\doc\rst_source\figures\Diagrams" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ieee9">
+  <component name="RunManager" selected="Python.upload_to_pypi">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -803,11 +806,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ieee9" />
-        <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python.ieee9" />
+        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -1661,7 +1664,7 @@
       <workItem from="1744018824114" duration="20054000" />
       <workItem from="1744096976547" duration="1526000" />
       <workItem from="1744106675489" duration="166000" />
-      <workItem from="1744108785809" duration="1871000" />
+      <workItem from="1744108785809" duration="2799000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -2006,7 +2009,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="668" />
+    <option name="localTasksCounter" value="669" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2052,7 +2055,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="vastly improved ProfilesInputDialogue" />
     <MESSAGE value="Fixed map plotting width with results" />
     <MESSAGE value="Removed the error prone function pointers inside the diagrams and replaced with direct calls to the GUI functions instead" />
     <MESSAGE value="Fixed issue in z_seq property" />
@@ -2077,7 +2079,8 @@
     <MESSAGE value="5.3.28" />
     <MESSAGE value="Fixed Code scanning alert #4" />
     <MESSAGE value="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed cgmes export reporting in get_cgmes_cn_nodes_from_tp_nodes" />
+    <MESSAGE value="5.3.29" />
+    <option name="LAST_COMMIT_MESSAGE" value="5.3.29" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2838,7 +2841,7 @@
     <SUITE FILE_PATH="coverage/GridCal$grid_merge.coverage" NAME="grid_merge Coverage Results" MODIFIED="1742396314060" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridMerge" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_nonlinear_contingency_py.coverage" NAME="Nosetests in test_nonlinear_contingency.py Coverage Results" MODIFIED="1696002399880" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$readme_checks.coverage" NAME="readme_checks Coverage Results" MODIFIED="1739351394873" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk" />
-    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1744052411587" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1744115292897" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_load_all_grids_py.coverage" NAME="Nosetests in test_load_all_grids.py Coverage Results" MODIFIED="1598802785581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_sparse2_test_sum.coverage" NAME="pytest for test_sparse2.test_sum Coverage Results" MODIFIED="1735502026314" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$object_plot_analysis.coverage" NAME="object_plot_analysis Coverage Results" MODIFIED="1689665184050" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Analysis" />

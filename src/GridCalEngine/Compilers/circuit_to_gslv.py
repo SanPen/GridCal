@@ -184,7 +184,7 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
 
                 # we pick all the profile
                 if len(data) > 0:
-                    gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+                    gslv_profile.init_sparse(default_value=gc_profile.default_value, data=data)
 
             else:
                 assert len(time_indices) == n_time
@@ -199,7 +199,7 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
                 else:
                     data = sp_arr2.get_map()
 
-                gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+                gslv_profile.init_sparse(default_value=gc_profile.default_value, data=data)
 
         else:
             if time_indices is None:
@@ -1560,10 +1560,9 @@ def convert_transformer(elm: dev.Transformer2W,
 
     # control vars
     if override_controls:
-        tr2.tap_module_control_mode = pg.TapModuleControl.fixed
-        tr2.tap_phase_control_mode = pg.TapPhaseControl.fixed
+        tr2.tap_module_control_mode.fill(pg.TapModuleControl.fixed)
+        tr2.tap_phase_control_mode.fill(pg.TapPhaseControl.fixed)
     else:
-        # tr2.setAllControlMode(ctrl_dict[elm.control_mode])
         pass
 
     return tr2
@@ -1634,11 +1633,6 @@ def convert_transformer3w(elm: dev.Transformer3W,
 
     # this is because the central node is in the buses list already from GridCal
     tr3.central_node = bus_dict[elm.bus0.idtag]
-
-    if use_time_series:
-        pass
-    else:
-        pass
 
     return tr3
 
