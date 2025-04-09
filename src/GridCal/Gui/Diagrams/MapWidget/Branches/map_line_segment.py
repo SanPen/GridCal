@@ -253,21 +253,40 @@ class MapLineSegment(QGraphicsLineItem):
                        function_ptr=self.calculate_total_length,
                        icon_path=":/Icons/icons/ruler.svg")
 
+        add_menu_entry(menu=menu,
+                       text="Consolidate selected objects coordinates",
+                       function_ptr=self.editor.consolidate_object_coordinates,
+                       icon_path=":/Icons/icons/CataloguePrivate.svg")
+
+
         menu.addSeparator()
 
         # Check if a substation is selected
         selected_items = self.editor.get_selected()
         has_substation = False
-        counter = 0
+        substation_counter = 0
+        line_counter = 0
 
         for api_obj, _ in selected_items:
-            if hasattr(api_obj, 'device_type') and api_obj.device_type == DeviceType.SubstationDevice:
-                has_substation = True
-                counter += 1
+            if hasattr(api_obj, 'device_type'):
+                if api_obj.device_type == DeviceType.SubstationDevice:
+                    has_substation = True
+                    substation_counter += 1
+                if api_obj.device_type == DeviceType.LineDevice:
+                    line_counter += 1
+
+        if line_counter > 1:
+            add_menu_entry(menu=menu,
+                           text="Merge selected lines",
+                           function_ptr=self.editor.merge_selected_lines,
+                           icon_path=":/Icons/icons/fusion.svg")
+
+
+        menu.addSeparator()
 
         # Add the split line to substation option if a substation is selected
         if has_substation:
-            if counter == 1:
+            if substation_counter == 1:
                 add_menu_entry(menu=menu,
                                text="Split line to selected substation (In-Out)",
                                function_ptr=self.editor.split_line_to_substation,
@@ -277,7 +296,7 @@ class MapLineSegment(QGraphicsLineItem):
                                text="Connect line to selected substation (T-joint)",
                                function_ptr=self.editor.create_t_joint_to_substation,
                                icon_path=":/Icons/icons/divide.svg")
-            elif counter == 2:
+            elif substation_counter == 2:
 
                 add_menu_entry(menu=menu,
                                text="Change substation connection of the line",
