@@ -291,7 +291,7 @@ class DiagramsMain(CompiledArraysMain):
 
         # check boxes
         self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_constraints)
-
+        self.ui.use_schematic_objects_color_checkBox.clicked.connect(self.re_colour_schematic)
         # context menu
         self.ui.diagramsListView.customContextMenuRequested.connect(self.show_diagrams_context_menu)
 
@@ -1462,6 +1462,19 @@ class DiagramsMain(CompiledArraysMain):
                                               t_idx=t_idx,
                                               allow_popups=allow_popups)
 
+    def re_colour_schematic(self):
+        """
+        Recolour a schematic
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+
+        use_api_color = self.ui.use_schematic_objects_color_checkBox.isChecked()
+
+        if diagram_widget:
+
+            if isinstance(diagram_widget, SchematicWidget):
+                diagram_widget.recolour(use_api_color=use_api_color)
+
     def set_diagrams_list_view(self) -> None:
         """
         Create the diagrams list view
@@ -2013,6 +2026,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.min_node_size_spinBox.setValue(widget.diagram.min_bus_width)
         self.ui.max_node_size_spinBox.setValue(widget.diagram.max_bus_width)
         self.ui.arrow_size_size_spinBox.setValue(widget.diagram.arrow_size)
+        self.ui.use_schematic_objects_color_checkBox.setChecked(widget.diagram.use_api_colors)
         self.ui.palette_comboBox.setCurrentIndex(self.cmap_index_dict.get(widget.diagram.palette, 0))
 
         if isinstance(widget, GridMapWidget):

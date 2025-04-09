@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen, QBrush,
                            QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
                            QContextMenuEvent)
 from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
@@ -3301,20 +3301,22 @@ class SchematicWidget(BaseDiagramWidget):
         Set the dark theme
         :return:
         """
-        ACTIVE['color'] = QColor(255, 255, 255, 255)  # white
-        ACTIVE['text'] = QColor(255, 255, 255, 255)  # white
-        ACTIVE['background'] = QColor(0, 0, 0, 255)  # black
-        self.recolour_mode()
+        if not self.diagram.use_api_colors:
+            ACTIVE['color'] = QColor(255, 255, 255, 255)  # white
+            ACTIVE['text'] = QColor(255, 255, 255, 255)  # white
+            ACTIVE['background'] = QColor(0, 0, 0, 255)  # black
+            self.recolour_mode()
 
     def set_light_mode(self) -> None:
         """
         Set the light theme
         :return:
         """
-        ACTIVE['color'] = QColor(0, 0, 0, 255)  # black
-        ACTIVE['text'] = QColor(0, 0, 0, 255)  # black
-        ACTIVE['background'] = QColor(255, 255, 255, 255)  # white
-        self.recolour_mode()
+        if not self.diagram.use_api_colors:
+            ACTIVE['color'] = QColor(0, 0, 0, 255)  # black
+            ACTIVE['text'] = QColor(0, 0, 0, 255)  # black
+            ACTIVE['background'] = QColor(255, 255, 255, 255)  # white
+            self.recolour_mode()
 
     def colour_results(self,
                        # buses: List[Bus],
@@ -3768,6 +3770,41 @@ class SchematicWidget(BaseDiagramWidget):
                             fluid_node_flow_in=fluid_node_flow_in[i] if fluid_node_flow_in is not None else None,
                             fluid_node_flow_out=fluid_node_flow_out[i] if fluid_node_flow_out is not None else None,
                         )
+
+    def recolour(self, use_api_color: bool):
+        """
+
+        :param use_api_color:
+        :return:
+        """
+
+        self.diagram.use_api_colors = use_api_color
+
+        for graphical_obj in self.items():
+
+            if graphical_obj.api_object is not None:
+
+                if use_api_color:
+                    if hasattr(graphical_obj.api_object, 'color'):
+                        color_hex = graphical_obj.api_object.color
+                        color = QColor(color_hex)
+                        if isinstance(graphical_obj, BusGraphicItem):
+                            brush = QBrush(color)
+                            graphical_obj.set_tile_color(brush)
+
+                        elif isinstance(graphical_obj, (TransformerGraphicItem, LineGraphicItem)):
+
+                            w = graphical_obj.pen_width
+
+                            if graphical_obj.api_object.active:  # TODO: gather the property at the time step too
+                                style = Qt.PenStyle.SolidLine
+                            else:
+                                style = Qt.PenStyle.DashLine
+
+                            graphical_obj.set_colour(color, w=w, style=style)
+
+                else:
+                    graphical_obj.recolour_mode()
 
     def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, QGraphicsItem]]:
         """

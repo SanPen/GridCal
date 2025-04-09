@@ -129,6 +129,8 @@ class ConfigurationMain(ResultsMain):
 
             self.colour_diagrams()
 
+
+
     @staticmethod
     def config_file_path() -> str:
         """

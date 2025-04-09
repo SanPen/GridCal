@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import List, Dict, Union, Tuple, Callable, TYPE_CHECKING
+from typing import List, Dict, Union, Tuple, Callable, Generator,TYPE_CHECKING
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
@@ -31,7 +31,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import SimulationTypes, ResultTypes
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 
-from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
+from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager, ALL_GRAPHICS
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.object_model import ObjectsModel
 
@@ -220,6 +220,15 @@ class BaseDiagramWidget(QSplitter):
         # video pointer
         self._video: Union[None, cv2.VideoWriter] = None
 
+
+    def items(self) -> Generator[ALL_GRAPHICS, None, None] :
+        """
+        Iterable through all graphics registered in the graphics manager
+        :return: ALL_GRAPHICS one by one
+        """
+        for device_tpe, graphics_dict in self.graphics_manager.graphic_dict.items():
+            for idtag, graphical_obj in graphics_dict.items():
+                yield graphical_obj
 
     @property
     def name(self):
