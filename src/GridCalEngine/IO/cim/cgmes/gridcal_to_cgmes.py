@@ -357,10 +357,10 @@ def get_cgmes_cn_nodes_from_tp_nodes(multi_circuit_model: MultiCircuit,
         else:
             logger.add_error(
                 msg=f'TN has no ConnectivityNodeContainer, so cannot be assigned to CN',
-                device=tn.idtag,
-                device_class=tn.device_type.value,
+                device=tn.rdfid,
+                device_class=tn.tpe,
                 device_property="Bus.voltage_level.idtag",
-                value=tn.ConnectivityNodeContainer,
+                value="None",
                 comment="get_cgmes_cn_nodes_from_tp_nodes()"
             )
 

@@ -16,13 +16,15 @@ class InvestmentsGroup(EditableDevice):
                  idtag: Union[str, None] = None,
                  name: str = "InvestmentGroup",
                  category: str = '',
-                 comment: str = ""):
+                 comment: str = "",
+                 discount_rate=5):
         """
         Contingency group
         :param idtag: Unique identifier
         :param name: contingency group name
         :param category: tag to category the group
         :param comment: comment
+        :param discount_rate: discount rate (%)
         """
 
         EditableDevice.__init__(self,
@@ -35,4 +37,7 @@ class InvestmentsGroup(EditableDevice):
         # Contingency type
         self.category = category
 
-        self.register(key='category', units='', tpe=str, definition='Some tag to category the contingency group')
+        self.discount_rate = discount_rate
+
+        self.register(key='category', units='', tpe=str, definition='Some tag to category the investment group')
+        self.register(key='discount_rate', units='%', tpe=float, definition='Investment group discount rate')

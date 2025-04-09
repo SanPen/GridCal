@@ -522,17 +522,22 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         dialog.setModal(True)
         dialog.exec()
 
-    def move_to_api_coordinates(self):
+    def move_to_api_coordinates(self, question: bool = True):
         """
         Function to move the graphics to the Database location
         :return:
         """
-        ok = yes_no_question(f"Move substation {self.api_object.name} graphics to it's database coordinates?",
-                             "Move substation graphics")
+        if question:
+            ok = yes_no_question(f"Move substation {self.api_object.name} graphics to it's database coordinates?",
+                                 "Move substation graphics")
 
-        if ok:
+            if ok:
+                x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
+                self.set_callbacks(x, y)
+        else:
             x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
             self.set_callbacks(x, y)
+
 
     def merge_selected_substations(self):
         """
@@ -638,8 +643,13 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                         for line in self.editor.circuit.lines:
                             if line.bus_from in removed_buses:
                                 line.bus_from = recipient_buses[line.bus_from.Vnom]
+                                line_graphic = self.editor.graphics_manager.query(elm=line)
+                                line_graphic.calculate_total_length()
+
                             if line.bus_to in removed_buses:
                                 line.bus_to = recipient_buses[line.bus_to.Vnom]
+                                line_graphic = self.editor.graphics_manager.query(elm=line)
+                                line_graphic.calculate_total_length()
 
                         for bus in removed_buses:
                             self.editor.circuit.delete_bus(obj=bus, delete_associated=False)

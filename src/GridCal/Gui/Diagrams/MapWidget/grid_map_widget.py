@@ -3,11 +3,14 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+import ast
 import os
 from typing import Union, List, Set, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
+import re
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -55,7 +58,7 @@ from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.object_model import ObjectsModel
-from GridCal.Gui.messages import error_msg, info_msg
+from GridCal.Gui.messages import error_msg, info_msg, yes_no_question
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -1400,6 +1403,58 @@ class GridMapWidget(BaseDiagramWidget):
             gelm.api_object.lat = gelm.lat
             gelm.api_object.long = gelm.lon
 
+        ok = yes_no_question(title='Update lengths?',
+                             text='Do you want to update lengths of lines? \n'
+                                  'IMPORTANT: This will take into account every movement of substation and line '
+                                  'locations. If you are unsure of the effects of this updating, click no and perform '
+                                  'the individual length update in a new map or in the specific line.')
+        if ok:
+            line_graphics_list = self.graphics_manager.graphic_dict[DeviceType.LineDevice]
+
+            for key, line_graphic in line_graphics_list.items():
+                line_graphic.calculate_total_length()
+
+            self.gui.show_info_toast(message='Line lengths UPDATED')
+
+
+        else:
+            self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
+    def reset_coordinates(self):
+        """
+        Consolidate the graphic elements' x, y coordinates into the API DB values
+        """
+        graphics_substations: List[SubstationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.SubstationDevice)
+        graphics_linelocations: List[LineLocationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.LineLocation)
+
+        for gelm in graphics_substations:
+            gelm.move_to_api_coordinates(question=False)
+
+        for gelm in graphics_linelocations:
+            gelm.move_to_api_coordinates(question=False)
+
+        # self.update()
+        # self.refresh()
+
+        # ok = yes_no_question(title='Update lengths?',
+        #                      text='Do you want to update lengths of lines? \n'
+        #                           'IMPORTANT: This will take into account the reseting of every substation and line  '
+        #                           'location. If you are unsure of the effects of this updating, click no and perform '
+        #                           'the individual length update in a new map or in the specific line.')
+        # if ok:
+        #     line_graphics_list = self.graphics_manager.graphic_dict[DeviceType.LineDevice]
+        #
+        #     for key, line_graphic in line_graphics_list.items():
+        #         line_graphic.calculate_total_length()
+
+        #     self.gui.show_info_toast(message='Line lengths UPDATED')
+        #
+        #
+        # else:
+        #     self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
     def plot_substation(self, i: int, api_object: Substation):
         """
         Plot branch results
@@ -1475,6 +1530,148 @@ class GridMapWidget(BaseDiagramWidget):
                 plt.show()
         else:
             info_msg("There are no time series, so nothing to plot :/")
+
+    def merge_selected_lines(self):
+
+        selected_lines = self.get_selected_line_segments_tup()
+
+        if len(selected_lines) != 2:
+            self.gui.show_error_toast('Line merging not done. Number of lines selected should be exactly equal to 2.')
+            return
+
+        line1 = selected_lines[0][0]
+        line2 = selected_lines[1][0]
+        line1_graphic = selected_lines[0][1]
+        line2_graphic = selected_lines[1][1]
+
+        if line1.template != line2.template:
+            self.gui.show_error_toast('Line merging could not be done, lines have different templates. Check if that '
+                                      'is correct, and apply the same template before trying again '
+                                      'if you want to merge them.')
+            return
+
+        if ((line1.bus_from == line2.bus_from and line1.bus_to == line2.bus_to) or
+                (line1.bus_from == line2.bus_to and line1.bus_to == line2.bus_from)):
+            self.gui.show_error_toast('Line merging not done. The lines selected were parallel, this operation is not '
+                                      'suitable.')
+            return
+
+        circ_idx = 0  # TODO: Window to select the circuit idx
+
+        list_locations = line1.locations.data
+        list_lineloc2 = line2.locations.data
+
+        if line1.bus_from == line2.bus_from:
+
+            bus_from = line1.bus_to
+            bus_to = line2.bus_to
+            joint_bus = line1.bus_from
+            list_locations.reverse()
+
+        elif line1.bus_from == line2.bus_to:
+
+            bus_from = line1.bus_to
+            bus_to = line2.bus_from
+            joint_bus = line1.bus_from
+            list_locations.reverse()
+            list_lineloc2.reverse()
+
+        elif line1.bus_to == line2.bus_from:
+
+            bus_from = line1.bus_from
+            bus_to = line2.bus_to
+            joint_bus = line1.bus_to
+
+        elif line1.bus_to == line2.bus_to:
+
+            bus_from = line1.bus_from
+            bus_to = line2.bus_from
+            joint_bus = line1.bus_to
+            list_lineloc2.reverse()
+
+        else:
+            self.gui.show_error_toast(
+                'Line merging not done. The lines selected were not connected at any of its ends.')
+            return
+
+        osmids = line1.code
+        osmids += ' ' + line2.code
+
+        jll = 0
+        for loc1 in list_locations:
+            loc1.seq = jll
+            jll += 1
+
+        list_locations.append(LineLocation(lat=joint_bus.latitude, lon=joint_bus.longitude, seq=jll, z=0))
+
+        jll += 1
+
+        for loc2 in list_lineloc2:
+            loc2.seq = jll
+            list_locations.append(loc2)
+            jll += 1
+
+        new_line = Line(name=f'{line1.name} {line2.name}', code=osmids,
+                        bus_from=bus_from, bus_to=bus_to,
+                        length=line1.length + line2.length, circuit_idx=circ_idx)
+        new_line.color = line1.color
+        line1.template.compute()
+        new_line.apply_template(obj=line1.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+
+        previous_coordinates = [0, 0]
+
+        for loc in list_locations:
+            if [loc.lat, loc.long] != previous_coordinates:
+                new_line.locations.add(idtag=loc.idtag,
+                                       latitude=loc.lat,
+                                       longitude=loc.long,
+                                       sequence=loc.seq)
+                previous_coordinates = [loc.lat, loc.long]
+            else:
+                pass
+
+        self.circuit.add_line(new_line)
+        self.circuit.delete_line(line1)
+        self.circuit.delete_line(line2)
+
+        self.remove_branch_graphic(line=line1_graphic)
+        self.remove_branch_graphic(line=line2_graphic)
+        self.add_api_line(api_object=new_line)
+
+        self.gui.show_info_toast(message='Line merging successful!')
+
+
+    def consolidate_object_coordinates(self):
+        selected_lines = self.get_selected_line_segments_tup()
+        selected_substations = self.get_selected_substations_tup()
+        line_graphics_list = []
+        for subst, subst_graphic in selected_substations:
+            subst.latitude = subst_graphic.lat
+            subst.longitude = subst_graphic.lon
+
+        for line, line_graphic in selected_lines:
+            line_graphics_list.append(line_graphic)
+            for gelm in line_graphic.nodes_list:
+                gelm.api_object.lat = gelm.lat
+                gelm.api_object.long = gelm.lon
+
+        ok = yes_no_question(title='Update lengths?',
+                             text='Do you want to update lengths of lines? \n'
+                                  'IMPORTANT: This will take into account every movement of substation and line '
+                                  'locations. If you are unsure of the effects of this updating, click no and perform '
+                                  'the individual length update in a new map or in the specific line.')
+        if ok:
+
+            for line_graphic in line_graphics_list:
+                line_graphic.calculate_total_length()
+
+            self.gui.show_info_toast(message='Line lengths UPDATED')
+
+
+        else:
+            self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
+        return
 
     def split_line_to_substation(self):
         """
@@ -1700,8 +1897,9 @@ class GridMapWidget(BaseDiagramWidget):
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
 
         # Recalculate lengths based on new waypoints
-        line1.update_length()
-        line2.update_length()
+
+        line1_graphic.calculate_total_length()
+        line2_graphic.calculate_total_length()
 
         self.gui.show_info_toast(
             f'{line1.name} ({line1.length:.3f}km) and {line2.name} ({line2.length:.3f}km) created. {line_api.name} removed.'
@@ -1880,11 +2078,12 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Step 1: Create a new substation at the waypoint location
         new_substation_name = f"{line_api.name}_Junction"
+        code = ast.literal_eval(line_api.code)
+        new_code = [f"{subcode}_Junction" for subcode in code]
 
         # Create the new substation
         new_substation = Substation(name=new_substation_name,
-                                    code=f"{line_api.code}_Junction" if hasattr(line_api,
-                                                                                'code') and line_api.code else "",
+                                    code=new_code if hasattr(line_api, 'code') and line_api.code else "",
                                     latitude=waypoint_lat,
                                     longitude=waypoint_lon)
 
@@ -2006,10 +2205,11 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Handle the code property - it might be a list of strings
         if hasattr(line_api, 'code') and line_api.code is not None:
-            if isinstance(line_api.code, list):
-                line1_code = [f"{code}_1" for code in line_api.code]
+            code = ast.literal_eval(line_api.code)
+            if isinstance(code, list):
+                line1_code = [f"{subcode}_1" for subcode in code]
             else:
-                line1_code = f"{line_api.code}_1"
+                line1_code = f"{code}_1"
         else:
             line1_code = ""
 
@@ -2051,10 +2251,11 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Handle the code property for line 2
         if hasattr(line_api, 'code') and line_api.code is not None:
-            if isinstance(line_api.code, list):
-                line2_code = [f"{code}_2" for code in line_api.code]
+            code = ast.literal_eval(line_api.code)
+            if isinstance(code, list):
+                line2_code = [f"{subcode}_2" for subcode in code]
             else:
-                line2_code = f"{line_api.code}_2"
+                line2_code = f"{code}_2"
         else:
             line2_code = ""
 
@@ -2264,7 +2465,8 @@ class GridMapWidget(BaseDiagramWidget):
         # Remove past graphic item and add the new one
 
         self.remove_branch_graphic(line=line_graphic, delete_from_db=False)
-        self.add_api_line(api_object=line_api)
+        line = self.add_api_line(api_object=line_api)
+        line.calculate_total_length()
 
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)

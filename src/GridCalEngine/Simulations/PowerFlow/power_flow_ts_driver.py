@@ -14,7 +14,7 @@ import GridCalEngine.Simulations.PowerFlow.power_flow_worker as pf_worker
 from GridCalEngine.Compilers.circuit_to_bentayga import bentayga_pf
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_pf
 from GridCalEngine.Compilers.circuit_to_pgm import pgm_pf
-from GridCalEngine.Compilers.circuit_to_gslv import (GSLV_AVAILABLE, gslv_pf, translate_gslv_pf_results)
+from GridCalEngine.Compilers.circuit_to_gslv import gslv_pf
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.enumerations import EngineType, SimulationTypes
 

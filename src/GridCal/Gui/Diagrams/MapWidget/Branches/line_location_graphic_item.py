@@ -10,6 +10,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 
+from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
@@ -149,6 +150,41 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
         self.api_object.lat = self.lat
         self.api_object.long = self.lon
+
+    def move_to_api_coordinates(self, question: bool = True):
+        """
+        Function to move the graphics to the Database location
+        :return:
+        """
+        if question:
+            ok = yes_no_question(f"Move substation {self.api_object.name} graphics to it's database coordinates?",
+                                 "Move substation graphics")
+
+            if ok:
+                x, y = self.move_to(lat=self.api_object.lat,
+                                    lon=self.api_object.long)  # this moves the vl too
+                self.set_callbacks(x, y)
+        else:
+            x, y = self.move_to(lat=self.api_object.lat, lon=self.api_object.long)  # this moves the vl too
+            self.set_callbacks(x, y)
+
+    def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
+        """
+
+        :param lat:
+        :param lon:
+        :return: x, y
+        """
+        x, y = self.editor.to_x_y(lat=lat, lon=lon)  # upper left corner
+
+        self.setRect(
+            x - self.rect().width() / 2,
+            y - self.rect().height() / 2,
+            self.rect().width(),
+            self.rect().height()
+        )
+
+        return x, y
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """

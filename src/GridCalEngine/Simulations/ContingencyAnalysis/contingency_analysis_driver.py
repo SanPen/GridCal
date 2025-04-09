@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import numpy as np
 from typing import Union, List
+
+from GridCalEngine.Compilers.circuit_to_gslv import gslv_contingencies
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import EngineType, ContingencyMethod, SimulationTypes
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
@@ -159,6 +161,17 @@ class ContingencyAnalysisDriver(DriverTemplate):
                                               con_opt=self.options,
                                               time_series=False,
                                               time_indices=None)
+
+            self.results = translate_newton_pa_contingencies(grid=self.grid,
+                                                             con_res=con_res)
+
+        elif self.engine == EngineType.GSLV:
+
+            self.report_text("Running contingencies in newton...")
+            con_res = gslv_contingencies(circuit=self.grid,
+                                         con_opt=self.options,
+                                         time_series=False,
+                                         time_indices=None)
 
             self.results = translate_newton_pa_contingencies(grid=self.grid,
                                                              con_res=con_res)

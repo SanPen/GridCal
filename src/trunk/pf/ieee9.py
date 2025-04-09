@@ -75,27 +75,56 @@ grid9.add_line(l6)
 
 gce.save_file(grid9, "IEEE9.gridcal")
 
+
+# angles_0 = [0, 0, 0, 150, 150, 150, 150, 150, 150]
+# for i, bus in enumerate(grid9.buses):
+#     bus.Va0 = np.deg2rad(angles_0[i])
+
 # Power flow
-options = gce.PowerFlowOptions(gce.SolverType.HELM,
+
+
+drv = gce.InputsAnalysisDriver(grid=grid9)
+mdl = drv.results.mdl(gce.ResultTypes.AreaAnalysis)
+df = mdl.to_df()
+print(df)
+
+# # linear first
+# options_2 = gce.PowerFlowOptions(gce.SolverType.DC)
+# power_flow = gce.PowerFlowDriver(grid9, options_2)
+# power_flow.run()
+#
+# # Set buses angles:
+# for i, bus in enumerate(grid9.buses):
+#     bus.Va0 = np.angle(power_flow.results.voltage[i], deg=False)
+
+options = gce.PowerFlowOptions(gce.SolverType.NR,
                                retry_with_other_methods=False,
                                tolerance=1e-6,
                                control_q=False,
                                control_taps_phase=False,
                                control_taps_modules=False,
                                apply_temperature_correction=False,
+                               use_stored_guess=False,
+                               initialize_angles=True,
                                verbose=False)
-
-drv = gce.InputsAnalysisDriver(grid=grid9)
-mdl = drv.results.mdl(gce.ResultTypes.AreaAnalysis)
-df = mdl.to_df()
-
-print(df)
-
 power_flow = gce.PowerFlowDriver(grid9, options)
 power_flow.run()
 print(grid9.name)
 print('Converged:', power_flow.results.converged, 'error:', power_flow.results.error)
 resultsDF = power_flow.results.get_bus_df()
 resultsDF['V (kV)'] = resultsDF['Vm'] * np.array([bus.Vnom for bus in grid9.buses])
+resultsDF['Va (rad)'] = np.deg2rad(resultsDF['Va'])
 
 print(resultsDF)
+
+logger = gce.save_cgmes_file(
+    grid=grid9,
+    filename="IEEE9.zip",
+    cgmes_boundary_set_path="../../tests/data/grids/CGMES_2_4_15/TestConfigurations_packageCASv2.0/FullGrid/CGMES_v2.4.15_FullGridTestConfiguration_BD_v1.zip",
+    cgmes_version=gce.CGMESVersions.v2_4_15,
+    pf_results=power_flow.results
+)
+
+if logger.has_logs():
+    logger.print()
+    logger.to_xlsx("ieee9_cgmes_logs.xlsx")

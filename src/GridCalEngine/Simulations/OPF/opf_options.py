@@ -32,6 +32,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
                  maximize_flows=False,
                  inter_aggregation_info: InterAggregationInfo | None = None,
                  unit_commitment=False,
+                 generation_expansion_planning: bool = False,
                  export_model_fname: Union[None, str] = None,
                  generate_report=False,
                  ips_method: SolverType = SolverType.NR,
@@ -94,6 +95,8 @@ class OptimalPowerFlowOptions(OptionsTemplate):
         self.inter_aggregation_info = inter_aggregation_info
 
         self.unit_commitment = unit_commitment
+
+        self.generation_expansion_planning = generation_expansion_planning
 
         self.max_va = 6.28
 

@@ -195,8 +195,7 @@ class GenerationVars:
         self.starting_up = np.zeros((nt, n_elm), dtype=object)
         self.shutting_down = np.zeros((nt, n_elm), dtype=object)
         self.cost = np.zeros((nt, n_elm), dtype=object)
-        # self.fuel = np.zeros((nt, n_elm), dtype=object)
-        # self.emissions = np.zeros((nt, n_elm), dtype=object)
+        self.invested = np.zeros((nt, n_elm), dtype=object)
 
     def get_values(self,
                    Sbase: float,
@@ -222,8 +221,7 @@ class GenerationVars:
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
                 data.cost[t, i] = model.get_value(self.cost[t, i])
-                # data.fuel[t, i] = model.get_value(self.fuel[t, i])
-                # data.emissions[t, i] = model.get_value(self.emissions[t, i])
+                data.invested[t, i] = model.get_value(self.invested[t, i])
 
         # format the arrays appropriately
         data.p = data.p.astype(float, copy=False)
@@ -232,8 +230,7 @@ class GenerationVars:
         data.starting_up = data.starting_up.astype(bool, copy=False)
         data.shutting_down = data.shutting_down.astype(bool, copy=False)
         data.cost = data.cost.astype(float, copy=False)
-        # data.fuel = (gen_fuel_rates_matrix.T * data.p.T).T
-        # data.emissions = (gen_emissions_rates_matrix.T * data.p.T).T
+        data.invested = data.invested.astype(bool, copy=False)
 
         return data
 
@@ -271,6 +268,8 @@ class BatteryVars(GenerationVars):
                 data.producing[t, i] = model.get_value(self.producing[t, i])
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
+                data.cost[t, i] = model.get_value(self.cost[t, i])
+                data.invested[t, i] = model.get_value(self.invested[t, i])
 
             # format the arrays appropriately
             data.p = data.p.astype(float, copy=False)
@@ -279,6 +278,8 @@ class BatteryVars(GenerationVars):
             data.producing = data.producing.astype(int, copy=False)
             data.starting_up = data.starting_up.astype(int, copy=False)
             data.shutting_down = data.shutting_down.astype(int, copy=False)
+            data.cost = data.cost.astype(float, copy=False)
+            data.invested = data.invested.astype(bool, copy=False)
 
         return data
 
@@ -664,7 +665,8 @@ def add_linear_generation_formulation(t: Union[int, None],
                                       skip_generation_limits: bool,
                                       all_generators_fixed: bool,
                                       vd: IntVec,
-                                      nodal_capacity_active: bool):
+                                      nodal_capacity_active: bool,
+                                      generation_expansion_planning: bool):
     """
     Add MIP generation formulation
     :param t: time step
@@ -680,6 +682,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                                  instead of resorting to dispatchable status
     :param vd: slack indices
     :param nodal_capacity_active: nodal capacity active?
+    :param generation_expansion_planning: generation expansion plan?
     :return objective function
     """
     f_obj = 0.0
@@ -690,6 +693,9 @@ def add_linear_generation_formulation(t: Union[int, None],
         id_gen_nonvd = [i for i in range(gen_data_t.nelm) if i not in vd]
     else:
         id_gen_nonvd = []
+
+    year = time_array[t].year - time_array[0].year
+
 
     # add generation stuff
     for k in range(gen_data_t.nelm):
@@ -773,6 +779,30 @@ def add_linear_generation_formulation(t: Union[int, None],
                             prob.add_cst(
                                 cst=gen_vars.p[t, k] - gen_vars.p[t - 1, k] <= gen_data_t.ramp_up[k] / Sbase * dt
                             )
+
+                # Generation Expansion Planning
+                if gen_data_t.is_candidate[k] and generation_expansion_planning:
+
+                    money_factor = np.power(1.0 + gen_data_t.discount_rate[k] / 100.0, year)
+
+                    # declare the investment binary
+                    gen_vars.invested[t, k] = prob.add_int(lb=0, ub=1, name=join("Ig_", [t, k]))
+
+                    # add the investment cost to the objective
+                    f_obj += gen_vars.invested[t, k] * (gen_data_t.pmax[k] / Sbase) * gen_data_t.capex[k] * money_factor
+
+                    if t > 0:
+                        # installation persistence
+                        prob.add_cst(gen_vars.invested[t - 1, k] <= gen_vars.invested[t, k],
+                                      name=join("persist_", [t, k]))
+
+                    # maximum production constraint
+                    prob.add_cst(gen_vars.p[t, k] <= (gen_data_t.pmax[k] / Sbase) * gen_vars.invested[t, k],
+                                  name=join("max_prod_", [t, k]))
+                else:
+                    # is invested for already
+                    gen_vars.invested[t, k] = 1
+
             else:
 
                 # it is NOT dispatchable
@@ -827,6 +857,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                                    unit_commitment: bool,
                                    ramp_constraints: bool,
                                    skip_generation_limits: bool,
+                                   generation_expansion_planning: bool,
                                    energy_0: Vec):
     """
     Add MIP generation formulation
@@ -839,6 +870,7 @@ def add_linear_battery_formulation(t: Union[int, None],
     :param unit_commitment: formulate unit commitment?
     :param ramp_constraints: formulate ramp constraints?
     :param skip_generation_limits: skip the generation limits?
+    :param generation_expansion_planning: generation expansion planning?
     :param energy_0: initial value of the energy stored
     :return objective function
     """
@@ -916,7 +948,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                 if len(time_array) > 1:
                     dt = (time_array[t] - time_array[t - 1]).seconds / 3600.0
                 else:
-                    dt =  1.0
+                    dt = 1.0
 
                 if ramp_constraints and t is not None:
                     if t > 0:
@@ -1540,8 +1572,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       skip_generation_limits: bool = False,
                       consider_contingencies: bool = False,
                       contingency_groups_used: Union[List[ContingencyGroup], None] = None,
-                      unit_Commitment: bool = False,
+                      unit_commitment: bool = False,
                       ramp_constraints: bool = False,
+                      generation_expansion_planning: bool = False,
                       all_generators_fixed: bool = False,
                       lodf_threshold: float = 0.001,
                       maximize_inter_area_flow: bool = False,
@@ -1566,10 +1599,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param skip_generation_limits: Skip the generation limits?
     :param consider_contingencies: Consider the contingencies?
     :param contingency_groups_used: List of contingency groups to use
-    :param unit_Commitment: Formulate unit commitment?
+    :param unit_commitment: Formulate unit commitment?
     :param ramp_constraints: Formulate ramp constraints?
+    :param generation_expansion_planning: Generation expansion planning?
     :param all_generators_fixed: All generators take their snapshot or profile values
-                                 instead of resorting to dispatcheable status
+                                 instead of resorting to dispatchable status
     :param lodf_threshold: LODF threshold value to consider contingencies
     :param maximize_inter_area_flow: Maximize the inter-area flow?
     :param inter_aggregation_info: Inter rea (or country, etc) information
@@ -1658,6 +1692,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
             t_idx=global_t_idx,  # yes, this is not a bug
             bus_dict=bus_dict,
             areas_dict=areas_dict,
+            fill_gep=generation_expansion_planning,
             logger=logger
         )
 
@@ -1688,12 +1723,13 @@ def run_linear_opf_ts(grid: MultiCircuit,
             gen_data_t=nc.generator_data,
             gen_vars=mip_vars.gen_vars,
             prob=lp_model,
-            unit_commitment=unit_Commitment,
+            unit_commitment=unit_commitment,
             ramp_constraints=ramp_constraints,
             skip_generation_limits=skip_generation_limits,
             all_generators_fixed=all_generators_fixed,
             vd=indices.vd,
-            nodal_capacity_active=active_nodal_capacity
+            nodal_capacity_active=active_nodal_capacity,
+            generation_expansion_planning=generation_expansion_planning,
         )
 
         # formulate batteries --------------------------------------------------------------------------------------
@@ -1708,9 +1744,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
             batt_data_t=nc.battery_data,
             batt_vars=mip_vars.batt_vars,
             prob=lp_model,
-            unit_commitment=unit_Commitment,
+            unit_commitment=unit_commitment,
             ramp_constraints=ramp_constraints,
             skip_generation_limits=skip_generation_limits,
+            generation_expansion_planning=generation_expansion_planning,
             energy_0=energy_0
         )
 

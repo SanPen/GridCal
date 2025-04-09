@@ -347,7 +347,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
     def x2var(self, x: Vec) -> None:
         """
-        Convert X to decission variables
+        Convert X to decision variables
         :param x: solution vector
         """
         a = len(self.idx_dVa)
@@ -363,7 +363,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
     def var2x(self) -> Vec:
         """
-        Convert the internal decission variables into the vector
+        Convert the internal decision variables into the vector
         :return: Vector
         """
         return np.r_[
@@ -456,7 +456,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Qt - self.nc.active_branch_data.Qset[self.idx_dQt]
         ]
 
-        # compute the rror
+        # compute the error
         return compute_fx_error(_f), x
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
@@ -630,7 +630,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                 # recompute the error based on the new Scalc and S0
                 self._f = self.fx()
 
-                # compute the rror
+                # compute the error
                 self._error = compute_fx_error(self._f)
 
         # converged?

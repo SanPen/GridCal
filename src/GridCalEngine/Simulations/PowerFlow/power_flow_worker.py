@@ -911,6 +911,16 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         bus_types=nc.bus_data.bus_types,
     )
 
+    if options.initialize_angles and options.solver_type not in [SolverType.DC, SolverType.LACPF, SolverType.HELM]:
+        results_0 = __multi_island_pf_nc_limited_support(
+            nc=nc,
+            options=PowerFlowOptions(solver_type=SolverType.DC),
+            logger=logger,
+            V_guess=V_guess,
+            Sbus_input=Sbus_input,
+        )
+        V_guess = results_0.voltage
+
     if nc.active_branch_data.any_pf_control:
 
         results = __multi_island_pf_nc_complete_support(

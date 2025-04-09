@@ -252,6 +252,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionDisable_all_results_tags.triggered.connect(self.disable_all_results_tags)
         self.ui.actionEnable_all_results_tags.triggered.connect(self.enable_all_results_tags)
         self.ui.actionConsolidate_diagram_coordinates.triggered.connect(self.consolidate_diagram_coordinates)
+        self.ui.actionReset_coordinates.triggered.connect(self.reset_diagram_coordinates)
         self.ui.actionRotate.triggered.connect(self.rotate)
 
         # Buttons
@@ -290,7 +291,7 @@ class DiagramsMain(CompiledArraysMain):
 
         # check boxes
         self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_constraints)
-
+        self.ui.use_schematic_objects_color_checkBox.clicked.connect(self.re_colour_schematic)
         # context menu
         self.ui.diagramsListView.customContextMenuRequested.connect(self.show_diagrams_context_menu)
 
@@ -1461,6 +1462,19 @@ class DiagramsMain(CompiledArraysMain):
                                               t_idx=t_idx,
                                               allow_popups=allow_popups)
 
+    def re_colour_schematic(self):
+        """
+        Recolour a schematic
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+
+        use_api_color = self.ui.use_schematic_objects_color_checkBox.isChecked()
+
+        if diagram_widget:
+
+            if isinstance(diagram_widget, SchematicWidget):
+                diagram_widget.recolour(use_api_color=use_api_color)
+
     def set_diagrams_list_view(self) -> None:
         """
         Create the diagrams list view
@@ -1516,7 +1530,7 @@ class DiagramsMain(CompiledArraysMain):
                 # set pointer to the circuit
                 diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
                                                      busbars=self.circuit.get_bus_bars(),
-                                                     connecivity_nodes=self.circuit.get_connectivity_nodes(),
+                                                     connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                                      lines=self.circuit.get_lines(),
                                                      dc_lines=self.circuit.get_dc_lines(),
                                                      transformers2w=self.circuit.get_transformers2w(),
@@ -1557,7 +1571,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
                                              busbars=self.circuit.get_bus_bars(),
-                                             connecivity_nodes=self.circuit.get_connectivity_nodes(),
+                                             connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                              lines=self.circuit.get_lines(),
                                              dc_lines=self.circuit.get_dc_lines(),
                                              transformers2w=self.circuit.get_transformers2w(),
@@ -1723,6 +1737,14 @@ class DiagramsMain(CompiledArraysMain):
                                                                 diagram=diagram)
                             self.set_diagrams_list_view()
 
+                            self.show_info_toast(f"{diagram.name} added")
+                    else:
+                        self.show_error_toast(f"Could not find any bus")
+                else:
+                    self.show_error_toast(f"No elements selected")
+            else:
+                self.show_error_toast(f"No object selected")
+
     def new_bus_branch_diagram_from_bus(self, root_bus: dev.Bus):
         """
         Add a bus-branch diagram of a particular selection of objects
@@ -1745,6 +1767,7 @@ class DiagramsMain(CompiledArraysMain):
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
             self.set_diagrams_list_view()
+            self.show_info_toast(f"{diagram.name} added")
 
     def new_bus_branch_diagram_from_substation(self, substations: List[dev.Substation]):
         """
@@ -1780,6 +1803,8 @@ class DiagramsMain(CompiledArraysMain):
 
             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
             self.set_diagrams_list_view()
+            self.show_info_toast(f"{diagram.name} added")
+
         else:
             if len(substations) == 1:
                 info_msg(text=f"No buses were found associated with the substation {substations[0].name}",
@@ -1895,6 +1920,7 @@ class DiagramsMain(CompiledArraysMain):
         self.add_diagram_widget_and_diagram(diagram_widget=map_widget, diagram=diagram)
         self.set_diagrams_list_view()
         self.set_diagram_widget(widget=map_widget)
+        self.show_info_toast(f"{diagram.name} added")
 
     def add_diagram_widget_and_diagram(self,
                                        diagram_widget: ALL_EDITORS,
@@ -2000,6 +2026,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.min_node_size_spinBox.setValue(widget.diagram.min_bus_width)
         self.ui.max_node_size_spinBox.setValue(widget.diagram.max_bus_width)
         self.ui.arrow_size_size_spinBox.setValue(widget.diagram.arrow_size)
+        self.ui.use_schematic_objects_color_checkBox.setChecked(widget.diagram.use_api_colors)
         self.ui.palette_comboBox.setCurrentIndex(self.cmap_index_dict.get(widget.diagram.palette, 0))
 
         if isinstance(widget, GridMapWidget):
@@ -2668,6 +2695,21 @@ class DiagramsMain(CompiledArraysMain):
             if ok:
                 diagram_widget.consolidate_coordinates()
 
+    def reset_diagram_coordinates(self):
+        """
+        Reset the diagram coordinates using the DB
+        :return:
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+
+        if diagram_widget is not None:
+            ok = yes_no_question(text="The diagram coordinates will be reset to its database values. "
+                                      "Do you want to do this?",
+                                 title="Reset diagram coordinates using the DB")
+            if ok:
+                diagram_widget.reset_coordinates()
+                self.show_info_toast(message='Coordinates of substations and linelocations set to its database values.')
+
     def rotate(self):
         """
         Rotate the selected diagram
@@ -2688,11 +2730,12 @@ class DiagramsMain(CompiledArraysMain):
         """
         Country sizes
         """
-        self.ui.min_node_size_spinBox.setValue(5)
-        self.ui.max_node_size_spinBox.setValue(20)
-        self.ui.min_branch_size_spinBox.setValue(5)
-        self.ui.max_branch_size_spinBox.setValue(20)
-        self.ui.arrow_size_size_spinBox.setValue(7)
+        self.ui.min_node_size_spinBox.setValue(2)
+        self.ui.max_node_size_spinBox.setValue(8)
+        self.ui.min_branch_size_spinBox.setValue(1)
+        self.ui.max_branch_size_spinBox.setValue(3)
+        self.ui.arrow_size_size_spinBox.setValue(1.5)
+        self.redraw_current_diagram()
 
     def preset_2(self):
         """
@@ -2700,9 +2743,10 @@ class DiagramsMain(CompiledArraysMain):
         """
         self.ui.min_node_size_spinBox.setValue(1)
         self.ui.max_node_size_spinBox.setValue(2)
-        self.ui.min_branch_size_spinBox.setValue(1)
-        self.ui.max_branch_size_spinBox.setValue(2)
-        self.ui.arrow_size_size_spinBox.setValue(2)
+        self.ui.min_branch_size_spinBox.setValue(0.1)
+        self.ui.max_branch_size_spinBox.setValue(0.2)
+        self.ui.arrow_size_size_spinBox.setValue(0.15)
+        self.redraw_current_diagram()
 
     def preset_3(self):
         """
@@ -2713,6 +2757,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.min_branch_size_spinBox.setValue(0.01)
         self.ui.max_branch_size_spinBox.setValue(0.02)
         self.ui.arrow_size_size_spinBox.setValue(0.015)
+        self.redraw_current_diagram()
 
     def preset_4(self):
         """
@@ -2723,3 +2768,4 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.min_branch_size_spinBox.setValue(0.001)
         self.ui.max_branch_size_spinBox.setValue(0.002)
         self.ui.arrow_size_size_spinBox.setValue(0.0015)
+        self.redraw_current_diagram()
