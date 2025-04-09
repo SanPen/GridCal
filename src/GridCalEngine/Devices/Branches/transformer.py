@@ -263,7 +263,7 @@ class Transformer2W(ControllableBranchParent):
         else:
             self.LV = LV
 
-    def get_from_to_nominal_voltages(self) -> Tuple[float, float]:
+    def get_from_to_nominal_voltages(self) -> Tuple[float, float, bool]:
         """
 
         :return:
@@ -278,12 +278,14 @@ class Transformer2W(ControllableBranchParent):
             # the HV side is on the from side
             tpe_f_v = self.HV
             tpe_t_v = self.LV
+            hv_at_from = True
         else:
             # the HV side is on the to side
             tpe_t_v = self.HV
             tpe_f_v = self.LV
+            hv_at_from = False
 
-        return tpe_f_v, tpe_t_v
+        return tpe_f_v, tpe_t_v, hv_at_from
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
@@ -299,7 +301,7 @@ class Transformer2W(ControllableBranchParent):
         bus_t_v = self.bus_to.Vnom
 
         # obtain the nominal voltages at the from and to sides
-        tpe_f_v, tpe_t_v = self.get_from_to_nominal_voltages()
+        tpe_f_v, tpe_t_v, hv_at_from = self.get_from_to_nominal_voltages()
 
         tap_f = tpe_f_v / bus_f_v if bus_f_v > 0 else 1.0
         tap_t = tpe_t_v / bus_t_v if bus_t_v > 0 else 1.0

@@ -1,48 +1,22 @@
-from sympy import symbols
+from sympy import symbols, Matrix
 import numpy as np
-import GridCalEngine.api as gce
-from GridCalEngine import WindingsConnection
 
-np.set_printoptions(linewidth=20000, precision=1, suppress=True)
+np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 
-trafo = gce.Transformer2W(name='Test',
-                          r=0.1,
-                          x=1,
-                          g=0.001,
-                          b=0.01,
-                          tap_module=1,
-                          tap_phase=0,
-                          conn=WindingsConnection.GG
-                          )
+Ys = symbols('Ys')
+Ysh = symbols('Ysh')
+a = symbols('a')
 
-Ys = 1 / (trafo.R + 1j * trafo.X)
-Ysh = (trafo.G + 1j * trafo.B) / 2
-m = trafo.tap_module
-tau = trafo.tap_phase
-mf = 1
-mt = 1
+Y_2x2 = Matrix([
+    [Ys/a**2 + Ysh/2, -Ys/np.conjugate(a)],
+    [-Ys/a, Ys + Ysh/2]
+])
 
-Ysc = symbols('Ysc')
-Ym = symbols('Ym')
-T = symbols('T')
+Y_6x6_primitive = np.zeros((6, 6), dtype=object)
 
-Yphase = np.empty((2, 2), dtype=object)
-
-Yphase[0,0] = Ysc + Ym/2
-Yphase[0,1] = -T * Ysc
-Yphase[1,0] = -T * Ysc
-Yphase[1,1] = T**2 * (Ysc + Ym/2)
-
-yff = (Ys + Ysh) / (m**2 * mf**2 * np.exp(2j*tau))
-yft = -Ys / (m * mf * mt)
-ytf = -Ys / (m * mf * mt * np.exp(2j*tau))
-ytt = (Ys + Ysh) / mt**2
-
-Yprimitive = np.zeros((6, 6), dtype=object)
-
-Yprimitive[0:2,0:2] = Yphase
-Yprimitive[2:4,2:4] = Yphase
-Yprimitive[4:6,4:6] = Yphase
+Y_6x6_primitive[0:2,0:2] = Y_2x2
+Y_6x6_primitive[2:4,2:4] = Y_2x2
+Y_6x6_primitive[4:6,4:6] = Y_2x2
 
 connexion = 'Dd'
 
@@ -127,10 +101,9 @@ elif connexion == 'Dy':
 print()
 print(Cu)
 print()
-print()
 print(Ci)
 print()
-Ytrafo = Ci @ Yprimitive @ Cu
+Ytrafo = Ci @ Y_6x6_primitive @ Cu
 print()
 print(Ytrafo)
 print()
