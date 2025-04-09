@@ -207,7 +207,7 @@ def compute_admittances(R: Vec,
             raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
 
     else:  # original
-        # with np.errstate(all='raise'):
+
         yff = (ys + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
         yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
         ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)

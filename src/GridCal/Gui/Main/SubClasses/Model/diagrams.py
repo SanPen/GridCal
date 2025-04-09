@@ -1530,7 +1530,7 @@ class DiagramsMain(CompiledArraysMain):
                 # set pointer to the circuit
                 diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
                                                      busbars=self.circuit.get_bus_bars(),
-                                                     connecivity_nodes=self.circuit.get_connectivity_nodes(),
+                                                     connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                                      lines=self.circuit.get_lines(),
                                                      dc_lines=self.circuit.get_dc_lines(),
                                                      transformers2w=self.circuit.get_transformers2w(),
@@ -1571,7 +1571,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = generate_schematic_diagram(buses=self.circuit.get_buses(),
                                              busbars=self.circuit.get_bus_bars(),
-                                             connecivity_nodes=self.circuit.get_connectivity_nodes(),
+                                             connectivity_nodes=self.circuit.get_connectivity_nodes(),
                                              lines=self.circuit.get_lines(),
                                              dc_lines=self.circuit.get_dc_lines(),
                                              transformers2w=self.circuit.get_transformers2w(),

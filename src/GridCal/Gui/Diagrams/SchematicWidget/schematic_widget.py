@@ -4463,7 +4463,7 @@ class SchematicWidget(BaseDiagramWidget):
 
 def generate_schematic_diagram(buses: List[Bus],
                                busbars: List[BusBar],
-                               connecivity_nodes: List[ConnectivityNode],
+                               connectivity_nodes: List[ConnectivityNode],
                                lines: List[Line],
                                dc_lines: List[DcLine],
                                transformers2w: List[Transformer2W],
@@ -4484,7 +4484,7 @@ def generate_schematic_diagram(buses: List[Bus],
     Add a elements to the schematic scene
     :param buses: list of Bus objects
     :param busbars: List of Bus bars
-    :param connecivity_nodes: List of ConnectivityNode objects
+    :param connectivity_nodes: List of ConnectivityNode objects
     :param lines: list of Line objects
     :param dc_lines: list of DcLine objects
     :param transformers2w: list of Transformer Objects
@@ -4547,7 +4547,7 @@ def generate_schematic_diagram(buses: List[Bus],
     # --------------------------------------------------------------------------------------------------------------
 
     add_devices_list(cls="busbars", dev_lst=busbars)
-    add_devices_list(cls="connecivity_nodes", dev_lst=connecivity_nodes)
+    add_devices_list(cls="connecivity_nodes", dev_lst=connectivity_nodes)
     add_devices_list(cls="fluid_nodes", dev_lst=fluid_nodes)
     add_devices_list(cls="transformers3w", dev_lst=transformers3w)
 
@@ -4693,14 +4693,15 @@ def make_vicinity_diagram(circuit: MultiCircuit,
                           max_level: int = 1,
                           prog_func: Union[Callable, None] = None,
                           text_func: Union[Callable, None] = None,
-                          name: str = ""):
+                          name: str = "") -> SchematicDiagram:
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
     :param root_bus: Bus
     :param max_level: max expansion level
-    :param prog_func:
-    :param text_func:
+    :param prog_func: progress function pointer
+    :param text_func: Text progress function
+    :param name: name of the diagram
     :return:
     """
 
@@ -4715,7 +4716,7 @@ def make_vicinity_diagram(circuit: MultiCircuit,
     diagram = generate_schematic_diagram(
         buses=list(buses),
         busbars=busbars,
-        connecivity_nodes=cns,
+        connectivity_nodes=cns,
         lines=lines,
         dc_lines=dc_lines,
         transformers2w=transformers2w,
@@ -4741,7 +4742,7 @@ def make_diagram_from_buses(circuit: MultiCircuit,
                             buses: List[Bus] | Set[Bus],
                             name='Diagram from selection',
                             prog_func: Union[Callable, None] = None,
-                            text_func: Union[Callable, None] = None):
+                            text_func: Union[Callable, None] = None) -> SchematicDiagram:
     """
     Create a vicinity diagram
     :param circuit: MultiCircuit
@@ -4762,7 +4763,7 @@ def make_diagram_from_buses(circuit: MultiCircuit,
     # Draw schematic subset
     diagram = generate_schematic_diagram(buses=list(buses),
                                          busbars=busbars,
-                                         connecivity_nodes=cns,
+                                         connectivity_nodes=cns,
                                          lines=lines,
                                          dc_lines=dc_lines,
                                          transformers2w=transformers2w,
