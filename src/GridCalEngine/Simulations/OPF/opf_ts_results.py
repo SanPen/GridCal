@@ -195,8 +195,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.fluid_injection_flow = np.zeros((nt, n_fluid_injection), dtype=float)
 
         self.converged = np.empty(nt, dtype=bool)
-        self.system_fuel = np.empty((nt, nemissions), dtype=float)
-        self.system_emissions = np.empty((nt, nfuels), dtype=float)
+        self.system_fuel = np.empty((nt, nfuels), dtype=float)
+        self.system_emissions = np.empty((nt, nemissions), dtype=float)
         self.system_energy_cost = np.empty(nt, dtype=float)
 
         self.register(name='bus_names', tpe=StrVec)
