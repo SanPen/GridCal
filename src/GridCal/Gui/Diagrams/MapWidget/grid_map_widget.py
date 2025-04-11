@@ -23,7 +23,7 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandard
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import CheckListDialogue
+from GridCal.Gui.general_dialogues import CheckListDialogue, InputNumberDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
@@ -1556,7 +1556,29 @@ class GridMapWidget(BaseDiagramWidget):
                                       'suitable.')
             return
 
-        circ_idx = 0  # TODO: Window to select the circuit idx
+        if line1.circuit_idx == line2.circuit_idx:
+            circ_idx = 0
+
+        else:
+            inpt = InputNumberDialogue(
+                min_value=0,
+                max_value=10,
+                default_value=0,
+                title="Select circuit ID",
+                text="Circuit ID",
+                is_int=True
+            )
+
+            inpt.exec()
+
+            if inpt.is_accepted:
+                circ_idx = inpt.value
+                if circ_idx > line1.template.n_circuits - 1:
+                    self.gui.show_error_toast(f'The circuit id introduced is greater than the maximum id that this '
+                                              f'template can use. The template has {line1.template.n_circuits}, the '
+                                              f'maximum possible value for the circuit_idx is '
+                                              f'{line1.template.n_circuits - 1}, try again.')
+                    return
 
         list_locations = line1.locations.data
         list_lineloc2 = line2.locations.data
@@ -1640,6 +1662,13 @@ class GridMapWidget(BaseDiagramWidget):
 
         self.gui.show_info_toast(message='Line merging successful!')
 
+        ok = yes_no_question(
+            text='Do you want to delete the substation where the lines were connecting? This will'
+                 ' open the substation deletion menu, with the information of the items that would '
+                 'be removed.', title='Remove substation?')
+        if ok:
+            merging_substation = self.graphics_manager.query(elm=joint_bus.substation)
+            merging_substation.remove_function_from_schematic_and_db()
 
     def consolidate_object_coordinates(self):
         selected_lines = self.get_selected_line_segments_tup()

@@ -256,7 +256,7 @@ class MapLineSegment(QGraphicsLineItem):
         add_menu_entry(menu=menu,
                        text="Consolidate selected objects coordinates",
                        function_ptr=self.editor.consolidate_object_coordinates,
-                       icon_path=":/Icons/icons/CataloguePrivate.svg")
+                       icon_path=":/Icons/icons/assign_to_profile.svg")
 
 
         menu.addSeparator()

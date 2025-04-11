@@ -958,8 +958,8 @@ def dSf_dVa_csc(nbus, br_indices, bus_indices, yft, V, F, T) -> CxCSC:
 
 
 @njit()
-def dSf_dVa_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
-                      tap_module) -> CxCSC:
+def dSf_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
+                     tap_module) -> CxCSC:
     """
 
     :param nbus: number of buses
@@ -1222,8 +1222,8 @@ def dSt_dVa_csc(nbus, br_indices, bus_indices, ytf, V, F, T) -> CxCSC:
 
 
 @njit()
-def dSt_dVa_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
-                      tap_module) -> CxCSC:
+def dSt_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
+                     tap_module) -> CxCSC:
     """
 
     :param nbus: number of buses

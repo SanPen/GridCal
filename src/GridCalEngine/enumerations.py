@@ -1315,7 +1315,12 @@ class ResultTypes(Enum):
     BusPower = 'Bus power'
     BusShadowPrices = 'Nodal shadow prices'
     BranchOverloads = 'Branch overloads'
+    BranchOverloadsCost = 'Branch overloads cost'
+
+    LoadPower = 'Load power'
     LoadShedding = 'Load shedding'
+    LoadSheddingCost = "Load shedding cost"
+
     GeneratorShedding = 'Generator shedding'
     GeneratorPower = 'Generator power'
     GeneratorReactivePower = 'Generator reactive power'
@@ -1352,6 +1357,7 @@ class ResultTypes(Enum):
     SystemFuel = 'System fuel consumption'
     SystemEmissions = 'System emissions'
     SystemEnergyCost = 'System energy cost'
+    SystemEnergyTotalCost = "System energy total cost"
 
     # NTC TS
     OpfNtcTsContingencyReport = 'Contingency flow report'
@@ -1402,6 +1408,9 @@ class ResultTypes(Enum):
 
     FluidFlowPath = 'Flow in the river'
     FluidFlowInjection = 'Flow circulating in the device'
+
+    # OPF plots
+    OpfBalancePlot = "Balance plot"
 
     # sigma
     SigmaReal = 'Sigma real'
