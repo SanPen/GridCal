@@ -28,19 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minimal refactorings">
-      <change afterPath="$PROJECT_DIR$/src/trunk/plot/stack_plot_pos_neg.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added power by technology summary at the OPF results&#10;Much better implementation of the stacked results plot">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NodalCapacity/nodal_capacity_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NodalCapacity/nodal_capacity_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NodalCapacity/nodal_capacity_ts_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NodalCapacity/nodal_capacity_ts_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_ts_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_ts_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/opf_ts_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/results_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/results_table.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +71,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -238,7 +228,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "devel",
+    "git-widget-placeholder": "devel__batt__vars__split",
     "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Simulations/Stochastic",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -1160,8 +1150,12 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
+      <item itemvalue="Python.ieee9" />
+      <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.stack_plot_pos_neg" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.pytest in tests" />
       <item itemvalue="Python tests.pytest for test_opf.test_opf_load_not_shedding_because_of_line" />
       <item itemvalue="Python tests.pytest for test_opf.test_opf_load_shedding_because_of_line" />
       <item itemvalue="Python tests.pytest in test_opf.py" />
@@ -1169,8 +1163,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.stack_plot_pos_neg" />
         <item itemvalue="Python tests.pytest in test_opf.py" />
+        <item itemvalue="Python.stack_plot_pos_neg" />
         <item itemvalue="Python tests.pytest for test_opf.test_opf_load_not_shedding_because_of_line" />
         <item itemvalue="Python tests.pytest for test_opf.test_opf_load_shedding_because_of_line" />
       </list>
@@ -2033,7 +2027,8 @@
       <workItem from="1744195922955" duration="9420000" />
       <workItem from="1744231870662" duration="1263000" />
       <workItem from="1744272531054" duration="769000" />
-      <workItem from="1744355624897" duration="22641000" />
+      <workItem from="1744355624897" duration="24395000" />
+      <workItem from="1744407866928" duration="333000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -2378,7 +2373,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="675" />
+    <option name="localTasksCounter" value="676" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2424,7 +2419,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added minor adjustment to fill_design_properties structure" />
     <MESSAGE value="minor tweaks to the transformer related functions" />
     <MESSAGE value="5.3.23" />
     <MESSAGE value="5.3.24" />
@@ -2449,7 +2443,8 @@
     <MESSAGE value="minor refactorings" />
     <MESSAGE value="Important opf refurbishing&#10;Added tests about generation, battery and load shedding" />
     <MESSAGE value="Minimal refactorings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Minimal refactorings" />
+    <MESSAGE value="Added power by technology summary at the OPF results&#10;Much better implementation of the stacked results plot" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added power by technology summary at the OPF results&#10;Much better implementation of the stacked results plot" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2941,7 +2936,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1127</line>
+          <line>1128</line>
           <option name="timeStamp" value="2642" />
         </line-breakpoint>
       </breakpoints>
@@ -3038,7 +3033,7 @@
     <SUITE FILE_PATH="coverage/GridCal$jacobian_based_acdc_power_flow__1_.coverage" NAME="jacobian_based_acdc_power_flow (1) Coverage Results" MODIFIED="1609455735388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PowerFlow" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_grid_diff_test_add_stuff_roundtrip.coverage" NAME="pytest for test_grid_diff.test_add_stuff_roundtrip Coverage Results" MODIFIED="1743177817309" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$psse_parser.coverage" NAME="psse_parser Coverage Results" MODIFIED="1594285082315" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1744386355446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1744386785777" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$newton_current.coverage" NAME="newton_current Coverage Results" MODIFIED="1597481272992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/power_flow" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power.coverage" NAME="branch_power Coverage Results" MODIFIED="1659016478801" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives" />
     <SUITE FILE_PATH="coverage/GridCal$binary_ga.coverage" NAME="binary_ga Coverage Results" MODIFIED="1663317448376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms" />

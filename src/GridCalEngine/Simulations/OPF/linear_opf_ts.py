@@ -908,7 +908,9 @@ def add_linear_battery_formulation(t: Union[int, None],
         if batt_data_t.active[k]:
 
             # declare active power var (limits will be applied later)
-            batt_vars.p[t, k] = prob.add_var(0, 1e20, join("batt_p_", [t, k], "_"))
+            p_pos = prob.add_var(0, 1e20, join("batt_ppos_", [t, k], "_"))
+            p_neg = prob.add_var(0, 1e20, join("batt_pneg_", [t, k], "_"))
+            batt_vars.p[t, k] = p_pos - p_neg
 
             if batt_data_t.dispatchable[k]:
 
@@ -925,8 +927,8 @@ def add_linear_battery_formulation(t: Union[int, None],
                                                                  join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    # f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]
-                    #           + batt_data_t.cost_0[k] * batt_vars.producing[t, k])
+                    f_obj += (batt_data_t.cost_1[k] * p_pos
+                              + batt_data_t.cost_0[k] * batt_vars.producing[t, k])
 
                     # start-up cost
                     f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
@@ -964,13 +966,12 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # No unit commitment
 
                     # Operational cost (linear...)
-                    # f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
+                    f_obj += (batt_data_t.cost_1[k] * p_pos) + batt_data_t.cost_0[k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        set_var_bounds(var=batt_vars.p[t, k],
-                                       lb=batt_data_t.pmin[k] / Sbase,
-                                       ub=batt_data_t.pmax[k] / Sbase)
+                        set_var_bounds(var=p_pos, lb=0, ub=+batt_data_t.pmax[k] / Sbase)
+                        set_var_bounds(var=p_neg, lb=0, ub=-batt_data_t.pmin[k] / Sbase)
 
                 # compute the time increment in hours
                 if len(time_array) > 1:
@@ -1010,7 +1011,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                 # it is NOT dispatchable
 
                 # Operational cost (linear...)
-                # f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
+                f_obj += (batt_data_t.cost_1[k] * p_pos) + batt_data_t.cost_0[k]
 
                 p = batt_data_t.p[k] / Sbase
 
