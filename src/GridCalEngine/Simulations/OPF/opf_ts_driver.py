@@ -75,7 +75,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             n_fluid_node=self.grid.get_fluid_nodes_number(),
             n_fluid_path=self.grid.get_fluid_paths_number(),
             n_fluid_injection=self.grid.get_fluid_injection_number(),
-            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
+            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
+                datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
 
@@ -134,7 +135,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
 
+            self.results.load_power = opf_vars.load_vars.p
             self.results.load_shedding = opf_vars.load_vars.shedding
+            self.results.load_shedding_cost = opf_vars.load_vars.shedding_cost
 
             self.results.battery_power = opf_vars.batt_vars.p
             self.results.battery_energy = opf_vars.batt_vars.e
@@ -152,6 +155,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.Sf = opf_vars.branch_vars.flows
             self.results.St = -opf_vars.branch_vars.flows
             self.results.overloads = opf_vars.branch_vars.flow_slacks_pos - opf_vars.branch_vars.flow_slacks_neg
+            self.results.overloads_cost = opf_vars.branch_vars.overload_cost
+
             self.results.loading = opf_vars.branch_vars.loading
             self.results.phase_shift = opf_vars.branch_vars.tap_angles
 
@@ -168,7 +173,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.system_fuel = opf_vars.sys_vars.system_fuel
             self.results.system_emissions = opf_vars.sys_vars.system_emissions
-            self.results.system_energy_cost = opf_vars.sys_vars.system_energy_cost
+            self.results.system_energy_cost = opf_vars.sys_vars.system_unit_energy_cost
+            self.results.system_total_energy_cost = opf_vars.sys_vars.system_total_energy_cost
 
             # set converged for all t to the value of acceptable solution
             self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
@@ -183,16 +189,18 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.report_progress2(it, len(self.time_indices))
 
                 # run opf
-                res = run_nonlinear_opf(grid=self.grid,
-                                        opf_options=self.options,
-                                        pf_options=self.pf_options,
-                                        t_idx=t,
-                                        # for the first power flow, use the given strategy
-                                        # for the successive ones, use the previous solution
-                                        pf_init=self.options.ips_init_with_pf if it == 0 else True,
-                                        Sbus_pf0=self.results.Sbus[it-1, :] if it > 0 else None,
-                                        voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
-                                        logger=self.logger)
+                res = run_nonlinear_opf(
+                    grid=self.grid,
+                    opf_options=self.options,
+                    pf_options=self.pf_options,
+                    t_idx=t,
+                    # for the first power flow, use the given strategy
+                    # for the successive ones, use the previous solution
+                    pf_init=self.options.ips_init_with_pf if it == 0 else True,
+                    Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
+                    voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
+                    logger=self.logger
+                )
                 Sbase = self.grid.Sbase
                 self.results.voltage[it, :] = res.V
                 self.results.Sbus[it, :] = res.S * Sbase
@@ -306,7 +314,9 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                      * np.exp(1j * opf_vars.bus_vars.theta))
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
 
+            self.results.load_power[time_indices, :] = opf_vars.load_vars.p
             self.results.load_shedding[time_indices, :] = opf_vars.load_vars.shedding
+            self.results.load_shedding_cost[time_indices, :] = opf_vars.load_vars.shedding_cost
 
             self.results.battery_power[time_indices, :] = opf_vars.batt_vars.p
             self.results.battery_energy[time_indices, :] = opf_vars.batt_vars.e
@@ -323,6 +333,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.St[time_indices, :] = -opf_vars.branch_vars.flows
             self.results.overloads[time_indices, :] = (opf_vars.branch_vars.flow_slacks_pos
                                                        - opf_vars.branch_vars.flow_slacks_neg)
+            self.results.overloads_cost[time_indices, :] = opf_vars.branch_vars.overload_cost
+
             self.results.loading[time_indices, :] = opf_vars.branch_vars.loading
             self.results.phase_shift[time_indices, :] = opf_vars.branch_vars.tap_angles
 
@@ -339,7 +351,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.system_fuel[time_indices, :] = opf_vars.sys_vars.system_fuel
             self.results.system_emissions[time_indices, :] = opf_vars.sys_vars.system_emissions
-            self.results.system_energy_cost[time_indices] = opf_vars.sys_vars.system_energy_cost
+            self.results.system_energy_cost[time_indices] = opf_vars.sys_vars.system_unit_energy_cost
+            self.results.system_total_energy_cost[time_indices] = opf_vars.sys_vars.system_total_energy_cost
 
             # set converged for all t to the value of acceptable solution
             self.results.converged[time_indices] = np.array([opf_vars.acceptable_solution] * opf_vars.nt)

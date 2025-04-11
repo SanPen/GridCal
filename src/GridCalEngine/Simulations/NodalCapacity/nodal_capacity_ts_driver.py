@@ -197,7 +197,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.results.system_fuel = opf_vars.sys_vars.system_fuel
         self.results.system_emissions = opf_vars.sys_vars.system_emissions
-        self.results.system_energy_cost = opf_vars.sys_vars.system_energy_cost
+        self.results.system_energy_cost = opf_vars.sys_vars.system_unit_energy_cost
 
         # set converged for all t to the value of acceptable solution
         self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
