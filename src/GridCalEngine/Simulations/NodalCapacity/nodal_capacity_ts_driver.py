@@ -68,6 +68,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             hvdc_names=self.grid.get_hvdc_names(),
             fuel_names=self.grid.get_fuel_names(),
             emission_names=self.grid.get_emission_names(),
+            technology_names=self.grid.get_technology_names(),
             fluid_node_names=self.grid.get_fluid_node_names(),
             fluid_path_names=self.grid.get_fluid_path_names(),
             fluid_injection_names=self.grid.get_fluid_injection_names(),

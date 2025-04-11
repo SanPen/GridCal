@@ -1358,6 +1358,7 @@ class ResultTypes(Enum):
     SystemEmissions = 'System emissions'
     SystemEnergyCost = 'System energy cost'
     SystemEnergyTotalCost = "System energy total cost"
+    PowerByTechnology = "Power by technology"
 
     # NTC TS
     OpfNtcTsContingencyReport = 'Contingency flow report'
@@ -1411,6 +1412,7 @@ class ResultTypes(Enum):
 
     # OPF plots
     OpfBalancePlot = "Balance plot"
+    OpfTechnologyPlot = "Technology plot"
 
     # sigma
     SigmaReal = 'Sigma real'

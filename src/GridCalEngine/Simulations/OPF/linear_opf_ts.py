@@ -546,25 +546,34 @@ class SystemVars:
         self.system_emissions = np.zeros(nt, dtype=float)
         self.system_unit_energy_cost = np.zeros(nt, dtype=float)
         self.system_total_energy_cost = np.zeros(nt, dtype=float)
+        self.power_by_technology = np.zeros(nt, dtype=float)
 
     def compute(self,
                 gen_emissions_rates_matrix: csc_matrix,
                 gen_fuel_rates_matrix: csc_matrix,
+                gen_tech_shares_matrix: csc_matrix,
+                batt_tech_shares_matrix: csc_matrix,
                 gen_p: Mat,
                 gen_cost: Mat,
+                batt_p: Mat,
                 shedding_cost: Mat,
                 overload_cost: Mat):
         """
         Compute the system values
         :param gen_emissions_rates_matrix: emissions rates matrix (n_emissions, n_gen)
         :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
+        :param gen_tech_shares_matrix: technology shares of the generators
+        :param batt_tech_shares_matrix technology shares of the batteries
         :param gen_p: Generation power values (nt, ngen)
         :param gen_cost: Generation cost values (nt, ngen)
+        :param batt_p: Battery power values (nt, nbatt)
         :param shedding_cost: Shedding cost values (nt, ngen)
         :param overload_cost: Overload cost values (nt, ngen)
         """
         self.system_fuel = (gen_fuel_rates_matrix * gen_p.T).T
         self.system_emissions = (gen_emissions_rates_matrix * gen_p.T).T
+        self.power_by_technology = (gen_tech_shares_matrix * gen_p.T).T
+        self.power_by_technology += (batt_tech_shares_matrix * batt_p.T).T
 
         with np.errstate(divide='ignore', invalid='ignore'):  # numpy magic to ignore the zero divisions
 
@@ -625,7 +634,11 @@ class OpfVars:
 
         self.sys_vars = SystemVars(nt=nt)
 
-    def get_values(self, Sbase: float, model: LpModel, gen_emissions_rates_matrix, gen_fuel_rates_matrix) -> "OpfVars":
+    def get_values(self, Sbase: float, model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix,
+                   gen_fuel_rates_matrix: csc_matrix,
+                   gen_tech_shares_matrix: csc_matrix,
+                   batt_tech_shares_matrix: csc_matrix) -> "OpfVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: OpfVars instance
@@ -657,7 +670,10 @@ class OpfVars:
         data.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
         data.sys_vars = self.sys_vars.compute(gen_emissions_rates_matrix=gen_emissions_rates_matrix,
                                               gen_fuel_rates_matrix=gen_fuel_rates_matrix,
+                                              gen_tech_shares_matrix=gen_tech_shares_matrix,
+                                              batt_tech_shares_matrix=batt_tech_shares_matrix,
                                               gen_p=data.gen_vars.p,
+                                              batt_p=data.batt_vars.p,
                                               gen_cost=data.gen_vars.cost,
                                               shedding_cost=data.load_vars.shedding_cost,
                                               overload_cost=data.branch_vars.overload_cost)
@@ -909,8 +925,8 @@ def add_linear_battery_formulation(t: Union[int, None],
                                                                  join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]
-                              + batt_data_t.cost_0[k] * batt_vars.producing[t, k])
+                    # f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]
+                    #           + batt_data_t.cost_0[k] * batt_vars.producing[t, k])
 
                     # start-up cost
                     f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
@@ -948,7 +964,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # No unit commitment
 
                     # Operational cost (linear...)
-                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
+                    # f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
@@ -994,7 +1010,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                 # it is NOT dispatchable
 
                 # Operational cost (linear...)
-                f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
+                # f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
 
                 p = batt_data_t.p[k] / Sbase
 
@@ -1416,14 +1432,14 @@ def add_linear_node_balance(t_idx: int,
 
 
 def add_copper_plate_balance(t_idx: int,
-                            generator_data: GeneratorData,
-                            battery_data: BatteryData,
-                            load_data: LoadData,
-                            bus_vars: BusVars,
-                            gen_vars: GenerationVars,
-                            batt_vars: BatteryVars,
-                            load_vars: LoadVars,
-                            prob: LpModel,):
+                             generator_data: GeneratorData,
+                             battery_data: BatteryData,
+                             load_data: LoadData,
+                             bus_vars: BusVars,
+                             gen_vars: GenerationVars,
+                             batt_vars: BatteryVars,
+                             load_vars: LoadVars,
+                             prob: LpModel, ):
     """
     Add the copperplate equality
     :param t_idx: time step
@@ -1447,6 +1463,7 @@ def add_copper_plate_balance(t_idx: int,
         cst=sum(P_esp) == 0,
         name=join("copper_plate_", [t_idx, 0], "_")
     )
+
 
 def add_hydro_formulation(t: Union[int, None],
                           time_global_tidx: Union[int, None],
@@ -1705,8 +1722,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
     n_fluid_inj = grid.get_fluid_injection_number()
 
     # gather the fuels and emission rates matrices
-    gen_emissions_rates_matrix = grid.get_emission_rates_sparse_matrix()
-    gen_fuel_rates_matrix = grid.get_fuel_rates_sparse_matrix()
+    gen_emissions_rates_matrix = grid.get_gen_emission_rates_sparse_matrix()
+    gen_fuel_rates_matrix = grid.get_gen_fuel_rates_sparse_matrix()
+    gen_tech_shares_matrix = grid.get_gen_technology_connectivity_matrix()
+    batt_tech_shares_matrix = grid.get_batt_technology_connectivity_matrix()
 
     if maximize_inter_area_flow:
         inter_area_branches = inter_aggregation_info.lst_br
@@ -1995,7 +2014,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     vars_v = mip_vars.get_values(Sbase=grid.Sbase,
                                  model=lp_model,
                                  gen_emissions_rates_matrix=gen_emissions_rates_matrix,
-                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix)
+                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix,
+                                 gen_tech_shares_matrix=gen_tech_shares_matrix,
+                                 batt_tech_shares_matrix=batt_tech_shares_matrix)
 
     # add the model logger to the main logger
     logger += lp_model.logger

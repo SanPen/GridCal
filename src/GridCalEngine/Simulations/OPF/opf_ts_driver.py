@@ -62,6 +62,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             hvdc_names=self.grid.get_hvdc_names(),
             fuel_names=self.grid.get_fuel_names(),
             emission_names=self.grid.get_emission_names(),
+            technology_names=self.grid.get_technology_names(),
             fluid_node_names=self.grid.get_fluid_node_names(),
             fluid_path_names=self.grid.get_fluid_path_names(),
             fluid_injection_names=self.grid.get_fluid_injection_names(),
@@ -175,6 +176,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.system_emissions = opf_vars.sys_vars.system_emissions
             self.results.system_energy_cost = opf_vars.sys_vars.system_unit_energy_cost
             self.results.system_total_energy_cost = opf_vars.sys_vars.system_total_energy_cost
+            self.results.power_by_technology = opf_vars.sys_vars.power_by_technology
 
             # set converged for all t to the value of acceptable solution
             self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
@@ -353,6 +355,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.system_emissions[time_indices, :] = opf_vars.sys_vars.system_emissions
             self.results.system_energy_cost[time_indices] = opf_vars.sys_vars.system_unit_energy_cost
             self.results.system_total_energy_cost[time_indices] = opf_vars.sys_vars.system_total_energy_cost
+            self.results.power_by_technology[time_indices] = opf_vars.sys_vars.power_by_technology
 
             # set converged for all t to the value of acceptable solution
             self.results.converged[time_indices] = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
