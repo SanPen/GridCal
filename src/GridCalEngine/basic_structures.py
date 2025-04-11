@@ -11,6 +11,7 @@ import numpy.typing as npt
 import datetime
 from scipy.sparse import csc_matrix, csr_matrix
 from GridCalEngine.enumerations import TimeGrouping, LogSeverity
+import copy
 
 IntList = List[int]
 Numeric = Union[int, float, bool, complex]
@@ -908,3 +909,6 @@ class ListSet(list):
         """Return a shallow copy of the ListSet."""
         return ListSet(self)
 
+    def __deepcopy__(self, memo):
+        copied_list = ListSet(copy.deepcopy(list(self), memo))
+        return copied_list
