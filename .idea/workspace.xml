@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Yff, Yft, Ytf, Ytt computation">
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/Transformers_ChatGPT.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Ysh computation">
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/ZigZag.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/gridcal_to_raw.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/gridcal_to_raw.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Transformers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Transformers.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -185,6 +183,7 @@
     "Python.Transformers.executor": "Run",
     "Python.Transformers_ChatGPT.executor": "Run",
     "Python.Transformers_v2.executor": "Run",
+    "Python.ZigZag.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.circuit_to_optimods.executor": "Run",
     "Python.line_constants.executor": "Run",
@@ -1885,7 +1884,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="577" />
+    <option name="localTasksCounter" value="578" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1931,7 +1930,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.3.5" />
     <MESSAGE value="Improved UCTE parsing" />
     <MESSAGE value="minimal refactors" />
     <MESSAGE value="Fixed tr type test values and cleaned get_impedances" />
@@ -1956,7 +1954,8 @@
     <MESSAGE value="Test tower composition" />
     <MESSAGE value="Carson impedance calculation" />
     <MESSAGE value="Yff, Yft, Ytf, Ytt computation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Yff, Yft, Ytf, Ytt computation" />
+    <MESSAGE value="Ysh computation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ysh computation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

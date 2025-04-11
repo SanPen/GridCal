@@ -107,3 +107,9 @@ Ytrafo = Ci @ Y_6x6_primitive @ Cu
 print()
 print(Ytrafo)
 print()
+
+Zs = symbols('Zs')
+
+Ys = 1/(Zs/2)
+
+print(Ys)
