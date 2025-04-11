@@ -1955,12 +1955,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
             )
 
         # production equals demand -------------------------------------------------------------------------------------
-        # lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[local_t_idx, :]) +
-        #                       lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) +
-        #                       lp_model.sum(mip_vars.nodal_capacity_vars.P[local_t_idx, :]) >=
-        #                       mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
-        #                           local_t_idx].sum()),
-        #                  name=f"satisfy_demand_at_{local_t_idx}")
+        # NOTE: The production == demand, happens with the kirchoff equation for the grid and with the
+        # copper plate balance for the copper plate scenario
 
         if progress_func is not None:
             progress_func((local_t_idx + 1) / nt * 100.0)

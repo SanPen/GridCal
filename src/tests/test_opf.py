@@ -275,7 +275,8 @@ def test_opf_hvdc_controls():
                                           power_flow_options=power_flow_options,
                                           mip_solver=MIPSolvers.HIGHS,
                                           generate_report=True,
-                                          export_model_fname="test_opf_hvdc_controls.lp")
+                                          # export_model_fname="test_opf_hvdc_controls.lp"
+                                          )
 
     # HVDC free mode
     main_circuit.hvdc_lines[0].control_mode = HvdcControlType.type_0_free
@@ -448,7 +449,8 @@ def test_opf_load_shedding():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           zonal_grouping=ZonalGrouping.NoGrouping,
-                                          export_model_fname="test_opf_load_shedding.lp")
+                                          # export_model_fname="test_opf_load_shedding.lp"
+                                          )
 
     driver = OptimalPowerFlowTimeSeriesDriver(grid=grid, options=opf_options)
     driver.run()
@@ -481,7 +483,8 @@ def test_opf_load_shedding_because_of_line():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           zonal_grouping=ZonalGrouping.NoGrouping,
-                                          export_model_fname="test_opf_load_shedding.lp")
+                                          # export_model_fname="test_opf_load_shedding.lp"
+                                          )
 
     driver = OptimalPowerFlowTimeSeriesDriver(grid=grid, options=opf_options)
     driver.run()
@@ -515,7 +518,8 @@ def test_opf_load_not_shedding_because_of_line():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           zonal_grouping=ZonalGrouping.NoGrouping,
-                                          export_model_fname="test_opf_load_shedding.lp")
+                                          # export_model_fname="test_opf_load_shedding.lp"
+                                          )
 
     driver = OptimalPowerFlowTimeSeriesDriver(grid=grid, options=opf_options)
     driver.run()
