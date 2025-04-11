@@ -370,6 +370,11 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                        icon_path=":/Icons/icons/map.svg",
                        function_ptr=self.open_street_view)
 
+        add_menu_entry(menu=menu,
+                       text="Consolidate selected objects coordinates",
+                       function_ptr=self.editor.consolidate_object_coordinates,
+                       icon_path=":/Icons/icons/assign_to_profile.svg")
+
         menu.exec_(event.screenPos())
 
     def create_new_line(self):
