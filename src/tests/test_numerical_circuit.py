@@ -42,8 +42,8 @@ def test_numerical_cicuit_branch_contingencies():
     :return: Nothing if ok, fails if not
     """
     for i, fname in enumerate([
-        os.path.join('data', 'grids', 'IEEE14-13_14.gridcal'),
-        os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
+        os.path.join('src', 'tests', 'data', 'grids', 'IEEE14-13_14.gridcal'),
+        os.path.join('src', 'tests', 'data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
     ]):
         main_circuit = FileOpen(fname).open()
         nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
@@ -109,3 +109,6 @@ def test_bus_indexing_remap():
 
         assert np.allclose(F, island.passive_branch_data.F)
         assert np.allclose(T, island.passive_branch_data.T)
+
+if __name__ == '__main__':
+    test_numerical_cicuit_branch_contingencies()
