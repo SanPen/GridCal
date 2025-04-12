@@ -116,7 +116,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.r = r
 
         # loads, shunts, generators, etc...
-        self.shunt_children: List[SHUNT_GRAPHICS] = list()
+        self._child_graphics: List[SHUNT_GRAPHICS] = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -159,9 +159,30 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
 
+    def get_associated_branch_graphics(self) -> List[GenericDiagramWidget]:
+        """
+        Get a list of all associated branch graphics
+        :return:
+        """
+        conn: List[GenericDiagramWidget | SHUNT_GRAPHICS] = self._terminal.get_hosted_graphics()
+
+        return conn
+
+    def get_associated_graphics(self) -> List[GenericDiagramWidget | SHUNT_GRAPHICS]:
+        """
+        Get a list of all associated graphics
+        :return:
+        """
+        conn: List[GenericDiagramWidget | SHUNT_GRAPHICS] = self.get_associated_branch_graphics()
+
+        for graphics in self._child_graphics:
+            conn.append(graphics)
+
+        return conn
+
     def get_nexus_point(self) -> QPointF:
         """
-        Get the connection point for the chldren nexus line
+        Get the connection point for the children nexus line
         :return: QPointF
         """
         return QPointF(self.x() + self.rect().width() / 2.0,
@@ -176,7 +197,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)
 
-        for e in self.shunt_children:
+        for e in self._child_graphics:
             if e is not None:
                 e.recolour_mode()
 
@@ -244,7 +265,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Merge another BusGraphicItem into this
         :param other_bus_graphic: BusGraphicItem
         """
-        self.shunt_children += other_bus_graphic.shunt_children
+        self._child_graphics += other_bus_graphic._child_graphics
 
     def update(self, rect: Union[QRectF, QRect] = ...):
         """
@@ -304,10 +325,10 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             Nothing
         """
         y0 = self.h + 40
-        n = len(self.shunt_children)
+        n = len(self._child_graphics)
         inc_x = self.w / (n + 1)
         x = inc_x
-        for elm in self.shunt_children:
+        for elm in self._child_graphics:
             elm.setPos(x - elm.w / 2, y0)
             x += inc_x
 
@@ -553,6 +574,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.editor.remove_element(device=self.api_object,
                                        graphic_object=self,
                                        delete_from_db=delete_from_db)
+            self._terminal.clear()
 
     def update_color(self):
         """
@@ -768,7 +790,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_load(bus=self.api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -781,7 +803,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_shunt(bus=self.api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -794,7 +816,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_generator(bus=self.api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -808,7 +830,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_static_generator(bus=self.api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -823,7 +845,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_battery(bus=self.api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -838,7 +860,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -853,7 +875,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_current_injection(bus=self.api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -868,7 +890,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self.editor.circuit.add_controllable_shunt(bus=self.api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph

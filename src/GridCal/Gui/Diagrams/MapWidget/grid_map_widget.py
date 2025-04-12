@@ -16,14 +16,13 @@ from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton
 from collections.abc import Callable
-from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool,
-                            QEventLoop)
+from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
-from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import CheckListDialogue, InputNumberDialogue
+from GridCal.Gui.general_dialogues import ElementsDialogue, InputNumberDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
@@ -31,14 +30,14 @@ from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.enumerations import Colormaps
@@ -50,7 +49,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathL
 from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, MapDiagramScene
 from GridCal.Gui.Diagrams.MapWidget.Branches.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
@@ -278,7 +277,7 @@ class GridMapWidget(BaseDiagramWidget):
         """
 
         :param device:
-        :param propagate: Propagate the delete to other diagrams?
+        :param propagate: Propagate the action to other diagrams?
         :return:
         """
         self.diagram.delete_device(device=device)
@@ -307,12 +306,16 @@ class GridMapWidget(BaseDiagramWidget):
         """
         self.diagram.name = val
 
+    @property
+    def diagram_scene(self) -> MapDiagramScene:
+        return self.map.diagram_scene
+
     def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, ALL_MAP_GRAPHICS]]:
         """
         Get selection
         :return: List of EditableDevice, QGraphicsItem
         """
-        return [(elm.api_object, elm) for elm in self.map.diagram_scene.selectedItems()]
+        return [(elm.api_object, elm) for elm in self.diagram_scene.selectedItems()]
 
     def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine,
                                                                   MapDcLine,
@@ -324,7 +327,7 @@ class GridMapWidget(BaseDiagramWidget):
         :return: List of (Line, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)) tuples
         """
         selected_line_segments = []
-        for item in self.map.diagram_scene.selectedItems():
+        for item in self.diagram_scene.selectedItems():
             if (hasattr(item, 'api_object') and hasattr(item, 'container')
                     and isinstance(item.container,
                                    (MapAcLine,
@@ -341,7 +344,7 @@ class GridMapWidget(BaseDiagramWidget):
         :return: List of (Substation, SubstationGraphicItem) tuples
         """
         selected_substations = []
-        for item in self.map.diagram_scene.selectedItems():
+        for item in self.diagram_scene.selectedItems():
             if hasattr(item, 'api_object') and isinstance(item, SubstationGraphicItem):
                 selected_substations.append((item.api_object, item))
         return selected_substations
@@ -352,47 +355,45 @@ class GridMapWidget(BaseDiagramWidget):
         :param graphic_object: Graphic object associated
         """
 
-        self.map.diagram_scene.addItem(graphic_object)
+        self.diagram_scene.addItem(graphic_object)
 
-    def remove_only_graphic_element(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
+    def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS | GenericDiagramWidget) -> None:
         """
-        Removes only the graphic elements, not the api_object
-        :param graphic_object: Graphic object associated
-        """
-        self.map.diagram_scene.removeItem(graphic_object)
-
-    def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
-        """
-        Add item to the diagram and the diagram scene
+        Remove item from the diagram scene
         :param graphic_object: Graphic object associated
         """
         api_object = getattr(graphic_object, 'api_object', None)
         if api_object is not None:
             self.graphics_manager.delete_device(api_object)
-        self.map.diagram_scene.removeItem(graphic_object)
+        self.diagram_scene.removeItem(graphic_object)
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
                        graphic_object: ALL_MAP_GRAPHICS = None,
                        delete_from_db: bool = False) -> None:
         """
-        Remove device from the diagram and the database
+        Remove device from the diagram and the database.
+        If removing from the database, this propagates to all diagrams
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
         :param delete_from_db: Delete the element also from the database?
         """
 
-        if graphic_object is not None:
+        # call the parent functionality, this propagated to other diagrams if delete_from_db
+        deleted: bool = super().remove_element(device=device,
+                                               graphic_object=graphic_object,
+                                               delete_from_db=delete_from_db)
+        if deleted:
+
             if isinstance(graphic_object, SubstationGraphicItem):
                 self.remove_substation(substation=graphic_object,
                                        delete_from_db=delete_from_db)
 
             elif isinstance(graphic_object, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)):
                 self.remove_branch_graphic(line=graphic_object, delete_from_db=delete_from_db)
-
-        self.delete_diagram_element(device=device, propagate=delete_from_db)
-
-        self.object_editor_table.setModel(None)
+        else:
+            # the notifications are handled by the parent
+            pass
 
     def zoom_callback(self, zoom_level: int) -> None:
         """
@@ -545,8 +546,8 @@ class GridMapWidget(BaseDiagramWidget):
         :param node: Node to remove
         """
 
-        nod = self.graphics_manager.delete_device(node.api_object)
-        self.map.diagram_scene.removeItem(nod)
+        self.graphics_manager.delete_device(node.api_object)
+        self.remove_from_scene(node)
 
     def remove_substation(self,
                           api_object: Substation,
@@ -563,17 +564,22 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Remove from graphics manager and scene
         sub = self.graphics_manager.delete_device(api_object)
-        self.map.diagram_scene.removeItem(sub)
+        self.remove_from_scene(sub)
 
         # Find and delete all lines connected to the substation
         for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
+
             for elm in self.graphics_manager.get_device_type_list(tpe):
+
                 if elm.api_object.get_substation_from() == api_object or elm.api_object.get_substation_to() == api_object:
+
                     self.graphics_manager.delete_device(elm.api_object)
+
                     for segment in elm.segments_list:
-                        self.map.diagram_scene.removeItem(segment)
-                    for lineloc in elm.nodes_list:
-                        self.map.diagram_scene.removeItem(lineloc)
+                        self.remove_from_scene(segment)
+
+                    for line_loc in elm.nodes_list:
+                        self.remove_from_scene(line_loc)
 
         # Finally, delete from the database if requested
         if delete_from_db:
@@ -601,8 +607,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param voltage_levels: List of voltage levels associated with the substation
         :param dialog_title: Title for the dialog
         """
-        from GridCal.Gui.general_dialogues import ElementsDialogue
-        from GridCalEngine.Devices.Parents.editable_device import GCProp
+
 
         # Combine all devices
         all_devices = devices + buses + voltage_levels
@@ -653,39 +658,10 @@ class GridMapWidget(BaseDiagramWidget):
                 self.circuit.delete_branch(obj=line.api_object)
 
             for seg in lin.segments_list:
-                self.map.diagram_scene.removeItem(seg)
+                self.remove_from_scene(seg)
 
-            for lineloc in lin.nodes_list:
-                self.map.diagram_scene.removeItem(lineloc)
-
-    def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
-        """
-        Delete the selected items from the diagram
-        """
-        # get the selected objects
-        selected = self.get_selected()
-
-        if len(selected) > 0:
-
-            dlg = CheckListDialogue(
-                objects_list=[f"{elm.device_type.value}: {elm.name}" for elm, graphic_obj in selected],
-                title="Delete Selected"
-            )
-
-            dlg.setModal(True)
-            dlg.exec()
-
-            if dlg.is_accepted:
-
-                for i in dlg.selected_indices:
-                    elm, graphic_obj = selected[i]
-                    self.remove_element(device=elm,
-                                        graphic_object=graphic_obj,
-                                        delete_from_db=delete_from_db)
-                    # self.remove_from_scene(graphic_obj)
-
-        else:
-            info_msg('Choose some elements from the schematic', 'Delete')
+            for line_loc in lin.nodes_list:
+                self.remove_from_scene(line_loc)
 
     def add_api_line(self, api_object: Line) -> MapAcLine:
         """
@@ -1039,8 +1015,8 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
         print('Updating device sizes!')
-        self.map.diagram_scene.blockSignals(True)
-        self.map.diagram_scene.invalidate(self.map.diagram_scene.sceneRect())
+        self.diagram_scene.blockSignals(True)
+        self.diagram_scene.invalidate(self.diagram_scene.sceneRect())
 
         branch_width = self.diagram.min_branch_width  # self.get_branch_width()
         arrow_width = self.diagram.arrow_size  # self.get_arrow_scale()
@@ -1069,8 +1045,8 @@ class GridMapWidget(BaseDiagramWidget):
             elm_graphics.set_api_object_color()
             elm_graphics.set_size(r=se_width)
 
-        self.map.diagram_scene.blockSignals(False)
-        self.map.diagram_scene.update(self.map.diagram_scene.sceneRect())
+        self.diagram_scene.blockSignals(False)
+        self.diagram_scene.update(self.diagram_scene.sceneRect())
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -2381,7 +2357,7 @@ class GridMapWidget(BaseDiagramWidget):
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
 
         # Explicitly remove the waypoint graphic from the scene to prevent artifact
-        self.map.diagram_scene.removeItem(selected_waypoint)
+        self.remove_from_scene(selected_waypoint)
 
         # Remove the original line
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)

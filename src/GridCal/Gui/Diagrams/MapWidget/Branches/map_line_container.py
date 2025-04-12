@@ -68,7 +68,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         Remove all segments from the scene
         """
         for segment in self.segments_list:
-            self.editor.remove_only_graphic_element(segment)
+            self.editor.remove_from_scene(segment)
 
         self.segments_list = list()
 

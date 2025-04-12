@@ -34,13 +34,14 @@ from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidg
                                                                    generate_schematic_diagram,
                                                                    make_vicinity_diagram)
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
+from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 
-ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
+ALL_EDITORS = Union[SchematicWidget, GridMapWidget, BaseDiagramWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
 
 
@@ -52,9 +53,9 @@ class VideoExportWorker(QtCore.QThread):
     progress_text = QtCore.Signal(str)
     done_signal = QtCore.Signal()
 
-    def __init__(self, filename, diagram: SchematicWidget | GridMapWidget,
+    def __init__(self, filename, diagram: ALL_EDITORS,
                  fps: int, start_idx: int, end_idx: int, current_study: str,
-                 grid_colour_function: Callable[[Union[SchematicWidget, GridMapWidget], str, int, bool], None], ):
+                 grid_colour_function: Callable[[ALL_EDITORS, str, int, bool], None], ):
         """
 
         :param filename:
@@ -73,8 +74,7 @@ class VideoExportWorker(QtCore.QThread):
         self.start_idx = start_idx
         self.end_idx = end_idx
         self.current_study = current_study
-        self.grid_colour_function: Callable[
-            [SchematicWidget | GridMapWidget, str, int, bool], None] = grid_colour_function
+        self.grid_colour_function: Callable[[ALL_EDITORS, str, int, bool], None] = grid_colour_function
 
         self.logger = Logger()
 
@@ -453,7 +453,7 @@ class DiagramsMain(CompiledArraysMain):
         else:
             info_msg("There are no time series :/")
 
-    def pf_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def pf_colouring(self, diagram_widget: ALL_EDITORS,
                      results: PowerFlowResults, cmap: Colormaps,
                      use_flow_based_width: bool = False,
                      min_branch_width: int = 2,
@@ -507,7 +507,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def pf_ts_colouring(self, t_idx: int,
-                        diagram_widget: Union[SchematicWidget, GridMapWidget],
+                        diagram_widget: ALL_EDITORS,
                         results: PowerFlowTimeSeriesResults, cmap: Colormaps,
                         use_flow_based_width: bool = False,
                         min_branch_width: int = 2,
@@ -553,7 +553,7 @@ class DiagramsMain(CompiledArraysMain):
                                              max_bus_width=max_bus_width,
                                              cmap=cmap)
 
-    def cpf_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def cpf_colouring(self, diagram_widget: ALL_EDITORS,
                       results: ContinuationPowerFlowResults, cmap: Colormaps,
                       use_flow_based_width: bool = False,
                       min_branch_width: int = 2,
@@ -598,7 +598,7 @@ class DiagramsMain(CompiledArraysMain):
                                                  max_bus_width=max_bus_width,
                                                  cmap=cmap)
 
-    def spf_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def spf_colouring(self, diagram_widget: ALL_EDITORS,
                       results: sim.StochasticPowerFlowResults, cmap: Colormaps,
                       use_flow_based_width: bool = False,
                       min_branch_width: int = 2,
@@ -642,7 +642,7 @@ class DiagramsMain(CompiledArraysMain):
                                              max_bus_width=max_bus_width,
                                              cmap=cmap)
 
-    def sc_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def sc_colouring(self, diagram_widget: ALL_EDITORS,
                      results: sim.ShortCircuitResults, cmap: Colormaps,
                      use_flow_based_width: bool = False,
                      min_branch_width: int = 2,
@@ -686,7 +686,7 @@ class DiagramsMain(CompiledArraysMain):
                                              max_bus_width=max_bus_width,
                                              cmap=cmap)
 
-    def opf_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def opf_colouring(self, diagram_widget: ALL_EDITORS,
                       results: sim.OptimalPowerFlowResults, cmap: Colormaps,
                       use_flow_based_width: bool = False,
                       min_branch_width: int = 2,
@@ -737,7 +737,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def opf_ts_colouring(self, t_idx: int,
-                         diagram_widget: Union[SchematicWidget, GridMapWidget],
+                         diagram_widget: ALL_EDITORS,
                          results: sim.OptimalPowerFlowTimeSeriesResults,
                          cmap: Colormaps,
                          use_flow_based_width: bool = False,
@@ -789,7 +789,7 @@ class DiagramsMain(CompiledArraysMain):
                                              max_bus_width=max_bus_width,
                                              cmap=cmap)
 
-    def ntc_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def ntc_colouring(self, diagram_widget: ALL_EDITORS,
                       results: sim.OptimalNetTransferCapacityResults, cmap: Colormaps,
                       use_flow_based_width: bool = False,
                       min_branch_width: int = 2,
@@ -833,7 +833,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def ntc_ts_colouring(self, t_idx: int,
-                         diagram_widget: Union[SchematicWidget, GridMapWidget],
+                         diagram_widget: ALL_EDITORS,
                          results: sim.OptimalNetTransferCapacityTimeSeriesResults,
                          cmap: Colormaps,
                          use_flow_based_width: bool = False,
@@ -879,7 +879,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def nc_ts_colouring(self, t_idx: int | None,
-                        diagram_widget: Union[SchematicWidget, GridMapWidget],
+                        diagram_widget: ALL_EDITORS,
                         results: sim.NodalCapacityTimeSeriesResults,
                         cmap: Colormaps,
                         use_flow_based_width: bool = False,
@@ -925,7 +925,7 @@ class DiagramsMain(CompiledArraysMain):
                                              max_bus_width=max_bus_width,
                                              cmap=cmap)
 
-    def linpf_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def linpf_colouring(self, diagram_widget: ALL_EDITORS,
                         results: sim.LinearAnalysisResults, cmap: Colormaps,
                         use_flow_based_width: bool = False,
                         min_branch_width: int = 2,
@@ -969,7 +969,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def linpf_ts_colouring(self, t_idx: int,
-                           diagram_widget: Union[SchematicWidget, GridMapWidget],
+                           diagram_widget: ALL_EDITORS,
                            results: sim.LinearAnalysisTimeSeriesResults,
                            cmap: Colormaps,
                            use_flow_based_width: bool = False,
@@ -1011,7 +1011,7 @@ class DiagramsMain(CompiledArraysMain):
                                              max_bus_width=max_bus_width,
                                              cmap=cmap)
 
-    def con_colouring(self, diagram_widget: Union[SchematicWidget, GridMapWidget],
+    def con_colouring(self, diagram_widget: ALL_EDITORS,
                       results: sim.ContingencyAnalysisResults, cmap: Colormaps,
                       use_flow_based_width: bool = False,
                       min_branch_width: int = 2,
@@ -1052,7 +1052,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def con_ts_colouring(self, t_idx: int,
-                         diagram_widget: Union[SchematicWidget, GridMapWidget],
+                         diagram_widget: ALL_EDITORS,
                          results: sim.ContingencyAnalysisTimeSeriesResults,
                          cmap: Colormaps,
                          use_flow_based_width: bool = False,
@@ -1095,7 +1095,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def default_colouring(self, t_idx: int | None,
-                          diagram_widget: Union[SchematicWidget, GridMapWidget],
+                          diagram_widget: ALL_EDITORS,
                           cmap: Colormaps,
                           use_flow_based_width: bool = False,
                           min_branch_width: int = 2,
@@ -1138,7 +1138,7 @@ class DiagramsMain(CompiledArraysMain):
                                              cmap=cmap)
 
     def grid_colour_function(self,
-                             diagram_widget: Union[SchematicWidget, GridMapWidget],
+                             diagram_widget: ALL_EDITORS,
                              current_study: str,
                              t_idx: Union[None, int],
                              allow_popups: bool = True) -> None:
@@ -2613,7 +2613,8 @@ class DiagramsMain(CompiledArraysMain):
         if isinstance(diagram, SchematicWidget):
             diagram.enable_all_results_tags()
 
-    def call_delete_db_element(self, caller: Union[SchematicWidget, GridMapWidget], api_obj: ALL_DEV_TYPES):
+    def call_delete_db_element(self, caller: SchematicWidget | GridMapWidget | BaseDiagramWidget,
+                               api_obj: ALL_DEV_TYPES):
         """
         This function is meant to be a master delete function that is passed to each diagram
         so that when a diagram deletes an element, the element is deleted in all other diagrams

@@ -64,7 +64,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.switch_graphics import Switch
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, GenericDiagramWidget
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
 import GridCal.Gui.Visualization.visualization as viz
@@ -958,25 +958,16 @@ class SchematicWidget(BaseDiagramWidget):
         else:
             warn("Null graphics skipped")
 
-    def remove_from_scene(self, graphic_object: QGraphicsItem = None) -> None:
+    def remove_from_scene(self, graphic_object: QGraphicsItem| GenericDiagramWidget) -> None:
         """
-        Add item to the diagram and the diagram scene
+        Remove item from the diagram scene
         :param graphic_object: Graphic object associated
         """
         if graphic_object is not None:
             if graphic_object.scene() is not None:
-
-                # try to remove nexus and children
-                if isinstance(graphic_object,
-                              (BusGraphicItem, CnGraphicItem,
-                               BusBarGraphicItem, FluidNodeGraphicItem)):
-
-                    for g in graphic_object.shunt_children:
-                        self.diagram_scene.removeItem(g.nexus)
-
                 self.diagram_scene.removeItem(graphic_object)
             else:
-                warn(f"Null scene for {graphic_object}, was it deleted already?")
+                self.gui.show_warning_toast(f"Null scene for {graphic_object}, was it deleted already?")
 
     def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True) -> None:
         """
@@ -998,26 +989,30 @@ class SchematicWidget(BaseDiagramWidget):
                        graphic_object: Union[QGraphicsItem, None] = None,
                        delete_from_db: bool = False) -> None:
         """
-        Remove device from the diagram and the database
+        Remove device from the diagram and the database.
+        If removing from the database, this propagates to all diagrams
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
         :param delete_from_db: Delete the element also from the database?
         """
-
-        if graphic_object is not None and device is not None:
-
-            # NOTE: This function already deleted from the database and other diagrams
-            self.delete_diagram_element(device=device, propagate=delete_from_db)
+        # call the parent functionality, this propagated to other diagrams if delete_from_db
+        deleted: bool = super().remove_element(device=device,
+                                               graphic_object=graphic_object,
+                                               delete_from_db=delete_from_db)
+        if deleted:
 
             if isinstance(graphic_object,
                           (BusGraphicItem, CnGraphicItem,
                            BusBarGraphicItem, FluidNodeGraphicItem)):
                 graphic_object.delete_all_connections(ask=False, delete_from_db=delete_from_db)
 
-        else:
-            warn(f"Graphic object {graphic_object} and device {device} are none")
 
-        self.object_editor_table.setModel(None)
+
+        else:
+
+            # the notifications are handled by the parent
+
+            pass
 
     def delete_diagram_elements(self, elements: List[ALL_DEV_TYPES]):
         """
@@ -1073,37 +1068,6 @@ class SchematicWidget(BaseDiagramWidget):
                     idx, bus = cn_dict[idtag]
                     lst.append((idx, bus, graphic_object))
         return lst
-
-    def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
-        """
-        Delete the selected items from the diagram
-        """
-        # get the selected objects
-        selected = self.get_selected()
-
-        if len(selected) > 0:
-
-            dlg = CheckListDialogue(
-                objects_list=[f"{elm.device_type.value}: {elm.name}" for elm, graphic_obj in selected],
-                title="Delete Selected"
-            )
-
-            dlg.setModal(True)
-            dlg.exec()
-
-            if dlg.is_accepted:
-
-                for i in dlg.selected_indices:
-                    elm, graphic_obj = selected[i]
-                    self.remove_element(device=elm,
-                                        graphic_object=graphic_obj,
-                                        delete_from_db=delete_from_db)
-                    # self.remove_from_scene(graphic_obj)
-                    if hasattr(graphic_obj, 'nexus'):
-                        self.remove_from_scene(graphic_obj.nexus)
-
-        else:
-            info_msg('Choose some elements from the schematic', 'Delete')
 
     def get_buses(self) -> List[Tuple[int, Bus, BusGraphicItem]]:
         """
@@ -4460,6 +4424,7 @@ class SchematicWidget(BaseDiagramWidget):
         for gelm in graphics:
             gelm.x = gelm.api_object.x
             gelm.y = gelm.api_object.y
+
 
 def generate_schematic_diagram(buses: List[Bus],
                                busbars: List[BusBar],

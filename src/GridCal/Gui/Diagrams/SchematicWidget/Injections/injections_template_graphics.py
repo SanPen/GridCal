@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
@@ -59,6 +59,13 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
 
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_nexus(self.pos())
+
+    def get_associated_graphics(self) -> List[GenericDiagramWidget | QGraphicsLineItem]:
+        """
+        Get a list of all associated graphics
+        :return:
+        """
+        return [self.nexus]
 
     def recolour_mode(self):
         """

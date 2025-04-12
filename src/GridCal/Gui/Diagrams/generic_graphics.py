@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING
 import darkdetect
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem,
@@ -257,3 +257,13 @@ class GenericDiagramWidget:
         :return:
         """
         self.draw_labels = not self.draw_labels
+
+    def get_associated_graphics(self) -> List["GenericDiagramWidget"]:
+        """
+        Get a list of all graphical elements associated with this widget.
+        In the case of aBusGraphicsItem, it will be all the nexus, and the shunt connections
+        plus the LineGraphicItems connecting to it, etc.
+        This function is meant to be overloaded.
+        :return:
+        """
+        return list()
