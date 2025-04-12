@@ -1,71 +1,50 @@
 import numpy as np
-import sympy
-from pprint import pprint
-# Define fundamental symbols
-R, X, G, B, t, phi = sympy.symbols('R, X, G, B, t, phi', real=True)
-I = sympy.I  # Imaginary unit
+from sympy import symbols
+from scipy.linalg import block_diag
 
-# --- Define Admittances Symbolically ---
-yff = sympy.Symbol('y_ff')
-yft = sympy.Symbol('y_ft')
-ytf = sympy.Symbol('y_tf')
-ytt = sympy.Symbol('y_tt')
+np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 
-F = np.array([0, 2, 4, 6, 8, 10])
-T = np.array([1, 3, 5, 7, 9, 11])
+yff = symbols('yff')
+yft = symbols('yft')
+ytf = symbols('ytf')
+ytt = symbols('ytt')
 
-Y_ff = np.diag([yff, yff, yff, yff, yff, yff])
-Y_ft = np.diag([yft, yft, yft, yft, yft, yft])
-Y_tf = np.diag([ytf, ytf, ytf, ytf, ytf, ytf])
-Y_tt = np.diag([ytt, ytt, ytt, ytt, ytt, ytt])
+y_primitive = np.zeros((2,2), object)
+y_primitive[0,0] = yff
+y_primitive[0,1] = yft
+y_primitive[1,0] = ytf
+y_primitive[1,1] = ytt
 
-Cf = np.zeros((6, 12))
-Ct = np.zeros((6, 12))
+Yprimitive = block_diag(y_primitive, y_primitive, y_primitive, y_primitive, y_primitive, y_primitive)
 
-for i in range(6):
-    Cf[i, F[i]] = 1
-    Ct[i, T[i]] = 1
+Cu = np.zeros((6,12))
+Ci = np.zeros((12,6))
 
-Yfps = Y_ff @ Cf + Y_ft @ Ct
-Ytps = Y_tf @ Cf + Y_tt @ Ct
+Cu[0,0] = 1
+Cu[0,2] = 1
+Cu[1,4] = 1
+Cu[1,6] = 1
+Cu[2,8] = 1
+Cu[2,10] = 1
+Cu[3,11] = -1
+Cu[3,1] = 1
+Cu[4,3] = -1
+Cu[4,5] = 1
+Cu[5,7] = -1
+Cu[5,9] = 1
 
-Yps = Cf.T @ Yfps + Ct.T @ Ytps
+Ci[0,0] = 1
+Ci[1,3] = 1
+Ci[2,0] = 1
+Ci[3,4] = -1
+Ci[4,1] = 1
+Ci[5,4] = 1
+Ci[6,1] = 1
+Ci[7,5] = -1
+Ci[8,2] = 1
+Ci[9,5] = 1
+Ci[10,2] = 1
+Ci[11,3] = -1
 
-print('Yps: ', Yps)
-
-# ----------
-
-C_i_ps_abc = np.array([
-    [1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0],
-    [1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, -1, 0],
-    [0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, -1],
-    [0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1],
-    [0, 0, 1, 0, 0, 0],
-    [0, 0, 0, -1, 0, 0],
-])
-
-C_v_abc_ps = np.array([
-    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
-    [0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0],
-])
-
-C_pseudo_i_ps_abc = np.linalg.pinv(C_i_ps_abc)
-C_pseudo_v_abc_ps = np.linalg.pinv(C_v_abc_ps)
-
-Yabc = C_pseudo_i_ps_abc @ Yps @ C_pseudo_v_abc_ps
-
-print('Yabc: ', Yabc)
-pprint(Yabc)
-
-# ----------
-
+Y = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
+print(Y)
