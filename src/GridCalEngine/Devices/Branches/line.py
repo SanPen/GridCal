@@ -195,7 +195,8 @@ class Line(BranchParent):
                                  'for transformers0% for lines.')
 
         self.register(key='circuit_idx', units='', tpe=int,
-                      definition='Circuit index, used for multiple circuits sharing towers (starts at zero)')
+                      definition='Circuit index, used for multiple circuits sharing towers (starts at zero)',
+                      editable=False)
 
         self.register(key='length', units='km', tpe=float, definition='Length of the line (not used for calculation)')
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
@@ -309,6 +310,22 @@ class Line(BranchParent):
     def circuit_idx(self, value):
         if value >= 0:
             self._circuit_idx = int(value)
+
+    def set_circuit_idx(self, val: int, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType]):
+        """
+        Set the circuit_idx with additional behavior based on the is_user_action flag. Ensure that the template exists and is valid.
+        :param value: The value to set
+        """
+        # If the user is setting the circuit index, ensure that the template exists and is valid
+        if obj is None:
+            raise Exception("Template must be set before changing the circuit index.")
+        if not isinstance(obj, (OverheadLineType, UndergroundLineType, SequenceLineType)):
+            raise Exception("Invalid template type. Must be OverheadLineType, UndergroundLineType, or SequenceLineType.")
+        if val >= obj.n_circuits:
+            raise Exception("Circuit index exceeds the number of circuits in the template.")
+        else:
+            if val >= 0:
+                self._circuit_idx = int(val)
 
     @property
     def length(self) -> float:
