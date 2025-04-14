@@ -59,7 +59,7 @@ class WireInTower:
 
         self._phase: int = phase
 
-        self.circuit_index: int = 0
+        self.circuit_index: int = 1
 
         self.phase_type: str = ""
 
@@ -94,7 +94,7 @@ class WireInTower:
         if phase == 0:
             self._phase = phase
             self.phase_type = "N"
-            self.circuit_index = 0
+            self.circuit_index = 1
 
         elif (phase - 1) % 3 == 0:
             self._phase = phase
@@ -345,7 +345,7 @@ class OverheadLineType(EditableDevice):
     def get_ys(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
         """
         get the series admittance matrix in p.u. (total)
-        :param circuit_idx: Circuit index (starting by 0)
+        :param circuit_idx: Circuit index (starting by 1)
         :param Sbase: Base power (MVA)
         :param length: Line length (km)
         :param Vnom: Nominal voltage (kV)
@@ -353,7 +353,7 @@ class OverheadLineType(EditableDevice):
         """
         Zbase = (Vnom * Vnom) / Sbase
 
-        k = (3 * circuit_idx) + np.array([0, 1, 2])
+        k = (3 * (circuit_idx - 1)) + np.array([0, 1, 2])
         z = self.z_abc[np.ix_(k, k)] * length / Zbase
         y = np.linalg.inv(z)
         return y
@@ -361,7 +361,7 @@ class OverheadLineType(EditableDevice):
     def get_ysh(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
         """
         get the shunt admittance matrix in p.u. (total)
-        :param circuit_idx: Circuit index (starting by 0)
+        :param circuit_idx: Circuit index (starting by 1)
         :param Sbase: Base power (MVA)
         :param length: Line length (km)
         :param Vnom: Nominal voltage (kV)
@@ -369,7 +369,7 @@ class OverheadLineType(EditableDevice):
         """
         Zbase = (Vnom * Vnom) / Sbase
         Ybase = 1 / Zbase
-        k = (3 * circuit_idx) + np.array([0, 1, 2])
+        k = (3 * (circuit_idx - 1)) + np.array([0, 1, 2])
         y = self.y_abc[np.ix_(k, k)] * length * -1e6 / Ybase
         return y
 
@@ -533,17 +533,17 @@ class OverheadLineType(EditableDevice):
     def get_sequence_values(self, circuit_idx: int, seq: int = 1):
         """
         Get the positive sequence values R1 [Ohm], X1[Ohm] and Bsh1 [S].
-        :param circuit_idx: Circuit indexation (starts at 0)
+        :param circuit_idx: Circuit indexation (starts at 1)
         :param seq: Sequence number (0, 1, 2)
         :return: R1 [Ohm], X1[Ohm] and Bsh1 [S]
         """
         self.compute()
         if self.z_seq is not None and self.y_seq is not None:
-            a1 = 3 * circuit_idx + seq
+            a1 = 3 * (circuit_idx - 1) + seq
             R1 = self.z_seq[a1, a1].real
             X1 = self.z_seq[a1, a1].imag
             Bsh1 = self.y_seq[a1, a1].imag * 1e6
-            I_kA = self.Imax[circuit_idx]
+            I_kA = self.Imax[circuit_idx - 1]
             return R1, X1, Bsh1, I_kA
         else:
             warn(f"{self.name} tower is incorrect :(")
@@ -564,12 +564,12 @@ class OverheadLineType(EditableDevice):
         Zbase = (Vn * Vn) / Sbase
         Ybase = 1 / Zbase
 
-        a0 = 3 * circuit_index
+        a0 = 3 * (circuit_index - 1)
         R0 = self.z_seq[a0, a0].real
         X0 = self.z_seq[a0, a0].imag
         Bsh0 = self.y_seq[a0, a0].imag * 1e6
 
-        a1 = 3 * circuit_index + 1
+        a1 = 3 * (circuit_index - 1) + 1
         R1 = self.z_seq[a1, a1].real
         X1 = self.z_seq[a1, a1].imag
         Bsh1 = self.y_seq[a1, a1].imag * 1e6
@@ -602,7 +602,7 @@ class OverheadLineType(EditableDevice):
         y2 = 1j * Bsh0 * length * 1e-6 / Ybase
 
         # get the rating in MVA = kA * kV
-        rate = self.Imax[circuit_index] * Vn * np.sqrt(3)
+        rate = self.Imax[circuit_index - 1] * Vn * np.sqrt(3)
 
         return R1, X1, B1, R0, X0, B0, rate
 
