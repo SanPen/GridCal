@@ -913,7 +913,7 @@ class MultiCircuit(Assets):
         fill the x and y value from the latitude and longitude values
         :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
         :param factor: Explosion factor
-        :param remove_offset: remove the sometimes huge offset coming from pyproj
+        :param remove_offset: delete the sometimes huge offset coming from pyproj
         :return Logger object
         """
 
@@ -939,7 +939,7 @@ class MultiCircuit(Assets):
         x *= factor
         y *= factor
 
-        # remove the offset
+        # delete the offset
         if remove_offset:
             x_min = np.min(x)
             y_max = np.max(y)

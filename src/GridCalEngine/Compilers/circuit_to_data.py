@@ -69,7 +69,7 @@ def set_bus_control_voltage(i: int,
     """
     if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
         if remote_control and j > -1 and j != i:
-            # remove voltage control
+            # delete voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
             bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
@@ -120,7 +120,7 @@ def set_bus_control_voltage_vsc(i: int,
     """
     if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
         if remote_control and j > -1 and j != i:
-            # remove voltage control
+            # delete voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
             # bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             bus_data.is_p_controlled[j] = True

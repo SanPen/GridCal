@@ -331,7 +331,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Delete all bus connections
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus',
+            ok = yes_no_question('Are you sure that you want to delete this bus',
                                  'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
         else:
             ok = True
@@ -345,7 +345,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus',
+            ok = yes_no_question('Are you sure that you want to delete this bus',
                                  'Remove connectivity node')
         else:
             ok = True

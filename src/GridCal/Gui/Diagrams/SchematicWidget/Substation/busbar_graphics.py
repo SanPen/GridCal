@@ -486,7 +486,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Delete all bus connections
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this busbar',
+            ok = yes_no_question('Are you sure that you want to delete this busbar',
                                  'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
         else:
             ok = True
@@ -500,7 +500,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+            ok = yes_no_question('Are you sure that you want to delete this bus', 'Remove bus')
         else:
             ok = True
 

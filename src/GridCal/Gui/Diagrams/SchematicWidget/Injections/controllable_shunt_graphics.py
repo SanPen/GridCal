@@ -9,7 +9,7 @@ from PySide6 import QtWidgets
 from GridCal.Gui.Diagrams.generic_graphics import Square
 from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Editors.controllable_shunt_editor import ControllableShuntEditor
+from GridCal.Gui.Diagrams.Editors.controllable_shunt_editor import ControllableShuntEditor
 from GridCal.Gui.gui_functions import add_menu_entry
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

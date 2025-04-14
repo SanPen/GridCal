@@ -623,14 +623,14 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         self._editor._remove_from_scene(self)
 
-    def remove(self, ask=True):
+    def delete(self, ask=True):
         """
         Remove this object in the diagram and the API
         @return:
         """
         if ask:
             dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+            ok = yes_no_question(f'Do you want to delete the {dtype} {self.api_object.name}?',
                                  f'Remove {dtype}')
         else:
             ok = True

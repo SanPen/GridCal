@@ -415,7 +415,7 @@ class ControlRaiyan:
                 # print("controlType", type(controlType))
                 # print("setPoint", type(setPoint))
                 
-                #remove from the unknown_dict
+                #delete from the unknown_dict
                 unknown_dict[controlType].pop(busIndex)
                 known_dict[controlType][busIndex] = setPoint
 
@@ -432,7 +432,7 @@ class ControlRaiyan:
                 # print("controlType", type(controlType))
                 # print("setPoint", type(setPoint))
 
-                #remove from the unknown_dict
+                #delete from the unknown_dict
                 try:
                     unknown_dict[controlType].pop((busFromIndex, busToIndex))
                 except:
@@ -2485,7 +2485,7 @@ def var2x_raiyan(Va: Vec,
     mags_unknown_idx = np.r_[pq, dc_buses]
     combined_list = vmt_control_idx + vmf_control_idx
     for int_to_remove in combined_list:
-        #remove the value not the index
+        #delete the value not the index
         mask = mags_unknown_idx != int_to_remove
         mags_unknown_idx = mags_unknown_idx[mask]
     mag_pq_dc = Vm0[mags_unknown_idx].tolist()

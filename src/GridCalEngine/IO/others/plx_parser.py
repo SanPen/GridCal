@@ -478,7 +478,7 @@ class PlxModel:
         # get xml root node
         root = xtree.getroot()
 
-        # text to remove: {http://tempuri.org/MasterDataSet.xsd}
+        # text to delete: {http://tempuri.org/MasterDataSet.xsd}
         # this is a very annoying text that is present in all the xml nodes
         text_to_remove = root.tag[root.tag.find("{"):root.tag.find("}") + 1]
 

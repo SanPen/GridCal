@@ -2130,7 +2130,7 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            # remove from the current simulations
+            # delete from the current simulations
             self.remove_simulation(SimulationTypes.OPFTimeSeries_run)
 
             if results is not None:
@@ -2321,7 +2321,7 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            # remove from the current simulations
+            # delete from the current simulations
             self.remove_simulation(SimulationTypes.OPF_NTC_TS_run)
 
             if results is not None:
@@ -2857,7 +2857,7 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            # remove from the current simulations
+            # delete from the current simulations
             self.remove_simulation(SimulationTypes.NodalCapacityTimeSeries_run)
 
             if results is not None:

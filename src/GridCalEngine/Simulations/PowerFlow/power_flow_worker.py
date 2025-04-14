@@ -288,7 +288,7 @@ def __solve_island_limited_support(island: NumericalCircuit,
                                    logger=Logger()) -> Tuple[NumericPowerFlowResults, ConvergenceReport]:
     """
     Run a power flow simulation using the selected method (no outer loop controls).
-    This routine supports remove voltage controls,and Hvdc links through external injections (Shvdc)
+    This routine supports delete voltage controls,and Hvdc links through external injections (Shvdc)
     Also requires grids to be split by HvdcLines
     :param island: SnapshotData circuit, this ensures on-demand admittances computation
     :param indices: SimulationIndices

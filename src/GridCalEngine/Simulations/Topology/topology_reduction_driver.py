@@ -32,7 +32,7 @@ def get_branches_of_bus(B, j):
 def select_branches_to_reduce(circuit: MultiCircuit, rx_criteria=True, rx_threshold=1e-5,
                               selected_types=BranchType.Branch):
     """
-    Find Branches to remove
+    Find Branches to delete
     Args:
         circuit: Circuit to modify in-place
         rx_criteria: use the r+x threshold to select Branches?
@@ -141,11 +141,11 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
         # delete_with_dialogue bus
         removed_bus = circuit.buses.pop(f)
 
-        # remove the branch and that's it
+        # delete the branch and that's it
         removed_branch = branches.pop(removed_br_idx)
 
     else:
-        # remove the branch and that's it
+        # delete the branch and that's it
         removed_branch = branches.pop(removed_br_idx)
         removed_bus = None
         updated_bus = None
@@ -195,7 +195,7 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
 
     buses_merged = list()
 
-    # remove
+    # delete
     total = len(buses_to_reduce)
     for k, bus in enumerate(buses_to_reduce):
 
@@ -273,7 +273,7 @@ class TopologyReduction(DriverTemplate):
         """
         self.tic()
         self.report_progress(0.0)
-        self.report_text('Detecting which Branches to remove...')
+        self.report_text('Detecting which Branches to delete...')
 
         # sort the Branches in reverse order
         self.br_to_remove.sort(reverse=True)
@@ -329,7 +329,7 @@ class DeleteAndReduce(DriverTemplate):
         self.tic()
         self._is_running = True
         self.report_progress(0.0)
-        self.report_text('Detecting which Branches to remove...')
+        self.report_text('Detecting which Branches to delete...')
 
         # get the selected buses
         buses = [self.objects[idx.row()] for idx in self.sel_idx]

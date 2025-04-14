@@ -330,11 +330,11 @@ def build_wheel(pkg_name: str,
         tar.writestr(os.path.join(dist_info_path, 'WHEEL'), data=wheel_info)
         tar.writestr(os.path.join(dist_info_path, 'RECORD'), data=record_info)
 
-    # os.remove(pkg_info_path)
-    # os.remove(setup_cfg_path)
-    # os.remove(metadata_f_path)
-    # os.remove(wheel_f_path)
-    # os.remove(record_f_path)
+    # os.delete(pkg_info_path)
+    # os.delete(setup_cfg_path)
+    # os.delete(metadata_f_path)
+    # os.delete(wheel_f_path)
+    # os.delete(record_f_path)
     # os.removedirs(dist_info_path)
 
     return output_filename

@@ -224,8 +224,7 @@ class DiagramsMain(CompiledArraysMain):
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionTakePicture.triggered.connect(self.take_picture)
         self.ui.actionRecord_video.triggered.connect(self.record_video)
-        self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_diagram_and_db)
-        self.ui.actionDelete_from_the_diagram.triggered.connect(self.delete_selected_from_the_diagram)
+        self.ui.actionDelete_selected.triggered.connect(self.delete_selected_diagram_widgets)
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
         self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
@@ -1943,17 +1942,17 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram_widget = self.get_selected_diagram_widget()
         if diagram_widget is not None:
-            ok = yes_no_question("Are you sure that you want to remove " + diagram_widget.name + "?",
+            ok = yes_no_question("Are you sure that you want to delete " + diagram_widget.name + "?",
                                  "Remove diagram")
 
             if ok:
-                # remove the widget
+                # delete the widget
                 self.diagram_widgets_list.remove(diagram_widget)
 
-                # remove the diagram
+                # delete the diagram
                 self.circuit.remove_diagram(diagram_widget.diagram)
 
-                # remove it from the layout list
+                # delete it from the layout list
                 self.remove_all_diagram_widgets()
 
                 # update view
@@ -1988,15 +1987,15 @@ class DiagramsMain(CompiledArraysMain):
         """
         Remove all diagram widgets from the container
         """
-        # remove all widgets from the layout
+        # delete all widgets from the layout
         for i in reversed(range(self.ui.schematic_layout.count())):
             # get the widget
             widget_to_remove = self.ui.schematic_layout.itemAt(i).widget()
 
-            # remove it from the layout list
+            # delete it from the layout list
             self.ui.schematic_layout.removeWidget(widget_to_remove)
 
-            # remove it from the gui
+            # delete it from the gui
             widget_to_remove.setParent(None)
 
     def set_diagram_widget(self, widget: ALL_EDITORS):
@@ -2257,9 +2256,9 @@ class DiagramsMain(CompiledArraysMain):
         elif isinstance(diagram_widget, GridMapWidget):
             diagram_widget.delete_selected_from_widget(delete_from_db=False)
 
-    def delete_selected_from_the_diagram_and_db(self):
+    def delete_selected_diagram_widgets(self):
         """
-        Prompt to delete_with_dialogue the selected elements from the current diagram and database
+        Prompt to delete the selected elements from the current diagram and (optionally) the database
         """
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
@@ -2267,6 +2266,9 @@ class DiagramsMain(CompiledArraysMain):
 
         elif isinstance(diagram_widget, GridMapWidget):
             diagram_widget.delete_selected_from_widget(delete_from_db=True)
+
+        else:
+            self.show_error_toast("delete_selected_diagram_widgets: Unsupported widget :(")
 
     def try_to_fix_buses_location(self):
         """
@@ -2388,7 +2390,7 @@ class DiagramsMain(CompiledArraysMain):
 
                 group_name = "Investment " + str(len(self.circuit.get_contingency_groups()))
 
-                # launch selection dialogue to add/remove from the selection
+                # launch selection dialogue to add/delete from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]
                 self.investment_checks_diag = CheckListDialogue(objects_list=names,
                                                                 title="Add investment",
@@ -2535,6 +2537,8 @@ class DiagramsMain(CompiledArraysMain):
 
             elif isinstance(diagram_widget, GridMapWidget):
                 pass
+
+
 
     def search_diagram(self):
         """

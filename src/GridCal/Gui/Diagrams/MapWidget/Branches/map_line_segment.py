@@ -15,7 +15,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.Diagrams.SchematicWidget.Editors.line_editor import LineEditor
+from GridCal.Gui.Diagrams.Editors.line_editor import LineEditor
 
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.enumerations import DeviceType
@@ -478,7 +478,7 @@ class MapLineSegment(QGraphicsLineItem):
         """
         if ask:
             dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+            ok = yes_no_question(f'Do you want to delete the {dtype} {self.api_object.name}?',
                                  f'Remove {dtype}')
         else:
             ok = True

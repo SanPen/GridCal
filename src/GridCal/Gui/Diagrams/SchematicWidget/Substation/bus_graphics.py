@@ -476,12 +476,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/assign_to_profile.svg",
                        function_ptr=self.assign_status_to_profile)
 
-        add_menu_entry(menu, text='Delete all the connections',
-                       icon_path=":/Icons/icons/delete_conn.svg",
-                       function_ptr=lambda: self.delete_all_connections(ask=True, delete_from_db=True))
-
-        add_menu_entry(menu, text='Remove',
-                       icon_path=":/Icons/icons/delete_db.svg",
+        add_menu_entry(menu, text='Delete',
+                       icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove)
 
         add_menu_entry(menu, text='Expand schematic',
@@ -542,18 +538,11 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         self._editor.set_active_status_to_profile(self._api_object)
 
-    def delete_all_connections(self, ask: bool, delete_from_db: bool) -> None:
-        """
-        Delete all bus connections
-        """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus',
-                                 'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
-        else:
-            ok = True
-
-        if ok:
-            self._terminal.remove_all_connections(delete_from_db=delete_from_db)
+    # def delete_all_connections(self, delete_from_db: bool) -> None:
+    #     """
+    #     Delete all bus connections
+    #     """
+    #     self._terminal.remove_all_connections(delete_from_db=delete_from_db)
 
     def remove(self) -> None:
         """

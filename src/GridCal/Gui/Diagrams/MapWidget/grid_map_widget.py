@@ -551,7 +551,7 @@ class GridMapWidget(BaseDiagramWidget):
     def remove_line_location_graphic(self, node: LineLocationGraphicItem):
         """
         Removes node from diagram and scene
-        :param node: Node to remove
+        :param node: Node to delete
         """
 
         self.graphics_manager.delete_device(node._api_object)
@@ -567,7 +567,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param api_object: Substation object from the MultiCircuit
         :param substation_buses: List of buses associated to this substation
         :param voltage_levels:  List of voltage levels associated to this substation
-        :param delete_from_db: Does it remove the objects from the Database too (bool)
+        :param delete_from_db: Does it delete the objects from the Database too (bool)
         """
 
         # Remove from graphics manager and scene
@@ -655,7 +655,7 @@ class GridMapWidget(BaseDiagramWidget):
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """
         Removes line from diagram and scene
-        :param line: Line to remove
+        :param line: Line to delete
         :param delete_from_db:
         """
         lin = self.graphics_manager.delete_device(line._api_object)
@@ -1906,7 +1906,7 @@ class GridMapWidget(BaseDiagramWidget):
         line2_graphic = self.add_api_line(line2)
 
         # Remove the original line from the circuit and map
-        # Ensure we remove the correct graphic container
+        # Ensure we delete the correct graphic container
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
 
         # Recalculate lengths based on new waypoints
@@ -2364,7 +2364,7 @@ class GridMapWidget(BaseDiagramWidget):
         line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
 
-        # Explicitly remove the waypoint graphic from the scene to prevent artifact
+        # Explicitly delete the waypoint graphic from the scene to prevent artifact
         self._remove_from_scene(selected_waypoint)
 
         # Remove the original line

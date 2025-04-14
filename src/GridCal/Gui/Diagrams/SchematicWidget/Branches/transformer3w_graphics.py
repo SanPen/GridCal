@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QColor
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
-from GridCal.Gui.Diagrams.SchematicWidget.Editors.transformer3w_editor import Transformer3WEditor
+from GridCal.Gui.Diagrams.Editors.transformer3w_editor import Transformer3WEditor
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
@@ -464,7 +464,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus',
+            ok = yes_no_question('Are you sure that you want to delete this bus',
                                  'Remove bus')
         else:
             ok = True

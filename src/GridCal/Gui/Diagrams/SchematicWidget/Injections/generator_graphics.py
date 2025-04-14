@@ -12,7 +12,7 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Editors.generator_editor import GeneratorQCurveEditor
+from GridCal.Gui.Diagrams.Editors.generator_editor import GeneratorQCurveEditor
 from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
 from GridCal.Gui.gui_functions import add_menu_entry

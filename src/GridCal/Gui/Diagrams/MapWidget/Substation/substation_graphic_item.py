@@ -606,7 +606,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                     bus.substation = self.api_object
                     selected_buses.append(bus)
 
-            # remove connections that are from and to the same substation
+            # delete connections that are from and to the same substation
             for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
                 for elm in self.editor.graphics_manager.get_device_type_list(tpe):
                     if elm._api_object.get_substation_from() == elm._api_object.get_substation_to():

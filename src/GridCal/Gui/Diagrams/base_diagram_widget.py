@@ -97,7 +97,7 @@ def qimage_to_cv(qimage: QImage, logger: Logger, force_disk=False) -> np.ndarray
     else:
         try:
             # convert picture using the memory
-            # we need to remove the alpha channel, otherwise the video frame is not saved
+            # we need to delete the alpha channel, otherwise the video frame is not saved
             cv_mat = np.array(qimage.constBits()).reshape(height, width, 4).astype(np.uint8)[:, :, :3]
 
             return cv_mat
@@ -332,9 +332,8 @@ class BaseDiagramWidget(QSplitter):
     def delete_with_dialogue(self, selected: List[GenericDiagramWidget], delete_from_db: bool) -> None:
         """
         Delete elements with a dialogue of all the dependencies
-        :param selected:
-        :param delete_from_db:
-        :return:
+        :param selected: list of selected widgets
+        :param delete_from_db: initial value for the delete from db option
         """
         if len(selected) > 0:
 
@@ -376,6 +375,14 @@ class BaseDiagramWidget(QSplitter):
         """
         self.delete_with_dialogue(selected=self._get_selected(),
                                   delete_from_db=delete_from_db)
+
+    def delete_diagram_elements(self, elements: List[ALL_DEV_TYPES]):
+        """
+        Delete device from the diagram registry
+        :param elements: list of elements to delete
+        """
+        for elm in elements:
+            self.delete_element_utility_function(elm)
 
     def set_time_index(self, time_index: Union[int, None]):
         """

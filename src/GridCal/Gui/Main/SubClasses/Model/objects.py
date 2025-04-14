@@ -1202,7 +1202,7 @@ class ObjectsTableMain(DiagramsMain):
         :return:
         """
         ok = yes_no_question(
-            "This action removes all disconnected devices with no active profile and remove all small islands",
+            "This action removes all disconnected devices with no active profile and delete all small islands",
             "Delete inconsistencies")
 
         if ok:

@@ -600,7 +600,7 @@ class IoMain(ConfigurationMain):
     #
     #     :return:
     #     """
-    #     self.stuff_running_now.remove('file_open')
+    #     self.stuff_running_now.delete('file_open')
     #
     #     if self.open_file_thread_object is not None:
     #

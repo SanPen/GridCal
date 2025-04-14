@@ -451,7 +451,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Delete all bus connections
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this fluid node',
+            ok = yes_no_question('Are you sure that you want to delete this fluid node',
                                  'Remove fluid node from schematic and DB' if delete_from_db else "Remove bus from schematic")
         else:
             ok = True
@@ -465,7 +465,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this fluid node',
+            ok = yes_no_question('Are you sure that you want to delete this fluid node',
                                  'Remove fluid node')
         else:
             ok = True

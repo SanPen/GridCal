@@ -260,7 +260,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         add_menu_entry(menu=menu,
                        text="Delete",
                        function_ptr=self.remove,
-                       icon_path=":/Icons/icons/delete3.svg")
+                       icon_path=":/Icons/icons/delete_schematic.svg")
 
         return menu
 

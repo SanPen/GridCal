@@ -97,20 +97,20 @@ class WindingGraphicItem(LineGraphicTemplateItem):
             del_icon = QIcon()
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
+            ra2.triggered.connect(self.delete)
 
             menu.exec_(event.screenPos())
         else:
             pass
 
-    def remove(self, ask=True):
+    def delete(self, ask=True):
         """
         Remove this object in the diagram and the API
         @return:
         """
         if ask:
             dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+            ok = yes_no_question(f'Do you want to delete the {dtype} {self.api_object.name}?',
                                  'Remove branch')
         else:
             ok = True
