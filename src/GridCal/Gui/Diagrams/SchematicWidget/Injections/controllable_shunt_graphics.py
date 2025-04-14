@@ -34,8 +34,8 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
                                               editor=editor,
                                               device_type_name='external grid',
                                               w=40,
-                                              h=40,
-                                              glyph=Square(self, 40, 40, "C"))
+                                              h=40)
+        self.set_glyph(glyph=Square(self, 40, 40, "C", self.update_nexus))
 
     @property
     def api_object(self) -> ControllableShunt:

@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, List
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItemGroup, QMenu,
                                QGraphicsSceneContextMenuEvent)
@@ -37,8 +37,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
                  device_type_name: str,
                  w: int,
                  h: int,
-                 editor: SchematicWidget,
-                 glyph: Square | Circle | Polygon | Condenser):
+                 editor: SchematicWidget):
         """
 
         :param parent:
@@ -52,16 +51,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
 
         self.w = w
         self.h = h
-
-        pen = QPen(self.color, self.w, self.style)
-
-        self.glyph = glyph
-        self.glyph.setPen(pen)
-        self.addToGroup(self.glyph)
-
-        self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_nexus(self.pos())
-
+        self.glyph: Square | Circle | Polygon | Condenser | None = None
         self.scale = 1.0
         self.device_type_name = device_type_name
 
@@ -74,10 +64,23 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        self._editor.add_to_scene(self.nexus)
 
-        self.setPos(self._parent.x(), self._parent.y() + 100)
+
+    def set_glyph(self, glyph: Square | Circle | Polygon | Condenser):
+        """
+
+        :param glyph:
+        :return:
+        """
+        pen = QPen(self.color, self.width, self.style)
+        self.glyph = glyph
+        self.glyph.setPen(pen)
+        self.addToGroup(self.glyph)
+
+        self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_nexus(self.pos())
+
+        self._editor.add_to_scene(self.nexus)
 
     @property
     def parent(self) -> NODE_GRAPHIC:
@@ -150,7 +153,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
 
         self.glyph.setPen(QPen(self.color, self.width, self.style))
 
-    def update_nexus(self, pos):
+    def update_nexus(self, pos: QPointF):
         """
         Update the nexus line that joins the parent and this object
         :param pos: position of this object

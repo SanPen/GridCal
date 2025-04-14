@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Union, List, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING, Callable
 import darkdetect
 from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem, QGraphicsItemGroup,
@@ -174,7 +174,7 @@ class Polygon(QGraphicsPolygonItem):
     PolygonItem
     """
 
-    def __init__(self, parent: GenericDiagramWidget, polygon):
+    def __init__(self, parent: GenericDiagramWidget, polygon, update_nexus_fcn: Callable[[QPointF], None]):
         """
         Constructor
         :param parent:
@@ -182,6 +182,11 @@ class Polygon(QGraphicsPolygonItem):
         super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
         self.setPolygon(polygon)
+        self.update_nexus_fcn = update_nexus_fcn
+
+    def setPen(self, pen: QPen):
+        super().setPen(pen)
+        pass
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
         """
@@ -191,7 +196,7 @@ class Polygon(QGraphicsPolygonItem):
         :return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
+            self.update_nexus_fcn(value)
         return super(QGraphicsPolygonItem, self).itemChange(change, value)
 
 
@@ -200,7 +205,7 @@ class Square(QGraphicsRectItem):
     Square
     """
 
-    def __init__(self, parent, h: int, w: int, label_letter: str):
+    def __init__(self, parent, h: int, w: int, label_letter: str, update_nexus_fcn: Callable[[QPointF], None]):
         """
         Constructor
         :param parent:
@@ -211,9 +216,10 @@ class Square(QGraphicsRectItem):
 
         self.label = QGraphicsTextItem(label_letter, parent=self)
         self.label.setPos(h / 4, w / 5)
+        self.update_nexus_fcn = update_nexus_fcn
 
     def setPen(self, pen: QPen):
-        self.setPen(pen)
+        super().setPen(pen)
         self.label.setDefaultTextColor(pen.color())
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
@@ -224,7 +230,7 @@ class Square(QGraphicsRectItem):
         :return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
+            self.update_nexus_fcn(value)
         return super(QGraphicsRectItem, self).itemChange(change, value)
 
 
@@ -233,7 +239,7 @@ class Circle(QGraphicsEllipseItem):
     Circle
     """
 
-    def __init__(self, parent, h: int, w: int, label_letter: str):
+    def __init__(self, parent, h: int, w: int, label_letter: str, update_nexus_fcn: Callable[[QPointF], None]):
         """
         Constructor
         :param parent:
@@ -244,9 +250,10 @@ class Circle(QGraphicsEllipseItem):
 
         self.label = QGraphicsTextItem(label_letter, parent=self)
         self.label.setPos(h / 4, w / 5)
+        self.update_nexus_fcn = update_nexus_fcn
 
     def setPen(self, pen: QPen):
-        self.setPen(pen)
+        super().setPen(pen)
         self.label.setDefaultTextColor(pen.color())
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
@@ -257,7 +264,7 @@ class Circle(QGraphicsEllipseItem):
         :return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
+            self.update_nexus_fcn(value)
         return super(QGraphicsEllipseItem, self).itemChange(change, value)
 
 
@@ -266,7 +273,7 @@ class Condenser(QGraphicsItemGroup):
     Square
     """
 
-    def __init__(self, parent, h: int, w: int):
+    def __init__(self, parent, h: int, w: int, update_nexus_fcn: Callable[[QPointF], None]):
         """
         Constructor
         :param parent:
@@ -284,13 +291,14 @@ class Condenser(QGraphicsItemGroup):
 
         self.lines = list()
         for l in lines_data:
-            l1 = Line(self)
+            l1 = QGraphicsLineItem(parent)
             l1.setLine(l)
             self.lines.append(l1)
             self.addToGroup(l1)
 
+        self.update_nexus_fcn = update_nexus_fcn
+
     def setPen(self, pen: QPen):
-        self.setPen(pen)
         for l in self.lines:
             l.setPen(pen)
 
@@ -302,7 +310,7 @@ class Condenser(QGraphicsItemGroup):
         :return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
+            self.update_nexus_fcn(value)
         return super(QGraphicsItemGroup, self).itemChange(change, value)
 
 
@@ -311,13 +319,14 @@ class Line(QGraphicsLineItem):
     Line
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent, update_nexus_fcn: Callable[[QPointF], None]):
         """
         Constructor
         :param parent:
         """
         super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        self.update_nexus_fcn = update_nexus_fcn
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
         """
@@ -327,5 +336,5 @@ class Line(QGraphicsLineItem):
         :return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
+            self.update_nexus_fcn(value)
         return super(QGraphicsLineItem, self).itemChange(change, value)

@@ -30,8 +30,8 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
                                               editor=editor,
                                               device_type_name='static_generator',
                                               w=40,
-                                              h=40,
-                                              glyph=Square(self, h=30, w=15, label_letter="S"))
+                                              h=40)
+        self.set_glyph(glyph=Square(self, h=40, w=40, label_letter="S", update_nexus_fcn=self.update_nexus))
 
     @property
     def api_object(self) -> StaticGenerator:

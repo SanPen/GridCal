@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap, QPolygonF
 from PySide6.QtWidgets import QMenu
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Polygon
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Polygon, Square
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Injections.load import Load
@@ -32,20 +32,15 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
                                               editor=editor,
                                               device_type_name='load',
                                               w=20,
-                                              h=20,
-                                              glyph = Polygon(self, QPolygonF([QPointF(0, 0),
-                                                                               QPointF(self.w, 0),
-                                                                               QPointF(self.w / 2, self.h)]))
-                                              )
+                                              h=20)
 
         # triangle
-        self.glyph = Polygon(self, QPolygonF([QPointF(0, 0), QPointF(self.w, 0), QPointF(self.w / 2, self.h)]))
-        self.glyph.setPolygon()
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.addToGroup(self.glyph)
-
-        self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_nexus(self.pos())
+        self.set_glyph(glyph=Polygon(self,
+                                     polygon=QPolygonF([QPointF(0, 0),
+                                                        QPointF(self.w, 0),
+                                                        QPointF(self.w / 2, self.h)]),
+                                     update_nexus_fcn=self.update_nexus)
+                       )
 
     @property
     def api_object(self) -> Load:

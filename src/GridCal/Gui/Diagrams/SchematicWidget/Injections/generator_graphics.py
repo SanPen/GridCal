@@ -39,8 +39,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                               editor=editor,
                                               device_type_name='generator',
                                               w=40,
-                                              h=40,
-                                              glyph=Circle(self, 40, 40, "G"))
+                                              h=40)
+        self.set_glyph(glyph=Circle(self, 40, 40, "G", self.update_nexus))
 
     @property
     def api_object(self) -> Generator:

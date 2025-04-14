@@ -28,7 +28,8 @@ class BatteryGraphicItem(InjectionTemplateGraphicItem):
                                               device_type_name='generator',
                                               w=40,
                                               h=40,
-                                              glyph=Square(self, 40, 40, "B"))
+                                              )
+        self.set_glyph(glyph=Square(self, 40, 40, "B", self.update_nexus))
 
     @property
     def api_object(self) -> Battery:

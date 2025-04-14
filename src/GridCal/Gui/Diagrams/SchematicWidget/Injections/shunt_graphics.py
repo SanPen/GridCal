@@ -26,9 +26,9 @@ class ShuntGraphicItem(InjectionTemplateGraphicItem):
                                               api_obj=api_obj,
                                               editor=editor,
                                               device_type_name='generator',
-                                              w=15,
-                                              h=30,
-                                              glyph=Condenser(self, h=30, w=15))
+                                              w=20,
+                                              h=40)
+        self.set_glyph(glyph=Condenser(self, h=self.h, w=self.w, update_nexus_fcn=self.update_nexus))
 
     @property
     def api_object(self) -> Shunt:

@@ -31,8 +31,8 @@ class CurrentInjectionGraphicItem(InjectionTemplateGraphicItem):
                                               editor=editor,
                                               device_type_name='Current injection',
                                               w=40,
-                                              h=40,
-                                              glyph=Square(self, 40, 40, "I") )
+                                              h=40)
+        self.set_glyph(glyph=Square(self, 40, 40, "I", self.update_nexus))
 
     @property
     def api_object(self) -> CurrentInjection:
