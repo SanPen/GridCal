@@ -572,7 +572,7 @@ class DeleteDialogue(QtWidgets.QDialog):
     """
 
     def __init__(self,
-                 objects_list: List[str],
+                 names_list: List[str],
                  title='Select objects',
                  delete_from_db: bool = False,
                  ask_for_group_name: bool = False,
@@ -582,7 +582,7 @@ class DeleteDialogue(QtWidgets.QDialog):
                  check_value=True):
         """
 
-        :param objects_list: List of names to display
+        :param names_list: List of names to display
         :param title: Window title
         :param ask_for_group_name: Ask for a group name (i.e. investments group name...)
         :param group_label: Name of the property
@@ -607,7 +607,7 @@ class DeleteDialogue(QtWidgets.QDialog):
 
         # list
         self.list_view = QtWidgets.QListView()
-        self.mdl = get_list_model(objects_list, checks=checks, check_value=check_value)
+        self.mdl = get_list_model(names_list, checks=checks, check_value=check_value)
         self.list_view.setModel(self.mdl)
 
         # delete_with_dialogue from DB check
