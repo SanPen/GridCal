@@ -316,7 +316,7 @@ class ObjectsTableMain(DiagramsMain):
         On click, display the objects properties
         """
 
-        if self.ui.dataStructuresTreeView.selectedIndexes()[0]._parent().row() > -1:
+        if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:
             # if the clicked element has a valid parent...
 
             elm_type = self.get_db_object_selected_type()
