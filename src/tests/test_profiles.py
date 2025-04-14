@@ -135,7 +135,7 @@ def test_profile1():
 
     assert all_ok
 
-    # now we set the threshhold to 75% sparsity, hence the array will be considered sparse
+    # now we set the threshold to 75% sparsity, hence the array will be considered sparse
     profile = Profile(default_value=0.0, arr=x, sparsity_threshold=0.75, data_type=float)
     assert profile.is_sparse
 

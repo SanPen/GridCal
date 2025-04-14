@@ -156,7 +156,9 @@ class LoadVars:
         """
         self.shedding = np.zeros((nt, n_elm), dtype=object)
 
-        self.p = np.zeros((nt, n_elm), dtype=float)  # to be filled (no vars)
+        self.p = np.zeros((nt, n_elm), dtype=object)  # to be filled (no vars)
+
+        self.shedding_cost = np.zeros((nt, n_elm), dtype=object)
 
     def get_values(self, Sbase: float, model: LpModel) -> "LoadVars":
         """
@@ -166,14 +168,16 @@ class LoadVars:
         nt, n_elm = self.shedding.shape
         data = LoadVars(nt=nt, n_elm=n_elm)
 
-        data.p = self.p * Sbase  # this is data already, so make a refference copy
-
         for t in range(nt):
             for i in range(n_elm):
                 data.shedding[t, i] = model.get_value(self.shedding[t, i]) * Sbase
+                data.p[t, i] = model.get_value(self.p[t, i]) * Sbase
+                data.shedding_cost[t, i] = model.get_value(self.shedding_cost[t, i]) * Sbase
 
         # format the arrays appropriately
         data.shedding = data.shedding.astype(float, copy=False)
+        data.p = data.p.astype(float, copy=False)
+        data.shedding_cost = data.shedding_cost.astype(float, copy=False)
 
         return data
 
@@ -220,7 +224,7 @@ class GenerationVars:
                 data.producing[t, i] = model.get_value(self.producing[t, i])
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
                 data.shutting_down[t, i] = model.get_value(self.shutting_down[t, i])
-                data.cost[t, i] = model.get_value(self.cost[t, i])
+                data.cost[t, i] = model.get_value(self.cost[t, i]) * Sbase
                 data.invested[t, i] = model.get_value(self.invested[t, i])
 
         # format the arrays appropriately
@@ -301,6 +305,7 @@ class BranchVars:
         self.tap_angles = np.zeros((nt, n_elm), dtype=object)
         self.flow_constraints_ub = np.zeros((nt, n_elm), dtype=object)
         self.flow_constraints_lb = np.zeros((nt, n_elm), dtype=object)
+        self.overload_cost = np.zeros((nt, n_elm), dtype=object)
 
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
@@ -325,6 +330,7 @@ class BranchVars:
                 data.tap_angles[t, i] = model.get_value(self.tap_angles[t, i])
                 data.flow_constraints_ub[t, i] = model.get_value(self.flow_constraints_ub[t, i])
                 data.flow_constraints_lb[t, i] = model.get_value(self.flow_constraints_lb[t, i])
+                data.overload_cost[t, i] = model.get_value(self.overload_cost[t, i]) * Sbase
 
         for i in range(len(self.contingency_flow_data)):
             t, m, c, var, neg_slack, pos_slack = self.contingency_flow_data[i]
@@ -337,6 +343,7 @@ class BranchVars:
         data.flows = data.flows.astype(float, copy=False)
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
         data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
+        data.overload_cost = data.overload_cost.astype(float, copy=False)
         data.tap_angles = data.tap_angles.astype(float, copy=False)
 
         # compute loading
@@ -504,12 +511,6 @@ class FluidInjectionVars:
         :param n_elm: Number of elements moving fluid
         """
 
-        # self.efficiency = np.zeros((nt, n_elm), dtype=float)  # m3
-        # self.max_flow_rate = np.zeros((nt, n_elm), dtype=float)  # m3/s
-        #
-        # self.p_max = np.zeros((nt, n_elm), dtype=float)  # MW
-        # self.p_min = np.zeros((nt, n_elm), dtype=float)  # MW
-        #
         self.flow = np.zeros((nt, n_elm), dtype=object)  # m3/s
 
     def get_values(self, model: LpModel) -> "FluidInjectionVars":
@@ -543,25 +544,46 @@ class SystemVars:
         """
         self.system_fuel = np.zeros(nt, dtype=float)
         self.system_emissions = np.zeros(nt, dtype=float)
-        self.system_energy_cost = np.zeros(nt, dtype=float)
+        self.system_unit_energy_cost = np.zeros(nt, dtype=float)
+        self.system_total_energy_cost = np.zeros(nt, dtype=float)
+        self.power_by_technology = np.zeros(nt, dtype=float)
 
     def compute(self,
                 gen_emissions_rates_matrix: csc_matrix,
                 gen_fuel_rates_matrix: csc_matrix,
+                gen_tech_shares_matrix: csc_matrix,
+                batt_tech_shares_matrix: csc_matrix,
                 gen_p: Mat,
-                gen_cost: Mat):
+                gen_cost: Mat,
+                batt_p: Mat,
+                shedding_cost: Mat,
+                overload_cost: Mat):
         """
         Compute the system values
-        :param gen_emissions_rates_matrix: emissins rates matrix (n_emissions, n_gen)
+        :param gen_emissions_rates_matrix: emissions rates matrix (n_emissions, n_gen)
         :param gen_fuel_rates_matrix: fuel rates matrix (n_fuels, n_gen)
+        :param gen_tech_shares_matrix: technology shares of the generators
+        :param batt_tech_shares_matrix technology shares of the batteries
         :param gen_p: Generation power values (nt, ngen)
         :param gen_cost: Generation cost values (nt, ngen)
+        :param batt_p: Battery power values (nt, nbatt)
+        :param shedding_cost: Shedding cost values (nt, ngen)
+        :param overload_cost: Overload cost values (nt, ngen)
         """
         self.system_fuel = (gen_fuel_rates_matrix * gen_p.T).T
         self.system_emissions = (gen_emissions_rates_matrix * gen_p.T).T
+        self.power_by_technology = (gen_tech_shares_matrix * gen_p.T).T
+        self.power_by_technology += (batt_tech_shares_matrix * batt_p.T).T
 
         with np.errstate(divide='ignore', invalid='ignore'):  # numpy magic to ignore the zero divisions
-            self.system_energy_cost = np.nan_to_num(gen_cost / gen_p).sum(axis=1)
+
+            self.system_total_energy_cost = np.nan_to_num(gen_cost).sum(axis=1)
+            self.system_total_energy_cost += np.nan_to_num(shedding_cost).sum(axis=1)
+            self.system_total_energy_cost += np.nan_to_num(overload_cost).sum(axis=1)
+
+            self.system_unit_energy_cost = self.system_total_energy_cost / np.nan_to_num(gen_p).sum(axis=1)
+
+        return self
 
 
 class OpfVars:
@@ -612,7 +634,11 @@ class OpfVars:
 
         self.sys_vars = SystemVars(nt=nt)
 
-    def get_values(self, Sbase: float, model: LpModel, gen_emissions_rates_matrix, gen_fuel_rates_matrix) -> "OpfVars":
+    def get_values(self, Sbase: float, model: LpModel,
+                   gen_emissions_rates_matrix: csc_matrix,
+                   gen_fuel_rates_matrix: csc_matrix,
+                   gen_tech_shares_matrix: csc_matrix,
+                   batt_tech_shares_matrix: csc_matrix) -> "OpfVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
         :return: OpfVars instance
@@ -642,15 +668,18 @@ class OpfVars:
         data.fluid_node_vars = self.fluid_node_vars.get_values(model)
         data.fluid_path_vars = self.fluid_path_vars.get_values(model)
         data.fluid_inject_vars = self.fluid_inject_vars.get_values(model)
-        data.sys_vars = self.sys_vars
+        data.sys_vars = self.sys_vars.compute(gen_emissions_rates_matrix=gen_emissions_rates_matrix,
+                                              gen_fuel_rates_matrix=gen_fuel_rates_matrix,
+                                              gen_tech_shares_matrix=gen_tech_shares_matrix,
+                                              batt_tech_shares_matrix=batt_tech_shares_matrix,
+                                              gen_p=data.gen_vars.p,
+                                              batt_p=data.batt_vars.p,
+                                              gen_cost=data.gen_vars.cost,
+                                              shedding_cost=data.load_vars.shedding_cost,
+                                              overload_cost=data.branch_vars.overload_cost)
 
         data.acceptable_solution = self.acceptable_solution
 
-        # compute the system parameters
-        data.sys_vars.compute(gen_emissions_rates_matrix=gen_emissions_rates_matrix,
-                              gen_fuel_rates_matrix=gen_fuel_rates_matrix,
-                              gen_p=data.gen_vars.p,
-                              gen_cost=data.gen_vars.cost)
         return data
 
 
@@ -695,7 +724,6 @@ def add_linear_generation_formulation(t: Union[int, None],
         id_gen_nonvd = []
 
     year = time_array[t].year - time_array[0].year
-
 
     # add generation stuff
     for k in range(gen_data_t.nelm):
@@ -794,18 +822,18 @@ def add_linear_generation_formulation(t: Union[int, None],
                     if t > 0:
                         # installation persistence
                         prob.add_cst(gen_vars.invested[t - 1, k] <= gen_vars.invested[t, k],
-                                      name=join("persist_", [t, k]))
+                                     name=join("persist_", [t, k]))
 
                     # maximum production constraint
                     prob.add_cst(gen_vars.p[t, k] <= (gen_data_t.pmax[k] / Sbase) * gen_vars.invested[t, k],
-                                  name=join("max_prod_", [t, k]))
+                                 name=join("max_prod_", [t, k]))
                 else:
                     # is invested for already
                     gen_vars.invested[t, k] = 1
 
             else:
 
-                # it is NOT dispatchable
+                ## it is NOT dispatchable
                 p = gen_data_t.p[k] / Sbase
 
                 # Operational cost (linear...)
@@ -817,7 +845,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                     gen_vars.shedding[t, k] = prob.add_var(0, p, join("gen_shedding_", [t, k], "_"))
 
                     prob.add_cst(cst=gen_vars.p[t, k] == p - gen_vars.shedding[t, k],
-                                 name=join("gen==PG-PGslack", [t, k], "_"))
+                                 name=join("gen==P_minus_Pslack_", [t, k], "_"))
 
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
@@ -826,7 +854,7 @@ def add_linear_generation_formulation(t: Union[int, None],
                     gen_vars.shedding[t, k] = prob.add_var(0, -p, join("gen_shedding_", [t, k], "_"))
 
                     prob.add_cst(cst=gen_vars.p[t, k] == p + gen_vars.shedding[t, k],
-                                 name=join("gen==PG+PGslack", [t, k], "_"))
+                                 name=join("gen==P_plus_Pslack_", [t, k], "_"))
 
                     gen_vars.cost[t, k] += gen_data_t.cost_1[k] * gen_vars.shedding[t, k]
 
@@ -880,7 +908,9 @@ def add_linear_battery_formulation(t: Union[int, None],
         if batt_data_t.active[k]:
 
             # declare active power var (limits will be applied later)
-            batt_vars.p[t, k] = prob.add_var(0, 1e20, join("batt_p_", [t, k], "_"))
+            p_pos = prob.add_var(0, 1e20, join("batt_ppos_", [t, k], "_"))
+            p_neg = prob.add_var(0, 1e20, join("batt_pneg_", [t, k], "_"))
+            batt_vars.p[t, k] = p_pos - p_neg
 
             if batt_data_t.dispatchable[k]:
 
@@ -897,7 +927,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                                                                  join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]
+                    f_obj += (batt_data_t.cost_1[k] * p_pos
                               + batt_data_t.cost_0[k] * batt_vars.producing[t, k])
 
                     # start-up cost
@@ -936,13 +966,12 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # No unit commitment
 
                     # Operational cost (linear...)
-                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
+                    f_obj += (batt_data_t.cost_1[k] * p_pos) + batt_data_t.cost_0[k]
 
                     # power boundaries of the generator
                     if not skip_generation_limits:
-                        set_var_bounds(var=batt_vars.p[t, k],
-                                       lb=batt_data_t.pmin[k] / Sbase,
-                                       ub=batt_data_t.pmax[k] / Sbase)
+                        set_var_bounds(var=p_pos, lb=0, ub=+batt_data_t.pmax[k] / Sbase)
+                        set_var_bounds(var=p_neg, lb=0, ub=-batt_data_t.pmin[k] / Sbase)
 
                 # compute the time increment in hours
                 if len(time_array) > 1:
@@ -970,8 +999,9 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                 if t > 0:
                     # energy decreases / increases with power · dt
-                    prob.add_cst(cst=(batt_vars.e[t, k] ==
-                                      batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k]),
+                    prob.add_cst(cst=(batt_vars.e[t, k] == batt_vars.e[t - 1, k]
+                                      + dt * (batt_data_t.discharge_efficiency[k] * p_pos
+                                              - batt_data_t.charge_efficiency[k] * p_neg)),
                                  name=join("batt_energy_", [t, k], "_"))
                 else:
                     # set the initial energy value
@@ -982,7 +1012,7 @@ def add_linear_battery_formulation(t: Union[int, None],
                 # it is NOT dispatchable
 
                 # Operational cost (linear...)
-                f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]) + batt_data_t.cost_0[k]
+                f_obj += (batt_data_t.cost_1[k] * p_pos) + batt_data_t.cost_0[k]
 
                 p = batt_data_t.p[k] / Sbase
 
@@ -1076,21 +1106,28 @@ def add_linear_load_formulation(t: Union[int, None],
 
         if load_data_t.active[k]:
 
-            # store the load
-            load_vars.p[t, k] = load_data_t.S[k].real / Sbase
+            p_set = load_data_t.S[k].real / Sbase
 
-            if load_vars.p[t, k] > 0.0:
+            if p_set > 0.0:
 
                 # assign load shedding variable
                 load_vars.shedding[t, k] = prob.add_var(lb=0,
-                                                        ub=load_vars.p[t, k],
+                                                        ub=p_set,
                                                         name=join("load_shedding_", [t, k], "_"))
 
+                # store the load
+                load_vars.p[t, k] = p_set - load_vars.shedding[t, k]
+
+                load_vars.shedding_cost[t, k] = load_data_t.cost[k] * load_vars.shedding[t, k]
+
                 # minimize the load shedding
-                f_obj += load_data_t.cost[k] * load_vars.shedding[t, k]
+                f_obj += load_vars.shedding_cost[t, k]
             else:
                 # the load is negative, won't shed?
                 load_vars.shedding[t, k] = 0.0
+
+                # store the load
+                load_vars.p[t, k] = load_data_t.S[k].real / Sbase
 
         else:
             # the load is not available at time step
@@ -1190,9 +1227,10 @@ def add_linear_branches_formulation(t: int,
                 prob.add_cst(cst=branch_vars.flow_constraints_lb[t, m],
                              name=join("br_flow_lower_lim_", [t, m]))
 
+                branch_vars.overload_cost[t, m] = (branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
+                                                   + branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t, m])
                 # add to the objective function
-                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t, m]
-                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t, m]
+                f_obj += branch_vars.overload_cost[t, m]
 
     return f_obj
 
@@ -1363,12 +1401,12 @@ def add_linear_node_balance(t_idx: int,
     B = Bbus.tocsc()
 
     P_esp = bus_vars.branch_injections[t_idx, :]
-    # P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
-    # P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
-    # P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
-    P_esp += generator_data.get_array_per_bus_obj(gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
-    P_esp += battery_data.get_array_per_bus_obj(batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
-    P_esp += load_data.get_array_per_bus_obj(load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+
+    # NOTE: all device "p" has already the expression of their shedding inside
+
+    P_esp += generator_data.get_array_per_bus_obj(gen_vars.p[t_idx, :])
+    P_esp += battery_data.get_array_per_bus_obj(batt_vars.p[t_idx, :])
+    P_esp -= load_data.get_array_per_bus_obj(load_vars.p[t_idx, :])
 
     if len(capacity_nodes_idx) > 0:
         P_esp[capacity_nodes_idx] += nodal_capacity_vars.P[t_idx, :]
@@ -1378,7 +1416,7 @@ def add_linear_node_balance(t_idx: int,
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
-        if isinstance(bus_vars.Pcalc[t_idx, k], (int, float)):
+        if isinstance(bus_vars.Pcalc[t_idx, k], (int, float)) and isinstance(P_esp[k], (int, float)):
             bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
                 cst=bus_vars.theta[t_idx, k] == 0,
                 name=join("island_bus_", [t_idx, k], "_")
@@ -1393,6 +1431,40 @@ def add_linear_node_balance(t_idx: int,
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
+
+
+def add_copper_plate_balance(t_idx: int,
+                             generator_data: GeneratorData,
+                             battery_data: BatteryData,
+                             load_data: LoadData,
+                             bus_vars: BusVars,
+                             gen_vars: GenerationVars,
+                             batt_vars: BatteryVars,
+                             load_vars: LoadVars,
+                             prob: LpModel, ):
+    """
+    Add the copperplate equality
+    :param t_idx: time step
+    :param generator_data: GeneratorData
+    :param battery_data: BatteryData
+    :param load_data: LoadData
+    :param bus_vars: BusVars
+    :param gen_vars: GenerationVars
+    :param batt_vars: BatteryVars
+    :param load_vars: LoadVars
+    :param prob: LpModel
+    """
+
+    # NOTE: all device "p" has already the expression of their shedding inside
+
+    P_esp = generator_data.get_array_per_bus_obj(gen_vars.p[t_idx, :])
+    P_esp += battery_data.get_array_per_bus_obj(batt_vars.p[t_idx, :])
+    P_esp -= load_data.get_array_per_bus_obj(load_vars.p[t_idx, :])
+
+    bus_vars.kirchhoff[t_idx, 0] = prob.add_cst(
+        cst=sum(P_esp) == 0,
+        name=join("copper_plate_", [t_idx, 0], "_")
+    )
 
 
 def add_hydro_formulation(t: Union[int, None],
@@ -1652,8 +1724,10 @@ def run_linear_opf_ts(grid: MultiCircuit,
     n_fluid_inj = grid.get_fluid_injection_number()
 
     # gather the fuels and emission rates matrices
-    gen_emissions_rates_matrix = grid.get_emission_rates_sparse_matrix()
-    gen_fuel_rates_matrix = grid.get_fuel_rates_sparse_matrix()
+    gen_emissions_rates_matrix = grid.get_gen_emission_rates_sparse_matrix()
+    gen_fuel_rates_matrix = grid.get_gen_fuel_rates_sparse_matrix()
+    gen_tech_shares_matrix = grid.get_gen_technology_connectivity_matrix()
+    batt_tech_shares_matrix = grid.get_batt_technology_connectivity_matrix()
 
     if maximize_inter_area_flow:
         inter_area_branches = inter_aggregation_info.lst_br
@@ -1889,15 +1963,21 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
-            pass
+            add_copper_plate_balance(
+                t_idx=local_t_idx,
+                generator_data=nc.generator_data,
+                battery_data=nc.battery_data,
+                load_data=nc.load_data,
+                bus_vars=mip_vars.bus_vars,
+                gen_vars=mip_vars.gen_vars,
+                batt_vars=mip_vars.batt_vars,
+                load_vars=mip_vars.load_vars,
+                prob=lp_model,
+            )
 
         # production equals demand -------------------------------------------------------------------------------------
-        lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[local_t_idx, :]) +
-                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) +
-                              lp_model.sum(mip_vars.nodal_capacity_vars.P[local_t_idx, :]) >=
-                              mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
-                                  local_t_idx].sum()),
-                         name=f"satisfy_demand_at_{local_t_idx}")
+        # NOTE: The production == demand, happens with the kirchoff equation for the grid and with the
+        # copper plate balance for the copper plate scenario
 
         if progress_func is not None:
             progress_func((local_t_idx + 1) / nt * 100.0)
@@ -1936,7 +2016,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     vars_v = mip_vars.get_values(Sbase=grid.Sbase,
                                  model=lp_model,
                                  gen_emissions_rates_matrix=gen_emissions_rates_matrix,
-                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix)
+                                 gen_fuel_rates_matrix=gen_fuel_rates_matrix,
+                                 gen_tech_shares_matrix=gen_tech_shares_matrix,
+                                 batt_tech_shares_matrix=batt_tech_shares_matrix)
 
     # add the model logger to the main logger
     logger += lp_model.logger

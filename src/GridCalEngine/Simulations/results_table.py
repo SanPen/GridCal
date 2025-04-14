@@ -376,13 +376,65 @@ class ResultsTable:
             plot_legend = True
 
         df = pd.DataFrame(data=data, index=index, columns=columns)
-        ax.set_title(self.title, fontsize=14)
-        ax.set_ylabel(self.y_label, fontsize=11)
-        ax.set_xlabel(self.x_label, fontsize=11)
-        try:
-            df.plot(ax=ax, legend=plot_legend, stacked=stacked)
-        except TypeError:
-            print('No numeric data to plot...')
+
+        if stacked and len(columns) > 1:
+            # --- 1. Filter Out Columns That Are Entirely Zero ---
+            df_filtered = df.loc[:, (df != 0).any()]
+            data = df_filtered.values  # Convert the filtered DataFrame to a NumPy array
+            n_series = data.shape[1]
+
+            # --- 2. Prepare the Positive and Negative Parts ---
+            # For positive plotting: keep positive values and set non-positive ones to 0.
+            data_pos = np.where(data > 0, data, 0)
+            # For negative plotting: keep negative values and set non-negative ones to 0.
+            data_neg = np.where(data < 0, data, 0)
+
+            # --- 3. Compute Cumulative Sums Along the Series Axis ---
+            cum_pos = np.cumsum(data_pos, axis=1)
+            cum_neg = np.cumsum(data_neg, axis=1)
+
+            # --- 4. Plot Using Matplotlib's fill_between ---
+            # Use a colormap to generate distinct colors for each series.
+            colors = plt.cm.viridis(np.linspace(0, 1, n_series))
+
+            # x-axis will use the DataFrame's DatetimeIndex.
+            x = df_filtered.index
+
+            # Plot the positive areas for each series.
+            for i in range(n_series):
+                if i == 0:
+                    if cum_pos[:, i].sum() != 0:
+                        ax.fill_between(x, 0, cum_pos[:, i], color=colors[i],
+                            label=f'{df_filtered.columns[i]}')
+                else:
+                    if cum_pos[:, i].sum() != 0:
+                        ax.fill_between(x, cum_pos[:, i - 1], cum_pos[:, i], color=colors[i],
+                            label=f'{df_filtered.columns[i]}')
+
+            # Plot the negative areas for each series.
+            for i in range(n_series):
+                if i == 0:
+                    if cum_neg[:, i].sum() != 0:
+                        ax.fill_between(x, 0, cum_neg[:, i], color=colors[i], alpha=0.6,
+                            label=f'{df_filtered.columns[i]}')
+                else:
+                    if cum_neg[:, i].sum() != 0:
+                        ax.fill_between(x, cum_neg[:, i - 1], cum_neg[:, i], color=colors[i], alpha=0.6,
+                            label=f'{df_filtered.columns[i]}')
+
+            # Add legend and labels for clarity
+            ax.set_title(self.title, fontsize=14)
+            ax.set_ylabel(self.y_label, fontsize=11)
+            ax.set_xlabel(self.x_label, fontsize=11)
+            ax.legend(loc='upper right', fontsize='small')
+        else:
+            ax.set_title(self.title, fontsize=14)
+            ax.set_ylabel(self.y_label, fontsize=11)
+            ax.set_xlabel(self.x_label, fontsize=11)
+            try:
+                df.plot(ax=ax, legend=plot_legend)
+            except TypeError:
+                print('No numeric data to plot...')
 
     def plot_device(self, ax=None, device_idx: int = 0, stacked=False, title: str = ""):
         """

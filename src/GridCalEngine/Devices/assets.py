@@ -1903,6 +1903,16 @@ class Assets:
         except ValueError:
             pass
 
+    def get_batteries_indexing_dict(self) -> Dict[str, int]:
+        """
+        Get a dictionary that relates the battery uuid's with their index
+        :return: Dict[str, int]
+        """
+        gen_index_dict: Dict[str, int] = dict()
+        for k, elm in enumerate(self.batteries):
+            gen_index_dict[elm.idtag] = k  # associate the idtag to the index
+        return gen_index_dict
+
     # ------------------------------------------------------------------------------------------------------------------
     # Static generator
     # ------------------------------------------------------------------------------------------------------------------
@@ -3901,6 +3911,13 @@ class Assets:
         for k, elm in enumerate(self._technologies):
             index_dict[elm.idtag] = k  # associate the idtag to the index
         return index_dict
+
+    def get_technology_names(self) -> StrVec:
+        """
+
+        :return:
+        """
+        return np.array([elm.name for elm in self._technologies])
 
     # ------------------------------------------------------------------------------------------------------------------
     # Modelling authority

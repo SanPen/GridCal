@@ -1740,7 +1740,7 @@ class MultiCircuit(Assets):
 
         return val
 
-    def get_fuel_rates_sparse_matrix(self) -> csc_matrix:
+    def get_gen_fuel_rates_sparse_matrix(self) -> csc_matrix:
         """
         Get the fuel rates matrix with relation to the generators
         should be used to get the fuel amounts by: Rates_mat x Pgen
@@ -1762,18 +1762,18 @@ class MultiCircuit(Assets):
 
         return gen_fuel_rates_matrix.tocsc()
 
-    def get_emission_rates_sparse_matrix(self) -> csc_matrix:
+    def get_gen_emission_rates_sparse_matrix(self) -> csc_matrix:
         """
         Get the emission rates matrix with relation to the generators
         should be used to get the fuel amounts by: Rates_mat x Pgen
         :return: CSC sparse matrix (n_emissions, n_gen)
         """
-        nemissions = len(self._emission_gases)
+        n_emissions = len(self._emission_gases)
         gen_index_dict = self.get_generator_indexing_dict()
         em_index_dict = self.get_emissions_indexing_dict()
-        nelm = len(gen_index_dict)
+        n_elm = len(gen_index_dict)
 
-        gen_emissions_rates_matrix: lil_matrix = lil_matrix((nemissions, nelm), dtype=float)
+        gen_emissions_rates_matrix: lil_matrix = lil_matrix((n_emissions, n_elm), dtype=float)
 
         # create associations between generators and emissions
         for generator in self.generators:
@@ -1784,7 +1784,7 @@ class MultiCircuit(Assets):
 
         return gen_emissions_rates_matrix.tocsc()
 
-    def get_technology_connectivity_matrix(self) -> csc_matrix:
+    def get_gen_technology_connectivity_matrix(self) -> csc_matrix:
         """
         Get the technology connectivity matrix with relation to the generators
         should be used to get the generation per technology by: Tech_mat x Pgen
@@ -1799,12 +1799,35 @@ class MultiCircuit(Assets):
 
         # create associations between generators and technologies
         for generator in self.generators:
-            for assoc in generator.fuels:
+            for assoc in generator.technologies:
                 gen_idx = gen_index_dict[generator.idtag]
                 tech_idx = tech_index_dict[assoc.api_object.idtag]
                 gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
+
+    def get_batt_technology_connectivity_matrix(self) -> csc_matrix:
+        """
+        Get the technology connectivity matrix with relation to the generators
+        should be used to get the generation per technology by: Tech_mat x Pgen
+        :return: CSC sparse matrix (n_tech, n_gen)
+        """
+        ntech = len(self._technologies)
+        gen_index_dict = self.get_batteries_indexing_dict()
+        tech_index_dict = self.get_technology_indexing_dict()
+        nelm = len(gen_index_dict)
+
+        gen_tech_proportions_matrix: lil_matrix = lil_matrix((ntech, nelm), dtype=int)
+
+        # create associations between generators and technologies
+        for elm in self.batteries:
+            for assoc in elm.technologies:
+                gen_idx = gen_index_dict[elm.idtag]
+                tech_idx = tech_index_dict[assoc.api_object.idtag]
+                gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
+
+        return gen_tech_proportions_matrix.tocsc()
+
 
     def set_investments_status(self,
                                investments_list: List[dev.Investment],

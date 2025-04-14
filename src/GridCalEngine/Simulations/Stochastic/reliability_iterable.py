@@ -8,23 +8,8 @@ from typing import Tuple, Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.basic_structures import Vec, IntVec,Logger
-
-
-def get_transition_probabilities(lbda: Vec, mu: Vec) -> Tuple[Vec, Vec]:
-    """
-    Probability of the component being unavailable
-    See: Power distribution system reliability p.67
-    :param lbda: failure rate ( 1 / mttf)
-    :param mu: repair rate (1 / mttr)
-    :return: availability probability, unavailability probability
-    """
-    lbda2 = lbda * lbda
-    mu2 = mu * mu
-    p_unavailability = lbda2 / (lbda2 + 2.0 * lbda * mu + 2.0 * mu2)
-    p_availability = 1.0 - p_unavailability
-
-    return p_availability, p_unavailability
+from GridCalEngine.Simulations.Stochastic.reliability import compute_transition_probabilities
+from GridCalEngine.basic_structures import Vec, IntVec, Logger
 
 
 class ReliabilityIterable:
@@ -59,17 +44,15 @@ class ReliabilityIterable:
         nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=logger)
 
         # compute the transition probabilities
-        if forced_mttf is None:
-            lbda = 1.0 / nc.passive_branch_data.mttf
-        else:
-            lbda = 1.0 / np.full(nc.nbr, forced_mttf)
+        self.p_up_branches, self.p_dwn_branches = compute_transition_probabilities(mttf=nc.passive_branch_data.mttf,
+                                                                                   mttr=nc.passive_branch_data.mttr,
+                                                                                   forced_mttf=forced_mttf,
+                                                                                   forced_mttr=forced_mttr)
 
-        if forced_mttr is None:
-            mu = 1.0 / nc.passive_branch_data.mttr
-        else:
-            mu = 1.0 / np.full(nc.nbr, forced_mttr)
-
-        self.p_up, self.p_dwn = get_transition_probabilities(lbda=lbda, mu=mu)
+        self.p_up_gen, self.p_dwn_gen = compute_transition_probabilities(mttf=nc.generator_data.mttf,
+                                                                         mttr=nc.generator_data.mttr,
+                                                                         forced_mttf=forced_mttf,
+                                                                         forced_mttr=forced_mttr)
 
     def __iter__(self) -> "ReliabilityIterable":
         return self
@@ -85,7 +68,7 @@ class ReliabilityIterable:
 
         # determine the Markov states
         p = np.random.random(nc.nbr)
-        br_active = (p > self.p_dwn).astype(int)
+        br_active = (p > self.p_dwn_branches).astype(int)
 
         # apply the transitioning states
         nc.passive_branch_data.active = br_active
