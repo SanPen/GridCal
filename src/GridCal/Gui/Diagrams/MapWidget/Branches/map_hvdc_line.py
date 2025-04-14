@@ -24,3 +24,7 @@ class MapHvdcLine(MapLineContainer):
         :param draw_labels:
         """
         MapLineContainer.__init__(self, editor=editor, api_object=api_object, draw_labels=draw_labels)
+
+    @property
+    def api_object(self) -> HvdcLine:
+        return self._api_object

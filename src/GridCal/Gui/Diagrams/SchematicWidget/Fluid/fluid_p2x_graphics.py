@@ -50,6 +50,10 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_nexus(self.pos())
 
+    @property
+    def api_object(self) -> FluidP2x:
+        return self._api_object
+
     def mouseDoubleClickEvent(self, event):
         """
 
@@ -102,8 +106,8 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
 
         @return:
         """
-        if self._api_object is not None:
-            if self._api_object.active:
+        if self.api_object is not None:
+            if self.api_object.active:
                 self.set_enable(False)
             else:
                 self.set_enable(True)
@@ -114,14 +118,14 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self._api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def enable_disable_control_toggle(self):
         """
         Enable / Disable device voltage control
         """
-        if self._api_object is not None:
-            self._api_object.is_controlled = not self._api_object.is_controlled
+        if self.api_object is not None:
+            self.api_object.is_controlled = not self.api_object.is_controlled
 
     def set_enable(self, val=True):
         """
@@ -129,9 +133,9 @@ class FluidP2xGraphicItem(InjectionTemplateGraphicItem):
         @param val:
         @return:
         """
-        self._api_object.active = val
-        if self._api_object is not None:
-            if self._api_object.active:
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
                 self.style = ACTIVE['style']
                 self.color = ACTIVE['color']
             else:

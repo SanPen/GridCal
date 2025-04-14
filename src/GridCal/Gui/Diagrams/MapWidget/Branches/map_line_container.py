@@ -127,8 +127,8 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
 
         :return:
         """
-        for conector in self.segments_list:
-            conector.update_endings()
+        for connector in self.segments_list:
+            connector.update_endings()
 
     def end_update(self) -> None:
         """

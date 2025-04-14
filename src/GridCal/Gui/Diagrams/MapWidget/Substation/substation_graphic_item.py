@@ -70,7 +70,6 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         self.size = size
         self.line_container = None
         self.editor: GridMapWidget = editor  # reassign for the types to be clear
-        self.api_object: Substation = api_object  # reassign for the types to be clear
 
         r2 = size / 2
         x, y = editor.to_x_y(lat=lat, lon=lon)  # upper left corner
@@ -103,6 +102,11 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+
+    @property
+    def api_object(self) -> Substation:
+        return self._api_object
 
     def merge(self, se: "SubstationGraphicItem"):
         """

@@ -46,12 +46,16 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         self.setPos(self.parent.x(), self.parent.y() + 100)
         self.update_nexus(self.pos())
 
+    @property
+    def api_object(self) -> StaticGenerator:
+        return self._api_object
+
     def recolour_mode(self):
         """
         Change the colour according to the system theme
         """
-        if self._api_object is not None:
-            if self._api_object.active:
+        if self.api_object is not None:
+            if self.api_object.active:
                 self.color = ACTIVE['color']
                 self.style = ACTIVE['style']
             else:
@@ -77,7 +81,7 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         pe = menu.addAction('Active')
         pe.setCheckable(True)
-        pe.setChecked(self._api_object.active)
+        pe.setChecked(self.api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
@@ -105,8 +109,8 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         @return:
         """
-        if self._api_object is not None:
-            if self._api_object.active:
+        if self.api_object is not None:
+            if self.api_object.active:
                 self.set_enable(False)
             else:
                 self.set_enable(True)
@@ -117,7 +121,7 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self._api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -125,9 +129,9 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         @param val:
         @return:
         """
-        self._api_object.active = val
-        if self._api_object is not None:
-            if self._api_object.active:
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
                 self.style = ACTIVE['style']
                 self.color = ACTIVE['color']
             else:
@@ -147,7 +151,7 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         ts = self.editor.circuit.time_profile
 
         # plot the profiles
-        self._api_object.plot_profiles(time=ts)
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -155,4 +159,4 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        self.editor.set_editor_model(api_object=self._api_object)
+        self.editor.set_editor_model(api_object=self.api_object)

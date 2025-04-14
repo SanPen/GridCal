@@ -62,8 +62,6 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
 
         self.editor: GridMapWidget = editor  # to reinforce the type
 
-        self.api_object: VoltageLevel = api_object  # to reinforce the type
-
         self.radius = r * api_object.Vnom * 0.01
 
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
@@ -94,6 +92,10 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.hovered = False
         self.needsUpdate = False
         self.setZValue(0)
+
+    @property
+    def api_object(self) -> VoltageLevel:
+        return self._api_object
 
     def center_on_substation(self) -> None:
         """
@@ -155,11 +157,11 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         :param new_parent: New Substation Graphic item parent
         :return: Copy of the VL Grpahic Item with new parent.
         """
-        return VoltageLevelGraphicItem(parent=new_parent, editor=new_parent.editor, api_object=self.api_object,
-                                       r=self.radius / self.api_object.Vnom / 0.01, draw_labels=self.draw_labels)
-
-
-
+        return VoltageLevelGraphicItem(parent=new_parent,
+                                       editor=new_parent.editor,
+                                       api_object=self.api_object,
+                                       r=self.radius / self.api_object.Vnom / 0.01,
+                                       draw_labels=self.draw_labels)
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """

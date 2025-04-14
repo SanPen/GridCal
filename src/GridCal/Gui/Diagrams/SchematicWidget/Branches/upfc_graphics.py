@@ -40,6 +40,10 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
                                          api_object=api_object,
                                          draw_labels=draw_labels)
 
+    @property
+    def api_object(self) -> UPFC:
+        return self._api_object
+
     def contextMenuEvent(self, event):
         """
         Show context menu

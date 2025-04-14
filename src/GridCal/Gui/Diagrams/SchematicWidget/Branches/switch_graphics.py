@@ -40,19 +40,23 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
                                          api_object=api_object,
                                          draw_labels=draw_labels)
 
+    @property
+    def api_object(self) -> Switch:
+        return self._api_object
+
     def contextMenuEvent(self, event):
         """
         Show context menu
         @param event:
         @return:
         """
-        if self._api_object is not None:
+        if self.api_object is not None:
             menu = QMenu()
             menu.addSection("Line")
 
             pe = menu.addAction('Active')
             pe.setCheckable(True)
-            pe.setChecked(self._api_object.active)
+            pe.setChecked(self.api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
             add_menu_entry(menu=menu,

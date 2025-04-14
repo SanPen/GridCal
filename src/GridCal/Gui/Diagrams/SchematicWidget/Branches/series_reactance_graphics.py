@@ -40,18 +40,22 @@ class SeriesReactanceGraphicItem(LineGraphicTemplateItem):
                                          api_object=api_object,
                                          draw_labels=draw_labels)
 
+    @property
+    def api_object(self) -> SeriesReactance:
+        return self._api_object
+
     def contextMenuEvent(self, event):
         """
         Show context menu
         @param event:
         @return:
         """
-        if self._api_object is not None:
+        if self.api_object is not None:
             menu = QMenu()
 
             pe = menu.addAction('Enable/Disable')
             pe_icon = QIcon()
-            if self._api_object.active:
+            if self.api_object.active:
                 pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
             else:
                 pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
