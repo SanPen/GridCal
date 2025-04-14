@@ -333,8 +333,8 @@ class MapLineSegment(QGraphicsLineItem):
         menu.addSeparator()
 
         add_menu_entry(menu=menu,
-                       text="Delete",
-                       function_ptr=self.remove,
+                       text="Delete line",
+                       function_ptr=self.remove_line,
                        icon_path=":/Icons/icons/delete3.svg")
 
         menu.exec_(event.screenPos())
@@ -533,3 +533,6 @@ class MapLineSegment(QGraphicsLineItem):
                     f"{self.api_object.name} has been updated.")
 
 
+    def remove_line(self):
+
+        self.parentItem().remove_line()

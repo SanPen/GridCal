@@ -295,6 +295,8 @@ class BaseDiagramWidget(QSplitter):
                                         delete_from_db=delete_from_db)
                 else:
                     # simpler graphics associated, simply delete_with_dialogue
+                    if hasattr(__obj=child_graphic, __name='api_object') and delete_from_db:
+                        self.circuit.delete_element(obj=child_graphic.api_object)
                     self._remove_from_scene(graphic_object=child_graphic)
 
             # NOTE: This function already deleted from the database and other diagrams
@@ -334,7 +336,7 @@ class BaseDiagramWidget(QSplitter):
 
             # get the set of absolutely all affected graphics
             extended: Set[GenericDiagramWidget] = set()
-            for elm, graphic_obj in selected:
+            for graphic_obj in selected:
                 extended.add(graphic_obj)
                 for child_graphic in graphic_obj.get_associated_graphics():
                     extended.add(child_graphic)
@@ -355,8 +357,8 @@ class BaseDiagramWidget(QSplitter):
                 if dlg.is_accepted:
 
                     for i in dlg.selected_indices:
-                        elm, graphic_obj = selected[i]
-                        self.remove_element(device=elm,
+                        graphic_obj = selected[i]
+                        self.remove_element(device=graphic_obj._api_object,
                                             graphic_object=graphic_obj,
                                             delete_from_db=delete_from_db)
             else:

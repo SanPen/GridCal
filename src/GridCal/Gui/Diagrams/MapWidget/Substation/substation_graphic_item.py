@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSc
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
@@ -350,14 +351,9 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                        function_ptr=self.move_to_api_coordinates)
 
         add_menu_entry(menu=menu,
-                       text="Remove from schematic only",
-                       icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=self.remove_function_from_schematic)
-
-        add_menu_entry(menu=menu,
-                       text="Remove from schematic and database",
+                       text="Remove substation",
                        icon_path=":/Icons/icons/delete_db.svg",
-                       function_ptr=self.remove_function_from_schematic_and_db)
+                       function_ptr=self.remove_substation)
 
         add_menu_entry(menu=menu,
                        text="Substation diagram",
@@ -788,3 +784,37 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         # https://maps.google.com/?q=<lat>,<lng>
         url = f"https://www.google.com/maps/?q={self.lat},{self.lon}"
         webbrowser.open(url)
+
+    def get_associated_graphics(self) -> List[GenericDiagramWidget]:
+
+        associated_buses = self.editor.circuit.get_substation_buses(substation=self.api_object)
+        associated_buses_graphics = []
+        associated_vl_graphics = []
+        associated_lines_graphics = []
+
+        #TODO: Connectivity nodes / busbars? Probably this is only when dealing with the schematic
+        # associated_connectivity_node = []
+        # associated_busbars_graphics = []
+
+        for bus in associated_buses:
+
+            associated_buses_graphics.append(self.editor.graphics_manager.query(elm=bus))
+            associated_vl_graphics.append(self.editor.graphics_manager.query(elm=bus.voltage_level))
+
+            for line in self.editor.circuit.lines:
+                if line.bus_to == bus or line.bus_from == bus:
+                    associated_lines_graphics.append(self.editor.graphics_manager.query(elm=line))
+
+            # for cn in self.editor.circuit.connectivity_nodes:
+            #     if cn.bus == bus:
+            #         associated_connectivity_node.append(cn)
+            #
+            # for bb in self.editor.circuit.bus_bars:
+            #     if bb.voltage_level == bus.voltage_level:
+            #         associated_busbars_graphics.append(bb)
+
+        return associated_buses_graphics + associated_vl_graphics + associated_lines_graphics
+
+    def remove_substation(self):
+
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)

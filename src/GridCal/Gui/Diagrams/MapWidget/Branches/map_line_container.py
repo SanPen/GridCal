@@ -538,5 +538,22 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         # Update the line's length property
         if total_length > 0.0:
             self.api_object.length = total_length
-            
+
         return total_length
+
+    def get_associated_graphics(self):
+        """
+        This function gets the graphic objects associated to a MapLineContainer
+        return: The list of the associated graphic objects, which are the nodes and segments of the line.
+
+        """
+
+        # TODO: The line api_object will be deleted when parsing the MapLineContainer. But the LineLocation does not
+        #  have the GenericDiagramWidget class as parent. Will this be an issue?
+
+        return self.segments_list + self.nodes_list
+
+    def remove_line(self):
+
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+
