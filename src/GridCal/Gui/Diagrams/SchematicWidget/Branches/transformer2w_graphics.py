@@ -53,7 +53,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
             menu.addSection("Transformer")
 
@@ -61,7 +61,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                            text="Active",
                            function_ptr=self.enable_disable_toggle,
                            checkeable=True,
-                           checked_value=self.api_object.active)
+                           checked_value=self._api_object.active)
 
             add_menu_entry(menu=menu,
                            text="Draw labels",
@@ -150,11 +150,11 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         :return:
         """
 
-        if self.api_object is not None:
-            if self.api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
+        if self._api_object is not None:
+            if self._api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
                 # trigger the editor
                 self.edit()
-            elif self.api_object.device_type is DeviceType.SwitchDevice:
+            elif self._api_object.device_type is DeviceType.SwitchDevice:
                 # change state
                 self.enable_disable_toggle()
 
@@ -165,8 +165,8 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
         templates = self.editor.circuit.transformer_types
-        current_template = self.api_object.template
-        dlg = TransformerEditor(self.api_object, Sbase,
+        current_template = self._api_object.template
+        dlg = TransformerEditor(self._api_object, Sbase,
                                 modify_on_accept=True,
                                 templates=templates,
                                 current_template=current_template)
@@ -179,7 +179,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         :return:
         """
 
-        dlg = TransformerTapsEditor(api_object=self.api_object.tap_changer)
+        dlg = TransformerTapsEditor(api_object=self._api_object.tap_changer)
         if dlg.exec():
             pass
 
@@ -190,19 +190,19 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
 
-        if self.api_object.template is not None:
+        if self._api_object.template is not None:
             # automatically pick the template
-            if isinstance(self.api_object.template, TransformerType):
-                self.editor.circuit.add_transformer_type(self.api_object.template)
+            if isinstance(self._api_object.template, TransformerType):
+                self.editor.circuit.add_transformer_type(self._api_object.template)
             else:
                 # raise dialogue to set the template
-                dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
+                dlg = TransformerEditor(self._api_object, Sbase, modify_on_accept=False)
                 if dlg.exec():
                     tpe = dlg.get_template()
                     self.editor.circuit.add_transformer_type(tpe)
         else:
             # raise dialogue to set the template
-            dlg = TransformerEditor(self.api_object, Sbase, modify_on_accept=False)
+            dlg = TransformerEditor(self._api_object, Sbase, modify_on_accept=False)
             if dlg.exec():
                 tpe = dlg.get_template()
                 self.editor.circuit.add_transformer_type(tpe)
@@ -217,7 +217,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                              title="Add transformer type")
 
         if ok:
-            tpe = self.api_object.get_transformer_type(Sbase=self.editor.circuit.Sbase)
+            tpe = self._api_object.get_transformer_type(Sbase=self.editor.circuit.Sbase)
 
             self.editor.circuit.add_transformer_type(tpe)
 
@@ -226,32 +226,32 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         Flip connections
         :return:
         """
-        self.api_object.flip()
+        self._api_object.flip()
 
     def tap_up(self):
         """
         Set one tap up
         """
-        self.api_object.tap_up()
+        self._api_object.tap_up()
 
     def tap_down(self):
         """
         Set one tap down
         """
-        self.api_object.tap_down()
+        self._api_object.tap_down()
 
     def control_v_from(self):
         """
 
         :return:
         """
-        self.api_object.regulation_bus = self.api_object.bus_from
-        self.api_object.tap_module_control_mode = TapModuleControl.Vm
+        self._api_object.regulation_bus = self._api_object.bus_from
+        self._api_object.tap_module_control_mode = TapModuleControl.Vm
 
     def control_v_to(self):
         """
 
         :return:
         """
-        self.api_object.regulation_bus = self.api_object.bus_to
-        self.api_object.tap_module_control_mode = TapModuleControl.Vm
+        self._api_object.regulation_bus = self._api_object.bus_to
+        self._api_object.tap_module_control_mode = TapModuleControl.Vm

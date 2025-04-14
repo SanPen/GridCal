@@ -46,12 +46,12 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
 
             pe = menu.addAction('Enable/Disable')
             pe_icon = QIcon()
-            if self.api_object.active:
+            if self._api_object.active:
                 pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
             else:
                 pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))
@@ -119,13 +119,13 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
 
         :return:
         """
-        self.api_object.regulation_bus = self.api_object.bus_from
-        self.api_object.tap_module_control_mode = TapModuleControl.Vm
+        self._api_object.regulation_bus = self._api_object.bus_from
+        self._api_object.tap_module_control_mode = TapModuleControl.Vm
 
     def control_v_to(self):
         """
 
         :return:
         """
-        self.api_object.regulation_bus = self.api_object.bus_to
-        self.api_object.tap_module_control_mode = TapModuleControl.Vm
+        self._api_object.regulation_bus = self._api_object.bus_to
+        self._api_object.tap_module_control_mode = TapModuleControl.Vm

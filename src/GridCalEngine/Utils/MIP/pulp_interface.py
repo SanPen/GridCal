@@ -292,7 +292,7 @@ class LpModel:
                     # set the modified (original) objective function
                     self.model.setObjective(self.model.objective)
 
-                    # at this point we can delete the debug model
+                    # at this point we can delete_with_dialogue the debug model
                     del debug_model
 
                     if progress_text is not None:

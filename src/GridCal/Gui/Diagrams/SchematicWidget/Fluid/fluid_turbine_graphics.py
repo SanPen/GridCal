@@ -61,8 +61,8 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.color = ACTIVE['color']
                 self.style = ACTIVE['style']
             else:
@@ -110,8 +110,8 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
 
         @return:
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.set_enable(False)
             else:
                 self.set_enable(True)
@@ -122,14 +122,14 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self._api_object, override_question=True)
 
     def enable_disable_control_toggle(self):
         """
         Enable / Disable device voltage control
         """
-        if self.api_object is not None:
-            self.api_object.is_controlled = not self.api_object.is_controlled
+        if self._api_object is not None:
+            self._api_object.is_controlled = not self._api_object.is_controlled
 
     def set_enable(self, val=True):
         """
@@ -137,9 +137,9 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
         @param val:
         @return:
         """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
+        self._api_object.active = val
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.style = ACTIVE['style']
                 self.color = ACTIVE['color']
             else:

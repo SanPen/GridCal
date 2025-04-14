@@ -99,7 +99,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         Centers the graphic item on the substation
         """
-        parent_center = self.parent.get_center_pos()
+        parent_center = self._parent.get_center_pos()
         xc = parent_center.x() - self.rect().width() / 2
         yc = parent_center.y() - self.rect().height() / 2
         self.setRect(xc, yc, self.rect().width(), self.rect().height())
@@ -166,14 +166,14 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         Event handler for mouse move events.
         """
         if self.hovered:
-            self.parent.mouseMoveEvent(event)
+            self._parent.mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        self.parent.mousePressEvent(event)
+        self._parent.mousePressEvent(event)
         self.editor.disableMove = True
         self.update_position_at_the_diagram()  # always update
 
@@ -185,7 +185,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         Event handler for mouse release events.
         """
         super().mouseReleaseEvent(event)
-        self.parent.mouseReleaseEvent(event)
+        self._parent.mouseReleaseEvent(event)
         self.editor.disableMove = True
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
@@ -261,7 +261,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         bus = Bus(name=f"Bus {self.api_object.name}",
                   Vnom=self.api_object.Vnom,
-                  substation=self.parent.api_object,
+                  substation=self._parent._api_object,
                   voltage_level=self.api_object)
 
         self.editor.circuit.add_bus(obj=bus)

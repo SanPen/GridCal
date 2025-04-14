@@ -129,7 +129,7 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
         # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
-        self.editor.update_diagram_element(device=self.api_object,
+        self.editor.update_diagram_element(device=self._api_object,
                                            latitude=self.lat,
                                            longitude=self.lon,
                                            graphic_object=self)
@@ -148,8 +148,8 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
         # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
-        self.api_object.lat = self.lat
-        self.api_object.long = self.lon
+        self._api_object.lat = self.lat
+        self._api_object.long = self.lon
 
     def move_to_api_coordinates(self, question: bool = True):
         """
@@ -157,15 +157,15 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         :return:
         """
         if question:
-            ok = yes_no_question(f"Move substation {self.api_object.name} graphics to it's database coordinates?",
+            ok = yes_no_question(f"Move substation {self._api_object.name} graphics to it's database coordinates?",
                                  "Move substation graphics")
 
             if ok:
-                x, y = self.move_to(lat=self.api_object.lat,
-                                    lon=self.api_object.long)  # this moves the vl too
+                x, y = self.move_to(lat=self._api_object.lat,
+                                    lon=self._api_object.long)  # this moves the vl too
                 self.set_callbacks(x, y)
         else:
-            x, y = self.move_to(lat=self.api_object.lat, lon=self.api_object.long)  # this moves the vl too
+            x, y = self.move_to(lat=self._api_object.lat, lon=self._api_object.long)  # this moves the vl too
             self.set_callbacks(x, y)
 
     def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
@@ -253,7 +253,7 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
         add_menu_entry(menu=menu,
                        text="Delete",
-                       icon_path=":/Icons/icons/delete.svg",
+                       icon_path=":/Icons/icons/delete_with_dialogue.svg",
                        function_ptr=self.remove)
 
         menu.exec_(event.screenPos())

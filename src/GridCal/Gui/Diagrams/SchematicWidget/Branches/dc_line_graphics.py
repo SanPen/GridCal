@@ -259,13 +259,13 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
             menu.addSection("Line")
 
             pe = menu.addAction('Active')
             pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
+            pe.setChecked(self._api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
             add_menu_entry(menu=menu,
@@ -325,11 +325,11 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         :param event:
         :return:
         """
-        if self.api_object is not None:
-            if self.api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
+        if self._api_object is not None:
+            if self._api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
                 # trigger the editor
                 self.edit()
-            elif self.api_object.device_type is DeviceType.SwitchDevice:
+            elif self._api_object.device_type is DeviceType.SwitchDevice:
                 # change state
                 self.enable_disable_toggle()
 
@@ -340,8 +340,8 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
         templates = self.editor.circuit.underground_cable_types + self.editor.circuit.overhead_line_types
-        current_template = self.api_object.template
-        dlg = DcLineEditor(self.api_object, Sbase, templates, current_template)
+        current_template = self._api_object.template
+        dlg = DcLineEditor(self._api_object, Sbase, templates, current_template)
         if dlg.exec():
             pass
 
@@ -352,7 +352,7 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
 
-        dlg = DcLineEditor(branch=self.api_object, Sbase=Sbase)
+        dlg = DcLineEditor(branch=self._api_object, Sbase=Sbase)
         if dlg.exec():
             pass
 

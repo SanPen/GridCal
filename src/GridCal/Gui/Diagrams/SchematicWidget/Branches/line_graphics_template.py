@@ -32,10 +32,13 @@ from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+
+NODE_GRAPHIC = BusGraphicItem | CnGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
 
 
 class TransformerSymbol(QGraphicsRectItem):
@@ -517,6 +520,14 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         self.set_colour(self.color, self.width, self.style)
 
+    @property
+    def parent(self) -> NODE_GRAPHIC:
+        return self._parent
+
+    @property
+    def api_object(self) -> BRANCH_TYPES:
+        return self._api_object
+
     def get_terminal_from(self) -> Union[None, BarTerminalItem, RoundTerminalItem]:
         """
         Get the terminal from
@@ -606,7 +617,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         Remove this object in the diagram
         @return:
         """
-        self.editor.remove_from_scene(self)
+        self.editor._remove_from_scene(self)
 
     def remove(self, ask=True):
         """
@@ -622,7 +633,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         if ok:
             self.editor.circuit.delete_branch(obj=self.api_object)
-            self.editor.delete_diagram_element(device=self.api_object)
+            self.editor.delete_element_utility_function(device=self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -982,56 +993,56 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         :return:
         """
-        return self.get_from_graphic_object().api_object
+        return self.get_from_graphic_object()._api_object
 
     def get_bus_to(self) -> Bus:
         """
 
         :return:
         """
-        return self.get_to_graphic_object().api_object
+        return self.get_to_graphic_object()._api_object
 
     def get_cn_from(self) -> ConnectivityNode:
         """
 
         :return:
         """
-        return self.get_from_graphic_object().api_object
+        return self.get_from_graphic_object()._api_object
 
     def get_cn_to(self) -> ConnectivityNode:
         """
 
         :return:
         """
-        return self.get_to_graphic_object().api_object
+        return self.get_to_graphic_object()._api_object
 
     def get_busbar_from(self) -> BusBar:
         """
 
         :return:
         """
-        return self.get_from_graphic_object().api_object
+        return self.get_from_graphic_object()._api_object
 
     def get_busbar_to(self) -> BusBar:
         """
 
         :return:
         """
-        return self.get_to_graphic_object().api_object
+        return self.get_to_graphic_object()._api_object
 
     def get_fluid_node_from(self) -> FluidNode:
         """
 
         :return:
         """
-        return self.get_from_graphic_object().api_object
+        return self.get_from_graphic_object()._api_object
 
     def get_fluid_node_to(self) -> FluidNode:
         """
 
         :return:
         """
-        return self.get_to_graphic_object().api_object
+        return self.get_to_graphic_object()._api_object
 
     def get_fluid_node_graphics_from(self) -> FluidNodeGraphicItem:
         """

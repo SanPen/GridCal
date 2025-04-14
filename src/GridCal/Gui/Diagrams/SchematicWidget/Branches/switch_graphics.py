@@ -46,13 +46,13 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
             menu.addSection("Line")
 
             pe = menu.addAction('Active')
             pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
+            pe.setChecked(self._api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
             add_menu_entry(menu=menu,

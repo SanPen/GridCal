@@ -610,7 +610,7 @@ class DeleteDialogue(QtWidgets.QDialog):
         self.mdl = get_list_model(objects_list, checks=checks, check_value=check_value)
         self.list_view.setModel(self.mdl)
 
-        # delete from DB check
+        # delete_with_dialogue from DB check
         self.delete_from_db_check = QtWidgets.QCheckBox()
         self.delete_from_db_check.setText(r'Remove from the database')
         self.delete_from_db_check.setChecked(delete_from_db)

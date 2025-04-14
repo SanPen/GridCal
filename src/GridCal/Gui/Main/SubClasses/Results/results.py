@@ -290,7 +290,7 @@ class ResultsMain(SimulationsMain):
                 study_name = path[0]
                 study_type = self.available_results_dict[study_name]
 
-                quit_msg = "Do you want to delete the results driver " + study_name + "?"
+                quit_msg = "Do you want to delete_with_dialogue the results driver " + study_name + "?"
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                        quit_msg,
                                                        QtWidgets.QMessageBox.StandardButton.Yes,

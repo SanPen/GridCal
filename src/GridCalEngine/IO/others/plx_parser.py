@@ -225,7 +225,7 @@ class PlxLine(PlxElement):
 
         :return:
         """
-        # delete coordinates with zeros
+        # delete_with_dialogue coordinates with zeros
         for k in range(len(self.coordinates) - 1, -1, -1):
             a, b = self.coordinates[k]
             if a == 0.0 or b == 0.0:
@@ -242,7 +242,7 @@ class PlxLine(PlxElement):
             locations = [[self.node_from.latitude, self.node_from.longitude],
                          [self.node_to.latitude, self.node_to.longitude]]
 
-        # delete coordinates with zeros
+        # delete_with_dialogue coordinates with zeros
         for k in range(len(locations) - 1, -1, -1):
             a, b = locations[k]
             if (a + b) <= 0:

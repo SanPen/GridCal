@@ -46,8 +46,8 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.color = ACTIVE['color']
                 self.style = ACTIVE['style']
             else:
@@ -72,7 +72,7 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
 
         pe = menu.addAction('Active')
         pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
+        pe.setChecked(self._api_object.active)
         pe.triggered.connect(self.enable_disable_toggle)
 
         pa = menu.addAction('Plot profiles')
@@ -100,8 +100,8 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
 
         @return:
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.set_enable(False)
             else:
                 self.set_enable(True)
@@ -112,7 +112,7 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self._api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -120,9 +120,9 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
         @param val:
         @return:
         """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
+        self._api_object.active = val
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.style = ACTIVE['style']
                 self.color = ACTIVE['color']
             else:
@@ -138,5 +138,5 @@ class LoadGraphicItem(InjectionTemplateGraphicItem):
         ts = self.editor.circuit.time_profile
 
         # plot the profiles
-        self.api_object.plot_profiles(time=ts)
+        self._api_object.plot_profiles(time=ts)
 

@@ -127,7 +127,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.index = index
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
+        self.label = QtWidgets.QGraphicsTextItem(self._api_object.name if self._api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
@@ -208,7 +208,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-        self.editor.update_diagram_element(device=self.api_object,
+        self.editor.update_diagram_element(device=self._api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
                                            w=self.w,
@@ -236,7 +236,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.editor.remove_from_scene(self.big_marker)
+            self.editor._remove_from_scene(self.big_marker)
             self.big_marker = None
 
     def set_position(self, x: float, y: float) -> None:
@@ -307,7 +307,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.arrange_children()
 
         # update editor diagram position
-        self.editor.update_diagram_element(device=self.api_object,
+        self.editor.update_diagram_element(device=self._api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
                                            w=self.w,
@@ -394,7 +394,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path="",
                        function_ptr=self.enable_disable_toggle,
                        checkeable=True,
-                       checked_value=self.api_object.active)
+                       checked_value=self._api_object.active)
 
         add_menu_entry(menu=menu,
                        text="Draw labels",
@@ -454,7 +454,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/dc.svg",
                        function_ptr=self.enable_disable_dc,
                        checkeable=True,
-                       checked_value=self.api_object.is_dc)
+                       checked_value=self._api_object.is_dc)
 
         add_menu_entry(menu=menu,
                        text="Plot profiles",
@@ -544,7 +544,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Assign the snapshot rate to the profile
         """
-        self.editor.set_active_status_to_profile(self.api_object)
+        self.editor.set_active_status_to_profile(self._api_object)
 
     def delete_all_connections(self, ask: bool, delete_from_db: bool) -> None:
         """
@@ -571,7 +571,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             ok = True
 
         if ok:
-            self.editor.remove_element(device=self.api_object,
+            self.editor.remove_element(device=self._api_object,
                                        graphic_object=self,
                                        delete_from_db=delete_from_db)
             self._terminal.clear()
@@ -580,7 +580,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Update the colour
         """
-        if self.api_object.active:
+        if self._api_object.active:
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
             self.set_tile_color(QBrush(DEACTIVATED['color']))
@@ -589,15 +589,15 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Expands the diagram from this bus
         """
-        self.editor.expand_diagram_from_bus(root_bus=self.api_object)
+        self.editor.expand_diagram_from_bus(root_bus=self._api_object)
 
     def new_vecinity_diagram_from_here(self):
         """
         Create new vecinity diagram
         :return:
         """
-        if self.api_object is not None:
-            self.editor.gui.new_bus_branch_diagram_from_bus(root_bus=self.api_object)
+        if self._api_object is not None:
+            self.editor.gui.new_bus_branch_diagram_from_bus(root_bus=self._api_object)
         else:
             warning_msg("The api object is none :(")
 
@@ -606,15 +606,15 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Toggle bus element state
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
 
             # change the bus state (snapshot)
-            self.api_object.active = not self.api_object.active
+            self._api_object.active = not self._api_object.active
 
             # change the Branches state (snapshot)
             for host in self._terminal.hosting_connections:
-                if host.api_object is not None:
-                    host.set_enable(val=self.api_object.active)
+                if host._api_object is not None:
+                    host.set_enable(val=self._api_object.active)
 
             self.update_color()
 
@@ -624,12 +624,12 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self._api_object, override_question=True)
 
                     # change the Branches state (time series)
                     for host in self._terminal.hosting_connections:
-                        if host.api_object is not None:
-                            self.editor.set_active_status_to_profile(host.api_object, override_question=True)
+                        if host._api_object is not None:
+                            self.editor.set_active_status_to_profile(host._api_object, override_question=True)
 
     def any_short_circuit(self) -> bool:
         """
@@ -690,10 +690,10 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Activates or deactivates the bus as a DC bus
         """
-        if self.api_object.is_dc:
-            self.api_object.is_dc = False
+        if self._api_object.is_dc:
+            self._api_object.is_dc = False
         else:
-            self.api_object.is_dc = True
+            self._api_object.is_dc = True
 
     def rotate(self):
         """
@@ -702,7 +702,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         self.r += 90
         self.setRotation(self.r)
-        self.editor.update_diagram_element(device=self.api_object,
+        self.editor.update_diagram_element(device=self._api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
                                            w=self.w,
@@ -716,8 +716,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Plot profiles
         """
         # get the index of this object
-        i = self.editor.circuit.get_buses().index(self.api_object)
-        self.editor.plot_bus(i, self.api_object)
+        i = self.editor.circuit.get_buses().index(self._api_object)
+        self.editor.plot_bus(i, self._api_object)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
@@ -725,15 +725,15 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param event: QGraphicsSceneMouseEvent
         """
 
-        if self.api_object.device_type == DeviceType.BusDevice:
-            self.editor.set_editor_model(api_object=self.api_object)
+        if self._api_object.device_type == DeviceType.BusDevice:
+            self.editor.set_editor_model(api_object=self._api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         Mouse double click
         :param event: event object
         """
-        title = self.api_object.name if self.api_object is not None else ""
+        title = self._api_object.name if self._api_object is not None else ""
         msg = ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
@@ -787,7 +787,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_load(bus=self.api_object)
+            api_obj = self.editor.circuit.add_load(bus=self._api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -800,7 +800,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param api_obj: If None, a new shunt is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_shunt(bus=self.api_object)
+            api_obj = self.editor.circuit.add_shunt(bus=self._api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -813,7 +813,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param api_obj: if None, a new generator is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_generator(bus=self._api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -827,7 +827,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_static_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_static_generator(bus=self._api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -842,7 +842,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_battery(bus=self.api_object)
+            api_obj = self.editor.circuit.add_battery(bus=self._api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -857,7 +857,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
+            api_obj = self.editor.circuit.add_external_grid(bus=self._api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -872,7 +872,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_current_injection(bus=self.api_object)
+            api_obj = self.editor.circuit.add_current_injection(bus=self._api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -887,7 +887,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_controllable_shunt(bus=self.api_object)
+            api_obj = self.editor.circuit.add_controllable_shunt(bus=self._api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self._child_graphics.append(_grph)
@@ -909,7 +909,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         if self.draw_labels:
             vm = format_str.format(Vm)
-            vm_kv = format_str.format(Vm * self.api_object.Vnom)
+            vm_kv = format_str.format(Vm * self._api_object.Vnom)
             va = format_str.format(Va)
             msg = f"Bus {i}"
             if tpe is not None:
@@ -924,7 +924,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         else:
             msg = ""
 
-        title = self.api_object.name if self.api_object is not None else ""
+        title = self._api_object.name if self._api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
@@ -936,18 +936,18 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         # https://maps.google.com/?q=<lat>,<lng>
-        if self.api_object is not None:
-            url = f"https://www.google.com/maps/?q={self.api_object.latitude},{self.api_object.longitude}"
+        if self._api_object is not None:
+            url = f"https://www.google.com/maps/?q={self._api_object.latitude},{self._api_object.longitude}"
             webbrowser.open(url)
         else:
             warning_msg(f"No API object available :(")
 
     def __str__(self):
 
-        if self.api_object is None:
+        if self._api_object is None:
             return f"Bus graphics {hex(id(self))}"
         else:
-            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+            return f"Graphics of {self._api_object.name} [{hex(id(self))}]"
 
     def __repr__(self):
         return str(self)

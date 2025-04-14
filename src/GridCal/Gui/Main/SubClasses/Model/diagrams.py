@@ -2247,26 +2247,26 @@ class DiagramsMain(CompiledArraysMain):
 
     def delete_selected_from_the_diagram(self):
         """
-        Prompt to delete the selected buses from the current diagram
+        Prompt to delete_with_dialogue the selected buses from the current diagram
         """
 
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected_from_widget(delete_from_db=False)
+            diagram_widget.delete_selected_from_widget(delete_from_db=False)
 
         elif isinstance(diagram_widget, GridMapWidget):
-            diagram_widget.delete_Selected_from_widget(delete_from_db=False)
+            diagram_widget.delete_selected_from_widget(delete_from_db=False)
 
     def delete_selected_from_the_diagram_and_db(self):
         """
-        Prompt to delete the selected elements from the current diagram and database
+        Prompt to delete_with_dialogue the selected elements from the current diagram and database
         """
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected_from_widget(delete_from_db=True)
+            diagram_widget.delete_selected_from_widget(delete_from_db=True)
 
         elif isinstance(diagram_widget, GridMapWidget):
-            diagram_widget.delete_Selected_from_widget(delete_from_db=True)
+            diagram_widget.delete_selected_from_widget(delete_from_db=True)
 
     def try_to_fix_buses_location(self):
         """
@@ -2289,7 +2289,7 @@ class DiagramsMain(CompiledArraysMain):
         diagram = self.get_selected_diagram_widget()
 
         if isinstance(diagram, SchematicWidget):
-            lst = diagram.get_selection_api_objects()
+            lst = diagram._get_selection_api_objects()
         elif isinstance(diagram, GridMapWidget):
             lst = list()
         else:
@@ -2526,7 +2526,7 @@ class DiagramsMain(CompiledArraysMain):
     def delete_from_all_diagrams(self, elements: List[ALL_DEV_TYPES]):
         """
         Delete elements from all editors
-        :param elements: list of devices to delete from the graphics editors
+        :param elements: list of devices to delete_with_dialogue from the graphics editors
         :return:
         """
         for diagram_widget in self.diagram_widgets_list:
@@ -2616,7 +2616,7 @@ class DiagramsMain(CompiledArraysMain):
     def call_delete_db_element(self, caller: SchematicWidget | GridMapWidget | BaseDiagramWidget,
                                api_obj: ALL_DEV_TYPES):
         """
-        This function is meant to be a master delete function that is passed to each diagram
+        This function is meant to be a master delete_with_dialogue function that is passed to each diagram
         so that when a diagram deletes an element, the element is deleted in all other diagrams
         :param caller:
         :param api_obj:
@@ -2624,7 +2624,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         for diagram in self.diagram_widgets_list:
             if diagram != caller:
-                diagram.delete_diagram_element(device=api_obj, propagate=False)
+                diagram.delete_element_utility_function(device=api_obj, propagate=False)
 
         try:
             self.circuit.delete_element(obj=api_obj)

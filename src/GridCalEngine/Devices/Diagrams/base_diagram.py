@@ -309,7 +309,7 @@ class BaseDiagram:
             d = self.data.get(str(device.device_type.value), None)
 
             if d:
-                # the category does exist, delete from it
+                # the category does exist, delete_with_dialogue from it
                 return d.delete_device(device=device)
             else:
                 # not found so we're ok

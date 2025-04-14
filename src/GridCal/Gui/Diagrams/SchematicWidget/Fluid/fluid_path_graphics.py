@@ -65,7 +65,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         Gether the color from the api object and apply
         :return:
         """
-        self.color = QColor(self.api_object.color) if self.api_object is not None else ACTIVE['fluid']
+        self.color = QColor(self._api_object.color) if self._api_object is not None else ACTIVE['fluid']
         self.set_colour(color=self.color,
                         w=self.width,
                         style=self.style)
@@ -104,11 +104,11 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         :param event:
         :return:
         """
-        if self.api_object is not None:
-            if self.api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
+        if self._api_object is not None:
+            if self._api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
                 # trigger the editor
                 self.edit()
-            elif self.api_object.device_type is DeviceType.SwitchDevice:
+            elif self._api_object.device_type is DeviceType.SwitchDevice:
                 # change state
                 self.enable_disable_toggle()
 
@@ -118,7 +118,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
             menu.addSection("FluidPath")
 
@@ -169,4 +169,4 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this fluid path into a line?',
                              'Convert fluid path')
         if ok:
-            self.editor.convert_fluid_path_to_line(element=self.api_object, item_graphic=self)
+            self.editor.convert_fluid_path_to_line(element=self._api_object, item_graphic=self)

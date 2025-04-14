@@ -59,8 +59,8 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.color = ACTIVE['color']
                 self.style = ACTIVE['style']
             else:
@@ -89,14 +89,14 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                        icon_path="",
                        function_ptr=self.enable_disable_toggle,
                        checkeable=True,
-                       checked_value=self.api_object.active)
+                       checked_value=self._api_object.active)
 
         add_menu_entry(menu=menu,
                        text="Voltage control",
                        icon_path="",
                        function_ptr=self.enable_disable_control_toggle,
                        checkeable=True,
-                       checked_value=self.api_object.is_controlled)
+                       checked_value=self._api_object.is_controlled)
 
         add_menu_entry(menu=menu,
                        text="Set regulation bus",
@@ -139,13 +139,13 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         #                icon_path=":/Icons/icons/delete3.svg",
         #                function_ptr=self.remove)
 
-        add_menu_entry(menu, text='Remove from schematic and DB',
-                       icon_path=":/Icons/icons/delete_db.svg",
-                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
+        # add_menu_entry(menu, text='Remove from schematic and DB',
+        #                icon_path=":/Icons/icons/delete_db.svg",
+        #                function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
 
-        add_menu_entry(menu, text='Remove from schematic',
+        add_menu_entry(menu, text='Remove',
                        icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=False))
+                       function_ptr=self.remove)
 
         add_menu_entry(menu=menu,
                        text="Convert to battery",
@@ -166,15 +166,15 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         ok = yes_no_question('Are you sure that you want to convert this generator into a battery?',
                              'Convert generator')
         if ok:
-            self.editor.convert_generator_to_battery(gen=self.api_object, graphic_object=self)
+            self.editor.convert_generator_to_battery(gen=self._api_object, graphic_object=self)
 
     def enable_disable_toggle(self):
         """
 
         @return:
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.set_enable(False)
             else:
                 self.set_enable(True)
@@ -185,14 +185,14 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self._api_object, override_question=True)
 
     def enable_disable_control_toggle(self):
         """
         Enable / Disable device voltage control
         """
-        if self.api_object is not None:
-            self.api_object.is_controlled = not self.api_object.is_controlled
+        if self._api_object is not None:
+            self._api_object.is_controlled = not self._api_object.is_controlled
 
     def set_regulation_bus(self):
         """
@@ -213,14 +213,14 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         :return:
         """
-        self.api_object.control_bus = None
+        self._api_object.control_bus = None
 
     def clear_regulation_cn(self):
         """
 
         :return:
         """
-        self.api_object.control_cn = None
+        self._api_object.control_cn = None
 
     def set_enable(self, val=True):
         """
@@ -228,9 +228,9 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         @param val:
         @return:
         """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
+        self._api_object.active = val
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.style = ACTIVE['style']
                 self.color = ACTIVE['color']
             else:
@@ -250,27 +250,27 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         ts = self.editor.circuit.time_profile
 
         # plot the profiles
-        self.api_object.plot_profiles(time=ts)
+        self._api_object.plot_profiles(time=ts)
 
     def edit_q_curve(self):
         """
         Open the appropriate editor dialogue
         :return:
         """
-        dlg = GeneratorQCurveEditor(q_curve=self.api_object.q_curve,
-                                    Qmin=self.api_object.Qmin,
-                                    Qmax=self.api_object.Qmax,
-                                    Pmin=self.api_object.Pmin,
-                                    Pmax=self.api_object.Pmax,
-                                    Snom=self.api_object.Snom)
+        dlg = GeneratorQCurveEditor(q_curve=self._api_object.q_curve,
+                                    Qmin=self._api_object.Qmin,
+                                    Qmax=self._api_object.Qmax,
+                                    Pmin=self._api_object.Pmin,
+                                    Pmax=self._api_object.Pmax,
+                                    Snom=self._api_object.Snom)
         if dlg.exec():
             pass
 
-        self.api_object.Snom = np.round(dlg.Snom, 1) if dlg.Snom > 1 else dlg.Snom
-        self.api_object.Qmin = dlg.Qmin
-        self.api_object.Qmax = dlg.Qmax
-        self.api_object.Pmin = dlg.Pmin
-        self.api_object.Pmax = dlg.Pmax
+        self._api_object.Snom = np.round(dlg.Snom, 1) if dlg.Snom > 1 else dlg.Snom
+        self._api_object.Qmin = dlg.Qmin
+        self._api_object.Qmax = dlg.Qmax
+        self._api_object.Pmin = dlg.Pmin
+        self._api_object.Pmax = dlg.Pmax
 
     def solar_pv_wizard(self):
         """
@@ -281,15 +281,15 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         if self.editor.circuit.has_time_series:
 
             dlg = SolarPvWizard(time_array=self.editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
-                                peak_power=self.api_object.Pmax,
-                                latitude=self.api_object.bus.latitude,
-                                longitude=self.api_object.bus.longitude,
-                                gen_name=self.api_object.name,
-                                bus_name=self.api_object.bus.name)
+                                peak_power=self._api_object.Pmax,
+                                latitude=self._api_object.bus.latitude,
+                                longitude=self._api_object.bus.longitude,
+                                gen_name=self._api_object.name,
+                                bus_name=self._api_object.bus.name)
             if dlg.exec():
                 if dlg.is_accepted:
-                    if len(dlg.P) == self.api_object.P_prof.size():
-                        self.api_object.P_prof.set(dlg.P)
+                    if len(dlg.P) == self._api_object.P_prof.size():
+                        self._api_object.P_prof.set(dlg.P)
 
                         self.plot()
                     else:
@@ -306,15 +306,15 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         if self.editor.circuit.has_time_series:
 
             dlg = WindFarmWizard(time_array=self.editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
-                                 peak_power=self.api_object.Pmax,
-                                 latitude=self.api_object.bus.latitude,
-                                 longitude=self.api_object.bus.longitude,
-                                 gen_name=self.api_object.name,
-                                 bus_name=self.api_object.bus.name)
+                                 peak_power=self._api_object.Pmax,
+                                 latitude=self._api_object.bus.latitude,
+                                 longitude=self._api_object.bus.longitude,
+                                 gen_name=self._api_object.name,
+                                 bus_name=self._api_object.bus.name)
             if dlg.exec():
                 if dlg.is_accepted:
-                    if len(dlg.P) == self.api_object.P_prof.size():
-                        self.api_object.P_prof.set(dlg.P)
+                    if len(dlg.P) == self._api_object.P_prof.size():
+                        self._api_object.P_prof.set(dlg.P)
                         self.plot()
                     else:
                         raise Exception("Wrong length from the solar photovoltaic wizard")

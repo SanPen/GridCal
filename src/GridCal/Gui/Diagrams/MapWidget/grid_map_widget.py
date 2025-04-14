@@ -183,7 +183,7 @@ class SelectionDialog(QDialog):
         layout = QVBoxLayout()
 
         # Add instructions
-        instruction_label = QLabel(f"Click on a substation to reconnect branch {branch.api_object.name}")
+        instruction_label = QLabel(f"Click on a substation to reconnect branch {branch._api_object.name}")
         instruction_label.setWordWrap(True)
         layout.addWidget(instruction_label)
 
@@ -273,7 +273,7 @@ class GridMapWidget(BaseDiagramWidget):
         """
         self.diagram = diagram
 
-    def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True):
+    def delete_element_utility_function(self, device: ALL_DEV_TYPES, propagate: bool = True):
         """
 
         :param device:
@@ -284,7 +284,7 @@ class GridMapWidget(BaseDiagramWidget):
         graphic_object: ALL_MAP_GRAPHICS = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            self.remove_from_scene(graphic_object)
+            self._remove_from_scene(graphic_object)
 
         if propagate:
             self.gui.call_delete_db_element(caller=self, api_obj=device)
@@ -310,12 +310,20 @@ class GridMapWidget(BaseDiagramWidget):
     def diagram_scene(self) -> MapDiagramScene:
         return self.map.diagram_scene
 
-    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, ALL_MAP_GRAPHICS]]:
+    def _get_selected(self) -> List[ALL_MAP_GRAPHICS]:
         """
         Get selection
-        :return: List of EditableDevice, QGraphicsItem
+        :return: List of ALL_MAP_GRAPHICS
         """
-        return [(elm.api_object, elm) for elm in self.diagram_scene.selectedItems()]
+        return [elm for elm in self.diagram_scene.selectedItems()]
+
+    def _get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get a list of the API objects from the selection
+        :return: List[EditableDevice]
+        """
+        return [e.api_object for e in self.diagram_scene.selectedItems()]
+
 
     def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine,
                                                                   MapDcLine,
@@ -357,7 +365,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         self.diagram_scene.addItem(graphic_object)
 
-    def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS | GenericDiagramWidget) -> None:
+    def _remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS | GenericDiagramWidget) -> None:
         """
         Remove item from the diagram scene
         :param graphic_object: Graphic object associated
@@ -546,8 +554,8 @@ class GridMapWidget(BaseDiagramWidget):
         :param node: Node to remove
         """
 
-        self.graphics_manager.delete_device(node.api_object)
-        self.remove_from_scene(node)
+        self.graphics_manager.delete_device(node._api_object)
+        self._remove_from_scene(node)
 
     def remove_substation(self,
                           api_object: Substation,
@@ -564,24 +572,24 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Remove from graphics manager and scene
         sub = self.graphics_manager.delete_device(api_object)
-        self.remove_from_scene(sub)
+        self._remove_from_scene(sub)
 
-        # Find and delete all lines connected to the substation
+        # Find and delete_with_dialogue all lines connected to the substation
         for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
 
             for elm in self.graphics_manager.get_device_type_list(tpe):
 
-                if elm.api_object.get_substation_from() == api_object or elm.api_object.get_substation_to() == api_object:
+                if elm._api_object.get_substation_from() == api_object or elm._api_object.get_substation_to() == api_object:
 
-                    self.graphics_manager.delete_device(elm.api_object)
+                    self.graphics_manager.delete_device(elm._api_object)
 
                     for segment in elm.segments_list:
-                        self.remove_from_scene(segment)
+                        self._remove_from_scene(segment)
 
                     for line_loc in elm.nodes_list:
-                        self.remove_from_scene(line_loc)
+                        self._remove_from_scene(line_loc)
 
-        # Finally, delete from the database if requested
+        # Finally, delete_with_dialogue from the database if requested
         if delete_from_db:
             # Delete buses associated with this substation
             for bus in substation_buses:
@@ -650,18 +658,18 @@ class GridMapWidget(BaseDiagramWidget):
         :param line: Line to remove
         :param delete_from_db:
         """
-        lin = self.graphics_manager.delete_device(line.api_object)
+        lin = self.graphics_manager.delete_device(line._api_object)
 
         if lin is not None:
 
             if delete_from_db:
-                self.circuit.delete_branch(obj=line.api_object)
+                self.circuit.delete_branch(obj=line._api_object)
 
             for seg in lin.segments_list:
-                self.remove_from_scene(seg)
+                self._remove_from_scene(seg)
 
             for line_loc in lin.nodes_list:
-                self.remove_from_scene(line_loc)
+                self._remove_from_scene(line_loc)
 
     def add_api_line(self, api_object: Line) -> MapAcLine:
         """
@@ -1284,7 +1292,7 @@ class GridMapWidget(BaseDiagramWidget):
                         )
                         graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
 
-                    tooltip = str(i) + ': ' + graphic_object.api_object.name
+                    tooltip = str(i) + ': ' + graphic_object._api_object.name
                     tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
                         abs(hvdc_loading[i]) * 100) + ' [%]'
 
@@ -1376,8 +1384,8 @@ class GridMapWidget(BaseDiagramWidget):
             gelm.api_object.longitude = gelm.lon
 
         for gelm in graphics_linelocations:
-            gelm.api_object.lat = gelm.lat
-            gelm.api_object.long = gelm.lon
+            gelm._api_object.lat = gelm.lat
+            gelm._api_object.long = gelm.lon
 
         ok = yes_no_question(title='Update lengths?',
                              text='Do you want to update lengths of lines? \n'
@@ -1639,7 +1647,7 @@ class GridMapWidget(BaseDiagramWidget):
         self.gui.show_info_toast(message='Line merging successful!')
 
         ok = yes_no_question(
-            text='Do you want to delete the substation where the lines were connecting? This will'
+            text='Do you want to delete_with_dialogue the substation where the lines were connecting? This will'
                  ' open the substation deletion menu, with the information of the items that would '
                  'be removed.', title='Remove substation?')
         if ok:
@@ -1657,8 +1665,8 @@ class GridMapWidget(BaseDiagramWidget):
         for line, line_graphic in selected_lines:
             line_graphics_list.append(line_graphic)
             for gelm in line_graphic.nodes_list:
-                gelm.api_object.lat = gelm.lat
-                gelm.api_object.long = gelm.lon
+                gelm._api_object.lat = gelm.lat
+                gelm._api_object.long = gelm.lon
 
         ok = yes_no_question(title='Update lengths?',
                              text='Do you want to update lengths of lines? \n'
@@ -2016,7 +2024,7 @@ class GridMapWidget(BaseDiagramWidget):
         from the waypoint.
         """
         # Get selected items
-        selected_items = self.get_selected()
+        selected_items = self._get_selected()
 
         # Find the substation and waypoint in the selection
         selected_substation = None
@@ -2049,7 +2057,7 @@ class GridMapWidget(BaseDiagramWidget):
             return
 
         # Get the line API object
-        line_api = original_line_container.api_object
+        line_api = original_line_container._api_object
 
         if not isinstance(line_api, Line):
             msg = QMessageBox()
@@ -2357,7 +2365,7 @@ class GridMapWidget(BaseDiagramWidget):
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
 
         # Explicitly remove the waypoint graphic from the scene to prevent artifact
-        self.remove_from_scene(selected_waypoint)
+        self._remove_from_scene(selected_waypoint)
 
         # Remove the original line
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)

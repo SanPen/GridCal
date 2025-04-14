@@ -88,7 +88,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.index = index
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
+        self.label = QtWidgets.QGraphicsTextItem(self._api_object.name if self._api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
         self.label.setPos(QPoint(self.w, 0))
@@ -135,7 +135,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-        self.editor.update_diagram_element(device=self.api_object,
+        self.editor.update_diagram_element(device=self._api_object,
                                            x=self.pos().x(),
                                            y=self.pos().y(),
                                            w=self.w,
@@ -249,7 +249,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
         dc.setIcon(dc_icon)
         dc.setCheckable(True)
-        dc.setChecked(self.api_object.dc)
+        dc.setChecked(self._api_object.dc)
         dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
@@ -354,26 +354,26 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.delete_all_connections(ask=False, delete_from_db=True)
 
             for g in self.shunt_children:
-                self.editor.remove_from_scene(g.nexus)
+                self.editor._remove_from_scene(g.nexus)
 
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
+            self.editor.remove_element(device=self._api_object, graphic_object=self)
 
     def enable_disable_dc(self):
         """
         Activates or deactivates the cn as a DC connectivity node
         """
-        if self.api_object.dc:
-            self.api_object.dc = False
+        if self._api_object.dc:
+            self._api_object.dc = False
         else:
-            self.api_object.dc = True
+            self._api_object.dc = True
 
     def plot_profiles(self) -> None:
         """
         Plot profiles
         """
         # get the index of this object
-        i = self.editor.circuit.get_buses().index(self.api_object)
-        self.editor.plot_bus(i, self.api_object)
+        i = self.editor.circuit.get_buses().index(self._api_object)
+        self.editor.plot_bus(i, self._api_object)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
@@ -381,15 +381,15 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param event: QGraphicsSceneMouseEvent
         """
 
-        if self.api_object.device_type == DeviceType.ConnectivityNodeDevice:
-            self.editor.set_editor_model(api_object=self.api_object)
+        if self._api_object.device_type == DeviceType.ConnectivityNodeDevice:
+            self.editor.set_editor_model(api_object=self._api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         Mouse double click
         :param event: event object
         """
-        title = self.api_object.name if self.api_object is not None else ""
+        title = self._api_object.name if self._api_object is not None else ""
         msg = ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
@@ -443,7 +443,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: LoadGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_load(cn=self.api_object)
+            api_obj = self.editor.circuit.add_load(cn=self._api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -457,7 +457,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_shunt(cn=self.api_object)
+            api_obj = self.editor.circuit.add_shunt(cn=self._api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -471,7 +471,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: GeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_generator(cn=self.api_object)
+            api_obj = self.editor.circuit.add_generator(cn=self._api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -485,7 +485,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: StaticGeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_static_generator(cn=self.api_object)
+            api_obj = self.editor.circuit.add_static_generator(cn=self._api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -500,7 +500,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: BatteryGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_battery(cn=self.api_object)
+            api_obj = self.editor.circuit.add_battery(cn=self._api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -515,7 +515,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ExternalGridGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_external_grid(cn=self.api_object)
+            api_obj = self.editor.circuit.add_external_grid(cn=self._api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -530,7 +530,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: CurrentInjectionGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_current_injection(cn=self.api_object)
+            api_obj = self.editor.circuit.add_current_injection(cn=self._api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -545,7 +545,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ControllableShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_controllable_shunt(cn=self.api_object)
+            api_obj = self.editor.circuit.add_controllable_shunt(cn=self._api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -566,7 +566,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         vm = format_str.format(Vm)
-        vm_kv = format_str.format(Vm * self.api_object.Vnom)
+        vm_kv = format_str.format(Vm * self._api_object.Vnom)
         va = format_str.format(Va)
         msg = f"Bus {i}"
         if tpe is not None:
@@ -579,7 +579,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             q = format_str.format(Q)
             msg += f"P={p} MW<br>Q={q} MVAr"
 
-        title = self.api_object.name if self.api_object is not None else ""
+        title = self._api_object.name if self._api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
@@ -587,10 +587,10 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
     def __str__(self):
 
-        if self.api_object is None:
+        if self._api_object is None:
             return f"CN graphics {hex(id(self))}"
         else:
-            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+            return f"Graphics of {self._api_object.name} [{hex(id(self))}]"
 
     def __repr__(self):
         return str(self)

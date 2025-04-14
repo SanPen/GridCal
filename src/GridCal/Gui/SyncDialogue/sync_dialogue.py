@@ -58,8 +58,8 @@ class SyncDialogueWindow(QtWidgets.QDialog):
 
         l = 0
         idx = item
-        while idx.parent().data() is not None:
-            idx = idx.parent()
+        while idx._parent().data() is not None:
+            idx = idx._parent()
             l += 1
         return l
 

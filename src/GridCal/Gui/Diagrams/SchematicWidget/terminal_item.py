@@ -195,7 +195,7 @@ class BarTerminalItem(QGraphicsRectItem):
         """
         for graphic_item, _ in self._hosting_connections.items():
             self.editor.remove_element(graphic_object=graphic_item,
-                                       device=graphic_item.api_object,
+                                       device=graphic_item._api_object,
                                        delete_from_db=delete_from_db)
 
         self.clear()
@@ -418,7 +418,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         """
         for graphic_item, _ in self._hosting_connections.items():
             self.editor.remove_element(graphic_object=graphic_item,
-                                       device=graphic_item.api_object,
+                                       device=graphic_item._api_object,
                                        delete_from_db=delete_from_db)
 
         self.clear()

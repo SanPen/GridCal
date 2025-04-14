@@ -56,8 +56,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
         for elm in [self.symbol]:
             if elm is not None:
                 try:
-                    self.editor.remove_from_scene(elm)
-                    # sip.delete(elm)
+                    self.editor._remove_from_scene(elm)
+                    # sip.delete_with_dialogue(elm)
                     elm = None
                 except:
                     pass
@@ -71,7 +71,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         w = h
         self.symbol = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
         self.symbol.setPen(QPen(self.color, self.width, self.style))
-        if self.api_object.active:
+        if self._api_object.active:
             self.symbol.setBrush(self.color)
         else:
             self.symbol.setBrush(QBrush(Qt.GlobalColor.white))
@@ -93,11 +93,11 @@ class LineGraphicItem(LineGraphicTemplateItem):
         :param event:
         :return:
         """
-        if self.api_object is not None:
-            if self.api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
+        if self._api_object is not None:
+            if self._api_object.device_type in [DeviceType.Transformer2WDevice, DeviceType.LineDevice]:
                 # trigger the editor
                 self.edit()
-            elif self.api_object.device_type is DeviceType.SwitchDevice:
+            elif self._api_object.device_type is DeviceType.SwitchDevice:
                 # change state
                 self.enable_disable_toggle()
 
@@ -107,7 +107,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
             menu.addSection("Line")
 
@@ -115,7 +115,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
                            text="Active",
                            function_ptr=self.enable_disable_toggle,
                            checkeable=True,
-                           checked_value=self.api_object.active)
+                           checked_value=self._api_object.active)
 
             add_menu_entry(menu=menu,
                            text="Draw labels",
@@ -214,8 +214,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.plot_branch(i, self.api_object)
+        i = self.editor.circuit.get_branches().index(self._api_object)
+        self.editor.plot_branch(i, self._api_object)
 
     def edit(self):
         """
@@ -223,7 +223,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         :return:
         """
         Sbase = self.editor.circuit.Sbase
-        Vnom = self.api_object.get_max_bus_nominal_voltage()
+        Vnom = self._api_object.get_max_bus_nominal_voltage()
         templates = list()
 
         for lst in [self.editor.circuit.sequence_line_types,
@@ -233,8 +233,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
                 if Vnom == temp.Vnom:
                     templates.append(temp)
 
-        current_template = self.api_object.template
-        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
+        current_template = self._api_object.template
+        dlg = LineEditor(line=self._api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
                          templates=templates, current_template=current_template)
         if dlg.exec():
             pass
@@ -246,7 +246,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
 
-        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
+        dlg = LineEditor(line=self._api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
                          templates=None, current_template=None)
         if dlg.exec():
             pass
@@ -260,18 +260,18 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
         if ok:
             # rate = I
-            rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = KA * KV * sqrt(3)
+            rated_current = self._api_object.rate / (self._api_object.Vf * 1.73205080757)  # MVA = KA * KV * sqrt(3)
 
-            tpe = SequenceLineType(name='SequenceLine from ' + self.api_object.name,
+            tpe = SequenceLineType(name='SequenceLine from ' + self._api_object.name,
                                    idtag=None,
                                    Imax=rated_current,
-                                   Vnom=self.api_object.Vf,
-                                   R=self.api_object.R / self.api_object.length,
-                                   X=self.api_object.X / self.api_object.length,
-                                   B=self.api_object.B / self.api_object.length,
-                                   R0=self.api_object.R0 / self.api_object.length,
-                                   X0=self.api_object.X0 / self.api_object.length,
-                                   B0=self.api_object.B0 / self.api_object.length)
+                                   Vnom=self._api_object.Vf,
+                                   R=self._api_object.R / self._api_object.length,
+                                   X=self._api_object.X / self._api_object.length,
+                                   B=self._api_object.B / self._api_object.length,
+                                   R0=self._api_object.R0 / self._api_object.length,
+                                   X0=self._api_object.X0 / self._api_object.length,
+                                   B0=self._api_object.B0 / self._api_object.length)
 
             self.editor.circuit.add_sequence_line(tpe)
 
@@ -296,7 +296,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         """
         ok = yes_no_question('Are you sure that you want to convert this line into a transformer?', 'Convert line')
         if ok:
-            self.editor.convert_line_to_transformer(line=self.api_object, line_graphic=self)
+            self.editor.convert_line_to_transformer(line=self._api_object, line_graphic=self)
 
     def to_hvdc(self):
         """
@@ -305,18 +305,18 @@ class LineGraphicItem(LineGraphicTemplateItem):
         """
         ok = yes_no_question('Are you sure that you want to convert this line into a HVDC line?', 'Convert line')
         if ok:
-            self.editor.convert_line_to_hvdc(line=self.api_object, line_graphic=self)
+            self.editor.convert_line_to_hvdc(line=self._api_object, line_graphic=self)
 
     def to_vsc(self):
         """
         Convert this object to VSC
         :return:
         """
-        if self.api_object.convertible_to_vsc():
+        if self._api_object.convertible_to_vsc():
             ok = yes_no_question('Are you sure that you want to convert this line into a VSC device?',
                                  'Convert line')
             if ok:
-                self.editor.convert_line_to_vsc(line=self.api_object, line_graphic=self)
+                self.editor.convert_line_to_vsc(line=self._api_object, line_graphic=self)
         else:
             warning_msg('Unable to convert to VSC. One of the buses must be DC and the other AC.')
 
@@ -328,7 +328,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this line into a UPFC device?',
                              'Convert line')
         if ok:
-            self.editor.convert_line_to_upfc(line=self.api_object, line_graphic=self)
+            self.editor.convert_line_to_upfc(line=self._api_object, line_graphic=self)
 
     def to_series_reactance(self):
         """
@@ -338,7 +338,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this line into a series reactance device?',
                              'Convert line')
         if ok:
-            self.editor.convert_line_to_series_reactance(line=self.api_object, line_graphic=self)
+            self.editor.convert_line_to_series_reactance(line=self._api_object, line_graphic=self)
 
     def to_switch(self):
         """
@@ -348,14 +348,14 @@ class LineGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this line into a switch device?',
                              'Convert line')
         if ok:
-            self.editor.convert_line_to_switch(line=self.api_object, line_graphic=self)
+            self.editor.convert_line_to_switch(line=self._api_object, line_graphic=self)
 
     def __str__(self):
 
-        if self.api_object is None:
+        if self._api_object is None:
             return f"Line graphics {hex(id(self))}"
         else:
-            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+            return f"Graphics of {self._api_object.name} [{hex(id(self))}]"
 
     def __repr__(self):
         return str(self)

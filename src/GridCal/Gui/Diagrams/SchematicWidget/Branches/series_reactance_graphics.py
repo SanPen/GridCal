@@ -46,12 +46,12 @@ class SeriesReactanceGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
 
             pe = menu.addAction('Enable/Disable')
             pe_icon = QIcon()
-            if self.api_object.active:
+            if self._api_object.active:
                 pe_icon.addPixmap(QPixmap(":/Icons/icons/uncheck_all.svg"))
             else:
                 pe_icon.addPixmap(QPixmap(":/Icons/icons/check_all.svg"))

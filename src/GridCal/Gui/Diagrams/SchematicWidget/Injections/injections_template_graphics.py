@@ -14,6 +14,11 @@ from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+    from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
+    from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
+    from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
+    from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+    NODE_GRAPHIC = BusGraphicItem | CnGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
 
 
 class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
@@ -22,7 +27,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
     """
 
     def __init__(self,
-                 parent,
+                 parent: NODE_GRAPHIC,
                  api_obj: INJECTION_DEVICE_TYPES,
                  device_type_name: str,
                  w: int,
@@ -43,7 +48,6 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         self.h = h
 
         self.scale = 1.0
-
         self.device_type_name = device_type_name
 
         # Properties of the container:
@@ -57,8 +61,16 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         self.nexus.setPen(QPen(self.color, self.width, self.style))
         self.editor.add_to_scene(self.nexus)
 
-        self.setPos(self.parent.x(), self.parent.y() + 100)
+        self.setPos(self._parent.x(), self._parent.y() + 100)
         self.update_nexus(self.pos())
+
+    @property
+    def parent(self) -> NODE_GRAPHIC:
+        return self._parent
+
+    @property
+    def api_object(self) -> INJECTION_DEVICE_TYPES:
+        return self._api_object
 
     def get_associated_graphics(self) -> List[GenericDiagramWidget | QGraphicsLineItem]:
         """
@@ -82,7 +94,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         Update the nexus line that joins the parent and this object
         :param pos: position of this object
         """
-        parent_pt = self.parentItem().get_nexus_point()
+        parent_pt = self.parent.get_nexus_point()
         self.nexus.setLine(
             pos.x() + self.w / 2,
             pos.y(),
@@ -92,42 +104,46 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         self.setZValue(-1)
         self.nexus.setZValue(-1)
 
-    def remove(self, ask=True):
+    def remove(self):
         """
         Remove this element
         @return:
         """
-        if ask:
-            ok = yes_no_question(f'Are you sure that you want to remove this {self.device_type_name}?',
-                                 f'Remove {self.api_object.name}')
-        else:
-            ok = True
+        # if ask:
+        #     ok = yes_no_question(f'Are you sure that you want to remove this {self.device_type_name}?',
+        #                          f'Remove {self.api_object.name}')
+        # else:
+        #     ok = True
+        #
+        # if ok:
+        #     self.editor._remove_from_scene(self.nexus)
+        #     self.editor.remove_element(device=self.api_object, graphic_object=self)
+        #     self.editor._remove_from_scene(self)
+        #     self.editor.delete_element_utility_function(device=self.api_object)
 
-        if ok:
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
-            self.editor.remove_from_scene(self)
-            self.editor.delete_diagram_element(device=self.api_object)
+        self.editor.delete_with_dialogue(selected=[(self, self._api_object)], delete_from_db=False)
 
     def remove_from_widget_and_db(self, ask: bool = True, delete_from_db: bool = True) -> None:
         """
         Remove this element
         @return:
         """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this device',
-                                 'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
-        else:
-            ok = True
+        # if ask:
+        #     ok = yes_no_question('Are you sure that you want to remove this device',
+        #                          'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
+        # else:
+        #     ok = True
+        #
+        # if ok:
+        #     self.editor.remove_element(device=self.api_object,
+        #                                 graphic_object=self,
+        #                                 delete_from_db=delete_from_db)
+        #
+        #     self.editor._remove_from_scene(self.nexus)
+        #     self.editor._remove_from_scene(self)
+            # self.editor.delete_element_utility_function(device=self.api_object)
 
-        if ok:
-            self.editor.remove_element(device=self.api_object,
-                                       graphic_object=self,
-                                       delete_from_db=delete_from_db)
-
-            self.editor.remove_from_scene(self.nexus)
-            self.editor.remove_from_scene(self)
-            # self.editor.delete_diagram_element(device=self.api_object)
+        self.editor.delete_with_dialogue(selected=[(self._api_object, self)], delete_from_db=False)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -135,7 +151,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        self.editor.set_editor_model(api_object=self.api_object)
+        self.editor.set_editor_model(api_object=self._api_object)
 
     def change_bus(self):
         """
@@ -146,10 +162,10 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         if len(idx_bus_list) == 2:
 
             # detect the bus and its combinations
-            if idx_bus_list[0][1] == self.api_object.bus:
+            if idx_bus_list[0][1] == self._api_object.bus:
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
                 idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
-            elif idx_bus_list[1][1] == self.api_object.bus:
+            elif idx_bus_list[1][1] == self._api_object.bus:
                 idx, new_bus, new_bus_graphic_item = idx_bus_list[0]
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
             else:
@@ -161,10 +177,11 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
                 title='Change bus')
 
             if ok:
-                self.api_object.bus = new_bus
-                new_bus_graphic_item.add_object(api_obj=self.api_object)
+                self._api_object.bus = new_bus
+                new_bus_graphic_item.add_object(api_obj=self._api_object)
                 new_bus_graphic_item.update()
-                self.remove(ask=False)
+                self.editor.remove_element(device=self.api_object, graphic_object=self)
+
         else:
             warning_msg("you have to select the origin and destination buses!",
                         title='Change bus')

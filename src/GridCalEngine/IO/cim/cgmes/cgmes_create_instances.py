@@ -275,34 +275,34 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
     else:
         for tech_association in gen.technologies:
 
-            if tech_association.api_object.name == 'General':
+            if tech_association._api_object.name == 'General':
                 object_template = cgmes_model.get_class_type("GeneratingUnit")
                 sm = object_template(new_rdf_id)
                 cgmes_model.add(sm)
                 return sm
 
-            if tech_association.api_object.name == 'Thermal':
+            if tech_association._api_object.name == 'Thermal':
                 object_template = cgmes_model.get_class_type(
                     "ThermalGeneratingUnit")
                 tgu = object_template(new_rdf_id)
                 cgmes_model.add(tgu)
                 return tgu
 
-            if tech_association.api_object.name == 'Hydro':
+            if tech_association._api_object.name == 'Hydro':
                 object_template = cgmes_model.get_class_type(
                     "HydroGeneratingUnit")
                 hgu = object_template(new_rdf_id)
                 cgmes_model.add(hgu)
                 return hgu
 
-            if tech_association.api_object.name == 'Solar':
+            if tech_association._api_object.name == 'Solar':
                 object_template = cgmes_model.get_class_type(
                     "SolarGeneratingUnit")
                 sgu = object_template(new_rdf_id)
                 cgmes_model.add(sgu)
                 return sgu
 
-            if tech_association.api_object.name == 'Wind Onshore':
+            if tech_association._api_object.name == 'Wind Onshore':
                 object_template = cgmes_model.get_class_type(
                     "WindGeneratingUnit")
                 wgu = object_template(new_rdf_id)
@@ -310,7 +310,7 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
                 cgmes_model.add(wgu)
                 return wgu
 
-            if tech_association.api_object.name == 'Wind Offshore':
+            if tech_association._api_object.name == 'Wind Offshore':
                 object_template = cgmes_model.get_class_type(
                     "WindGeneratingUnit")
                 wgu = object_template(new_rdf_id)
@@ -318,7 +318,7 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
                 cgmes_model.add(wgu)
                 return wgu
 
-            if tech_association.api_object.name == 'Nuclear':
+            if tech_association._api_object.name == 'Nuclear':
                 object_template = cgmes_model.get_class_type(
                     "NuclearGeneratingUnit")
                 ngu = object_template(new_rdf_id)

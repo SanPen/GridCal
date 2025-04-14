@@ -108,7 +108,7 @@ class MapLineSegment(QGraphicsLineItem):
 
         :return:
         """
-        return self.container.api_object
+        return self.container._api_object
 
     @property
     def editor(self) -> GridMapWidget:
@@ -234,7 +234,7 @@ class MapLineSegment(QGraphicsLineItem):
                        text="Active",
                        function_ptr=self.enable_disable_toggle,
                        checkeable=True,
-                       checked_value=self.container.api_object.active)
+                       checked_value=self.container._api_object.active)
 
         add_menu_entry(menu=menu,
                        text="Draw labels",
@@ -262,7 +262,7 @@ class MapLineSegment(QGraphicsLineItem):
         menu.addSeparator()
 
         # Check if a substation is selected
-        selected_items = self.editor.get_selected()
+        selected_items = self.editor._get_selected()
         has_substation = False
         substation_counter = 0
         line_counter = 0
@@ -486,7 +486,7 @@ class MapLineSegment(QGraphicsLineItem):
         if ok:
             self.editor.remove_branch_graphic(line=self.container)
             # self.editor.circuit.delete_branch(obj=self.api_object)
-            self.editor.delete_diagram_element(device=self.api_object)
+            self.editor.delete_element_utility_function(device=self.api_object)
 
     def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """

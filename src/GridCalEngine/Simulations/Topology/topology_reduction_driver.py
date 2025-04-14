@@ -138,7 +138,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
         circuit.merge_buses(bus1=bus_t, bus2=bus_f)
         updated_bus = bus_t
 
-        # delete bus
+        # delete_with_dialogue bus
         removed_bus = circuit.buses.pop(f)
 
         # remove the branch and that's it
@@ -214,15 +214,15 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
                 # remember the buses that keep the devices
                 buses_merged.append(selected)
 
-                # delete the bus from the circuit and the dictionary
+                # delete_with_dialogue the bus from the circuit and the dictionary
                 circuit.delete_bus(bus, delete_associated=True)
                 bus_bus.__delitem__(bus)
             else:
-                # the bus is isolated, so delete it
+                # the bus is isolated, so delete_with_dialogue it
                 circuit.delete_bus(bus, delete_associated=True)
 
         else:
-            # the bus is isolated, so delete it
+            # the bus is isolated, so delete_with_dialogue it
             circuit.delete_bus(bus, delete_associated=True)
 
         if text_func is not None:
@@ -283,7 +283,7 @@ class TopologyReduction(DriverTemplate):
         # for every branch in reverse order...
         for i, br_idx in enumerate(self.br_to_remove):
 
-            # delete branch
+            # delete_with_dialogue branch
             removed_branch, removed_bus, updated_bus, updated_branches = reduce_grid_brute(circuit=self.grid,
                                                                                            removed_br_idx=br_idx)
 

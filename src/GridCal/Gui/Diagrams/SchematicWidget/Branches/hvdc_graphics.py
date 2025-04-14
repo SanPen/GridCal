@@ -47,13 +47,13 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
             menu.addSection("HVDC line")
 
             pe = menu.addAction('Active')
             pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
+            pe.setChecked(self._api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
             add_menu_entry(menu=menu,
@@ -114,5 +114,5 @@ class HvdcGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.get_hvdc().index(self.api_object)
-        self.editor.plot_hvdc_branch(i, self.api_object)
+        i = self.editor.circuit.get_hvdc().index(self._api_object)
+        self.editor.plot_hvdc_branch(i, self._api_object)

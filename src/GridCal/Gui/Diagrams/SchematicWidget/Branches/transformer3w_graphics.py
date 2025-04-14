@@ -259,7 +259,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.editor.remove_from_scene(self.big_marker)
+            self.editor._remove_from_scene(self.big_marker)
             self.big_marker = None
 
     def change_size(self, w, h):
@@ -322,7 +322,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V1 = bus.Vnom
             self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
-            conn.api_object = self.api_object.winding1
+            conn._api_object = self.api_object.winding1
             conn.winding_number = 0
 
         elif i == 1:
@@ -331,7 +331,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V2 = bus.Vnom
             self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
-            conn.api_object = self.api_object.winding2
+            conn._api_object = self.api_object.winding2
             conn.winding_number = 1
 
         elif i == 2:
@@ -340,7 +340,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V3 = bus.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
-            conn.api_object = self.api_object.winding3
+            conn._api_object = self.api_object.winding3
             conn.winding_number = 2
         else:
             raise Exception('Unsupported winding index {}'.format(i))
@@ -366,7 +366,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V1 = cn.Vnom
             self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
-            conn.api_object = self.api_object.winding1
+            conn._api_object = self.api_object.winding1
             conn.winding_number = 0
 
         elif i == 1:
@@ -375,7 +375,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V2 = cn.Vnom
             self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
-            conn.api_object = self.api_object.winding2
+            conn._api_object = self.api_object.winding2
             conn.winding_number = 1
 
         elif i == 2:
@@ -384,7 +384,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V3 = cn.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
-            conn.api_object = self.api_object.winding3
+            conn._api_object = self.api_object.winding3
             conn.winding_number = 2
         else:
             raise Exception('Unsupported winding index {}'.format(i))
@@ -456,7 +456,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             t.remove_all_connections(delete_from_db=delete_from_db)
 
         for c in self.connection_lines:
-            self.editor.remove_from_scene(c)
+            self.editor._remove_from_scene(c)
 
     def remove(self, ask=True):
         """

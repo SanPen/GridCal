@@ -68,7 +68,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         Remove all segments from the scene
         """
         for segment in self.segments_list:
-            self.editor.remove_from_scene(segment)
+            self.editor._remove_from_scene(segment)
 
         self.segments_list = list()
 
@@ -77,7 +77,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         Remove all the nodes from the scene
         """
         for node in self.nodes_list:
-            self.editor.remove_from_scene(node)
+            self.editor._remove_from_scene(node)
 
         self.nodes_list = list()
 
@@ -150,7 +150,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         line_locs_info = self.editor.diagram.query_by_type(device_type=DeviceType.LineLocation)
 
         # draw line locations
-        for elm in self.api_object.locations.data:
+        for elm in self._api_object.locations.data:
 
             if line_locs_info is not None:
                 loc_data = line_locs_info.locations.get(elm.idtag, None)
@@ -175,11 +175,11 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         :return:
         """
         for seg in self.segments_list:
-            if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
+            if seg.first._api_object == node._api_object or seg.second._api_object == node._api_object:
                 self.editor.map.diagram_scene.removeItem(seg)
 
         self.nodes_list.remove(node)
-        self.api_object.locations.remove(node.api_object)
+        self._api_object.locations.remove(node._api_object)
 
         for nod in self.nodes_list:
             if nod.index > node.index:
@@ -199,7 +199,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             Union[LineLocationGraphicItem, SubstationGraphicItem, VoltageLevelGraphicItem]] = list()
 
         # add the substation from
-        substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
+        substation_from_graphics = self.editor.graphics_manager.query(elm=self._api_object.get_substation_from())
         if substation_from_graphics is not None:
             if substation_from_graphics.valid_coordinates():
                 connection_elements.append(substation_from_graphics)
@@ -209,7 +209,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         connection_elements += self.nodes_list
 
         # add the substation to
-        substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+        substation_to_graphics = self.editor.graphics_manager.query(elm=self._api_object.get_substation_to())
         if substation_to_graphics is not None:
             if substation_to_graphics.valid_coordinates():
                 connection_elements.append(substation_to_graphics)
@@ -249,14 +249,14 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
 
         :return:
         """
-        return self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+        return self.editor.graphics_manager.query(elm=self._api_object.get_substation_to())
 
     def substation_from(self):
         """
 
         :return:
         """
-        return self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
+        return self.editor.graphics_manager.query(elm=self._api_object.get_substation_from())
 
     def insert_new_node_at_position(self, index: int):
         """
@@ -266,13 +266,13 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         """
 
         # Check if the index is valid
-        if 1 <= index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 1:
+        if 1 <= index < len(self._api_object.locations.data) and len(self._api_object.locations.data) > 1:
 
             nd1 = self.nodes_list[index]
             nd2 = self.nodes_list[index - 1]
 
             # Create a new API object for the node. Assuming `api_object.locations.data` holds coordinates or similar data
-            new_api_node_data = self.api_object.locations.data[index]
+            new_api_node_data = self._api_object.locations.data[index]
 
             new_lat = ((nd2.lat + nd1.lat) / 2)
             new_long = ((nd2.lon + nd1.lon) / 2)
@@ -285,7 +285,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                                           idtag=None,  # generates new UUID
                                           code=new_api_node_data.code)
 
-            self.api_object.locations.data.insert(index, new_api_object)
+            self._api_object.locations.data.insert(index, new_api_object)
 
             # Create a new graphical node item
 
@@ -315,10 +315,10 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             # Return the newly created node
             return graphic_obj
 
-        elif len(self.api_object.locations.data) == 0:
+        elif len(self._api_object.locations.data) == 0:
 
-            substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
-            substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+            substation_from_graphics = self.editor.graphics_manager.query(elm=self._api_object.get_substation_from())
+            substation_to_graphics = self.editor.graphics_manager.query(elm=self._api_object.get_substation_to())
 
             nd1 = substation_from_graphics
             nd2 = substation_to_graphics
@@ -334,7 +334,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                                           idtag="",
                                           code="")
 
-            self.api_object.locations.data.insert(0, new_api_object)
+            self._api_object.locations.data.insert(0, new_api_object)
 
             # Create a new graphical node item
 
@@ -355,10 +355,10 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             # Return the newly created node
             return graphic_obj
 
-        elif 0 == index or index >= len(self.api_object.locations.data) - 1:
+        elif 0 == index or index >= len(self._api_object.locations.data) - 1:
 
-            substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
-            substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+            substation_from_graphics = self.editor.graphics_manager.query(elm=self._api_object.get_substation_from())
+            substation_to_graphics = self.editor.graphics_manager.query(elm=self._api_object.get_substation_to())
 
             nd1 = substation_from_graphics
             nd2 = substation_to_graphics
@@ -380,7 +380,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                                           idtag="",
                                           code="")
 
-            self.api_object.locations.data.insert(index, new_api_object)
+            self._api_object.locations.data.insert(index, new_api_object)
 
             # Create a new graphical node item
 
@@ -421,18 +421,18 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         :return:
         """
         # TODO: Review this and possibly link to existing functions
-        if 0 < index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 3:
+        if 0 < index < len(self._api_object.locations.data) and len(self._api_object.locations.data) > 3:
 
             # ln1 = Line()
             # ln1.set_data_from(self.api_object)
-            ln1 = self.api_object.copy()
+            ln1 = self._api_object.copy()
 
             # ln2 = Line()
             # ln2.set_data_from(self.api_object)
-            ln2 = self.api_object.copy()
+            ln2 = self._api_object.copy()
 
-            first_list = self.api_object.locations.data[:index]
-            second_list = self.api_object.locations.data[index:]
+            first_list = self._api_object.locations.data[:index]
+            second_list = self._api_object.locations.data[index:]
 
             ln1.locations.data = first_list
             ln2.locations.data = second_list
@@ -448,8 +448,8 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                 api_obj.long = self.nodes_list[idx].lon
                 idx = idx + 1
 
-            ln1.bus_from = self.api_object.bus_from
-            ln2.bus_to = self.api_object.bus_to
+            ln1.bus_from = self._api_object.bus_from
+            ln2.bus_to = self._api_object.bus_to
 
             # l1 = self.editor.add_api_line(ln1, original=False)
             # l2 = self.editor.add_api_line(ln2, original=False)
@@ -509,17 +509,17 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         # Add the substation from
         substation_from = self.substation_from()
         if substation_from is not None:
-            connection_points.append((substation_from.api_object.latitude, substation_from.api_object.longitude))
+            connection_points.append((substation_from._api_object.latitude, substation_from._api_object.longitude))
 
         # Add all intermediate points
         for node in self.nodes_list:
-            connection_points.append((node.api_object.lat, node.api_object.long))
+            connection_points.append((node._api_object.lat, node._api_object.long))
         
         # Add the substation to
         substation_to = self.substation_to()
 
         if substation_to is not None:
-            connection_points.append((substation_to.api_object.latitude, substation_to.api_object.longitude))
+            connection_points.append((substation_to._api_object.latitude, substation_to._api_object.longitude))
 
         # Calculate total length by summing distances between consecutive points
         total_length = 0.0
@@ -531,6 +531,6 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         
         # Update the line's length property
         if total_length > 0.0:
-            self.api_object.length = total_length
+            self._api_object.length = total_length
             
         return total_length

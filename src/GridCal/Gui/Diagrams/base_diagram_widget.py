@@ -84,7 +84,7 @@ def qimage_to_cv(qimage: QImage, logger: Logger, force_disk=False) -> np.ndarray
     Convert a image from Qt to an OpenCV image
     :param qimage: Qimage
     :param logger: Logger
-    :param force_disk: if true, the image is converted by saving to disk and loading again with opencv
+    :param force_disk: if true, the image is converted by saving to disk and loading again with open-cv
     :return: OpenCv matrix
     """
     width = qimage.width()
@@ -249,7 +249,7 @@ class BaseDiagramWidget(QSplitter):
         """
         self.diagram.name = val
 
-    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, QGraphicsItem]]:
+    def _get_selected(self) -> List[GenericDiagramWidget]:
         """
 
         :return:
@@ -257,7 +257,14 @@ class BaseDiagramWidget(QSplitter):
         print(f"'get_selected' Not implemented for {str(self)}")
         return list()
 
-    def remove_from_scene(self, graphic_object: QGraphicsItem | GenericDiagramWidget) -> None:
+    def _get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get a list of the API objects from the selection
+        :return: List[ALL_DEV_TYPES]
+        """
+        return list()
+
+    def _remove_from_scene(self, graphic_object: QGraphicsItem | GenericDiagramWidget) -> None:
         """
         Remove item from the diagram scene
         :param graphic_object: Graphic object associated
@@ -274,7 +281,7 @@ class BaseDiagramWidget(QSplitter):
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
         :param delete_from_db: Delete the element also from the database?
-        :return: True if managed to delete the object
+        :return: True if managed to delete_with_dialogue the object
         """
         if graphic_object is not None and device is not None:
 
@@ -283,15 +290,15 @@ class BaseDiagramWidget(QSplitter):
                 if isinstance(child_graphic, GenericDiagramWidget):
 
                     # Warning: recursive call for devices that may have further sub-graphics (i.e. the nexus)
-                    self.remove_element(device=child_graphic.api_object,
+                    self.remove_element(device=child_graphic._api_object,
                                         graphic_object=child_graphic,
                                         delete_from_db=delete_from_db)
                 else:
-                    # simpler graphics associated, simply delete
-                    self.remove_from_scene(graphic_object=child_graphic)
+                    # simpler graphics associated, simply delete_with_dialogue
+                    self._remove_from_scene(graphic_object=child_graphic)
 
             # NOTE: This function already deleted from the database and other diagrams
-            self.delete_diagram_element(device=device, propagate=delete_from_db)
+            self.delete_element_utility_function(device=device, propagate=delete_from_db)
             self.object_editor_table.setModel(None)
 
             return True
@@ -300,9 +307,9 @@ class BaseDiagramWidget(QSplitter):
             self.object_editor_table.setModel(None)
             return False
 
-    def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True):
+    def delete_element_utility_function(self, device: ALL_DEV_TYPES, propagate: bool = True):
         """
-        THis function is a utility function to call this function in other diagrams through the GUI
+        This function is a utility function to call this function in other diagrams through the GUI
         :param device: ALL_DEV_TYPES
         :param propagate: propagate
         :return:
@@ -311,12 +318,12 @@ class BaseDiagramWidget(QSplitter):
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            self.remove_from_scene(graphic_object)
+            self._remove_from_scene(graphic_object)
 
         if propagate:
             self.gui.call_delete_db_element(caller=self, api_obj=device)
 
-    def delete(self, selected: List[Tuple[ALL_DEV_TYPES, GenericDiagramWidget]], delete_from_db: bool) -> None:
+    def delete_with_dialogue(self, selected: List[GenericDiagramWidget], delete_from_db: bool) -> None:
         """
         Delete elements with a dialogue of all the dependencies
         :param selected:
@@ -335,7 +342,7 @@ class BaseDiagramWidget(QSplitter):
 
             if len(extended_lst) > 1:
                 dlg = DeleteDialogue(
-                    objects_list=[f"{graphic_obj.api_object.device_type.value}: {graphic_obj.api_object.name}"
+                    objects_list=[f"{graphic_obj._api_object.device_type.value}: {graphic_obj._api_object.name}"
                                   for graphic_obj in extended_lst],
                     delete_from_db=delete_from_db,
                     title="Delete Selected",
@@ -353,23 +360,19 @@ class BaseDiagramWidget(QSplitter):
                                             graphic_object=graphic_obj,
                                             delete_from_db=delete_from_db)
             else:
-                self.remove_element(device=extended_lst[0].api_object,
+                self.remove_element(device=extended_lst[0]._api_object,
                                     graphic_object=extended_lst[0],
                                     delete_from_db=delete_from_db)
         else:
-            self.gui.show_warning_toast("Choose some elements to delete")
+            self.gui.show_warning_toast("Choose some elements to delete_with_dialogue")
 
-
-    def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
+    def delete_selected_from_widget(self, delete_from_db: bool) -> None:
         """
         Delete the selected items from the diagram
         :param delete_from_db:
         """
-        # get the selected objects
-        selected: List[Tuple[ALL_DEV_TYPES, QGraphicsItem]] = self.get_selected()
-
-        self.delete(selected=selected, delete_from_db=delete_from_db)
-
+        self.delete_with_dialogue(selected=self._get_selected(),
+                                  delete_from_db=delete_from_db)
 
     def set_time_index(self, time_index: Union[int, None]):
         """

@@ -223,7 +223,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
             vl_graphics.set_size(r=self.size * scale)
             vl_graphics.center_on_substation()
 
-        sorted_objects = sorted(self.voltage_level_graphics, key=lambda x: -x.api_object.Vnom)
+        sorted_objects = sorted(self.voltage_level_graphics, key=lambda x: -x._api_object.Vnom)
         for i, vl_graphics in enumerate(sorted_objects):
             vl_graphics.setZValue(i)
 
@@ -399,10 +399,10 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
             for idtag, graphic_object in dev_dict.items():
                 substation_from_graphics = self.editor.graphics_manager.query(
-                    elm=graphic_object.api_object.get_substation_from()
+                    elm=graphic_object._api_object.get_substation_from()
                 )
                 substation_to_graphics = self.editor.graphics_manager.query(
-                    elm=graphic_object.api_object.get_substation_to()
+                    elm=graphic_object._api_object.get_substation_to()
                 )
                 lines_info.append((idtag, graphic_object, substation_from_graphics, substation_to_graphics))
 
@@ -609,7 +609,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
             # remove connections that are from and to the same substation
             for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
                 for elm in self.editor.graphics_manager.get_device_type_list(tpe):
-                    if elm.api_object.get_substation_from() == elm.api_object.get_substation_to():
+                    if elm._api_object.get_substation_from() == elm._api_object.get_substation_to():
                         self.editor.remove_branch_graphic(elm, delete_from_db=True)
 
             for substation in deleted_api_objs:

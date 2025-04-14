@@ -2574,7 +2574,7 @@ class Assets:
 
     def delete_line_template_dependency(self, obj):
         """
-        Search a branch template from lines and transformers and delete it
+        Search a branch template from lines and transformers and delete_with_dialogue it
         :param obj:
         :return:
         """
@@ -2743,7 +2743,7 @@ class Assets:
 
     def delete_transformer_template_dependency(self, obj: dev.TransformerType):
         """
-        Search a branch template from lines and transformers and delete it
+        Search a branch template from lines and transformers and delete_with_dialogue it
         :param obj:
         :return:
         """
@@ -3399,7 +3399,7 @@ class Assets:
         except ValueError:
             pass
 
-        # delete references in the remedial action groups
+        # delete_with_dialogue references in the remedial action groups
         for rag in self._remedial_action_groups:
             if rag.conn_group is not None:
                 if rag.conn_group == obj:
@@ -3538,7 +3538,7 @@ class Assets:
         """
         Delete zone
         :param obj: index
-        :param del_group: delete the group?
+        :param del_group: delete_with_dialogue the group?
         """
         try:
             self._investments.remove(obj)
@@ -3891,7 +3891,7 @@ class Assets:
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.technologies:
-                    if assoc.api_object == obj:
+                    if assoc._api_object == obj:
                         to_del.append(assoc)
 
                 for assoc in to_del:
@@ -4096,7 +4096,7 @@ class Assets:
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.fuels:
-                    if assoc.api_object == obj:
+                    if assoc._api_object == obj:
                         to_del.append(assoc)
 
                 for assoc in to_del:
@@ -4171,13 +4171,13 @@ class Assets:
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.emissions:
-                    if assoc.api_object == obj:
+                    if assoc._api_object == obj:
                         to_del.append(assoc)
 
                 for assoc in to_del:
                     elm.emissions.remove(assoc)
 
-        # delete the gas
+        # delete_with_dialogue the gas
         try:
             self._emission_gases.remove(obj)
         except ValueError:
@@ -4224,7 +4224,7 @@ class Assets:
         Delete fluid node
         :param obj: FluidNode
         """
-        # delete dependencies
+        # delete_with_dialogue dependencies
         for fluid_path in reversed(self._fluid_paths):
             if fluid_path.source == obj or fluid_path.target == obj:
                 self.delete_fluid_path(fluid_path)
@@ -4875,7 +4875,7 @@ class Assets:
         """
         Delete the dependencies that may come with a branch
         :param obj: branch object or any object
-        :param delete_groups: delete empty groups too?
+        :param delete_groups: delete_with_dialogue empty groups too?
         :return:
         """
         for elm in self.contingencies:
@@ -5719,7 +5719,7 @@ class Assets:
     def delete_element(self, obj: ALL_DEV_TYPES) -> None:
         """
         Get set of elements and their parent nodes
-        :param obj: device object to delete
+        :param obj: device object to delete_with_dialogue
         :return: Nothing
         """
 

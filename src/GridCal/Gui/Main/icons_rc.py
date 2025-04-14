@@ -35040,7 +35040,7 @@ g2\x22\x0a   width=\x2219\
 2\x22\x0a   viewBox=\x220\
  0 192 192\x22\x0a   s\
 odipodi:docname=\
-\x22new (delete).sv\
+\x22new (delete_with_dialogue).sv\
 g\x22\x0a   inkscape:v\
 ersion=\x221.1.2 (0\
 a00cf5339, 2022-\

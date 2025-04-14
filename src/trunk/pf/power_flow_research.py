@@ -2903,7 +2903,7 @@ def isolate_AC_DC(grid, Ybus) -> csc_matrix:
     _matrix = Ybus.copy()
     n = _matrix.shape[0]  # Assuming Ybus is square
 
-    #iterate through and first delete anything that has to do with the dc_lines
+    #iterate through and first delete_with_dialogue anything that has to do with the dc_lines
     for elm in grid.dc_lines:
         # Get indices for the buses
         from_idx = grid.buses.index(elm.bus_from)

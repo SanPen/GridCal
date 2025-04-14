@@ -316,7 +316,7 @@ class ObjectsTableMain(DiagramsMain):
         On click, display the objects properties
         """
 
-        if self.ui.dataStructuresTreeView.selectedIndexes()[0].parent().row() > -1:
+        if self.ui.dataStructuresTreeView.selectedIndexes()[0]._parent().row() > -1:
             # if the clicked element has a valid parent...
 
             elm_type = self.get_db_object_selected_type()
@@ -523,16 +523,16 @@ class ObjectsTableMain(DiagramsMain):
 
         if len(selected_objects):
 
-            ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
+            ok = yes_no_question('Are you sure that you want to delete_with_dialogue the selected elements?', 'Delete')
             if ok:
                 for obj in selected_objects:
 
-                    # delete from the database
+                    # delete_with_dialogue from the database
                     self.circuit.delete_element(obj=obj)
 
-                    # delete from all diagrams
+                    # delete_with_dialogue from all diagrams
                     for diagram in self.diagram_widgets_list:
-                        diagram.delete_diagram_element(device=obj, propagate=False)
+                        diagram.delete_element_utility_function(device=obj, propagate=False)
 
                 # update the view
                 self.view_objects_data()
@@ -717,7 +717,7 @@ class ObjectsTableMain(DiagramsMain):
 
         if len(selected_buses):
 
-            ok = yes_no_question(text="This will delete all buses and their connected elements that were not selected."
+            ok = yes_no_question(text="This will delete_with_dialogue all buses and their connected elements that were not selected."
                                       "This cannot be undone and it is dangerous if you don't know"
                                       "what you are doing. \nAre you sure?",
                                  title="Crop model to buses selection?")
@@ -1198,7 +1198,7 @@ class ObjectsTableMain(DiagramsMain):
 
     def delete_inconsistencies(self):
         """
-        Call delete shit
+        Call delete_with_dialogue shit
         :return:
         """
         ok = yes_no_question(
@@ -1234,13 +1234,13 @@ class ObjectsTableMain(DiagramsMain):
                     buses_to_delete.append(bus)
                     buses_to_delete_idx.append(r)
 
-        # delete the grphics from all diagrams
+        # delete_with_dialogue the grphics from all diagrams
         self.delete_from_all_diagrams(elements=buses_to_delete)
 
         for elm in buses_to_delete:
             logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
 
-        # search other elements to delete
+        # search other elements to delete_with_dialogue
         for dev_lst in [self.circuit.lines,
                         self.circuit.dc_lines,
                         self.circuit.vsc_devices,
@@ -1264,7 +1264,7 @@ class ObjectsTableMain(DiagramsMain):
         Clean the DataBase
         """
 
-        ok = yes_no_question("This action may delete unused objects and references, \nAre you sure?",
+        ok = yes_no_question("This action may delete_with_dialogue unused objects and references, \nAre you sure?",
                              title="DB clean")
 
         if ok:

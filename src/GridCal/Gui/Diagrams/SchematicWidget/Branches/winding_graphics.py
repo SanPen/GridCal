@@ -52,13 +52,13 @@ class WindingGraphicItem(LineGraphicTemplateItem):
         @param event:
         @return:
         """
-        if self.api_object is not None:
+        if self._api_object is not None:
             menu = QMenu()
             menu.addSection("Winding")
 
             pe = menu.addAction('Active')
             pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
+            pe.setChecked(self._api_object.active)
             pe.triggered.connect(self.enable_disable_toggle)
 
             add_menu_entry(menu=menu,
@@ -105,15 +105,15 @@ class WindingGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         if ask:
-            dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
+            dtype = self._api_object.device_type.value
+            ok = yes_no_question(f'Do you want to remove the {dtype} {self._api_object.name}?',
                                  'Remove branch')
         else:
             ok = True
 
         if ok:
-            self.editor.circuit.delete_branch(self.api_object)
-            self.editor.delete_diagram_element(self.api_object)
+            self.editor.circuit.delete_branch(self._api_object)
+            self.editor.delete_element_utility_function(self._api_object)
 
             # unregister the winding
             self.parent_tr3_graphics_item.remove_winding(self.winding_number)

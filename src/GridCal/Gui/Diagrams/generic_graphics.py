@@ -187,9 +187,9 @@ class GenericDiagramWidget:
         :param draw_labels:
         """
 
-        self.parent = parent
+        self._parent = parent
 
-        self.api_object: ALL_DEV_TYPES = api_object
+        self._api_object: ALL_DEV_TYPES = api_object
 
         self.editor: Union[SchematicWidget, GridMapWidget] = editor
 
@@ -216,15 +216,15 @@ class GenericDiagramWidget:
         self._draw_labels = value
 
         # update editor diagram position
-        self.editor.update_label_drwaing_status(device=self.api_object, draw_labels=self._draw_labels)
+        self.editor.update_label_drwaing_status(device=self._api_object, draw_labels=self._draw_labels)
 
     def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if hasattr(self.api_object, 'active'):
-                if self.api_object.active:
+        if self._api_object is not None:
+            if hasattr(self._api_object, 'active'):
+                if self._api_object.active:
                     self.color = ACTIVE['color']
                     self.style = ACTIVE['style']
                 else:

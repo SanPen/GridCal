@@ -286,6 +286,7 @@ class MultiCircuit(Assets):
         """
         cpy = MultiCircuit(name=self.name, Sbase=self.Sbase, fbase=self.fBase, idtag=self.idtag)
 
+        # TODO: make this list automatic
         ppts = ['branch_groups',
                 'lines',
                 'dc_lines',
@@ -446,7 +447,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_hvdc(hvdc)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_line(line)
 
         return hvdc
@@ -475,7 +476,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_transformer2w(transformer)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_line(line)
 
         return transformer
@@ -518,7 +519,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_battery(bus=gen.bus, api_obj=batt, cn=gen.cn)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_injection_device(gen)
 
         return batt
@@ -543,7 +544,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_vsc(vsc)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_line(line)
 
         return vsc
@@ -570,7 +571,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_upfc(upfc)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_line(line)
 
         return upfc
@@ -598,7 +599,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_series_reactance(series_reactance)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_line(line)
 
         return series_reactance
@@ -625,7 +626,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_switch(series_reactance)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_line(line)
 
         return series_reactance
@@ -647,7 +648,7 @@ class MultiCircuit(Assets):
         # add device to the circuit
         self.add_line(line)
 
-        # delete the line from the circuit
+        # delete_with_dialogue the line from the circuit
         self.delete_fluid_path(fluid_path)
 
         return line
@@ -1532,7 +1533,7 @@ class MultiCircuit(Assets):
 
                 if len(injection_devs_list) > 1:
                     # there are more than one device of this type in the bus
-                    # we keep the first, we delete the others
+                    # we keep the first, we delete_with_dialogue the others
                     if dev_tpe == DeviceType.GeneratorDevice:
                         _, to_delete = get_fused_device_lst(injection_devs_list,
                                                             ['P', 'Pmin', 'Pmax',
@@ -1554,7 +1555,7 @@ class MultiCircuit(Assets):
                     else:
                         to_delete = list()
 
-                    # delete elements
+                    # delete_with_dialogue elements
                     for elm in to_delete:
                         self.delete_injection_device(obj=elm)
                         list_of_deleted.append(elm)
@@ -1757,7 +1758,7 @@ class MultiCircuit(Assets):
         for generator in self.generators:
             for assoc in generator.fuels:
                 gen_idx = gen_index_dict[generator.idtag]
-                fuel_idx = fuel_index_dict[assoc.api_object.idtag]
+                fuel_idx = fuel_index_dict[assoc._api_object.idtag]
                 gen_fuel_rates_matrix[fuel_idx, gen_idx] = assoc.value
 
         return gen_fuel_rates_matrix.tocsc()
@@ -1779,7 +1780,7 @@ class MultiCircuit(Assets):
         for generator in self.generators:
             for assoc in generator.emissions:
                 gen_idx = gen_index_dict[generator.idtag]
-                em_idx = em_index_dict[assoc.api_object.idtag]
+                em_idx = em_index_dict[assoc._api_object.idtag]
                 gen_emissions_rates_matrix[em_idx, gen_idx] = assoc.value
 
         return gen_emissions_rates_matrix.tocsc()
@@ -1801,7 +1802,7 @@ class MultiCircuit(Assets):
         for generator in self.generators:
             for assoc in generator.technologies:
                 gen_idx = gen_index_dict[generator.idtag]
-                tech_idx = tech_index_dict[assoc.api_object.idtag]
+                tech_idx = tech_index_dict[assoc._api_object.idtag]
                 gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
@@ -1823,7 +1824,7 @@ class MultiCircuit(Assets):
         for elm in self.batteries:
             for assoc in elm.technologies:
                 gen_idx = gen_index_dict[elm.idtag]
-                tech_idx = tech_index_dict[assoc.api_object.idtag]
+                tech_idx = tech_index_dict[assoc._api_object.idtag]
                 gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
@@ -2216,7 +2217,7 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="cn_to")
 
-                # if the element is topologically isolated, delete it
+                # if the element is topologically isolated, delete_with_dialogue it
                 if (elm.bus_from is None
                         and elm.bus_to is None
                         and elm.cn_from is None
@@ -2260,7 +2261,7 @@ class MultiCircuit(Assets):
                                         device_class=elm.device_type.value,
                                         device_property="cn")
 
-                # if the element is topologically isolated, delete it
+                # if the element is topologically isolated, delete_with_dialogue it
                 if elm.bus is None and elm.cn is None:
                     elements_to_delete.append(elm)
 
@@ -2283,7 +2284,7 @@ class MultiCircuit(Assets):
             if elm.device_idtag not in all_dev.keys():
                 contingencies_to_delete.append(elm)
 
-        # pass 2: delete the "null" contingencies
+        # pass 2: delete_with_dialogue the "null" contingencies
         for elm in contingencies_to_delete:
             self.delete_contingency(obj=elm)
             logger.add_info("Deleted isolated contingency",
@@ -2297,7 +2298,7 @@ class MultiCircuit(Assets):
             group_idx = group_dict[elm.group]
             group_counter[group_idx] += 1
 
-        # pass 4: delete unrefferenced groups
+        # pass 4: delete_with_dialogue unrefferenced groups
         groups_to_delete = [elm for i, elm in enumerate(self._contingency_groups) if group_counter[i] == 0]
         for elm in groups_to_delete:
             self.delete_contingency_group(obj=elm)
@@ -2318,7 +2319,7 @@ class MultiCircuit(Assets):
             if elm.device_idtag not in all_dev.keys():
                 ra_to_delete.append(elm)
 
-        # pass 2: delete the "null" contingencies
+        # pass 2: delete_with_dialogue the "null" contingencies
         for elm in ra_to_delete:
             self.delete_remedial_action(obj=elm)
             logger.add_info("Deleted isolated remedial action",
@@ -2332,7 +2333,7 @@ class MultiCircuit(Assets):
             group_idx = group_dict[elm.group]
             group_counter[group_idx] += 1
 
-        # pass 4: delete unrefferenced groups
+        # pass 4: delete_with_dialogue unrefferenced groups
         groups_to_delete = [elm for i, elm in enumerate(self._remedial_action_groups) if group_counter[i] == 0]
         for elm in groups_to_delete:
             self.delete_remedial_action_group(obj=elm)
@@ -2353,7 +2354,7 @@ class MultiCircuit(Assets):
             if elm.device_idtag not in all_dev.keys():
                 contingencies_to_delete.append(elm)
 
-        # pass 2: delete the "null" contingencies
+        # pass 2: delete_with_dialogue the "null" contingencies
         for elm in contingencies_to_delete:
             self.delete_investment(obj=elm)
             logger.add_info("Deleted isolated investment",
@@ -2367,7 +2368,7 @@ class MultiCircuit(Assets):
             group_idx = group_dict[elm.group]
             group_counter[group_idx] += 1
 
-        # pass 4: delete unreferenced groups
+        # pass 4: delete_with_dialogue unreferenced groups
         groups_to_delete = [elm for i, elm in enumerate(self._investments_groups) if group_counter[i] == 0]
         for elm in groups_to_delete:
             self.delete_investment_groups(obj=elm)
@@ -2384,7 +2385,7 @@ class MultiCircuit(Assets):
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.technologies:
-                    if assoc.api_object not in self.technologies:
+                    if assoc._api_object not in self.technologies:
                         to_del.append(assoc)
 
                 for assoc in to_del:

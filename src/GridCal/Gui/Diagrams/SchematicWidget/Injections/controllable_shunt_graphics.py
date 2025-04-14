@@ -54,8 +54,8 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         """
         Change the colour according to the system theme
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.color = ACTIVE['color']
                 self.style = ACTIVE['style']
             else:
@@ -82,7 +82,7 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         add_menu_entry(menu=menu,
                        text="Active",
                        checkeable=True,
-                       checked_value=self.api_object.active,
+                       checked_value=self._api_object.active,
                        function_ptr=self.enable_disable_toggle)
 
         add_menu_entry(menu=menu,
@@ -112,23 +112,23 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         Call the edit dialogue
         :return:
         """
-        dlg = ControllableShuntEditor(api_object=self.api_object)
+        dlg = ControllableShuntEditor(api_object=self._api_object)
         if dlg.exec():
-            self.api_object.active_steps = dlg.get_active_steps()
-            self.api_object.g_steps = dlg.get_g_steps()
-            self.api_object.Gmax = self.api_object.g_steps.max()
-            self.api_object.Gmin = self.api_object.g_steps.min()
-            self.api_object.b_steps = dlg.get_b_steps()
-            self.api_object.Bmax = self.api_object.b_steps.max()
-            self.api_object.Bmin = self.api_object.b_steps.min()
+            self._api_object.active_steps = dlg.get_active_steps()
+            self._api_object.g_steps = dlg.get_g_steps()
+            self._api_object.Gmax = self._api_object.g_steps.max()
+            self._api_object.Gmin = self._api_object.g_steps.min()
+            self._api_object.b_steps = dlg.get_b_steps()
+            self._api_object.Bmax = self._api_object.b_steps.max()
+            self._api_object.Bmin = self._api_object.b_steps.min()
 
     def enable_disable_toggle(self):
         """
 
         @return:
         """
-        if self.api_object is not None:
-            if self.api_object.active:
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.set_enable(False)
             else:
                 self.set_enable(True)
@@ -139,7 +139,7 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self.editor.set_active_status_to_profile(self._api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -147,9 +147,9 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         @param val:
         @return:
         """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
+        self._api_object.active = val
+        if self._api_object is not None:
+            if self._api_object.active:
                 self.style = ACTIVE['style']
                 self.color = ACTIVE['color']
             else:
@@ -169,7 +169,7 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         ts = self.editor.circuit.time_profile
 
         # plot the profiles
-        self.api_object.plot_profiles(time=ts)
+        self._api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -177,4 +177,4 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        self.editor.set_editor_model(api_object=self.api_object)
+        self.editor.set_editor_model(api_object=self._api_object)
