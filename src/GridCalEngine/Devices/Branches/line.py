@@ -308,8 +308,12 @@ class Line(BranchParent):
 
     @circuit_idx.setter
     def circuit_idx(self, value):
-        if value >= 0:
+        if value > 0:
             self._circuit_idx = int(value)
+
+            if self.auto_update_enabled:
+                print("No impedance updates are being done, use the apply_template method to update the impedance values")
+
 
     def set_circuit_idx(self, val: int, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType]):
         """
