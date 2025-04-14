@@ -15,7 +15,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
+from GridCal.Gui.Diagrams.SchematicWidget.Editors.line_editor import LineEditor
 
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.enumerations import DeviceType
@@ -108,7 +108,7 @@ class MapLineSegment(QGraphicsLineItem):
 
         :return:
         """
-        return self.container._api_object
+        return self.container.api_object
 
     @property
     def editor(self) -> GridMapWidget:

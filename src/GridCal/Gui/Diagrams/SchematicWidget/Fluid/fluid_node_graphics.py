@@ -104,6 +104,10 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     def api_object(self) -> FluidNode:
         return self._api_object
 
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
+
     def get_associated_branch_graphics(self) -> List[GenericDiagramWidget]:
         """
         Get a list of all associated branch graphics
@@ -159,13 +163,13 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         super().mouseMoveEvent(event)
 
         self.editor.update_diagram_element(device=self.api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=self.w,
-                                           h=self.h,
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
-                                           graphic_object=self)
+                                            x=self.pos().x(),
+                                            y=self.pos().y(),
+                                            w=self.w,
+                                            h=self.h,
+                                            r=self.rotation(),
+                                            draw_labels=self.draw_labels,
+                                            graphic_object=self)
 
     def set_position(self, x, y):
         """
@@ -249,13 +253,13 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         # update editor diagram position
         self.editor.update_diagram_element(device=self.api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=self.w,
-                                           h=int(self.min_h),
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
-                                           graphic_object=self)
+                                            x=self.pos().x(),
+                                            y=self.pos().y(),
+                                            w=self.w,
+                                            h=int(self.min_h),
+                                            r=self.rotation(),
+                                            draw_labels=self.draw_labels,
+                                            graphic_object=self)
 
         return self.w, self.min_h
 

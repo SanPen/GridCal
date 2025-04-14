@@ -94,7 +94,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.label.setPos(QPoint(self.w, 0))
 
         # connection terminals the block
-        self._terminal = RoundTerminalItem('s', parent=self, editor=self.editor, h=20, w=20)  # , h=self.h))
+        self._terminal = RoundTerminalItem('s', parent=self, editor=self._editor, h=20, w=20)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
         self._terminal.setPos(QPoint(15, 15))
         self._terminal_mid_point = QPoint(20, 20)  # (15, 15) + (20, 20) / 2
@@ -135,14 +135,14 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-        self.editor.update_diagram_element(device=self._api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=self.w,
-                                           h=self.h,
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
-                                           graphic_object=self)
+        self._editor.update_diagram_element(device=self._api_object,
+                                            x=self.pos().x(),
+                                            y=self.pos().y(),
+                                            w=self.w,
+                                            h=self.h,
+                                            r=self.rotation(),
+                                            draw_labels=self.draw_labels,
+                                            graphic_object=self)
 
     def set_position(self, x: float, y: float) -> None:
         """
@@ -354,9 +354,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.delete_all_connections(ask=False, delete_from_db=True)
 
             for g in self.shunt_children:
-                self.editor._remove_from_scene(g.nexus)
+                self._editor._remove_from_scene(g.nexus)
 
-            self.editor.remove_element(device=self._api_object, graphic_object=self)
+            self._editor.remove_element(device=self._api_object, graphic_object=self)
 
     def enable_disable_dc(self):
         """
@@ -372,8 +372,8 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Plot profiles
         """
         # get the index of this object
-        i = self.editor.circuit.get_buses().index(self._api_object)
-        self.editor.plot_bus(i, self._api_object)
+        i = self._editor.circuit.get_buses().index(self._api_object)
+        self._editor.plot_bus(i, self._api_object)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
@@ -382,7 +382,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
 
         if self._api_object.device_type == DeviceType.ConnectivityNodeDevice:
-            self.editor.set_editor_model(api_object=self._api_object)
+            self._editor.set_editor_model(api_object=self._api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
@@ -443,9 +443,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: LoadGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_load(cn=self._api_object)
+            api_obj = self._editor.circuit.add_load(cn=self._api_object)
 
-        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -457,9 +457,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_shunt(cn=self._api_object)
+            api_obj = self._editor.circuit.add_shunt(cn=self._api_object)
 
-        _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -471,9 +471,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: GeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_generator(cn=self._api_object)
+            api_obj = self._editor.circuit.add_generator(cn=self._api_object)
 
-        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
@@ -485,9 +485,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: StaticGeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_static_generator(cn=self._api_object)
+            api_obj = self._editor.circuit.add_static_generator(cn=self._api_object)
 
-        _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
@@ -500,9 +500,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: BatteryGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_battery(cn=self._api_object)
+            api_obj = self._editor.circuit.add_battery(cn=self._api_object)
 
-        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
@@ -515,9 +515,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ExternalGridGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_external_grid(cn=self._api_object)
+            api_obj = self._editor.circuit.add_external_grid(cn=self._api_object)
 
-        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
@@ -530,9 +530,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: CurrentInjectionGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_current_injection(cn=self._api_object)
+            api_obj = self._editor.circuit.add_current_injection(cn=self._api_object)
 
-        _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
@@ -545,9 +545,9 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return: ControllableShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_controllable_shunt(cn=self._api_object)
+            api_obj = self._editor.circuit.add_controllable_shunt(cn=self._api_object)
 
-        _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
+        _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
 
