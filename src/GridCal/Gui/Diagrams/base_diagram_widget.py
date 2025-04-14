@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import List, Set, Dict, Union, Tuple, Callable, Generator, TYPE_CHECKING
+from typing import List, Set, Dict, Union, Tuple, Generator, TYPE_CHECKING
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
@@ -34,7 +34,7 @@ from GridCalEngine.enumerations import SimulationTypes, ResultTypes
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager, ALL_GRAPHICS
-from GridCal.Gui.general_dialogues import CheckListDialogue, InputNumberDialogue, DeleteDialogue
+from GridCal.Gui.general_dialogues import DeleteDialogue
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.object_model import ObjectsModel
 
@@ -342,29 +342,26 @@ class BaseDiagramWidget(QSplitter):
                     extended.add(child_graphic)
             extended_lst: List[GenericDiagramWidget] = list(extended)
 
-            if len(extended_lst) > 1:
-                dlg = DeleteDialogue(
-                    objects_list=[f"{graphic_obj._api_object.device_type.value}: {graphic_obj._api_object.name}"
-                                  for graphic_obj in extended_lst],
-                    delete_from_db=delete_from_db,
-                    title="Delete Selected",
-                    checks=False,
-                )
+            dlg = DeleteDialogue(
+                objects_list=[f"{graphic_obj.api_object.device_type.value}: "
+                              f"{graphic_obj.api_object.name}"
+                              for graphic_obj in extended_lst],
+                delete_from_db=delete_from_db,
+                title="Delete Selected",
+                checks=False,
+            )
 
-                dlg.setModal(True)
-                dlg.exec()
+            dlg.setModal(True)
+            dlg.exec()
 
-                if dlg.is_accepted:
+            if dlg.is_accepted:
 
-                    for i in dlg.selected_indices:
-                        graphic_obj = selected[i]
-                        self.remove_element(device=graphic_obj._api_object,
-                                            graphic_object=graphic_obj,
-                                            delete_from_db=delete_from_db)
-            else:
-                self.remove_element(device=extended_lst[0]._api_object,
-                                    graphic_object=extended_lst[0],
-                                    delete_from_db=delete_from_db)
+                for i in dlg.selected_indices:
+                    graphic_obj = selected[i]
+                    self.remove_element(device=graphic_obj.api_object,
+                                        graphic_object=graphic_obj,
+                                        delete_from_db=delete_from_db)
+
         else:
             self.gui.show_warning_toast("Choose some elements to delete_with_dialogue")
 

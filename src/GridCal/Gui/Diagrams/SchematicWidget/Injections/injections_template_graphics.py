@@ -176,14 +176,6 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
 
         self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
-    def remove_from_widget_and_db(self, ask: bool = True, delete_from_db: bool = True) -> None:
-        """
-        Remove this element
-        @return:
-        """
-
-        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
-
     def plot(self):
         """
         Plot API objects profiles

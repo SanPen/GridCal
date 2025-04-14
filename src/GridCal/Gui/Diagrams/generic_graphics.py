@@ -8,7 +8,7 @@ import darkdetect
 from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem, QGraphicsItemGroup,
                                QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsTextItem)
-from PySide6.QtGui import QColor, QPen
+from PySide6.QtGui import QColor, QPen, QPolygon
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -100,6 +100,10 @@ class GenericDiagramWidget:
         self.style = ACTIVE['style']
 
     @property
+    def api_object(self) -> ALL_DEV_TYPES:
+        return self._api_object
+
+    @property
     def draw_labels(self) -> bool:
         """
         draw labels getter
@@ -174,7 +178,7 @@ class Polygon(QGraphicsPolygonItem):
     PolygonItem
     """
 
-    def __init__(self, parent: GenericDiagramWidget, polygon, update_nexus_fcn: Callable[[QPointF], None]):
+    def __init__(self, parent, polygon: QPolygon, update_nexus_fcn: Callable[[QPointF], None]):
         """
         Constructor
         :param parent:
