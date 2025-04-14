@@ -173,4 +173,4 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this fluid path into a line?',
                              'Convert fluid path')
         if ok:
-            self.editor.convert_fluid_path_to_line(element=self.api_object, item_graphic=self)
+            self._editor.convert_fluid_path_to_line(element=self.api_object, item_graphic=self)

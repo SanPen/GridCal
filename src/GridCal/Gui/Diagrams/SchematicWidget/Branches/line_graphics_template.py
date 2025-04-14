@@ -525,6 +525,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         return self._parent
 
     @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
+
+    @property
     def api_object(self) -> BRANCH_TYPES:
         return self._api_object
 
@@ -610,14 +614,14 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         :return:
         """
         if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object)
+            self._editor.set_editor_model(api_object=self.api_object)
 
     def remove_widget(self):
         """
         Remove this object in the diagram
         @return:
         """
-        self.editor._remove_from_scene(self)
+        self._editor._remove_from_scene(self)
 
     def remove(self, ask=True):
         """
@@ -632,8 +636,8 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
             ok = True
 
         if ok:
-            self.editor.circuit.delete_branch(obj=self.api_object)
-            self.editor.delete_element_utility_function(device=self.api_object)
+            self._editor.circuit.delete_branch(obj=self.api_object)
+            self._editor.delete_element_utility_function(device=self.api_object)
 
     def enable_disable_toggle(self):
         """
@@ -646,13 +650,13 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
             else:
                 self.set_enable(True)
 
-            if self.editor.circuit.get_time_number() > 0:
+            if self._editor.circuit.get_time_number() > 0:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -688,8 +692,8 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.plot_branch(i, self.api_object)
+        i = self._editor.circuit.get_branches().index(self.api_object)
+        self._editor.plot_branch(i, self.api_object)
 
     def set_from_port(self, from_port: BarTerminalItem):
         """
@@ -805,13 +809,13 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         Assign the snapshot rate to the profile
         """
-        self.editor.set_rate_to_profile(self.api_object)
+        self._editor.set_rate_to_profile(self.api_object)
 
     def assign_status_to_profile(self):
         """
         Assign the snapshot rate to the profile
         """
-        self.editor.set_active_status_to_profile(self.api_object)
+        self._editor.set_active_status_to_profile(self.api_object)
 
     def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
         """
@@ -858,7 +862,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         change the from or to bus of the nbranch with another selected bus
         """
-        self.editor.change_bus(line_graphics=self)
+        self._editor.change_bus(line_graphics=self)
 
     def get_from_graphic_object(self):
         """

@@ -10,8 +10,8 @@ from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_editor import TransformerEditor
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_taps_editor import TransformerTapsEditor
+from GridCal.Gui.Diagrams.SchematicWidget.Editors.transformer_editor import TransformerEditor
+from GridCal.Gui.Diagrams.SchematicWidget.Editors.transformer_taps_editor import TransformerTapsEditor
 from GridCalEngine.Devices.Branches.transformer import Transformer2W, TransformerType
 from GridCalEngine.enumerations import DeviceType, TapModuleControl
 

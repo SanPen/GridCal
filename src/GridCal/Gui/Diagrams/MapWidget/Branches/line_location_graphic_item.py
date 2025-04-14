@@ -87,6 +87,14 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         # Assign color to the node
         self.set_default_color()
 
+    @property
+    def api_object(self) -> LineLocation:
+        return self._api_object
+
+    @property
+    def editor(self) -> GridMapWidget:
+        return self._editor
+
     def get_center_pos(self) -> QPointF:
         """
 
@@ -114,7 +122,6 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
         if self.enabled:
             self.update_real_pos()
-            self.needs_update = True
             self.line_container.update_connectors()
 
     def update_position_at_the_diagram(self) -> None:
@@ -125,14 +132,14 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         center_point = self.get_pos()
 
         self.lat, self.lon = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
-                                                    y=center_point.y() + real_position.y())
+                                                     y=center_point.y() + real_position.y())
 
         # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
-        self.editor.update_diagram_element(device=self._api_object,
-                                           latitude=self.lat,
-                                           longitude=self.lon,
-                                           graphic_object=self)
+        self.editor.update_diagram_element(device=self.api_object,
+                                            latitude=self.lat,
+                                            longitude=self.lon,
+                                            graphic_object=self)
 
         print()
 
@@ -144,12 +151,12 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         center_point = self.get_pos()
 
         self.lat, self.lon = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
-                                                    y=center_point.y() + real_position.y())
+                                                     y=center_point.y() + real_position.y())
 
         # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
-        self._api_object.lat = self.lat
-        self._api_object.long = self.lon
+        self.api_object.lat = self.lat
+        self.api_object.long = self.lon
 
     def move_to_api_coordinates(self, question: bool = True):
         """
@@ -157,15 +164,15 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         :return:
         """
         if question:
-            ok = yes_no_question(f"Move substation {self._api_object.name} graphics to it's database coordinates?",
+            ok = yes_no_question(f"Move substation {self.api_object.name} graphics to it's database coordinates?",
                                  "Move substation graphics")
 
             if ok:
-                x, y = self.move_to(lat=self._api_object.lat,
-                                    lon=self._api_object.long)  # this moves the vl too
+                x, y = self.move_to(lat=self.api_object.lat,
+                                    lon=self.api_object.long)  # this moves the vl too
                 self.set_callbacks(x, y)
         else:
-            x, y = self.move_to(lat=self._api_object.lat, lon=self._api_object.long)  # this moves the vl too
+            x, y = self.move_to(lat=self.api_object.lat, lon=self.api_object.long)  # this moves the vl too
             self.set_callbacks(x, y)
 
     def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
@@ -281,7 +288,6 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         Remove
         """
         self.line_container.removeNode(node=self)
-
 
     def setNodeColor(self, inner_color: QColor, border_color: QColor = None) -> None:
         """

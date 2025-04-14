@@ -7,9 +7,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
-from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
+from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItemGroup, QMenu,
+                               QGraphicsSceneContextMenuEvent)
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
-from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
+from GridCal.Gui.gui_functions import add_menu_entry
+from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED, OTHER, Square, Circle,
+                                                   Polygon, Condenser)
+
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -18,6 +22,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
+
     NODE_GRAPHIC = BusGraphicItem | CnGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
 
 
@@ -32,7 +37,8 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
                  device_type_name: str,
                  w: int,
                  h: int,
-                 editor: SchematicWidget):
+                 editor: SchematicWidget,
+                 glyph: Square | Circle | Polygon | Condenser):
         """
 
         :param parent:
@@ -47,6 +53,15 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         self.w = w
         self.h = h
 
+        pen = QPen(self.color, self.w, self.style)
+
+        self.glyph = glyph
+        self.glyph.setPen(pen)
+        self.addToGroup(self.glyph)
+
+        self.setPos(self.parent.x(), self.parent.y() + 100)
+        self.update_nexus(self.pos())
+
         self.scale = 1.0
         self.device_type_name = device_type_name
 
@@ -59,7 +74,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         # line to tie this object with the original bus (the parent)
         self.nexus = QGraphicsLineItem()
         self.nexus.setPen(QPen(self.color, self.width, self.style))
-        self.editor.add_to_scene(self.nexus)
+        self._editor.add_to_scene(self.nexus)
 
         self.setPos(self._parent.x(), self._parent.y() + 100)
         self.update_nexus(self.pos())
@@ -71,6 +86,11 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
     @property
     def api_object(self) -> INJECTION_DEVICE_TYPES:
         return self._api_object
+
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
+
 
     def get_associated_graphics(self) -> List[GenericDiagramWidget | QGraphicsLineItem]:
         """
@@ -87,7 +107,48 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
 
         pen = QPen(self.color, self.width, self.style)
         self.nexus.setPen(pen)
+        self.glyph.setPen(pen)
+
         return pen
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
+
+            if self.editor.circuit.has_time_series:
+                ok = yes_no_question('Do you want to update the time series active status accordingly?',
+                                     'Update time series active status')
+
+                if ok:
+                    # change the bus state (time series)
+                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.style = ACTIVE['style']
+                self.color = ACTIVE['color']
+            else:
+                self.style = DEACTIVATED['style']
+                self.color = DEACTIVATED['color']
+        else:
+            self.style = OTHER['style']
+            self.color = OTHER['color']
+
+        self.glyph.setPen(QPen(self.color, self.width, self.style))
 
     def update_nexus(self, pos):
         """
@@ -109,41 +170,26 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         Remove this element
         @return:
         """
-        # if ask:
-        #     ok = yes_no_question(f'Are you sure that you want to remove this {self.device_type_name}?',
-        #                          f'Remove {self.api_object.name}')
-        # else:
-        #     ok = True
-        #
-        # if ok:
-        #     self.editor._remove_from_scene(self.nexus)
-        #     self.editor.remove_element(device=self.api_object, graphic_object=self)
-        #     self.editor._remove_from_scene(self)
-        #     self.editor.delete_element_utility_function(device=self.api_object)
 
-        self.editor.delete_with_dialogue(selected=[(self, self._api_object)], delete_from_db=False)
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
     def remove_from_widget_and_db(self, ask: bool = True, delete_from_db: bool = True) -> None:
         """
         Remove this element
         @return:
         """
-        # if ask:
-        #     ok = yes_no_question('Are you sure that you want to remove this device',
-        #                          'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
-        # else:
-        #     ok = True
-        #
-        # if ok:
-        #     self.editor.remove_element(device=self.api_object,
-        #                                 graphic_object=self,
-        #                                 delete_from_db=delete_from_db)
-        #
-        #     self.editor._remove_from_scene(self.nexus)
-        #     self.editor._remove_from_scene(self)
-            # self.editor.delete_element_utility_function(device=self.api_object)
 
-        self.editor.delete_with_dialogue(selected=[(self._api_object, self)], delete_from_db=False)
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+
+    def plot(self):
+        """
+        Plot API objects profiles
+        """
+        # time series object from the last simulation
+        ts = self.editor.circuit.time_profile
+
+        # plot the profiles
+        self.api_object.plot_profiles(time=ts)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         """
@@ -151,13 +197,13 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        self.editor.set_editor_model(api_object=self._api_object)
+        self._editor.set_editor_model(api_object=self._api_object)
 
     def change_bus(self):
         """
         Change the generator bus
         """
-        idx_bus_list = self.editor.get_selected_buses()
+        idx_bus_list = self._editor.get_selected_buses()
 
         if len(idx_bus_list) == 2:
 
@@ -180,7 +226,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
                 self._api_object.bus = new_bus
                 new_bus_graphic_item.add_object(api_obj=self._api_object)
                 new_bus_graphic_item.update()
-                self.editor.remove_element(device=self.api_object, graphic_object=self)
+                self._editor.remove_element(device=self.api_object, graphic_object=self)
 
         else:
             warning_msg("you have to select the origin and destination buses!",
@@ -193,3 +239,42 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         :return:
         """
         self.scale = scale
+
+    def get_base_context_menu(self) -> QMenu:
+
+        menu = QMenu()
+
+        add_menu_entry(menu=menu,
+                       text="Active",
+                       function_ptr=self.enable_disable_toggle,
+                       checkeable=True,
+                       checked_value=self.api_object.active)
+
+        add_menu_entry(menu=menu,
+                       text="Change bus",
+                       function_ptr=self.change_bus,
+                       icon_path=":/Icons/icons/move_bus.svg")
+
+        add_menu_entry(menu=menu,
+                       text="Plot profiles",
+                       function_ptr=self.plot,
+                       icon_path=":/Icons/icons/plot.svg")
+
+        menu.addSeparator()
+
+        add_menu_entry(menu=menu,
+                       text="Delete",
+                       function_ptr=self.remove,
+                       icon_path=":/Icons/icons/delete3.svg")
+
+        return menu
+
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
+        """
+        Display context menu
+        @param event:
+        @return:
+        """
+        menu = self.get_base_context_menu()
+
+        menu.exec(event.screenPos())
