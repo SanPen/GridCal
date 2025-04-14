@@ -295,7 +295,7 @@ class BaseDiagram:
             group.set_point(device, location)
             self.data[str(device.device_type.value)] = group
         else:
-            # the category does exists, add point
+            # the category does exist, add point
             d.set_point(device, location)  # the category, exists, just add
 
     def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:

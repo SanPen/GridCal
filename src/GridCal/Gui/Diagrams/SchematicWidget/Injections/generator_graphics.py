@@ -141,7 +141,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         # add_menu_entry(menu, text='Remove from schematic and DB',
         #                icon_path=":/Icons/icons/delete_db.svg",
-        #                function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
+        #                function_ptr=lambda: self.remove(ask=True, delete_from_db=True))
 
         add_menu_entry(menu, text='Remove',
                        icon_path=":/Icons/icons/delete_schematic.svg",

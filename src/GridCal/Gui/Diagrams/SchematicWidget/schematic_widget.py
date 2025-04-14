@@ -1006,8 +1006,6 @@ class SchematicWidget(BaseDiagramWidget):
                            BusBarGraphicItem, FluidNodeGraphicItem)):
                 graphic_object.delete_all_connections(ask=False, delete_from_db=delete_from_db)
 
-
-
         else:
 
             # the notifications are handled by the parent

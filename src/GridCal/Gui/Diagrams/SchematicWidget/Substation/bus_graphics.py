@@ -480,13 +480,9 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/delete_conn.svg",
                        function_ptr=lambda: self.delete_all_connections(ask=True, delete_from_db=True))
 
-        add_menu_entry(menu, text='Remove from schematic and DB',
+        add_menu_entry(menu, text='Remove',
                        icon_path=":/Icons/icons/delete_db.svg",
-                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
-
-        add_menu_entry(menu, text='Remove from schematic',
-                       icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=False))
+                       function_ptr=self.remove)
 
         add_menu_entry(menu, text='Expand schematic',
                        icon_path=":/Icons/icons/grid_icon.svg",
@@ -559,22 +555,13 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         if ok:
             self._terminal.remove_all_connections(delete_from_db=delete_from_db)
 
-    def remove_from_widget_and_db(self, ask: bool = True, delete_from_db: bool = True) -> None:
+    def remove(self) -> None:
         """
         Remove this element
         @return:
         """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus',
-                                 'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_element(device=self._api_object,
-                                       graphic_object=self,
-                                       delete_from_db=delete_from_db)
-            self._terminal.clear()
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+        self._terminal.clear()
 
     def update_color(self):
         """
