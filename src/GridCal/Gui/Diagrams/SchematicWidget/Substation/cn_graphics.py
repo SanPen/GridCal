@@ -10,6 +10,8 @@ from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
+from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import SHUNT_GRAPHICS
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, FONT_SCALE)
@@ -77,7 +79,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.w = w if w >= self.min_w else self.min_w
 
         # loads, shunts, generators, etc...
-        self.shunt_children = list()
+        self._child_graphics: List[SHUNT_GRAPHICS] = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -124,7 +126,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.label.setDefaultTextColor(ACTIVE['text'])
 
-        for e in self.shunt_children:
+        for e in self._child_graphics:
             if e is not None:
                 e.recolour_mode()
 
@@ -161,7 +163,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Merge another BusGraphicItem into this
         :param other_bus_graphic: BusGraphicItem
         """
-        self.shunt_children += other_bus_graphic.shunt_children
+        self._child_graphics += other_bus_graphic._child_graphics
 
     def set_height(self, h: int):
         """
@@ -179,10 +181,10 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             Nothing
         """
         y0 = self.h + 40
-        n = len(self.shunt_children)
+        n = len(self._child_graphics)
         inc_x = self.w / (n + 1)
         x = inc_x
-        for elm in self.shunt_children:
+        for elm in self._child_graphics:
             elm.setPos(x - elm.w / 2, y0)
             x += inc_x
 
@@ -353,10 +355,18 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         if ok:
             self.delete_all_connections(ask=False, delete_from_db=True)
 
-            for g in self.shunt_children:
+            for g in self._child_graphics:
                 self._editor._remove_from_scene(g.nexus)
 
             self._editor.remove_element(device=self._api_object, graphic_object=self)
+
+    def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
+        """
+        Delete a child object
+        :param obj:
+        :return:
+        """
+        self._child_graphics.remove(obj)
 
     def enable_disable_dc(self):
         """
@@ -446,7 +456,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_load(cn=self._api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -460,7 +470,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_shunt(cn=self._api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -474,7 +484,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_generator(cn=self._api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -488,7 +498,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_static_generator(cn=self._api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -503,7 +513,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_battery(cn=self._api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -518,7 +528,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_external_grid(cn=self._api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -533,7 +543,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_current_injection(cn=self._api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -548,7 +558,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj = self._editor.circuit.add_controllable_shunt(cn=self._api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph

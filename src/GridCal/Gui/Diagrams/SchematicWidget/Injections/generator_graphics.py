@@ -107,7 +107,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         add_menu_entry(menu, text='Remove',
                        icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=self.remove)
+                       function_ptr=self.delete)
 
         add_menu_entry(menu=menu,
                        text="Convert to battery",

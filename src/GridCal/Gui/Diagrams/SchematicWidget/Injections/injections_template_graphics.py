@@ -100,7 +100,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         Get a list of all associated graphics
         :return:
         """
-        return [self.nexus]
+        return [self.nexus, self.glyph]
 
     def recolour_mode(self):
         """
@@ -168,13 +168,14 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         self.setZValue(-1)
         self.nexus.setZValue(-1)
 
-    def remove(self):
+    def delete(self):
         """
         Remove this element
         @return:
         """
 
         self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+        self.parent.delete_child(self)
 
     def plot(self):
         """
@@ -259,7 +260,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
 
         add_menu_entry(menu=menu,
                        text="Delete",
-                       function_ptr=self.remove,
+                       function_ptr=self.delete,
                        icon_path=":/Icons/icons/delete_schematic.svg")
 
         return menu

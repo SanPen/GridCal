@@ -263,7 +263,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[None, CnGraphicItem] = None,
+                 parent: Union[CnGraphicItem, Transformer3WGraphicItem],
                  h=10.0,
                  w=10.0):
         """
@@ -284,7 +284,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         self.setPen(QPen(self.color, self.pen_width, self.style))
 
         # terminal parent object
-        self.parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
+        self.parent: Union[BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
 
         # object -> callback
         self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[float], None]] = dict()

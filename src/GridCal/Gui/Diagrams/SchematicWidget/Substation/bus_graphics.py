@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
+from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
@@ -478,7 +479,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         add_menu_entry(menu, text='Delete',
                        icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=self.remove)
+                       function_ptr=self.delete)
 
         add_menu_entry(menu, text='Expand schematic',
                        icon_path=":/Icons/icons/grid_icon.svg",
@@ -544,13 +545,21 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     #     """
     #     self._terminal.remove_all_connections(delete_from_db=delete_from_db)
 
-    def remove(self) -> None:
+    def delete(self) -> None:
         """
         Remove this element
         @return:
         """
         self._editor.delete_with_dialogue(selected=[self], delete_from_db=False)
         self._terminal.clear()
+
+    def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
+        """
+        Delete a child object
+        :param obj:
+        :return:
+        """
+        self._child_graphics.remove(obj)
 
     def update_color(self):
         """

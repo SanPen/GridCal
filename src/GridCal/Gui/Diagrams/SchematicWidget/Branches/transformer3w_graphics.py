@@ -134,6 +134,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         # other actions
         self.set_winding_tool_tips()
 
+    def get_associated_graphics(self) -> List[QGraphicsItem]:
+        """
+
+        :return:
+        """
+        return list()
+
     def recolour_mode(self):
         """
         Change the colour according to the system theme

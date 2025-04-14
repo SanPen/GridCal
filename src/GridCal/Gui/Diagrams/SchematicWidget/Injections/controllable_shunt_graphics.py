@@ -68,7 +68,7 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
 
         add_menu_entry(menu=menu,
                        text="Delete",
-                       function_ptr=self.remove,
+                       function_ptr=self.delete,
                        icon_path=":/Icons/icons/delete3.svg")
 
         add_menu_entry(menu=menu,

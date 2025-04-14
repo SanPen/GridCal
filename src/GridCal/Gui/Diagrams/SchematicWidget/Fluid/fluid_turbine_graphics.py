@@ -82,7 +82,7 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
         add_menu_entry(menu=menu,
                        text="Delete",
                        icon_path=":/Icons/icons/delete3.svg",
-                       function_ptr=self.remove)
+                       function_ptr=self.delete)
 
         add_menu_entry(menu=menu,
                        text="Change bus",
