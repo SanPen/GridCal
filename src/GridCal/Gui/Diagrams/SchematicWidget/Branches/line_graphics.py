@@ -230,18 +230,6 @@ class LineGraphicItem(LineGraphicTemplateItem):
         if dlg.exec():
             pass
 
-    def show_line_editor(self):
-        """
-        Open the appropriate editor dialogue
-        :return:
-        """
-        Sbase = self.editor.circuit.Sbase
-
-        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
-                         templates=None, current_template=None)
-        if dlg.exec():
-            pass
-
     def add_to_catalogue(self):
         """
         Add this to the catalogue

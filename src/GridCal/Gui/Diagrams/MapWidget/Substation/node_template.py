@@ -3,10 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING, List, Callable
+from typing import Union, TYPE_CHECKING, Dict, Callable, List
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QBrush
 
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
@@ -46,15 +47,15 @@ class NodeTemplate(GenericDiagramWidget):
         self.hovered = False
         self.needsUpdate = False
 
-        self._callbacks: List[Callable[[float, float], None]] = list()
+        self._hosting_connections: Dict[MapLineSegment, Callable[[float, float], None]] = dict()
 
-    def add_position_change_callback(self, fcn: Callable[[float, float], None]):
+    def add_position_change_callback(self, obj: MapLineSegment, fcn: Callable[[float, float], None]):
         """
         Add callable function
         :param fcn: Function that accepts two floats (x, y) to update the positions
         :return:
         """
-        self._callbacks.append(fcn)
+        self._hosting_connections[obj] = fcn
 
     def set_callbacks(self, x: float, y: float) -> None:
         """
@@ -62,7 +63,7 @@ class NodeTemplate(GenericDiagramWidget):
         :param x: x position
         :param y: y position
         """
-        for fcn in self._callbacks:
+        for obj, fcn in self._hosting_connections.items():
             fcn(x, y)
 
     def valid_coordinates(self) -> bool:
@@ -86,3 +87,19 @@ class NodeTemplate(GenericDiagramWidget):
         :return:
         """
         pass
+
+    def delete_hosting_connection(self, graphic_obj: MapLineSegment):
+        """
+        Delete object graphically connected to the graphical bus
+        :param graphic_obj: LineGraphicTemplateItem (or child of this)
+        """
+        if graphic_obj in self._hosting_connections.keys():
+            del self._hosting_connections[graphic_obj]
+        else:
+            print(f'No such hosting connection for {graphic_obj}')
+
+    def get_hosting_line_segments(self) -> List[MapLineSegment]:
+        """
+        Ger a list of the lines that are hosted here
+        """
+        return list(self._hosting_connections.keys())

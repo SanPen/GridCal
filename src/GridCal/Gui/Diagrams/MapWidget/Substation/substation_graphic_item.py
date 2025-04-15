@@ -6,24 +6,25 @@ from __future__ import annotations
 import webbrowser
 from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
-from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsRectItem, \
-    QMessageBox
+from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsRectItem
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
+
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
 from GridCal.Gui.object_model import ObjectsModel
+from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget import schematic_widget
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
-from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget import schematic_widget
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
@@ -104,7 +105,6 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
-
     @property
     def api_object(self) -> Substation:
         return self._api_object
@@ -114,7 +114,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         Merge a substation into this one
         :param se: other SubstationGraphicItem
         """
-        self._callbacks += se._callbacks
+        self._hosting_connections += se._hosting_connections
         for vl_graphic in se.voltage_level_graphics:
             self.register_voltage_level(vl=vl_graphic.get_copy(new_parent=self))
 
@@ -217,7 +217,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
     def sort_voltage_levels(self) -> None:
         """
-        Set the Zorder based on the voltage level voltage
+        Set the Z-order based on the voltage level voltage
         """
         max_vl = 1.0  # 1 KV
         for vl_graphics in self.voltage_level_graphics:
@@ -352,8 +352,8 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
         add_menu_entry(menu=menu,
                        text="Remove substation",
-                       icon_path=":/Icons/icons/delete_db.svg",
-                       function_ptr=self.remove_substation)
+                       icon_path=":/Icons/icons/delete_schematic.svg",
+                       function_ptr=self.delete)
 
         add_menu_entry(menu=menu,
                        text="Substation diagram",
@@ -446,7 +446,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
 
         delete_connections = True  # TODO: This option was defaulted, no input was given from the GUI
 
-        devs = []
+        devs = list()
         # find associated Branches in reverse order
         for obj in substation_buses:
             for branch_list in self.editor.circuit.get_branch_lists():
@@ -537,12 +537,12 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                                  "Move substation graphics")
 
             if ok:
-                x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
+                x, y = self.move_to(lat=self.api_object.latitude,
+                                    lon=self.api_object.longitude)  # this moves the vl too
                 self.set_callbacks(x, y)
         else:
             x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
             self.set_callbacks(x, y)
-
 
     def merge_selected_substations(self):
         """
@@ -580,18 +580,15 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                 if se_graphics != self:
                     self.merge(se=se_graphics)
                     sub = self.editor.graphics_manager.delete_device(se_graphics.api_object)
-                    self.editor.map.diagram_scene.removeItem(sub)
-                    # self.editor.remove_substation(substation=se_graphics,
-                    #                               delete_from_db=True,
-                    #                               delete_connections=False)
+                    self.editor.diagram_scene.removeItem(sub)
 
             # Update the code of the base substation
             self.api_object.code = merged_codes  # Needed?
 
             # Find the base substation in the circuit's collection and update it
-            for i, substation in enumerate(self.editor.circuit._substations):
+            for i, substation in enumerate(self.editor.circuit.substations):
                 if substation == self.api_object:
-                    self.editor.circuit._substations[i].code = merged_codes
+                    self.editor.circuit.substations[i].code = merged_codes
                     break
 
             # re-index the stuff pointing at deleted api elements to this api object
@@ -630,7 +627,6 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                 )
                 dlg.setModal(True)
                 dlg.exec()
-
 
                 if dlg.accepted:
 
@@ -683,7 +679,6 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
             else:
                 self.editor.gui.show_info_toast(
                     message='The substation merged have no associated buses. No schematic can be produced.')
-
 
     def new_substation_diagram(self):
         """
@@ -786,35 +781,27 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         webbrowser.open(url)
 
     def get_associated_widgets(self) -> List[GenericDiagramWidget]:
+        """
 
+        :return:
+        """
         associated_buses = self.editor.circuit.get_substation_buses(substation=self.api_object)
-        associated_buses_graphics = []
-        associated_vl_graphics = []
-        associated_lines_graphics = []
+        associated_buses_graphics = list()
+        associated_lines_graphics: List[MapLineContainer] = list()
 
-        #TODO: Connectivity nodes / busbars? Probably this is only when dealing with the schematic
-        # associated_connectivity_node = []
-        # associated_busbars_graphics = []
+        # TODO: Connectivity nodes / busbars? Probably this is only when dealing with the schematic
 
         for bus in associated_buses:
-
             associated_buses_graphics.append(self.editor.graphics_manager.query(elm=bus))
-            associated_vl_graphics.append(self.editor.graphics_manager.query(elm=bus.voltage_level))
 
-            for line in self.editor.circuit.lines:
-                if line.bus_to == bus or line.bus_from == bus:
-                    associated_lines_graphics.append(self.editor.graphics_manager.query(elm=line))
+        for segment in self.get_hosting_line_segments():
+            associated_lines_graphics.append(segment.container)
 
-            # for cn in self.editor.circuit.connectivity_nodes:
-            #     if cn.bus == bus:
-            #         associated_connectivity_node.append(cn)
-            #
-            # for bb in self.editor.circuit.bus_bars:
-            #     if bb.voltage_level == bus.voltage_level:
-            #         associated_busbars_graphics.append(bb)
+        return self.voltage_level_graphics + associated_lines_graphics
 
-        return associated_buses_graphics + associated_vl_graphics + associated_lines_graphics
+    def delete(self):
+        """
 
-    def remove_substation(self):
-
+        :return:
+        """
         self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)

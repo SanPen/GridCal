@@ -350,11 +350,13 @@ class BaseDiagramWidget(QSplitter):
 
             for graphic_obj in selected:
 
-                if isinstance(graphic_obj, GenericDiagramWidget):
-                    extended.add(graphic_obj)
+                if graphic_obj is not None:
+                    if isinstance(graphic_obj, GenericDiagramWidget):
+                        extended.add(graphic_obj)
 
                     for child_graphic in graphic_obj.get_associated_widgets():
-                        extended.add(child_graphic)
+                        if child_graphic is not None:
+                            extended.add(child_graphic)
 
             extended_lst: List[GenericDiagramWidget] = list(extended)
 

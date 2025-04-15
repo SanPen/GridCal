@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import webbrowser
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
@@ -84,8 +84,8 @@ class MapLineSegment(QGraphicsLineItem):
                                     text_scale=0.01, show_text=False)
 
         # set callbacks
-        self.first.add_position_change_callback(self.set_from_side_coordinates)
-        self.second.add_position_change_callback(self.set_to_side_coordinates)
+        self.first.add_position_change_callback(self, self.set_from_side_coordinates)
+        self.second.add_position_change_callback(self, self.set_to_side_coordinates)
 
         self._pen = self.set_colour(self.color, self.style)
         # self._pen.setCosmetic(True)
@@ -117,6 +117,20 @@ class MapLineSegment(QGraphicsLineItem):
         :return:
         """
         return self.container.editor
+
+    def delete_from_associations(self):
+        """
+        Delete the connections
+        """
+        self.first.delete_hosting_connection(self)
+        self.second.delete_hosting_connection(self)
+
+    def get_associated_widgets(self) -> List[MapLineContainer]:
+        """
+        This forwards to the map line container for the appropriate deletion of everything
+        :return:
+        """
+        return [self.container]
 
     def set_width(self, width: float):
         """
@@ -219,12 +233,6 @@ class MapLineSegment(QGraphicsLineItem):
         :param event:
         :return:
         """
-        scene_pos = event.scenePos()  # Position in scene coordinates
-        # screen_pos = event.screenPos()  # Position in global screen coordinates
-        # local_pos = event.pos()  # Position in item coordinates (if in an item)
-
-        x, y = scene_pos.x(), scene_pos.y()
-        lat, lon = self.editor.to_lat_lon(x=x, y=y)
 
         menu = QMenu()
 
@@ -258,7 +266,6 @@ class MapLineSegment(QGraphicsLineItem):
                        function_ptr=self.editor.consolidate_object_coordinates,
                        icon_path=":/Icons/icons/assign_to_profile.svg")
 
-
         menu.addSeparator()
 
         # Check if a substation is selected
@@ -280,7 +287,6 @@ class MapLineSegment(QGraphicsLineItem):
                            text="Merge selected lines",
                            function_ptr=self.editor.merge_selected_lines,
                            icon_path=":/Icons/icons/fusion.svg")
-
 
         menu.addSeparator()
 
@@ -310,6 +316,9 @@ class MapLineSegment(QGraphicsLineItem):
                        function_ptr=self.plot_profiles,
                        icon_path=":/Icons/icons/plot.svg")
 
+        scene_pos = event.scenePos()  # Position in scene coordinates
+        x, y = scene_pos.x(), scene_pos.y()
+        lat, lon = self.editor.to_lat_lon(x=x, y=y)
         add_menu_entry(menu=menu,
                        text="Open in google earth",
                        function_ptr=lambda: open_street_view(lat, lon),
@@ -327,15 +336,15 @@ class MapLineSegment(QGraphicsLineItem):
 
         add_menu_entry(menu=menu,
                        text="Add point",
-                       function_ptr=self.add_path_node,
+                       function_ptr=self.add_node,
                        icon_path=":/Icons/icons/cn_icon.svg")
 
         menu.addSeparator()
 
         add_menu_entry(menu=menu,
-                       text="Delete line",
-                       function_ptr=self.remove_line,
-                       icon_path=":/Icons/icons/delete3.svg")
+                       text="Delete",
+                       function_ptr=self.delete,
+                       icon_path=":/Icons/icons/delete_schematic.svg")
 
         menu.exec_(event.screenPos())
 
@@ -432,7 +441,7 @@ class MapLineSegment(QGraphicsLineItem):
         """
         self.editor.set_active_status_to_profile(self.api_object)
 
-    def add_path_node(self):
+    def add_node(self):
         """
         Add a path to the container by adding a new graphical segment
         """
@@ -458,35 +467,6 @@ class MapLineSegment(QGraphicsLineItem):
 
                 elif self.first.index < self.second.index:
                     self.container.insert_new_node_at_position(self.second.index)
-
-    def add_substation_here(self):
-        """
-        Split the line
-        :return:
-        """
-        # TODO implement:
-        # The container of this segment must be split into two new containers
-        # and in the middle, we need to create a substation object
-
-        # self.editor.split_line_in_out(line_graphics=self)
-        pass
-
-    def remove(self, ask=True):
-        """
-        Remove this object in the diagram and the API
-        @return:
-        """
-        if ask:
-            dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to delete the {dtype} {self.api_object.name}?',
-                                 f'Remove {dtype}')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.remove_branch_graphic(line=self.container)
-            # self.editor.circuit.delete_branch(obj=self.api_object)
-            self.editor.delete_element_utility_function(device=self.api_object)
 
     def set_arrows_with_power(self, Sf: complex | None, St: complex | None) -> None:
         """
@@ -532,7 +512,8 @@ class MapLineSegment(QGraphicsLineItem):
             message=f"Line length calculated: {total_length:.2f} km. The length property of line "
                     f"{self.api_object.name} has been updated.")
 
-
-    def remove_line(self):
-
-        self.parentItem().remove_line()
+    def delete(self):
+        """
+        Delete this and all the MapLineContainer segments
+        """
+        self.container.delete()

@@ -141,8 +141,6 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
                                             longitude=self.lon,
                                             graphic_object=self)
 
-        print()
-
     def update_database_position(self) -> None:
         """
         This function updates the position of this graphical element in the database
@@ -248,40 +246,12 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         """
         menu = QMenu()
 
-        # add_menu_entry(menu=menu,
-        #                text="Merge",
-        #                icon_path="",
-        #                function_ptr=self.MergeFunction)
-        #
-        # add_menu_entry(menu=menu,
-        #                text="Split",
-        #                icon_path=":/Icons/icons/divide.svg",
-        #                function_ptr=self.SplitFunction)
-
         add_menu_entry(menu=menu,
                        text="Delete",
-                       icon_path=":/Icons/icons/delete_with_dialogue.svg",
+                       icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove)
 
         menu.exec_(event.screenPos())
-
-    def AddFunction(self):
-        """
-
-        :return:
-        """
-        self.line_container.insert_new_node_at_position(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
-
-    def SplitFunction(self):
-        """
-
-        :return:
-        """
-        self.line_container.split_Line(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
 
     def remove(self):
         """
@@ -350,3 +320,5 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         pen = self.pen()
         pen.setWidth(width)
         self.setPen(pen)
+
+

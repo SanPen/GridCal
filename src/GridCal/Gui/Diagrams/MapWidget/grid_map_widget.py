@@ -53,7 +53,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import L
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, MapDiagramScene
-from GridCal.Gui.Diagrams.MapWidget.Branches.new_line_dialogue import NewMapLineDialogue
+from GridCal.Gui.Diagrams.Editors.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
@@ -394,17 +394,17 @@ class GridMapWidget(BaseDiagramWidget):
         deleted: bool = super().remove_element(device=device,
                                                graphic_object=graphic_object,
                                                delete_from_db=delete_from_db)
-        if deleted:
-
-            if isinstance(graphic_object, SubstationGraphicItem):
-                self.remove_substation(substation=graphic_object,
-                                       delete_from_db=delete_from_db)
-
-            elif isinstance(graphic_object, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)):
-                self.remove_branch_graphic(line=graphic_object, delete_from_db=delete_from_db)
-        else:
-            # the notifications are handled by the parent
-            pass
+        # if deleted:
+        #
+        #     if isinstance(graphic_object, SubstationGraphicItem):
+        #         self.remove_substation(substation=graphic_object,
+        #                                delete_from_db=delete_from_db)
+        #
+        #     elif isinstance(graphic_object, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)):
+        #         self.remove_branch_graphic(line=graphic_object, delete_from_db=delete_from_db)
+        # else:
+        #     # the notifications are handled by the parent
+        #     pass
 
     def zoom_callback(self, zoom_level: int) -> None:
         """

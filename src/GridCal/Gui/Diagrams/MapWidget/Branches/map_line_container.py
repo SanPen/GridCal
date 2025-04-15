@@ -221,8 +221,8 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                 connection_elements.append(substation_to_graphics)
                 substation_to_graphics.line_container = self
 
-        br_scale = self.editor.get_branch_width()
-        arrow_scale = self.editor.get_arrow_scale()
+        # br_scale = self.editor.get_branch_width()
+        # arrow_scale = self.editor.get_arrow_scale()
 
         # second pass: create the segments
         for i in range(1, len(connection_elements)):
@@ -237,9 +237,6 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
 
-            # segment_graphic_object.set_width(br_scale * segment_graphic_object.width)  # Assign the pen to the line item
-            # segment_graphic_object.set_arrow_sizes(arrow_scale)
-
             # register the segment in the line
             self.add_segment(segment=segment_graphic_object)
 
@@ -247,8 +244,6 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
         self.update_connectors()
-
-        # self.editor.update_device_sizes()
 
     def substation_to(self):
         """
@@ -541,19 +536,19 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
 
         return total_length
 
-    def get_associated_widgets(self):
+    def get_extra_graphics(self):
         """
         This function gets the graphic objects associated to a MapLineContainer
         return: The list of the associated graphic objects, which are the nodes and segments of the line.
-
         """
-
-        # TODO: The line api_object will be deleted when parsing the MapLineContainer. But the LineLocation does not
-        #  have the GenericDiagramWidget class as parent. Will this be an issue?
-
         return self.segments_list + self.nodes_list
 
-    def remove_line(self):
+    def delete(self):
+        """
+        Delete this object and all the other objects
+        """
+        for segment in self.segments_list:
+            segment.delete_from_associations()
 
         self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
