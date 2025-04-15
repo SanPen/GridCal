@@ -16,13 +16,14 @@ from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton
 from collections.abc import Callable
-from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
+from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool,
+                            QEventLoop)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
-from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import ElementsDialogue, InputNumberDialogue
+from GridCal.Gui.general_dialogues import CheckListDialogue, InputNumberDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
@@ -30,14 +31,14 @@ from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.Devices.Parents.editable_device import GCProp
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.enumerations import Colormaps
@@ -49,7 +50,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathL
 from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, MapDiagramScene
+from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 from GridCal.Gui.Diagrams.MapWidget.Branches.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
@@ -655,7 +656,7 @@ class GridMapWidget(BaseDiagramWidget):
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """
         Removes line from diagram and scene
-        :param line: Line to delete
+        :param line: Line to remove
         :param delete_from_db:
         """
         lin = self.graphics_manager.delete_device(line.api_object)
@@ -1384,8 +1385,8 @@ class GridMapWidget(BaseDiagramWidget):
             gelm.api_object.longitude = gelm.lon
 
         for gelm in graphics_linelocations:
-            gelm._api_object.lat = gelm.lat
-            gelm._api_object.long = gelm.lon
+            gelm.api_object.lat = gelm.lat
+            gelm.api_object.long = gelm.lon
 
         ok = yes_no_question(title='Update lengths?',
                              text='Do you want to update lengths of lines? \n'
@@ -1647,7 +1648,7 @@ class GridMapWidget(BaseDiagramWidget):
         self.gui.show_info_toast(message='Line merging successful!')
 
         ok = yes_no_question(
-            text='Do you want to delete_with_dialogue the substation where the lines were connecting? This will'
+            text='Do you want to delete the substation where the lines were connecting? This will'
                  ' open the substation deletion menu, with the information of the items that would '
                  'be removed.', title='Remove substation?')
         if ok:
@@ -1665,8 +1666,8 @@ class GridMapWidget(BaseDiagramWidget):
         for line, line_graphic in selected_lines:
             line_graphics_list.append(line_graphic)
             for gelm in line_graphic.nodes_list:
-                gelm._api_object.lat = gelm.lat
-                gelm._api_object.long = gelm.lon
+                gelm.api_object.lat = gelm.lat
+                gelm.api_object.long = gelm.lon
 
         ok = yes_no_question(title='Update lengths?',
                              text='Do you want to update lengths of lines? \n'
@@ -2047,25 +2048,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Get the line container from the waypoint
         original_line_container = selected_waypoint.line_container
-
-        if original_line_container is None:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Could not determine which line the waypoint belongs to.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
-            return
-
-        # Get the line API object
-        line_api = original_line_container._api_object
-
-        if not isinstance(line_api, Line):
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("The waypoint must belong to a line.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
-            return
+        line_api = original_line_container.api_object
 
         # Get the API objects
         substation_api, substation_graphic = selected_substation
@@ -2091,12 +2074,31 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Step 1: Create a new substation at the waypoint location
         new_substation_name = f"{line_api.name}_Junction"
-        code = ast.literal_eval(line_api.code)
-        new_code = [f"{subcode}_Junction" for subcode in code]
+
+        # --- Safely evaluate line_api.code ---
+        code_list = [] # Default to empty list
+        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str): # Check if it exists, is not empty, and is a string
+            try:
+                evaluated_code = ast.literal_eval(line_api.code)
+                # Ensure it's a list or treat as single item if string
+                if isinstance(evaluated_code, list):
+                    code_list = evaluated_code
+                elif isinstance(evaluated_code, str):
+                     code_list = [evaluated_code] # Treat literal string as single code
+                # Add handling for other literal types if needed, otherwise they result in empty list
+            except (ValueError, SyntaxError, TypeError):
+                # Handle cases where the string is not a valid literal
+                # If it doesn't look like a list, treat the original string as the code
+                if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                     code_list = [line_api.code]
+
+        # Modify the code list
+        new_code_list = [f"{subcode}_Junction" for subcode in code_list]
+        # --- End safe evaluation ---
 
         # Create the new substation
         new_substation = Substation(name=new_substation_name,
-                                    code=new_code if hasattr(line_api, 'code') and line_api.code else "",
+                                    code=str(new_code_list), # Store as string representation of list
                                     latitude=waypoint_lat,
                                     longitude=waypoint_lon)
 
@@ -2140,8 +2142,6 @@ class GridMapWidget(BaseDiagramWidget):
             bus_name = f"{substation_api.name} {vnom} kV Bus"
             suitable_bus_in_selected = Bus(name=bus_name,
                                            Vnom=vnom,
-                                           vmin=0.9,
-                                           vmax=1.1,
                                            voltage_level=voltage_level_in_selected,
                                            substation=substation_api)
 
@@ -2216,20 +2216,27 @@ class GridMapWidget(BaseDiagramWidget):
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
 
-        # Handle the code property - it might be a list of strings
-        if hasattr(line_api, 'code') and line_api.code is not None:
-            code = ast.literal_eval(line_api.code)
-            if isinstance(code, list):
-                line1_code = [f"{subcode}_1" for subcode in code]
-            else:
-                line1_code = f"{code}_1"
-        else:
-            line1_code = ""
+        # --- Safely evaluate line_api.code for line1 ---
+        code_list_for_line1 = [] # Default to empty list
+        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str):
+            try:
+                evaluated_code = ast.literal_eval(line_api.code)
+                if isinstance(evaluated_code, list):
+                    code_list_for_line1 = evaluated_code
+                elif isinstance(evaluated_code, str):
+                     code_list_for_line1 = [evaluated_code]
+            except (ValueError, SyntaxError, TypeError):
+                 if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                     code_list_for_line1 = [line_api.code]
+
+        # Modify the code list
+        line1_modified_code_list = [f"{subcode}_1" for subcode in code_list_for_line1]
+        # --- End safe evaluation for line1 ---
 
         line1 = Line(name=line1_name,
                      bus_from=line_api.bus_from,
                      bus_to=new_bus,
-                     code=line1_code,
+                     code=str(line1_modified_code_list), # Store as string representation
                      r=line_api.R * ratio1,  # Set impedance proportional to length
                      x=line_api.X * ratio1,
                      b=line_api.B * ratio1,
@@ -2262,20 +2269,27 @@ class GridMapWidget(BaseDiagramWidget):
         # Line 2: from new_bus to original bus_to
         line2_name = f"{line_api.name}_2"
 
-        # Handle the code property for line 2
-        if hasattr(line_api, 'code') and line_api.code is not None:
-            code = ast.literal_eval(line_api.code)
-            if isinstance(code, list):
-                line2_code = [f"{subcode}_2" for subcode in code]
-            else:
-                line2_code = f"{code}_2"
-        else:
-            line2_code = ""
+        # --- Safely evaluate line_api.code for line2 ---
+        code_list_for_line2 = [] # Default to empty list
+        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str):
+            try:
+                evaluated_code = ast.literal_eval(line_api.code)
+                if isinstance(evaluated_code, list):
+                    code_list_for_line2 = evaluated_code
+                elif isinstance(evaluated_code, str):
+                     code_list_for_line2 = [evaluated_code]
+            except (ValueError, SyntaxError, TypeError):
+                 if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                     code_list_for_line2 = [line_api.code]
+
+        # Modify the code list
+        line2_modified_code_list = [f"{subcode}_2" for subcode in code_list_for_line2]
+        # --- End safe evaluation for line2 ---
 
         line2 = Line(name=line2_name,
                      bus_from=new_bus,
                      bus_to=line_api.bus_to,
-                     code=line2_code,
+                     code=str(line2_modified_code_list), # Store as string representation
                      r=line_api.R * ratio2,  # Set impedance proportional to length
                      x=line_api.X * ratio2,
                      b=line_api.B * ratio2,
