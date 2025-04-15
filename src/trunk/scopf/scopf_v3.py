@@ -1,7 +1,5 @@
 
 from GridCalEngine.Simulations.OPF.NumericalMethods.scopf import *
-from trunk.substation_reduction.switch_reduction_early_investigation import n_bus
-
 
 def case_loop() -> None:
     """
@@ -72,7 +70,6 @@ def case_loop() -> None:
             print(f"\nContingency group {ic}: {contingency_group.name} (Category: {contingency_group.category})")
 
             # Set contingency status
-            nc = compile_numerical_circuit_at(grid, t_idx=None)
             nc.set_con_or_ra_status(contingencies)
 
             for cont in contingencies:
