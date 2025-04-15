@@ -166,6 +166,13 @@ class GenericDiagramWidget:
         """
         self.draw_labels = not self.draw_labels
 
+    def delete_from_associations(self):
+        """
+        Delete this object from other associations, i.e. for a line, delete from the terminal connections
+        :return:
+        """
+        pass
+
     def get_associated_widgets(self) -> List["GenericDiagramWidget"]:
         """
         Get a list of all graphical elements associated with this widget.

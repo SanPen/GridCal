@@ -253,7 +253,7 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
 
             add_menu_entry(menu=menu,
                            text="Delete",
-                           function_ptr=self.remove,
+                           function_ptr=self.delete,
                            icon_path=":/Icons/icons/delete_schematic.svg")
 
             menu.exec_(event.screenPos())
@@ -467,24 +467,12 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         self.winding_circles[i].setPen(QPen(color, self.pen_width, self.style))
         self.terminals[i].setPen(QPen(color, self.pen_width, self.style))
 
-    def delete_all_connections(self, delete_from_db: bool = True):
-        """
-        Delete all bus connections
-        """
-        for t in self.terminals:
-            t.remove_all_connections(delete_from_db=delete_from_db)
-
-        for c in self.connection_lines:
-            self.editor._remove_from_scene(c)
-
-    def remove(self):
+    def delete(self):
         """
         Remove this element
         @return:
         """
         deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
-        if deleted:
-            self.delete_all_connections(delete_from_db=delete_from_db_final)
 
     def edit(self):
         """

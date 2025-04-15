@@ -94,6 +94,11 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
     def editor(self) -> SchematicWidget:
         return self._editor
 
+    def delete_from_associations(self):
+        """
+        Delete this object from the bus or other parent hosting it
+        """
+        self.parent.delete_child(self)
 
     def get_associated_widgets(self) -> List[GenericDiagramWidget | QGraphicsLineItem]:
         """
@@ -182,8 +187,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         """
 
         deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
-        if deleted:
-            self.parent.delete_child(self)
+
 
     def plot(self):
         """

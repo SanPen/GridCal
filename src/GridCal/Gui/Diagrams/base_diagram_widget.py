@@ -285,19 +285,27 @@ class BaseDiagramWidget(QSplitter):
         """
         if graphic_object is not None and device is not None:
 
+            # Unregister this object from other objects that have references of it
+            # i.e. unregister a line from the 2 buses that host connections to it
+            # i.e. unregister a load from the bus that points to it
+            graphic_object.delete_from_associations()
+
             if delete_from_db:
                 self.circuit.delete_element(obj=graphic_object.api_object)
 
-            for child_graphic in graphic_object.get_associated_widgets():
+            # # For any other associated, graphic, delete too
+            # for child_graphic in graphic_object.get_associated_widgets():
+            #
+            #     if delete_from_db:
+            #         self.circuit.delete_element(obj=child_graphic.api_object)
+            #
+            #     # Warning: recursive call for devices that may have further sub-graphics (i.e. the nexus)
+            #     self.remove_element(device=child_graphic.api_object,
+            #                         graphic_object=child_graphic,
+            #                         delete_from_db=delete_from_db)
 
-                if delete_from_db:
-                    self.circuit.delete_element(obj=child_graphic.api_object)
-
-                # Warning: recursive call for devices that may have further sub-graphics (i.e. the nexus)
-                self.remove_element(device=child_graphic.api_object,
-                                    graphic_object=child_graphic,
-                                    delete_from_db=delete_from_db)
-
+            # Delete any other QWidget that is associated to this, and that we don't know about explicitly
+            # i.e. the nexus of the loads, generators, etc...
             for child_graphic in graphic_object.get_extra_graphics():
                 # simpler graphics associated, simply delete_with_dialogue
                 self._remove_from_scene(graphic_object=child_graphic)

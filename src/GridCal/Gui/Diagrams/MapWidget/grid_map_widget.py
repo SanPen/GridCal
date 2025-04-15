@@ -22,9 +22,11 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandard
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import CheckListDialogue, InputNumberDialogue
+from GridCal.Gui.general_dialogues import CheckListDialogue, InputNumberDialogue, ElementsDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
+from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
 from GridCalEngine.Devices.Branches.dc_line import DcLine
@@ -50,7 +52,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathL
 from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, MapDiagramScene
 from GridCal.Gui.Diagrams.MapWidget.Branches.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
