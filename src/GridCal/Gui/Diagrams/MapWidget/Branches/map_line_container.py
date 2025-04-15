@@ -181,11 +181,11 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         :return:
         """
         for seg in self.segments_list:
-            if seg.first._api_object == node._api_object or seg.second._api_object == node._api_object:
+            if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
                 self.editor.map.diagram_scene.removeItem(seg)
 
         self.nodes_list.remove(node)
-        self.api_object.locations.remove(node._api_object)
+        self.api_object.locations.remove(node.api_object)
 
         for nod in self.nodes_list:
             if nod.index > node.index:
@@ -515,17 +515,17 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         # Add the substation from
         substation_from = self.substation_from()
         if substation_from is not None:
-            connection_points.append((substation_from._api_object.latitude, substation_from._api_object.longitude))
+            connection_points.append((substation_from.api_object.latitude, substation_from.api_object.longitude))
 
         # Add all intermediate points
         for node in self.nodes_list:
-            connection_points.append((node._api_object.lat, node._api_object.long))
+            connection_points.append((node.api_object.lat, node.api_object.long))
         
         # Add the substation to
         substation_to = self.substation_to()
 
         if substation_to is not None:
-            connection_points.append((substation_to._api_object.latitude, substation_to._api_object.longitude))
+            connection_points.append((substation_to.api_object.latitude, substation_to.api_object.longitude))
 
         # Calculate total length by summing distances between consecutive points
         total_length = 0.0

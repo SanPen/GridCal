@@ -997,28 +997,28 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         :return:
         """
-        return self.get_from_graphic_object()._api_object
+        return self.get_from_graphic_object().api_object
 
     def get_bus_to(self) -> Bus:
         """
 
         :return:
         """
-        return self.get_to_graphic_object()._api_object
+        return self.get_to_graphic_object().api_object
 
     def get_cn_from(self) -> ConnectivityNode:
         """
 
         :return:
         """
-        return self.get_from_graphic_object()._api_object
+        return self.get_from_graphic_object().api_object
 
     def get_cn_to(self) -> ConnectivityNode:
         """
 
         :return:
         """
-        return self.get_to_graphic_object()._api_object
+        return self.get_to_graphic_object().api_object
 
     def get_busbar_from(self) -> BusBar:
         """

@@ -329,7 +329,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V1 = bus.Vnom
             self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
-            conn._api_object = self.api_object.winding1
+            conn.api_object = self.api_object.winding1
             conn.winding_number = 0
 
         elif i == 1:
@@ -338,7 +338,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V2 = bus.Vnom
             self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
-            conn._api_object = self.api_object.winding2
+            conn.api_object = self.api_object.winding2
             conn.winding_number = 1
 
         elif i == 2:
@@ -347,7 +347,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V3 = bus.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
-            conn._api_object = self.api_object.winding3
+            conn.api_object = self.api_object.winding3
             conn.winding_number = 2
         else:
             raise Exception('Unsupported winding index {}'.format(i))
@@ -373,7 +373,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V1 = cn.Vnom
             self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
-            conn._api_object = self.api_object.winding1
+            conn.api_object = self.api_object.winding1
             conn.winding_number = 0
 
         elif i == 1:
@@ -382,7 +382,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V2 = cn.Vnom
             self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
-            conn._api_object = self.api_object.winding2
+            conn.api_object = self.api_object.winding2
             conn.winding_number = 1
 
         elif i == 2:
@@ -391,7 +391,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                 self.api_object.V3 = cn.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
-            conn._api_object = self.api_object.winding3
+            conn.api_object = self.api_object.winding3
             conn.winding_number = 2
         else:
             raise Exception('Unsupported winding index {}'.format(i))

@@ -128,7 +128,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.index = index
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(self._api_object.name if self._api_object is not None else "", self)
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
@@ -209,7 +209,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-        self._editor.update_diagram_element(device=self._api_object,
+        self._editor.update_diagram_element(device=self.api_object,
                                             x=self.pos().x(),
                                             y=self.pos().y(),
                                             w=self.w,
@@ -308,7 +308,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.arrange_children()
 
         # update editor diagram position
-        self._editor.update_diagram_element(device=self._api_object,
+        self._editor.update_diagram_element(device=self.api_object,
                                             x=self.pos().x(),
                                             y=self.pos().y(),
                                             w=self.w,
@@ -395,7 +395,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path="",
                        function_ptr=self.enable_disable_toggle,
                        checkeable=True,
-                       checked_value=self._api_object.active)
+                       checked_value=self.api_object.active)
 
         add_menu_entry(menu=menu,
                        text="Draw labels",
@@ -455,7 +455,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/dc.svg",
                        function_ptr=self.enable_disable_dc,
                        checkeable=True,
-                       checked_value=self._api_object.is_dc)
+                       checked_value=self.api_object.is_dc)
 
         add_menu_entry(menu=menu,
                        text="Plot profiles",
@@ -487,7 +487,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         add_menu_entry(menu, text='Vicinity diagram from here',
                        icon_path=":/Icons/icons/grid_icon.svg",
-                       function_ptr=self.new_vecinity_diagram_from_here)
+                       function_ptr=self.new_vicinity_diagram_from_here)
 
         add_menu_entry(menu=menu,
                        text="Open in street view",
@@ -537,7 +537,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Assign the snapshot rate to the profile
         """
-        self._editor.set_active_status_to_profile(self._api_object)
+        self._editor.set_active_status_to_profile(self.api_object)
 
     # def delete_all_connections(self, delete_from_db: bool) -> None:
     #     """
@@ -565,7 +565,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Update the colour
         """
-        if self._api_object.active:
+        if self.api_object.active:
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
             self.set_tile_color(QBrush(DEACTIVATED['color']))
@@ -574,15 +574,15 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Expands the diagram from this bus
         """
-        self._editor.expand_diagram_from_bus(root_bus=self._api_object)
+        self._editor.expand_diagram_from_bus(root_bus=self.api_object)
 
-    def new_vecinity_diagram_from_here(self):
+    def new_vicinity_diagram_from_here(self):
         """
-        Create new vecinity diagram
+        Create new vicinity diagram
         :return:
         """
-        if self._api_object is not None:
-            self._editor.gui.new_bus_branch_diagram_from_bus(root_bus=self._api_object)
+        if self.api_object is not None:
+            self.editor.gui.new_bus_branch_diagram_from_bus(root_bus=self.api_object)
         else:
             warning_msg("The api object is none :(")
 
@@ -591,15 +591,15 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Toggle bus element state
         @return:
         """
-        if self._api_object is not None:
+        if self.api_object is not None:
 
             # change the bus state (snapshot)
-            self._api_object.active = not self._api_object.active
+            self.api_object.active = not self.api_object.active
 
             # change the Branches state (snapshot)
             for host in self._terminal.hosting_connections:
-                if host._api_object is not None:
-                    host.set_enable(val=self._api_object.active)
+                if host.api_object is not None:
+                    host.set_enable(val=self.api_object.active)
 
             self.update_color()
 
@@ -609,12 +609,12 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
                 if ok:
                     # change the bus state (time series)
-                    self._editor.set_active_status_to_profile(self._api_object, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object, override_question=True)
 
                     # change the Branches state (time series)
                     for host in self._terminal.hosting_connections:
-                        if host._api_object is not None:
-                            self._editor.set_active_status_to_profile(host._api_object, override_question=True)
+                        if host.api_object is not None:
+                            self._editor.set_active_status_to_profile(host.api_object, override_question=True)
 
     def any_short_circuit(self) -> bool:
         """

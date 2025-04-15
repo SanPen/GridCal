@@ -103,6 +103,10 @@ class GenericDiagramWidget:
     def api_object(self) -> ALL_DEV_TYPES:
         return self._api_object
 
+    # @api_object.setter
+    # def api_object(self, value: ALL_DEV_TYPES):
+    #     self._api_object = value
+
     @property
     def draw_labels(self) -> bool:
         """
@@ -120,15 +124,15 @@ class GenericDiagramWidget:
         self._draw_labels = value
 
         # update editor diagram position
-        self._editor.update_label_drwaing_status(device=self._api_object, draw_labels=self._draw_labels)
+        self._editor.update_label_drwaing_status(device=self.api_object, draw_labels=self._draw_labels)
 
     def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         """
-        if self._api_object is not None:
-            if hasattr(self._api_object, 'active'):
-                if self._api_object.active:
+        if self.api_object is not None:
+            if hasattr(self.api_object, 'active'):
+                if self.api_object.active:
                     self.color = ACTIVE['color']
                     self.style = ACTIVE['style']
                 else:

@@ -93,7 +93,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.index = index
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(self._api_object.name if self._api_object is not None else "", self)
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
 
@@ -102,7 +102,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
-        self._terminal = BarTerminalItem('s', parent=self, editor=self._editor)  # , h=self.h))
+        self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style,
                                    Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
@@ -153,7 +153,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-        self._editor.update_diagram_element(device=self._api_object,
+        self._editor.update_diagram_element(device=self.api_object,
                                             x=self.pos().x(),
                                             y=self.pos().y(),
                                             w=self.w,
@@ -252,7 +252,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.arrange_children()
 
         # update editor diagram position
-        self._editor.update_diagram_element(device=self._api_object,
+        self._editor.update_diagram_element(device=self.api_object,
                                             x=self.pos().x(),
                                             y=self.pos().y(),
                                             w=w,
@@ -394,7 +394,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
         dc.setIcon(dc_icon)
         dc.setCheckable(True)
-        dc.setChecked(self._api_object.cn.dc)
+        dc.setChecked(self.api_object.cn.dc)
         dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
@@ -481,7 +481,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Assign the snapshot rate to the profile
         """
-        self._editor.set_active_status_to_profile(self._api_object)
+        self._editor.set_active_status_to_profile(self.api_object)
 
     def delete_all_connections(self, ask: bool, delete_from_db: bool) -> None:
         """
@@ -507,7 +507,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             ok = True
 
         if ok:
-            self._editor.remove_element(device=self._api_object, graphic_object=self)
+            self._editor.remove_element(device=self.api_object, graphic_object=self)
 
     def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
         """
@@ -521,7 +521,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Update the colour
         """
-        if self._api_object.active:
+        if self.api_object.active:
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
             self.set_tile_color(QBrush(DEACTIVATED['color']))
@@ -586,10 +586,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Activates or deactivates the bus as a DC bus
         """
-        if self._api_object.cn.dc:
-            self._api_object.cn.dc = False
+        if self.api_object.cn.dc:
+            self.api_object.cn.dc = False
         else:
-            self._api_object.cn.dc = True
+            self.api_object.cn.dc = True
 
     def plot_profiles(self) -> None:
         """
@@ -606,15 +606,15 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param event: QGraphicsSceneMouseEvent
         """
 
-        if self._api_object.device_type == DeviceType.BusBarDevice:
-            self._editor.set_editor_model(api_object=self._api_object)
+        if self.api_object.device_type == DeviceType.BusBarDevice:
+            self._editor.set_editor_model(api_object=self.api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
         Mouse double click
         :param event: event object
         """
-        title = self._api_object.name if self._api_object is not None else ""
+        title = self.api_object.name if self.api_object is not None else ""
         msg = ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')

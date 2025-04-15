@@ -50,6 +50,10 @@ class WindingGraphicItem(LineGraphicTemplateItem):
     def api_object(self) -> Winding:
         return self._api_object
 
+    @api_object.setter
+    def api_object(self, api_object: Winding):
+        self._api_object = api_object
+
     def contextMenuEvent(self, event):
         """
         Show context menu

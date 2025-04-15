@@ -287,7 +287,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         self.parent: Union[BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
 
         # object -> callback
-        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[float], None]] = dict()
+        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[QPointF], None]] = dict()
 
         self.editor = editor
 
@@ -348,7 +348,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
 
     def add_hosting_connection(self,
                                graphic_obj: LineGraphicTemplateItem,
-                               callback: Callable[[float], None]):
+                               callback: Callable[[QPointF], None]):
         """
         Add object graphically connected to the graphical bus
         :param graphic_obj: LineGraphicTemplateItem (or child of this)
@@ -418,7 +418,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         """
         for graphic_item, _ in self._hosting_connections.items():
             self.editor.remove_element(graphic_object=graphic_item,
-                                       device=graphic_item._api_object,
+                                       device=graphic_item.api_object,
                                        delete_from_db=delete_from_db)
 
         self.clear()

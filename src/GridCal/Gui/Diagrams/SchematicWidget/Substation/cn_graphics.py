@@ -90,13 +90,13 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.index = index
 
         # Label:
-        self.label = QtWidgets.QGraphicsTextItem(self._api_object.name if self._api_object is not None else "", self)
+        self.label = QtWidgets.QGraphicsTextItem(self.api_object.name if self.api_object is not None else "", self)
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.label.setScale(FONT_SCALE)
         self.label.setPos(QPoint(self.w, 0))
 
         # connection terminals the block
-        self._terminal = RoundTerminalItem('s', parent=self, editor=self._editor, h=20, w=20)  # , h=self.h))
+        self._terminal = RoundTerminalItem('s', parent=self, editor=self.editor, h=20, w=20)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
         self._terminal.setPos(QPoint(15, 15))
         self._terminal_mid_point = QPoint(20, 20)  # (15, 15) + (20, 20) / 2
@@ -109,6 +109,14 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
         self.setRect(0.0, 0.0, self.w, self.h)
+
+    @property
+    def api_object(self) -> ConnectivityNode:
+        return self._api_object
+
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
 
     def get_nexus_point(self) -> QPointF:
         """
@@ -137,7 +145,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-        self._editor.update_diagram_element(device=self._api_object,
+        self._editor.update_diagram_element(device=self.api_object,
                                             x=self.pos().x(),
                                             y=self.pos().y(),
                                             w=self.w,
@@ -251,7 +259,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
         dc.setIcon(dc_icon)
         dc.setCheckable(True)
-        dc.setChecked(self._api_object.dc)
+        dc.setChecked(self.api_object.dc)
         dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
@@ -356,7 +364,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.delete_all_connections(ask=False, delete_from_db=True)
 
             for g in self._child_graphics:
-                self._editor._remove_from_scene(g.nexus)
+                self.editor._remove_from_scene(g.nexus)
 
             self._editor.remove_element(device=self._api_object, graphic_object=self)
 

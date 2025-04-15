@@ -254,7 +254,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         :param width: New pen width.
         """
         pen = self.pen()
-        pen.setWidth(width)  # keep this and do not change to setWidthF
+        pen.setWidthF(width)  # keep this and do not change to setWidthF
         self.setPen(pen)
 
     def add_bus(self):
@@ -263,7 +263,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         bus = Bus(name=f"Bus {self.api_object.name}",
                   Vnom=self.api_object.Vnom,
-                  substation=self._parent._api_object,
+                  substation=self._parent.api_object,
                   voltage_level=self.api_object)
 
         self.editor.circuit.add_bus(obj=bus)

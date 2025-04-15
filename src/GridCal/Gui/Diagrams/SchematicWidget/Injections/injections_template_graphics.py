@@ -193,7 +193,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        self._editor.set_editor_model(api_object=self._api_object)
+        self._editor.set_editor_model(api_object=self.api_object)
 
     def change_bus(self):
         """
@@ -204,10 +204,10 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         if len(idx_bus_list) == 2:
 
             # detect the bus and its combinations
-            if idx_bus_list[0][1] == self._api_object.bus:
+            if idx_bus_list[0][1] == self.api_object.bus:
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
                 idx, new_bus, new_bus_graphic_item = idx_bus_list[1]
-            elif idx_bus_list[1][1] == self._api_object.bus:
+            elif idx_bus_list[1][1] == self.api_object.bus:
                 idx, new_bus, new_bus_graphic_item = idx_bus_list[0]
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[1]
             else:
@@ -219,8 +219,8 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
                 title='Change bus')
 
             if ok:
-                self._api_object.bus = new_bus
-                new_bus_graphic_item.add_object(api_obj=self._api_object)
+                self.api_object.bus = new_bus
+                new_bus_graphic_item.add_object(api_obj=self.api_object)
                 new_bus_graphic_item.update()
                 self._editor.remove_element(device=self.api_object, graphic_object=self)
 

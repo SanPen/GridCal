@@ -183,7 +183,7 @@ class SelectionDialog(QDialog):
         layout = QVBoxLayout()
 
         # Add instructions
-        instruction_label = QLabel(f"Click on a substation to reconnect branch {branch._api_object.name}")
+        instruction_label = QLabel(f"Click on a substation to reconnect branch {branch.api_object.name}")
         instruction_label.setWordWrap(True)
         layout.addWidget(instruction_label)
 
@@ -554,7 +554,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param node: Node to delete
         """
 
-        self.graphics_manager.delete_device(node._api_object)
+        self.graphics_manager.delete_device(node.api_object)
         self._remove_from_scene(node)
 
     def remove_substation(self,
@@ -579,9 +579,9 @@ class GridMapWidget(BaseDiagramWidget):
 
             for elm in self.graphics_manager.get_device_type_list(tpe):
 
-                if elm._api_object.get_substation_from() == api_object or elm._api_object.get_substation_to() == api_object:
+                if elm.api_object.get_substation_from() == api_object or elm.api_object.get_substation_to() == api_object:
 
-                    self.graphics_manager.delete_device(elm._api_object)
+                    self.graphics_manager.delete_device(elm.api_object)
 
                     for segment in elm.segments_list:
                         self._remove_from_scene(segment)
@@ -658,12 +658,12 @@ class GridMapWidget(BaseDiagramWidget):
         :param line: Line to delete
         :param delete_from_db:
         """
-        lin = self.graphics_manager.delete_device(line._api_object)
+        lin = self.graphics_manager.delete_device(line.api_object)
 
         if lin is not None:
 
             if delete_from_db:
-                self.circuit.delete_branch(obj=line._api_object)
+                self.circuit.delete_branch(obj=line.api_object)
 
             for seg in lin.segments_list:
                 self._remove_from_scene(seg)
@@ -1292,7 +1292,7 @@ class GridMapWidget(BaseDiagramWidget):
                         )
                         graphic_object.set_width_scale(width=weight, arrow_width=arrow_size)
 
-                    tooltip = str(i) + ': ' + graphic_object._api_object.name
+                    tooltip = str(i) + ': ' + graphic_object.api_object.name
                     tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
                         abs(hvdc_loading[i]) * 100) + ' [%]'
 
