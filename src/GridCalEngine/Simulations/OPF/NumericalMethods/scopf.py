@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.enumerations import AcOpfMode, SolverType, ContingencyOperationTypes
 from typing import Union
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, CscMat
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, CscMat, Mat
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
                                                                                eval_g, eval_h,
                                                                                eval_h_scopf,
@@ -439,6 +439,15 @@ class NonlinearSCOPFResults:
     converged: bool = None
     iterations: int = None
 
+    # W_k = objective function of the SP
+    W_k: float = 0
+
+    # Z_k = lambda_k * dg_k/du_j + mu_k * dh_k/du_j
+    Z_k: Vec = None
+
+    # u_j = set-points passed to the subproblem
+    u_j: Vec = None
+
     def initialize(self, nbus: int, nbr: int, nsh: int, ng: int, nhvdc: int, ncap: int):
         """
         Initialize the arrays
@@ -473,6 +482,10 @@ class NonlinearSCOPFResults:
         self.error: float = 0.0
         self.converged: bool = False
         self.iterations: int = 0
+
+        self.W_k: float = 0
+        self.Z_k: Vec = np.zeros(nbus)
+        self.u_j: Vec = np.zeros(nbus)
 
     def merge(self,
               other: "NonlinearSCOPFResults",
@@ -527,6 +540,10 @@ class NonlinearSCOPFResults:
         self.converged: bool = False
         self.iterations: int = 0
 
+        self.W_k: float = max(self.W_k, other.W_k)
+        self.Z_k[bus_idx] = other.Z_k
+        self.u_j[bus_idx] = other.u_j
+
     @property
     def V(self) -> CxVec:
         """
@@ -541,7 +558,6 @@ def scopf_subproblem(nc: NumericalCircuit,
                      debug: bool = False,
                      use_autodiff: bool = False,
                      Sbus_pf: Union[CxVec, None] = None,
-                     voltage_pf: Union[CxVec, None] = None,
                      plot_error: bool = False,
                      mp_results: NonlinearSCOPFResults = None,
                      logger: Logger = Logger()) -> NonlinearSCOPFResults:
@@ -549,14 +565,14 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     :param nc: NumericalCircuit
     :param opf_options: OptimalPowerFlowOptions
-    :param debug: if true, the jacobians, hessians, etc are checked against finite diference versions of them
+    :param debug: if true, the jacobians, hessians, etc are checked against finite difference versions of them
     :param use_autodiff: use the autodiff version of the structures
     :param Sbus_pf: Sbus initial solution
-    :param voltage_pf: Voltage initial solution
     :param plot_error: Plot the error evolution. Default: False
     :param mp_results: Results from the master problem 
     :param logger: Logger
     :return: NonlinearSCOPFResults
+
     """
     print('nbus', nc.nbus, 'ngen', nc.ngen)
     loadtimeStart = timeit.default_timer()
@@ -581,8 +597,8 @@ def scopf_subproblem(nc: NumericalCircuit,
     print("Slack: ", slack)
 
     # # Set all generator powers except for slack
-    Pg_max = np.copy(mp_results.Pg)
-    Pg_min = np.copy(mp_results.Pg)
+    Pg_max = np.copy(mp_results.Pg[nc.generator_data.original_idx])
+    Pg_min = np.copy(mp_results.Pg[nc.generator_data.original_idx])
 
     Pg_max[slackgens] = nc.generator_data.pmax[slackgens] / Sbase
     Pg_min[slackgens] = nc.generator_data.pmin[slackgens] / Sbase
@@ -759,8 +775,8 @@ def scopf_subproblem(nc: NumericalCircuit,
                    nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
     q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:ngen]] +
                    nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
-    p0gen = mp_results.Pg
-    q0gen = mp_results.Qg
+    p0gen = mp_results.Pg[nc.generator_data.original_idx]
+    q0gen = mp_results.Qg[nc.generator_data.original_idx]
     va0 = np.angle(nc.bus_data.Vbus)
     vm0 = (Vm_max + Vm_min) / 2
     tapm0 = nc.active_branch_data.tap_module[k_m]
@@ -1029,11 +1045,23 @@ def scopf_subproblem(nc: NumericalCircuit,
         if len(logger):
             logger.print()
 
+    results = NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
+                                    Sf=Sf, St=St, loading=loading,
+                                    Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
+                                    tap_module=tap_module, tap_phase=tap_phase,
+                                    hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
+                                    lam_p=lam_p, lam_q=lam_q,
+                                    sl_sf=sl_sf, sl_st=sl_st, sl_vmax=sl_vmax, sl_vmin=sl_vmin,
+                                    nodal_capacity=nodal_capacity,
+                                    error=result.error,
+                                    converged=result.converged,
+                                    iterations=result.iterations)
+
     # Output of the SCOPF: return W_k, Z_k, u_j, where
     # W_k = objective function of the SP
     # Z_k = lambda_k * dg_k/du_j + mu_k * dh_k/du_j
-    # u_j = setpoints passed to the SP, they go in and out 
-    W_k = result.structs.f
+    # u_j = setpoints passed to the SP, they go in and out
+    results.W_k = result.structs.f
 
     # Select only the entries of Z_k also present in the MP, hence no slacks
     # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
@@ -1042,7 +1070,7 @@ def scopf_subproblem(nc: NumericalCircuit,
     # Z_k_init = result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
     # Z_k = Z_k_init[non_slack_idx]
-    Z_k = Z_k_init[control_pg_idx]
+    results.Z_k = Z_k_init[control_pg_idx]
 
     # Build full x vector
     u_j_all = var2x(Va=Va,
@@ -1061,25 +1089,14 @@ def scopf_subproblem(nc: NumericalCircuit,
     # Index to only include the control variables
     # u_j = u_j_all[control_pqg_idx]
     # u_j = u_j_all[non_slack_idx]
-    u_j = u_j_all[control_pg_idx]
+    results.u_j = u_j_all[control_pg_idx]
 
-    print(f"u_j: {u_j}")
-    print(f"W_k: {W_k}")
-    print(f"Z_k: {Z_k}")
+    if opf_options.verbose > 0:
+        print(f"u_j: {results.u_j}")
+        print(f"W_k: {results.W_k}")
+        print(f"Z_k: {results.Z_k}")
 
-    scopf_SP_results = NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
-                                             Sf=Sf, St=St, loading=loading,
-                                             Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
-                                             tap_module=tap_module, tap_phase=tap_phase,
-                                             hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
-                                             lam_p=lam_p, lam_q=lam_q,
-                                             sl_sf=sl_sf, sl_st=sl_st, sl_vmax=sl_vmax, sl_vmin=sl_vmin,
-                                             nodal_capacity=nodal_capacity,
-                                             error=result.error,
-                                             converged=result.converged,
-                                             iterations=result.iterations)
-
-    return scopf_SP_results, W_k, Z_k, u_j
+    return results
 
 
 def scopf_MP_OPF(nc: NumericalCircuit,
@@ -1608,7 +1625,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                                  iterations=result.iterations)
 
 
-def run_nonlinear_MP_opf(grid: MultiCircuit,
+def run_nonlinear_MP_opf(nc: NumericalCircuit,
                          opf_options: OptimalPowerFlowOptions,
                          pf_options: PowerFlowOptions,
                          t_idx: Union[None, int] = None,
@@ -1622,8 +1639,8 @@ def run_nonlinear_MP_opf(grid: MultiCircuit,
                          nodal_capacity_sign: float = 1.0,
                          capacity_nodes_idx: Union[IntVec, None] = None,
                          W_k_vec: Union[Vec, None] = None,
-                         Z_k_vec: Union[List[Vec], None] = None,
-                         u_j_vec: Union[List[Vec], None] = None,
+                         Z_k_vec: Union[Mat, None] = None,
+                         u_j_vec: Union[Mat, None] = None,
                          logger: Logger = Logger()) -> NonlinearSCOPFResults:
     """
     Run optimal power flow for a MultiCircuit
@@ -1643,9 +1660,6 @@ def run_nonlinear_MP_opf(grid: MultiCircuit,
     :param logger: Logger object
     :return: NonlinearSCOPFResults
     """
-
-    # compile the system
-    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx, logger=logger)
 
     if pf_init:
         if Sbus_pf0 is None:
@@ -1763,49 +1777,54 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
     # split into islands, but considering the HVDC lines as actual links
     islands = nc.split_into_islands(ignore_single_node_islands=True,
                                     consider_hvdc_as_island_links=True)
+
+    # create and initialize results
+    results = NonlinearSCOPFResults()
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
+                       nhvdc=nc.nhvdc, ncap=0)
+
     for i, island in enumerate(islands):
 
-        # 2. Run the island SP
+        indices = island.get_simulation_indices()
 
-        # create and initialize results
-        scopf_results = NonlinearSCOPFResults()
-        scopf_results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
-                                 nhvdc=nc.nhvdc, ncap=0)
+        if len(indices.vd) > 0:
+            # 2. Run the island SP
+            island_res = scopf_subproblem(nc=island,
+                                          opf_options=opf_options,
+                                          debug=debug,
+                                          use_autodiff=use_autodiff,
+                                          Sbus_pf=Sbus_pf[island.bus_data.original_idx],
+                                          plot_error=plot_error,
+                                          mp_results=mp_results,
+                                          logger=logger)
 
-        scopf_island_res, W_k, Z_k, u_j = scopf_subproblem(nc=island,
-                                                           opf_options=opf_options,
-                                                           debug=debug,
-                                                           use_autodiff=use_autodiff,
-                                                           Sbus_pf=Sbus_pf[island.bus_data.original_idx],
-                                                           voltage_pf=voltage_pf[island.bus_data.original_idx],
-                                                           plot_error=plot_error,
-                                                           mp_results=mp_results,
-                                                           logger=logger)
-
-        scopf_results.merge(other=scopf_island_res,
-                            bus_idx=island.bus_data.original_idx,
-                            br_idx=island.passive_branch_data.original_idx,
-                            il_idx=island.passive_branch_data.get_monitor_enabled_indices(),
-                            gen_idx=island.generator_data.original_idx,
-                            hvdc_idx=island.hvdc_data.original_idx,
-                            ncap_idx=None,
-                            contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
-                            acopf_mode=opf_options.acopf_mode)
-        if i > 0:
-            scopf_results.error = max(scopf_results.error, scopf_island_res.error)
-            scopf_results.iterations = max(scopf_results.iterations, scopf_island_res.iterations)
-            scopf_results.converged = scopf_results.converged and scopf_island_res.converged if i > 0 else scopf_island_res.converged
+            results.merge(other=island_res,
+                          bus_idx=island.bus_data.original_idx,
+                          br_idx=island.passive_branch_data.original_idx,
+                          il_idx=island.passive_branch_data.get_monitor_enabled_indices(),
+                          gen_idx=island.generator_data.original_idx,
+                          hvdc_idx=island.hvdc_data.original_idx,
+                          ncap_idx=None,
+                          contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
+                          acopf_mode=opf_options.acopf_mode)
+            if i > 0:
+                results.error = max(results.error, island_res.error)
+                results.iterations = max(results.iterations, island_res.iterations)
+                results.converged = results.converged and island_res.converged if i > 0 else island_res.converged
+            else:
+                results.error = island_res.error
+                results.iterations = island_res.iterations
+                results.converged = island_res.converged
         else:
-            scopf_results.error = scopf_island_res.error
-            scopf_results.iterations = scopf_island_res.iterations
-            scopf_results.converged = scopf_island_res.converged
+            print("No slacks in the island, figure this one out...")
+
 
         # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
-        scopf_results.Va = nc.propagate_bus_result(scopf_results.Va)
-        scopf_results.Vm = nc.propagate_bus_result(scopf_results.Vm)
+        results.Va = nc.propagate_bus_result(results.Va)
+        results.Vm = nc.propagate_bus_result(results.Vm)
 
-    return scopf_results, W_k, Z_k, u_j
+    return results
 
 
 def case_v0() -> None:
@@ -1831,8 +1850,10 @@ def case_v0() -> None:
                                                 ips_iterations=50,
                                                 acopf_mode=AcOpfMode.ACOPFslacks)
 
+    nc = compile_numerical_circuit_at(grid, t_idx=None)
+
     # Run the base case
-    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options,
+    acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
                                          opf_options=opf_base_options, pf_init=True)
 
     print()
@@ -1886,7 +1907,8 @@ def case_v0() -> None:
 
     # Run the MP with information from the SPs
     print("--- Feeding SPs info to MP ---")
-    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options, opf_options=opf_base_options,
+    nc = compile_numerical_circuit_at(grid, t_idx=None)
+    acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options, opf_options=opf_base_options,
                                          pf_init=True,
                                          W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j_vec)
 
@@ -1980,176 +2002,3 @@ def plot_scopf_progress(iteration_data):
 
     plt.tight_layout()
     plt.show()
-
-
-def case_loop() -> None:
-    """
-    Simple 5 bus system from where to build the SCOPF, looping
-    :return:
-    """
-    # Load basic grid
-    # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/3bus_cont_line_only.gridcal')
-    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/IEEE 5 Bus_exp.gridcal')
-    grid = FileOpen(file_path).open()
-
-    # Set options
-    pf_options = PowerFlowOptions(control_q=False)
-    opf_base_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
-                                               ips_tolerance=1e-8,
-                                               ips_iterations=50,
-                                               acopf_mode=AcOpfMode.ACOPFstd)
-    opf_slack_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
-                                                ips_tolerance=1e-8,
-                                                ips_iterations=50,
-                                                acopf_mode=AcOpfMode.ACOPFslacks)
-
-    acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options,
-                                         opf_options=opf_slack_options, pf_init=True)
-
-    print()
-    print(f"--- Base case ---")
-    print(f"Base OPF loading {acopf_results.loading} .")
-    print(f"Voltage magnitudes: {acopf_results.Vm}")
-    print(f"Generators P: {acopf_results.Pg}")
-    print(f"Generators Q: {acopf_results.Qg}")
-    print(f"Error: {acopf_results.error}")
-
-    print()
-    print("--- Starting loop with fixed number of repetitions, then breaking ---")
-
-    # Store all SP unfeasible results, accumulating them?
-    W_k_vec = []  # vec
-    Z_k_vec = []  # list of vecs
-    u_j_vec = []  # list of vecs
-
-    # Initialize tracking dictionary
-    iteration_data = {
-        'max_wk': [],
-        'num_violations': [],
-        'max_voltage_slack': [],
-        'avg_voltage_slack': [],
-        'max_flow_slack': [],
-        'avg_flow_slack': [],
-        'total_cost': []
-    }
-
-    linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
-
-    # Start main loop over iterations
-    for klm in range(20):
-        print(f"General iteration {klm + 1} of 20")
-
-        # Global slack and weight trackers
-        v_slacks = []
-        f_slacks = []
-        prob_cont = []
-        W_k_vec = []
-        Z_k_vec = []
-        u_j_vec = []
-        W_k_local = []
-
-        for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
-
-            contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
-            print(f"\nContingency group {ic}: {contingency_group.name} (Category: {contingency_group.category})")
-
-            # Set contingency status
-            nc = compile_numerical_circuit_at(grid, t_idx=None)
-            nc.set_con_or_ra_status(contingencies)
-
-            for cont in contingencies:
-                try:
-                    line_idx = next(i for i, l in enumerate(grid.lines) if l.name == cont.name)
-                    nc.passive_branch_data.active[line_idx] = False  # Deactivate the affected line
-
-                    # Rebuild islands after modification
-                    islands = nc.split_into_islands()
-
-                    if len(islands) > 1:
-                        island_sizes = [island.nbus for island in islands]
-                        largest_island_idx = np.argmax(island_sizes)
-                        island = islands[largest_island_idx]
-                    else:
-                        island = islands[0]
-
-                    indices = island.get_simulation_indices()
-
-                    if len(indices.vd) > 0:
-                        print('Selected island with size:', island.nbus)
-
-                        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(
-                            nc=island,
-                            pf_options=pf_options,
-                            opf_options=opf_slack_options,
-                            pf_init=True,
-                            mp_results=acopf_results
-                        )
-
-                        # Collect slacks
-                        v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
-                        f_slack = max(np.maximum(slack_sol_cont.sl_sf, slack_sol_cont.sl_st))
-                        v_slacks.append(v_slack)
-                        f_slacks.append(f_slack)
-
-                        if W_k > 0.0001:
-                            W_k_vec.append(W_k)
-                            Z_k_vec.append(Z_k)
-                            u_j_vec.append(u_j)
-                            prob_cont.append(ic)
-
-                        W_k_local.append(W_k)
-
-                        print('nbus', island.nbus, 'ngen', island.ngen)
-
-                    else:
-                        print("No valid voltage-dependent nodes found in island. Skipping.")
-
-                    nc.passive_branch_data.active[line_idx] = True
-                except StopIteration:
-                    print(f"Line with name '{cont.name}' not found in grid.lines. Skipping.")
-
-            # Revert contingency
-            nc.set_con_or_ra_status(contingencies, revert=True)
-
-        # Store metrics for this iteration
-        iteration_data['max_wk'].append(max(np.array(W_k_local)))
-        iteration_data['num_violations'].append(len(prob_cont))
-        iteration_data['max_voltage_slack'].append(max(v_slacks) if v_slacks else 0)
-        iteration_data['avg_voltage_slack'].append(np.mean(v_slacks) if v_slacks else 0)
-        iteration_data['max_flow_slack'].append(max(f_slacks) if f_slacks else 0)
-        iteration_data['avg_flow_slack'].append(np.mean(f_slacks) if f_slacks else 0)
-
-        # Run the MP with information from the SPs
-        print("--- Feeding SPs info to MP ---")
-        acopf_results = run_nonlinear_MP_opf(grid=grid, pf_options=pf_options,
-                                             opf_options=opf_slack_options,
-                                             pf_init=True,
-                                             W_k_vec=np.array(W_k_vec),
-                                             Z_k_vec=Z_k_vec,
-                                             u_j_vec=u_j_vec)
-
-        # Store generation cost
-        total_cost = np.sum(acopf_results.Pcost)
-        iteration_data['total_cost'].append(total_cost)
-
-        # Print current iteration metrics
-        print(f"Maximum W_k: {iteration_data['max_wk'][-1]}")
-        print(f"Number of violations: {iteration_data['num_violations'][-1]}")
-        print(f"Maximum voltage slack: {iteration_data['max_voltage_slack'][-1]}")
-        print(f"Average voltage slack: {iteration_data['avg_voltage_slack'][-1]}")
-        print(f"Maximum flow slack: {iteration_data['max_flow_slack'][-1]}")
-        print(f"Average flow slack: {iteration_data['avg_flow_slack'][-1]}")
-        print(f"Total generation cost: {total_cost}")
-
-        if len(prob_cont) == 0:
-            break
-
-    # Plot the results
-    plot_scopf_progress(iteration_data)
-
-    return None
-
-
-if __name__ == '__main__':
-    # case_v0()
-    case_loop()

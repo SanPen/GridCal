@@ -127,7 +127,7 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import multi_island_p
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingencies
 
 # Load grid
-fname = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/IEEE 5 Bus_exp.gridcal')
+fname = 'IEEE 5 Bus_exp.gridcal'
 grid = gce.FileOpen(fname).open()
 print('Grid loaded:', fname)
 

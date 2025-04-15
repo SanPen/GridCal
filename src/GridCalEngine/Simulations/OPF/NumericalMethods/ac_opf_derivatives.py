@@ -1613,7 +1613,10 @@ def jacobians_and_hessians_scopf(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, C
 
         GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gslcap, Gtapm, Gtapt, GSpfdc])
 
-        Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).tocsc()
+        try:
+            Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).tocsc()
+        except ValueError:
+            print()
 
         te_gx = timeit.default_timer()
 
