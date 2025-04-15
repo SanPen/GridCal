@@ -694,7 +694,7 @@ class NumericalCircuit:
         :param revert: if false, the contingencies are applied, else they are reversed
         :return: vector of power injection increments
         """
-
+        print(f'Applying contingencies: {event_list}')
         # vector of power injection increments
         inj_increment = np.zeros(self.nbus)
 
