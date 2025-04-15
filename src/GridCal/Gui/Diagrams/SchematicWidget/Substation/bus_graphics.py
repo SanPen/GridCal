@@ -160,6 +160,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
 
+    @property
+    def api_object(self) -> Bus:
+        return self._api_object
+
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
+
     def get_associated_branch_graphics(self) -> List[GenericDiagramWidget]:
         """
         Get a list of all associated branch graphics
@@ -169,7 +177,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         return conn
 
-    def get_associated_graphics(self) -> List[GenericDiagramWidget | SHUNT_GRAPHICS]:
+    def get_associated_widgets(self) -> List[GenericDiagramWidget | SHUNT_GRAPHICS]:
         """
         Get a list of all associated graphics
         :return:
@@ -550,14 +558,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Remove this element
         @return:
         """
-        self._editor.delete_with_dialogue(selected=[self], delete_from_db=False)
-        self._terminal.clear()
+        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+        if deleted:
+            self._terminal.clear()
 
     def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
         """
         Delete a child object
         :param obj:
-        :return:
         """
         self._child_graphics.remove(obj)
 

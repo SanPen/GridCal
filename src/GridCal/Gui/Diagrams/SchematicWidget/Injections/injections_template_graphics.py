@@ -95,9 +95,16 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         return self._editor
 
 
-    def get_associated_graphics(self) -> List[GenericDiagramWidget | QGraphicsLineItem]:
+    def get_associated_widgets(self) -> List[GenericDiagramWidget | QGraphicsLineItem]:
         """
         Get a list of all associated graphics
+        :return:
+        """
+        return list()
+
+    def get_extra_graphics(self):
+        """
+        Get a list of all QGraphicsItem that are not GenericDiagramWidget elements associated with this widget.
         :return:
         """
         return [self.nexus, self.glyph]
@@ -174,8 +181,9 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         @return:
         """
 
-        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
-        self.parent.delete_child(self)
+        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+        if deleted:
+            self.parent.delete_child(self)
 
     def plot(self):
         """

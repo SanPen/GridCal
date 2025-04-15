@@ -541,7 +541,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
 
         return total_length
 
-    def get_associated_graphics(self):
+    def get_associated_widgets(self):
         """
         This function gets the graphic objects associated to a MapLineContainer
         return: The list of the associated graphic objects, which are the nodes and segments of the line.

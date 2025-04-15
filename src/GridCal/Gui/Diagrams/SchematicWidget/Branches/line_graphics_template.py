@@ -628,16 +628,24 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         Remove this object in the diagram and the API
         @return:
         """
-        if ask:
-            dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to delete the {dtype} {self.api_object.name}?',
-                                 f'Remove {dtype}')
-        else:
-            ok = True
+        # if ask:
+        #     dtype = self.api_object.device_type.value
+        #     ok = yes_no_question(f'Do you want to delete the {dtype} {self.api_object.name}?',
+        #                          f'Remove {dtype}')
+        # else:
+        #     ok = True
+        #
+        # if ok:
+        #     self._editor.circuit.delete_branch(obj=self.api_object)
+        #     self._editor.delete_element_utility_function(device=self.api_object)
+        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
-        if ok:
-            self._editor.circuit.delete_branch(obj=self.api_object)
-            self._editor.delete_element_utility_function(device=self.api_object)
+        if deleted:
+            # self.editor.circuit.delete_branch(self.api_object)
+            # self.editor.delete_element_utility_function(self.api_object)
+
+            # unregister the winding
+            self.parent_tr3_graphics_item.remove_winding(self.winding_number)
 
     def enable_disable_toggle(self):
         """

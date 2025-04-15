@@ -166,11 +166,20 @@ class GenericDiagramWidget:
         """
         self.draw_labels = not self.draw_labels
 
-    def get_associated_graphics(self) -> List["GenericDiagramWidget"]:
+    def get_associated_widgets(self) -> List["GenericDiagramWidget"]:
         """
         Get a list of all graphical elements associated with this widget.
-        In the case of aBusGraphicsItem, it will be all the nexus, and the shunt connections
+        In the case of a BusGraphicsItem, it will be all the shunt connections
         plus the LineGraphicItems connecting to it, etc.
+        This function is meant to be overloaded.
+        :return:
+        """
+        return list()
+
+    def get_extra_graphics(self) -> List[QGraphicsItem]:
+        """
+        Get a list of all QGraphicsItem elements associated with this widget.
+        In the case of a GeneratorGraphicsItem, it will be all the nexus
         This function is meant to be overloaded.
         :return:
         """

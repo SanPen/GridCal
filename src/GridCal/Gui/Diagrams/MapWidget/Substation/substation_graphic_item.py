@@ -785,7 +785,7 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         url = f"https://www.google.com/maps/?q={self.lat},{self.lon}"
         webbrowser.open(url)
 
-    def get_associated_graphics(self) -> List[GenericDiagramWidget]:
+    def get_associated_widgets(self) -> List[GenericDiagramWidget]:
 
         associated_buses = self.editor.circuit.get_substation_buses(substation=self.api_object)
         associated_buses_graphics = []

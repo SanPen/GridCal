@@ -288,20 +288,19 @@ class BaseDiagramWidget(QSplitter):
             if delete_from_db:
                 self.circuit.delete_element(obj=graphic_object.api_object)
 
-            for child_graphic in graphic_object.get_associated_graphics():
+            for child_graphic in graphic_object.get_associated_widgets():
 
-                if isinstance(child_graphic, GenericDiagramWidget):
+                if delete_from_db:
+                    self.circuit.delete_element(obj=child_graphic.api_object)
 
-                    if delete_from_db:
-                        self.circuit.delete_element(obj=child_graphic.api_object)
+                # Warning: recursive call for devices that may have further sub-graphics (i.e. the nexus)
+                self.remove_element(device=child_graphic.api_object,
+                                    graphic_object=child_graphic,
+                                    delete_from_db=delete_from_db)
 
-                    # Warning: recursive call for devices that may have further sub-graphics (i.e. the nexus)
-                    self.remove_element(device=child_graphic.api_object,
-                                        graphic_object=child_graphic,
-                                        delete_from_db=delete_from_db)
-                else:
-                    # simpler graphics associated, simply delete_with_dialogue
-                    self._remove_from_scene(graphic_object=child_graphic)
+            for child_graphic in graphic_object.get_extra_graphics():
+                # simpler graphics associated, simply delete_with_dialogue
+                self._remove_from_scene(graphic_object=child_graphic)
 
             # NOTE: This function already deleted from the database and other diagrams
             self.delete_element_utility_function(device=device, propagate=delete_from_db)
@@ -329,22 +328,26 @@ class BaseDiagramWidget(QSplitter):
         if propagate:
             self.gui.call_delete_db_element(caller=self, api_obj=device)
 
-    def delete_with_dialogue(self, selected: List[GenericDiagramWidget], delete_from_db: bool) -> None:
+    def delete_with_dialogue(self, selected: List[GenericDiagramWidget], delete_from_db: bool) -> Tuple[bool, bool]:
         """
         Delete elements with a dialogue of all the dependencies
         :param selected: list of selected widgets
         :param delete_from_db: initial value for the delete from db option
+        :return deleted? delete_from_db?
         """
         if len(selected) > 0:
 
             # get the set of all affected GenericDiagramWidget instances
             extended: Set[GenericDiagramWidget] = set()
+
             for graphic_obj in selected:
+
                 if isinstance(graphic_obj, GenericDiagramWidget):
                     extended.add(graphic_obj)
-                    for child_graphic in graphic_obj.get_associated_graphics():
-                        if isinstance(child_graphic, GenericDiagramWidget):
-                            extended.add(child_graphic)
+
+                    for child_graphic in graphic_obj.get_associated_widgets():
+                        extended.add(child_graphic)
+
             extended_lst: List[GenericDiagramWidget] = list(extended)
 
             dlg = DeleteDialogue(
@@ -365,8 +368,12 @@ class BaseDiagramWidget(QSplitter):
                                         graphic_object=graphic_object,
                                         delete_from_db=dlg.delete_from_db)
 
+                return True, dlg.delete_from_db
+            else:
+                return False, False
         else:
             self.gui.show_warning_toast("Choose some elements to delete_with_dialogue")
+            return False, False
 
     def delete_selected_from_widget(self, delete_from_db: bool) -> None:
         """

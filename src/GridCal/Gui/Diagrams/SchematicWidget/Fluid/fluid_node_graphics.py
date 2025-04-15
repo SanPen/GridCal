@@ -117,7 +117,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         return conn
 
-    def get_associated_graphics(self) -> List[GenericDiagramWidget]:
+    def get_associated_widgets(self) -> List[GenericDiagramWidget]:
         """
         Get a list of all associated graphics
         :return:

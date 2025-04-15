@@ -103,7 +103,6 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style))
         self.setBrush(Qt.GlobalColor.transparent)
-        # self.setBrush(QBrush(QColor(255, 0, 0)))
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
