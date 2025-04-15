@@ -171,9 +171,9 @@ class LineEditor(QDialog):
         # Circuit Index
         max_circuits = 0
         if isinstance(self.current_template, OverheadLineType):
-            max_circuits = self.current_template.n_circuits - 1
+            max_circuits = self.current_template.n_circuits
         self.circuit_idx = QDoubleSpinBox()
-        self.circuit_idx.setMinimum(0)
+        self.circuit_idx.setMinimum(1)
         self.circuit_idx.setMaximum(max_circuits)
         self.circuit_idx.setDecimals(0)
         self.circuit_idx.setValue(float(self.line.circuit_idx))
@@ -301,7 +301,7 @@ class LineEditor(QDialog):
                 self.r_spinner.setValue(R1)
                 self.x_spinner.setValue(X1)
                 self.b_spinner.setValue(Bsh1)
-                self.circuit_idx.setMaximum(self.current_template.n_circuits - 1)
+                self.circuit_idx.setMaximum(self.current_template.n_circuits)
             else:
                 warning_msg(text=f"The template {self.current_template.name} contains errors",
                             title="Load template")
@@ -332,6 +332,6 @@ class LineEditor(QDialog):
                 template = self.templates[idx]
 
                 if isinstance(template, OverheadLineType):
-                    self.circuit_idx.setMaximum(template.n_circuits - 1)
+                    self.circuit_idx.setMaximum(template.n_circuits)
                 else:
-                    self.circuit_idx.setMaximum(0)
+                    self.circuit_idx.setMaximum(1)

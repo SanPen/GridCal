@@ -327,8 +327,10 @@ class Line(BranchParent):
             raise Exception("Invalid template type. Must be OverheadLineType, UndergroundLineType, or SequenceLineType.")
         if val >= obj.n_circuits:
             raise Exception("Circuit index exceeds the number of circuits in the template.")
+        if val <= 0:
+            raise Exception("Circuit index must be greater than 0.")
         else:
-            if val >= 0:
+            if val > 0:
                 self._circuit_idx = int(val)
 
     @property
