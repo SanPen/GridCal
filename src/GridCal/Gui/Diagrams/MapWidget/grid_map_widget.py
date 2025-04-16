@@ -10,23 +10,19 @@ from typing import Union, List, Set, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
-import re
 import pandas as pd
 from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton
 from collections.abc import Callable
-from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool,
-                            QEventLoop)
+from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
-from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import CheckListDialogue, InputNumberDialogue, ElementsDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
 from GridCalEngine.Devices.Branches.dc_line import DcLine
@@ -59,7 +55,6 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.messages import error_msg, info_msg, yes_no_question
 
 if TYPE_CHECKING:
@@ -313,7 +308,7 @@ class GridMapWidget(BaseDiagramWidget):
     def diagram_scene(self) -> MapDiagramScene:
         return self.map.diagram_scene
 
-    def _get_selected(self) -> List[ALL_MAP_GRAPHICS]:
+    def _get_selected(self) -> List[ALL_MAP_GRAPHICS | QGraphicsItem]:
         """
         Get selection
         :return: List of ALL_MAP_GRAPHICS
@@ -325,7 +320,7 @@ class GridMapWidget(BaseDiagramWidget):
         Get a list of the API objects from the selection
         :return: List[EditableDevice]
         """
-        return [e.api_object for e in self.diagram_scene.selectedItems()]
+        return [e.api_object for e in self._get_selected()]
 
 
     def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine,
@@ -604,56 +599,56 @@ class GridMapWidget(BaseDiagramWidget):
 
             # Delete the substation itself
             self.circuit.delete_substation(obj=api_object)
-
-    def show_devices_to_disconnect_dialog(self,
-                                          devices: List[ALL_DEV_TYPES],
-                                          buses: List[Bus],
-                                          voltage_levels: List[VoltageLevel],
-                                          dialog_title: str):
-        """
-        Show a dialog with the list of all devices that will be disconnected
-        
-        :param devices: List of devices to be disconnected
-        :param buses: List of buses associated with the substation
-        :param voltage_levels: List of voltage levels associated with the substation
-        :param dialog_title: Title for the dialog
-        """
-
-
-        # Combine all devices
-        all_devices = devices + buses + voltage_levels
-
-        if not all_devices:
-            info_msg('No devices to disconnect', dialog_title)
-            return
-
-        # Create custom properties for name, type, and ID tag
-        name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name',
-                           display=True, editable=False)
-
-        type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type',
-                           display=True, editable=False)
-
-        idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag',
-                            display=True, editable=False)
-
-        custom_props = [name_prop, type_prop, idtag_prop]
-
-        # Create and show the dialog
-        dialog = ElementsDialogue(name=dialog_title, elements=all_devices)
-
-        # Replace the model with our custom one that only shows name, type, and idtag
-        model = ObjectsModel(objects=all_devices,
-                             time_index=None,
-                             property_list=custom_props,
-                             parent=dialog.objects_table,
-                             editable=False)
-
-        dialog.objects_table.setModel(model)
-
-        # Make the dialog modal so the user must acknowledge it before continuing
-        dialog.setModal(True)
-        dialog.exec()
+    #
+    # def show_devices_to_disconnect_dialog(self,
+    #                                       devices: List[ALL_DEV_TYPES],
+    #                                       buses: List[Bus],
+    #                                       voltage_levels: List[VoltageLevel],
+    #                                       dialog_title: str):
+    #     """
+    #     Show a dialog with the list of all devices that will be disconnected
+    #
+    #     :param devices: List of devices to be disconnected
+    #     :param buses: List of buses associated with the substation
+    #     :param voltage_levels: List of voltage levels associated with the substation
+    #     :param dialog_title: Title for the dialog
+    #     """
+    #
+    #
+    #     # Combine all devices
+    #     all_devices = devices + buses + voltage_levels
+    #
+    #     if not all_devices:
+    #         info_msg('No devices to disconnect', dialog_title)
+    #         return
+    #
+    #     # Create custom properties for name, type, and ID tag
+    #     name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name',
+    #                        display=True, editable=False)
+    #
+    #     type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type',
+    #                        display=True, editable=False)
+    #
+    #     idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag',
+    #                         display=True, editable=False)
+    #
+    #     custom_props = [name_prop, type_prop, idtag_prop]
+    #
+    #     # Create and show the dialog
+    #     dialog = ElementsDialogue(name=dialog_title, elements=all_devices)
+    #
+    #     # Replace the model with our custom one that only shows name, type, and idtag
+    #     model = ObjectsModel(objects=all_devices,
+    #                          time_index=None,
+    #                          property_list=custom_props,
+    #                          parent=dialog.objects_table,
+    #                          editable=False)
+    #
+    #     dialog.objects_table.setModel(model)
+    #
+    #     # Make the dialog modal so the user must acknowledge it before continuing
+    #     dialog.setModal(True)
+    #     dialog.exec()
 
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """
