@@ -3891,7 +3891,7 @@ class Assets:
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.technologies:
-                    if assoc._api_object == obj:
+                    if assoc.api_object == obj:
                         to_del.append(assoc)
 
                 for assoc in to_del:
@@ -4096,7 +4096,7 @@ class Assets:
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.fuels:
-                    if assoc._api_object == obj:
+                    if assoc.api_object == obj:
                         to_del.append(assoc)
 
                 for assoc in to_del:
@@ -4171,7 +4171,7 @@ class Assets:
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.emissions:
-                    if assoc._api_object == obj:
+                    if assoc.api_object == obj:
                         to_del.append(assoc)
 
                 for assoc in to_del:

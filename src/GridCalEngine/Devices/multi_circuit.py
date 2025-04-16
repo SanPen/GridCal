@@ -1758,7 +1758,7 @@ class MultiCircuit(Assets):
         for generator in self.generators:
             for assoc in generator.fuels:
                 gen_idx = gen_index_dict[generator.idtag]
-                fuel_idx = fuel_index_dict[assoc._api_object.idtag]
+                fuel_idx = fuel_index_dict[assoc.api_object.idtag]
                 gen_fuel_rates_matrix[fuel_idx, gen_idx] = assoc.value
 
         return gen_fuel_rates_matrix.tocsc()
@@ -1780,7 +1780,7 @@ class MultiCircuit(Assets):
         for generator in self.generators:
             for assoc in generator.emissions:
                 gen_idx = gen_index_dict[generator.idtag]
-                em_idx = em_index_dict[assoc._api_object.idtag]
+                em_idx = em_index_dict[assoc.api_object.idtag]
                 gen_emissions_rates_matrix[em_idx, gen_idx] = assoc.value
 
         return gen_emissions_rates_matrix.tocsc()
@@ -1802,7 +1802,7 @@ class MultiCircuit(Assets):
         for generator in self.generators:
             for assoc in generator.technologies:
                 gen_idx = gen_index_dict[generator.idtag]
-                tech_idx = tech_index_dict[assoc._api_object.idtag]
+                tech_idx = tech_index_dict[assoc.api_object.idtag]
                 gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
@@ -1824,7 +1824,7 @@ class MultiCircuit(Assets):
         for elm in self.batteries:
             for assoc in elm.technologies:
                 gen_idx = gen_index_dict[elm.idtag]
-                tech_idx = tech_index_dict[assoc._api_object.idtag]
+                tech_idx = tech_index_dict[assoc.api_object.idtag]
                 gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
@@ -2385,7 +2385,7 @@ class MultiCircuit(Assets):
             for elm in elm_list:
                 to_del = list()
                 for assoc in elm.technologies:
-                    if assoc._api_object not in self.technologies:
+                    if assoc.api_object not in self.technologies:
                         to_del.append(assoc)
 
                 for assoc in to_del:

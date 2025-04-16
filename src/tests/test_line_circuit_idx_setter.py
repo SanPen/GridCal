@@ -4,16 +4,25 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from unittest.mock import patch
-from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
+from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType, Wire
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from src.GridCalEngine.Devices.Branches.line import Line
 
 
 def test_valid_circuit_idx():
+    """
+    Create a 3 circuit tower, assign the circuit 2 to a line, check that it is what we said
+    :return:
+    """
     line = Line()
+    wire = Wire()
     template = OverheadLineType()
-    template.n_circuits = 3
+
+    for i in range(9):
+        template.add_wire_relationship(wire, i, 7, i + 1)
+
+    assert template.n_circuits == 3
 
     line.set_circuit_idx(2, template)
     assert line._circuit_idx == 2
