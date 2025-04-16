@@ -1544,11 +1544,11 @@ class GridMapWidget(BaseDiagramWidget):
             return
 
         if line1.circuit_idx == line2.circuit_idx:
-            circ_idx = 0
+            circ_idx = line1.circuit_idx
 
         else:
             inpt = InputNumberDialogue(
-                min_value=0,
+                min_value=1,
                 max_value=10,
                 default_value=0,
                 title="Select circuit ID",
@@ -1560,11 +1560,11 @@ class GridMapWidget(BaseDiagramWidget):
 
             if inpt.is_accepted:
                 circ_idx = inpt.value
-                if circ_idx > line1.template.n_circuits - 1:
+                if circ_idx > line1.template.n_circuits:
                     self.gui.show_error_toast(f'The circuit id introduced is greater than the maximum id that this '
                                               f'template can use. The template has {line1.template.n_circuits}, the '
                                               f'maximum possible value for the circuit_idx is '
-                                              f'{line1.template.n_circuits - 1}, try again.')
+                                              f'{line1.template.n_circuits}, try again.')
                     return
 
         list_locations = line1.locations.data
