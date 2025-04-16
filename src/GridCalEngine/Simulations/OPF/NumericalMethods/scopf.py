@@ -1091,10 +1091,10 @@ def scopf_subproblem(nc: NumericalCircuit,
     # u_j = u_j_all[non_slack_idx]
     results.u_j = u_j_all[control_pg_idx]
 
-    if opf_options.verbose > 0:
-        print(f"u_j: {results.u_j}")
-        print(f"W_k: {results.W_k}")
-        print(f"Z_k: {results.Z_k}")
+    # if opf_options.verbose > 0:
+    print(f"u_j: {results.u_j}")
+    print(f"W_k: {results.W_k}")
+    print(f"Z_k: {results.Z_k}")
 
     return results
 
@@ -1279,6 +1279,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
 
     if W_k_vec is not None:
         n_cuts = len(W_k_vec)
+        print(f"n_cuts: {n_cuts}")
     else:
         n_cuts = 0
 
@@ -1818,145 +1819,12 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
         else:
             print("No slacks in the island, figure this one out...")
 
-
         # expand voltages if there was a bus topology reduction
     if nc.topology_performed:
         results.Va = nc.propagate_bus_result(results.Va)
         results.Vm = nc.propagate_bus_result(results.Vm)
 
     return results
-
-
-def case_v0() -> None:
-    """
-    Simple 5 bus system from where to build the SCOPF
-    :return:
-    """
-    # Load basic grid
-    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus4_v2.gridcal')
-    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v1.gridcal')
-    file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v3.gridcal')
-    # file_path = os.path.join('src', 'trunk', 'scopf', 'bus5_v5.gridcal')
-    grid = FileOpen(file_path).open()
-
-    # Set options
-    pf_options = PowerFlowOptions(control_q=False)
-    opf_base_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
-                                               ips_tolerance=1e-8,
-                                               ips_iterations=50,
-                                               acopf_mode=AcOpfMode.ACOPFstd)
-    opf_slack_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
-                                                ips_tolerance=1e-8,
-                                                ips_iterations=50,
-                                                acopf_mode=AcOpfMode.ACOPFslacks)
-
-    nc = compile_numerical_circuit_at(grid, t_idx=None)
-
-    # Run the base case
-    acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                         opf_options=opf_base_options, pf_init=True)
-
-    print()
-    print(f"--- Base case ---")
-    print(f"Base OPF loading {acopf_results.loading} .")
-    print(f"Voltage magnitudes: {acopf_results.Vm}")
-    print(f"Generators production: {acopf_results.Pg}")
-    print(f"Error: {acopf_results.error}")
-
-    # Loop through N lines by recompiling the nc (faster way if using cont.?) 
-    W_k_vec = []
-    Z_k_vec = []
-    u_j_vec = []
-    prob_cont = []
-
-    for i, line_to_disable in enumerate(grid.lines):
-        print()
-        print(f"--- N-1 Line Contingency {i + 1}: Deactivating '{line_to_disable.name}' ---")
-
-        # Deactivate the line in the main grid object
-        grid.lines[i].active = False
-
-        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options,
-                                                               opf_options=opf_slack_options,
-                                                               pf_init=True,
-                                                               mp_results=acopf_results)
-
-        if W_k > 2.4:
-            W_k_vec.append(W_k)
-            Z_k_vec.append(Z_k)
-            u_j_vec.append(u_j)
-            prob_cont.append(i)
-
-        print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
-        print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
-        print(f"Vmin slacks: {slack_sol_cont.sl_vmin}")
-        print(f"Branch loading: {slack_sol_cont.loading}")
-        print(f"Line slacks F: {slack_sol_cont.sl_sf}")
-        print(f"Line slacks T: {slack_sol_cont.sl_st}")
-        print(f"Generators P: {slack_sol_cont.Pg}")
-        print(f"Slack error: {slack_sol_cont.error}")
-
-        # Reactivate the line in the main grid object for the next iteration
-        grid.lines[i].active = True
-
-    print()
-    print("--- All contingencies processed ---")
-    print(f"Number of problematic SPs: {len(W_k_vec)}")
-    print(f"Problematic contingencies: {prob_cont}")
-    print()
-
-    # Run the MP with information from the SPs
-    print("--- Feeding SPs info to MP ---")
-    nc = compile_numerical_circuit_at(grid, t_idx=None)
-    acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options, opf_options=opf_base_options,
-                                         pf_init=True,
-                                         W_k_vec=np.array(W_k_vec), Z_k_vec=Z_k_vec, u_j_vec=u_j_vec)
-
-    print(f"Voltage magnitudes: {acopf_results.Vm}")
-    print(f"Final loading: {acopf_results.loading}")
-    print(f"Generators production: {acopf_results.Pg}")
-    print(f"Error: {acopf_results.error}")
-
-    # Second loop through N lines by recompiling the nc (faster way if using cont.?)
-    W_k_vec = []
-    Z_k_vec = []
-    u_j_vec = []
-    for i, line_to_disable in enumerate(grid.lines):
-        print()
-        print(f"--- N-1 Line Contingency {i + 1}: Deactivating '{line_to_disable.name}' ---")
-
-        # Deactivate the line in the main grid object
-        grid.lines[i].active = False
-
-        slack_sol_cont, W_k, Z_k, u_j = run_nonlinear_SP_scopf(grid=grid, pf_options=pf_options,
-                                                               opf_options=opf_slack_options,
-                                                               pf_init=True,
-                                                               mp_results=acopf_results)
-
-        if W_k > 1e-3:
-            W_k_vec.append(W_k)
-            Z_k_vec.append(Z_k)
-            u_j_vec.append(u_j)
-
-        print(f"Voltage magnitudes: {slack_sol_cont.Vm}")
-        print(f"Vmax slacks: {slack_sol_cont.sl_vmax}")
-        print(f"Vmin slacks: {slack_sol_cont.sl_vmin}")
-        print(f"Branch loading: {slack_sol_cont.loading}")
-        print(f"Line slacks F: {slack_sol_cont.sl_sf}")
-        print(f"Line slacks T: {slack_sol_cont.sl_st}")
-        print(f"Generators P: {slack_sol_cont.Pg}")
-        print(f"Slack error: {slack_sol_cont.error}")
-
-        # Reactivate the line in the main grid object for the next iteration
-        grid.lines[i].active = True
-
-    print()
-    print("--- All contingencies processed x2 ---")
-    print(f"Number of problematic SPs: {len(W_k_vec)}")
-    print()
-
-    return None
-
 
 def plot_scopf_progress(iteration_data):
     """
@@ -2002,3 +1870,172 @@ def plot_scopf_progress(iteration_data):
 
     plt.tight_layout()
     plt.show()
+
+
+def case_loop() -> None:
+    """
+    Simple 5 bus system from where to build the SCOPF, looping
+    :return:
+    """
+    # Load basic grid
+    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/IEEE 5 Bus_exp.gridcal')
+    grid = FileOpen(file_path).open()
+
+    # Set options
+    pf_options = PowerFlowOptions(control_q=False)
+    opf_base_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
+                                               ips_tolerance=1e-8,
+                                               ips_iterations=50,
+                                               acopf_mode=AcOpfMode.ACOPFstd)
+    opf_slack_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
+                                                ips_tolerance=1e-8,
+                                                ips_iterations=50,
+                                                acopf_mode=AcOpfMode.ACOPFslacks,
+                                                verbose=False)
+
+    nc = compile_numerical_circuit_at(grid, t_idx=None)
+    acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
+                                         opf_options=opf_slack_options, pf_init=True)
+
+    print()
+    print(f"--- Base case ---")
+    print(f"Base OPF loading {acopf_results.loading} .")
+    print(f"Voltage magnitudes: {acopf_results.Vm}")
+    print(f"Generators P: {acopf_results.Pg}")
+    print(f"Generators Q: {acopf_results.Qg}")
+    print(f"Error: {acopf_results.error}")
+
+    print()
+    print("--- Starting loop with fixed number of repetitions, then breaking ---")
+
+    # Initialize tracking dictionary
+    iteration_data = {
+        'max_wk': [],
+        'num_violations': [],
+        'max_voltage_slack': [],
+        'avg_voltage_slack': [],
+        'max_flow_slack': [],
+        'avg_flow_slack': [],
+        'total_cost': []
+    }
+
+    linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
+    n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
+
+
+    # Start main loop over iterations
+    for klm in range(20):
+        print(f"General iteration {klm + 1} of 20")
+
+        # Global slack and weight trackers
+        v_slacks = np.zeros(n_con_groups)
+        f_slacks = np.zeros(n_con_groups)
+        prob_cont = 0
+
+        for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
+
+            contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
+            print(f"\nContingency group {ic}: {contingency_group.name} (Category: {contingency_group.category})")
+
+            # Set contingency status
+            nc.set_con_or_ra_status(contingencies)
+
+            W_k_vec = np.zeros(n_con_groups)
+            Z_k_vec = np.zeros((n_con_groups, nc.bus_data.nbus))
+            u_j_vec = np.zeros((n_con_groups, nc.bus_data.nbus))
+            W_k_local = np.zeros(n_con_groups)
+
+            for cont in contingencies:
+                line_idx = next(i for i, l in enumerate(grid.lines) if l.name == cont.name)
+                nc.passive_branch_data.active[line_idx] = False  # Deactivate the affected line
+
+                # Rebuild islands after modification
+                islands = nc.split_into_islands()
+
+                if len(islands) > 1:
+                    island_sizes = [island.nbus for island in islands]
+                    largest_island_idx = np.argmax(island_sizes)
+                    island = islands[largest_island_idx]
+                else:
+                    island = islands[0]
+
+                indices = island.get_simulation_indices()
+
+                if len(indices.vd) > 0:
+                    print('Selected island with size:', island.nbus)
+
+                    slack_sol_cont = run_nonlinear_SP_scopf(
+                        nc=island,
+                        pf_options=pf_options,
+                        opf_options=opf_slack_options,
+                        pf_init=True,
+                        mp_results=acopf_results
+                    )
+
+                    v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
+                    f_slack = max(np.maximum(slack_sol_cont.sl_sf, slack_sol_cont.sl_st))
+                    v_slacks[ic] = v_slack
+                    f_slacks[ic] = f_slack
+                    if slack_sol_cont.W_k > 0.0001:
+                        W_k_vec[ic] = slack_sol_cont.W_k
+
+                        Z_k_vec[ic][island.bus_data.original_idx] = slack_sol_cont.Z_k
+                        u_j_vec[ic][island.bus_data.original_idx] = slack_sol_cont.u_j
+                        prob_cont += 1
+                        W_k_local[ic] = slack_sol_cont.W_k
+                    print(prob_cont, W_k_vec)
+
+                    # W_k_vec = np.zeros(prob_cont)
+                    # Z_k_vec = np.zeros((prob_cont, nc.bus_data.nbus))
+                    # u_j_vec = np.zeros((prob_cont, nc.bus_data.nbus))
+                    # W_k_local = np.zeros(prob_cont)
+                nc.passive_branch_data.active[line_idx] = True
+
+            # Revert contingency
+            nc.set_con_or_ra_status(contingencies, revert=True)
+
+        # Store metrics for this iteration
+        iteration_data['max_wk'].append(W_k_local.max())
+        iteration_data['num_violations'].append(prob_cont)
+        iteration_data['max_voltage_slack'].append(v_slacks.max())
+        iteration_data['avg_voltage_slack'].append(v_slacks.mean())
+        iteration_data['max_flow_slack'].append(f_slacks.max())
+        iteration_data['avg_flow_slack'].append(f_slacks.mean())
+
+        # Run the MP with information from the SPs
+        print("--- Feeding SPs info to MP ---")
+        acopf_results = run_nonlinear_MP_opf(nc=nc,
+                                             pf_options=pf_options,
+                                             opf_options=opf_slack_options,
+                                             pf_init=True,
+                                             W_k_vec=W_k_vec,
+                                             Z_k_vec=Z_k_vec,
+                                             u_j_vec=u_j_vec)
+
+
+
+        # Store generation cost
+        total_cost = np.sum(acopf_results.Pcost)
+        iteration_data['total_cost'].append(total_cost)
+
+        # Print current iteration metrics
+        print(f"Maximum W_k: {iteration_data['max_wk'][-1]}")
+        print(f"Number of violations: {iteration_data['num_violations'][-1]}")
+        print(f"Maximum voltage slack: {iteration_data['max_voltage_slack'][-1]}")
+        print(f"Average voltage slack: {iteration_data['avg_voltage_slack'][-1]}")
+        print(f"Maximum flow slack: {iteration_data['max_flow_slack'][-1]}")
+        print(f"Average flow slack: {iteration_data['avg_flow_slack'][-1]}")
+        print(f"Total generation cost: {total_cost}")
+
+        if prob_cont == 0:
+            break
+
+    # Plot the results
+    plot_scopf_progress(iteration_data)
+
+    return None
+
+
+if __name__ == '__main__':
+    # case_v0()
+    case_loop()
