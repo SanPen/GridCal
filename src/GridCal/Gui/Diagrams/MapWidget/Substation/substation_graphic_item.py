@@ -114,7 +114,11 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
         Merge a substation into this one
         :param se: other SubstationGraphicItem
         """
-        self._hosting_connections += se._hosting_connections
+
+        # merge the hosting connections
+        for key, val in se._hosting_connections.items():
+            self._hosting_connections[key] = val
+
         for vl_graphic in se.voltage_level_graphics:
             self.register_voltage_level(vl=vl_graphic.get_copy(new_parent=self))
 

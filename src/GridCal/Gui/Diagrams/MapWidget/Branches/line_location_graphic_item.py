@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, List, TYPE_CHECKING
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.gui_functions import add_menu_entry
 from PySide6 import QtWidgets
@@ -94,6 +94,13 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
     @property
     def editor(self) -> GridMapWidget:
         return self._editor
+
+    def get_associated_widgets(self) -> List[MapLineContainer]:
+        """
+        This forwards to the map line container for the appropriate deletion of everything
+        :return:
+        """
+        return [self.line_container]
 
     def get_center_pos(self) -> QPointF:
         """

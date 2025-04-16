@@ -5891,6 +5891,9 @@ class Assets:
         elif obj.device_type == DeviceType.FacilityDevice:
             self.delete_facility(obj)
 
+        elif obj.device_type == DeviceType.LineLocation:
+            pass
+
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 

@@ -269,18 +269,18 @@ class MapLineSegment(QGraphicsLineItem):
         menu.addSeparator()
 
         # Check if a substation is selected
-        selected_items = self.editor._get_selected()
         has_substation = False
         substation_counter = 0
         line_counter = 0
 
-        for api_obj, _ in selected_items:
-            if hasattr(api_obj, 'device_type'):
-                if api_obj.device_type == DeviceType.SubstationDevice:
-                    has_substation = True
-                    substation_counter += 1
-                if api_obj.device_type == DeviceType.LineDevice:
-                    line_counter += 1
+        for graphic_obj in self.editor._get_selected():
+            if hasattr(graphic_obj, 'api_object'):
+                if hasattr(graphic_obj.api_object, 'device_type'):
+                    if graphic_obj.api_object.device_type == DeviceType.SubstationDevice:
+                        has_substation = True
+                        substation_counter += 1
+                    if graphic_obj.api_object.device_type == DeviceType.LineDevice:
+                        line_counter += 1
 
         if line_counter > 1:
             add_menu_entry(menu=menu,
