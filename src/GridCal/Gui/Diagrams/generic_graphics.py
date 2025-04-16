@@ -103,10 +103,6 @@ class GenericDiagramWidget:
     def api_object(self) -> ALL_DEV_TYPES:
         return self._api_object
 
-    # @api_object.setter
-    # def api_object(self, value: ALL_DEV_TYPES):
-    #     self._api_object = value
-
     @property
     def draw_labels(self) -> bool:
         """

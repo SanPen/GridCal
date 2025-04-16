@@ -72,7 +72,10 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Create a pen with reduced line width
-        self.change_pen_width(0.5)
+        pen = self.pen()
+        pen.setWidth(0)  # set the pen width to 0
+        self.setPen(pen)
+
         # Create a pen with reduced line width
         se_color = self.api_object.substation.color if self.api_object.substation is not None else QColor("#3d7d95")
         self.color = QColor(se_color)
@@ -155,7 +158,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         Returns a copy of the VoltageLevelGraphicItem with a different parent
         :param new_parent: New Substation Graphic item parent
-        :return: Copy of the VL Grpahic Item with new parent.
+        :return: Copy of the VL Graphic Item with new parent.
         """
         return VoltageLevelGraphicItem(parent=new_parent,
                                        editor=new_parent.editor,
@@ -247,15 +250,6 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         center_point = bounding_rect.center()
 
         return center_point
-
-    def change_pen_width(self, width: float) -> None:
-        """
-        Change the pen width for the node.
-        :param width: New pen width.
-        """
-        pen = self.pen()
-        pen.setWidthF(width)  # keep this and do not change to setWidthF
-        self.setPen(pen)
 
     def add_bus(self):
         """

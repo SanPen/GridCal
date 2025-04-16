@@ -1059,18 +1059,6 @@ class GridMapWidget(BaseDiagramWidget):
         self.diagram_scene.blockSignals(False)
         self.diagram_scene.update(self.diagram_scene.sceneRect())
 
-    def change_size_and_pen_width_all(self, new_radius, pen_width):
-        """
-        Change the size and pen width of all elements in Schema.
-        :param new_radius: New radius for the nodes.
-        :param pen_width: New pen width for the nodes.
-        """
-        dev_dict = self.graphics_manager.get_device_type_dict(device_type=DeviceType.LineLocation)
-
-        for idtag, graphic_object in dev_dict.items():
-            graphic_object.resize(new_radius)
-            graphic_object.change_pen_width(pen_width)
-
     def center(self):
         """
         Center the diagram
