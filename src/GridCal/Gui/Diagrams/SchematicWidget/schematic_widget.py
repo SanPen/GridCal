@@ -3726,7 +3726,7 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     graphical_obj.recolour_mode()
 
-    def _get_selected(self) -> List[GenericDiagramWidget]:
+    def _get_selected(self) -> List[GenericDiagramWidget | QGraphicsItem]:
         """
         Get selection
         :return: List of EditableDevice, QGraphicsItem
@@ -3738,7 +3738,7 @@ class SchematicWidget(BaseDiagramWidget):
         Get a list of the API objects from the selection
         :return: List[EditableDevice]
         """
-        return [e.api_object for e in self.diagram_scene.selectedItems()]
+        return [e.api_object for e in self._get_selected()]
 
     def create_schematic_from_selection(self) -> SchematicDiagram:
         """
@@ -3749,14 +3749,14 @@ class SchematicWidget(BaseDiagramWidget):
 
         # first pass (only buses)
         bus_dict = dict()
-        for item in self.diagram_scene.selectedItems():
+        for item in self._get_selected():
             if isinstance(item, BusGraphicItem):
                 # check that the bus is in the original diagram
-                location = self.diagram.query_point(item._api_object)
+                location = self.diagram.query_point(item.api_object)
 
                 if location:
-                    diagram.set_point(device=item._api_object, location=location)
-                    bus_dict[item._api_object.idtag] = item
+                    diagram.set_point(device=item.api_object, location=location)
+                    bus_dict[item.api_object.idtag] = item
                 else:
                     raise Exception('Item was selected but was not registered!')
 
@@ -3837,8 +3837,8 @@ class SchematicWidget(BaseDiagramWidget):
                     x_arr.append(loc_i.x)
                     y_arr.append(loc_i.y)
 
-                x_m = np.mean(x_arr)
-                y_m = np.mean(y_arr)
+                x_m = float(np.mean(x_arr))
+                y_m = float(np.mean(y_arr))
 
                 delta_i = np.sqrt((graphic_object.x() - x_m) ** 2 + (graphic_object.y() - y_m) ** 2)
 
@@ -4366,6 +4366,9 @@ class SchematicWidget(BaseDiagramWidget):
             gelm.api_object.y = gelm.y()
 
     def reset_coordinates(self):
+        """
+        Reset coordinates to the stored ones in the DataBase
+        """
         graphics: List[BusGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusDevice)
         for gelm in graphics:
             gelm.x = gelm.api_object.x
@@ -4581,7 +4584,7 @@ List[FluidPath]]:
             transformers2w.append(obj)
 
         elif obj.device_type == DeviceType.Transformer3WDevice:
-            transformers3w.append(obj)
+            transformers3w.append(obj)  # TODO: think about this, because indeed a TR3 is never found this way
 
         elif obj.device_type == DeviceType.WindingDevice:
             windings.append(obj)
