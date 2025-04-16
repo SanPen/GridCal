@@ -105,13 +105,14 @@ def case_loop() -> None:
                         f_slack = max(np.maximum(slack_sol_cont.sl_sf, slack_sol_cont.sl_st))
                         v_slacks[ic] = v_slack
                         f_slacks[ic] = f_slack
+                        W_k_local[ic] = slack_sol_cont.W_k
 
                         if slack_sol_cont.W_k > 0.0001:
-                            W_k_vec[ic] = slack_sol_cont.W_k
-                            Z_k_vec[ic, island.bus_data.original_idx] = slack_sol_cont.Z_k
-                            u_j_vec[ic, island.bus_data.original_idx] = slack_sol_cont.u_j
+                            W_k_vec[prob_cont] = slack_sol_cont.W_k
+                            Z_k_vec[prob_cont, island.bus_data.original_idx] = slack_sol_cont.Z_k
+                            u_j_vec[prob_cont, island.bus_data.original_idx] = slack_sol_cont.u_j
                             prob_cont += 1
-                        W_k_local[ic] = slack_sol_cont.W_k
+
 
                         print('nbus', island.nbus, 'ngen', island.ngen)
 
@@ -124,6 +125,11 @@ def case_loop() -> None:
 
             # Revert contingency
             nc.set_con_or_ra_status(contingencies, revert=True)
+
+        if prob_cont < n_con_groups and prob_cont > 0:
+            W_k_vec.reshape(prob_cont)
+            Z_k_vec.reshape((prob_cont, nc.bus_data.nbus))
+            u_j_vec.reshape((prob_cont, nc.bus_data.nbus))
 
         # Store metrics for this iteration
         iteration_data['max_wk'].append(W_k_local.max())
