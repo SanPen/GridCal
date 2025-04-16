@@ -7,7 +7,7 @@ def case_loop() -> None:
     :return:
     """
     # Load basic grid
-    file_path = 'IEEE 5 Bus_exp.gridcal'
+    file_path = 'bus5_v9.gridcal'
     grid = FileOpen(file_path).open()
 
     # Set options
@@ -60,8 +60,8 @@ def case_loop() -> None:
         f_slacks = np.zeros(n_con_groups)
         prob_cont = 0
         W_k_vec = np.zeros(n_con_groups)
-        Z_k_vec = np.zeros((n_con_groups, nc.bus_data.nbus))
-        u_j_vec = np.zeros((n_con_groups, nc.bus_data.nbus))
+        Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
+        u_j_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
         W_k_local = np.zeros(n_con_groups)
 
         for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
@@ -109,8 +109,8 @@ def case_loop() -> None:
 
                         if slack_sol_cont.W_k > 0.0001:
                             W_k_vec[prob_cont] = slack_sol_cont.W_k
-                            Z_k_vec[prob_cont, island.bus_data.original_idx] = slack_sol_cont.Z_k
-                            u_j_vec[prob_cont, island.bus_data.original_idx] = slack_sol_cont.u_j
+                            Z_k_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.Z_k
+                            u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
                             prob_cont += 1
 
 
@@ -126,10 +126,11 @@ def case_loop() -> None:
             # Revert contingency
             nc.set_con_or_ra_status(contingencies, revert=True)
 
-        if prob_cont < n_con_groups and prob_cont > 0:
-            W_k_vec.reshape(prob_cont)
-            Z_k_vec.reshape((prob_cont, nc.bus_data.nbus))
-            u_j_vec.reshape((prob_cont, nc.bus_data.nbus))
+        if n_con_groups > prob_cont > 0:
+            # crop the dimension 0
+            W_k_vec = W_k_vec[:prob_cont]
+            Z_k_vec = Z_k_vec[:prob_cont, :]
+            u_j_vec = u_j_vec[:prob_cont, :]
 
         # Store metrics for this iteration
         iteration_data['max_wk'].append(W_k_local.max())

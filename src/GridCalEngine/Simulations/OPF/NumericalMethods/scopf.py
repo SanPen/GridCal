@@ -484,8 +484,8 @@ class NonlinearSCOPFResults:
         self.iterations: int = 0
 
         self.W_k: float = 0
-        self.Z_k: Vec = np.zeros(nbus)
-        self.u_j: Vec = np.zeros(nbus)
+        self.Z_k: Vec = np.zeros(ng)
+        self.u_j: Vec = np.zeros(ng)
 
     def merge(self,
               other: "NonlinearSCOPFResults",
@@ -541,8 +541,8 @@ class NonlinearSCOPFResults:
         self.iterations: int = 0
 
         self.W_k: float = max(self.W_k, other.W_k)
-        self.Z_k[bus_idx] = other.Z_k
-        self.u_j[bus_idx] = other.u_j
+        self.Z_k[gen_idx] = other.Z_k
+        self.u_j[gen_idx] = other.u_j
 
     @property
     def V(self) -> CxVec:
