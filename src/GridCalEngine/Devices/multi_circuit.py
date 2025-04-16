@@ -2783,3 +2783,18 @@ class MultiCircuit(Assets):
         self.underground_cable_types += data.underground_cable_types
         self.wire_types += data.wire_types
         self.sequence_line_types += data.sequence_line_types
+
+    def set_opf_ts_results(self, results):
+        """
+
+        :param results:
+        :return:
+        """
+        for i, elm in enumerate(self.get_generators()):
+            elm.P_prof.set(results.generator_power[:, i])
+
+        for i, elm in enumerate(self.get_batteries()):
+            elm.P_prof.set(results.battery_power[:, i])
+
+        for i, elm in enumerate(self.get_loads()):
+            elm.P_prof.set(results.load_power[:, i])

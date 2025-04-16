@@ -448,9 +448,9 @@ class DiagramsMain(CompiledArraysMain):
                     self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
                                            en=self.start_end_dialogue_window.end_value)
             else:
-                info_msg("Empty time series :/")
+                self.show_error_toast("Empty time series :/")
         else:
-            info_msg("There are no time series :/")
+            self.show_error_toast("There are no time series :/")
 
     def pf_colouring(self, diagram_widget: ALL_EDITORS,
                      results: PowerFlowResults, cmap: Colormaps,
@@ -2172,12 +2172,12 @@ class DiagramsMain(CompiledArraysMain):
                         self.video_thread.progress_signal.connect(self.ui.progressBar.setValue)
                         self.video_thread.progress_text.connect(self.ui.progress_label.setText)
                         self.video_thread.done_signal.connect(self.post_video_export)
-                        self.video_thread.run()  # we cannot run another thread accesing the main thread objects...
+                        self.video_thread.run()  # we cannot run another thread accessing the main thread objects...
             else:
-                info_msg("There is not diagram selected", "Record video")
+                self.show_error_toast("There is no diagram selected")
 
         else:
-            info_msg("There are no time series", "Record video")
+            self.show_error_toast("There are no time series")
 
     def post_video_export(self):
         """

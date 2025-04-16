@@ -3941,7 +3941,7 @@ class SchematicWidget(BaseDiagramWidget):
                 # plot the profiles
                 plt.show()
         else:
-            info_msg("There are no time series, so nothing to plot :/")
+            self.gui.show_error_toast("There are no time series, so nothing to plot :/")
 
     def plot_fluid_node(self, i: int, api_object: FluidNode):
         """
@@ -3996,7 +3996,7 @@ class SchematicWidget(BaseDiagramWidget):
                 # plot the profiles
                 plt.show()
         else:
-            info_msg("There are no time series, so nothing to plot :/")
+            self.gui.show_error_toast("There are no time series, so nothing to plot :/")
 
     def split_line_now(self, line_graphics: LineGraphicItem, position: float, extra_km: float):
         """

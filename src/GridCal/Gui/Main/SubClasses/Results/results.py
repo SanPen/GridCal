@@ -186,7 +186,6 @@ class ResultsMain(SimulationsMain):
                     cols = None
                     rows = None
 
-
                 # none selected, plot all
                 mdl.plot(
                     ax=ax,
@@ -308,22 +307,21 @@ class ResultsMain(SimulationsMain):
 
         if results is not None:
 
-            reply = QtWidgets.QMessageBox.question(self, 'Message',
-                                                   'Are you sure that you want to overwrite '
-                                                   'the generation profiles with the OPF results?',
-                                                   QtWidgets.QMessageBox.StandardButton.Yes,
-                                                   QtWidgets.QMessageBox.StandardButton.No)
+            ok = yes_no_question('Are you sure that you want to overwrite '
+                                 'the generation, batteries and load profiles '
+                                 'with the OPF results?',
+                                 title="Overwrite profiles with OPF results")
 
-            if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
-                for i, gen in enumerate(self.circuit.get_generators()):
-                    gen.P_prof.set(results.generator_power[:, i])
+            if ok:
+                self.circuit.set_opf_ts_results(results)
+                self.show_info_toast("P profiles set from the OPF results")
 
         else:
-            warning_msg('The OPF time series has no results :(')
+            self.show_warning_toast('The OPF time series has no results :(')
 
     def save_results_logs(self):
         """
-        Seve the results' logs
+        Save the results' logs
         """
         file, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, "Export logs", '',
                                                               filter="CSV (*.csv);;Excel files (*.xlsx)", )

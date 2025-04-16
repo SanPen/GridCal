@@ -1499,7 +1499,7 @@ class GridMapWidget(BaseDiagramWidget):
                 # plot the profiles
                 plt.show()
         else:
-            info_msg("There are no time series, so nothing to plot :/")
+            self.gui.show_error_toast("There are no time series, so nothing to plot :/")
 
     def merge_selected_lines(self):
 
