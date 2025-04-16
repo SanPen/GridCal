@@ -145,175 +145,175 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
     return idx_f, idx_t
 
 
-@njit()
-def dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap,
-                           tap_modules) -> CxCSC:
-    """
-    Derivative of the controllable branch power flows w.r.t. voltage magnitude.
-    :param nbus: number of buses
-    :param cbr: Array of controllable branch indices
-    :param F_cbr: Array of branch "from" bus indices
-    :param T_cbr: Array of branch "to" bus indices
-    :param yff_cbr: Array of branch primitive admittances
-    :param yft_cbr: Array of branch primitive admittances
-    :param ytf_cbr: Array of branch primitive admittances
-    :param ytt_cbr: Array of branch primitive admittances
-    :param yff0: Array of constant branch primitive admittances 
-    :param yft0: Array of constant branch primitive admittances
-    :param ytf0: Array of constant branch primitive admittances
-    :param ytt0: Array of constant branch primitive admittances
-    :param V: Array of complex voltages
-    :param tap: Array of branch complex taps (m * exp(1j * tau)
-    :param tap_modules: Array of branch tap modules
-    :return: dSbr_dVm
-    """
+# @njit()
+# def dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap,
+#                            tap_modules) -> CxCSC:
+#     """
+#     Derivative of the controllable branch power flows w.r.t. voltage magnitude.
+#     :param nbus: number of buses
+#     :param cbr: Array of controllable branch indices
+#     :param F_cbr: Array of branch "from" bus indices
+#     :param T_cbr: Array of branch "to" bus indices
+#     :param yff_cbr: Array of branch primitive admittances
+#     :param yft_cbr: Array of branch primitive admittances
+#     :param ytf_cbr: Array of branch primitive admittances
+#     :param ytt_cbr: Array of branch primitive admittances
+#     :param yff0: Array of constant branch primitive admittances 
+#     :param yft0: Array of constant branch primitive admittances
+#     :param ytf0: Array of constant branch primitive admittances
+#     :param ytt0: Array of constant branch primitive admittances
+#     :param V: Array of complex voltages
+#     :param tap: Array of branch complex taps (m * exp(1j * tau)
+#     :param tap_modules: Array of branch tap modules
+#     :return: dSbr_dVm
+#     """
 
-    max_nnz = len(yff_cbr) * 4
-    mat = CxCSC(nbus, nbus, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
-    Ti = np.empty(max_nnz, dtype=np.int32)
-    Tj = np.empty(max_nnz, dtype=np.int32)
+#     max_nnz = len(yff_cbr) * 4
+#     mat = CxCSC(nbus, nbus, max_nnz, False)
+#     Tx = np.empty(max_nnz, dtype=np.complex128)
+#     Ti = np.empty(max_nnz, dtype=np.int32)
+#     Tj = np.empty(max_nnz, dtype=np.int32)
 
-    nbr = len(yff_cbr)
-    tau = np.angle(tap)
+#     nbr = len(yff_cbr)
+#     tau = np.angle(tap)
 
-    nnz = 0
-    for _, c in enumerate(cbr):  # for each controllable branch ...
-        f = F_cbr[c]
-        t = T_cbr[c]
-        Vf = V[f]
-        Vt = V[t]
+#     nnz = 0
+#     for _, c in enumerate(cbr):  # for each controllable branch ...
+#         f = F_cbr[c]
+#         t = T_cbr[c]
+#         Vf = V[f]
+#         Vt = V[t]
 
-        Vm_f = np.abs(Vf)
-        Vm_t = np.abs(Vt)
+#         Vm_f = np.abs(Vf)
+#         Vm_t = np.abs(Vt)
 
-        # dSf/dVmf
-        dsf_dvmf = (2 * Vm_f * np.conj(yff_cbr[c]) / (tap_modules[c] * tap_modules[c])
-                    + Vf / Vm_f * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-                    - 2 * Vm_f * np.conj(yff0[c])
-                    - Vf / Vm_f * np.conj(Vt) * np.conj(yft0[c]))
+#         # dSf/dVmf
+#         dsf_dvmf = (2 * Vm_f * np.conj(yff_cbr[c]) / (tap_modules[c] * tap_modules[c])
+#                     + Vf / Vm_f * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+#                     - 2 * Vm_f * np.conj(yff0[c])
+#                     - Vf / Vm_f * np.conj(Vt) * np.conj(yft0[c]))
 
-        # dSf/dVmt
-        dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-                    - Vf * np.conj(Vt) / Vm_t * np.conj(yft0[c]))
+#         # dSf/dVmt
+#         dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+#                     - Vf * np.conj(Vt) / Vm_t * np.conj(yft0[c]))
 
-        # dSt/dVmf
-        dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-                    - Vt * np.conj(Vf) / Vm_f * np.conj(ytf0[c]))
+#         # dSt/dVmf
+#         dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+#                     - Vt * np.conj(Vf) / Vm_f * np.conj(ytf0[c]))
 
-        # dSt/dVmt
-        dst_dvmt = (2 * Vm_t * np.conj(ytt_cbr[c])
-                    + Vt / Vm_t * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-                    - 2 * Vm_t * np.conj(ytt0[c])
-                    - Vt / Vm_t * np.conj(Vf) * np.conj(ytf0[c]))
+#         # dSt/dVmt
+#         dst_dvmt = (2 * Vm_t * np.conj(ytt_cbr[c])
+#                     + Vt / Vm_t * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+#                     - 2 * Vm_t * np.conj(ytt0[c])
+#                     - Vt / Vm_t * np.conj(Vf) * np.conj(ytf0[c]))
 
-        # add to the triplets
-        Tx[nnz] = dsf_dvmf
-        Ti[nnz] = f
-        Tj[nnz] = f
-        nnz += 1
+#         # add to the triplets
+#         Tx[nnz] = dsf_dvmf
+#         Ti[nnz] = f
+#         Tj[nnz] = f
+#         nnz += 1
 
-        Tx[nnz] = dsf_dvmt
-        Ti[nnz] = f
-        Tj[nnz] = t
-        nnz += 1
+#         Tx[nnz] = dsf_dvmt
+#         Ti[nnz] = f
+#         Tj[nnz] = t
+#         nnz += 1
 
-        Tx[nnz] = dst_dvmf
-        Ti[nnz] = t
-        Tj[nnz] = f
-        nnz += 1
+#         Tx[nnz] = dst_dvmf
+#         Ti[nnz] = t
+#         Tj[nnz] = f
+#         nnz += 1
 
-        Tx[nnz] = dst_dvmt
-        Ti[nnz] = t
-        Tj[nnz] = t
-        nnz += 1
+#         Tx[nnz] = dst_dvmt
+#         Ti[nnz] = t
+#         Tj[nnz] = t
+#         nnz += 1
 
-    # convert to csc
-    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+#     # convert to csc
+#     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
-    return mat
+#     return mat
 
 
-@njit()
-def dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap,
-                           tap_modules) -> CxCSC:
-    """
-    Derivative of the controllable branch power flows w.r.t. voltage angle.
-    :param nbus: number of buses
-    :param cbr: Array of controllable branch indices
-    :param F_cbr: Array of branch "from" bus indices
-    :param T_cbr: Array of branch "to" bus indices
-    :param yff_cbr: Array of branch primitive admittances
-    :param yft_cbr: Array of branch primitive admittances
-    :param ytf_cbr: Array of branch primitive admittances
-    :param ytt_cbr: Array of branch primitive admittances
-    :param yff0: Array of constant branch primitive admittances 
-    :param yft0: Array of constant branch primitive admittances
-    :param ytf0: Array of constant branch primitive admittances
-    :param ytt0: Array of constant branch primitive admittances
-    :param V: Array of complex voltages
-    :param tap: Array of branch complex taps (m * exp(1j * tau)
-    :param tap_modules: Array of branch tap modules
-    :return: dSbr_dVa
-    """
+# @njit()
+# def dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap,
+#                            tap_modules) -> CxCSC:
+#     """
+#     Derivative of the controllable branch power flows w.r.t. voltage angle.
+#     :param nbus: number of buses
+#     :param cbr: Array of controllable branch indices
+#     :param F_cbr: Array of branch "from" bus indices
+#     :param T_cbr: Array of branch "to" bus indices
+#     :param yff_cbr: Array of branch primitive admittances
+#     :param yft_cbr: Array of branch primitive admittances
+#     :param ytf_cbr: Array of branch primitive admittances
+#     :param ytt_cbr: Array of branch primitive admittances
+#     :param yff0: Array of constant branch primitive admittances 
+#     :param yft0: Array of constant branch primitive admittances
+#     :param ytf0: Array of constant branch primitive admittances
+#     :param ytt0: Array of constant branch primitive admittances
+#     :param V: Array of complex voltages
+#     :param tap: Array of branch complex taps (m * exp(1j * tau)
+#     :param tap_modules: Array of branch tap modules
+#     :return: dSbr_dVa
+#     """
 
-    max_nnz = len(yff_cbr) * 4
-    mat = CxCSC(nbus, nbus, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
-    Ti = np.empty(max_nnz, dtype=np.int32)
-    Tj = np.empty(max_nnz, dtype=np.int32)
+#     max_nnz = len(yff_cbr) * 4
+#     mat = CxCSC(nbus, nbus, max_nnz, False)
+#     Tx = np.empty(max_nnz, dtype=np.complex128)
+#     Ti = np.empty(max_nnz, dtype=np.int32)
+#     Tj = np.empty(max_nnz, dtype=np.int32)
 
-    nbr = len(yff_cbr)
-    tau = np.angle(tap)
+#     nbr = len(yff_cbr)
+#     tau = np.angle(tap)
 
-    nnz = 0
-    for _, c in enumerate(cbr):  # for each controllable branch ...
-        f = F_cbr[c]
-        t = T_cbr[c]
-        Vf = V[f]
-        Vt = V[t]
+#     nnz = 0
+#     for _, c in enumerate(cbr):  # for each controllable branch ...
+#         f = F_cbr[c]
+#         t = T_cbr[c]
+#         Vf = V[f]
+#         Vt = V[t]
 
-        # dSf/dVaf
-        dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-                    - 1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
+#         # dSf/dVaf
+#         dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+#                     - 1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
 
-        # dSf/dVat
-        dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-                    + 1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
+#         # dSf/dVat
+#         dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
+#                     + 1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
 
-        # dSt/dVaf
-        dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-                    + 1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
+#         # dSt/dVaf
+#         dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+#                     + 1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
 
-        # dSt/dVat
-        dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-                    - 1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
+#         # dSt/dVat
+#         dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
+#                     - 1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
 
-        # add to the triplets
-        Tx[nnz] = dsf_dvaf
-        Ti[nnz] = f
-        Tj[nnz] = f
-        nnz += 1
+#         # add to the triplets
+#         Tx[nnz] = dsf_dvaf
+#         Ti[nnz] = f
+#         Tj[nnz] = f
+#         nnz += 1
 
-        Tx[nnz] = dsf_dvat
-        Ti[nnz] = f
-        Tj[nnz] = t
-        nnz += 1
+#         Tx[nnz] = dsf_dvat
+#         Ti[nnz] = f
+#         Tj[nnz] = t
+#         nnz += 1
 
-        Tx[nnz] = dst_dvaf
-        Ti[nnz] = t
-        Tj[nnz] = f
-        nnz += 1
+#         Tx[nnz] = dst_dvaf
+#         Ti[nnz] = t
+#         Tj[nnz] = f
+#         nnz += 1
 
-        Tx[nnz] = dst_dvat
-        Ti[nnz] = t
-        Tj[nnz] = t
-        nnz += 1
+#         Tx[nnz] = dst_dvat
+#         Ti[nnz] = t
+#         Tj[nnz] = t
+#         nnz += 1
 
-    # convert to csc
-    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+#     # convert to csc
+#     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
-    return mat
+#     return mat
 
 
 @njit()
@@ -754,8 +754,7 @@ def dSf_dVm_csc(nbus, br_indices, bus_indices, yff, yft, Vm, Va, F, T) -> CxCSC:
 
 
 @njit()
-def dSf_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
-                      tap_module) -> CxCSC:
+def dSf_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, V, F, T, tap, tap_module) -> CxCSC:
     """
 
     :param nbus: number of buses
@@ -765,10 +764,6 @@ def dSf_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, y
     :param yft:
     :param ytf:
     :param ytt:
-    :param yff0:
-    :param yft0:
-    :param ytf0:
-    :param ytt0:
     :param V:
     :param F:
     :param T:
@@ -958,8 +953,7 @@ def dSf_dVa_csc(nbus, br_indices, bus_indices, yft, V, F, T) -> CxCSC:
 
 
 @njit()
-def dSf_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
-                     tap_module) -> CxCSC:
+def dSf_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, V, F, T, tap, tap_module) -> CxCSC:
     """
 
     :param nbus: number of buses
@@ -969,10 +963,6 @@ def dSf_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yf
     :param yft:
     :param ytf:
     :param ytt:
-    :param yff0:
-    :param yft0:
-    :param ytf0:
-    :param ytt0:
     :param V:
     :param F:
     :param T:
@@ -1089,8 +1079,7 @@ def dSt_dVm_csc(nbus, br_indices, bus_indices, ytt, ytf, Vm, Va, F, T) -> CxCSC:
 
 
 @njit()
-def dSt_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
-                      tap_module) -> CxCSC:
+def dSt_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, V, F, T, tap, tap_module) -> CxCSC:
     """
 
     :param nbus: number of buses
@@ -1100,10 +1089,6 @@ def dSt_dVm_josep_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, y
     :param yft:
     :param ytf:
     :param ytt:
-    :param yff0:
-    :param yft0:
-    :param ytf0:
-    :param ytt0:
     :param V:
     :param F:
     :param T:
@@ -1222,8 +1207,7 @@ def dSt_dVa_csc(nbus, br_indices, bus_indices, ytf, V, F, T) -> CxCSC:
 
 
 @njit()
-def dSt_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yft0, ytf0, ytt0, V, F, T, tap,
-                     tap_module) -> CxCSC:
+def dSt_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, V, F, T, tap, tap_module) -> CxCSC:
     """
 
     :param nbus: number of buses
@@ -1233,10 +1217,6 @@ def dSt_incr_dVa_csc(nbus, br_indices, bus_indices, yff, yft, ytf, ytt, yff0, yf
     :param yft:
     :param ytf:
     :param ytt:
-    :param yff0:
-    :param yft0:
-    :param ytf0:
-    :param ytt0:
     :param V:
     :param F:
     :param T:
