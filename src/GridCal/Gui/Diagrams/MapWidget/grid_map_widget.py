@@ -322,7 +322,6 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [e.api_object for e in self._get_selected()]
 
-
     def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine,
                                                                   MapDcLine,
                                                                   MapHvdcLine,
@@ -354,6 +353,18 @@ class GridMapWidget(BaseDiagramWidget):
             if hasattr(item, 'api_object') and isinstance(item, SubstationGraphicItem):
                 selected_substations.append((item.api_object, item))
         return selected_substations
+
+    def get_selected_linelocations_tup(self) -> List[Tuple[LineLocation, LineLocationGraphicItem]]:
+        """
+        Get only selected Line Locations from the scene
+
+        :return: List of (LineLocation, LineLocationGraphicItem) tuples
+        """
+        selected_linelocations = []
+        for item in self.diagram_scene.selectedItems():
+            if hasattr(item, 'api_object') and isinstance(item, LineLocationGraphicItem):
+                selected_linelocations.append((item.api_object, item))
+        return selected_linelocations
 
     def add_to_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
@@ -1501,6 +1512,173 @@ class GridMapWidget(BaseDiagramWidget):
         else:
             self.gui.show_error_toast("There are no time series, so nothing to plot :/")
 
+    def transform_waypoint_to_substation(self):
+
+        selected_lines = self.get_selected_line_segments_tup()
+        selected_lineloc = self.get_selected_linelocations_tup()
+
+        if len(selected_lines) != 1:
+            self.gui.show_error_toast('More than one line selected. Could not create substation and split the line.')
+            return
+        if len(selected_lineloc) != 1:
+            self.gui.show_error_toast('More than one waypoint selected. Could not determine where '
+                                      'the substation should be created.')
+            return
+
+        ok = yes_no_question(title='Transform waypoint to substation?',
+                             text='Do you want to transform to substaiton teh selected '
+                                  'waypoint? This operation will split the line at the '
+                                  'selected location, and will connect the new ends to '
+                                  'the new substation.')
+
+        if ok:
+
+            splitting_index = None
+
+            line = selected_lines[0][0]
+            line_graphic = selected_lines[0][1]
+
+            selected_waypoint = selected_lineloc[0][0]
+            wp_graphic = selected_lineloc[0][1]
+
+            for i, lineloc in enumerate(line.locations.data):
+                if lineloc == selected_waypoint:
+                    splitting_index = i
+                    break
+                else:
+                    pass
+
+            if splitting_index is not None:
+
+                message = ''
+                municipality = line.bus_from.substation.municipality
+                region = line.bus_from.substation.region
+                community = line.bus_from.substation.community
+                country = line.bus_from.substation.country
+
+                if country != line.bus_to.substation.country:
+                    message += ('Country of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.\n')
+                if community != line.bus_to.substation.community:
+                    message += ('Community of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.\n')
+                if region != line.bus_to.substation.region:
+                    message += ('Region of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.\n')
+                if municipality != line.bus_to.substation.municipality:
+                    message += ('Municipality of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.')
+
+                loc = line.locations.data[splitting_index]
+                added_se = Substation(latitude=loc.lat, longitude=loc.long, region=region, community=community,
+                                      municipality=municipality, country=country)
+                added_se.color = '#0000FF'
+
+                added_vl = VoltageLevel(Vnom=line.bus_from.Vnom, substation=added_se)
+                added_bus = Bus(latitude=loc.lat, longitude=loc.long, voltage_level=added_vl,
+                                substation=added_se, Vnom=added_vl.Vnom)
+
+                linelocs1 = line.locations.data[:splitting_index]
+                linelocs2 = line.locations.data[splitting_index + 1:]
+                length1 = 0
+                length2 = 0
+
+                for i in range(len(linelocs1)):
+                    if i == 0:
+
+                        lat1 = line.bus_from.latitude
+                        lon1 = line.bus_from.longitude
+                        lat2 = linelocs1[i].lat
+                        lon2 = linelocs1[i].long
+                        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                    elif i == len(linelocs1) - 1:
+
+                        lat1 = linelocs1[i].lat
+                        lon1 = linelocs1[i].long
+                        lat2 = added_bus.latitude
+                        lon2 = added_bus.longitude
+                        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                    else:
+
+                        lat1 = linelocs1[i].lat
+                        lon1 = linelocs1[i].long
+                        lat2 = linelocs1[i + 1].lat
+                        lon2 = linelocs1[i + 1].long
+                        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                for i in range(len(linelocs2)):
+                    if i == 0:
+
+                        lat1 = added_bus.latitude
+                        lon1 = added_bus.longitude
+                        lat2 = linelocs2[i].lat
+                        lon2 = linelocs2[i].long
+                        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                    elif i == len(linelocs2) - 1:
+
+                        lat1 = linelocs2[i].lat
+                        lon1 = linelocs2[i].long
+                        lat2 = line.bus_to.latitude
+                        lon2 = line.bus_to.longitude
+                        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                    else:
+
+                        lat1 = linelocs2[i].lat
+                        lon1 = linelocs2[i].long
+                        lat2 = linelocs2[i + 1].lat
+                        lon2 = linelocs2[i + 1].long
+                        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                line1 = Line(name=line.name, code=line.code, bus_from=line.bus_from, bus_to=added_bus,
+                             circuit_idx=line.circuit_idx, length=length1)
+                line2 = Line(name=line.name, code=line.code, bus_from=added_bus, bus_to=line.bus_to,
+                             circuit_idx=line.circuit_idx, length=length2)
+
+                template = line.template
+                template.compute()
+                line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+
+                line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+
+                line1.color = line.color
+                line2.color = line.color
+
+                for i, loc in enumerate(linelocs1):
+                    line1.locations.add(idtag=loc.idtag, latitude=loc.lat, longitude=loc.long, sequence=i, altitude=0)
+                for i, loc in enumerate(linelocs2):
+                    line2.locations.add(idtag=loc.idtag, latitude=loc.lat, longitude=loc.long, sequence=i, altitude=0)
+
+                self.circuit.add_substation(added_se)
+                self.circuit.add_voltage_level(added_vl)
+                self.circuit.add_bus(added_bus)
+                self.circuit.add_line(line1)
+                self.circuit.add_line(line2)
+
+                se_graphics = self.add_api_substation(api_object=added_se,
+                                                      lat=added_se.latitude,
+                                                      lon=added_se.longitude)
+                vl_graphic = self.add_api_voltage_level(api_object=added_vl, substation_graphics=se_graphics)
+                self.add_api_line(api_object=line1)
+                self.add_api_line(api_object=line2)
+                se_graphics.resize_voltage_levels()
+                self.remove_element(device=line, graphic_object=line_graphic, delete_from_db=True)
+
+                if message != '':
+                    self.gui.show_warning_toast(message=message)
+
+            else:
+                self.gui.show_error_toast(
+                    'The waypoint selected is not included in the selected line\'s waypoint. Operation not performed.')
+                return
+
+
+
+
+
     def merge_selected_lines(self):
 
         selected_lines = self.get_selected_line_segments_tup()
@@ -1530,6 +1708,7 @@ class GridMapWidget(BaseDiagramWidget):
             circ_idx = line1.circuit_idx
 
         else:
+
             inpt = InputNumberDialogue(
                 min_value=1,
                 max_value=10,
@@ -1549,6 +1728,11 @@ class GridMapWidget(BaseDiagramWidget):
                                               f'maximum possible value for the circuit_idx is '
                                               f'{line1.template.n_circuits}, try again.')
                     return
+                else:
+                    pass
+            else:
+                self.gui.show_error_toast(f'Dialogue not accepted. Operation not performed.')
+                return
 
         list_locations = line1.locations.data
         list_lineloc2 = line2.locations.data
@@ -2061,21 +2245,22 @@ class GridMapWidget(BaseDiagramWidget):
         new_substation_name = f"{line_api.name}_Junction"
 
         # --- Safely evaluate line_api.code ---
-        code_list = [] # Default to empty list
-        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str): # Check if it exists, is not empty, and is a string
+        code_list = []  # Default to empty list
+        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code,
+                                                                      str):  # Check if it exists, is not empty, and is a string
             try:
                 evaluated_code = ast.literal_eval(line_api.code)
                 # Ensure it's a list or treat as single item if string
                 if isinstance(evaluated_code, list):
                     code_list = evaluated_code
                 elif isinstance(evaluated_code, str):
-                     code_list = [evaluated_code] # Treat literal string as single code
+                    code_list = [evaluated_code]  # Treat literal string as single code
                 # Add handling for other literal types if needed, otherwise they result in empty list
             except (ValueError, SyntaxError, TypeError):
                 # Handle cases where the string is not a valid literal
                 # If it doesn't look like a list, treat the original string as the code
                 if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
-                     code_list = [line_api.code]
+                    code_list = [line_api.code]
 
         # Modify the code list
         new_code_list = [f"{subcode}_Junction" for subcode in code_list]
@@ -2083,7 +2268,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Create the new substation
         new_substation = Substation(name=new_substation_name,
-                                    code=str(new_code_list), # Store as string representation of list
+                                    code=str(new_code_list),  # Store as string representation of list
                                     latitude=waypoint_lat,
                                     longitude=waypoint_lon)
 
@@ -2202,17 +2387,17 @@ class GridMapWidget(BaseDiagramWidget):
         line1_name = f"{line_api.name}_1"
 
         # --- Safely evaluate line_api.code for line1 ---
-        code_list_for_line1 = [] # Default to empty list
+        code_list_for_line1 = []  # Default to empty list
         if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str):
             try:
                 evaluated_code = ast.literal_eval(line_api.code)
                 if isinstance(evaluated_code, list):
                     code_list_for_line1 = evaluated_code
                 elif isinstance(evaluated_code, str):
-                     code_list_for_line1 = [evaluated_code]
+                    code_list_for_line1 = [evaluated_code]
             except (ValueError, SyntaxError, TypeError):
-                 if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
-                     code_list_for_line1 = [line_api.code]
+                if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                    code_list_for_line1 = [line_api.code]
 
         # Modify the code list
         line1_modified_code_list = [f"{subcode}_1" for subcode in code_list_for_line1]
@@ -2221,7 +2406,7 @@ class GridMapWidget(BaseDiagramWidget):
         line1 = Line(name=line1_name,
                      bus_from=line_api.bus_from,
                      bus_to=new_bus,
-                     code=str(line1_modified_code_list), # Store as string representation
+                     code=str(line1_modified_code_list),  # Store as string representation
                      r=line_api.R * ratio1,  # Set impedance proportional to length
                      x=line_api.X * ratio1,
                      b=line_api.B * ratio1,
@@ -2255,17 +2440,17 @@ class GridMapWidget(BaseDiagramWidget):
         line2_name = f"{line_api.name}_2"
 
         # --- Safely evaluate line_api.code for line2 ---
-        code_list_for_line2 = [] # Default to empty list
+        code_list_for_line2 = []  # Default to empty list
         if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str):
             try:
                 evaluated_code = ast.literal_eval(line_api.code)
                 if isinstance(evaluated_code, list):
                     code_list_for_line2 = evaluated_code
                 elif isinstance(evaluated_code, str):
-                     code_list_for_line2 = [evaluated_code]
+                    code_list_for_line2 = [evaluated_code]
             except (ValueError, SyntaxError, TypeError):
-                 if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
-                     code_list_for_line2 = [line_api.code]
+                if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                    code_list_for_line2 = [line_api.code]
 
         # Modify the code list
         line2_modified_code_list = [f"{subcode}_2" for subcode in code_list_for_line2]
@@ -2274,7 +2459,7 @@ class GridMapWidget(BaseDiagramWidget):
         line2 = Line(name=line2_name,
                      bus_from=new_bus,
                      bus_to=line_api.bus_to,
-                     code=str(line2_modified_code_list), # Store as string representation
+                     code=str(line2_modified_code_list),  # Store as string representation
                      r=line_api.R * ratio2,  # Set impedance proportional to length
                      x=line_api.X * ratio2,
                      b=line_api.B * ratio2,
