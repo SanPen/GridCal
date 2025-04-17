@@ -468,7 +468,8 @@ def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
 def calc_flows_summation_per_bus(nbus: int,
                                  F_br: IntVec, T_br: IntVec, Sf_br: CxVec, St_br: CxVec,
                                  F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
-                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
+                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
+                                 get_solution: bool = False) -> CxVec:
     """
     Summation of magnitudes per bus (complex)
     :param nbus:
@@ -490,9 +491,10 @@ def calc_flows_summation_per_bus(nbus: int,
     res = np.zeros(nbus, dtype=np.complex128)
 
     # Add branches
-    # for i in range(len(F_br)):
-    #     res[F_br[i]] += Sf_br[i]
-    #     res[T_br[i]] += St_br[i]
+    if get_solution:
+        for i in range(len(F_br)):
+            res[F_br[i]] += Sf_br[i]
+            res[T_br[i]] += St_br[i]
 
     # Add HVDC
     for i in range(len(F_hvdc)):
@@ -2522,7 +2524,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             F_vsc=self.nc.vsc_data.F,
             T_vsc=self.nc.vsc_data.T,
             Pf_vsc=Pf_vsc,
-            St_vsc=St_vsc
+            St_vsc=St_vsc,
+            get_solution=False
         )
 
         dS = self.Scalc - Sbus
@@ -2863,7 +2866,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             F_vsc=self.nc.vsc_data.F,
             T_vsc=self.nc.vsc_data.T,
             Pf_vsc=self.Pf_vsc,
-            St_vsc=St_vsc
+            St_vsc=St_vsc,
+            get_solution=False
         )
 
         dS = self.Scalc - Sbus
@@ -3128,7 +3132,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             F_vsc=self.nc.vsc_data.F,
             T_vsc=self.nc.vsc_data.T,
             Pf_vsc=Pf_vsc,
-            St_vsc=St_vsc
+            St_vsc=St_vsc,
+            get_solution=True
         )
 
         return NumericPowerFlowResults(
