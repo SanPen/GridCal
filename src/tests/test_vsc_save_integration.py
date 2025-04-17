@@ -87,7 +87,7 @@ def test_vsc_save_integration():
         assert control2_val_vsc5 == grid_reload.vsc_devices[5].control2_val
         assert control2_val_vsc6 == grid_reload.vsc_devices[6].control2_val
 
-        #remove the temp file
+        #delete the temp file
         os.remove("test_vsc_save_integration_temp.gridcal")
 
     except Exception as e:

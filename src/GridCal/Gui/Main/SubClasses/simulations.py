@@ -2130,7 +2130,7 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            # remove from the current simulations
+            # delete from the current simulations
             self.remove_simulation(SimulationTypes.OPFTimeSeries_run)
 
             if results is not None:
@@ -2321,7 +2321,7 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            # remove from the current simulations
+            # delete from the current simulations
             self.remove_simulation(SimulationTypes.OPF_NTC_TS_run)
 
             if results is not None:
@@ -2362,7 +2362,7 @@ class SimulationsMain(TimeEventsMain):
                 self.show_error_toast('There are no PTDF results :/')
 
         else:
-            # delete the markers
+            # delete_with_dialogue the markers
             self.clear_big_bus_markers()
 
     def post_run_find_node_groups(self):
@@ -2497,7 +2497,7 @@ class SimulationsMain(TimeEventsMain):
 
             else:
 
-                # delete the red dots
+                # delete_with_dialogue the red dots
                 self.clear_big_bus_markers()
         else:
             pass
@@ -2857,7 +2857,7 @@ class SimulationsMain(TimeEventsMain):
             # expand the clusters
             results.expand_clustered_results()
 
-            # remove from the current simulations
+            # delete from the current simulations
             self.remove_simulation(SimulationTypes.NodalCapacityTimeSeries_run)
 
             if results is not None:

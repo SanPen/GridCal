@@ -44,11 +44,17 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                                       draw_labels=draw_labels)
         QGraphicsItemGroup.__init__(self)
 
-        self.editor: GridMapWidget = editor  # reassign to make clear the editor type
-
         self.nodes_list: List[LineLocationGraphicItem] = list()
         self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
+
+    @property
+    def api_object(self) -> Union[BRANCH_TYPES, FluidPath]:
+        return self._api_object
+
+    @property
+    def editor(self) -> GridMapWidget:
+        return self._editor
 
     def set_width_scale(self, width: float, arrow_width: float):
         """
@@ -68,7 +74,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         Remove all segments from the scene
         """
         for segment in self.segments_list:
-            self.editor.remove_only_graphic_element(segment)
+            self.editor._remove_from_scene(segment)
 
         self.segments_list = list()
 
@@ -77,7 +83,7 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         Remove all the nodes from the scene
         """
         for node in self.nodes_list:
-            self.editor.remove_from_scene(node)
+            self.editor._remove_from_scene(node)
 
         self.nodes_list = list()
 
@@ -127,8 +133,8 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
 
         :return:
         """
-        for conector in self.segments_list:
-            conector.update_endings()
+        for connector in self.segments_list:
+            connector.update_endings()
 
     def end_update(self) -> None:
         """
@@ -158,10 +164,10 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                 loc_data = None
 
             graphic_obj = self.editor.create_line_location_graphic(line_container=self,
-                                                                   api_object=elm,
-                                                                   lat=elm.lat if loc_data is None else loc_data.latitude,
-                                                                   lon=elm.long if loc_data is None else loc_data.longitude,
-                                                                   index=self.number_of_nodes())  # 2.7 ...
+                                                                    api_object=elm,
+                                                                    lat=elm.lat if loc_data is None else loc_data.latitude,
+                                                                    lon=elm.long if loc_data is None else loc_data.longitude,
+                                                                    index=self.number_of_nodes())  # 2.7 ...
 
             self.register_new_node(node=graphic_obj)
 
@@ -215,8 +221,8 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
                 connection_elements.append(substation_to_graphics)
                 substation_to_graphics.line_container = self
 
-        br_scale = self.editor.get_branch_width()
-        arrow_scale = self.editor.get_arrow_scale()
+        # br_scale = self.editor.get_branch_width()
+        # arrow_scale = self.editor.get_arrow_scale()
 
         # second pass: create the segments
         for i in range(1, len(connection_elements)):
@@ -231,9 +237,6 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
 
-            # segment_graphic_object.set_width(br_scale * segment_graphic_object.width)  # Assign the pen to the line item
-            # segment_graphic_object.set_arrow_sizes(arrow_scale)
-
             # register the segment in the line
             self.add_segment(segment=segment_graphic_object)
 
@@ -241,8 +244,6 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
         self.update_connectors()
-
-        # self.editor.update_device_sizes()
 
     def substation_to(self):
         """
@@ -290,10 +291,10 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             # Create a new graphical node item
 
             graphic_obj = self.editor.create_line_location_graphic(line_container=self,
-                                                                   api_object=new_api_object,
-                                                                   lat=new_api_object.lat,
-                                                                   lon=new_api_object.long,
-                                                                   index=index)
+                                                                    api_object=new_api_object,
+                                                                    lat=new_api_object.lat,
+                                                                    lon=new_api_object.long,
+                                                                    index=index)
 
             idx = 0
 
@@ -339,10 +340,10 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             # Create a new graphical node item
 
             graphic_obj = self.editor.create_line_location_graphic(line_container=self,
-                                                                   api_object=new_api_object,
-                                                                   lat=new_api_object.lat,
-                                                                   lon=new_api_object.long,
-                                                                   index=0)
+                                                                    api_object=new_api_object,
+                                                                    lat=new_api_object.lat,
+                                                                    lon=new_api_object.long,
+                                                                    index=0)
 
             # Add the node to the nodes list
             self.nodes_list.insert(0, graphic_obj)
@@ -385,10 +386,10 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
             # Create a new graphical node item
 
             graphic_obj = self.editor.create_line_location_graphic(line_container=self,
-                                                                   api_object=new_api_object,
-                                                                   lat=new_api_object.lat,
-                                                                   lon=new_api_object.long,
-                                                                   index=index)
+                                                                    api_object=new_api_object,
+                                                                    lat=new_api_object.lat,
+                                                                    lon=new_api_object.long,
+                                                                    index=index)
 
             idx = 0
 
@@ -532,5 +533,22 @@ class MapLineContainer(GenericDiagramWidget, QGraphicsItemGroup):
         # Update the line's length property
         if total_length > 0.0:
             self.api_object.length = total_length
-            
+
         return total_length
+
+    def get_extra_graphics(self):
+        """
+        This function gets the graphic objects associated to a MapLineContainer
+        return: The list of the associated graphic objects, which are the nodes and segments of the line.
+        """
+        return self.segments_list + self.nodes_list
+
+    def delete(self):
+        """
+        Delete this object and all the other objects
+        """
+        for segment in self.segments_list:
+            segment.delete_from_associations()
+
+        self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
+

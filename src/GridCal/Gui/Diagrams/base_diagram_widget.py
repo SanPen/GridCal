@@ -3,15 +3,17 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import List, Dict, Union, Tuple, Callable, Generator,TYPE_CHECKING
+from typing import List, Set, Dict, Union, Tuple, Generator, TYPE_CHECKING
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QAbstractItemView
+from PySide6.QtWidgets import (QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QAbstractItemView,
+                               QGraphicsItem)
 
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Branches.line import Line
@@ -32,6 +34,7 @@ from GridCalEngine.enumerations import SimulationTypes, ResultTypes
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager, ALL_GRAPHICS
+from GridCal.Gui.general_dialogues import DeleteDialogue
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.object_model import ObjectsModel
 
@@ -81,7 +84,7 @@ def qimage_to_cv(qimage: QImage, logger: Logger, force_disk=False) -> np.ndarray
     Convert a image from Qt to an OpenCV image
     :param qimage: Qimage
     :param logger: Logger
-    :param force_disk: if true, the image is converted by saving to disk and loading again with opencv
+    :param force_disk: if true, the image is converted by saving to disk and loading again with open-cv
     :return: OpenCv matrix
     """
     width = qimage.width()
@@ -94,7 +97,7 @@ def qimage_to_cv(qimage: QImage, logger: Logger, force_disk=False) -> np.ndarray
     else:
         try:
             # convert picture using the memory
-            # we need to remove the alpha channel, otherwise the video frame is not saved
+            # we need to delete the alpha channel, otherwise the video frame is not saved
             cv_mat = np.array(qimage.constBits()).reshape(height, width, 4).astype(np.uint8)[:, :, :3]
 
             return cv_mat
@@ -220,8 +223,7 @@ class BaseDiagramWidget(QSplitter):
         # video pointer
         self._video: Union[None, cv2.VideoWriter] = None
 
-
-    def items(self) -> Generator[ALL_GRAPHICS, None, None] :
+    def items(self) -> Generator[ALL_GRAPHICS, None, None]:
         """
         Iterable through all graphics registered in the graphics manager
         :return: ALL_GRAPHICS one by one
@@ -246,6 +248,158 @@ class BaseDiagramWidget(QSplitter):
         :return:
         """
         self.diagram.name = val
+
+    def _get_selected(self) -> List[GenericDiagramWidget]:
+        """
+
+        :return:
+        """
+        print(f"'get_selected' Not implemented for {str(self)}")
+        return list()
+
+    def _get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get a list of the API objects from the selection
+        :return: List[ALL_DEV_TYPES]
+        """
+        return list()
+
+    def _remove_from_scene(self, graphic_object: QGraphicsItem | GenericDiagramWidget) -> None:
+        """
+        Remove item from the diagram scene
+        :param graphic_object: Graphic object associated
+        """
+        print(f"'remove_from_scene' Not implemented for {str(self)}")
+
+    def remove_element(self,
+                       device: ALL_DEV_TYPES,
+                       graphic_object: GenericDiagramWidget | None = None,
+                       delete_from_db: bool = False) -> bool:
+        """
+        Remove device from the diagram and the database.
+        If removing from the database, this propagates to all diagrams
+        :param device: EditableDevice
+        :param graphic_object: optionally provide the graphics object associated
+        :param delete_from_db: Delete the element also from the database?
+        :return: True if managed to delete_with_dialogue the object
+        """
+        if graphic_object is not None and device is not None:
+
+            # Unregister this object from other objects that have references of it
+            # i.e. unregister a line from the 2 buses that host connections to it
+            # i.e. unregister a load from the bus that points to it
+            graphic_object.delete_from_associations()
+
+            if delete_from_db:
+                self.circuit.delete_element(obj=graphic_object.api_object)
+
+            # # For any other associated, graphic, delete too
+            # for child_graphic in graphic_object.get_associated_widgets():
+            #
+            #     if delete_from_db:
+            #         self.circuit.delete_element(obj=child_graphic.api_object)
+            #
+            #     # Warning: recursive call for devices that may have further sub-graphics (i.e. the nexus)
+            #     self.remove_element(device=child_graphic.api_object,
+            #                         graphic_object=child_graphic,
+            #                         delete_from_db=delete_from_db)
+
+            # Delete any other QWidget that is associated to this, and that we don't know about explicitly
+            # i.e. the nexus of the loads, generators, etc...
+            for child_graphic in graphic_object.get_extra_graphics():
+                # simpler graphics associated, simply delete_with_dialogue
+                self._remove_from_scene(graphic_object=child_graphic)
+
+            # NOTE: This function already deleted from the database and other diagrams
+            self.delete_element_utility_function(device=device, propagate=delete_from_db)
+            self.object_editor_table.setModel(None)
+
+            return True
+        else:
+            self.gui.show_warning_toast(f"Graphic object {graphic_object} and device {device} are none")
+            self.object_editor_table.setModel(None)
+            return False
+
+    def delete_element_utility_function(self, device: ALL_DEV_TYPES, propagate: bool = True):
+        """
+        This function is a utility function to call this function in other diagrams through the GUI
+        :param device: ALL_DEV_TYPES
+        :param propagate: propagate
+        :return:
+        """
+        self.diagram.delete_device(device=device)
+        graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
+
+        if graphic_object is not None:
+            self._remove_from_scene(graphic_object)
+
+        if propagate:
+            self.gui.call_delete_db_element(caller=self, api_obj=device)
+
+    def delete_with_dialogue(self, selected: List[GenericDiagramWidget], delete_from_db: bool) -> Tuple[bool, bool]:
+        """
+        Delete elements with a dialogue of all the dependencies
+        :param selected: list of selected widgets
+        :param delete_from_db: initial value for the delete from db option
+        :return deleted? delete_from_db?
+        """
+        if len(selected) > 0:
+
+            # get the set of all affected GenericDiagramWidget instances
+            extended: Set[GenericDiagramWidget] = set()
+
+            for graphic_obj in selected:
+
+                if graphic_obj is not None:
+                    if isinstance(graphic_obj, GenericDiagramWidget):
+                        extended.add(graphic_obj)
+
+                    for child_graphic in graphic_obj.get_associated_widgets():
+                        if child_graphic is not None:
+                            extended.add(child_graphic)
+
+            extended_lst: List[GenericDiagramWidget] = list(extended)
+
+            dlg = DeleteDialogue(
+                names_list=[f"{graphic_obj.api_object.device_type.value}: "
+                              f"{graphic_obj.api_object.name}"
+                            for graphic_obj in extended_lst],
+                delete_from_db=delete_from_db,
+                title="Delete Selected",
+                checks=False,
+            )
+
+            dlg.setModal(True)
+            dlg.exec()
+
+            if dlg.is_accepted:
+                for graphic_object in extended_lst:
+                    self.remove_element(device=graphic_object.api_object,
+                                        graphic_object=graphic_object,
+                                        delete_from_db=dlg.delete_from_db)
+
+                return True, dlg.delete_from_db
+            else:
+                return False, False
+        else:
+            self.gui.show_warning_toast("Choose some elements to delete_with_dialogue")
+            return False, False
+
+    def delete_selected_from_widget(self, delete_from_db: bool) -> None:
+        """
+        Delete the selected items from the diagram
+        :param delete_from_db:
+        """
+        self.delete_with_dialogue(selected=self._get_selected(),
+                                  delete_from_db=delete_from_db)
+
+    def delete_diagram_elements(self, elements: List[ALL_DEV_TYPES]):
+        """
+        Delete device from the diagram registry
+        :param elements: list of elements to delete
+        """
+        for elm in elements:
+            self.delete_element_utility_function(elm)
 
     def set_time_index(self, time_index: Union[int, None]):
         """

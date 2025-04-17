@@ -129,7 +129,7 @@ class BaseMainGui(QMainWindow):
         self.lock_ui = False
         self.ui.progress_frame.setVisible(self.lock_ui)
 
-        self.stuff_running_now = list()
+        self.stuff_running_now: List[str] = list()
 
         self.session: SimulationSession = SimulationSession(name='GUI session')
 

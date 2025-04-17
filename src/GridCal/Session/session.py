@@ -271,7 +271,7 @@ class SimulationSession:
     def delete_driver(self, driver_type: SimulationTypes) -> None:
         """
         Get the results of the driver
-        :param driver_type: driver type to delete
+        :param driver_type: driver type to delete_with_dialogue
         """
         if driver_type in self.drivers.keys():
             del self.drivers[driver_type]

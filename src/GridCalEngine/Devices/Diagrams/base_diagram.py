@@ -295,7 +295,7 @@ class BaseDiagram:
             group.set_point(device, location)
             self.data[str(device.device_type.value)] = group
         else:
-            # the category does exists, add point
+            # the category does exist, add point
             d.set_point(device, location)  # the category, exists, just add
 
     def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:
@@ -309,7 +309,7 @@ class BaseDiagram:
             d = self.data.get(str(device.device_type.value), None)
 
             if d:
-                # the category does exist, delete from it
+                # the category does exist, delete_with_dialogue from it
                 return d.delete_device(device=device)
             else:
                 # not found so we're ok

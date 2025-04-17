@@ -116,10 +116,10 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         if sel_idx > -1:
 
-            # delete all the wires from the tower too
+            # delete_with_dialogue all the wires from the tower too
             self.tower_driver.delete_by_name(self.wires_table.wires[sel_idx])
 
-            # delete from the catalogue
+            # delete_with_dialogue from the catalogue
             self.wires_table.delete(sel_idx)
 
             self.compute()

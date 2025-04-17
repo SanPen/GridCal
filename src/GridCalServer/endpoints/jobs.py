@@ -153,7 +153,7 @@ async def jobs_list():
 async def delete_job(job_id: str):
     """
     Delete a specific job by ID
-    :param job_id: The ID of the job to delete
+    :param job_id: The ID of the job to delete_with_dialogue
     :return: A message indicating the result
     """
     if job_id in JOBS_LIST:

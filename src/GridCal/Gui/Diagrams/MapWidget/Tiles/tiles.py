@@ -384,7 +384,7 @@ class Tiles(BaseTiles):
         if not error:
             self.cache.add(key=(level, x, y), image=image)
 
-        # remove the request from the queued requests
+        # delete the request from the queued requests
         # note that it may not be there - a level change can flush the dict
         try:
             del self.queued_requests[(level, x, y)]

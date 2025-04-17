@@ -513,7 +513,7 @@ def convert_branches(circuit: MultiCircuit,
             # add device to the circuit
             circuit.add_dc_line(obj=dc_line)
 
-            # delete the line from the circuit
+            # delete_with_dialogue the line from the circuit
             circuit.delete_line(line)
             logger.add_info('Converted to DC line', line.name)
 

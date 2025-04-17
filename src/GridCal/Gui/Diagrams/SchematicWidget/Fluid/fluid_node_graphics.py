@@ -53,10 +53,8 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
 
-        self.api_object: FluidNode = fluid_node  # reassign for type to be clear
-
         # loads, shunts, generators, etc...
-        self.shunt_children = list()
+        self._child_graphics = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -102,9 +100,38 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
 
+    @property
+    def api_object(self) -> FluidNode:
+        return self._api_object
+
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
+
+    def get_associated_branch_graphics(self) -> List[GenericDiagramWidget]:
+        """
+        Get a list of all associated branch graphics
+        :return:
+        """
+        conn: List[GenericDiagramWidget] = self._terminal.get_hosted_graphics()
+
+        return conn
+
+    def get_associated_widgets(self) -> List[GenericDiagramWidget]:
+        """
+        Get a list of all associated graphics
+        :return:
+        """
+        conn: List[GenericDiagramWidget] = self.get_associated_branch_graphics()
+
+        for graphics in self._child_graphics:
+            conn.append(graphics)
+
+        return conn
+
     def set_api_object_color(self):
         """
-        Gether the color from the api object and apply
+        Gather the color from the api object and apply
         :return:
         """
         self.color = QColor(self.api_object.color) if self.api_object is not None else ACTIVE['fluid']
@@ -136,13 +163,13 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         super().mouseMoveEvent(event)
 
         self.editor.update_diagram_element(device=self.api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=self.w,
-                                           h=self.h,
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
-                                           graphic_object=self)
+                                            x=self.pos().x(),
+                                            y=self.pos().y(),
+                                            w=self.w,
+                                            h=self.h,
+                                            r=self.rotation(),
+                                            draw_labels=self.draw_labels,
+                                            graphic_object=self)
 
     def set_position(self, x, y):
         """
@@ -165,7 +192,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.label.setDefaultTextColor(ACTIVE['text'])
         # self.set_tile_color(self.color)
 
-        for e in self.shunt_children:
+        for e in self._child_graphics:
             if e is not None:
                 e.recolour_mode()
 
@@ -226,13 +253,13 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         # update editor diagram position
         self.editor.update_diagram_element(device=self.api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=self.w,
-                                           h=int(self.min_h),
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
-                                           graphic_object=self)
+                                            x=self.pos().x(),
+                                            y=self.pos().y(),
+                                            w=self.w,
+                                            h=int(self.min_h),
+                                            r=self.rotation(),
+                                            draw_labels=self.draw_labels,
+                                            graphic_object=self)
 
         return self.w, self.min_h
 
@@ -243,10 +270,10 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             Nothing
         """
         y0 = self.h + 40
-        n = len(self.shunt_children)
+        n = len(self._child_graphics)
         inc_x = self.w / (n + 1)
         x = inc_x
-        for elm in self.shunt_children:
+        for elm in self._child_graphics:
             elm.setPos(x - elm.w / 2, y0)
             x += inc_x
 
@@ -383,7 +410,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj.generator.name = f"Turbine @{self.api_object.name}"
 
         _grph = FluidTurbineGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -399,7 +426,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj.generator.name = f"Pump @{self.api_object.name}"
 
         _grph = FluidPumpGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -415,7 +442,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             api_obj.generator.name = f"P2X @{self.api_object.name}"
 
         _grph = FluidP2xGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -424,7 +451,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Delete all bus connections
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this fluid node',
+            ok = yes_no_question('Are you sure that you want to delete this fluid node',
                                  'Remove fluid node from schematic and DB' if delete_from_db else "Remove bus from schematic")
         else:
             ok = True
@@ -438,7 +465,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this fluid node',
+            ok = yes_no_question('Are you sure that you want to delete this fluid node',
                                  'Remove fluid node')
         else:
             ok = True

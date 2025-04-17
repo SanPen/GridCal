@@ -40,6 +40,10 @@ class SeriesReactanceGraphicItem(LineGraphicTemplateItem):
                                          api_object=api_object,
                                          draw_labels=draw_labels)
 
+    @property
+    def api_object(self) -> SeriesReactance:
+        return self._api_object
+
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -70,7 +74,7 @@ class SeriesReactanceGraphicItem(LineGraphicTemplateItem):
             del_icon = QIcon()
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
+            ra2.triggered.connect(self.delete)
 
             menu.addSeparator()
 

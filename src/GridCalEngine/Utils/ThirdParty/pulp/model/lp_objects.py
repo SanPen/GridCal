@@ -643,7 +643,7 @@ class LpAffineExpression(OrderedDict):
         :param constant:
         :param name:
         """
-        # to remove illegal characters from the names
+        # to delete illegal characters from the names
         illegal_chars = "-+[] ->/"
         self.expression = re.compile(f"[{re.escape(illegal_chars)}]")
         self.trans = str.maketrans("-+[] ", "_____")
@@ -833,7 +833,7 @@ class LpAffineExpression(OrderedDict):
             if val == 1:
                 term = f"{sign} {v.name}"
             else:
-                # adding zero to val to remove instances of negative zero
+                # adding zero to val to delete instances of negative zero
                 term = f"{sign} {val + 0:.12g} {v.name}"
 
             if self._count_characters(line) + len(term) > const.LpCplexLPLineSize:

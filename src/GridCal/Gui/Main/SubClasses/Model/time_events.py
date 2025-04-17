@@ -94,7 +94,7 @@ class TimeEventsMain(ObjectsTableMain):
         """
 
         if self.circuit.time_profile is not None:
-            quit_msg = "Are you sure that you want to remove the profiles?"
+            quit_msg = "Are you sure that you want to delete the profiles?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
                                                    QtWidgets.QMessageBox.StandardButton.No)

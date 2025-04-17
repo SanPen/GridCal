@@ -193,7 +193,7 @@ class ScriptingMain(IoMain):
         index = self.ui.sourceCodeTreeView.currentIndex()
         pth = self.python_fs_model.filePath(index)
         if os.path.exists(pth):
-            ok = yes_no_question(text="Do you want to delete {}?".format(pth), title="Delete source code file")
+            ok = yes_no_question(text="Do you want to delete_with_dialogue {}?".format(pth), title="Delete source code file")
 
             if ok:
                 os.remove(pth)
@@ -209,7 +209,7 @@ class ScriptingMain(IoMain):
 
         gf.add_menu_entry(menu=context_menu,
                           text="Delete",
-                          icon_path=":/Icons/icons/delete.svg",
+                          icon_path=":/Icons/icons/delete_with_dialogue.svg",
                           function_ptr=self.delete_source_code)
 
         # Convert global position to local position of the list widget

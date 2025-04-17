@@ -252,7 +252,7 @@ class SurrogateModel:
                        method='L-BFGS-B',
                        # --> changes with multiple objectives: instead of g, minimize the single_obj that comes out of scalarize
                        bounds=self.bounds,
-                       # jac=self.g_jac, # remove jacobian at first, until it is calculated
+                       # jac=self.g_jac, # delete jacobian at first, until it is calculated
                        options={'maxiter': 20, 'maxfun': 20})
         return res.x
 

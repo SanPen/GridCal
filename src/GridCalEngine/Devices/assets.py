@@ -1016,7 +1016,7 @@ class Assets:
         self.delete_winding(obj.winding1)
         self.delete_winding(obj.winding2)
         self.delete_winding(obj.winding3)
-        self.delete_bus(obj.bus0, delete_associated=True)  # also remove the middle bus
+        self.delete_bus(obj.bus0, delete_associated=True)  # also delete the middle bus
 
     # ------------------------------------------------------------------------------------------------------------------
     # Windings
@@ -1249,7 +1249,7 @@ class Assets:
         :param delete_associated: Delete the associated branches and injections
         """
 
-        # remove associated Branches in reverse order
+        # delete associated Branches in reverse order
         for branch_list in self.get_branch_lists():
             for i in range(len(branch_list) - 1, -1, -1):
                 if branch_list[i].bus_from == obj:
@@ -1263,7 +1263,7 @@ class Assets:
                     else:
                         branch_list[i].bus_to = None
 
-        # remove the associated injection devices
+        # delete the associated injection devices
         for inj_list in self.get_injection_devices_lists():
             for i in range(len(inj_list) - 1, -1, -1):
                 if inj_list[i].bus == obj:
@@ -1272,23 +1272,23 @@ class Assets:
                     else:
                         inj_list[i].bus = None
 
-        # remove associations in connectivity nodes
+        # delete associations in connectivity nodes
         deleted_cn = set()
         for cn in self._connectivity_nodes:
             if cn.bus == obj:
                 deleted_cn.add(cn)
-                self.delete_connectivity_node(cn)  # remove the association
+                self.delete_connectivity_node(cn)  # delete the association
 
-        # remove associations in bus_bars
+        # delete associations in bus_bars
         for bb in self.bus_bars:
             if bb.cn in deleted_cn:
                 self.delete_bus_bar(bb)
 
-        # remove the bus itself
+        # delete the bus itself
         try:
             self._buses.remove(obj)
         except ValueError:
-            print(f"Could not remove {obj.name}")
+            print(f"Could not delete {obj.name}")
 
     def get_buses_by(self, filter_elements: List[Union[dev.Area, dev.Country, dev.Zone]]) -> List[dev.Bus]:
         """
@@ -2574,7 +2574,7 @@ class Assets:
 
     def delete_line_template_dependency(self, obj):
         """
-        Search a branch template from lines and transformers and delete it
+        Search a branch template from lines and transformers and delete_with_dialogue it
         :param obj:
         :return:
         """
@@ -2743,7 +2743,7 @@ class Assets:
 
     def delete_transformer_template_dependency(self, obj: dev.TransformerType):
         """
-        Search a branch template from lines and transformers and delete it
+        Search a branch template from lines and transformers and delete_with_dialogue it
         :param obj:
         :return:
         """
@@ -2890,7 +2890,7 @@ class Assets:
         :return:
         """
         if len(selected_objects) > 1:
-            # remove the first SE from the list and keep it
+            # delete the first SE from the list and keep it
             base = selected_objects.pop(0)
 
             for elm in self.voltage_levels:
@@ -3399,7 +3399,7 @@ class Assets:
         except ValueError:
             pass
 
-        # delete references in the remedial action groups
+        # delete_with_dialogue references in the remedial action groups
         for rag in self._remedial_action_groups:
             if rag.conn_group is not None:
                 if rag.conn_group == obj:
@@ -3538,7 +3538,7 @@ class Assets:
         """
         Delete zone
         :param obj: index
-        :param del_group: delete the group?
+        :param del_group: delete_with_dialogue the group?
         """
         try:
             self._investments.remove(obj)
@@ -4177,7 +4177,7 @@ class Assets:
                 for assoc in to_del:
                     elm.emissions.remove(assoc)
 
-        # delete the gas
+        # delete_with_dialogue the gas
         try:
             self._emission_gases.remove(obj)
         except ValueError:
@@ -4224,7 +4224,7 @@ class Assets:
         Delete fluid node
         :param obj: FluidNode
         """
-        # delete dependencies
+        # delete_with_dialogue dependencies
         for fluid_path in reversed(self._fluid_paths):
             if fluid_path.source == obj or fluid_path.target == obj:
                 self.delete_fluid_path(fluid_path)
@@ -4875,7 +4875,7 @@ class Assets:
         """
         Delete the dependencies that may come with a branch
         :param obj: branch object or any object
-        :param delete_groups: delete empty groups too?
+        :param delete_groups: delete_with_dialogue empty groups too?
         :return:
         """
         for elm in self.contingencies:
@@ -5719,7 +5719,7 @@ class Assets:
     def delete_element(self, obj: ALL_DEV_TYPES) -> None:
         """
         Get set of elements and their parent nodes
-        :param obj: device object to delete
+        :param obj: device object to delete_with_dialogue
         :return: Nothing
         """
 
@@ -5891,6 +5891,9 @@ class Assets:
         elif obj.device_type == DeviceType.FacilityDevice:
             self.delete_facility(obj)
 
+        elif obj.device_type == DeviceType.LineLocation:
+            pass
+
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
@@ -6031,7 +6034,7 @@ class Assets:
 
     def clear(self) -> None:
         """
-        Clear the multi-circuit (remove the bus and branch objects)
+        Clear the multi-circuit (delete the bus and branch objects)
         """
 
         for key, elm_list in self.template_objects_dict.items():

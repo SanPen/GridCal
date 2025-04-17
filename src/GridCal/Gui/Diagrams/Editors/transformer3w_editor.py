@@ -92,7 +92,7 @@ class Transformer3WEditor(QDialog):
         super(Transformer3WEditor, self).__init__()
 
         # keep pointer to the line object
-        self.transformer_obj = tr3
+        self._api_object = tr3
 
         self.Sbase = Sbase
 
@@ -159,6 +159,10 @@ class Transformer3WEditor(QDialog):
 
         self.setWindowTitle('Transformer editor')
 
+    @property
+    def api_object(self) -> Transformer3W:
+        return self._api_object
+
     def accept_click(self):
         """
         Create transformer type and get the impedances
@@ -166,21 +170,21 @@ class Transformer3WEditor(QDialog):
         """
 
         if self.modify_on_accept:
-            self.transformer_obj.fill_from_design_values(V1=self.w1.vn_spinner.value(),
-                                                         V2=self.w2.vn_spinner.value(),
-                                                         V3=self.w3.vn_spinner.value(),
-                                                         Sn1=self.w1.sn_spinner.value(),
-                                                         Sn2=self.w2.sn_spinner.value(),
-                                                         Sn3=self.w3.sn_spinner.value(),
-                                                         Pcu12=self.w1.pcu_spinner.value(),
-                                                         Pcu23=self.w2.pcu_spinner.value(),
-                                                         Pcu31=self.w3.pcu_spinner.value(),
-                                                         Vsc12=self.w1.vsc_spinner.value(),
-                                                         Vsc23=self.w2.vsc_spinner.value(),
-                                                         Vsc31=self.w3.vsc_spinner.value(),
-                                                         Pfe=self.pfe_spinner.value(),
-                                                         I0=self.I0_spinner.value(),
-                                                         Sbase=self.Sbase)
+            self._api_object.fill_from_design_values(V1=self.w1.vn_spinner.value(),
+                                                     V2=self.w2.vn_spinner.value(),
+                                                     V3=self.w3.vn_spinner.value(),
+                                                     Sn1=self.w1.sn_spinner.value(),
+                                                     Sn2=self.w2.sn_spinner.value(),
+                                                     Sn3=self.w3.sn_spinner.value(),
+                                                     Pcu12=self.w1.pcu_spinner.value(),
+                                                     Pcu23=self.w2.pcu_spinner.value(),
+                                                     Pcu31=self.w3.pcu_spinner.value(),
+                                                     Vsc12=self.w1.vsc_spinner.value(),
+                                                     Vsc23=self.w2.vsc_spinner.value(),
+                                                     Vsc31=self.w3.vsc_spinner.value(),
+                                                     Pfe=self.pfe_spinner.value(),
+                                                     I0=self.I0_spinner.value(),
+                                                     Sbase=self.Sbase)
 
         self.accept()
 

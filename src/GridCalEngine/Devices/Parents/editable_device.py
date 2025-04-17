@@ -637,7 +637,7 @@ class EditableDevice:
                 # return the normal property
                 return getattr(self, prop.name)
 
-    def set_vaule(self, prop: GCProp, t_idx: Union[None, int], value: Any) -> None:
+    def set_value(self, prop: GCProp, t_idx: Union[None, int], value: Any) -> None:
         """
         Return value regardless of the property index
         :param prop: GCProp

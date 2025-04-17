@@ -12,7 +12,7 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_editor import GeneratorQCurveEditor
+from GridCal.Gui.Diagrams.Editors.generator_editor import GeneratorQCurveEditor
 from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
 from GridCal.Gui.gui_functions import add_menu_entry
@@ -40,40 +40,11 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                                               device_type_name='generator',
                                               w=40,
                                               h=40)
+        self.set_glyph(glyph=Circle(self, 40, 40, "G", self.update_nexus))
 
-        pen = QPen(self.color, self.width, self.style)
-
-        self.glyph = Circle(self)
-        self.glyph.setRect(0, 0, self.h, self.w)
-        self.glyph.setPen(pen)
-        self.addToGroup(self.glyph)
-
-        self.label = QGraphicsTextItem('G', parent=self.glyph)
-        self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 5)
-
-        self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_nexus(self.pos())
-
-    def recolour_mode(self):
-        """
-        Change the colour according to the system theme
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
-
-        pen = QPen(self.color, self.width, self.style)
-        self.glyph.setPen(pen)
-        self.nexus.setPen(pen)
-        self.label.setDefaultTextColor(self.color)
+    @property
+    def api_object(self) -> Generator:
+        return self._api_object
 
     def contextMenuEvent(self, event):
         """
@@ -134,18 +105,9 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
 
         menu.addSeparator()
 
-        # add_menu_entry(menu=menu,
-        #                text="Delete",
-        #                icon_path=":/Icons/icons/delete3.svg",
-        #                function_ptr=self.remove)
-
-        add_menu_entry(menu, text='Remove from schematic and DB',
-                       icon_path=":/Icons/icons/delete_db.svg",
-                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
-
-        add_menu_entry(menu, text='Remove from schematic',
+        add_menu_entry(menu, text='Remove',
                        icon_path=":/Icons/icons/delete_schematic.svg",
-                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=False))
+                       function_ptr=self.delete)
 
         add_menu_entry(menu=menu,
                        text="Convert to battery",
@@ -166,26 +128,7 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         ok = yes_no_question('Are you sure that you want to convert this generator into a battery?',
                              'Convert generator')
         if ok:
-            self.editor.convert_generator_to_battery(gen=self.api_object, graphic_object=self)
-
-    def enable_disable_toggle(self):
-        """
-
-        @return:
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.set_enable(False)
-            else:
-                self.set_enable(True)
-
-            if self.editor.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+            self._editor.convert_generator_to_battery(gen=self.api_object, graphic_object=self)
 
     def enable_disable_control_toggle(self):
         """
@@ -199,14 +142,14 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         Set regulation bus
         :return:
         """
-        self.editor.set_generator_control_bus(generator_graphics=self)
+        self._editor.set_generator_control_bus(generator_graphics=self)
 
     def set_regulation_cn(self):
         """
         Set regulation bus
         :return:
         """
-        self.editor.set_generator_control_cn(generator_graphics=self)
+        self._editor.set_generator_control_cn(generator_graphics=self)
 
     def clear_regulation_bus(self):
         """
@@ -221,36 +164,6 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         :return:
         """
         self.api_object.control_cn = None
-
-    def set_enable(self, val=True):
-        """
-        Set the enable value, graphically and in the API
-        @param val:
-        @return:
-        """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.label.setDefaultTextColor(self.color)
-
-    def plot(self):
-        """
-        Plot API objects profiles
-        """
-        # time series object from the last simulation
-        ts = self.editor.circuit.time_profile
-
-        # plot the profiles
-        self.api_object.plot_profiles(time=ts)
 
     def edit_q_curve(self):
         """
@@ -278,9 +191,9 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         :return:
         """
 
-        if self.editor.circuit.has_time_series:
+        if self._editor.circuit.has_time_series:
 
-            dlg = SolarPvWizard(time_array=self.editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
+            dlg = SolarPvWizard(time_array=self._editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
                                 peak_power=self.api_object.Pmax,
                                 latitude=self.api_object.bus.latitude,
                                 longitude=self.api_object.bus.longitude,
@@ -303,9 +216,9 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         :return:
         """
 
-        if self.editor.circuit.has_time_series:
+        if self._editor.circuit.has_time_series:
 
-            dlg = WindFarmWizard(time_array=self.editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
+            dlg = WindFarmWizard(time_array=self._editor.circuit.time_profile.strftime("%Y-%m-%d %H:%M").tolist(),
                                  peak_power=self.api_object.Pmax,
                                  latitude=self.api_object.bus.latitude,
                                  longitude=self.api_object.bus.longitude,
@@ -320,28 +233,3 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
                         raise Exception("Wrong length from the solar photovoltaic wizard")
         else:
             info_msg("You need to have time profiles for this function")
-
-    def rescale(self, scale: float = 1.0):
-        """
-
-        :param scale:
-        :return:
-        """
-        super().rescale(scale)
-        pen = QPen(self.color, self.width / scale, self.style)
-
-        self.glyph.setRect(0, 0, self.h / scale, self.w / scale)
-        self.glyph.setPen(pen)
-
-        font = QFont()
-        scaleFt = 12 / scale
-        if scaleFt < 1:
-            scaleFt = 1
-        font.setPointSize(scaleFt)  # Set the desired font size here
-
-        # Set the font for the QGraphicsTextItem
-
-        self.label.setFont(font)
-        self.label.setPos((self.h / scale) / 4, (self.w / scale) / 5)
-        # self.setRect(self.h / scale, self.w / scale)
-        self.setPos(0, (100 / scale))

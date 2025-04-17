@@ -600,7 +600,7 @@ class IoMain(ConfigurationMain):
     #
     #     :return:
     #     """
-    #     self.stuff_running_now.remove('file_open')
+    #     self.stuff_running_now.delete('file_open')
     #
     #     if self.open_file_thread_object is not None:
     #
@@ -856,7 +856,7 @@ class IoMain(ConfigurationMain):
 
             if self.circuit.valid_for_simulation() > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
-                                                       'Are you sure that you want to delete '
+                                                       'Are you sure that you want to delete_with_dialogue '
                                                        'the current grid and replace it?',
                                                        QtWidgets.QMessageBox.StandardButton.Yes,
                                                        QtWidgets.QMessageBox.StandardButton.No)

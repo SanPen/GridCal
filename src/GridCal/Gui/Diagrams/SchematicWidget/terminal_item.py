@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Union, Any, TYPE_CHECKING, Callable, Dict
+from typing import List, Union, Any, TYPE_CHECKING, Callable, Dict
 from PySide6.QtCore import Qt, QPointF, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import (QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
@@ -139,6 +139,13 @@ class BarTerminalItem(QGraphicsRectItem):
         """
         return self._hosting_connections
 
+    def get_hosted_graphics(self) ->List[LineGraphicTemplateItem]:
+        """
+        Get hosted graphics
+        :return:
+        """
+        return [graphic_obj for graphic_obj in self._hosting_connections.keys()]
+
     def update(self, rect: Union[QRectF, QRect] = ...):
         """
 
@@ -191,6 +198,9 @@ class BarTerminalItem(QGraphicsRectItem):
                                        device=graphic_item.api_object,
                                        delete_from_db=delete_from_db)
 
+        self.clear()
+
+    def clear(self):
         self._hosting_connections.clear()
 
     def __str__(self):
@@ -253,7 +263,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[None, CnGraphicItem] = None,
+                 parent: Union[CnGraphicItem, Transformer3WGraphicItem],
                  h=10.0,
                  w=10.0):
         """
@@ -274,10 +284,10 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         self.setPen(QPen(self.color, self.pen_width, self.style))
 
         # terminal parent object
-        self.parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
+        self.parent: Union[BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent
 
         # object -> callback
-        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[float], None]] = dict()
+        self._hosting_connections: Dict[LineGraphicTemplateItem, Callable[[QPointF], None]] = dict()
 
         self.editor = editor
 
@@ -338,7 +348,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
 
     def add_hosting_connection(self,
                                graphic_obj: LineGraphicTemplateItem,
-                               callback: Callable[[float], None]):
+                               callback: Callable[[QPointF], None]):
         """
         Add object graphically connected to the graphical bus
         :param graphic_obj: LineGraphicTemplateItem (or child of this)
@@ -356,6 +366,13 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         else:
             print(f'No such hosting connection {self.name} -> {graphic_obj}')
 
+    def get_hosted_graphics(self) ->List[LineGraphicTemplateItem]:
+        """
+        Get hosted graphics
+        :return:
+        """
+        return [graphic_obj for graphic_obj in self._hosting_connections.keys()]
+
     def update(self, rect: Union[QRectF, QRect] = ...):
         """
 
@@ -366,7 +383,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
 
     def process_callbacks(self, parent_pos: QPointF, mul: float = 1.0):
         """
-        Send the callbacks, ussually setEndPos or setStartPos functions from the line template
+        Send the callbacks, usually setEndPos or setStartPos functions from the line template
         :param parent_pos: Parent position
         :param mul: Multiplier
         """
@@ -404,6 +421,9 @@ class RoundTerminalItem(QGraphicsEllipseItem):
                                        device=graphic_item.api_object,
                                        delete_from_db=delete_from_db)
 
+        self.clear()
+
+    def clear(self):
         self._hosting_connections.clear()
 
     def __str__(self):

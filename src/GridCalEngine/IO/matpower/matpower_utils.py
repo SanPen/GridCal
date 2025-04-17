@@ -39,7 +39,7 @@ def txt2mat(txt: str, line_splitter=';', to_float=True):
     lines = txt.strip().split('\n')
     # del lines[-1]
 
-    # preprocess lines (remove the comments)
+    # preprocess lines (delete the comments)
     lines2 = list()
     for i, line in enumerate(lines):
         if line.lstrip()[0] != '%':
