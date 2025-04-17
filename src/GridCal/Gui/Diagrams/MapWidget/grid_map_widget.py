@@ -11,6 +11,7 @@ import json
 import numpy as np
 import math
 import pandas as pd
+from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton
@@ -1526,7 +1527,7 @@ class GridMapWidget(BaseDiagramWidget):
             return
 
         ok = yes_no_question(title='Transform waypoint to substation?',
-                             text='Do you want to transform to substaiton teh selected '
+                             text='Do you want to transform to substation the selected '
                                   'waypoint? This operation will split the line at the '
                                   'selected location, and will connect the new ends to '
                                   'the new substation.')
@@ -1580,58 +1581,79 @@ class GridMapWidget(BaseDiagramWidget):
 
                 linelocs1 = line.locations.data[:splitting_index]
                 linelocs2 = line.locations.data[splitting_index + 1:]
+
                 length1 = 0
                 length2 = 0
 
-                for i in range(len(linelocs1)):
-                    if i == 0:
+                if len(linelocs1) == 0:
 
-                        lat1 = line.bus_from.latitude
-                        lon1 = line.bus_from.longitude
-                        lat2 = linelocs1[i].lat
-                        lon2 = linelocs1[i].long
-                        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+                    lat1 = line.bus_from.latitude
+                    lon1 = line.bus_from.longitude
+                    lat2 = added_bus.latitude
+                    lon2 = added_bus.longitude
+                    length1 += haversine_distance(lat1, lon1, lat2, lon2)
 
-                    elif i == len(linelocs1) - 1:
+                else:
 
-                        lat1 = linelocs1[i].lat
-                        lon1 = linelocs1[i].long
-                        lat2 = added_bus.latitude
-                        lon2 = added_bus.longitude
-                        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+                    for i in range(len(linelocs1) + 1):
+                        if i == 0:
 
-                    else:
+                            lat1 = line.bus_from.latitude
+                            lon1 = line.bus_from.longitude
+                            lat2 = linelocs1[i].lat
+                            lon2 = linelocs1[i].long
+                            length1 += haversine_distance(lat1, lon1, lat2, lon2)
 
-                        lat1 = linelocs1[i].lat
-                        lon1 = linelocs1[i].long
-                        lat2 = linelocs1[i + 1].lat
-                        lon2 = linelocs1[i + 1].long
-                        length1 += haversine_distance(lat1, lon1, lat2, lon2)
+                        elif i == len(linelocs1):
 
-                for i in range(len(linelocs2)):
-                    if i == 0:
+                            lat1 = linelocs1[i - 1].lat
+                            lon1 = linelocs1[i - 1].long
+                            lat2 = added_bus.latitude
+                            lon2 = added_bus.longitude
+                            length1 += haversine_distance(lat1, lon1, lat2, lon2)
 
-                        lat1 = added_bus.latitude
-                        lon1 = added_bus.longitude
-                        lat2 = linelocs2[i].lat
-                        lon2 = linelocs2[i].long
-                        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+                        else:
 
-                    elif i == len(linelocs2) - 1:
+                            lat1 = linelocs1[i - 1].lat
+                            lon1 = linelocs1[i - 1].long
+                            lat2 = linelocs1[i].lat
+                            lon2 = linelocs1[i].long
+                            length1 += haversine_distance(lat1, lon1, lat2, lon2)
 
-                        lat1 = linelocs2[i].lat
-                        lon1 = linelocs2[i].long
-                        lat2 = line.bus_to.latitude
-                        lon2 = line.bus_to.longitude
-                        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+                if len(linelocs2) == 0:
 
-                    else:
+                    lat1 = added_bus.latitude
+                    lon1 = added_bus.longitude
+                    lat2 = line.bus_to.latitude
+                    lon2 = line.bus_to.longitude
+                    length2 += haversine_distance(lat1, lon1, lat2, lon2)
 
-                        lat1 = linelocs2[i].lat
-                        lon1 = linelocs2[i].long
-                        lat2 = linelocs2[i + 1].lat
-                        lon2 = linelocs2[i + 1].long
-                        length2 += haversine_distance(lat1, lon1, lat2, lon2)
+                else:
+
+                    for i in range(len(linelocs2) + 1):
+                        if i == 0:
+
+                            lat1 = added_bus.latitude
+                            lon1 = added_bus.longitude
+                            lat2 = linelocs2[i].lat
+                            lon2 = linelocs2[i].long
+                            length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                        elif i == len(linelocs2):
+
+                            lat1 = linelocs2[i - 1].lat
+                            lon1 = linelocs2[i - 1].long
+                            lat2 = line.bus_to.latitude
+                            lon2 = line.bus_to.longitude
+                            length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                        else:
+
+                            lat1 = linelocs2[i - 1].lat
+                            lon1 = linelocs2[i - 1].long
+                            lat2 = linelocs2[i].lat
+                            lon2 = linelocs2[i].long
+                            length2 += haversine_distance(lat1, lon1, lat2, lon2)
 
                 line1 = Line(name=line.name, code=line.code, bus_from=line.bus_from, bus_to=added_bus,
                              circuit_idx=line.circuit_idx, length=length1)
@@ -1639,7 +1661,8 @@ class GridMapWidget(BaseDiagramWidget):
                              circuit_idx=line.circuit_idx, length=length2)
 
                 template = line.template
-                template.compute()
+                if isinstance(template, OverheadLineType):
+                    template.compute()
                 line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
                 line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
@@ -1674,10 +1697,6 @@ class GridMapWidget(BaseDiagramWidget):
                 self.gui.show_error_toast(
                     'The waypoint selected is not included in the selected line\'s waypoint. Operation not performed.')
                 return
-
-
-
-
 
     def merge_selected_lines(self):
 
