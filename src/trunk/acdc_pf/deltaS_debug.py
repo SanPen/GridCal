@@ -105,5 +105,38 @@ def test_voltage_control_with_ltc() -> None:
         else:
             assert not ok
 
+def test_generator_Q_lims() -> None:
+    """
+    Check that we can shift the controls well when hitting Q limits
+    """
+    fname = os.path.join('src', 'tests', 'data', 'grids', '5Bus_LTC_FACTS_Fig4.7_Qlim.gridcal')
+
+    grid = gce.open_file(fname)
+
+    for control_q in [True]:
+        options = PowerFlowOptions(gce.SolverType.NR,
+                                   verbose=1,
+                                   control_q=control_q,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=False,
+                                   control_taps_phase=False,
+                                   control_remote_voltage=False,
+                                   apply_temperature_correction=False,
+                                   distributed_slack=False)
+
+        problem, solution = solve_generalized(grid=grid, options=options)
+
+        # check that the bus Q is at the limit
+        qbus = solution.Scalc[3].imag
+        ok = np.isclose(qbus, grid.generators[1].Qmin, atol=options.tolerance)
+        print(qbus, grid.generators[1].Qmin, options.tolerance)
+        if control_q:
+            assert ok
+        else:
+            assert not ok
+
+        assert solution.converged
+
 if __name__ == "__main__":
-    test_voltage_control_with_ltc()
+    # test_voltage_control_with_ltc()
+    test_generator_Q_lims()
