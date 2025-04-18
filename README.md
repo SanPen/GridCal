@@ -319,6 +319,8 @@ gce.save_cgmes_file(grid=my_grid,
 We are going to create a very simple 5-node grid from the excellent book
 *Power System Load Flow Analysis by Lynn Powell*.
 
+#### Lynn 5 buses
+
 ```python
 import GridCalEngine as gce
 
@@ -363,6 +365,8 @@ grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02))
 grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03))
 grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02))
 ```
+
+#### IEEE9
 
 A more complex example comes from the issue [354](https://github.com/SanPen/GridCal/issues/354). 
 In this example we create the IEEE9 bus grid from line and transformer definition information 
