@@ -914,7 +914,7 @@ def derivatives_tau_csc_numba(nbus, nbr, iPxsh,
 # original one
 @njit()
 def dSbus_dtau_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec,
-                   kconv: Vec, tap: CxVec, V: CxVec) -> CxCSC:
+                   tap: CxVec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
@@ -926,7 +926,6 @@ def dSbus_dtau_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxV
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
-    :param kconv: Array of "k2" parameters
     :param tap: Array of branch complex taps (m * exp(1j * tau)
     :param V: Array of complex voltages
     :return: dSbus_dsh
@@ -951,7 +950,7 @@ def dSbus_dtau_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxV
 
         # from side
         if f_idx >= 0:
-            yft_dsh = -Ys[k] / (-1j * kconv[k] * np.conj(tap[k]))
+            yft_dsh = -Ys[k] / (-1j * np.conj(tap[k]))
             Tx[nnz] = V[f] * np.conj(yft_dsh * V[t])
             Ti[nnz] = f_idx
             Tj[nnz] = k_counter
@@ -959,7 +958,7 @@ def dSbus_dtau_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxV
 
         # to side
         if t_idx >= 0:
-            ytf_dsh = -Ys[k] / (1j * kconv[k] * tap[k])
+            ytf_dsh = -Ys[k] / (1j * tap[k])
             Tx[nnz] = V[t] * np.conj(ytf_dsh * V[f])
             Ti[nnz] = t_idx
             Tj[nnz] = k_counter
@@ -972,8 +971,7 @@ def dSbus_dtau_csc(nbus, bus_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxV
 
 
 @njit()
-def dSf_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec, tap: CxVec,
-                 V: CxVec) -> CxCSC:
+def dSf_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, tap: CxVec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
@@ -985,7 +983,6 @@ def dSf_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
-    :param kconv: Array of "k2" parameters
     :param tap: Array of branch complex taps (m * exp(1j * tau)
     :param V: Array of complex voltages
     :return: dSf_dsh
@@ -1008,7 +1005,7 @@ def dSf_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
             t = T[k]
 
             # Partials of Ytt, Yff, Yft and Ytf w.r.t. Ɵ shift
-            yft_dsh = -Ys[k] / (-1j * kconv[k] * np.conj(tap[k]))
+            yft_dsh = -Ys[k] / (-1j * np.conj(tap[k]))
 
             # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
             Tx[nnz] = V[f] * np.conj(yft_dsh * V[t])
@@ -1023,8 +1020,7 @@ def dSf_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
 
 @njit()
-def dSt_dtau_csc(nbr, st_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec, tap: CxVec,
-                 V: CxVec) -> CxCSC:
+def dSt_dtau_csc(nbr, st_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, tap: CxVec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
@@ -1060,7 +1056,7 @@ def dSt_dtau_csc(nbr, st_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
             t = T[k]
 
             # Partials of Ytt, Yff, Yft and Ytf w.r.t. Ɵ shift
-            ytf_dsh = -Ys[k] / (1j * kconv[k] * tap[k])
+            ytf_dsh = -Ys[k] / (1j * tap[k])
 
             # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
             Tx[nnz] = V[t] * np.conj(ytf_dsh * V[f])
@@ -1162,7 +1158,7 @@ def derivatives_ma_csc_numba(nbus, nbr, iXxma, F, T, Ys, kconv, tap, tap_module,
 # original one
 @njit()
 def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: Vec,
-                 kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
+                 tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
     :param nbus:
@@ -1172,7 +1168,6 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
     :param Bc: Array of branch total susceptance values (sum of the two legs)
-    :param kconv: Array of "k2" parameters
     :param tap: Array of branch complex taps (m * exp(1j * tau)
     :param tap_module: Array of tap modules
     :param V: Array of complex voltages
@@ -1199,8 +1194,8 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
         # from side
         if f_idx >= 0:
             YttB = Ys[k] + 1j * (Bc[k] / 2)
-            dyff_dm = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))
-            dyft_dm = Ys[k] / (kconv[k] * tap_module[k] * np.conj(tap[k]))
+            dyff_dm = -2 * YttB / np.power(tap_module[k], 3)
+            dyft_dm = Ys[k] / (tap_module[k] * np.conj(tap[k]))
             Tx[nnz] = V[f] * np.conj(dyff_dm * V[f] + dyft_dm * V[t])
             Ti[nnz] = f_idx
             Tj[nnz] = k_counter
@@ -1208,7 +1203,7 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
         # to side
         if t_idx >= 0:
-            dytf_dm = Ys[k] / (kconv[k] * tap_module[k] * tap[k])
+            dytf_dm = Ys[k] / (tap_module[k] * tap[k])
             Tx[nnz] = V[t] * np.conj(dytf_dm * V[f])
             Ti[nnz] = t_idx
             Tj[nnz] = k_counter
@@ -1222,7 +1217,7 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
 @njit()
 def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: Vec,
-               kconv: Vec, tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
+               tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
@@ -1236,7 +1231,6 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
     :param Ys: Array of branch series admittances
     :param Bc: Array of branch total susceptance values
     :param Beq: Array of regulation susceptance of the FUBM model
-    :param kconv: Array of "k2" parameters
     :param tap: Array of branch complex taps (m * exp(1j * tau)
     :param tap_module: Array of tap modules
     :param V: Array of complex voltages
@@ -1261,8 +1255,8 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
             YttB = Ys[k] + 1j * (Bc[k] / 2.0)
 
             # Partials of Ytt, Yff, Yft and Ytf w.r.t.ma
-            dyff_dma = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))
-            dyft_dma = Ys[k] / (kconv[k] * tap_module[k] * np.conj(tap[k]))
+            dyff_dma = -2 * YttB /  np.power(tap_module[k], 3)
+            dyft_dma = Ys[k] / ( tap_module[k] * np.conj(tap[k]))
 
             # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
             Tx[nnz] = V[f] * np.conj(dyff_dma * V[f] + dyft_dma * V[t])
@@ -1277,7 +1271,7 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
 
 
 @njit()
-def dSt_dm_csc(nbr, st_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec,
+def dSt_dm_csc(nbr, st_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec,
                tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
@@ -1314,7 +1308,7 @@ def dSt_dm_csc(nbr, st_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kcon
             f = F[k]
             t = T[k]
 
-            dytf_dma = Ys[k] / (kconv[k] * tap_module[k] * tap[k])
+            dytf_dma = Ys[k] / (tap_module[k] * tap[k])
 
             # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
             Tx[nnz] = V[t] * np.conj(dytf_dma * V[f])

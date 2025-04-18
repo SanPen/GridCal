@@ -14,8 +14,8 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Utils.NumericalMethods.common import find_closest_number, make_complex
 from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff)
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method, \
-    compute_slack_distribution
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_for_generalized_method,
+                                                                                    compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
@@ -46,7 +46,6 @@ def adv_jacobian(nbus: int,
                  # Controllable Branch Indices
                  u_cbr_m: IntVec,
                  u_cbr_tau: IntVec,
-                 cbr: IntVec,
 
                  k_cbr_pf: IntVec,
                  k_cbr_pt: IntVec,
@@ -82,7 +81,7 @@ def adv_jacobian(nbus: int,
                  # Admittances and Connections
                  Ys: CxVec,
                  Bc: Vec,
-                 kconv: Vec,
+
                  yff_cbr: CxVec,
                  yft_cbr: CxVec,
                  ytf_cbr: CxVec,
@@ -157,10 +156,10 @@ def adv_jacobian(nbus: int,
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
 
-    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, kconv, tap, V).real
-    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
-    dP_dm__ = deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).real
-    dQ_dm__ = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).imag
+    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, tap, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, tap, V).imag
+    dP_dm__ = deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).imag
     # -------------
 
     dP_dPfvsc__ = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_p, u_vsc_pf, F_vsc)
@@ -241,15 +240,15 @@ def adv_jacobian(nbus: int,
     dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).real
     dQt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).imag
 
-    dPf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).real
-    dQf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).imag
-    dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, kconv, tap, tap_modules, V).real
-    dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, kconv, tap, tap_modules, V).imag
+    dPf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).imag
+    dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, tap, tap_modules, V).real
+    dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, tap, tap_modules, V).imag
 
-    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, kconv, tap, V).real
-    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
-    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, kconv, tap, V).real
-    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
+    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, tap, V).imag
+    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, tap, V).real
+    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, tap, V).imag
 
     dPf_dPfvsc_ = CSC(len(k_cbr_pf), len(u_vsc_pf), 0, False)
     dPf_dPtvsc_ = CSC(len(k_cbr_pf), len(u_vsc_pt), 0, False)
@@ -470,8 +469,7 @@ def calc_flows_summation_per_bus(nbus: int,
 @njit(cache=True)
 def calc_flows_active_branch_per_bus(nbus: int,
                                      F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
-                                     F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
-                                     get_solution: bool = False) -> CxVec:
+                                     F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
     """
     Summation of magnitudes per bus (complex)
     Used to add effects of VSCs and HVDCs to 
@@ -2540,9 +2538,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # only update once, from voltage regulated to PQ injection
                 i_k_vm = np.setdiff1d(np.arange(self.nc.nbus), self.i_u_vm)
                 pv = np.intersect1d(i_k_vm, self.i_k_p)
-                changed, i_u_vm, i_k_q = control_q_josep_method(self.Scalc, self.S0,
-                                                                pv, self.i_u_vm, self.i_k_q,
-                                                                self.Qmin, self.Qmax)
+                changed, i_u_vm, i_k_q = control_q_for_generalized_method(self.Scalc, self.S0,
+                                                                          pv, self.i_u_vm, self.i_k_q,
+                                                                          self.Qmin, self.Qmax)
 
                 if len(changed) > 0:
                     any_change = True
@@ -2868,7 +2866,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # Controllable Branch Indices
                 u_cbr_m=self.u_cbr_m,
                 u_cbr_tau=self.u_cbr_tau,
-                cbr=self.cbr,
 
                 k_cbr_pf=self.k_cbr_pf,
                 k_cbr_pt=self.k_cbr_pt,
@@ -2904,7 +2901,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 # Admittances and Connections
                 Ys=self.Ys,
                 Bc=self.nc.passive_branch_data.B,
-                kconv=self.nc.passive_branch_data.k,
+
                 yff_cbr=self.yff_cbr,
                 yft_cbr=self.yft_cbr,
                 ytf_cbr=self.ytf_cbr,
