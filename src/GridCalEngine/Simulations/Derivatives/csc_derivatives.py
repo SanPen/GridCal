@@ -1032,7 +1032,6 @@ def dSt_dtau_csc(nbr, st_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
-    :param kconv: Array of "k2" parameters
     :param tap: Array of branch complex taps (m * exp(1j * tau)
     :param V: Array of complex voltages
     :return: dSf_dsh

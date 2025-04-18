@@ -28,13 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added reshaping of the benders tracking matrices (fixed)">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/data/grids/case14_csh.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/newton_equivalence_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/newton_equivalence_utils.py" beforeDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed &quot;kconv&quot;">
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/matpower/matpower_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/csc_derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/csc_derivatives.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -269,7 +265,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Branches" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in test_power_flow_acdc_generalized.py">
+  <component name="RunManager" selected="Python tests.pytest in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1079,8 +1075,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest in test_power_flow_acdc_generalized.py" />
         <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python tests.pytest in test_power_flow_acdc_generalized.py" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.load_designer" />
         <item itemvalue="Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx" />
@@ -1952,7 +1948,7 @@
       <workItem from="1744653699575" duration="5156000" />
       <workItem from="1744701774777" duration="6535000" />
       <workItem from="1744789998617" duration="2124000" />
-      <workItem from="1744995572268" duration="2619000" />
+      <workItem from="1744995572268" duration="7122000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -2297,7 +2293,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="685" />
+    <option name="localTasksCounter" value="690" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2343,9 +2339,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added initialize_angles as a power flow option" />
-    <MESSAGE value="5.3.26" />
-    <MESSAGE value="5.3.27" />
     <MESSAGE value="Implemented the basic contingencies from gslv" />
     <MESSAGE value="Increased minimal gslv version" />
     <MESSAGE value="Protected compilation against none buses in generators, shunts and loads&#10;Improvements to the GUI behaviour" />
@@ -2358,7 +2351,6 @@
     <MESSAGE value="Added the ability to recolour the schematic with the design values" />
     <MESSAGE value="minor refactorings" />
     <MESSAGE value="Important opf refurbishing&#10;Added tests about generation, battery and load shedding" />
-    <MESSAGE value="Minimal refactorings" />
     <MESSAGE value="Added power by technology summary at the OPF results&#10;Much better implementation of the stacked results plot" />
     <MESSAGE value="Split storage vars, and now it works as expected" />
     <MESSAGE value="More refactoring" />
@@ -2368,7 +2360,11 @@
     <MESSAGE value="Fixed VL border issue" />
     <MESSAGE value="Refactored unused code" />
     <MESSAGE value="added x, y to the connectivity node&#10;refactored code" />
-    <option name="LAST_COMMIT_MESSAGE" value="added x, y to the connectivity node&#10;refactored code" />
+    <MESSAGE value="Improved README.md" />
+    <MESSAGE value="deleted newton related tests" />
+    <MESSAGE value="Minimal refactorings" />
+    <MESSAGE value="Removed &quot;kconv&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed &quot;kconv&quot;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3166,7 +3162,7 @@
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_opf_test_opf_load_shedding.coverage" NAME="pytest for test_opf.test_opf_load_shedding Coverage Results" MODIFIED="1744367881293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_continuation_power_flow.coverage" NAME="Nosetests for tests.test_continuation_power_flow Coverage Results" MODIFIED="1712338444431" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_power_flow_test_dc_pf_ieee14.coverage" NAME="Nosetests for test_power_flow.test_dc_pf_ieee14 Coverage Results" MODIFIED="1708459374133" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1744995635968" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1745002556503" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$LineBuilderDialogue.coverage" NAME="LineBuilderDialogue Coverage Results" MODIFIED="1742204493301" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_ptdf_test_ptdf_generation_contingencies.coverage" NAME="Nosetests for tests.test_ptdf.test_ptdf_generation_contingencies Coverage Results" MODIFIED="1710155943890" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$power_world_parser.coverage" NAME="power_world_parser Coverage Results" MODIFIED="1632911407871" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/IO" />
