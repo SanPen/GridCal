@@ -187,8 +187,8 @@ def adv_jacobian(nbus: int,
     dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc,
                                            T_vsc)
     dLossvsc_dPfvsc_ = deriv.dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf)
-    dLossvsc_dPtvsc_ = deriv.dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
-    dLossvsc_dQtvsc_ = deriv.dLossvsc_dQtvsc_josep_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
+    dLossvsc_dPtvsc_ = deriv.dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
+    dLossvsc_dQtvsc_ = deriv.dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
     dLossvsc_dPfhvdc_ = CSC(nvsc, nhvdc, 0, False)
     dLossvsc_dPthvdc_ = CSC(nvsc, nhvdc, 0, False)
     dLossvsc_dQfhvdc_ = CSC(nvsc, nhvdc, 0, False)
@@ -199,9 +199,9 @@ def adv_jacobian(nbus: int,
     # -------- ROW 4 (loss HVDCs) ---------
     dLosshvdc_dVa_ = CSC(nhvdc, len(i_u_va), 0, False)
 
-    dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_josep_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc)
-    dLosshvdc_dPfhvdc_ = deriv.dLosshvdc_dPfhvdc_josep_csc(nhvdc, V, hvdc_r, F_hvdc)
-    dLosshvdc_dPthvdc_ = deriv.dLosshvdc_dPthvdc_josep_csc(nhvdc)
+    dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc)
+    dLosshvdc_dPfhvdc_ = deriv.dLosshvdc_dPfhvdc_csc(nhvdc, V, hvdc_r, F_hvdc)
+    dLosshvdc_dPthvdc_ = deriv.dLosshvdc_dPthvdc_csc(nhvdc)
 
     dLosshvdc_dPfvsc_ = CSC(nhvdc, nvsc, 0, False)
     dLosshvdc_dPtvsc_ = CSC(nhvdc, nvsc, 0, False)
@@ -213,14 +213,14 @@ def adv_jacobian(nbus: int,
     dLosshvdc_dtau_ = CSC(nhvdc, len(u_cbr_tau), 0, False)
 
     # -------- ROW 5 (inj HVDCs) ---------
-    dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc)
+    dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc)
 
     dInjhvdc_dVm_ = CSC(nhvdc, len(i_u_vm), 0, False)
     dInjhvdc_dPfvsc_ = CSC(nhvdc, len(u_vsc_pf), 0, False)
     dInjhvdc_dPtvsc_ = CSC(nhvdc, len(u_vsc_pt), 0, False)
     dInjhvdc_dQtvsc_ = CSC(nhvdc, len(u_vsc_qt), 0, False)
 
-    dInjhvdc_dPfhvdc_ = deriv.dInjhvdc_dPfhvdc_josep_csc(nhvdc)
+    dInjhvdc_dPfhvdc_ = deriv.dInjhvdc_dPfhvdc_csc(nhvdc)
 
     dInjhvdc_dPthvdc_ = CSC(nhvdc, nhvdc, 0, False)
     dInjhvdc_dQfhvdc_ = CSC(nhvdc, nhvdc, 0, False)

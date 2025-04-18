@@ -145,177 +145,6 @@ def map_coordinates_numba(nrows, ncols, indptr, indices, F, T):
     return idx_f, idx_t
 
 
-# @njit()
-# def dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap,
-#                            tap_modules) -> CxCSC:
-#     """
-#     Derivative of the controllable branch power flows w.r.t. voltage magnitude.
-#     :param nbus: number of buses
-#     :param cbr: Array of controllable branch indices
-#     :param F_cbr: Array of branch "from" bus indices
-#     :param T_cbr: Array of branch "to" bus indices
-#     :param yff_cbr: Array of branch primitive admittances
-#     :param yft_cbr: Array of branch primitive admittances
-#     :param ytf_cbr: Array of branch primitive admittances
-#     :param ytt_cbr: Array of branch primitive admittances
-#     :param yff0: Array of constant branch primitive admittances 
-#     :param yft0: Array of constant branch primitive admittances
-#     :param ytf0: Array of constant branch primitive admittances
-#     :param ytt0: Array of constant branch primitive admittances
-#     :param V: Array of complex voltages
-#     :param tap: Array of branch complex taps (m * exp(1j * tau)
-#     :param tap_modules: Array of branch tap modules
-#     :return: dSbr_dVm
-#     """
-
-#     max_nnz = len(yff_cbr) * 4
-#     mat = CxCSC(nbus, nbus, max_nnz, False)
-#     Tx = np.empty(max_nnz, dtype=np.complex128)
-#     Ti = np.empty(max_nnz, dtype=np.int32)
-#     Tj = np.empty(max_nnz, dtype=np.int32)
-
-#     nbr = len(yff_cbr)
-#     tau = np.angle(tap)
-
-#     nnz = 0
-#     for _, c in enumerate(cbr):  # for each controllable branch ...
-#         f = F_cbr[c]
-#         t = T_cbr[c]
-#         Vf = V[f]
-#         Vt = V[t]
-
-#         Vm_f = np.abs(Vf)
-#         Vm_t = np.abs(Vt)
-
-#         # dSf/dVmf
-#         dsf_dvmf = (2 * Vm_f * np.conj(yff_cbr[c]) / (tap_modules[c] * tap_modules[c])
-#                     + Vf / Vm_f * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-#                     - 2 * Vm_f * np.conj(yff0[c])
-#                     - Vf / Vm_f * np.conj(Vt) * np.conj(yft0[c]))
-
-#         # dSf/dVmt
-#         dsf_dvmt = (Vf * np.conj(Vt) / Vm_t * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-#                     - Vf * np.conj(Vt) / Vm_t * np.conj(yft0[c]))
-
-#         # dSt/dVmf
-#         dst_dvmf = (Vt * np.conj(Vf) / Vm_f * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-#                     - Vt * np.conj(Vf) / Vm_f * np.conj(ytf0[c]))
-
-#         # dSt/dVmt
-#         dst_dvmt = (2 * Vm_t * np.conj(ytt_cbr[c])
-#                     + Vt / Vm_t * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-#                     - 2 * Vm_t * np.conj(ytt0[c])
-#                     - Vt / Vm_t * np.conj(Vf) * np.conj(ytf0[c]))
-
-#         # add to the triplets
-#         Tx[nnz] = dsf_dvmf
-#         Ti[nnz] = f
-#         Tj[nnz] = f
-#         nnz += 1
-
-#         Tx[nnz] = dsf_dvmt
-#         Ti[nnz] = f
-#         Tj[nnz] = t
-#         nnz += 1
-
-#         Tx[nnz] = dst_dvmf
-#         Ti[nnz] = t
-#         Tj[nnz] = f
-#         nnz += 1
-
-#         Tx[nnz] = dst_dvmt
-#         Ti[nnz] = t
-#         Tj[nnz] = t
-#         nnz += 1
-
-#     # convert to csc
-#     mat.fill_from_coo(Ti, Tj, Tx, nnz)
-
-#     return mat
-
-
-# @njit()
-# def dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0, ytf0, ytt0, V, tap,
-#                            tap_modules) -> CxCSC:
-#     """
-#     Derivative of the controllable branch power flows w.r.t. voltage angle.
-#     :param nbus: number of buses
-#     :param cbr: Array of controllable branch indices
-#     :param F_cbr: Array of branch "from" bus indices
-#     :param T_cbr: Array of branch "to" bus indices
-#     :param yff_cbr: Array of branch primitive admittances
-#     :param yft_cbr: Array of branch primitive admittances
-#     :param ytf_cbr: Array of branch primitive admittances
-#     :param ytt_cbr: Array of branch primitive admittances
-#     :param yff0: Array of constant branch primitive admittances 
-#     :param yft0: Array of constant branch primitive admittances
-#     :param ytf0: Array of constant branch primitive admittances
-#     :param ytt0: Array of constant branch primitive admittances
-#     :param V: Array of complex voltages
-#     :param tap: Array of branch complex taps (m * exp(1j * tau)
-#     :param tap_modules: Array of branch tap modules
-#     :return: dSbr_dVa
-#     """
-
-#     max_nnz = len(yff_cbr) * 4
-#     mat = CxCSC(nbus, nbus, max_nnz, False)
-#     Tx = np.empty(max_nnz, dtype=np.complex128)
-#     Ti = np.empty(max_nnz, dtype=np.int32)
-#     Tj = np.empty(max_nnz, dtype=np.int32)
-
-#     nbr = len(yff_cbr)
-#     tau = np.angle(tap)
-
-#     nnz = 0
-#     for _, c in enumerate(cbr):  # for each controllable branch ...
-#         f = F_cbr[c]
-#         t = T_cbr[c]
-#         Vf = V[f]
-#         Vt = V[t]
-
-#         # dSf/dVaf
-#         dsf_dvaf = (1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-#                     - 1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
-
-#         # dSf/dVat
-#         dsf_dvat = (-1j * Vf * np.conj(Vt) * np.conj(yft_cbr[c]) * np.exp(-1j * tau[c]) / tap_modules[c]
-#                     + 1j * Vf * np.conj(Vt) * np.conj(yft0[c]))
-
-#         # dSt/dVaf
-#         dst_dvaf = (-1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-#                     + 1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
-
-#         # dSt/dVat
-#         dst_dvat = (1j * Vt * np.conj(Vf) * np.conj(ytf_cbr[c]) * np.exp(1j * tau[c]) / tap_modules[c]
-#                     - 1j * Vt * np.conj(Vf) * np.conj(ytf0[c]))
-
-#         # add to the triplets
-#         Tx[nnz] = dsf_dvaf
-#         Ti[nnz] = f
-#         Tj[nnz] = f
-#         nnz += 1
-
-#         Tx[nnz] = dsf_dvat
-#         Ti[nnz] = f
-#         Tj[nnz] = t
-#         nnz += 1
-
-#         Tx[nnz] = dst_dvaf
-#         Ti[nnz] = t
-#         Tj[nnz] = f
-#         nnz += 1
-
-#         Tx[nnz] = dst_dvat
-#         Ti[nnz] = t
-#         Tj[nnz] = t
-#         nnz += 1
-
-#     # convert to csc
-#     mat.fill_from_coo(Ti, Tj, Tx, nnz)
-
-#     return mat
-
-
 @njit()
 def dSbr_dm_csc(nbus, u_cbr_m, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, tap, tap_modules) -> CxCSC:
     """
@@ -2380,7 +2209,7 @@ def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, 
 
 
 @njit()
-def dLosshvdc_dVm_josep_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc):
+def dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc):
     """
     dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
     """
@@ -2415,7 +2244,7 @@ def dLosshvdc_dVm_josep_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc):
 
 
 @njit()
-def dLosshvdc_dPfhvdc_josep_csc(nhvdc, V, hvdc_r, F_hvdc):
+def dLosshvdc_dPfhvdc_csc(nhvdc, V, hvdc_r, F_hvdc):
     """
     dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
     """
@@ -2445,7 +2274,7 @@ def dLosshvdc_dPfhvdc_josep_csc(nhvdc, V, hvdc_r, F_hvdc):
 
 
 @njit()
-def dLosshvdc_dPthvdc_josep_csc(nhvdc):
+def dLosshvdc_dPthvdc_csc(nhvdc):
     """
     dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
     """
@@ -2474,7 +2303,7 @@ def dLosshvdc_dPthvdc_josep_csc(nhvdc):
 
 
 @njit()
-def dInjhvdc_dPfhvdc_josep_csc(nhvdc):
+def dInjhvdc_dPfhvdc_csc(nhvdc):
     """
     dInjhvdc = Pf_hvdc - Pset - droop(Va[f] - Va[t])
     """
@@ -2537,7 +2366,7 @@ def dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf) -> CSC:
 
 
 @njit()
-def dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
+def dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
     """
     Compute the sparse matrix for the derivative of loss with respect to Pt in CSC format.
 
@@ -2585,7 +2414,7 @@ def dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) 
 
 
 @njit()
-def dLossvsc_dQtvsc_josep_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
+def dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
     """
     Compute the sparse matrix for the derivative of loss with respect to Qt in CSC format.
 
@@ -2628,106 +2457,6 @@ def dLossvsc_dQtvsc_josep_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt, Qt, T_vsc) 
 
     # Convert to CSC
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
-
-    return mat
-
-
-@njit()
-def dLossvsc_dPtvsc_csc(nvsc, i_u_pt, alpha2, alpha3, Vm, Pt, T_acdc) -> CSC:
-    """
-    Compute the sparse matrix for the derivative of loss with respect to Pt in CSC format.
-
-    :param nvsc: Number of VSCs (rows of the matrix).
-    :param i_u_pt: Column indices for the sparse matrix.
-    :param alpha2: Array of alpha2 coefficients.
-    :param alpha3: Array of alpha3 coefficients.
-    :param Vm: Voltage magnitudes at buses.
-    :param Pt: Active power flows.
-    :param T_acdc: Indices for AC/DC terminal buses.
-    :return: Sparse matrix in CSC format.
-    """
-    n_cols = len(i_u_pt)  # Number of columns (length of i_u_pt).
-    n_rows = nvsc  # Number of rows (equal to nvsc).
-    max_nnz = len(i_u_pt)  # Maximum number of non-zero entries.
-
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
-    Ti = np.empty(max_nnz, dtype=np.int32)
-    Tj = np.empty(max_nnz, dtype=np.int32)
-
-    nnz = 0  # Counter for non-zero entries
-
-    for k in range(nvsc):
-        t = T_acdc[k]
-        pq = Pt[k] * Pt[k]  # Assume no reactive power (Qt) in this context
-        pq_sqrt = np.sqrt(pq)
-        pq_sqrt += 1e-20  # Avoid division by zero
-
-        # Compute the derivative for this VSC
-        dLacdc_dPt = (
-                1.0
-                - alpha2[k] * Pt[k] / (Vm[t] * pq_sqrt)
-                - 2 * alpha3[k] * Pt[k] / (Vm[t] * Vm[t])
-        )
-        dLacdc_dPt *= -1
-
-        # Populate COO format arrays
-        Tx[nnz] = dLacdc_dPt
-        Ti[nnz] = k  # Row index corresponds to the current VSC
-        Tj[nnz] = k  # Column index aligns with VSC order
-        nnz += 1
-
-    # Convert to CSC
-    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
-
-    return mat.real
-
-
-@njit()
-def dLossvsc_dQtvsc_csc(nvsc, i_u_qt, alpha2, alpha3, Vm, Qt, T_acdc) -> CxCSC:
-    """
-    Compute the sparse matrix for the derivative of loss with respect to Qt in CSC format.
-
-    :param nvsc: Number of VSCs (rows of the matrix).
-    :param i_u_qt: Column indices for the sparse matrix.
-    :param alpha2: Array of alpha2 coefficients.
-    :param alpha3: Array of alpha3 coefficients.
-    :param Vm: Voltage magnitudes at buses.
-    :param Qt: Reactive power flows.
-    :param T_acdc: Indices for AC/DC terminal buses.
-    :return: Sparse matrix in CSC format.
-    """
-    n_cols = len(i_u_qt)  # Number of columns (length of i_u_qt).
-    n_rows = nvsc  # Number of rows (equal to nvsc).
-    max_nnz = len(i_u_qt)  # Maximum number of non-zero entries.
-
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
-    Ti = np.empty(max_nnz, dtype=np.int32)
-    Tj = np.empty(max_nnz, dtype=np.int32)
-
-    nnz = 0  # Counter for non-zero entries
-
-    for k in range(nvsc):
-        t = T_acdc[k]
-        pq = Qt[k] * Qt[k]  # Only reactive power (Qt) in this context
-        pq_sqrt = np.sqrt(pq)
-        pq_sqrt += 1e-20  # Avoid division by zero
-
-        # Compute the derivative for this VSC
-        _a = alpha2[k] * Qt[k] / (Vm[t] * pq_sqrt)
-        _b = 2 * alpha3[k] * Qt[k] / (Vm[t] * Vm[t])
-        dLacdc_dQt = -_a - _b
-        dLacdc_dQt *= -1
-
-        # Populate COO format arrays
-        Tx[nnz] = dLacdc_dQt
-        Ti[nnz] = k  # Row index corresponds to the current VSC
-        Tj[nnz] = k  # Column index aligns with VSC order
-        nnz += 1
-
-    # Convert to CSC
-    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
 
     return mat
 
@@ -2867,54 +2596,7 @@ def dInj_dVa_csc(nhvdc, i_u_va, hvdc_pset, hvdc_r, hvdc_droop, V, F_hvdc, T_hvdc
 
 
 @njit()
-def dLosshvdc_dVm_csc(nhvdc, i_u_vm, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
-    """
-    Compute the derivative of HVDC losses with respect to Vm in CSC format.
-
-    :param nhvdc: Number of HVDC systems (rows of the matrix).
-    :param i_u_vm: Column indices for the sparse matrix (corresponding to Vm).
-    :param Vm: Voltage magnitudes at buses.
-    :param Pf_hvdc: Active power flow on the from-side of HVDC.
-    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
-    :param hvdc_r: HVDC resistance values.
-    :param F_hvdc: From-bus indices for HVDC.
-    :param T_hvdc: To-bus indices for HVDC (not used here).
-    :return: Sparse matrix in CSC format.
-    """
-    n_cols = len(i_u_vm)  # Number of columns (length of i_u_vm).
-    n_rows = nhvdc  # Number of rows (equal to nhvdc).
-    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
-
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
-    Ti = np.empty(max_nnz, dtype=np.int32)
-    Tj = np.empty(max_nnz, dtype=np.int32)
-
-    nnz = 0  # Counter for non-zero entries
-
-    for k in range(nhvdc):
-        from_bus = F_hvdc[k]  # From-bus index
-        Vm_from = Vm[from_bus]  # Voltage magnitude at from-bus
-        Pf = Pf_hvdc[k]  # Active power flow on from-side
-        R = hvdc_r[k]  # HVDC resistance
-
-        # Compute the derivative for the from-side
-        dLosshvdc_dVm = -R * (Pf ** 2) / (Vm_from ** 2)
-
-        # Populate COO format arrays
-        Tx[nnz] = dLosshvdc_dVm
-        Ti[nnz] = k  # Row index corresponds to the current HVDC system
-        Tj[nnz] = from_bus  # Column index corresponds to the from-bus
-        nnz += 1
-
-    # Convert to CSC
-    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
-
-    return mat.real
-
-
-@njit()
-def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc) -> CSC:
+def dInjhvdc_dVa_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc) -> CSC:
     """
     Compute dInjhvdc_dVa in CSC format for HVDC systems.
 
@@ -2961,110 +2643,3 @@ def dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc) -> C
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
     return mat
-
-
-@njit()
-def dLosshvdc_dPfhvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
-    """
-    Compute the derivative of HVDC losses with respect to Pf_hvdc in CSC format.
-
-    :param nhvdc: Number of HVDC systems (rows and columns of the matrix).
-    :param hvdc_droop_idx: Indices corresponding to HVDC droop control.
-    :param Vm: Voltage magnitudes at buses.
-    :param Pf_hvdc: Active power flow on the from-side of HVDC.
-    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
-    :param hvdc_r: HVDC resistance values.
-    :param F_hvdc: From-bus indices for HVDC.
-    :param T_hvdc: To-bus indices for HVDC (not used here).
-    :return: Sparse matrix in CSC format.
-    """
-    n_cols = nhvdc  # The matrix is square, with dimensions nhvdc x nhvdc.
-    n_rows = nhvdc  # The number of rows matches nhvdc.
-    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
-
-    mat = CSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.empty(max_nnz, dtype=np.complex128)
-    Ti = np.empty(max_nnz, dtype=np.int32)
-    Tj = np.empty(max_nnz, dtype=np.int32)
-
-    nnz = 0  # Counter for non-zero entries
-
-    for k in range(nhvdc):
-        from_bus = F_hvdc[k]  # From-bus index
-        Vm_from = Vm[from_bus]  # Voltage magnitude at from-bus
-        Pf = Pf_hvdc[k]  # Active power flow on from-side
-        R = hvdc_r[k]  # HVDC resistance
-
-        # Compute the derivative
-        dLosshvdc_dPf = 1 - R * Pf / Vm_from
-
-        # Populate COO format arrays
-        Tx[nnz] = dLosshvdc_dPf
-        Ti[nnz] = k  # Row index corresponds to the current HVDC system
-        Tj[nnz] = k  # Column index corresponds to the current HVDC system
-        nnz += 1
-
-    # Convert to CSC
-    mat.fill_from_coo(Ti[:nnz], Tj[:nnz], Tx[:nnz], nnz)
-
-    return mat.real
-
-
-@njit()
-def dLosshvdc_dPthvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
-    """
-    Compute the derivative of HVDC losses with respect to Pt_hvdc in CSC format.
-
-    :param nhvdc: Number of HVDC systems (rows and columns of the matrix).
-    :param hvdc_droop_idx: Indices corresponding to HVDC droop control (not used here).
-    :param Vm: Voltage magnitudes at buses (not used here).
-    :param Pf_hvdc: Active power flow on the from-side of HVDC (not used here).
-    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
-    :param hvdc_r: HVDC resistance values (not used here).
-    :param F_hvdc: From-bus indices for HVDC (not used here).
-    :param T_hvdc: To-bus indices for HVDC (not used here).
-    :return: Sparse matrix in CSC format.
-    """
-    n_cols = nhvdc  # The matrix is square, with dimensions nhvdc x nhvdc.
-    n_rows = nhvdc  # The number of rows matches nhvdc.
-    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
-
-    mat = CSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.ones(max_nnz, dtype=np.complex128)  # All values are 1
-    Ti = np.arange(max_nnz, dtype=np.int32)  # Diagonal row indices
-    Tj = np.arange(max_nnz, dtype=np.int32)  # Diagonal column indices
-
-    # Simply a identity matrix
-    mat.fill_from_coo(Ti, Tj, Tx, max_nnz)
-
-    return mat.real
-
-
-@njit()
-def dLosshvdc_dPthvdc_csc(nhvdc, hvdc_droop_idx, Vm, Pf_hvdc, Pt_hvdc, hvdc_r, F_hvdc, T_hvdc) -> CSC:
-    """
-    Compute the derivative of HVDC losses with respect to Pt_hvdc in CSC format.
-
-    :param nhvdc: Number of HVDC systems (rows and columns of the matrix).
-    :param hvdc_droop_idx: Indices corresponding to HVDC droop control (not used here).
-    :param Vm: Voltage magnitudes at buses (not used here).
-    :param Pf_hvdc: Active power flow on the from-side of HVDC (not used here).
-    :param Pt_hvdc: Active power flow on the to-side of HVDC (not used here).
-    :param hvdc_r: HVDC resistance values (not used here).
-    :param F_hvdc: From-bus indices for HVDC (not used here).
-    :param T_hvdc: To-bus indices for HVDC (not used here).
-    :return: Sparse matrix in CSC format.
-    """
-    n_cols = nhvdc  # The matrix is square, with dimensions nhvdc x nhvdc.
-    n_rows = nhvdc  # The number of rows matches nhvdc.
-    max_nnz = nhvdc  # Maximum number of non-zero entries (one per HVDC system).
-
-    mat = CSC(n_rows, n_cols, max_nnz, False)
-    Tx = np.ones(max_nnz, dtype=np.complex128)  # All values are 1
-    Ti = np.arange(max_nnz, dtype=np.int32)  # Diagonal row indices
-    Tj = np.arange(max_nnz, dtype=np.int32)  # Diagonal column indices
-
-    # Convert to CSC
-    mat.fill_from_coo(Ti, Tj, Tx, max_nnz)
-
-    return mat.real
