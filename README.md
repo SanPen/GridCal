@@ -12,6 +12,7 @@ product of cutting-edge research.
 [![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
 [![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
 [![Downloads](https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/gridcal)
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg)](https://discord.gg/sVnwkaxN)
 
 GridCal started in 2015 with a clear objective: create a solid programming library and a user-friendly interface.
 This straightforward approach sparked many innovations — some driven by the necessity
@@ -181,6 +182,9 @@ description of the theory, the models and the objects.
 
 ### Understanding the program structure
 
+GridCal structure is composed by objects aranged in a "database" and  by "structs" at a deeper level.
+Learn [here](https://gridcal.readthedocs.io/en/latest/rst_source/development/structure.html) why.
+
 All simulations in GridCal are handled by the simulation drivers. The structure is as follows:
 
 <img height="250" src="doc/rst_source/figures/DataModelSimulation.png"/>
@@ -188,6 +192,8 @@ All simulations in GridCal are handled by the simulation drivers. The structure 
 Any driver is fed with the data model (`MultiCircuit` object), the respective driver options, and often another
 object relative to specific inputs for that driver. The driver is run, storing the driver results object.
 Although this may seem overly complicated, it has proven to be maintainable and very convenient.
+
+
 
 ### Snapshot vs. time series
 
@@ -357,6 +363,130 @@ grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02))
 grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03))
 grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02))
 ```
+
+A more complex example comes from the issue [354](https://github.com/SanPen/GridCal/issues/354). 
+In this example we create the IEEE9 bus grid from line and transformer definition information 
+instead of per-unit values:
+
+```python
+import numpy as np
+import GridCalEngine.api as gce
+
+# ieee9 grid
+grid9 = gce.MultiCircuit('IEEE-9', Sbase=100, fbase=50)
+
+# Add the buses
+bus1 = gce.Bus(name='Bus 1', Vnom=17.16, is_slack=True)
+bus2 = gce.Bus(name='Bus 2', Vnom=18.45)
+bus3 = gce.Bus(name='Bus 3', Vnom=14.145)
+bus4 = gce.Bus(name='Bus 4', Vnom=230)
+bus5 = gce.Bus(name='Bus 5', Vnom=230)
+bus6 = gce.Bus(name='Bus 6', Vnom=230)
+bus7 = gce.Bus(name='Bus 7', Vnom=230)
+bus8 = gce.Bus(name='Bus 8', Vnom=230)
+bus9 = gce.Bus(name='Bus 9', Vnom=230)
+
+grid9.add_bus(bus1)
+grid9.add_bus(bus2)
+grid9.add_bus(bus3)
+grid9.add_bus(bus4)
+grid9.add_bus(bus5)
+grid9.add_bus(bus6)
+grid9.add_bus(bus7)
+grid9.add_bus(bus8)
+grid9.add_bus(bus9)
+
+# add generators
+grid9.add_generator(bus1, gce.Generator(name='Slack Generator', P=0.0, vset=1.0))
+grid9.add_generator(bus2, gce.Generator(name='Gen2', P=163, Sbase=100, vset=1.0))
+grid9.add_generator(bus3, gce.Generator(name='Gen3', P=85, vset=1.0))
+
+# add loads
+grid9.add_load(bus5, gce.Load(name='Load 1', P=125, Q=50))
+grid9.add_load(bus6, gce.Load(name='Load 2', P=90, Q=30))
+grid9.add_load(bus8, gce.Load(name='Load 3', P=100, Q=35))
+
+# add transformers
+tr1 = gce.Transformer2W(bus_from=bus4,bus_to= bus1, name='T1', HV=230, LV=16.5, nominal_power=247.5, rate=247.5, tap_phase=150*np.pi/180)
+tr1.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=14.3, Sbase=grid9.Sbase)
+
+tr2 = gce.Transformer2W(bus_from=bus7, bus_to=bus2, name='T2', HV=230, LV=18, nominal_power=192, rate=192, tap_phase=150*np.pi/180)
+tr2.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=12.0, Sbase=grid9.Sbase)
+
+tr3 = gce.Transformer2W(bus_from=bus9, bus_to=bus3, name='T3', HV=230, LV=13.8, nominal_power=128, rate=128, tap_phase=150*np.pi/180)
+tr3.fill_design_properties(Pcu=0.0, Pfe=0.0, I0=0.0, Vsc=7.5, Sbase=grid9.Sbase)
+
+grid9.add_transformer2w(tr1)  # 0.5236 => 30°#2.618
+grid9.add_transformer2w(tr2)  # 2.618#2.618#0.5236
+grid9.add_transformer2w(tr3)  # 0.5236
+
+# add lines
+l1 = gce.Line(bus_from=bus4, bus_to=bus5, name='line 4-5')
+l1.fill_design_properties(r_ohm=5.3, x_ohm=45.0, c_nf=1060, length=1.0, Imax=1.0, freq=grid9.fBase, Sbase=grid9.Sbase)
+
+l2 = gce.Line(bus_from=bus4, bus_to=bus6, name='line 4-6')
+l2.fill_design_properties(r_ohm=9.0, x_ohm=48.7, c_nf=950, length=1.0, Imax=1.0, freq=grid9.fBase, Sbase=grid9.Sbase)
+
+l3 = gce.Line(bus_from=bus5, bus_to=bus7, name='line 5-7')
+l3.fill_design_properties(r_ohm=16.9, x_ohm=85.2, c_nf=1840, length=1.0, Imax=1.0, freq=grid9.fBase, Sbase=grid9.Sbase)
+
+l4 = gce.Line(bus_from=bus6, bus_to=bus9, name='line 6-9')
+l4.fill_design_properties(r_ohm=20.6, x_ohm=89.9, c_nf=2150, length=1.0, Imax=1.0, freq=grid9.fBase, Sbase=grid9.Sbase)
+
+l5 = gce.Line(bus_from=bus7, bus_to=bus8, name='line 7-8')
+l5.fill_design_properties(r_ohm=4.5, x_ohm=38.1, c_nf=870, length=1.0, Imax=1.0, freq=grid9.fBase, Sbase=grid9.Sbase)
+
+l6 = gce.Line(bus_from=bus8, bus_to=bus9, name='line 8-9')
+l6.fill_design_properties(r_ohm=6.3, x_ohm=53.3, c_nf=1260, length=1.0, Imax=1.0, freq=grid9.fBase, Sbase=grid9.Sbase)
+
+grid9.add_line(l1)
+grid9.add_line(l2)
+grid9.add_line(l3)
+grid9.add_line(l4)
+grid9.add_line(l5)
+grid9.add_line(l6)
+
+# save (optional)
+gce.save_file(grid9, "IEEE9.gridcal")
+
+# Power flow
+options = gce.PowerFlowOptions(gce.SolverType.NR,
+                               retry_with_other_methods=False,
+                               tolerance=1e-6,
+                               control_q=False,
+                               control_taps_phase=False,
+                               control_taps_modules=False,
+                               apply_temperature_correction=False,
+                               use_stored_guess=False,
+                               initialize_angles=True,
+                               verbose=False)
+
+power_flow = gce.PowerFlowDriver(grid9, options)
+power_flow.run()
+
+# print the results
+resultsDF = power_flow.results.get_bus_df()
+resultsDF['V (kV)'] = resultsDF['Vm'] * np.array([bus.Vnom for bus in grid9.buses])
+print(resultsDF)
+```
+
+Which yields:
+
+```aiignore
+|       | Vm (p.u.) | V(kV)      | Va (deg)   | P (MW)      | Q (MVAr)   |
+|-------|-----------|------------|------------|-------------|------------|
+| Bus 1 | 1         | 17.16      | 0          | 71.63834    | 27.114476  |
+| Bus 2 | 1         | 18.45      | 9.277313   | 163.000003  | 6.973044   |
+| Bus 3 | 1         | 14.145     | 4.657059   | 85.000001   | -10.669872 |
+| Bus 4 | 1.025709  | 235.91303  | 147.776277 | -0.000009   | 0.000006   |
+| Bus 5 | 0.995498  | 228.96449  | 146.002536 | -125.000009 | -49.999972 |
+| Bus 6 | 1.01254   | 232.884245 | 146.305199 | -90.000008  | -29.999988 |
+| Bus 7 | 1.025576  | 235.882375 | 153.715955 | 0.000034    | 0.000033   |
+| Bus 8 | 1.015629  | 233.594652 | 150.721498 | -100.000018 | -34.999992 |
+| Bus 9 | 1.032244  | 237.416038 | 151.959026 | 0.000016    | 0.000008   |
+```
+
+Exactly the same results as the example from the book of the issue.
 
 ### Power Flow
 
