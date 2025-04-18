@@ -2332,7 +2332,7 @@ def dInjhvdc_dPfhvdc_csc(nhvdc):
 
 
 @njit()
-def dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf) -> CSC:
+def dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf) -> CSC:
     """
     Compute dLossvsc_dPfvsc in CSC format with column indices aligned to u_vsc_pf.
 
