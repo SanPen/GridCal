@@ -13,7 +13,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Utils.NumericalMethods.common import find_closest_number, make_complex
-from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff, csc_add_cx)
+from GridCalEngine.Utils.Sparse.csc2 import (CSC, CxCSC, scipy_to_mat, sp_slice, csc_stack_2d_ff)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_josep_method, \
     compute_slack_distribution
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
@@ -88,9 +88,6 @@ def adv_jacobian(nbus: int,
                  ytf_cbr: CxVec,
                  ytt_cbr: CxVec,
 
-                 F_cbr: IntVec,
-                 T_cbr: IntVec,
-
                  Yi: IntVec,
                  Yp: IntVec,
                  Yx: CxVec) -> CSC:
@@ -140,8 +137,6 @@ def adv_jacobian(nbus: int,
     :param yft_cbr:
     :param ytf_cbr:
     :param ytt_cbr:
-    :param F_cbr:
-    :param T_cbr:
     :param Yi:
     :param Yp:
     :param Yx:
@@ -152,42 +147,15 @@ def adv_jacobian(nbus: int,
 
     # -------- ROW 1 + ROW 2 (Sbus) ---------
     # bus-bus derivatives (always needed)
-
-    # passive admittance contribution
     dSy_dVm_x, dSy_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, Vm)
     dS_dVm = CxCSC(nbus, nbus, len(dSy_dVm_x), False).set(Yi, Yp, dSy_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dSy_dVa_x), False).set(Yi, Yp, dSy_dVa_x)
-
-    # NOTE: remove the two derivatives below and the csc_add_cx,
-    # the derivatives dSy_dVm and dSy_dVa are enough
-    # active transformers contribution
-    # dScbr_dVm = deriv.dSbr_bus_dVm_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0,
-    #                                          ytf0, ytt0, V, tap, tap_modules)
-    # dScbr_dVa = deriv.dSbr_bus_dVa_josep_csc(nbus, cbr, F_cbr, T_cbr, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, yff0, yft0,
-    #                                          ytf0, ytt0, V, tap, tap_modules)
-
-    # dS_dVm = csc_add_cx(dSy_dVm, dScbr_dVm)
-    # dS_dVa = csc_add_cx(dSy_dVa, dScbr_dVa)
 
     dP_dVm__ = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
     dQ_dVm__ = sp_slice(dS_dVm.imag, i_k_q, i_u_vm)
 
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
-
-    # NOTE: these derivatives are the same as the original ones, just pass the kconv (should be 1 always),
-    # to be extracted from the passive branches data
-    # TODO: not use yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, but check what is needed in the original functions
-    # instead of yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, pass Ys, Bc, kconv
-    # dP_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_p, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-    #                                        tap, tap_modules, V).real
-    # dQ_dtau__ = deriv.dSbus_dtau_josep_csc(nbus, i_k_q, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-    #                                        tap, tap_modules, V).imag
-
-    # dP_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_p, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-    #                                    tap, tap_modules, V).real
-    # dQ_dm__ = deriv.dSbus_dm_josep_csc(nbus, i_k_q, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-    #                                    tap, tap_modules, V).imag
 
     dP_dtau__ =  deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, kconv, tap, V).real
     dQ_dtau__ =  deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
@@ -203,7 +171,6 @@ def adv_jacobian(nbus: int,
     dQ_dPtvsc__ = CSC(len(i_k_q), len(u_vsc_pt), 0, False)  # fully empty 
     dQ_dQtvsc__ = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_q, u_vsc_qt, T_vsc)
 
-    # hvdc_range = np.array(range(nhvdc))
     hvdc_range = np.arange(nhvdc)
     dP_dPfhvdc__ = deriv.dPQ_dPQft_csc(nbus, nhvdc, i_k_p, hvdc_range, F_hvdc)
     dP_dPthvdc__ = deriv.dPQ_dPQft_csc(nbus, nhvdc, i_k_p, hvdc_range, T_hvdc)
@@ -219,9 +186,9 @@ def adv_jacobian(nbus: int,
     dLossvsc_dVa_ = CSC(nvsc, len(i_u_va), 0, False)
     dLossvsc_dVm_ = deriv.dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf_vsc, Pt_vsc, Qt_vsc, F_vsc,
                                            T_vsc)
-    dLossvsc_dPfvsc_ = deriv.dLossvsc_dPfvsc_josep_csc(nvsc, u_vsc_pf)
-    dLossvsc_dPtvsc_ = deriv.dLossvsc_dPtvsc_josep_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
-    dLossvsc_dQtvsc_ = deriv.dLossvsc_dQtvsc_josep_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
+    dLossvsc_dPfvsc_ = deriv.dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf)
+    dLossvsc_dPtvsc_ = deriv.dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
+    dLossvsc_dQtvsc_ = deriv.dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt_vsc, Qt_vsc, T_vsc)
     dLossvsc_dPfhvdc_ = CSC(nvsc, nhvdc, 0, False)
     dLossvsc_dPthvdc_ = CSC(nvsc, nhvdc, 0, False)
     dLossvsc_dQfhvdc_ = CSC(nvsc, nhvdc, 0, False)
@@ -232,9 +199,9 @@ def adv_jacobian(nbus: int,
     # -------- ROW 4 (loss HVDCs) ---------
     dLosshvdc_dVa_ = CSC(nhvdc, len(i_u_va), 0, False)
 
-    dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_josep_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc)
-    dLosshvdc_dPfhvdc_ = deriv.dLosshvdc_dPfhvdc_josep_csc(nhvdc, V, hvdc_r, F_hvdc)
-    dLosshvdc_dPthvdc_ = deriv.dLosshvdc_dPthvdc_josep_csc(nhvdc)
+    dLosshvdc_dVm_ = deriv.dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc)
+    dLosshvdc_dPfhvdc_ = deriv.dLosshvdc_dPfhvdc_csc(nhvdc, V, hvdc_r, F_hvdc)
+    dLosshvdc_dPthvdc_ = deriv.dLosshvdc_dPthvdc_csc(nhvdc)
 
     dLosshvdc_dPfvsc_ = CSC(nhvdc, nvsc, 0, False)
     dLosshvdc_dPtvsc_ = CSC(nhvdc, nvsc, 0, False)
@@ -246,14 +213,14 @@ def adv_jacobian(nbus: int,
     dLosshvdc_dtau_ = CSC(nhvdc, len(u_cbr_tau), 0, False)
 
     # -------- ROW 5 (inj HVDCs) ---------
-    dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_josep_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc)
+    dInjhvdc_dVa_ = deriv.dInjhvdc_dVa_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc)
 
     dInjhvdc_dVm_ = CSC(nhvdc, len(i_u_vm), 0, False)
     dInjhvdc_dPfvsc_ = CSC(nhvdc, len(u_vsc_pf), 0, False)
     dInjhvdc_dPtvsc_ = CSC(nhvdc, len(u_vsc_pt), 0, False)
     dInjhvdc_dQtvsc_ = CSC(nhvdc, len(u_vsc_qt), 0, False)
 
-    dInjhvdc_dPfhvdc_ = deriv.dInjhvdc_dPfhvdc_josep_csc(nhvdc)
+    dInjhvdc_dPfhvdc_ = deriv.dInjhvdc_dPfhvdc_csc(nhvdc)
 
     dInjhvdc_dPthvdc_ = CSC(nhvdc, nhvdc, 0, False)
     dInjhvdc_dQfhvdc_ = CSC(nhvdc, nhvdc, 0, False)
@@ -263,35 +230,26 @@ def adv_jacobian(nbus: int,
     dInjhvdc_dtau_ = CSC(nhvdc, len(u_cbr_tau), 0, False)
 
     # -------- ROW 6 + ROW 7 + ROW 8 + ROW 9 (contr. branch powers) ---------
-    # NOTE: apparently we are not using the yff0, yft0, ytf0, ytt0 terms
-    # remove them and use the original derivatives
-    dPf_dVa_ = deriv.dSf_incr_dVa_csc(nbus, k_cbr_pf, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    dQf_dVa_ = deriv.dSf_incr_dVa_csc(nbus, k_cbr_qf, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
-    dPt_dVa_ = deriv.dSt_incr_dVa_csc(nbus, k_cbr_pt, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    dQt_dVa_ = deriv.dSt_incr_dVa_csc(nbus, k_cbr_qt, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
+    dPf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, yft_cbr, V, F, T).real
+    dQf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_qf, i_u_va, yft_cbr, V, F, T).imag
+    dPt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, ytf_cbr, V, F, T).real
+    dQt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_qt, i_u_va, ytf_cbr, V, F, T).imag
 
-    dPf_dVm_ = deriv.dSf_dVm_josep_csc(nbus, k_cbr_pf, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    dQf_dVm_ = deriv.dSf_dVm_josep_csc(nbus, k_cbr_qf, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
-    dPt_dVm_ = deriv.dSt_dVm_josep_csc(nbus, k_cbr_pt, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    dQt_dVm_ = deriv.dSt_dVm_josep_csc(nbus, k_cbr_qt, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
+    Va = np.angle(V)
+    dPf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_pf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).real
+    dQf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_qf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).imag
+    dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).real
+    dQt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).imag
 
-    dPf_dm_ = deriv.dSf_dm_josep_csc(nbr, k_cbr_pf, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).real
-    dQf_dm_ = deriv.dSf_dm_josep_csc(nbr, k_cbr_qf, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).imag
-    dPt_dm_ = deriv.dSt_dm_josep_csc(nbr, k_cbr_pt, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).real
-    dQt_dm_ = deriv.dSt_dm_josep_csc(nbr, k_cbr_qt, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).imag
+    dPf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).imag
+    dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, kconv, tap, tap_modules, V).real
+    dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, kconv, tap, tap_modules, V).imag
 
-    dPf_dtau_ = deriv.dSf_dtau_josep_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).real
-    dQf_dtau_ = deriv.dSf_dtau_josep_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).imag
-    dPt_dtau_ = deriv.dSt_dtau_josep_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).real
-    dQt_dtau_ = deriv.dSt_dtau_josep_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).imag
+    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, kconv, tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
+    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, kconv, tap, V).real
+    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
 
     dPf_dPfvsc_ = CSC(len(k_cbr_pf), len(u_vsc_pf), 0, False)
     dPf_dPtvsc_ = CSC(len(k_cbr_pf), len(u_vsc_pt), 0, False)
@@ -468,10 +426,11 @@ def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
 def calc_flows_summation_per_bus(nbus: int,
                                  F_br: IntVec, T_br: IntVec, Sf_br: CxVec, St_br: CxVec,
                                  F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
-                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
-                                 get_solution: bool = False) -> CxVec:
+                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
     """
     Summation of magnitudes per bus (complex)
+    Includes everything: VSCs, HVDCs, and all 
+    traditional branches (lines and controllable transformers)
     :param nbus:
     :param F_br:
     :param T_br:
@@ -491,10 +450,9 @@ def calc_flows_summation_per_bus(nbus: int,
     res = np.zeros(nbus, dtype=np.complex128)
 
     # Add branches
-    if get_solution:
-        for i in range(len(F_br)):
-            res[F_br[i]] += Sf_br[i]
-            res[T_br[i]] += St_br[i]
+    for i in range(len(F_br)):
+        res[F_br[i]] += Sf_br[i]
+        res[T_br[i]] += St_br[i]
 
     # Add HVDC
     for i in range(len(F_hvdc)):
@@ -508,6 +466,41 @@ def calc_flows_summation_per_bus(nbus: int,
 
     return res
 
+
+@njit(cache=True)
+def calc_flows_active_branch_per_bus(nbus: int,
+                                    F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
+                                    F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
+                                    get_solution: bool = False) -> CxVec:
+    """
+    Summation of magnitudes per bus (complex)
+    Used to add effects of VSCs and HVDCs to 
+    the traditional branches (lines and controllable transformers)
+    :param nbus:
+    :param F_hvdc:
+    :param T_hvdc:
+    :param Sf_hvdc:
+    :param St_hvdc:
+    :param F_vsc:
+    :param T_vsc:
+    :param Pf_vsc:
+    :param St_vsc:
+    :return:
+    """
+
+    res = np.zeros(nbus, dtype=np.complex128)
+
+    # Add HVDC
+    for i in range(len(F_hvdc)):
+        res[F_hvdc[i]] += Sf_hvdc[i]
+        res[T_hvdc[i]] += St_hvdc[i]
+
+    # Add VSC
+    for i in range(len(F_vsc)):
+        res[F_vsc[i]] += Pf_vsc[i]
+        res[T_vsc[i]] += St_vsc[i]
+
+    return res
 
 def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
     """
@@ -646,7 +639,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
 
         # Controllable branches ----------------------------------------------------------------------------------------
-        # TODO: check if we need all this and if it is correct
         ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)  # series admittance
         bc2 = make_complex(nc.passive_branch_data.G, nc.passive_branch_data.B) / 2.0  # shunt admittance
         vtap_f = nc.passive_branch_data.virtual_tap_f
@@ -658,10 +650,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.yft_cbr = -ys / (m0 * np.exp(-1.0j * tau0) * vtap_f * vtap_t)
         self.ytf_cbr = -ys / (m0 * np.exp(1.0j * tau0) * vtap_t * vtap_f)
         self.ytt_cbr = (ys + bc2) / (vtap_t * vtap_t)
-        # self.yff_cbr = (ys + bc2) / (vtap_f * vtap_f)
-        # self.yft_cbr = -ys / (vtap_f * vtap_t)
-        # self.ytf_cbr = -ys / (vtap_t * vtap_f)
-        # self.ytt_cbr = (ys + bc2) / (vtap_t * vtap_t)
+
         self.F_cbr = self.nc.passive_branch_data.F
         self.T_cbr = self.nc.passive_branch_data.T
 
@@ -669,15 +658,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Bc = self.nc.passive_branch_data.B
         self.vtap_f = self.nc.passive_branch_data.virtual_tap_f
         self.vtap_t = self.nc.passive_branch_data.virtual_tap_t
-
-        # # This is fully constant and hence we could precompute it
-        # m0 = self.nc.active_branch_data.tap_module.copy()
-        # tau0 = self.nc.active_branch_data.tap_angle.copy()
-
-        # self.yff0 = self.yff_cbr / (m0 * m0)
-        # self.yft0 = self.yft_cbr / (m0 * np.exp(-1.0j * tau0))
-        # self.ytf0 = self.ytf_cbr / (m0 * np.exp(1.0j * tau0))
-        # self.ytt0 = self.ytt_cbr
 
         self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.Cf,
                              Ct=self.nc.passive_branch_data.Ct,
@@ -2395,39 +2375,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                              vtap_f=self.nc.passive_branch_data.virtual_tap_f,
                              vtap_t=self.nc.passive_branch_data.virtual_tap_t)
 
-        # yff = (self.yff_cbr / (m2 * m2))
-        # yft = self.yft_cbr / (m2 * np.exp(-1.0j * tau2))
-        # ytf = self.ytf_cbr / (m2 * np.exp(1.0j * tau2))
-        # ytt = self.ytt_cbr
-
-        yff = (self.Ys + self.Bc/2) / (m2 * m2 * self.vtap_f * self.vtap_f)
-        yft = -self.Ys / (m2 * np.exp(-1.0j * tau2) * self.vtap_f * self.vtap_t)
-        ytf = -self.Ys / (m2 * np.exp(1.0j * tau2) * self.vtap_t * self.vtap_f)
-        ytt = (self.Ys + self.Bc/2) / (self.vtap_t * self.vtap_t)
-
-
-
         # Passive branches ---------------------------------------------------------------------------------------------
         V = polar_to_rect(Vm, Va)
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
         Scalc_passive = compute_power(self.Ybus, V)
-
-        Vf_cbr = V[self.F_cbr[self.cbr]]
-        Vt_cbr = V[self.T_cbr[self.cbr]]
-        yff_ = yff[self.cbr]
-        yft_ = yft[self.cbr]
-        ytf_ = ytf[self.cbr]
-        ytt_ = ytt[self.cbr]
-        # yff0_ = self.yff0[self.cbr]
-        # yft0_ = self.yft0[self.cbr]
-        # ytf0_ = self.ytf0[self.cbr]
-        # ytt0_ = self.ytt0[self.cbr]
-
-        # Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff_ - yff0_) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft_ - yft0_))
-        # St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_ - ytt0_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_ - ytf0_))
-
-        Sf_cbr = Vf_cbr * np.conj(Vf_cbr) * np.conj(yff_) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft_)
-        St_cbr = Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_)
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2507,27 +2458,21 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
         St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
-        # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        # Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
-        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
-            nbus=self.nc.bus_data.nbus,
-            F_br=self.F_cbr[self.cbr],
-            T_br=self.T_cbr[self.cbr],
-            Sf_br=Sf_cbr,
-            St_br=St_cbr,
-            F_hvdc=self.nc.hvdc_data.F,
-            T_hvdc=self.nc.hvdc_data.T,
-            Sf_hvdc=Sf_hvdc,
-            St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
-            T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=Pf_vsc,
-            St_vsc=St_vsc,
-            get_solution=False
-        )
+        Scalc_active = calc_flows_active_branch_per_bus(
+                            nbus=self.nc.bus_data.nbus,
+                            F_hvdc=self.nc.hvdc_data.F,
+                            T_hvdc=self.nc.hvdc_data.T,
+                            Sf_hvdc=Sf_hvdc,
+                            St_hvdc=St_hvdc,
+                            F_vsc=self.nc.vsc_data.F,
+                            T_vsc=self.nc.vsc_data.T,
+                            Pf_vsc=Pf_vsc,
+                            St_vsc=St_vsc)
 
+        self.Scalc = Scalc_active + Scalc_passive
+            
         dS = self.Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
@@ -2732,45 +2677,35 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def fx(self) -> Vec:
         """
-        Used? Yes! Needed when updating the controls
+        Used when updating the controls
         :return:
         """
 
         V = polar_to_rect(self.Vm, self.Va)
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
-        Scalc_passive = compute_power(self.Ybus, V)
 
-        # Controllable branches ----------------------------------------------------------------------------------------
-        # Power at the controlled branches
+        # Update Ybus with the new taps
         m2 = self.nc.active_branch_data.tap_module.copy()
         tau2 = self.nc.active_branch_data.tap_angle.copy()
         m2[self.u_cbr_m] = self.m
         tau2[self.u_cbr_tau] = self.tau
 
-        yff = (self.yff_cbr / (m2 * m2))
-        yft = self.yft_cbr / (m2 * np.exp(-1.0j * tau2))
-        ytf = self.ytf_cbr / (m2 * np.exp(1.0j * tau2))
-        ytt = self.ytt_cbr
+        self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.Cf,
+                             Ct=self.nc.passive_branch_data.Ct,
+                             Yshunt_bus=self.nc.shunt_data.get_injections_per_bus() / self.nc.Sbase,
+                             R=self.nc.passive_branch_data.R,
+                             X=self.nc.passive_branch_data.X,
+                             G=self.nc.passive_branch_data.G,
+                             B=self.nc.passive_branch_data.B,
+                             m=m2,
+                             tau=tau2,
+                             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+                             vtap_t=self.nc.passive_branch_data.virtual_tap_t)
 
-        Vf_cbr = V[self.F_cbr[self.cbr]]
-        Vt_cbr = V[self.T_cbr[self.cbr]]
-        yff_ = yff[self.cbr]
-        yft_ = yft[self.cbr]
-        ytf_ = ytf[self.cbr]
-        ytt_ = ytt[self.cbr]
-        # yff0_ = self.yff0[self.cbr]
-        # yft0_ = self.yft0[self.cbr]
-        # ytf0_ = self.ytf0[self.cbr]
-        # ytt0_ = self.ytt0[self.cbr]
+        Scalc_passive = compute_power(self.Ybus, V)
 
-        Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff_) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft_))
-        St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_))
-
-        # difference between the actual power and the power calculated with the passive term (initial admittance)
-        # AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        # AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
-        # AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
-
+        # Controllable branches ----------------------------------------------------------------------------------------
+        # Power at the controlled branches
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
                         F=self.nc.passive_branch_data.F,
@@ -2834,8 +2769,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
-        # Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
-
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = self.Vm[self.nc.hvdc_data.F]
         zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
@@ -2853,22 +2786,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc)
 
         # total nodal power --------------------------------------------------------------------------------------------
-        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
-            nbus=self.nc.bus_data.nbus,
-            F_br=self.F_cbr[self.cbr],
-            T_br=self.T_cbr[self.cbr],
-            Sf_br=Sf_cbr,
-            St_br=St_cbr,
-            F_hvdc=self.nc.hvdc_data.F,
-            T_hvdc=self.nc.hvdc_data.T,
-            Sf_hvdc=Sf_hvdc,
-            St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
-            T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=self.Pf_vsc,
-            St_vsc=St_vsc,
-            get_solution=False
-        )
+        Scalc_active = calc_flows_active_branch_per_bus(
+                            nbus=self.nc.bus_data.nbus,
+                            F_hvdc=self.nc.hvdc_data.F,
+                            T_hvdc=self.nc.hvdc_data.T,
+                            Sf_hvdc=Sf_hvdc,
+                            St_hvdc=St_hvdc,
+                            F_vsc=self.nc.vsc_data.F,
+                            T_vsc=self.nc.vsc_data.T,
+                            Pf_vsc=self.Pf_vsc,
+                            St_vsc=St_vsc)
+
+        self.Scalc = Scalc_active + Scalc_passive
 
         dS = self.Scalc - Sbus
 
@@ -2884,19 +2813,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qf_cbr - self.cbr_qf_set,
             Qt_cbr - self.cbr_qt_set
         ]
-
-        # Finally, update Ybus with the new taps
-        self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.Cf,
-                             Ct=self.nc.passive_branch_data.Ct,
-                             Yshunt_bus=self.nc.shunt_data.get_injections_per_bus() / self.nc.Sbase,
-                             R=self.nc.passive_branch_data.R,
-                             X=self.nc.passive_branch_data.X,
-                             G=self.nc.passive_branch_data.G,
-                             B=self.nc.passive_branch_data.B,
-                             m=m2,
-                             tau=tau2,
-                             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                             vtap_t=self.nc.passive_branch_data.virtual_tap_t)
 
         return self._f
 
@@ -2993,9 +2909,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 yft_cbr=self.yft_cbr,
                 ytf_cbr=self.ytf_cbr,
                 ytt_cbr=self.ytt_cbr,
-
-                F_cbr=self.F_cbr,
-                T_cbr=self.T_cbr,
 
                 Yi=self.Ybus.indices,
                 Yp=self.Ybus.indptr,
@@ -3113,8 +3026,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Sbus_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
         # Sbus_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
         # Sbus_br = Sf @ self.nc.passive_branch_data.Cf + St @ self.nc.passive_branch_data.Ct
-        #
-        # # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
         # Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
 
         # the trick here is that the mismatch of the branch flow summations is what we actually want;
@@ -3132,9 +3043,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             F_vsc=self.nc.vsc_data.F,
             T_vsc=self.nc.vsc_data.T,
             Pf_vsc=Pf_vsc,
-            St_vsc=St_vsc,
-            get_solution=True
-        )
+            St_vsc=St_vsc)
 
         return NumericPowerFlowResults(
             V=self.V,
