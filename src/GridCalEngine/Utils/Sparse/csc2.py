@@ -1487,44 +1487,6 @@ def csc_add_ff(A: CSC, B: CSC, alpha = 1.0, beta = 1.0) -> CSC:
     return C  # success; free workspace, return C
 
 
-@nb.njit()
-def csc_add_cx(A: CxCSC, B: CxCSC, alpha = 1.0, beta = 1.0) -> CxCSC:
-    """
-    C = alpha*A + beta*B
-
-    @param A: column-compressed matrix
-    @param B: column-compressed matrix
-    @param alpha: scalar alpha
-    @param beta: scalar beta
-    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)
-    """
-
-    m = A.n_rows
-    n = B.n_cols
-
-    w = np.zeros(m, dtype=np.int32)
-
-    x = np.zeros(n, dtype=np.complex128)  # get workspace
-
-    C = CxCSC(m, n, A.nnz + B.nnz, False)  # allocate result
-
-    nz = 0
-
-    for j in range(n):
-        C.indptr[j] = nz  # column j of C starts here
-
-        nz = csc_scatter_f(A.indptr, A.indices, A.data, j, alpha, w, x, j + 1, C.indices, nz)  # alpha*A(:,j)
-
-        nz = csc_scatter_f(B.indptr, B.indices, B.data, j, beta, w, x, j + 1, C.indices, nz)  # beta*B(:,j)
-
-        for p in range(C.indptr[j], nz):
-            C.data[p] = x[C.indices[p]]
-
-    C.indptr[n] = nz  # finalize the last column of C
-
-    return C  # success; free workspace, return C
-
-
 @nb.njit(cache=True)
 def csc_add_ff2(Am, An, Aindptr, Aindices, Adata, Bn, Bindptr, Bindices, Bdata):
     """
@@ -1559,8 +1521,6 @@ def csc_add_ff2(Am, An, Aindptr, Aindices, Adata, Bn, Bindptr, Bindices, Bdata):
     Cp[n] = nz  # finalize the last column of C
 
     return Cm, Cn, Cp, Ci, Cx, nz  # success; free workspace, return C
-
-
 
 
 @nb.njit(cache=True)
