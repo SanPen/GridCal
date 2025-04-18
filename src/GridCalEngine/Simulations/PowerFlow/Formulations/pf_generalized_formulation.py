@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Dict, Callable
 import numpy as np
 from numba import njit
 from scipy.sparse import diags
@@ -81,7 +81,7 @@ def adv_jacobian(nbus: int,
 
                  # Admittances and Connections
                  Ys: CxVec,
-                 Bc: CxVec,
+                 Bc: Vec,
                  kconv: Vec,
                  yff_cbr: CxVec,
                  yft_cbr: CxVec,
@@ -157,10 +157,10 @@ def adv_jacobian(nbus: int,
     dP_dVa__ = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dQ_dVa__ = sp_slice(dS_dVa.imag, i_k_q, i_u_va)
 
-    dP_dtau__ =  deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, kconv, tap, V).real
-    dQ_dtau__ =  deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
-    dP_dm__ =  deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).real
-    dQ_dm__ =  deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).imag
+    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_p, u_cbr_tau, F, T, Ys, kconv, tap, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
+    dP_dm__ = deriv.dSbus_dm_csc(nbus, i_k_p, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).imag
     # -------------
 
     dP_dPfvsc__ = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_p, u_vsc_pf, F_vsc)
@@ -469,9 +469,9 @@ def calc_flows_summation_per_bus(nbus: int,
 
 @njit(cache=True)
 def calc_flows_active_branch_per_bus(nbus: int,
-                                    F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
-                                    F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
-                                    get_solution: bool = False) -> CxVec:
+                                     F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
+                                     F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
+                                     get_solution: bool = False) -> CxVec:
     """
     Summation of magnitudes per bus (complex)
     Used to add effects of VSCs and HVDCs to 
@@ -501,6 +501,7 @@ def calc_flows_active_branch_per_bus(nbus: int,
         res[T_vsc[i]] += St_vsc[i]
 
     return res
+
 
 def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
     """
@@ -709,7 +710,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         cbr_qf_set = list()
         cbr_qt_set = list()
 
-        dic_old_to_new_bus = {val: idx for idx, val in enumerate(self.nc.bus_data.original_idx)}
+        dic_old_to_new_bus: Dict[int, int] = {int(val): idx
+                                              for idx, val in enumerate(self.nc.bus_data.original_idx)}
 
         # CONTROLLABLE BRANCH LOOP
         count_overl = 0
@@ -722,7 +724,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             if ctrl_m == TapModuleControl.Vm:
 
                 # Every bus controlled by m has to become a PQV bus
-                bus_idx = self.nc.active_branch_data.tap_controlled_buses[k]
+                bus_idx: int = int(self.nc.active_branch_data.tap_controlled_buses[k])
                 new_bus_idx = dic_old_to_new_bus[bus_idx]
                 # self.is_p_controlled[bus_idx] = True
                 # self.is_q_controlled[bus_idx] = True
@@ -2461,18 +2463,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # total nodal power --------------------------------------------------------------------------------------------
         Scalc_active = calc_flows_active_branch_per_bus(
-                            nbus=self.nc.bus_data.nbus,
-                            F_hvdc=self.nc.hvdc_data.F,
-                            T_hvdc=self.nc.hvdc_data.T,
-                            Sf_hvdc=Sf_hvdc,
-                            St_hvdc=St_hvdc,
-                            F_vsc=self.nc.vsc_data.F,
-                            T_vsc=self.nc.vsc_data.T,
-                            Pf_vsc=Pf_vsc,
-                            St_vsc=St_vsc)
+            nbus=self.nc.bus_data.nbus,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=Pf_vsc,
+            St_vsc=St_vsc)
 
         self.Scalc = Scalc_active + Scalc_passive
-            
+
         dS = self.Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
@@ -2654,12 +2656,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 self.is_va_controlled = self.nc.bus_data.is_va_controlled.copy()
                 self._analyze_branch_controls()
                 self.analyze_bus_controls()
+
                 # the composition of x may have changed, so recompute
                 x = self.var2x()
 
-                # vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.S0.real, types=self.bus_types)
-                # self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
-            #
             if any_change or branch_ctrl_change:
                 # recompute the error based on the new Scalc and S0
                 self._f = self.fx()
@@ -2787,15 +2787,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # total nodal power --------------------------------------------------------------------------------------------
         Scalc_active = calc_flows_active_branch_per_bus(
-                            nbus=self.nc.bus_data.nbus,
-                            F_hvdc=self.nc.hvdc_data.F,
-                            T_hvdc=self.nc.hvdc_data.T,
-                            Sf_hvdc=Sf_hvdc,
-                            St_hvdc=St_hvdc,
-                            F_vsc=self.nc.vsc_data.F,
-                            T_vsc=self.nc.vsc_data.T,
-                            Pf_vsc=self.Pf_vsc,
-                            St_vsc=St_vsc)
+            nbus=self.nc.bus_data.nbus,
+            F_hvdc=self.nc.hvdc_data.F,
+            T_hvdc=self.nc.hvdc_data.T,
+            Sf_hvdc=Sf_hvdc,
+            St_hvdc=St_hvdc,
+            F_vsc=self.nc.vsc_data.F,
+            T_vsc=self.nc.vsc_data.T,
+            Pf_vsc=self.Pf_vsc,
+            St_vsc=St_vsc)
 
         self.Scalc = Scalc_active + Scalc_passive
 
