@@ -230,47 +230,26 @@ def adv_jacobian(nbus: int,
     dInjhvdc_dtau_ = CSC(nhvdc, len(u_cbr_tau), 0, False)
 
     # -------- ROW 6 + ROW 7 + ROW 8 + ROW 9 (contr. branch powers) ---------
-    # TODO: change all these to use the original ones
-    # dPf_dVa_ = deriv.dSf_incr_dVa_csc(nbus, k_cbr_pf, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    # dQf_dVa_ = deriv.dSf_incr_dVa_csc(nbus, k_cbr_qf, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
-    # dPt_dVa_ = deriv.dSt_incr_dVa_csc(nbus, k_cbr_pt, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    # dQt_dVa_ = deriv.dSt_incr_dVa_csc(nbus, k_cbr_qt, i_u_va, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
-
     dPf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, yft_cbr, V, F, T).real
     dQf_dVa_ = deriv.dSf_dVa_csc(nbus, k_cbr_qf, i_u_va, yft_cbr, V, F, T).imag
     dPt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, ytf_cbr, V, F, T).real
     dQt_dVa_ = deriv.dSt_dVa_csc(nbus, k_cbr_qt, i_u_va, ytf_cbr, V, F, T).imag
 
-
-    # dSf_dVm_csc(nbus, br_indices, bus_indices, yff, yft, Vm, Va, F, T) -> CxCSC:
     Va = np.angle(V)
     dPf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_pf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).real
     dQf_dVm_ = deriv.dSf_dVm_csc(nbus, k_cbr_qf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).imag
     dPt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).real
     dQt_dVm_ = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).imag
 
-    # dPf_dVm_ = deriv.dSf_dVm_josep_csc(nbus, k_cbr_pf, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    # dQf_dVm_ = deriv.dSf_dVm_josep_csc(nbus, k_cbr_qf, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
-    # dPt_dVm_ = deriv.dSt_dVm_josep_csc(nbus, k_cbr_pt, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).real
-    # dQt_dVm_ = deriv.dSt_dVm_josep_csc(nbus, k_cbr_qt, i_u_vm, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr, V, F, T, tap, tap_modules).imag
+    dPf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, kconv, tap, tap_modules, V).imag
+    dPt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, kconv, tap, tap_modules, V).real
+    dQt_dm_ = deriv.dSt_dm_csc(nbr, k_cbr_qt, u_cbr_m, F, T, Ys, kconv, tap, tap_modules, V).imag
 
-    dPf_dm_ = deriv.dSf_dm_josep_csc(nbr, k_cbr_pf, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).real
-    dQf_dm_ = deriv.dSf_dm_josep_csc(nbr, k_cbr_qf, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).imag
-    dPt_dm_ = deriv.dSt_dm_josep_csc(nbr, k_cbr_pt, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).real
-    dQt_dm_ = deriv.dSt_dm_josep_csc(nbr, k_cbr_qt, u_cbr_m, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                     tap, tap_modules, V).imag
-
-    dPf_dtau_ = deriv.dSf_dtau_josep_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).real
-    dQf_dtau_ = deriv.dSf_dtau_josep_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).imag
-    dPt_dtau_ = deriv.dSt_dtau_josep_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).real
-    dQt_dtau_ = deriv.dSt_dtau_josep_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, yff_cbr, yft_cbr, ytf_cbr, ytt_cbr,
-                                         tap, tap_modules, V).imag
+    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, kconv, tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
+    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, kconv, tap, V).real
+    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, k_cbr_qt, u_cbr_tau, F, T, Ys, kconv, tap, V).imag
 
     dPf_dPfvsc_ = CSC(len(k_cbr_pf), len(u_vsc_pf), 0, False)
     dPf_dPtvsc_ = CSC(len(k_cbr_pf), len(u_vsc_pt), 0, False)
