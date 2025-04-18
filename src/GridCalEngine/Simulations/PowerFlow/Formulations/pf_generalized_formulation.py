@@ -468,10 +468,11 @@ def calcSt(k: IntVec, V: CxVec, F: IntVec, T: IntVec,
 def calc_flows_summation_per_bus(nbus: int,
                                  F_br: IntVec, T_br: IntVec, Sf_br: CxVec, St_br: CxVec,
                                  F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
-                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
-                                 get_solution: bool = False) -> CxVec:
+                                 F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec) -> CxVec:
     """
     Summation of magnitudes per bus (complex)
+    Includes everything: VSCs, HVDCs, and all 
+    traditional branches (lines and controllable transformers)
     :param nbus:
     :param F_br:
     :param T_br:
@@ -491,10 +492,9 @@ def calc_flows_summation_per_bus(nbus: int,
     res = np.zeros(nbus, dtype=np.complex128)
 
     # Add branches
-    if get_solution:
-        for i in range(len(F_br)):
-            res[F_br[i]] += Sf_br[i]
-            res[T_br[i]] += St_br[i]
+    for i in range(len(F_br)):
+        res[F_br[i]] += Sf_br[i]
+        res[T_br[i]] += St_br[i]
 
     # Add HVDC
     for i in range(len(F_hvdc)):
@@ -508,6 +508,41 @@ def calc_flows_summation_per_bus(nbus: int,
 
     return res
 
+
+@njit(cache=True)
+def calc_flows_active_branch_per_bus(nbus: int,
+                                    F_hvdc: IntVec, T_hvdc: IntVec, Sf_hvdc: CxVec, St_hvdc: CxVec,
+                                    F_vsc: IntVec, T_vsc: IntVec, Pf_vsc: Vec, St_vsc: CxVec,
+                                    get_solution: bool = False) -> CxVec:
+    """
+    Summation of magnitudes per bus (complex)
+    Used to add effects of VSCs and HVDCs to 
+    the traditional branches (lines and controllable transformers)
+    :param nbus:
+    :param F_hvdc:
+    :param T_hvdc:
+    :param Sf_hvdc:
+    :param St_hvdc:
+    :param F_vsc:
+    :param T_vsc:
+    :param Pf_vsc:
+    :param St_vsc:
+    :return:
+    """
+
+    res = np.zeros(nbus, dtype=np.complex128)
+
+    # Add HVDC
+    for i in range(len(F_hvdc)):
+        res[F_hvdc[i]] += Sf_hvdc[i]
+        res[T_hvdc[i]] += St_hvdc[i]
+
+    # Add VSC
+    for i in range(len(F_vsc)):
+        res[F_vsc[i]] += Pf_vsc[i]
+        res[T_vsc[i]] += St_vsc[i]
+
+    return res
 
 def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> CSC:
     """
@@ -2510,24 +2545,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Scalc_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
 
         # total nodal power --------------------------------------------------------------------------------------------
-        # Scalc = Scalc_passive + AScalc_cbr + Scalc_vsc + Scalc_hvdc
-        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
-            nbus=self.nc.bus_data.nbus,
-            F_br=self.F_cbr[self.cbr],
-            T_br=self.T_cbr[self.cbr],
-            Sf_br=Sf_cbr,
-            St_br=St_cbr,
-            F_hvdc=self.nc.hvdc_data.F,
-            T_hvdc=self.nc.hvdc_data.T,
-            Sf_hvdc=Sf_hvdc,
-            St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
-            T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=Pf_vsc,
-            St_vsc=St_vsc,
-            get_solution=False
-        )
+        Scalc_active = calc_flows_active_branch_per_bus(
+                            nbus=self.nc.bus_data.nbus,
+                            F_hvdc=self.nc.hvdc_data.F,
+                            T_hvdc=self.nc.hvdc_data.T,
+                            Sf_hvdc=Sf_hvdc,
+                            St_hvdc=St_hvdc,
+                            F_vsc=self.nc.vsc_data.F,
+                            T_vsc=self.nc.vsc_data.T,
+                            Pf_vsc=Pf_vsc,
+                            St_vsc=St_vsc)
 
+        self.Scalc = Scalc_active + Scalc_passive
+            
         dS = self.Scalc - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
@@ -2732,7 +2762,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def fx(self) -> Vec:
         """
-        Used? Yes! Needed when updating the controls
+        Used when updating the controls
         :return:
         """
 
@@ -2746,30 +2776,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         tau2 = self.nc.active_branch_data.tap_angle.copy()
         m2[self.u_cbr_m] = self.m
         tau2[self.u_cbr_tau] = self.tau
-
-        yff = (self.yff_cbr / (m2 * m2))
-        yft = self.yft_cbr / (m2 * np.exp(-1.0j * tau2))
-        ytf = self.ytf_cbr / (m2 * np.exp(1.0j * tau2))
-        ytt = self.ytt_cbr
-
-        Vf_cbr = V[self.F_cbr[self.cbr]]
-        Vt_cbr = V[self.T_cbr[self.cbr]]
-        yff_ = yff[self.cbr]
-        yft_ = yft[self.cbr]
-        ytf_ = ytf[self.cbr]
-        ytt_ = ytt[self.cbr]
-        # yff0_ = self.yff0[self.cbr]
-        # yft0_ = self.yft0[self.cbr]
-        # ytf0_ = self.ytf0[self.cbr]
-        # ytt0_ = self.ytt0[self.cbr]
-
-        Sf_cbr = (Vf_cbr * np.conj(Vf_cbr) * np.conj(yff_) + Vf_cbr * np.conj(Vt_cbr) * np.conj(yft_))
-        St_cbr = (Vt_cbr * np.conj(Vt_cbr) * np.conj(ytt_) + Vt_cbr * np.conj(Vf_cbr) * np.conj(ytf_))
-
-        # difference between the actual power and the power calculated with the passive term (initial admittance)
-        # AScalc_cbr = np.zeros(self.nc.bus_data.nbus, dtype=complex)
-        # AScalc_cbr[self.F_cbr[self.cbr]] += Sf_cbr
-        # AScalc_cbr[self.T_cbr[self.cbr]] += St_cbr
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2834,8 +2840,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
-        # Scalc_vsc = self.Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
-
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = self.Vm[self.nc.hvdc_data.F]
         zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
@@ -2853,22 +2857,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc)
 
         # total nodal power --------------------------------------------------------------------------------------------
-        self.Scalc = Scalc_passive + calc_flows_summation_per_bus(
-            nbus=self.nc.bus_data.nbus,
-            F_br=self.F_cbr[self.cbr],
-            T_br=self.T_cbr[self.cbr],
-            Sf_br=Sf_cbr,
-            St_br=St_cbr,
-            F_hvdc=self.nc.hvdc_data.F,
-            T_hvdc=self.nc.hvdc_data.T,
-            Sf_hvdc=Sf_hvdc,
-            St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
-            T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=self.Pf_vsc,
-            St_vsc=St_vsc,
-            get_solution=False
-        )
+        Scalc_active = calc_flows_active_branch_per_bus(
+                            nbus=self.nc.bus_data.nbus,
+                            F_hvdc=self.nc.hvdc_data.F,
+                            T_hvdc=self.nc.hvdc_data.T,
+                            Sf_hvdc=Sf_hvdc,
+                            St_hvdc=St_hvdc,
+                            F_vsc=self.nc.vsc_data.F,
+                            T_vsc=self.nc.vsc_data.T,
+                            Pf_vsc=self.Pf_vsc,
+                            St_vsc=St_vsc)
+
+        self.Scalc = Scalc_active + Scalc_passive
 
         dS = self.Scalc - Sbus
 
@@ -3113,8 +3113,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Sbus_vsc = Pf_vsc @ self.nc.vsc_data.Cf + St_vsc @ self.nc.vsc_data.Ct
         # Sbus_hvdc = Sf_hvdc @ self.nc.hvdc_data.Cf + St_hvdc @ self.nc.hvdc_data.Ct
         # Sbus_br = Sf @ self.nc.passive_branch_data.Cf + St @ self.nc.passive_branch_data.Ct
-        #
-        # # Sbus_act = Sbus_vsc + Sbus_hvdc + Sbus_br - Sbus_const
         # Sbus = Sbus_vsc + Sbus_hvdc + Sbus_br
 
         # the trick here is that the mismatch of the branch flow summations is what we actually want;
@@ -3132,9 +3130,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             F_vsc=self.nc.vsc_data.F,
             T_vsc=self.nc.vsc_data.T,
             Pf_vsc=Pf_vsc,
-            St_vsc=St_vsc,
-            get_solution=True
-        )
+            St_vsc=St_vsc)
 
         return NumericPowerFlowResults(
             V=self.V,
