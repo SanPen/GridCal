@@ -8,6 +8,7 @@ import numpy as np
 from numba import njit
 from scipy.sparse import diags
 from scipy.sparse import lil_matrix, isspmatrix_csc
+from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -108,7 +109,6 @@ def adv_jacobian(nbus: int,
     :param Vm:
     :param u_cbr_m:
     :param u_cbr_tau:
-    :param cbr:
     :param k_cbr_pf:
     :param k_cbr_pt:
     :param k_cbr_qf:
@@ -131,7 +131,6 @@ def adv_jacobian(nbus: int,
     :param Pf_hvdc:
     :param Ys:
     :param Bc:
-    :param kconv:
     :param yff_cbr:
     :param yft_cbr:
     :param ytf_cbr:
@@ -285,15 +284,14 @@ def adv_jacobian(nbus: int,
     # compose the Jacobian
     J = csc_stack_2d_ff(
         mats=
-        [dP_dVa__, dP_dVm__, dP_dPfvsc__, dP_dPtvsc__, dP_dQtvsc__, dP_dPfhvdc__, dP_dPthvdc__,
-         dP_dQfhvdc__, dP_dQthvdc__, dP_dm__, dP_dtau__,
+        [dP_dVa__, dP_dVm__, dP_dPfvsc__, dP_dPtvsc__, dP_dQtvsc__, dP_dPfhvdc__, dP_dPthvdc__, dP_dQfhvdc__,
+         dP_dQthvdc__, dP_dm__, dP_dtau__,
 
-         dQ_dVa__, dQ_dVm__, dQ_dPfvsc__, dQ_dPtvsc__, dQ_dQtvsc__, dQ_dPfhvdc__, dQ_dPthvdc__,
-         dQ_dQfhvdc__, dQ_dQthvdc__, dQ_dm__, dQ_dtau__,
+         dQ_dVa__, dQ_dVm__, dQ_dPfvsc__, dQ_dPtvsc__, dQ_dQtvsc__, dQ_dPfhvdc__, dQ_dPthvdc__, dQ_dQfhvdc__,
+         dQ_dQthvdc__, dQ_dm__, dQ_dtau__,
 
-         dLossvsc_dVa_, dLossvsc_dVm_, dLossvsc_dPfvsc_, dLossvsc_dPtvsc_, dLossvsc_dQtvsc_,
-         dLossvsc_dPfhvdc_, dLossvsc_dPthvdc_, dLossvsc_dQfhvdc_, dLossvsc_dQthvdc_, dLossvsc_dm_,
-         dLossvsc_dtau_,
+         dLossvsc_dVa_, dLossvsc_dVm_, dLossvsc_dPfvsc_, dLossvsc_dPtvsc_, dLossvsc_dQtvsc_, dLossvsc_dPfhvdc_,
+         dLossvsc_dPthvdc_, dLossvsc_dQfhvdc_, dLossvsc_dQthvdc_, dLossvsc_dm_, dLossvsc_dtau_,
 
          dLosshvdc_dVa_, dLosshvdc_dVm_, dLosshvdc_dPfvsc_, dLosshvdc_dPtvsc_, dLosshvdc_dQtvsc_,
          dLosshvdc_dPfhvdc_, dLosshvdc_dPthvdc_, dLosshvdc_dQfhvdc_, dLosshvdc_dQthvdc_, dLosshvdc_dm_,
@@ -318,37 +316,6 @@ def adv_jacobian(nbus: int,
     )
 
     return J
-
-
-def calcYbus(Cf, Ct, Yshunt_bus: CxVec,
-             R: Vec, X: Vec, G: Vec, B: Vec, m: Vec, tau: Vec, vtap_f: Vec, vtap_t: Vec) -> CSC:
-    """
-    Compute passive Ybus
-    :param Cf:
-    :param Ct:
-    :param Yshunt_bus:
-    :param R:
-    :param X:
-    :param G:
-    :param B:
-    :param m:
-    :param tau:
-    :param vtap_f:
-    :param vtap_t:
-    :return:
-    """
-    ys = 1.0 / make_complex(R, X + 1e-20)  # series admittance
-    bc2 = make_complex(G, B) / 2.0  # shunt admittance
-    yff = (ys + bc2) / (m * m * vtap_f * vtap_f)
-    yft = -ys / (m * np.exp(-1.0j * tau) * vtap_f * vtap_t)
-    ytf = -ys / (m * np.exp(1.0j * tau) * vtap_t * vtap_f)
-    ytt = (ys + bc2) / (vtap_t * vtap_t)
-
-    Yf = diags(yff) * Cf + diags(yft) * Ct
-    Yt = diags(ytf) * Cf + diags(ytt) * Ct
-    Ybus = Cf.T * Yf + Ct.T * Yt + diags(Yshunt_bus)
-
-    return Ybus.tocsc()
 
 
 @njit(cache=True)
@@ -560,10 +527,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qmin = Qmin
         self.Qmax = Qmax
 
-        # arrays for branch control types (nbr)
-        self.F = nc.passive_branch_data.F
-        self.T = nc.passive_branch_data.T
-
         # Indices ------------------------------------------------------------------------------------------------------
 
         # Bus indices
@@ -575,15 +538,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC LOOP
         for k in range(self.nc.hvdc_data.nelm):
-            self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.F[k]] = True
-            self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.T[k]] = True
+            self.is_q_controlled[self.nc.hvdc_data.F[k]] = True
+            self.is_q_controlled[self.nc.hvdc_data.T[k]] = True
 
         # Controllable Branch Indices
         self.u_cbr_m = np.zeros(0, dtype=int)
         self.u_cbr_tau = np.zeros(0, dtype=int)
-        self.cbr = np.zeros(0, dtype=int)
-        self.u_rel_cbr_m = np.zeros(0, dtype=int)
-        self.u_rel_cbr_tau = np.zeros(0, dtype=int)
         self.k_cbr_pf = np.zeros(0, dtype=int)
         self.k_cbr_pt = np.zeros(0, dtype=int)
         self.k_cbr_qf = np.zeros(0, dtype=int)
@@ -592,11 +552,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cbr_pt_set = np.zeros(0, dtype=float)
         self.cbr_qf_set = np.zeros(0, dtype=float)
         self.cbr_qt_set = np.zeros(0, dtype=float)
-        self._analyze_branch_controls()
-        self.cbr = np.union1d(self.u_cbr_m, self.u_cbr_tau)
-        cbr_dic = {val: idx for idx, val in enumerate(self.cbr)}
-        self.u_rel_cbr_m = np.array([cbr_dic[val] for val in self.u_cbr_m], dtype=np.int32)
-        self.u_rel_cbr_t = np.array([cbr_dic[val] for val in self.u_cbr_tau], dtype=np.int32)
+        self._set_branch_control_indices()
 
         # VSC Indices
         self.u_vsc_pf = np.zeros(0, dtype=int)
@@ -608,13 +564,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.vsc_pf_set = np.zeros(0, dtype=float)
         self.vsc_pt_set = np.zeros(0, dtype=float)
         self.vsc_qt_set = np.zeros(0, dtype=float)
-        self._analyze_vsc_controls()
+        self._set_vsc_control_indices()
 
         # HVDC Indices
         self.hvdc_droop_idx = np.zeros(0, dtype=int)
-        self._analyze_hvdc_controls()
+        self._set_hvdc_control_indices()
 
-        # Bus indices
+        # After all index initializations, compute the bus indices
         self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
         self.i_u_va = np.where(self.is_va_controlled == 0)[0]
         self.i_k_p = np.where(self.is_p_controlled == 1)[0]
@@ -637,41 +593,30 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Pt_vsc[self.k_vsc_pt] = self.vsc_pt_set / self.nc.Sbase
         self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
 
-        # Controllable branches ----------------------------------------------------------------------------------------
-        ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)  # series admittance
-        bc2 = make_complex(nc.passive_branch_data.G, nc.passive_branch_data.B) / 2.0  # shunt admittance
-        vtap_f = nc.passive_branch_data.virtual_tap_f
-        vtap_t = nc.passive_branch_data.virtual_tap_t
-
-        m0 = self.nc.active_branch_data.tap_module.copy()
-        tau0 = self.nc.active_branch_data.tap_angle.copy()
-        self.yff_cbr = (ys + bc2) / (m0 * m0 * vtap_f * vtap_f)
-        self.yft_cbr = -ys / (m0 * np.exp(-1.0j * tau0) * vtap_f * vtap_t)
-        self.ytf_cbr = -ys / (m0 * np.exp(1.0j * tau0) * vtap_t * vtap_f)
-        self.ytt_cbr = (ys + bc2) / (vtap_t * vtap_t)
-
-        self.F_cbr = self.nc.passive_branch_data.F
-        self.T_cbr = self.nc.passive_branch_data.T
+        # Admittance ---------------------------------------------------------------------------------------------------
 
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
-        self.Bc = self.nc.passive_branch_data.B
-        self.vtap_f = self.nc.passive_branch_data.virtual_tap_f
-        self.vtap_t = self.nc.passive_branch_data.virtual_tap_t
+        self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()
 
-        self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.Cf,
-                             Ct=self.nc.passive_branch_data.Ct,
-                             Yshunt_bus=self.nc.shunt_data.get_injections_per_bus() / self.nc.Sbase,
-                             R=self.nc.passive_branch_data.R,
-                             X=self.nc.passive_branch_data.X,
-                             G=self.nc.passive_branch_data.G,
-                             B=self.nc.passive_branch_data.B,
-                             m=self.nc.active_branch_data.tap_module,
-                             tau=self.nc.active_branch_data.tap_angle,
-                             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                             vtap_t=self.nc.passive_branch_data.virtual_tap_t)
+        self.adm = compute_admittances(
+            R=self.nc.passive_branch_data.R,
+            X=self.nc.passive_branch_data.X,
+            G=self.nc.passive_branch_data.G,
+            B=self.nc.passive_branch_data.B,
+            tap_module=expand(self.nc.nbr, self.m, self.u_cbr_m, 1.0),
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+            tap_angle=expand(self.nc.nbr, self.tau, self.u_cbr_tau, 0.0),
+            Cf=self.nc.passive_branch_data.Cf,
+            Ct=self.nc.passive_branch_data.Ct,
+            Yshunt_bus=self.Yshunt_bus,
+            conn=self.nc.passive_branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
         if self.options.verbose > 1:
-            print("Ybus\n", self.Ybus.toarray())
+            print("Ybus\n", self.adm.Ybus.toarray())
 
     def update_Qlim_indices(self, i_u_vm: IntVec, i_k_q: IntVec) -> None:
         """
@@ -682,7 +627,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.i_u_vm = i_u_vm
         self.i_k_q = i_k_q
 
-    def analyze_bus_controls(self) -> None:
+    def _set_bus_control_indices(self) -> None:
         """
         Analyze the bus indices from the boolean marked arrays
         """
@@ -691,14 +636,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.i_k_p = np.where(self.is_p_controlled == 1)[0]
         self.i_k_q = np.where(self.is_q_controlled == 1)[0]
 
-    def _analyze_branch_controls(self) -> None:
+    def _set_branch_control_indices(self) -> None:
         """
         Analyze the control branches and compute the indices
         """
         # Controllable Branch Indices
         u_cbr_m = list()
         u_cbr_tau = list()
-        cbr = list()
         k_cbr_pf = list()
         k_cbr_pt = list()
         k_cbr_qf = list()
@@ -712,7 +656,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                               for idx, val in enumerate(self.nc.bus_data.original_idx)}
 
         # CONTROLLABLE BRANCH LOOP
-        count_overl = 0
         for k in range(self.nc.passive_branch_data.nelm):
 
             ctrl_m = self.nc.active_branch_data.tap_module_control_mode[k]
@@ -773,10 +716,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             else:
                 raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
 
-        print('count_overl', count_overl)
         self.u_cbr_m = np.array(u_cbr_m, dtype=int)
         self.u_cbr_tau = np.array(u_cbr_tau, dtype=int)
-        self.cbr = np.array(cbr, dtype=int)
         self.k_cbr_pf = np.array(k_cbr_pf, dtype=int)
         self.k_cbr_pt = np.array(k_cbr_pt, dtype=int)
         self.k_cbr_qf = np.array(k_cbr_qf, dtype=int)
@@ -786,14 +727,13 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cbr_qf_set = np.array(cbr_qf_set, dtype=float)
         self.cbr_qt_set = np.array(cbr_qt_set, dtype=float)
 
-    def _analyze_vsc_controls(self) -> None:
+    def _set_vsc_control_indices(self) -> None:
         """
         Analyze the control branches and compute the indices
         :return: None
         """
 
         # VSC Indices
-        # vsc = list()
         u_vsc_pf = list()
         u_vsc_pt = list()
         u_vsc_qt = list()
@@ -806,14 +746,17 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # VSC LOOP
         for k in range(self.nc.vsc_data.nelm):
-            # vsc.append(i)
+
             control1 = self.nc.vsc_data.control1[k]
             control2 = self.nc.vsc_data.control2[k]
             assert control1 != control2, f"VSC control types must be different for VSC indexed at {k}"
+
             control1_magnitude = self.nc.vsc_data.control1_val[k]
             control2_magnitude = self.nc.vsc_data.control2_val[k]
+
             control1_bus_device = self.nc.vsc_data.control1_bus_idx[k]
             control2_bus_device = self.nc.vsc_data.control2_bus_idx[k]
+
             control1_branch_device = self.nc.vsc_data.control1_branch_idx[k]
             control2_branch_device = self.nc.vsc_data.control2_branch_idx[k]
 
@@ -1177,1059 +1120,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.vsc_pt_set = np.array(vsc_pt_set, dtype=float)
         self.vsc_qt_set = np.array(vsc_qt_set, dtype=float)
 
-    def _analyze_vsc_controls_old(self) -> None:
-        """
-        Analyze the control branches and compute the indices
-        :return: None
-        """
-
-        # VSC Indices
-        # vsc = list()
-        u_vsc_pf = list()
-        u_vsc_pt = list()
-        u_vsc_qt = list()
-        k_vsc_pf = list()
-        k_vsc_pt = list()
-        k_vsc_qt = list()
-        vsc_pf_set = list()
-        vsc_pt_set = list()
-        vsc_qt_set = list()
-
-        # VSC LOOP
-        for k in range(self.nc.vsc_data.nelm):
-            # vsc.append(i)
-            control1 = self.nc.vsc_data.control1[k]
-            control2 = self.nc.vsc_data.control2[k]
-            assert control1 != control2, f"VSC control types must be different for VSC indexed at {k}"
-            control1_magnitude = self.nc.vsc_data.control1_val[k]
-            control2_magnitude = self.nc.vsc_data.control2_val[k]
-            control1_bus_device = self.nc.vsc_data.control1_bus_idx[k]
-            control2_bus_device = self.nc.vsc_data.control2_bus_idx[k]
-            control1_branch_device = self.nc.vsc_data.control1_branch_idx[k]
-            control2_branch_device = self.nc.vsc_data.control2_branch_idx[k]
-
-            """"    
-
-            Vm_dc = 'Vm_dc'
-            Vm_ac = 'Vm_ac'
-            Va_ac = 'Va_ac'
-            Qac = 'Q_ac'
-            Pdc = 'P_dc'
-            Pac = 'P_ac'
-
-
-            """
-            if control1 == ConverterControlType.Vm_dc:
-                if control2 == ConverterControlType.Vm_dc:
-                    self.logger.add_error(
-                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
-                        f" control1: {control1}, control2: {control2}")
-                elif control2 == ConverterControlType.Vm_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                elif control2 == ConverterControlType.Va_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        self.is_va_controlled[control2_bus_device] = True
-                elif control2 == ConverterControlType.Qac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pdc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                else:
-                    raise Exception(f"Unknown control type {control2}")
-
-            elif control1 == ConverterControlType.Vm_ac:
-                if control2 == ConverterControlType.Vm_dc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                elif control2 == ConverterControlType.Vm_ac:
-                    self.logger.add_error(
-                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
-                        f" control1: {control1}, control2: {control2}")
-
-                elif control2 == ConverterControlType.Va_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        self.is_va_controlled[control2_bus_device] = True
-
-                elif control2 == ConverterControlType.Qac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pdc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                else:
-                    raise Exception(f"Unknown control type {control2}")
-
-            elif control1 == ConverterControlType.Va_ac:
-                if control2 == ConverterControlType.Vm_dc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-
-                elif control2 == ConverterControlType.Vm_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-
-                elif control2 == ConverterControlType.Va_ac:
-                    self.logger.add_error(
-                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
-                        f" control1: {control1}, control2: {control2}")
-
-                elif control2 == ConverterControlType.Qac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pdc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        self.is_va_controlled[control1_bus_device] = True
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                        pass
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                else:
-                    raise Exception(f"Unknown control type {control2}")
-
-            elif control1 == ConverterControlType.Qac:
-                if control2 == ConverterControlType.Vm_dc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-
-
-                elif control2 == ConverterControlType.Vm_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-
-                elif control2 == ConverterControlType.Va_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Qac:
-                    self.logger.add_error(
-                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
-                        f" control1: {control1}, control2: {control2}")
-                elif control2 == ConverterControlType.Pdc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Pac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        # self.u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                else:
-                    raise Exception(f"Unknown control type {control2}")
-
-            elif control1 == ConverterControlType.Pdc:
-
-                if control2 == ConverterControlType.Vm_dc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Vm_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Va_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Qac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pdc:
-                    self.logger.add_error(
-                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
-                        f" control1: {control1}, control2: {control2}")
-                elif control2 == ConverterControlType.Pac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        # self.u_vsc_pf.append(control1_branch_device)
-                        u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        k_vsc_pf.append(control1_branch_device)
-                        # self.k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        vsc_pf_set.append(control1_magnitude)
-                        # self.vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                else:
-                    raise Exception(f"Unknown control type {control2}")
-
-            elif control1 == ConverterControlType.Pac:
-                if control2 == ConverterControlType.Vm_dc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Vm_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Va_ac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        self.is_va_controlled[control2_bus_device] = True
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        # self.u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-                        pass
-                elif control2 == ConverterControlType.Qac:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        u_vsc_pt.append(control2_branch_device)
-                        # self.u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        # self.k_vsc_pt.append(control2_branch_device)
-                        k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        # self.vsc_pt_set.append(control2_magnitude)
-                        vsc_qt_set.append(control2_magnitude)
-                elif control2 == ConverterControlType.Pdc:
-                    if control1_bus_device > -1:
-                        # self.is_p_controlled[control1_bus_device] = True
-                        # self.is_q_controlled[control1_bus_device] = True
-                        # self.is_vm_controlled[control1_bus_device] = True
-                        # self.is_va_controlled[control1_bus_device] = True
-                        pass
-                    if control2_bus_device > -1:
-                        # self.is_p_controlled[control2_bus_device] = True
-                        # self.is_q_controlled[control2_bus_device] = True
-                        # self.is_vm_controlled[control2_bus_device] = True
-                        # self.is_va_controlled[control2_bus_device] = True
-                        pass
-                    if control1_branch_device > -1:
-                        u_vsc_pf.append(control1_branch_device)
-                        # self.u_vsc_pt.append(control1_branch_device)
-                        u_vsc_qt.append(control1_branch_device)
-
-                        # self.k_vsc_pf.append(control1_branch_device)
-                        k_vsc_pt.append(control1_branch_device)
-                        # self.k_vsc_qt.append(control1_branch_device)
-
-                        # self.vsc_pf_set.append(control1_magnitude)
-                        vsc_pt_set.append(control1_magnitude)
-                        # self.vsc_qt_set.append(control1_magnitude)
-                    if control2_branch_device > -1:
-                        u_vsc_pf.append(control2_branch_device)
-                        # self.u_vsc_pt.append(control2_branch_device)
-                        u_vsc_qt.append(control2_branch_device)
-
-                        # self.k_vsc_pf.append(control2_branch_device)
-                        k_vsc_pt.append(control2_branch_device)
-                        # self.k_vsc_qt.append(control2_branch_device)
-
-                        # self.vsc_pf_set.append(control2_magnitude)
-                        vsc_pt_set.append(control2_magnitude)
-                        # self.vsc_qt_set.append(control2_magnitude)
-
-                elif control2 == ConverterControlType.Pac:
-                    self.logger.add_error(
-                        f"VSC control1 and control2 are the same for VSC indexed at {k},"
-                        f" control1: {control1}, control2: {control2}")
-                else:
-                    raise Exception(f"Unknown control type {control2}")
-
-            else:
-                raise Exception(f"Unknown control type {control1}")
-
-        # self.vsc = np.array(vsc, dtype=int)
-        self.u_vsc_pf = np.array(u_vsc_pf, dtype=int)
-        self.u_vsc_pt = np.array(u_vsc_pt, dtype=int)
-        self.u_vsc_qt = np.array(u_vsc_qt, dtype=int)
-        self.k_vsc_pf = np.array(k_vsc_pf, dtype=int)
-        self.k_vsc_pt = np.array(k_vsc_pt, dtype=int)
-        self.k_vsc_qt = np.array(k_vsc_qt, dtype=int)
-        self.vsc_pf_set = np.array(vsc_pf_set, dtype=float)
-        self.vsc_pt_set = np.array(vsc_pt_set, dtype=float)
-        self.vsc_qt_set = np.array(vsc_qt_set, dtype=float)
-
-    def _analyze_hvdc_controls(self) -> None:
+    def _set_hvdc_control_indices(self) -> None:
         """
         Analyze the control branches and compute the indices
         :return: None
@@ -2240,10 +1131,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC LOOP
         for k in range(self.nc.hvdc_data.nelm):
-            # hvdc.append(k)
-            # self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.bus_f[k]] = True
-            # self.nc.bus_data.is_q_controlled[self.nc.hvdc_data.bus_t[k]] = True
-            # self.nc.bus_data.bus_types[self.nc.hvdc_data.bus_f[k]] = BusMode.PQV
             if self.nc.hvdc_data.control_mode[k] == HvdcControlType.type_0_free:
                 hvdc_droop_idx.append(k)
 
@@ -2252,7 +1139,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def x2var(self, x: Vec) -> None:
         """
-        Convert X to decission variables
+        Convert X to decision variables
         :param x: solution vector
         """
         a = len(self.i_u_va)
@@ -2363,22 +1250,27 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2[self.u_cbr_m] = m
         tau2[self.u_cbr_tau] = tau
 
-        self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.Cf,
-                             Ct=self.nc.passive_branch_data.Ct,
-                             Yshunt_bus=self.nc.shunt_data.get_injections_per_bus() / self.nc.Sbase,
-                             R=self.nc.passive_branch_data.R,
-                             X=self.nc.passive_branch_data.X,
-                             G=self.nc.passive_branch_data.G,
-                             B=self.nc.passive_branch_data.B,
-                             m=m2,
-                             tau=tau2,
-                             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                             vtap_t=self.nc.passive_branch_data.virtual_tap_t)
+        self.adm = compute_admittances(
+            R=self.nc.passive_branch_data.R,
+            X=self.nc.passive_branch_data.X,
+            G=self.nc.passive_branch_data.G,
+            B=self.nc.passive_branch_data.B,
+            tap_module=m2,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+            tap_angle=tau2,
+            Cf=self.nc.passive_branch_data.Cf,
+            Ct=self.nc.passive_branch_data.Ct,
+            Yshunt_bus=self.Yshunt_bus,
+            conn=self.nc.passive_branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
         # Passive branches ---------------------------------------------------------------------------------------------
         V = polar_to_rect(Vm, Va)
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
-        Scalc_passive = compute_power(self.Ybus, V)
+        Scalc_passive = compute_power(self.adm.Ybus, V)
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -2652,8 +1544,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 self.is_q_controlled = self.nc.bus_data.is_q_controlled.copy()
                 self.is_vm_controlled = self.nc.bus_data.is_vm_controlled.copy()
                 self.is_va_controlled = self.nc.bus_data.is_va_controlled.copy()
-                self._analyze_branch_controls()
-                self.analyze_bus_controls()
+                self._set_branch_control_indices()
+                self._set_bus_control_indices()
 
                 # the composition of x may have changed, so recompute
                 x = self.var2x()
@@ -2688,19 +1580,24 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2[self.u_cbr_m] = self.m
         tau2[self.u_cbr_tau] = self.tau
 
-        self.Ybus = calcYbus(Cf=self.nc.passive_branch_data.Cf,
-                             Ct=self.nc.passive_branch_data.Ct,
-                             Yshunt_bus=self.nc.shunt_data.get_injections_per_bus() / self.nc.Sbase,
-                             R=self.nc.passive_branch_data.R,
-                             X=self.nc.passive_branch_data.X,
-                             G=self.nc.passive_branch_data.G,
-                             B=self.nc.passive_branch_data.B,
-                             m=m2,
-                             tau=tau2,
-                             vtap_f=self.nc.passive_branch_data.virtual_tap_f,
-                             vtap_t=self.nc.passive_branch_data.virtual_tap_t)
+        self.adm = compute_admittances(
+            R=self.nc.passive_branch_data.R,
+            X=self.nc.passive_branch_data.X,
+            G=self.nc.passive_branch_data.G,
+            B=self.nc.passive_branch_data.B,
+            tap_module=m2,
+            vtap_f=self.nc.passive_branch_data.virtual_tap_f,
+            vtap_t=self.nc.passive_branch_data.virtual_tap_t,
+            tap_angle=tau2,
+            Cf=self.nc.passive_branch_data.Cf,
+            Ct=self.nc.passive_branch_data.Ct,
+            Yshunt_bus=self.Yshunt_bus,
+            conn=self.nc.passive_branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
-        Scalc_passive = compute_power(self.Ybus, V)
+        Scalc_passive = compute_power(self.adm.Ybus, V)
 
         # Controllable branches ----------------------------------------------------------------------------------------
         # Power at the controlled branches
@@ -2844,7 +1741,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             if len(self.hvdc_droop_idx) > 0:
                 hvdc_droop_redone[self.hvdc_droop_idx] = self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx]
 
-            assert isspmatrix_csc(self.Ybus)
+            assert isspmatrix_csc(self.adm.Ybus)
 
             J_sym = adv_jacobian(
                 nbus=self.nc.nbus,
@@ -2902,14 +1799,14 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Ys=self.Ys,
                 Bc=self.nc.passive_branch_data.B,
 
-                yff_cbr=self.yff_cbr,
-                yft_cbr=self.yft_cbr,
-                ytf_cbr=self.ytf_cbr,
-                ytt_cbr=self.ytt_cbr,
+                yff_cbr=self.adm.yff,
+                yft_cbr=self.adm.yft,
+                ytf_cbr=self.adm.ytf,
+                ytt_cbr=self.adm.ytt,
 
-                Yi=self.Ybus.indices,
-                Yp=self.Ybus.indptr,
-                Yx=self.Ybus.data
+                Yi=self.adm.Ybus.indices,
+                Yp=self.adm.Ybus.indptr,
+                Yx=self.adm.Ybus.data
             )
 
             if self.options.verbose > 1:
