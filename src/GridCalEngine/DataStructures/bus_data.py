@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
-
+from typing import Dict
 import numpy as np
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, BoolVec, StrVec
 from GridCalEngine.enumerations import BusMode
@@ -139,6 +139,15 @@ class BusData:
         data.original_idx = self.original_idx.copy()
 
         return data
+
+    def get_original_to_island_bus_dict(self) -> Dict[int, int]:
+        """
+        Dictionary that relates the original bus index to the island bus index
+        :return: dict[original idx] -> island index
+        """
+        return {
+            int(val): idx for idx, val in enumerate(self.original_idx)
+        }
 
     def set_bus_mode(self, idx: int, val: BusMode):
         """

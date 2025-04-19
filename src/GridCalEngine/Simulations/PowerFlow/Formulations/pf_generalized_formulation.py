@@ -6,7 +6,6 @@
 from typing import Tuple, List, Dict, Callable
 import numpy as np
 from numba import njit
-from scipy.sparse import diags
 from scipy.sparse import lil_matrix, isspmatrix_csc
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -529,19 +528,14 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Indices ------------------------------------------------------------------------------------------------------
 
-        # Bus indices
+        # Bus indices (initial values)
         self.bus_types = nc.bus_data.bus_types.copy()
         self.is_p_controlled = nc.bus_data.is_p_controlled.copy()
         self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
         self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
         self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
 
-        # HVDC LOOP
-        for k in range(self.nc.hvdc_data.nelm):
-            self.is_q_controlled[self.nc.hvdc_data.F[k]] = True
-            self.is_q_controlled[self.nc.hvdc_data.T[k]] = True
-
-        # Controllable Branch Indices
+        # Fill controllable Branch Indices
         self.u_cbr_m = np.zeros(0, dtype=int)
         self.u_cbr_tau = np.zeros(0, dtype=int)
         self.k_cbr_pf = np.zeros(0, dtype=int)
@@ -554,7 +548,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.cbr_qt_set = np.zeros(0, dtype=float)
         self._set_branch_control_indices()
 
-        # VSC Indices
+        # Fill VSC Indices
         self.u_vsc_pf = np.zeros(0, dtype=int)
         self.u_vsc_pt = np.zeros(0, dtype=int)
         self.u_vsc_qt = np.zeros(0, dtype=int)
@@ -566,18 +560,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.vsc_qt_set = np.zeros(0, dtype=float)
         self._set_vsc_control_indices()
 
-        # HVDC Indices
+        # Fill HVDC Indices
         self.hvdc_droop_idx = np.zeros(0, dtype=int)
         self._set_hvdc_control_indices()
 
-        # After all index initializations, compute the bus indices
-        self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
-        self.i_u_va = np.where(self.is_va_controlled == 0)[0]
-        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
-        self.i_k_q = np.where(self.is_q_controlled == 1)[0]
+        # Alter bus indices after all other index initializations
+        self.i_u_vm = np.zeros(0, dtype=int)
+        self.i_u_va = np.zeros(0, dtype=int)
+        self.i_k_p = np.zeros(0, dtype=int)
+        self.i_k_q = np.zeros(0, dtype=int)
+        self._set_bus_control_indices()
 
         # Unknowns -----------------------------------------------------------------------------------------------------
-        # Va and Vm are set internally
+        # Va and Vm are set at the parent
         self.Pf_vsc = np.zeros(nc.vsc_data.nelm)
         self.Pt_vsc = np.zeros(nc.vsc_data.nelm)
         self.Qt_vsc = np.zeros(nc.vsc_data.nelm)
@@ -585,8 +580,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qf_hvdc = np.zeros(nc.hvdc_data.nelm)
         self.Pt_hvdc = np.zeros(nc.hvdc_data.nelm)
         self.Qt_hvdc = np.zeros(nc.hvdc_data.nelm)
-        self.m = np.ones(len(self.u_cbr_m))
-        self.tau = np.zeros(len(self.u_cbr_tau))
+        self.m = self.nc.active_branch_data.tap_module[self.u_cbr_m]
+        self.tau = self.nc.active_branch_data.tap_angle[self.u_cbr_tau]
 
         # set the VSC set-points
         self.Pf_vsc[self.k_vsc_pf] = self.vsc_pf_set / self.nc.Sbase
@@ -596,7 +591,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         # Admittance ---------------------------------------------------------------------------------------------------
 
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
-        self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()
+        self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()  # computed here for later
 
         self.adm = compute_admittances(
             R=self.nc.passive_branch_data.R,
@@ -618,7 +613,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         if self.options.verbose > 1:
             print("Ybus\n", self.adm.Ybus.toarray())
 
-    def update_Qlim_indices(self, i_u_vm: IntVec, i_k_q: IntVec) -> None:
+    def _update_Qlim_indices(self, i_u_vm: IntVec, i_k_q: IntVec) -> None:
         """
         Update the indices due to applying Q limits
         :param i_u_vm: Indices of unknown voltage magnitudes
@@ -652,8 +647,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         cbr_qf_set = list()
         cbr_qt_set = list()
 
-        dic_old_to_new_bus: Dict[int, int] = {int(val): idx
-                                              for idx, val in enumerate(self.nc.bus_data.original_idx)}
+        original_to_island_bus_dict: Dict[int, int] = self.nc.bus_data.get_original_to_island_bus_dict()
 
         # CONTROLLABLE BRANCH LOOP
         for k in range(self.nc.passive_branch_data.nelm):
@@ -666,12 +660,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                 # Every bus controlled by m has to become a PQV bus
                 bus_idx: int = int(self.nc.active_branch_data.tap_controlled_buses[k])
-                new_bus_idx = dic_old_to_new_bus[bus_idx]
+                island_bus_idx = original_to_island_bus_dict.get(bus_idx, None)
                 # self.is_p_controlled[bus_idx] = True
                 # self.is_q_controlled[bus_idx] = True
-                if not self.is_vm_controlled[new_bus_idx]:
-                    self.is_vm_controlled[new_bus_idx] = True
-                    u_cbr_m.append(k)
+                if island_bus_idx is not None:
+                    if not self.is_vm_controlled[island_bus_idx]:
+                        self.is_vm_controlled[island_bus_idx] = True
+                        u_cbr_m.append(k)
+                else:
+                    print("Warning: Controlled bus index outside of the island, skipping control")
 
             elif ctrl_m == TapModuleControl.Qf:
                 u_cbr_m.append(k)
@@ -794,7 +791,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 u_vsc_pt.append(k)
                 u_vsc_qt.append(k)
 
-
             elif control1 == ConverterControlType.Vm_dc and control2 == ConverterControlType.Qac:
                 if control1_bus_device > -1:
                     self.is_vm_controlled[control1_bus_device] = True
@@ -840,6 +836,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                     vsc_pt_set.append(control2_magnitude)
 
+
             elif control1 == ConverterControlType.Vm_ac and control2 == ConverterControlType.Vm_dc:
                 if control1_bus_device > -1:
                     self.is_vm_controlled[control1_bus_device] = True
@@ -862,7 +859,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 u_vsc_pf.append(k)
                 u_vsc_pt.append(k)
                 u_vsc_qt.append(k)
-
 
             elif control1 == ConverterControlType.Vm_ac and control2 == ConverterControlType.Qac:
                 if control1_bus_device > -1:
@@ -903,6 +899,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     k_vsc_pt.append(control2_branch_device)
                     vsc_pt_set.append(control2_magnitude)
 
+
             elif control1 == ConverterControlType.Va_ac and control2 == ConverterControlType.Vm_dc:
                 if control1_bus_device > -1:
                     self.is_va_controlled[control1_bus_device] = True
@@ -920,7 +917,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 u_vsc_pf.append(k)
                 u_vsc_pt.append(k)
                 u_vsc_qt.append(k)
-
 
             elif control1 == ConverterControlType.Va_ac and control2 == ConverterControlType.Va_ac:
                 self.logger.add_error(
@@ -966,6 +962,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     k_vsc_pt.append(control2_branch_device)
                     vsc_pt_set.append(control2_magnitude)
 
+
             elif control1 == ConverterControlType.Qac and control2 == ConverterControlType.Vm_dc:
                 if control2_bus_device > -1:
                     self.is_vm_controlled[control2_bus_device] = True
@@ -1003,15 +1000,19 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     u_vsc_pt.append(control1_branch_device)
                     k_vsc_qt.append(control1_branch_device)
                     vsc_qt_set.append(control1_magnitude)
+
+                if control2_branch_device > -1:
                     k_vsc_pf.append(control2_branch_device)
                     vsc_pf_set.append(control2_magnitude)
 
             elif control1 == ConverterControlType.Qac and control2 == ConverterControlType.Pac:
                 if control1_branch_device > -1:
                     u_vsc_pf.append(control1_branch_device)
-                    k_vsc_pt.append(control2_branch_device)
                     k_vsc_qt.append(control1_branch_device)
                     vsc_qt_set.append(control1_magnitude)
+
+                if control2_branch_device > -1:
+                    k_vsc_pt.append(control2_branch_device)
                     vsc_pt_set.append(control2_magnitude)
 
 
@@ -1046,9 +1047,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 if control1_branch_device > -1:
                     k_vsc_pf.append(control1_branch_device)
                     vsc_pf_set.append(control1_magnitude)
+                    u_vsc_pt.append(control1_branch_device)
+
+                if control2_branch_device > -1:
                     k_vsc_qt.append(control2_branch_device)
                     vsc_qt_set.append(control2_magnitude)
-                    u_vsc_pt.append(control1_branch_device)
 
             elif control1 == ConverterControlType.Pdc and control2 == ConverterControlType.Pdc:
                 self.logger.add_error(
@@ -1061,6 +1064,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     u_vsc_qt.append(control1_branch_device)
                     k_vsc_pt.append(control1_branch_device)
                     vsc_pt_set.append(control1_magnitude)
+
 
             elif control1 == ConverterControlType.Pac and control2 == ConverterControlType.Vm_dc:
                 if control2_bus_device > -1:
@@ -1122,7 +1126,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
     def _set_hvdc_control_indices(self) -> None:
         """
-        Analyze the control branches and compute the indices
+        Analyze the control hvdc and compute the indices
         :return: None
         """
 
@@ -1131,6 +1135,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # HVDC LOOP
         for k in range(self.nc.hvdc_data.nelm):
+
+            self.is_q_controlled[self.nc.hvdc_data.F[k]] = True
+            self.is_q_controlled[self.nc.hvdc_data.T[k]] = True
+
             if self.nc.hvdc_data.control_mode[k] == HvdcControlType.type_0_free:
                 hvdc_droop_idx.append(k)
 
@@ -1438,7 +1446,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     any_change = True
 
                     # update the bus type lists
-                    self.update_Qlim_indices(i_u_vm=i_u_vm, i_k_q=i_k_q)
+                    self._update_Qlim_indices(i_u_vm=i_u_vm, i_k_q=i_k_q)
 
                     # the composition of x may have changed, so recompute
                     x = self.var2x()

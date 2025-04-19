@@ -418,7 +418,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             conn=self.nc.passive_branch_data.conn,
             seq=1,
             add_windings_phase=False,
-            verbose=self.options.verbose,
         )
 
         # compute the complex voltage
@@ -482,8 +481,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Yshunt_bus=self.nc.get_Yshunt_bus_pu(),
             conn=self.nc.passive_branch_data.conn,
             seq=1,
-            add_windings_phase=False,
-            verbose=self.options.verbose,
+            add_windings_phase=False
         )
 
         # compute the complex voltage

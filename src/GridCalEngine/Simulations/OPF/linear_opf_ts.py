@@ -723,7 +723,10 @@ def add_linear_generation_formulation(t: Union[int, None],
     else:
         id_gen_nonvd = []
 
-    year = time_array[t].year - time_array[0].year
+    if len(time_array) > 0:
+        year = time_array[t].year - time_array[0].year
+    else:
+        year = 0
 
     # add generation stuff
     for k in range(gen_data_t.nelm):
