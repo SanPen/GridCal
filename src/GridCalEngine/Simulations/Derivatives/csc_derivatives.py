@@ -1843,21 +1843,21 @@ def dP_dPfvsc_csc(i_k_p, u_vsc_pf, F_vsc) -> CSC:
 
 
 @njit()
-def dPQ_dPQft_csc(nbus, nvsc, i_k_pq, u_dev_pq, FT_dev) -> CSC:
+def dPQ_dPQft_csc(nbus: int, nvsc: int, i_k_pq: IntVec, u_dev_pq: IntVec, FT_dev: IntVec) -> CSC:
     """
     Calculate the derivatives of the power balance with respect to injections of branches
     The method works for vscs and transformers without loss of generality
 
     :param i_k_pq: Indices for the rows corresponding to the power injections.
     :param u_dev_pq: Column indices for the sparse matrix.
-    :param FT_dev: From or bus indices.
+    :param FT_dev: From or To bus indices.
     :return: Sparse matrix in CSC format.
     """
     n_cols = len(u_dev_pq)  # Number of columns (length of u_vsc_pf).
     n_rows = len(i_k_pq)  # Number of rows (equal to nbus).
     max_nnz = len(u_dev_pq)  # Maximum number of non-zero entries.
 
-    mat = CxCSC(n_rows, n_cols, max_nnz, False)
+    mat = CSC(n_rows, n_cols, max_nnz, False)
     Tx = np.empty(max_nnz, dtype=np.float64)
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
@@ -1870,18 +1870,16 @@ def dPQ_dPQft_csc(nbus, nvsc, i_k_pq, u_dev_pq, FT_dev) -> CSC:
     for dev_idx, dev in enumerate(u_dev_pq):
         f_bus = FT_dev[dev]
 
-        if j_lookup[f_bus] >= 0:
-        # if f_bus in i_k_p_set:
-        # if vsc_lookup[dev] >= 0:
-            Tx[nnz] = 1.0
-            Ti[nnz] = j_lookup[f_bus]
-            Tj[nnz] = vsc_lookup[dev]
-            nnz += 1
+        # if j_lookup[f_bus] >= 0: # this is always evaluated to true
+        Tx[nnz] = 1.0
+        Ti[nnz] = j_lookup[f_bus]
+        Tj[nnz] = vsc_lookup[dev]
+        nnz += 1
 
     # Convert to CSC
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
 
-    return mat.real
+    return mat
 
 
 @njit()
