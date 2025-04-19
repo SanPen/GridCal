@@ -11,7 +11,8 @@ from typing import Tuple, List
 from dataclasses import dataclass
 
 import GridCalEngine
-from GridCalEngine import ContingencyGroup, Contingency, LinearMultiContingencies
+from GridCalEngine import ContingencyGroup, Contingency, LinearMultiContingencies, BranchType
+from GridCalEngine.Simulations.LinearFactors.linear_analysis import ContingencyIndices
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -1878,7 +1879,8 @@ def case_loop() -> None:
     :return:
     """
     # Load basic grid
-    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/IEEE 5 Bus_exp.gridcal')
+    # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
+    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/IEEE 14 zip.gridcal')
     grid = FileOpen(file_path).open()
 
     # Set options
@@ -1920,79 +1922,91 @@ def case_loop() -> None:
     }
 
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
-    n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
-
 
     # Start main loop over iterations
     for klm in range(20):
         print(f"General iteration {klm + 1} of 20")
 
+        n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
+
         # Global slack and weight trackers
         v_slacks = np.zeros(n_con_groups)
         f_slacks = np.zeros(n_con_groups)
         prob_cont = 0
+        W_k_vec = np.zeros(n_con_groups)
+        Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
+        u_j_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
+        W_k_local = np.zeros(n_con_groups)
+
+        br_lists = grid.get_branch_lists()
+        all_branches = [br for group in br_lists for br in group]
 
         for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
 
             contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
-            print(f"\nContingency group {ic}: {contingency_group.name} (Category: {contingency_group.category})")
+            print(f"\nContingency group {ic}: {contingency_group.name}")
 
             # Set contingency status
             nc.set_con_or_ra_status(contingencies)
 
-            W_k_vec = np.zeros(n_con_groups)
-            Z_k_vec = np.zeros((n_con_groups, nc.bus_data.nbus))
-            u_j_vec = np.zeros((n_con_groups, nc.bus_data.nbus))
-            W_k_local = np.zeros(n_con_groups)
-
             for cont in contingencies:
-                line_idx = next(i for i, l in enumerate(grid.lines) if l.name == cont.name)
-                nc.passive_branch_data.active[line_idx] = False  # Deactivate the affected line
+                try:
+                    br_idx = next(i for i, br in enumerate(all_branches) if br.name == cont.name)
+                    nc.passive_branch_data.active[br_idx] = False  # Deactivate the affected branch
 
-                # Rebuild islands after modification
-                islands = nc.split_into_islands()
+                    # Rebuild islands after modification
+                    islands = nc.split_into_islands()
 
-                if len(islands) > 1:
-                    island_sizes = [island.nbus for island in islands]
-                    largest_island_idx = np.argmax(island_sizes)
-                    island = islands[largest_island_idx]
-                else:
-                    island = islands[0]
+                    if len(islands) > 1:
+                        island_sizes = [island.nbus for island in islands]
+                        largest_island_idx = np.argmax(island_sizes)
+                        island = islands[largest_island_idx]
+                    else:
+                        island = islands[0]
 
-                indices = island.get_simulation_indices()
+                    indices = island.get_simulation_indices()
 
-                if len(indices.vd) > 0:
-                    print('Selected island with size:', island.nbus)
+                    if len(indices.vd) > 0:
+                        print('Selected island with size:', island.nbus)
 
-                    slack_sol_cont = run_nonlinear_SP_scopf(
-                        nc=island,
-                        pf_options=pf_options,
-                        opf_options=opf_slack_options,
-                        pf_init=True,
-                        mp_results=acopf_results
-                    )
+                        slack_sol_cont = run_nonlinear_SP_scopf(
+                            nc=island,
+                            pf_options=pf_options,
+                            opf_options=opf_slack_options,
+                            pf_init=True,
+                            mp_results=acopf_results
+                        )
 
-                    v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
-                    f_slack = max(np.maximum(slack_sol_cont.sl_sf, slack_sol_cont.sl_st))
-                    v_slacks[ic] = v_slack
-                    f_slacks[ic] = f_slack
-                    if slack_sol_cont.W_k > 0.0001:
-                        W_k_vec[ic] = slack_sol_cont.W_k
-
-                        Z_k_vec[ic][island.bus_data.original_idx] = slack_sol_cont.Z_k
-                        u_j_vec[ic][island.bus_data.original_idx] = slack_sol_cont.u_j
-                        prob_cont += 1
+                        # Collect slacks
+                        v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
+                        f_slack = max(np.maximum(slack_sol_cont.sl_sf, slack_sol_cont.sl_st))
+                        v_slacks[ic] = v_slack
+                        f_slacks[ic] = f_slack
                         W_k_local[ic] = slack_sol_cont.W_k
-                    print(prob_cont, W_k_vec)
 
-                    # W_k_vec = np.zeros(prob_cont)
-                    # Z_k_vec = np.zeros((prob_cont, nc.bus_data.nbus))
-                    # u_j_vec = np.zeros((prob_cont, nc.bus_data.nbus))
-                    # W_k_local = np.zeros(prob_cont)
-                nc.passive_branch_data.active[line_idx] = True
+                        if slack_sol_cont.W_k > 0.0001:
+                            W_k_vec[prob_cont] = slack_sol_cont.W_k
+                            Z_k_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.Z_k
+                            u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
+                            prob_cont += 1
+
+                        print('nbus', island.nbus, 'ngen', island.ngen)
+
+                    else:
+                        print("No valid voltage-dependent nodes found in island. Skipping.")
+
+                    nc.passive_branch_data.active[br_idx] = True
+                except StopIteration:
+                    print(f"Line with name '{cont.name}' not found in grid.lines. Skipping.")
 
             # Revert contingency
             nc.set_con_or_ra_status(contingencies, revert=True)
+
+        if n_con_groups > prob_cont > 0:
+            # crop the dimension 0
+            W_k_vec = W_k_vec[:prob_cont]
+            Z_k_vec = Z_k_vec[:prob_cont, :]
+            u_j_vec = u_j_vec[:prob_cont, :]
 
         # Store metrics for this iteration
         iteration_data['max_wk'].append(W_k_local.max())
@@ -2011,8 +2025,6 @@ def case_loop() -> None:
                                              W_k_vec=W_k_vec,
                                              Z_k_vec=Z_k_vec,
                                              u_j_vec=u_j_vec)
-
-
 
         # Store generation cost
         total_cost = np.sum(acopf_results.Pcost)
