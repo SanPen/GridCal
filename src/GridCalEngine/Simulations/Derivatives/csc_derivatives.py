@@ -1505,7 +1505,7 @@ def dSt_dbeq_csc(sf_indices, beq_indices) -> CxCSC:
 
 
 @njit()
-def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, F, T) -> CSC:
+def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha2, alpha3, Vm, Pt, Qt, T) -> CSC:
     """
         pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]
         pq_sqrt = np.sqrt(pq)
@@ -1530,14 +1530,11 @@ def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, 
 
         if j_lookup[t] >= 0:
 
-            Vm_t = np.abs(V[t])
+            Vm_t = Vm[t]
             pq = Pt[kidx] * Pt[kidx] + Qt[kidx] * Qt[kidx]
-            pq_sqrt = np.sqrt(pq)
-            pq_sqrt += 1e-20
+            pq_sqrt = np.sqrt(pq) + 1e-20
 
-            dLossvsc_dVmt = alpha2[kidx] * pq_sqrt / (Vm_t * Vm_t) + 2 * alpha3[kidx] * pq / (Vm_t * Vm_t * Vm_t)
-
-            Tx[nnz] = - dLossvsc_dVmt
+            Tx[nnz] = - (alpha2[kidx] * pq_sqrt / (Vm_t * Vm_t) + 2 * alpha3[kidx] * pq / (Vm_t * Vm_t * Vm_t))
             Ti[nnz] = kidx
             Tj[nnz] = j_lookup[t]
             nnz += 1
@@ -1549,7 +1546,8 @@ def dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha1, alpha2, alpha3, V, Pf, Pt, Qt, 
 
 
 @njit()
-def dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc):
+def dLosshvdc_dVm_csc(nhvdc: int, nbus: int, i_u_vm: IntVec, Vm: Vec, Pf_hvdc: Vec,
+                      hvdc_r: Vec, F_hvdc: IntVec):
     """
     dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
     """
@@ -1569,7 +1567,7 @@ def dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc):
 
         if j_lookup[f] >= 0:
 
-            Vm_f = np.abs(V[f])
+            Vm_f = Vm[f]
             dLosshvdc_dVmf = - 2 * hvdc_r[kidx] * Pf_hvdc[kidx] / (Vm_f * Vm_f * Vm_f)
 
             Tx[nnz] = dLosshvdc_dVmf
@@ -1584,7 +1582,7 @@ def dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, V, Pf_hvdc, hvdc_r, F_hvdc):
 
 
 @njit()
-def dLosshvdc_dPfhvdc_csc(nhvdc, V, hvdc_r, F_hvdc):
+def dLosshvdc_dPfhvdc_csc(nhvdc, Vm, hvdc_r, F_hvdc):
     """
     dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc
     """
@@ -1599,7 +1597,7 @@ def dLosshvdc_dPfhvdc_csc(nhvdc, V, hvdc_r, F_hvdc):
 
     for kidx in range(nhvdc):
         f = F_hvdc[kidx]
-        Vm_f = np.abs(V[f])
+        Vm_f =Vm[f]
         dLosshvdc_dPfhvdc = hvdc_r[kidx] / (Vm_f * Vm_f) - 1
 
         Tx[nnz] = dLosshvdc_dPfhvdc
@@ -1706,7 +1704,7 @@ def dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf) -> CSC:
 
 
 @njit()
-def dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
+def dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, Vm, Pt, Qt, T_vsc) -> CSC:
     """
     Compute the sparse matrix for the derivative of loss with respect to Pt in CSC format.
 
@@ -1730,16 +1728,13 @@ def dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
 
-    j_lookup = make_lookup(len(u_vsc_pt), u_vsc_pt)
-
     nnz = 0  # Counter for non-zero entries
-    Vm = np.abs(V)
 
     for k, vsc in enumerate(u_vsc_pt):
         t = T_vsc[vsc]
         Vm_t = Vm[t]
-        val = alpha2[vsc] / Vm_t * 1 / np.sqrt(Pt[vsc] * Pt[vsc] + Qt[vsc] * Qt[vsc] + 1e-20) * Pt[vsc] + 2 * alpha3[
-            vsc] * Pt[vsc] / (Vm_t * Vm_t) - 1
+        val = (alpha2[vsc] / Vm_t * 1 / np.sqrt(Pt[vsc] * Pt[vsc] + Qt[vsc] * Qt[vsc] + 1e-20) * Pt[vsc]
+               + 2 * alpha3[vsc] * Pt[vsc] / (Vm_t * Vm_t) - 1)
 
         # Populate COO format arrays
         Tx[nnz] = val
@@ -1754,7 +1749,7 @@ def dLossvsc_dPtvsc_csc(nvsc, u_vsc_pt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC
 
 
 @njit()
-def dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC:
+def dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, Vm, Pt, Qt, T_vsc) -> CSC:
     """
     Compute the sparse matrix for the derivative of loss with respect to Qt in CSC format.
 
@@ -1778,16 +1773,13 @@ def dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, V, Pt, Qt, T_vsc) -> CSC
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
 
-    j_lookup = make_lookup(len(u_vsc_qt), u_vsc_qt)
-
     nnz = 0  # Counter for non-zero entries
-    Vm = np.abs(V)
 
     for k, vsc in enumerate(u_vsc_qt):
         t = T_vsc[vsc]
         Vm_t = Vm[t]
-        val = alpha2[vsc] / Vm_t * 1 / np.sqrt(Pt[vsc] * Pt[vsc] + Qt[vsc] * Qt[vsc] + 1e-20) * Qt[vsc] + 2 * alpha3[
-            vsc] * Qt[vsc] / (Vm_t * Vm_t)
+        val = (alpha2[vsc] / Vm_t * 1 / np.sqrt(Pt[vsc] * Pt[vsc] + Qt[vsc] * Qt[vsc] + 1e-20) * Qt[vsc]
+               + 2 * alpha3[vsc] * Qt[vsc] / (Vm_t * Vm_t))
 
         # Populate COO format arrays
         Tx[nnz] = val
