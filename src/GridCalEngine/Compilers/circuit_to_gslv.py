@@ -14,7 +14,7 @@ from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, ContingencyMethod, ContingencyOperationTypes,
-                                        BuildStatus, BranchGroupTypes)
+                                        BuildStatus, BranchGroupTypes, ConverterControlType)
 import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -94,6 +94,15 @@ try:
         ContingencyMethod.PTDF: pg.ContingencyMethod.PTDF,
         ContingencyMethod.PowerFlow: pg.ContingencyMethod.PowerFlow,
         ContingencyMethod.HELM: pg.ContingencyMethod.HELM,
+    }
+
+    converter_control_type_dict = {
+        ConverterControlType.Vm_dc: pg.ConverterControlType.Vm_dc,
+        ConverterControlType.Vm_ac: pg.ConverterControlType.Vm_ac,
+        ConverterControlType.Va_ac: pg.ConverterControlType.Va_ac,
+        ConverterControlType.Qac: pg.ConverterControlType.Q_ac,
+        ConverterControlType.Pdc: pg.ConverterControlType.P_dc,
+        ConverterControlType.Pac: pg.ConverterControlType.P_ac,
     }
 
 except ImportError as e:
@@ -1673,20 +1682,38 @@ def convert_vsc(elm: dev.VSC, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     :param time_indices:
     :return:
     """
-    vsc = pg.Vsc(idtag=elm.idtag,
-                 code=str(elm.code),
-                 name=elm.name,
-                 bus_from=bus_dict[elm.bus_from.idtag],
-                 bus_to=bus_dict[elm.bus_to.idtag],
-                 nt=n_time,
-                 active=elm.active, )
 
-    vsc.alpha1 = elm.alpha1
-    vsc.alpha2 = elm.alpha2
-    vsc.alpha3 = elm.alpha3
-
-    vsc.setAllMonitorloading(elm.monitor_loading)
-    vsc.setAllContingencyenabled(elm.contingency_enabled)
+    vsc = pg.Vsc(
+        nt=n_time,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        name=elm.name,
+        idtag=elm.idtag,
+        code=str(elm.code),
+        active=elm.active,
+        rate=9999.0,
+        kdp=elm.kdp,
+        alpha1=elm.alpha1,
+        alpha2=elm.alpha2,
+        alpha3=elm.alpha3,
+        mttf=elm.mttf,
+        mttr=elm.mttr,
+        overload_cost=elm.Cost,
+        contingency_factor=elm.contingency_factor,
+        protection_rating_factor=elm.protection_rating_factor,
+        contingency_enabled=elm.contingency_enabled,
+        monitor_loading=elm.monitor_loading,
+        capex=elm.capex,
+        opex=elm.opex,
+        build_status=build_status_dict[elm.build_status],
+        control1=converter_control_type_dict[elm.control1],
+        control2=converter_control_type_dict[elm.control2],
+        control1_val=elm.control1_val,
+        control2_val=elm.control2_val,
+        #     TODO: extend the search
+        control1_dev=bus_dict.get(elm.control1_dev, None),
+        control2_dev=bus_dict.get(elm.control2_dev, None)
+    )
 
     fill_profile(gslv_profile=vsc.active,
                  gc_profile=elm.active_prof,
@@ -1751,18 +1778,20 @@ def convert_dc_line(elm: dev.DcLine, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     :param time_indices:
     :return:
     """
-    lne = pg.DcLine(idtag=elm.idtag,
-                    name=elm.name,
-                    calc_node_from=bus_dict[elm.bus_from.idtag],
-                    calc_node_to=bus_dict[elm.bus_to.idtag],
-                    nt=n_time,
-                    length=elm.length,
-                    rate=elm.rate,
-                    active_default=elm.active,
-                    r=elm.R,
-                    monitor_loading_default=elm.monitor_loading,
-                    monitor_contingency_default=elm.contingency_enabled
-                    )
+    lne = pg.DcLine(
+        idtag=elm.idtag,
+        code=str(elm.code),
+        name=elm.name,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        nt=n_time,
+        length=elm.length,
+        rate=elm.rate if elm.rate > 0 else 9999,
+        active=elm.active,
+        r=float(elm.R),
+        monitor_loading=elm.monitor_loading,
+        contingency_enabled=elm.contingency_enabled,
+    )
 
     fill_profile(gslv_profile=lne.active,
                  gc_profile=elm.active_prof,
@@ -1829,30 +1858,30 @@ def convert_hvdc_line(elm: dev.HvdcLine, bus_dict: Dict[str, "pg.Bus"], n_time: 
     :return:
     """
 
-    hvdc = pg.HvdcLine(idtag=elm.idtag,
-                       code=str(elm.code),
-                       name=elm.name,
-                       calc_node_from=bus_dict[elm.bus_from.idtag],
-                       calc_node_to=bus_dict[elm.bus_to.idtag],
-                       cn_from=None,
-                       cn_to=None,
-                       nt=n_time,
-                       active_default=int(elm.active),
-                       rate=elm.rate,
-                       contingency_rate=elm.rate * elm.contingency_factor,
-                       monitor_loading_default=1,
-                       monitor_contingency_default=1,
-                       P=elm.Pset,
-                       Vf=elm.Vset_f,
-                       Vt=elm.Vset_t,
-                       r=elm.r,
-                       angle_droop=elm.angle_droop,
-                       length=elm.length,
-                       min_firing_angle_f=elm.min_firing_angle_f,
-                       max_firing_angle_f=elm.max_firing_angle_f,
-                       min_firing_angle_t=elm.min_firing_angle_t,
-                       max_firing_angle_t=elm.max_firing_angle_t,
-                       control_mode=hvdc_control_mode_dict[elm.control_mode])
+    hvdc = pg.HvdcLine(
+        idtag=elm.idtag,
+        code=str(elm.code),
+        name=elm.name,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        nt=n_time,
+        active=elm.active,
+        rate=elm.rate,
+        contingency_factor=elm.contingency_factor,
+        # monitor_loading=elm.monitor_loading,
+        # contingency_enabled=elm.contingency_enabled,
+        pset=elm.Pset,
+        Vset_f=elm.Vset_f,
+        Vset_t=elm.Vset_t,
+        r=float(elm.r),
+        angle_droop=elm.angle_droop,
+        length=elm.length,
+        min_firing_angle_f=elm.min_firing_angle_f,
+        max_firing_angle_f=elm.max_firing_angle_f,
+        min_firing_angle_t=elm.min_firing_angle_t,
+        max_firing_angle_t=elm.max_firing_angle_t,
+        control_mode=hvdc_control_mode_dict[elm.control_mode]
+    )
 
     fill_profile(gslv_profile=hvdc.active,
                  gc_profile=elm.active_prof,
