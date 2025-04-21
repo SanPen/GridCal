@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Ysh computation">
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/ZigZag.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="ZigZag admittance matrix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Transformers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Transformers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/ZigZag.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/ZigZag.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,87 +134,88 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
-    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
-    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
-    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
-    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
-    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
-    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
-    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
-    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
-    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.Python tests in line_constants.py.executor": "Run",
-    "Python tests.Python tests in line_constants_wire_bundling.py.executor": "Run",
-    "Python tests.Python tests in test_tower_composition.py.executor": "Run",
-    "Python tests.Python tests in tests.executor": "Run",
-    "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
-    "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
-    "Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor": "Run",
-    "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
-    "Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor": "Debug",
-    "Python tests.pytest for test_ac_opf.test_superconductors_handling.executor": "Run",
-    "Python tests.pytest for test_basic.test_gridcal_basic_pi.executor": "Debug",
-    "Python tests.pytest for test_load_save_load.test_load_save_load2.executor": "Run",
-    "Python tests.pytest for test_transformer_type.test_psse_conversion3.executor": "Debug",
-    "Python tests.pytest for test_transformer_type.test_transformer_type.executor": "Run",
-    "Python tests.pytest in test_ac_opf.py.executor": "Run",
-    "Python tests.pytest in test_basic.py.executor": "Run",
-    "Python tests.pytest in test_transformer_type.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
-    "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.Function_Test_Tower_Composition.executor": "Run",
-    "Python.GridCalMain.executor": "Run",
-    "Python.Nordic_Grid.executor": "Run",
-    "Python.Nordic_Grid_v2.executor": "Run",
-    "Python.Panther_Cable.executor": "Run",
-    "Python.Saved_Line.executor": "Debug",
-    "Python.SeriesImpedance.executor": "Run",
-    "Python.ShuntAdmittance.executor": "Run",
-    "Python.Transformers.executor": "Run",
-    "Python.Transformers_ChatGPT.executor": "Run",
-    "Python.Transformers_v2.executor": "Run",
-    "Python.ZigZag.executor": "Run",
-    "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.circuit_to_optimods.executor": "Run",
-    "Python.line_constants.executor": "Run",
-    "Python.line_constants_bundle.executor": "Run",
-    "Python.line_constants_wire_bundling.executor": "Run",
-    "Python.new_circuit_objects.executor": "Run",
-    "Python.pymoo_example.executor": "Debug",
-    "Python.python_console.executor": "Run",
-    "Python.raw_imp_exp_test.executor": "Run",
-    "Python.readme_checks.executor": "Run",
-    "Python.test_power_flow.executor": "Run",
-    "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
-    "Python.trafos_deltadelta.executor": "Run",
-    "Python.update_gui_file.executor": "Run",
-    "Python.upload_to_pypi.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "#352 on #343__extend__objects__for__3__phase",
-    "last_opened_file_path": "C:/Users/alexb/OneDrive/eRoots/GridCal/src/trunk/three_phase",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in line_constants.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in line_constants_wire_bundling.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_tower_composition.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_load_save_load.test_load_save_load2.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_transformer_type.test_psse_conversion3.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_transformer_type.test_transformer_type.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_ac_opf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_basic.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_transformer_type.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Function_Test_Tower_Composition.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Nordic_Grid.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Nordic_Grid_v2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Panther_Cable.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Saved_Line.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.SeriesImpedance.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ShuntAdmittance.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Transformers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Transformers_ChatGPT.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Transformers_v2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ZigZag.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.circuit_to_optimods.executor&quot;: &quot;Run&quot;,
+    &quot;Python.line_constants.executor&quot;: &quot;Run&quot;,
+    &quot;Python.line_constants_bundle.executor&quot;: &quot;Run&quot;,
+    &quot;Python.line_constants_wire_bundling.executor&quot;: &quot;Run&quot;,
+    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.python_console.executor&quot;: &quot;Run&quot;,
+    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.readme_checks.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_power_flow.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_raw_cgmes_cross_roundtrip.executor&quot;: &quot;Run&quot;,
+    &quot;Python.trafos_deltadelta.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
+    &quot;Python.zigzag.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;#352 on #343__extend__objects__for__3__phase&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/alexb/OneDrive/eRoots/GridCal/src/trunk/three_phase&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -1884,7 +1885,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="578" />
+    <option name="localTasksCounter" value="579" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1930,7 +1931,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved UCTE parsing" />
     <MESSAGE value="minimal refactors" />
     <MESSAGE value="Fixed tr type test values and cleaned get_impedances" />
     <MESSAGE value="Removed qtconsole dependency in the engine&#10;Added dependency_map_of_gridcal.txt&#10;Fixed bugs in test_ac_opf.py" />
@@ -1955,7 +1955,8 @@
     <MESSAGE value="Carson impedance calculation" />
     <MESSAGE value="Yff, Yft, Ytf, Ytt computation" />
     <MESSAGE value="Ysh computation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ysh computation" />
+    <MESSAGE value="ZigZag admittance matrix" />
+    <option name="LAST_COMMIT_MESSAGE" value="ZigZag admittance matrix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

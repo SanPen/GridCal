@@ -1,6 +1,9 @@
 import numpy as np
 import sympy
 from pprint import pprint
+
+np.set_printoptions(linewidth=20000, precision=3, suppress=True)
+
 # Define fundamental symbols
 R, X, G, B, t, phi = sympy.symbols('R, X, G, B, t, phi', real=True)
 I = sympy.I  # Imaginary unit

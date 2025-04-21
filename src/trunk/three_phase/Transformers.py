@@ -3,22 +3,23 @@ import numpy as np
 
 np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 
-Ys = symbols('Ys')
-Ysh = symbols('Ysh')
-a = symbols('a')
+yff = symbols('yff')
+yft = symbols('yft')
+ytf = symbols('ytf')
+ytt = symbols('ytt')
 
 Y_2x2 = Matrix([
-    [Ys/a**2 + Ysh/2, -Ys/np.conjugate(a)],
-    [-Ys/a, Ys + Ysh/2]
+    [yff, yft],
+    [ytf, ytt]
 ])
 
-Y_6x6_primitive = np.zeros((6, 6), dtype=object)
+Yprimitive = np.zeros((6, 6), dtype=object)
 
-Y_6x6_primitive[0:2,0:2] = Y_2x2
-Y_6x6_primitive[2:4,2:4] = Y_2x2
-Y_6x6_primitive[4:6,4:6] = Y_2x2
+Yprimitive[0:2,0:2] = Y_2x2
+Yprimitive[2:4,2:4] = Y_2x2
+Yprimitive[4:6,4:6] = Y_2x2
 
-connexion = 'Dd'
+connexion = 'Yz'
 
 Cu = np.zeros((6, 6))
 Ci = np.zeros((6, 6))
@@ -98,18 +99,50 @@ elif connexion == 'Dy':
     Ci[4, 3] = 1  # Ib = I4
     Ci[5, 5] = 1  # Ic = I6
 
+elif connexion == 'Yz':
+    Yprimitive = np.zeros((12, 12), dtype=object)
+
+    Yprimitive[0:2, 0:2] = Y_2x2
+    Yprimitive[2:4, 2:4] = Y_2x2
+    Yprimitive[4:6, 4:6] = Y_2x2
+    Yprimitive[6:8, 6:8] = Y_2x2
+    Yprimitive[8:10, 8:10] = Y_2x2
+    Yprimitive[10:12, 10:12] = Y_2x2
+
+    Cu = np.zeros((6, 12))
+    Cu[0, 0] = 1
+    Cu[0, 2] = 1
+    Cu[1, 4] = 1
+    Cu[1, 6] = 1
+    Cu[2, 8] = 1
+    Cu[2, 10] = 1
+    Cu[3, 1] = 1
+    Cu[3, 7] = -1
+    Cu[4, 5] = 1
+    Cu[4, 11] = -1
+    Cu[5, 9] = 1
+    Cu[5, 3] = -1
+
+    Ci = np.zeros((12, 6))
+    Ci[0, 0] = 1
+    Ci[1, 3] = 1
+    Ci[2, 0] = 1
+    Ci[3, 5] = -1
+    Ci[4, 1] = 1
+    Ci[5, 4] = 1
+    Ci[6, 1] = 1
+    Ci[7, 3] = -1
+    Ci[8, 2] = 1
+    Ci[9, 5] = 1
+    Ci[10, 2] = 1
+    Ci[11, 4] = -1
+
 print()
 print(Cu)
 print()
 print(Ci)
 print()
-Ytrafo = Ci @ Y_6x6_primitive @ Cu
+Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 print()
 print(Ytrafo)
 print()
-
-Zs = symbols('Zs')
-
-Ys = 1/(Zs/2)
-
-print(Ys)
