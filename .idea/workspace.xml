@@ -28,9 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Caught possible bug in the adjacency formation">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="minor change in the test_fubm_new voltage comparison, now checking also the imaginary part">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1949,7 +1948,7 @@
       <workItem from="1745054952606" duration="18413000" />
       <workItem from="1745083452993" duration="6833000" />
       <workItem from="1745139925380" duration="7243000" />
-      <workItem from="1745220876637" duration="33022000" />
+      <workItem from="1745220876637" duration="34048000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -2294,7 +2293,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="697" />
+    <option name="localTasksCounter" value="698" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2340,7 +2339,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed bug in gslv conversion" />
     <MESSAGE value="5.3.30" />
     <MESSAGE value="Added the ability to recolour the schematic with the design values" />
     <MESSAGE value="minor refactorings" />
@@ -2365,7 +2363,8 @@
     <MESSAGE value="Refactor of the get_solution method in pf_generalized_formulation.py" />
     <MESSAGE value="Refactored multi_island_pf_nc to remove useless initialization" />
     <MESSAGE value="Caught possible bug in the adjacency formation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Caught possible bug in the adjacency formation" />
+    <MESSAGE value="minor change in the test_fubm_new voltage comparison, now checking also the imaginary part" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor change in the test_fubm_new voltage comparison, now checking also the imaginary part" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

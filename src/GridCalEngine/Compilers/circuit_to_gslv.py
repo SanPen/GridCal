@@ -31,7 +31,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
-GSLV_RECOMMENDED_VERSION = "0.1.1"
+GSLV_RECOMMENDED_VERSION = "0.2.0"
 GSLV_VERSION = ''
 GSLV_AVAILABLE = False
 try:
