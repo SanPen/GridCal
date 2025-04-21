@@ -297,7 +297,7 @@ def adv_jacobian(nbus: int,
         dQt_dVa, dQt_dVm, dQt_dPfvsc, dQt_dPtvsc, dQt_dQtvsc, dQt_dPfhvdc, dQt_dPthvdc, dQt_dQfhvdc,
         dQt_dQthvdc, dQt_dm, dQt_dtau
 
-    ],n_rows=9, n_cols=11)
+    ], n_rows=9, n_cols=11)
 
     return J
 
@@ -1867,25 +1867,28 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         If = Vf * self.adm.yff + Vt * self.adm.yft
         It = Vt * self.adm.ytt + Vf * self.adm.ytf
-        Sf = Vf * np.conj(If)
-        St = Vt * np.conj(It)
+        Sf = Vf * np.conj(If) * self.nc.Sbase
+        St = Vt * np.conj(It) * self.nc.Sbase
 
         # Branch losses in MVA
-        losses = (Sf + St) * self.nc.Sbase
+        losses = (Sf + St)
 
         # Branch loading in p.u.
-        loading = Sf * self.nc.Sbase / (self.nc.passive_branch_data.rates + 1e-9)
+        loading = Sf / (self.nc.passive_branch_data.rates + 1e-9)
 
         # VSC ----------------------------------------------------------------------------------------------------------
-        St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
+        Pf_vsc = self.Pf_vsc * self.nc.Sbase
+        St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc) * self.nc.Sbase
         If_vsc = self.Pf_vsc / self.Vm[self.nc.vsc_data.F]
         It_vsc = St_vsc / self.Vm[self.nc.vsc_data.T]
-        loading_vsc = np.abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20) * self.nc.Sbase
+        loading_vsc = np.abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20)
+        losses_vsc = Pf_vsc + St_vsc.real
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc) * self.nc.Sbase
         St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc) * self.nc.Sbase
         loading_hvdc = Sf_hvdc.real / (self.nc.hvdc_data.rates + 1e-20)
+        losses_hvdc = Sf_hvdc + Sf_hvdc
 
         # Basic bus powers
         # the trick here is that the mismatch of the branch flow summations is what we actually want;
@@ -1913,24 +1916,24 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         return NumericPowerFlowResults(
             V=self.V,
-            Scalc=Sbus * self.nc.Sbase,
+            Scalc=Sbus,
             m=m2,
             tau=tau2,
-            Sf=Sf * self.nc.Sbase,
-            St=St * self.nc.Sbase,
+            Sf=Sf,
+            St=St,
             If=If,
             It=It,
             loading=loading,
             losses=losses,
-            Pf_vsc=self.Pf_vsc * self.nc.Sbase,
-            St_vsc=St_vsc * self.nc.Sbase,
+            Pf_vsc=Pf_vsc,
+            St_vsc=St_vsc,
             If_vsc=If_vsc,
             It_vsc=It_vsc,
-            losses_vsc=self.Pf_vsc + St_vsc.real,
+            losses_vsc=losses_vsc,
             loading_vsc=loading_vsc,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
-            losses_hvdc=Sf_hvdc + Sf_hvdc,
+            losses_hvdc=losses_hvdc,
             loading_hvdc=loading_hvdc,
             norm_f=self.error,
             converged=self.converged,
