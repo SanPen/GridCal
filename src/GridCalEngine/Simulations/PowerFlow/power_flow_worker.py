@@ -892,26 +892,9 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     if logger is None:
         logger = Logger()
 
-    # declare results
-    results = PowerFlowResults(
-        n=nc.nbus,
-        m=nc.nbr,
-        n_hvdc=nc.nhvdc,
-        n_vsc=nc.nvsc,
-        n_gen=nc.ngen,
-        n_batt=nc.nbatt,
-        n_sh=nc.nshunt,
-        bus_names=nc.bus_data.names,
-        branch_names=nc.passive_branch_data.names,
-        hvdc_names=nc.hvdc_data.names,
-        vsc_names=nc.vsc_data.names,
-        gen_names=nc.generator_data.names,
-        batt_names=nc.battery_data.names,
-        sh_names=nc.shunt_data.names,
-        bus_types=nc.bus_data.bus_types,
-    )
-
     if options.initialize_angles and options.solver_type not in [SolverType.DC, SolverType.LACPF, SolverType.HELM]:
+        # NOTE: This is to initialize power flows with very different angles
+        # that may happen if the transformer phase shifts are applied in te power flow
         results_0 = __multi_island_pf_nc_limited_support(
             nc=nc,
             options=PowerFlowOptions(solver_type=SolverType.DC),
@@ -940,6 +923,15 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                 Sbus_input=Sbus_input,
             )
 
+        # expand voltages if there was a bus topology reduction
+        if nc.topology_performed:
+            results.voltage = nc.propagate_bus_result(results.voltage)
+
+        # do the reactive power partition and store the values
+        __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
+
+        return results
+
     else:
         results = __multi_island_pf_nc_limited_support(
             nc=nc,
@@ -949,14 +941,14 @@ def multi_island_pf_nc(nc: NumericalCircuit,
             Sbus_input=Sbus_input,
         )
 
-    # expand voltages if there was a bus topology reduction
-    if nc.topology_performed:
-        results.voltage = nc.propagate_bus_result(results.voltage)
+        # expand voltages if there was a bus topology reduction
+        if nc.topology_performed:
+            results.voltage = nc.propagate_bus_result(results.voltage)
 
-    # do the reactive power partition and store the values
-    __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
+        # do the reactive power partition and store the values
+        __split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
 
-    return results
+        return results
 
 
 def multi_island_pf(multi_circuit: MultiCircuit,
