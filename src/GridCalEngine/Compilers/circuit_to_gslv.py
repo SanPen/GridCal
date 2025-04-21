@@ -1676,8 +1676,8 @@ def convert_vsc(elm: dev.VSC, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     vsc = pg.Vsc(idtag=elm.idtag,
                  code=str(elm.code),
                  name=elm.name,
-                 calc_node_from=bus_dict[elm.bus_from.idtag],
-                 calc_node_to=bus_dict[elm.bus_to.idtag],
+                 bus_from=bus_dict[elm.bus_from.idtag],
+                 bus_to=bus_dict[elm.bus_to.idtag],
                  nt=n_time,
                  active=elm.active, )
 
