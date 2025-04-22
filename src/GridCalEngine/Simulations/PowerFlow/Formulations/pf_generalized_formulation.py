@@ -20,16 +20,18 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
-                                                                                   polar_to_rect)
+                                                                                   compute_current, polar_to_rect)
 from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, HvdcControlType, ConverterControlType)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 
 
-@njit()
+# @njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  nvsc: int,
                  nhvdc: int,
+                 ndc: int,
+
                  F: IntVec,
                  T: IntVec,
                  F_vsc: IntVec,
@@ -43,6 +45,8 @@ def adv_jacobian(nbus: int,
                  V: CxVec,
                  Vm: Vec,
                  Va: Vec,
+
+                 Sbus: CxVec,
 
                  # Controllable Branch Indices
                  u_cbr_m: IntVec,
@@ -72,6 +76,7 @@ def adv_jacobian(nbus: int,
                  i_u_va: IntVec,
                  i_k_p: IntVec,
                  i_k_q: IntVec,
+                 i_k_dc: IntVec,
 
                  # Unknowns
                  Pf_vsc: Vec,
@@ -97,6 +102,7 @@ def adv_jacobian(nbus: int,
     :param nbr:
     :param nvsc:
     :param nhvdc:
+    :param ndc:
     :param F:
     :param T:
     :param F_vsc:
@@ -126,6 +132,7 @@ def adv_jacobian(nbus: int,
     :param i_u_va:
     :param i_k_p:
     :param i_k_q:
+    :param i_k_dc:
     :param Pf_vsc:
     :param Pt_vsc:
     :param Qt_vsc:
@@ -152,7 +159,7 @@ def adv_jacobian(nbus: int,
 
     hvdc_range = np.arange(nhvdc)
 
-    # -------- ROW 2 (P) ---------
+    # -------- ROW 1 (P) ---------
     dP_dVa = sp_slice(dS_dVa.real, i_k_p, i_u_va)
     dP_dVm = sp_slice(dS_dVm.real, i_k_p, i_u_vm)
     dP_dPfvsc = deriv.dPQ_dPQft_csc(nbus, nvsc, i_k_p, u_vsc_pf, F_vsc)
@@ -178,7 +185,31 @@ def adv_jacobian(nbus: int,
     dQ_dm = deriv.dSbus_dm_csc(nbus, i_k_q, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).imag
     dQ_dtau = deriv.dSbus_dtau_csc(nbus, i_k_q, u_cbr_tau, F, T, Ys, tap, V).imag
 
-    # -------- ROW 3 (Losses VSCs) ---------
+    
+    # -------- ROW 3 (DC current balance) ---------
+    # fi = YV - P/V = 0
+    # No angles in DC, hence only dI_dVm
+
+    # d(YV)_dVm = Y @ dV_dVm = Y @ exp(j * Va) = Y @ V / Vm = Y (because no angles!)
+    # d(-P/V)_dVm = P * 1 / (V^2) = (S / V^2).real
+    # dfi_dVm = d(YV - P/V)_dVm = Y + (S / (V^2 + 1e-20)).real
+    # size ndc x i_u_vm
+
+    # take real parts everywhere
+    dI_dVa = CSC(ndc, len(i_u_va), 0, False)  # fully empty
+    dI_dVm = deriv.dIdc_dVm_csc(ndc, nbus, i_k_dc, i_u_vm, Yx, Yp, Yi, Vm, Sbus)
+    dI_dPfvsc = CSC(ndc, len(u_vsc_pf), 0, False)  # fully empty
+    dI_dPtvsc = CSC(ndc, len(u_vsc_pt), 0, False)  # fully empty
+    dI_dQtvsc = CSC(ndc, len(u_vsc_qt), 0, False)  # fully empty
+    dI_dPfhvdc = CSC(ndc, nhvdc, 0, False)  # fully empty
+    dI_dPthvdc = CSC(ndc, nhvdc, 0, False)  # fully empty
+    dI_dQfhvdc = CSC(ndc, nhvdc, 0, False)  # fully empty
+    dI_dQthvdc = CSC(ndc, nhvdc, 0, False)  # fully empty
+    dI_dm = CSC(ndc, len(u_cbr_m), 0, False)  # fully empty
+    dI_dtau = CSC(ndc, len(u_cbr_tau), 0, False)  # fully empty
+    
+
+    # -------- ROW 4 (Losses VSCs) ---------
     dLvsc_dVa = CSC(nvsc, len(i_u_va), 0, False)  # fully empty
     dLvsc_dVm = deriv.dLossvsc_dVm_csc(nvsc, nbus, i_u_vm, alpha2, alpha3, Vm, Pt_vsc, Qt_vsc, T_vsc)
     dLvsc_dPfvsc = deriv.dLossvsc_dPfvsc_csc(nvsc, u_vsc_pf)
@@ -191,7 +222,7 @@ def adv_jacobian(nbus: int,
     dLvsc_dm = CSC(nvsc, len(u_cbr_m), 0, False)  # fully empty
     dLvsc_dtau = CSC(nvsc, len(u_cbr_tau), 0, False)  # fully empty
 
-    # -------- ROW 4 (loss HVDCs) ---------
+    # -------- ROW 5 (loss HVDCs) ---------
     dLhvdc_dVa = CSC(nhvdc, len(i_u_va), 0, False)  # fully empty
     dLhvdc_dVm = deriv.dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, Vm, Pf_hvdc, hvdc_r, F_hvdc)
     dLhvdc_dPfvsc = CSC(nhvdc, nvsc, 0, False)  # fully empty
@@ -204,7 +235,7 @@ def adv_jacobian(nbus: int,
     dLhvdc_dm = CSC(nhvdc, len(u_cbr_m), 0, False)  # fully empty
     dLhvdc_dtau = CSC(nhvdc, len(u_cbr_tau), 0, False)  # fully empty
 
-    # -------- ROW 5 (inj HVDCs) ---------
+    # -------- ROW 6 (inj HVDCs) ---------
     dInjhvdc_dVa = deriv.dInjhvdc_dVa_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc)
     dInjhvdc_dVm = CSC(nhvdc, len(i_u_vm), 0, False)  # fully empty
     dInjhvdc_dPfvsc = CSC(nhvdc, len(u_vsc_pf), 0, False)  # fully empty
@@ -217,7 +248,7 @@ def adv_jacobian(nbus: int,
     dInjhvdc_dm = CSC(nhvdc, len(u_cbr_m), 0, False)  # fully empty
     dInjhvdc_dtau = CSC(nhvdc, len(u_cbr_tau), 0, False)  # fully empty
 
-    # -------- ROW 6(Pf) ---------
+    # -------- ROW 7 (Pf) ---------
     dPf_dVa = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, yft_cbr, V, F, T).real
     dPf_dVm = deriv.dSf_dVm_csc(nbus, k_cbr_pf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).real
     dPf_dPfvsc = CSC(len(k_cbr_pf), len(u_vsc_pf), 0, False)  # fully empty
@@ -230,8 +261,7 @@ def adv_jacobian(nbus: int,
     dPf_dm = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).real
     dPf_dtau = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, tap, V).real
 
-    # -------- ROW 7(Pt) ---------
-
+    # -------- ROW 8 (Pt) ---------
     dPt_dVa = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, ytf_cbr, V, F, T).real
     dPt_dVm = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).real
     dPt_dPfvsc = CSC(len(k_cbr_pt), len(u_vsc_pf), 0, False)  # fully empty
@@ -244,7 +274,7 @@ def adv_jacobian(nbus: int,
     dPt_dm = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, tap, tap_modules, V).real
     dPt_dtau = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, tap, V).real
 
-    # -------- ROW 8(Qf) ---------
+    # -------- ROW 9 (Qf) ---------
     dQf_dVa = deriv.dSf_dVa_csc(nbus, k_cbr_qf, i_u_va, yft_cbr, V, F, T).imag
     dQf_dVm = deriv.dSf_dVm_csc(nbus, k_cbr_qf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).imag
     dQf_dPfvsc = CSC(len(k_cbr_qf), len(u_vsc_pf), 0, False)  # fully empty
@@ -257,7 +287,7 @@ def adv_jacobian(nbus: int,
     dQf_dm = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).imag
     dQf_dtau = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, tap, V).imag
 
-    # -------- ROW 9(Qt) ---------
+    # -------- ROW 10 (Qt) ---------
     dQt_dVa = deriv.dSt_dVa_csc(nbus, k_cbr_qt, i_u_va, ytf_cbr, V, F, T).imag
     dQt_dVm = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).imag
     dQt_dPfvsc = CSC(len(k_cbr_qt), len(u_vsc_pf), 0, False)  # fully empty
@@ -275,6 +305,8 @@ def adv_jacobian(nbus: int,
         dP_dVa, dP_dVm, dP_dPfvsc, dP_dPtvsc, dP_dQtvsc, dP_dPfhvdc, dP_dPthvdc, dP_dQfhvdc, dP_dQthvdc, dP_dm, dP_dtau,
 
         dQ_dVa, dQ_dVm, dQ_dPfvsc, dQ_dPtvsc, dQ_dQtvsc, dQ_dPfhvdc, dQ_dPthvdc, dQ_dQfhvdc, dQ_dQthvdc, dQ_dm, dQ_dtau,
+
+        dI_dVa, dI_dVm, dI_dPfvsc, dI_dPtvsc, dI_dQtvsc, dI_dPfhvdc, dI_dPthvdc, dI_dQfhvdc, dI_dQthvdc, dI_dm, dI_dtau,
 
         dLvsc_dVa, dLvsc_dVm, dLvsc_dPfvsc, dLvsc_dPtvsc, dLvsc_dQtvsc, dLvsc_dPfhvdc, dLvsc_dPthvdc,
         dLvsc_dQfhvdc, dLvsc_dQthvdc, dLvsc_dm, dLvsc_dtau,
@@ -297,7 +329,7 @@ def adv_jacobian(nbus: int,
         dQt_dVa, dQt_dVm, dQt_dPfvsc, dQt_dPtvsc, dQt_dQtvsc, dQt_dPfhvdc, dQt_dPthvdc, dQt_dQfhvdc,
         dQt_dQthvdc, dQt_dm, dQt_dtau
 
-    ],n_rows=9, n_cols=11)
+    ],n_rows=10, n_cols=11)
 
     return J
 
@@ -519,6 +551,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
         self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
         self.is_va_controlled = nc.bus_data.is_va_controlled.copy()
+        self.is_dc = nc.bus_data.is_dc.copy()
 
         # Fill controllable Branch Indices
         self.u_cbr_m = np.zeros(0, dtype=int)
@@ -613,8 +646,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         """
         self.i_u_vm = np.where(self.is_vm_controlled == 0)[0]
         self.i_u_va = np.where(self.is_va_controlled == 0)[0]
-        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
         self.i_k_q = np.where(self.is_q_controlled == 1)[0]
+        self.i_k_dc = np.where(self.is_dc == 1)[0]
+
+        self.is_p_controlled[self.i_k_dc] = False
+        self.i_k_p = np.where(self.is_p_controlled == 1)[0]
 
     def _set_branch_control_indices(self) -> None:
         """
@@ -1360,10 +1396,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         dS = self.Scalc - Sbus
 
+        # DC current balance --------------------------------------------------------------------------------------------
+        # YV - P/V = 0
+        Icalc_passive = compute_current(self.adm.Ybus, V)
+
+        dI = (Icalc_passive[self.i_k_dc] - Sbus[self.i_k_dc] / (V[self.i_k_dc] + 1e-20)).real
+
+
         # compose the residuals vector ---------------------------------------------------------------------------------
         _f = np.r_[
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
+            dI,
             loss_vsc,
             loss_hvdc,
             inj_hvdc,
@@ -1537,6 +1581,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 self.is_q_controlled = self.nc.bus_data.is_q_controlled.copy()
                 self.is_vm_controlled = self.nc.bus_data.is_vm_controlled.copy()
                 self.is_va_controlled = self.nc.bus_data.is_va_controlled.copy()
+                self.is_dc = self.nc.bus_data.is_dc.copy()
                 self._set_branch_control_indices()
                 self._set_bus_control_indices()
 
@@ -1734,13 +1779,18 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             if len(self.hvdc_droop_idx) > 0:
                 hvdc_droop_redone[self.hvdc_droop_idx] = self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx]
 
+            ndc = self.nc.bus_data.is_dc.sum()
+
             assert isspmatrix_csc(self.adm.Ybus)
+
+            Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
 
             J_sym = adv_jacobian(
                 nbus=self.nc.nbus,
                 nbr=self.nc.nbr,
                 nvsc=self.nc.vsc_data.nelm,
                 nhvdc=nhvdc,
+                ndc=ndc,
                 F=self.nc.passive_branch_data.F,
                 T=self.nc.passive_branch_data.T,
                 F_vsc=self.nc.vsc_data.F,
@@ -1753,6 +1803,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 V=self.V,
                 Vm=self.Vm,
                 Va=self.Va,
+
+                Sbus=Sbus,
 
                 # Controllable Branch Indices
                 u_cbr_m=self.u_cbr_m,
@@ -1782,6 +1834,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 i_u_va=self.i_u_va,
                 i_k_p=self.i_k_p,
                 i_k_q=self.i_k_q,
+                i_k_dc=self.i_k_dc,
 
                 # Unknowns
                 Pf_vsc=self.Pf_vsc,

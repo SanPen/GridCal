@@ -90,6 +90,16 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
     return V * np.conj(Ybus @ V)
 
 
+def compute_current(Ybus: csc_matrix, V: CxVec) -> CxVec:
+    """
+    Compute the current from the admittance matrix and the voltage
+    :param Ybus: Admittance matrix
+    :param V: Voltage vector
+    :return: Calculated current
+    """
+    return Ybus @ V
+
+
 @nb.njit(cache=True, fastmath=True)
 def compute_fx(Scalc: CxVec, Sbus: CxVec, idx_dP: IntVec, idx_dQ: IntVec) -> Vec:
     """

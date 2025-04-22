@@ -994,6 +994,47 @@ def diagc(m: int, value: float = 1.0) -> CSC:
     return res
 
 
+@nb.njit(cache=True)
+def diags(m: int, value: Vec) -> CSC:
+    """
+    Get diagonal sparse matrix from an array of values
+    :param m: size of the matrix
+    :param value: values to set
+    :return: CSC matrix
+    """
+    res = CSC(m, m, m, False)
+
+    for i in range(m):
+        res.indptr[i] = i
+        res.indices[i] = i
+        res.data[i] = value[i]
+
+    res.indptr[m] = m
+
+    return res
+
+
+@nb.njit(cache=True)
+def diags_cxcsc(m: int, value: Vec) -> CxCSC:
+    """
+    Get diagonal sparse matrix from an array of complex values
+    :param m: size of the matrix
+    :param value: values to set
+    :return: CSC matrix
+    """
+    res = CxCSC(m, m, m, False)
+
+    for i in range(m):
+        res.indptr[i] = i
+        res.indices[i] = i
+        res.data[i] = value[i]
+
+    res.indptr[m] = m
+
+    return res
+
+
+
 @nb.njit(cache=False)
 def extend(A: CSC, last_col: Vec, last_row: Vec, corner_val: float) -> CSC:
     """

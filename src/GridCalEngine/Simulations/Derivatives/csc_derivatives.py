@@ -10,7 +10,7 @@ from typing import Tuple
 from scipy.sparse import csc_matrix
 from GridCalEngine.basic_structures import CxVec, IntVec, Vec
 from GridCalEngine.Utils.NumericalMethods.common import make_lookup
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, diags, csc_add_ff
 from GridCalEngine.Utils.Sparse.csc_numba import ialloc
 
 
@@ -115,6 +115,67 @@ def dSbus_dV_csc(Ybus: csc_matrix, V: CxVec, Vm) -> Tuple[CxCSC, CxCSC]:
     # generate sparse CSC matrices with computed data and return them
     return dS_dVm, dS_dVa
 
+
+# @njit(cache=True)
+def dIdc_dVm_csc(ndc, nbus, i_k_dc, i_u_vm, Yx, Yp, Yi, Vm, Sbus) -> CSC:
+    """
+    Compute the derivative of the DC current balance w.r.t. the voltage module
+    :param ndc: number of DC buses
+    :param nbus: number of buses
+    :param i_k_dc: indices of the DC buses
+    :param i_u_vm: indices of the voltage module
+    :param Yx: data of Ybus in CSC format
+    :param Yp: indptr of Ybus in CSC format
+    :param Yi: indices of Ybus in CSC format
+    :param Vm: voltage modules vector
+    :param Sbus: complex power vector
+    :return: dIdc_dVm
+    """
+
+    # d(YV)_dVm = Y @ dV_dVm = Y @ exp(j * Va) = Y @ V / Vm = Y (because no angles!)
+    # d(-P/V)_dVm = P * 1 / (V^2) = (S / V^2).real
+
+    max_nnz = 2 * nbus
+    Tx = np.empty(max_nnz, dtype=np.complex128)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+    mat = CxCSC(len(i_k_dc), len(i_u_vm), max_nnz, False)
+
+    # for j in range(A.n_cols):
+    c_nz = 0
+    for j in range(nbus):
+        for p in range(Yp[j], Yp[j + 1]):
+            row = Yi[p]
+            col = j
+            if row in i_k_dc and col in i_u_vm:
+                Tx[c_nz] = Yx[p]
+                Ti[c_nz] = row
+                Tj[c_nz] = col
+
+                if Yi[p] == j:  # diag
+                    Tx[c_nz] += Sbus[row] / (Vm[row] * Vm[row] + 1e-20)
+
+                c_nz += 1
+
+    # dS_dVm_data = Sbus / (Vm * Vm + 1e-20)
+    # dS_dVm_csc_re = diags(nbus, dS_dVm_data.real)
+
+    # Ybus_csc_re = CSC(nbus, nbus, len(Yx), False)
+    # Ybus_csc_re.set(Yi, Yp, Yx.real)
+
+    mat.fill_from_coo(Ti, Tj, Tx, nnz=len(Tx))
+    dIdc_dVm_real = mat
+
+    # dI_dVm = csc_add_wrapper(dS_dVm_csc, Ybus_csc)
+    # dI_dVm = dS_dVm_csc_re + Ybus_csc_re
+    # dI_dVm = csc_add_ff(dS_dVm_csc_re, Ybus_csc_re)
+    # print(type(dI_dVm))
+    # dIdc_dVm_col = dI_dVm[:, i_u_vm]
+    # dIdc_dVm = dI_dVm[i_k_dc, :][:, i_u_vm]
+    # dIdc_dVm_real = dIdc_dVm
+
+    return dIdc_dVm_real
+    
 
 # ----------------------------------------------------------------------------------------------------------------------
 
