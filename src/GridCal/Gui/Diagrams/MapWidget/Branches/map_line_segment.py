@@ -272,7 +272,6 @@ class MapLineSegment(QGraphicsLineItem):
         has_substation = False
         substation_counter = 0
         line_counter = 0
-        lineloc_counter = 0
 
         for graphic_obj in self.editor._get_selected():
             if hasattr(graphic_obj, 'api_object'):
@@ -283,22 +282,12 @@ class MapLineSegment(QGraphicsLineItem):
                     elif graphic_obj.api_object.device_type == DeviceType.LineDevice:
                         line_counter += 1
 
-                    elif graphic_obj.api_object.device_type == DeviceType.LineLocation:
-                        lineloc_counter += 1
-
         if line_counter > 1:
+
             add_menu_entry(menu=menu,
                            text="Merge selected lines",
                            function_ptr=self.editor.merge_selected_lines,
                            icon_path=":/Icons/icons/fusion.svg")
-
-        menu.addSeparator()
-
-        if lineloc_counter > 0:
-            add_menu_entry(menu=menu,
-                           text="Transform waypoint into substation",
-                           function_ptr=self.editor.transform_waypoint_to_substation,
-                           icon_path=":/Icons/icons/divide.svg")
 
         menu.addSeparator()
 
@@ -310,10 +299,6 @@ class MapLineSegment(QGraphicsLineItem):
                                function_ptr=self.editor.split_line_to_substation,
                                icon_path=":/Icons/icons/divide.svg")
 
-                add_menu_entry(menu=menu,
-                               text="Connect line to selected substation (T-joint)",
-                               function_ptr=self.editor.create_t_joint_to_substation,
-                               icon_path=":/Icons/icons/divide.svg")
             elif substation_counter == 2:
 
                 add_menu_entry(menu=menu,

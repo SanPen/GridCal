@@ -56,7 +56,7 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.messages import error_msg, info_msg, yes_no_question
+from GridCal.Gui.messages import error_msg, yes_no_question
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -1515,12 +1515,9 @@ class GridMapWidget(BaseDiagramWidget):
 
     def transform_waypoint_to_substation(self):
 
-        selected_lines = self.get_selected_line_segments_tup()
         selected_lineloc = self.get_selected_linelocations_tup()
 
-        if len(selected_lines) != 1:
-            self.gui.show_error_toast('More than one line selected. Could not create substation and split the line.')
-            return
+
         if len(selected_lineloc) != 1:
             self.gui.show_error_toast('More than one waypoint selected. Could not determine where '
                                       'the substation should be created.')
@@ -1536,8 +1533,8 @@ class GridMapWidget(BaseDiagramWidget):
 
             splitting_index = None
 
-            line = selected_lines[0][0]
-            line_graphic = selected_lines[0][1]
+            line_graphic = selected_lineloc[0][1].line_container
+            line = line_graphic.api_object
 
             selected_waypoint = selected_lineloc[0][0]
             wp_graphic = selected_lineloc[0][1]
@@ -2216,30 +2213,21 @@ class GridMapWidget(BaseDiagramWidget):
         selected_items = self._get_selected()
 
         # Find the substation and waypoint in the selection
-        selected_substation = None
-        selected_waypoint = None
-
-        for api_obj, graphic_obj in selected_items:
-            if isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
-                selected_substation = (api_obj, graphic_obj)
-            elif isinstance(graphic_obj, LineLocationGraphicItem):
-                selected_waypoint = graphic_obj
+        list_sel_substations = self.get_selected_substations_tup()
+        list_sel_waypoint = self.get_selected_linelocations_tup()
 
         # Check if we have a substation and a waypoint selected
-        if selected_substation is None or selected_waypoint is None:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Please select one substation and one waypoint.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
+        if len(list_sel_substations) != 1 or len(list_sel_waypoint) != 1:
+            self.gui.show_error_toast(message="Please select exactly one substation and one waypoint.")
             return
 
+        selected_waypoint = list_sel_waypoint[0][1]
         # Get the line container from the waypoint
-        original_line_container = selected_waypoint.line_container
+        original_line_container = list_sel_waypoint[0][1].line_container
         line_api = original_line_container.api_object
 
         # Get the API objects
-        substation_api, substation_graphic = selected_substation
+        substation_api, substation_graphic = list_sel_substations[0]
 
         # Get the waypoint coordinates
         waypoint_lat = selected_waypoint.lat
@@ -2253,11 +2241,7 @@ class GridMapWidget(BaseDiagramWidget):
                 break
 
         if waypoint_idx == -1:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Selected waypoint not found in the line's waypoints.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
+            self.gui.show_error_toast(message="Selected waypoint not found in the line's waypoints.")
             return
 
         # Step 1: Create a new substation at the waypoint location
