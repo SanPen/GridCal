@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 from typing import Tuple, List, TYPE_CHECKING
+
+from GridCalEngine.enumerations import DeviceType
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.gui_functions import add_menu_entry
 from PySide6 import QtWidgets
@@ -257,6 +259,28 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
                        text="Delete",
                        icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove)
+
+        add_menu_entry(menu=menu,
+                       text="Transform waypoint into substation",
+                       function_ptr=self.editor.transform_waypoint_to_substation,
+                       icon_path=":/Icons/icons/divide.svg")
+
+        menu.addSeparator()
+
+        has_substation = False
+
+        for graphic_obj in self.editor._get_selected():
+            if hasattr(graphic_obj, 'api_object'):
+                if hasattr(graphic_obj.api_object, 'device_type'):
+                    if graphic_obj.api_object.device_type == DeviceType.SubstationDevice:
+                        has_substation = True
+
+        if has_substation:
+
+            add_menu_entry(menu=menu,
+                           text="Connect line to selected substation (T-joint) at this waypoint",
+                           function_ptr=self.editor.create_t_joint_to_substation,
+                           icon_path=":/Icons/icons/divide.svg")
 
         menu.exec_(event.screenPos())
 

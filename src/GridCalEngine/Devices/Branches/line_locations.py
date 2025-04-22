@@ -39,6 +39,7 @@ class LineLocation(EditableDevice):
                                 code=code,
                                 device_type=DeviceType.LineLocation)
 
+        self.locations = None
         self.lat = lat
         self.long = lon
         self.alt = z
