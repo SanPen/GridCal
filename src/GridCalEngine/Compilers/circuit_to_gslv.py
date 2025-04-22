@@ -1247,7 +1247,8 @@ def convert_battery(k: int, elm: dev.Battery, bus_dict: Dict[str, "pg.Bus"], n_t
     :param opf_results:
     :return:
     """
-    gen = pg.Battery(nt=n_time,
+    gen = pg.Battery(
+        nt=n_time,
                      name=elm.name,
                      idtag=elm.idtag,
                      P=elm.P,
@@ -1263,7 +1264,8 @@ def convert_battery(k: int, elm: dev.Battery, bus_dict: Dict[str, "pg.Bus"], n_t
                      Enom=elm.Enom,
                      charge_efficiency=elm.charge_efficiency,
                      discharge_efficiency=elm.discharge_efficiency,
-                     is_controlled=elm.is_controlled, )
+                     is_controlled=elm.is_controlled,
+    )
 
     gen.bus = bus_dict[elm.bus.idtag]
 
@@ -1473,21 +1475,59 @@ def convert_transformer(elm: dev.Transformer2W,
                            nt=n_time,
                            HV=elm.HV,
                            LV=elm.LV,
-                           rate=elm.rate if elm.rate > 0 else 9999,
+                           nominal_power=elm.Sn,
+                           copper_losses=elm.Pcu,
+                           iron_losses=elm.Pfe,
+                           no_load_current=elm.I0,
+                           short_circuit_voltage=elm.Vsc,
                            active=elm.active,
+                           rate=elm.rate if elm.rate > 0 else 9999,
+
                            r=elm.R,
                            x=elm.X,
                            g=elm.G,
                            b=elm.B,
-                           monitor_loading=elm.monitor_loading,
-                           contingency_enabled=elm.contingency_enabled,
+
                            tap_module=elm.tap_module,
-                           tap_phase=elm.tap_phase)
+                           tap_module_max = elm.tap_module_max,
+                           tap_module_min=elm.tap_module_min,
+
+                           tap_phase=elm.tap_phase,
+                           tap_phase_max=elm.tap_phase_max,
+                           tap_phase_min=elm.tap_phase_min,
+
+                           tolerance=elm.tolerance,
+
+                           cost=elm.Cost,
+                           mttf=elm.mttf,
+                           mttr=elm.mttr,
+
+                           vset=elm.vset,
+                           Pset=elm.Pset,
+                           Qset=elm.Qset,
+
+                           temp_base=elm.temp_base,
+                           temp_oper=elm.temp_oper,
+                           alpha=elm.alpha,
+
+                           tap_module_control_mode=tap_module_control_mode_dict[elm.tap_module_control_mode],
+                           tap_phase_control_mode=tap_phase_control_mode_dict[elm.tap_phase_control_mode],
+
+                           contingency_factor=elm.contingency_factor,
+                           protection_rating_factor=elm.protection_rating_factor,
+
+                           contingency_enabled=elm.contingency_enabled,
+                           monitor_loading=elm.monitor_loading,
+
+                           )
 
     tr2.tap_phase_min = elm.tap_phase_min
     tr2.tap_phase_max = elm.tap_phase_max
     tr2.tap_module_min = elm.tap_module_min
     tr2.tap_module_max = elm.tap_module_max
+
+    if elm.regulation_bus is not None:
+        tr2.regulation_bus = bus_dict[elm.regulation_bus.idtag]
 
     fill_profile(gslv_profile=tr2.active,
                  gc_profile=elm.active_prof,

@@ -21,6 +21,7 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str, verbose=False)
     """
     if arr.shape != arr_expected.shape:
         print('failed (shape):', name, test)
+        print(f"got: {arr}, \nexpected: {arr_expected}")
         return 1
 
     if np.allclose(arr, arr_expected, atol=tol):
@@ -120,6 +121,8 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: gce.NumericalCircuit, tol:
     errors += CheckArr(gslv_types.pq, gc_types.pq, tol, 'Types', 'pq')
     errors += CheckArr(gslv_types.pv, gc_types.pv, tol, 'Types', 'pv')
     errors += CheckArr(gslv_types.vd, gc_types.vd, tol, 'Types', 'vd')
+    errors += CheckArr(gslv_types.pqv, gc_types.pqv, tol, 'Types', 'pqv')
+    errors += CheckArr(gslv_types.p, gc_types.p, tol, 'Types', 'p')
 
     errors += CheckArr(gslv_conn.Cf.toarray(), gc_conn.Cf.toarray(), tol, 'Connectivity', 'Cf (dense)')
     errors += CheckArr(gslv_conn.Ct.toarray(), gc_conn.Ct.toarray(), tol, 'Connectivity', 'Ct (dense)')
@@ -225,13 +228,14 @@ def test_gslv_compatibility():
         return
 
     files = [
-        'IEEE 14 bus.raw',
-        'IEEE 30 bus.raw',
-        'IEEE 118 Bus v2.raw',
+        'AC-DC with all and DCload.gridcal',
+        'RAW/IEEE 14 bus.raw',
+        'RAW/IEEE 30 bus.raw',
+        'RAW/IEEE 118 Bus v2.raw',
     ]
 
     for f1 in files:
-        fname = os.path.join('data', 'grids', 'RAW', f1)
+        fname = os.path.join('data', 'grids',  f1)
 
         print(f"Testing: {fname}")
 
@@ -341,7 +345,7 @@ def test_contingencies_ts():
 
 
 if __name__ == '__main__':
-    # test_gslv_compatibility()
+    test_gslv_compatibility()
     # test_gslv_compatibility_ts()
     # test_power_flow_ts()
-    test_contingencies_ts()
+    # test_contingencies_ts()
