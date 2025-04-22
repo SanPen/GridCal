@@ -686,6 +686,12 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             self.toast_manager.show_info_toast("Profiles loaded for assigning...")
 
+            # If the columns in the loaded data file do not match the length of the objects,
+            # it likely indicates an update of profiles. Therefore, uncheck the checkbox to preserve the original
+            # profiles that are not included in the update.
+            if self.original_data_frame.shape[1] != len(self.objects):
+                self.ui.setUnassignedToZeroCheckBox.setChecked(False)
+
         else:
             if logger.has_logs():
                 dlg = LogsDialogue("Import issues", logger)
