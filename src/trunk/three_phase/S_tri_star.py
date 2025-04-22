@@ -93,6 +93,7 @@ S_star_formula = C_v_inv @ S_tri_direct @ C_i_H
 # Compare
 print(f"\nComparing S_star_direct vs S_star_formula:")
 print(f"Are matrices close? {np.allclose(S_star_direct, S_star_formula)}")
+print(S_star_formula)
 
 
 
