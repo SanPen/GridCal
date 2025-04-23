@@ -92,3 +92,7 @@ def test_ntc_ieee_14() -> None:
     res = drv.results
 
     assert res.converged
+
+
+if __name__ == '__main__':
+    test_ntc_ieee_14()

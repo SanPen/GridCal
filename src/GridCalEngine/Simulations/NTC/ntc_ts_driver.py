@@ -7,7 +7,7 @@ import numpy as np
 from typing import Union
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
+from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf
 from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
@@ -67,9 +67,9 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         for t_idx, t in enumerate(self.time_indices):
 
-            opf_vars = run_linear_ntc_opf_ts(
+            opf_vars = run_linear_ntc_opf(
                 grid=self.grid,
-                time_indices=[t],  # only one time index at a time
+                t=t,  # only one time index at a time
                 solver_type=self.options.opf_options.mip_solver,
                 zonal_grouping=self.options.opf_options.zonal_grouping,
                 skip_generation_limits=self.options.skip_generation_limits,

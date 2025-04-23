@@ -5,7 +5,7 @@
 
 from typing import List
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
+from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
@@ -50,9 +50,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         self.report_text('Formulating NTC OPF...')
 
-        opf_vars = run_linear_ntc_opf_ts(
+        opf_vars = run_linear_ntc_opf(
             grid=self.grid,
-            time_indices=None,
+            t=None,
             solver_type=self.options.opf_options.mip_solver,
             zonal_grouping=self.options.opf_options.zonal_grouping,
             skip_generation_limits=self.options.skip_generation_limits,
