@@ -34,9 +34,10 @@ import matplotlib.pyplot as plt
 
 
 def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admittances, Cg, R, X, Sd, slack, from_idx,
-                                to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U, P_L, tanmax, Q_U, Q_L, tapm_max,
-                                tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase,
-                                rates, il, nll, ig, nig, Sg_undis, ctQ, acopf_mode, h=1e-5) -> IpsFunctionReturn:
+                                nshed, to_idx, fdc, tdc, ndc, pq, pv, Pdcmax, V_U, V_L, P_U, P_L, tanmax, Q_U, Q_L,
+                                tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s,
+                                c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ, acopf_mode,
+                                h=1e-5) -> IpsFunctionReturn:
     """
 
     :param x:
@@ -52,6 +53,7 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
     :param slack:
     :param from_idx:
     :param to_idx:
+    :param n_shed:
     :param fdc:
     :param tdc:
     :param ndc:
@@ -98,8 +100,9 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq, M=nll, ntapm=ntapm,
-                                                     ntapt=ntapt, ndc=ndc, nslcap=0, acopf_mode=acopf_mode)
+    _, _, _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, nshed=nshed, npq=npq, M=nll,
+                                                        ntapm=ntapm, ntapt=ntapt, ndc=ndc, nslcap=0,
+                                                        acopf_mode=acopf_mode)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -162,7 +165,7 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
 
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, Sd, slack,
                                 from_idx, to_idx, f_nd_dc, t_nd_dc, fdc, tdc, ndc, nsh, capacity_nodes_idx,
-                                nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, Inom, V_U, V_L,
+                                nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, Inom, nshed, shedding_cost, V_U, V_L,
                                 P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                 k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
                                 W_k_vec, Z_k_vec, u_j_vec, acopf_mode) -> Tuple[IpsFunctionReturn, Vec]:
@@ -188,6 +191,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param pq: Index of PQ buses
     :param pv: Index of PV buses
     :param Pdcmax: Bound for power transmission in a DC link
+    :param nshed: Number of load shedding buses
     :param V_U: upper bound for voltage module per bus
     :param V_L: lower bound for voltage module per bus
     :param P_U: upper bound for active power generation per generator
@@ -198,7 +202,6 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param tapm_min: Lower bound for tap module per transformer
     :param tapt_max: Upper bound for tap phase per transformer
     :param tapt_min: Lower bound for tap phase per transformer
-    :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
     :param alltapm: value of all the tap modules, including the non controlled ones
     :param alltapt: value of all the tap phases, including the non controlled ones
     :param k_m: Index of module controlled transformers
@@ -233,7 +236,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
+    _, _, _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, nshed=nshed, npq=npq,
                                                      M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
                                                      nslcap=nslcap, acopf_mode=acopf_mode)
 
@@ -254,15 +257,15 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
 
     ts_f = timeit.default_timer()
     f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, nll=nll, c0=c0, c1=c1, c2=c2, c_s=c_s, nslcap=nslcap,
-               nodal_capacity_sign=nodal_capacity_sign, c_v=c_v, ig=ig, npq=npq, ndc=ndc, Sbase=Sbase,
-               acopf_mode=acopf_mode)
+               nodal_capacity_sign=nodal_capacity_sign, shedding_cost=shedding_cost, c_v=c_v, ig=ig,
+               nshed=nshed, npq=npq, ndc=ndc, Sbase=Sbase, acopf_mode=acopf_mode)
     te_f = timeit.default_timer()
 
     ts_g = timeit.default_timer()
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, nll=nll, nslcap=nslcap,
-                      nodal_capacity_sign=nodal_capacity_sign, capacity_nodes_idx=capacity_nodes_idx, npq=npq, pv=pv,
-                      f_nd_dc=f_nd_dc, t_nd_dc=t_nd_dc, fdc=fdc, tdc=tdc, Pf_nondisp=Pf_nondisp, k_m=k_m, k_tau=k_tau,
-                      Vm_max=V_U, Sg_undis=Sg_undis, slack=slack, acopf_mode=acopf_mode)
+                      nodal_capacity_sign=nodal_capacity_sign, capacity_nodes_idx=capacity_nodes_idx, nshed=nshed,
+                      npq=npq, pv=pv, f_nd_dc=f_nd_dc, t_nd_dc=t_nd_dc, fdc=fdc, tdc=tdc, Pf_nondisp=Pf_nondisp,
+                      k_m=k_m, k_tau=k_tau, Vm_max=V_U, Sg_undis=Sg_undis, slack=slack, acopf_mode=acopf_mode)
     te_g = timeit.default_timer()
 
     ts_h = timeit.default_timer()
@@ -272,13 +275,11 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     #                    tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
     #                    rates=rates, il=il, ig=ig, ctQ=ctQ,
     #                    acopf_mode=acopf_mode)
-    H, Sf, St = eval_h_scopf(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m,
-                             k_tau=k_tau,
-                             Cg=Cg, Inom=Inom, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L,
-                             tapm_max=tapm_max,
-                             tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
+    H, Sf, St = eval_h_scopf(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
+                             Cg=Cg, Inom=Inom, nshed=nshed, Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L,
+                             tapm_max=tapm_max, tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
                              rates=rates, il=il, ig=ig, ctQ=ctQ, W_k_vec=W_k_vec, Z_k_vec=Z_k_vec, u_j_vec=u_j_vec,
-                             acopf_mode=acopf_mode)
+                             acopf_mode=acopf_mode, Sd=Sd)
     te_h = timeit.default_timer()
 
     fx, Gx, Hx, fxx, Gxx, Hxx, der_times = jacobians_and_hessians_scopf(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg,
@@ -286,6 +287,8 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                                                         Ct=Ct, Inom=Inom, Yf=Yf,
                                                                         Yt=Yt, Ybus=Ybus, Sbase=Sbase, mon_br_idx=il,
                                                                         ig=ig,
+                                                                        nshed=nshed,
+                                                                        shedding_cost=shedding_cost,
                                                                         slack=slack,
                                                                         nslcap=nslcap,
                                                                         nodal_capacity_sign=nodal_capacity_sign,
@@ -425,6 +428,7 @@ class NonlinearSCOPFResults:
     Qg: Vec = None
     Qsh: Vec = None
     Pcost: Vec = None
+    Pshed: Vec = None
     tap_module: Vec = None
     tap_phase: Vec = None
     hvdc_Pf: Vec = None
@@ -449,12 +453,13 @@ class NonlinearSCOPFResults:
     # u_j = set-points passed to the subproblem
     u_j: Vec = None
 
-    def initialize(self, nbus: int, nbr: int, nsh: int, ng: int, nhvdc: int, ncap: int):
+    def initialize(self, nbus: int, nbr: int, nsh: int, nshed: int, ng: int, nhvdc: int, ncap: int):
         """
         Initialize the arrays
         :param nbus: number of buses
         :param nbr: number of branches
         :param nsh: number of controllable shunt elements
+        :param nshed: number of load shedding buses
         :param ng: number of generators
         :param nhvdc: number of HVDC
         :param ncap: Number of nodal capacity nodes
@@ -469,6 +474,7 @@ class NonlinearSCOPFResults:
         self.Qg: Vec = np.zeros(ng)
         self.Qsh: Vec = np.zeros(nsh)
         self.Pcost: Vec = np.zeros(ng)
+        self.Pshed: Vec = np.zeros(nshed)
         self.tap_module: Vec = np.zeros(nbr)
         self.tap_phase: Vec = np.zeros(nbr)
         self.hvdc_Pf: Vec = np.zeros(nhvdc)
@@ -494,6 +500,7 @@ class NonlinearSCOPFResults:
               br_idx: IntVec,
               il_idx: IntVec,
               gen_idx: IntVec,
+              load_idx: IntVec,
               hvdc_idx: IntVec,
               ncap_idx: IntVec,
               contshunt_idx: IntVec,
@@ -520,6 +527,7 @@ class NonlinearSCOPFResults:
         self.Qg[gen_idx] = other.Qg
         self.Qsh[contshunt_idx] = other.Qsh
         self.Pcost[gen_idx] = other.Pcost
+        self.Pshed[load_idx] = other.Pshed
         self.tap_module[br_idx] = other.tap_module
         self.tap_phase[br_idx] = other.tap_phase
         self.hvdc_Pf[hvdc_idx] = other.hvdc_Pf
@@ -559,6 +567,7 @@ def scopf_subproblem(nc: NumericalCircuit,
                      debug: bool = False,
                      use_autodiff: bool = False,
                      Sbus_pf: Union[CxVec, None] = None,
+                     load_shedding: bool = False,
                      plot_error: bool = False,
                      mp_results: NonlinearSCOPFResults = None,
                      logger: Logger = Logger()) -> NonlinearSCOPFResults:
@@ -569,6 +578,7 @@ def scopf_subproblem(nc: NumericalCircuit,
     :param debug: if true, the jacobians, hessians, etc are checked against finite difference versions of them
     :param use_autodiff: use the autodiff version of the structures
     :param Sbus_pf: Sbus initial solution
+    :param load_shedding: if true, the load shedding is activated
     :param plot_error: Plot the error evolution. Default: False
     :param mp_results: Results from the master problem 
     :param logger: Logger
@@ -668,7 +678,7 @@ def scopf_subproblem(nc: NumericalCircuit,
     gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[gen_nondisp_idx]
     rates = nc.passive_branch_data.rates / Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
-    Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
+    Va_max = nc.bus_data.angle_max  # These limits are not really used as of right now.
     Va_min = nc.bus_data.angle_min
 
     # Transformer control modes and line parameters to calculate the associated derivatives w.r.t the tap variables.
@@ -735,6 +745,16 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     # Slack relaxations for constraints
 
+    if load_shedding:
+        shedding_cost = np.zeros(nbus)
+        shedding_cost[nc.load_data.get_bus_indices()] = nc.load_data.cost
+        Pshed0 = Sd.real
+        nshed = nbus
+    else:
+        shedding_cost = np.array([])
+        Pshed0 = np.array([])
+        nshed = 0
+
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
@@ -764,10 +784,10 @@ def scopf_subproblem(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
     if opf_options.ips_control_q_limits:
-        NI = 2 * n_br_mon + 2 * npq + ngen + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
+        NI = 2 * n_br_mon + 2 * npq + ngen + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + 2 * nshed
     else:
         # No Reactive constraint (power curve)
-        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl
+        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + 2 * nshed
 
     # ignore power from Z and I of the load
 
@@ -789,6 +809,7 @@ def scopf_subproblem(nc: NumericalCircuit,
                Vm=vm0,
                Pg=p0gen,
                Qg=q0gen,
+               Pshed=Pshed0,
                sl_sf=sl_sf0,
                sl_st=sl_st0,
                sl_vmax=sl_vmax0,
@@ -838,7 +859,7 @@ def scopf_subproblem(nc: NumericalCircuit,
             # run the solver with the autodiff derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_autodiff_structures,
-                                           arg=(admittances, Cg, Sd, slack, from_idx, to_idx, pq, pv,
+                                           arg=(admittances, Cg, Sd, slack, from_idx, nshed, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
                                                 c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx,
@@ -855,7 +876,7 @@ def scopf_subproblem(nc: NumericalCircuit,
                                                   arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
                                                        t_nd_hvdc, f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, nsh,
                                                        capacity_nodes_idx, nodal_capacity_sign, nslcap, pq, pv,
-                                                       Pf_nondisp, P_hvdc_max, Inom, Vm_max, Vm_min, Pg_max, Pg_min,
+                                                       Pf_nondisp, P_hvdc_max, Inom, nshed, shedding_cost, Vm_max, Vm_min, Pg_max, Pg_min,
                                                        tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                        alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
                                                        br_mon_idx, n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
@@ -867,9 +888,9 @@ def scopf_subproblem(nc: NumericalCircuit,
                                                   trust=opf_options.ips_trust_radius)
 
     # convert the solution to the problem variables
-    (Va, Vm, Pg_dis, Qg_dis, sl_sf, sl_st,
+    (Va, Vm, Pg_dis, Qg_dis, Pshed, sl_sf, sl_st,
      sl_vmax, sl_vmin, slcap, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=n_gen_disp, nQg=n_gen_disp,
-                                                        M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
+                                                        nshed=nshed, M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
                                                         nslcap=nslcap, acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
@@ -914,6 +935,7 @@ def scopf_subproblem(nc: NumericalCircuit,
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
+        df_shed = pd.DataFrame(data={'Load shedded (MW)': Pshed * nc.Sbase})
         df_linkdc = pd.DataFrame(data={'P_dc (MW)': Pfdc * nc.Sbase})
 
         df_slsf = pd.DataFrame(data={'Slacks Sf': sl_sf})
@@ -931,6 +953,7 @@ def scopf_subproblem(nc: NumericalCircuit,
         print("V-Trafos:\n", df_trafo_m)
         print("Tau-Trafos:\n", df_trafo_tau)
         print("Gen:\n", df_gen)
+        print("Load shedding\n", df_shed)
         print("Link DC:\n", df_linkdc)
 
         print('Qshunt min: ' + str(Qsh_min))
@@ -1048,7 +1071,7 @@ def scopf_subproblem(nc: NumericalCircuit,
 
     results = NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
                                     Sf=Sf, St=St, loading=loading,
-                                    Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
+                                    Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen], Pshed=Pshed,
                                     tap_module=tap_module, tap_phase=tap_phase,
                                     hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
                                     lam_p=lam_p, lam_q=lam_q,
@@ -1078,6 +1101,7 @@ def scopf_subproblem(nc: NumericalCircuit,
                     Vm=Vm,
                     Pg=Pg,
                     Qg=Qg,
+                    Pshed=Pshed,
                     sl_sf=sl_sf,
                     sl_st=sl_st,
                     sl_vmax=sl_vmax,
@@ -1107,6 +1131,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                  use_autodiff: bool = False,
                  pf_init: bool = False,
                  Sbus_pf: Union[CxVec, None] = None,
+                 load_shedding: bool = False,
                  voltage_pf: Union[CxVec, None] = None,
                  plot_error: bool = False,
                  optimize_nodal_capacity: bool = False,
@@ -1125,6 +1150,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
     :param use_autodiff: use the autodiff version of the structures
     :param pf_init: Initialize with power flow
     :param Sbus_pf: Sbus initial solution
+    :param load_shedding: if true, the load shedding is activated
     :param voltage_pf: Voltage initial solution
     :param plot_error: Plot the error evolution. Default: False
     :param optimize_nodal_capacity:
@@ -1280,9 +1306,18 @@ def scopf_MP_OPF(nc: NumericalCircuit,
 
     if W_k_vec is not None:
         n_cuts = len(W_k_vec)
-        print(f"n_cuts: {n_cuts}")
     else:
         n_cuts = 0
+
+    if load_shedding:
+        shedding_cost = np.zeros(nbus)
+        shedding_cost[nc.load_data.get_bus_indices()] = nc.load_data.cost
+        Pshed0 = Sd.real
+        nshed = nbus
+    else:
+        shedding_cost = np.array([])
+        Pshed0 = np.array([])
+        nshed = 0
 
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
@@ -1318,10 +1353,10 @@ def scopf_MP_OPF(nc: NumericalCircuit,
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
     if opf_options.ips_control_q_limits:
-        NI = 2 * n_br_mon + 2 * npq + ngen + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + n_cuts
+        NI = 2 * n_br_mon + 2 * npq + ngen + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + 2 * nshed + n_cuts
     else:
         # No Reactive constraint (power curve)
-        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + n_cuts
+        NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl + 2 * nshed + n_cuts
 
     # ignore power from Z and I of the load
 
@@ -1359,6 +1394,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                Vm=vm0,
                Pg=p0gen,
                Qg=q0gen,
+               Pshed=Pshed0,
                sl_sf=sl_sf0,
                sl_st=sl_st0,
                sl_vmax=sl_vmax0,
@@ -1416,7 +1452,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                                                   arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
                                                        t_nd_hvdc, f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, nsh,
                                                        capacity_nodes_idx, nodal_capacity_sign, nslcap, pq, pv,
-                                                       Pf_nondisp, P_hvdc_max, Inom, Vm_max, Vm_min, Pg_max, Pg_min,
+                                                       Pf_nondisp, P_hvdc_max, Inom, nshed, shedding_cost, Vm_max, Vm_min, Pg_max, Pg_min,
                                                        tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                                        alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
                                                        br_mon_idx, n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
@@ -1428,9 +1464,9 @@ def scopf_MP_OPF(nc: NumericalCircuit,
                                                   trust=opf_options.ips_trust_radius)
 
     # convert the solution to the problem variables
-    (Va, Vm, Pg_dis, Qg_dis, sl_sf, sl_st,
+    (Va, Vm, Pg_dis, Qg_dis, Pshed, sl_sf, sl_st,
      sl_vmax, sl_vmin, slcap, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=n_gen_disp, nQg=n_gen_disp,
-                                                        M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
+                                                        nshed=nshed, M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
                                                         nslcap=nslcap, acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
@@ -1616,7 +1652,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
 
     return NonlinearSCOPFResults(Va=Va, Vm=Vm, S=S,
                                  Sf=Sf, St=St, loading=loading,
-                                 Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
+                                 Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen], Pshed=Pshed,
                                  tap_module=tap_module, tap_phase=tap_phase,
                                  hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
                                  lam_p=lam_p, lam_q=lam_q,
@@ -1630,7 +1666,6 @@ def scopf_MP_OPF(nc: NumericalCircuit,
 def run_nonlinear_MP_opf(nc: NumericalCircuit,
                          opf_options: OptimalPowerFlowOptions,
                          pf_options: PowerFlowOptions,
-                         t_idx: Union[None, int] = None,
                          debug: bool = False,
                          use_autodiff: bool = False,
                          pf_init=False,
@@ -1638,6 +1673,7 @@ def run_nonlinear_MP_opf(nc: NumericalCircuit,
                          voltage_pf0: Union[CxVec, None] = None,
                          plot_error: bool = False,
                          optimize_nodal_capacity: bool = False,
+                         load_shedding: bool = False,
                          nodal_capacity_sign: float = 1.0,
                          capacity_nodes_idx: Union[IntVec, None] = None,
                          W_k_vec: Union[Vec, None] = None,
@@ -1645,11 +1681,10 @@ def run_nonlinear_MP_opf(nc: NumericalCircuit,
                          u_j_vec: Union[Mat, None] = None,
                          logger: Logger = Logger()) -> NonlinearSCOPFResults:
     """
-    Run optimal power flow for a MultiCircuit
-    :param grid: MultiCircuit
+    Run optimal power flow for a NumericalCircuit
+    :param nc: NumericalCircuit
     :param opf_options: OptimalPowerFlowOptions
     :param pf_options: PowerFlowOptions
-    :param t_idx: Time index
     :param debug: debug? when active the autodiff is activated
     :param use_autodiff: Use autodiff?
     :param pf_init: Initialize with power flow
@@ -1657,6 +1692,7 @@ def run_nonlinear_MP_opf(nc: NumericalCircuit,
     :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
     :param optimize_nodal_capacity:
+    :param load_shedding: Load shedding?
     :param nodal_capacity_sign:
     :param capacity_nodes_idx:
     :param logger: Logger object
@@ -1685,13 +1721,18 @@ def run_nonlinear_MP_opf(nc: NumericalCircuit,
     # create and initialize results
     results = NonlinearSCOPFResults()
 
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen, nshed=nc.nbus if load_shedding else 0,
                        nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
     for i, island in enumerate(islands):
 
-        capacity_nodes_idx_org = None
-        capacity_nodes_idx_isl = None
+        if capacity_nodes_idx is not None:
+            # get the
+            (capacity_nodes_idx_org,
+             capacity_nodes_idx_isl) = remap_original_bus_indices(nbus=nc.nbus, orginal_bus_idx=capacity_nodes_idx)
+        else:
+            capacity_nodes_idx_org = None
+            capacity_nodes_idx_isl = None
 
         # run the island ACOPF
         island_res = scopf_MP_OPF(nc=island,
@@ -1705,21 +1746,25 @@ def run_nonlinear_MP_opf(nc: NumericalCircuit,
                                   plot_error=plot_error,
                                   optimize_nodal_capacity=optimize_nodal_capacity,
                                   nodal_capacity_sign=nodal_capacity_sign,
+                                  load_shedding=load_shedding,
                                   capacity_nodes_idx=capacity_nodes_idx_isl,
                                   logger=logger,
                                   W_k_vec=W_k_vec,
                                   Z_k_vec=Z_k_vec,
                                   u_j_vec=u_j_vec)
 
+        # merge the results
         results.merge(other=island_res,
                       bus_idx=island.bus_data.original_idx,
                       br_idx=island.passive_branch_data.original_idx,
                       il_idx=island.passive_branch_data.get_monitor_enabled_indices(),
                       gen_idx=island.generator_data.original_idx,
+                      load_idx=island.bus_data.original_idx if load_shedding else np.array([], dtype=int),
                       hvdc_idx=island.hvdc_data.original_idx,
                       ncap_idx=capacity_nodes_idx_org,
                       contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
                       acopf_mode=opf_options.acopf_mode)
+
         if i > 0:
             results.error = max(results.error, island_res.error)
             results.iterations = max(results.iterations, island_res.iterations)
@@ -1748,6 +1793,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
                            voltage_pf0: Union[CxVec, None] = None,
                            mp_results: NonlinearSCOPFResults = None,
                            plot_error: bool = False,
+                           load_shedding: bool = False,
                            optimize_nodal_capacity: bool = False,
                            nodal_capacity_sign: float = 1.0,
                            capacity_nodes_idx: Union[IntVec, None] = None,
@@ -1764,6 +1810,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
     :param Sbus_pf0: Sbus initial solution
     :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
+    :param load_shedding: Load shedding?
     :param optimize_nodal_capacity:
     :param nodal_capacity_sign:
     :param capacity_nodes_idx:
@@ -1782,7 +1829,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
 
     # create and initialize results
     results = NonlinearSCOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen, nshed=nc.nbus if load_shedding else 0,
                        nhvdc=nc.nhvdc, ncap=0)
 
     for i, island in enumerate(islands):
@@ -1796,6 +1843,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
                                           debug=debug,
                                           use_autodiff=use_autodiff,
                                           Sbus_pf=Sbus_pf[island.bus_data.original_idx],
+                                          load_shedding=load_shedding,
                                           plot_error=plot_error,
                                           mp_results=mp_results,
                                           logger=logger)
@@ -1805,6 +1853,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
                           br_idx=island.passive_branch_data.original_idx,
                           il_idx=island.passive_branch_data.get_monitor_enabled_indices(),
                           gen_idx=island.generator_data.original_idx,
+                          load_idx=island.load_data.original_idx if load_shedding else np.array([], dtype=int),
                           hvdc_idx=island.hvdc_data.original_idx,
                           ncap_idx=None,
                           contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
@@ -1880,8 +1929,16 @@ def case_loop() -> None:
     """
     # Load basic grid
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
-    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/IEEE 14 zip.gridcal')
+    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     grid = FileOpen(file_path).open()
+
+    # configure grid for load shedding testing
+    for ll in range(len(grid.lines)):
+        grid.lines[ll].monitor_loading = True
+    for tt in range(len(grid.transformers2w)):
+        grid.transformers2w[tt].monitor_loading = True
+
+    grid.loads[1].Cost = 0
 
     # Set options
     pf_options = PowerFlowOptions(control_q=False)
@@ -1897,7 +1954,7 @@ def case_loop() -> None:
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                         opf_options=opf_slack_options, pf_init=True)
+                                         opf_options=opf_slack_options, pf_init=True, load_shedding=True)
 
     print()
     print(f"--- Base case ---")
@@ -1974,7 +2031,8 @@ def case_loop() -> None:
                             pf_options=pf_options,
                             opf_options=opf_slack_options,
                             pf_init=True,
-                            mp_results=acopf_results
+                            mp_results=acopf_results,
+                            load_shedding=False
                         )
 
                         # Collect slacks
@@ -2009,12 +2067,20 @@ def case_loop() -> None:
             u_j_vec = u_j_vec[:prob_cont, :]
 
         # Store metrics for this iteration
-        iteration_data['max_wk'].append(W_k_local.max())
+        if W_k_local.size > 0:
+            iteration_data['max_wk'].append(W_k_local.max())
+            iteration_data['max_voltage_slack'].append(v_slacks.max())
+            iteration_data['avg_voltage_slack'].append(v_slacks.mean())
+            iteration_data['max_flow_slack'].append(f_slacks.max())
+            iteration_data['avg_flow_slack'].append(f_slacks.mean())
+        else:
+            iteration_data['max_wk'].append(0.1)
+            iteration_data['max_voltage_slack'].append(0.1)
+            iteration_data['avg_voltage_slack'].append(0.1)
+            iteration_data['max_flow_slack'].append(0.1)
+            iteration_data['avg_flow_slack'].append(0.1)
+            print('Contingencies have not been initialised')
         iteration_data['num_violations'].append(prob_cont)
-        iteration_data['max_voltage_slack'].append(v_slacks.max())
-        iteration_data['avg_voltage_slack'].append(v_slacks.mean())
-        iteration_data['max_flow_slack'].append(f_slacks.max())
-        iteration_data['avg_flow_slack'].append(f_slacks.mean())
 
         # Run the MP with information from the SPs
         print("--- Feeding SPs info to MP ---")

@@ -694,7 +694,6 @@ class NumericalCircuit:
         :param revert: if false, the contingencies are applied, else they are reversed
         :return: vector of power injection increments
         """
-        print(f'Applying contingencies: {event_list}')
         # vector of power injection increments
         inj_increment = np.zeros(self.nbus)
 
@@ -711,8 +710,10 @@ class NumericalCircuit:
                 if cnt.prop == ContingencyOperationTypes.Active:
                     if revert:
                         self.passive_branch_data.active[idx] = int(not bool(cnt.value))
+                        print(f'Removing contingencies: {event_list}')
                     else:
                         self.passive_branch_data.active[idx] = int(cnt.value)
+                        print(f'Applying contingencies: {event_list}')
                 else:
                     print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
 
