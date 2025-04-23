@@ -52,6 +52,24 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
                                               acopf_mode=gce.AcOpfMode.ACOPFstd)
     base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
+    grid.loads[1].P = 0
+    nc = gce.compile_numerical_circuit_at(grid)
+    load0_base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+
+    grid.loads[1].P = 94.2
+
+    for load in grid.loads:
+        load.Cost = 9.0
+
+    nc = gce.compile_numerical_circuit_at(grid)
+    load_shed_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options, load_shedding=True)
+
+    grid.loads[1].Cost = 0
+
+    nc = gce.compile_numerical_circuit_at(grid)
+    load_shed0_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options,
+                                           load_shedding=True)
+
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
     slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
@@ -76,7 +94,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
     tap_slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
-    return base_sol, slack_sol, tap_sol, tap_slack_sol
+    return base_sol, load0_base_sol, load_shed_sol, load_shed0_sol, slack_sol, tap_sol, tap_slack_sol
 
 
 def case14_ctrlQ_shunts() -> NonlinearOPFResults:
@@ -154,6 +172,13 @@ def test_ieee14():
     Pg_test = [1.94330215, 0.3671917, 0.28742702, 0.00000149, 0.08494969]
     Qg_test = [0.00000419, 0.2368516, 0.24126884, 0.11545683, 0.08273012]
 
+    vm_test_load0 = [1.06, 1.046051, 1.037816, 1.020212, 1.020992, 1.059999, 1.048694, 1.059999, 1.045839, 1.040895,
+                     1.046892, 1.044995, 1.040248, 1.025249]
+    va_test_load0 = [0, -0.049619, -0.086409, -0.116704, -0.102097, -0.19418, -0.172344,
+                     -0.172344, -0.201529, -0.205302, -0.20204, -0.209008, -0.210053, -0.223038]
+    Pg_test_load0 = [1.43546781, 0.26670811, 0.00000015, 0.00000016, 0.00000017]
+    Qg_test_load0 = [0.00009202, 0.18747472, 0.1988645, 0.08543572, 0.06802756]
+
     vm_test_sl = [1.0599998, 1.04075254, 1.01562432, 1.01446007, 1.01636191, 1.05999794, 1.0463456, 1.05999841,
                   1.04369754, 1.03913505, 1.04600771, 1.04481843, 1.03994689, 1.0238869]
     va_test_sl = [0.0, -0.07020259, -0.17324036, -0.15123059, -0.12965027, -0.22146689, -0.19526562, -0.18177452,
@@ -189,12 +214,27 @@ def test_ieee14():
     tapm_test_tap_sl = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.96635518, 0., 0.97510953]
     tapt_test_tap_sl = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.01311787, 0.02386944, 0.]
 
-    base, slack, tap, tapslack = case14()
+    base, baseload, shedload, shedload0, slack, tap, tapslack = case14()
 
     assert np.allclose(base.Vm, vm_test, atol=1e-3)
     assert np.allclose(base.Va, va_test, atol=1e-3)
     assert np.allclose(base.Pg, Pg_test, atol=1e-3)
     assert np.allclose(base.Qg, Qg_test, atol=1e-3)
+
+    assert np.allclose(baseload.Vm, vm_test_load0, atol=1e-3)
+    assert np.allclose(baseload.Va, va_test_load0, atol=1e-3)
+    assert np.allclose(baseload.Pg, Pg_test_load0, atol=1e-3)
+    assert np.allclose(baseload.Qg, Qg_test_load0, atol=1e-3)
+
+    assert np.allclose(shedload.Vm, vm_test, atol=1e-3)
+    assert np.allclose(shedload.Va, va_test, atol=1e-3)
+    assert np.allclose(shedload.Pg, Pg_test, atol=1e-3)
+    assert np.allclose(shedload.Qg, Qg_test, atol=1e-3)
+
+    assert np.allclose(shedload0.Vm, vm_test_load0, atol=1e-3)
+    assert np.allclose(shedload0.Va, va_test_load0, atol=1e-3)
+    assert np.allclose(shedload0.Pg, Pg_test_load0, atol=1e-3)
+    assert np.allclose(shedload0.Qg, Qg_test_load0, atol=1e-3)
 
     assert np.allclose(slack.Vm, vm_test_sl, atol=1e-3)
     assert np.allclose(slack.Va, va_test_sl, atol=1e-3)
@@ -321,7 +361,6 @@ def superconductor() -> NonlinearOPFResults:
 def test_superconductors_handling():
     vm_test = [1.0957346797437704, 1.0969574703822882, 1.0862735278860973, 1.0957346797437704,
                1.0854699877686833, 1.0999995150478854, 1.089489008278147, 1.0999995260914164, 1.072794065554122]
-
 
     va_test = [-4.2370941920734066e-20, 0.1286722741064758, 0.09997739459585175, -4.2370941920734066e-20,
                -0.026373782258851553, 0.05377100775984605, 0.022363497246639205, 0.05904426953721843,

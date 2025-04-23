@@ -395,9 +395,9 @@ class NonlinearOPFResults:
     loading: Vec = None
     Pg: Vec = None
     Qg: Vec = None
-    Pshed: Vec = None
     Qsh: Vec = None
     Pcost: Vec = None
+    Pshed: Vec = None
     tap_module: Vec = None
     tap_phase: Vec = None
     hvdc_Pf: Vec = None
@@ -431,9 +431,9 @@ class NonlinearOPFResults:
         self.loading: Vec = np.zeros(nbr)
         self.Pg: Vec = np.zeros(ng)
         self.Qg: Vec = np.zeros(ng)
-        self.Pshed: Vec = np.zeros(nshed)
         self.Qsh: Vec = np.zeros(nsh)
         self.Pcost: Vec = np.zeros(ng)
+        self.Pshed: Vec = np.zeros(nshed)
         self.tap_module: Vec = np.zeros(nbr)
         self.tap_phase: Vec = np.zeros(nbr)
         self.hvdc_Pf: Vec = np.zeros(nhvdc)
@@ -480,9 +480,9 @@ class NonlinearOPFResults:
         self.loading[br_idx] = other.loading
         self.Pg[gen_idx] = other.Pg
         self.Qg[gen_idx] = other.Qg
-        self.Pshed[load_idx] = other.Pshed
         self.Qsh[contshunt_idx] = other.Qsh
         self.Pcost[gen_idx] = other.Pcost
+        self.Pshed[load_idx] = other.Pshed
         self.tap_module[br_idx] = other.tap_module
         self.tap_phase[br_idx] = other.tap_phase
         self.hvdc_Pf[hvdc_idx] = other.hvdc_Pf
@@ -688,7 +688,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     P_hvdc_max = nc.hvdc_data.rates[hvdc_disp_idx]
 
     if load_shedding:
-        shedding_cost = nc.load_data.cost
+        shedding_cost = np.zeros(nbus)
+        shedding_cost[nc.load_data.get_bus_indices()] = nc.load_data.cost
         Pshed0 = Sd.real
         nshed = nbus
     else:
@@ -894,6 +895,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
                                     'dual price (€/MW)': lam_p, 'dual price (€/MVAr)': lam_q})
         df_gen = pd.DataFrame(data={'P (MW)': Pg * nc.Sbase, 'Q (MVAr)': Qg * nc.Sbase})
+        df_shed = pd.DataFrame(data={'Load shedded (MW)': Pshed * nc.Sbase})
         df_linkdc = pd.DataFrame(data={'P_dc (MW)': Pfdc * nc.Sbase})
 
         df_slsf = pd.DataFrame(data={'Slacks Sf': sl_sf})
@@ -911,6 +913,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("V-Trafos:\n", df_trafo_m)
         print("Tau-Trafos:\n", df_trafo_tau)
         print("Gen:\n", df_gen)
+        print("Load shedding\n", df_shed)
         print("Link DC:\n", df_linkdc)
 
         print('Qshunt min: ' + str(Qsh_min))
@@ -1031,7 +1034,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     return NonlinearOPFResults(Va=Va, Vm=Vm, S=S,
                                Sf=Sf, St=St, loading=loading,
-                               Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
+                               Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen], Pshed=Pshed,
                                tap_module=tap_module, tap_phase=tap_phase,
                                hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
                                lam_p=lam_p, lam_q=lam_q,
@@ -1125,6 +1128,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                            voltage_pf=voltage_pf[island.bus_data.original_idx],
                                            plot_error=plot_error,
                                            optimize_nodal_capacity=optimize_nodal_capacity,
+                                           load_shedding=load_shedding,
                                            nodal_capacity_sign=nodal_capacity_sign,
                                            capacity_nodes_idx=capacity_nodes_idx_isl,
                                            logger=logger)

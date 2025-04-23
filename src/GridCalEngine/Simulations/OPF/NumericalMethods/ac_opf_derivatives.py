@@ -755,7 +755,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         fx = np.zeros(NV)
         if nslcap == 0:
             fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase * Sbase) + c1 * Sbase) * 1e-4
-            fx[2 * N + 2 * 2 * Ng: 2 * N + 2 * 2 * Ng + nshed] = shedding_cost
+            fx[2 * N + 2 * Ng: 2 * N + 2 * Ng + nshed] = shedding_cost
             if acopf_mode == AcOpfMode.ACOPFslacks:
                 fx[npfvar + nshed: npfvar + nshed + M] = c_s
                 fx[npfvar + nshed + M: npfvar + nshed + 2 * M] = c_s
@@ -1178,7 +1178,8 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
             G1 = sp.hstack([Gaa, Gav, lil_matrix((N, 2 * Ng + nshed + nsl + nslcap + ndc))])
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nshed + nsl + nslcap + ndc))])
             Gxx = sp.vstack(
-                [G1, G2, lil_matrix((2 * Ng + nshed + nsl + nslcap + ndc, npfvar + nsl + nslcap + ndc))]).tocsc()
+                [G1, G2,
+                 lil_matrix((2 * Ng + nshed + nsl + nslcap + ndc, npfvar + nshed + nsl + nslcap + ndc))]).tocsc()
 
         te_gxx = timeit.default_timer()
         # INEQUALITY CONSTRAINTS HESS ----------------------------------------------------------------------------------
