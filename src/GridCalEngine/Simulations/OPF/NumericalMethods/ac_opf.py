@@ -695,7 +695,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if load_shedding:
         shedding_cost = np.zeros(nbus)
         shedding_cost[nc.load_data.get_bus_indices()] = nc.load_data.cost
-        Pshed0 = Sd.real
+        # Pshed0 = Sd.real
+        Pshed0 = np.zeros(len(Sd.real), dtype=float)
         nshed = nbus
     else:
         shedding_cost = np.array([])

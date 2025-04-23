@@ -748,7 +748,8 @@ def scopf_subproblem(nc: NumericalCircuit,
     if load_shedding:
         shedding_cost = np.zeros(nbus)
         shedding_cost[nc.load_data.get_bus_indices()] = nc.load_data.cost
-        Pshed0 = Sd.real
+        # Pshed0 = Sd.real
+        Pshed0 = np.zeros(len(Sd.real), dtype=float)
         nshed = nbus
     else:
         shedding_cost = np.array([])
@@ -1306,13 +1307,15 @@ def scopf_MP_OPF(nc: NumericalCircuit,
 
     if W_k_vec is not None:
         n_cuts = len(W_k_vec)
+        print('n_cuts', n_cuts)
     else:
         n_cuts = 0
 
     if load_shedding:
         shedding_cost = np.zeros(nbus)
         shedding_cost[nc.load_data.get_bus_indices()] = nc.load_data.cost
-        Pshed0 = Sd.real
+        # Pshed0 = Sd.real
+        Pshed0 = np.zeros(len(Sd.real), dtype=float)
         nshed = nbus
     else:
         shedding_cost = np.array([])
@@ -1929,7 +1932,9 @@ def case_loop() -> None:
     """
     # Load basic grid
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
-    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
+    # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
+    file_path = 'src/trunk/scopf/bus5_v12.gridcal'
+    # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
@@ -1938,7 +1943,7 @@ def case_loop() -> None:
     for tt in range(len(grid.transformers2w)):
         grid.transformers2w[tt].monitor_loading = True
 
-    grid.loads[1].Cost = 0
+    # grid.loads[1].Cost = 0
 
     # Set options
     pf_options = PowerFlowOptions(control_q=False)
@@ -1954,7 +1959,7 @@ def case_loop() -> None:
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                         opf_options=opf_slack_options, pf_init=True, load_shedding=True)
+                                         opf_options=opf_slack_options, pf_init=True, load_shedding=False)
 
     print()
     print(f"--- Base case ---")
@@ -1980,8 +1985,11 @@ def case_loop() -> None:
 
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
+    prob_cont = 0
+    tolerance = 1e-4
+
     # Start main loop over iterations
-    for klm in range(20):
+    for klm in range(1):
         print(f"General iteration {klm + 1} of 20")
 
         n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
@@ -1989,7 +1997,7 @@ def case_loop() -> None:
         # Global slack and weight trackers
         v_slacks = np.zeros(n_con_groups)
         f_slacks = np.zeros(n_con_groups)
-        prob_cont = 0
+        viols = 0
         W_k_vec = np.zeros(n_con_groups)
         Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
         u_j_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
@@ -2042,11 +2050,12 @@ def case_loop() -> None:
                         f_slacks[ic] = f_slack
                         W_k_local[ic] = slack_sol_cont.W_k
 
-                        if slack_sol_cont.W_k > 0.0001:
-                            W_k_vec[prob_cont] = slack_sol_cont.W_k
-                            Z_k_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.Z_k
-                            u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
+                        if slack_sol_cont.W_k > tolerance:
+                            W_k_vec[viols] = slack_sol_cont.W_k
+                            Z_k_vec[viols, island.generator_data.original_idx] = slack_sol_cont.Z_k
+                            u_j_vec[viols, island.generator_data.original_idx] = slack_sol_cont.u_j
                             prob_cont += 1
+                            viols += 1
 
                         print('nbus', island.nbus, 'ngen', island.ngen)
 
@@ -2080,7 +2089,7 @@ def case_loop() -> None:
             iteration_data['max_flow_slack'].append(0.1)
             iteration_data['avg_flow_slack'].append(0.1)
             print('Contingencies have not been initialised')
-        iteration_data['num_violations'].append(prob_cont)
+        iteration_data['num_violations'].append(viols)
 
         # Run the MP with information from the SPs
         print("--- Feeding SPs info to MP ---")
@@ -2105,7 +2114,7 @@ def case_loop() -> None:
         print(f"Average flow slack: {iteration_data['avg_flow_slack'][-1]}")
         print(f"Total generation cost: {total_cost}")
 
-        if prob_cont == 0:
+        if viols == 0:
             break
 
     # Plot the results
