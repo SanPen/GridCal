@@ -160,6 +160,7 @@ class BaseDiagram:
         self._min_bus_width: float = min_bus_width
         self._max_bus_width: float = max_bus_width
         self._arrow_size: float = arrow_size
+        self._use_api_colors: bool = False
 
         self._palette = palette
         self._default_bus_voltage: float = default_bus_voltage
@@ -267,6 +268,14 @@ class BaseDiagram:
     def default_bus_voltage(self, value: float):
         self._default_bus_voltage = value
 
+    @property
+    def use_api_colors(self) -> bool:
+        return self._use_api_colors
+
+    @use_api_colors.setter
+    def use_api_colors(self, value: bool):
+        self._use_api_colors = value
+
     def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
 
@@ -286,7 +295,7 @@ class BaseDiagram:
             group.set_point(device, location)
             self.data[str(device.device_type.value)] = group
         else:
-            # the category does exists, add point
+            # the category does exist, add point
             d.set_point(device, location)  # the category, exists, just add
 
     def delete_device(self, device: ALL_DEV_TYPES) -> Union[object, None]:
@@ -300,7 +309,7 @@ class BaseDiagram:
             d = self.data.get(str(device.device_type.value), None)
 
             if d:
-                # the category does exist, delete from it
+                # the category does exist, delete_with_dialogue from it
                 return d.delete_device(device=device)
             else:
                 # not found so we're ok
@@ -350,7 +359,7 @@ class BaseDiagram:
                 "min_bus_width": self.min_bus_width,
                 "max_bus_width": self.max_bus_width,
                 "arrow_size": self.arrow_size,
-
+                "use_api_colors": self.use_api_colors,
                 "palette": self.palette.value,
                 "default_bus_voltage": self.default_bus_voltage,
                 'data': data}
@@ -377,6 +386,7 @@ class BaseDiagram:
         self.arrow_size: float = data.get("arrow_size", 1)
         self.palette = Colormaps(data.get("palette", 'GridCal'))
         self.default_bus_voltage = data.get("default_bus_voltage", 10)
+        self.use_api_colors = data.get("use_api_colors", False)
 
         if data['type'] == 'bus-branch':
             self.diagram_type = DiagramType.Schematic

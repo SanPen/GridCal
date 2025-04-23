@@ -670,7 +670,7 @@ def plot_combined_functions(function, data, scalef):
     # Add a legend
     ax.legend()
 
-    # Set axis limits and remove grid
+    # Set axis limits and delete grid
     # ax.set_xlim([0, 1.3])
     # ax.set_ylim([0, 1.3])
     # ax.set_zlim([0, 2])

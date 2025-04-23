@@ -41,7 +41,6 @@ def adv_jacobian(nbus: int,
                  F: IntVec,
                  T: IntVec,
                  Ys: CxVec,
-                 kconv: Vec,
                  complex_tap: CxVec,
                  tap_modules: Vec,
                  Bc: Vec,
@@ -72,7 +71,6 @@ def adv_jacobian(nbus: int,
     :param F:
     :param T:
     :param Ys: Series admittance 1 / (R + jX)
-    :param kconv:
     :param complex_tap:
     :param tap_modules:
     :param Bc: Total changing susceptance
@@ -107,19 +105,19 @@ def adv_jacobian(nbus: int,
     dPt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dPt, idx_dvm, ytt, ytf, Vm, Va, F, T).real
     dQt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dQt, idx_dvm, ytt, ytf, Vm, Va, F, T).imag
 
-    dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V).real
-    dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V).imag
-    dPf_dm_ = deriv.dSf_dm_csc(nbr, idx_dPf, idx_dm, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V).real
-    dQf_dm_ = deriv.dSf_dm_csc(nbr, idx_dQf, idx_dm, F, T, Ys, Bc, kconv, complex_tap, tap_modules, V).imag
-    dPt_dm_ = deriv.dSt_dm_csc(nbr, idx_dPt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).real
-    dQt_dm_ = deriv.dSt_dm_csc(nbr, idx_dQt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).imag
+    dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, complex_tap, tap_modules, V).real
+    dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, complex_tap, tap_modules, V).imag
+    dPf_dm_ = deriv.dSf_dm_csc(nbr, idx_dPf, idx_dm, F, T, Ys, Bc, complex_tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(nbr, idx_dQf, idx_dm, F, T, Ys, Bc, complex_tap, tap_modules, V).imag
+    dPt_dm_ = deriv.dSt_dm_csc(nbr, idx_dPt, idx_dm, F, T, Ys, complex_tap, tap_modules, V).real
+    dQt_dm_ = deriv.dSt_dm_csc(nbr, idx_dQt, idx_dm, F, T, Ys, complex_tap, tap_modules, V).imag
 
-    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dPt, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dQt, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+    dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, complex_tap, V).real
+    dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, complex_tap, V).imag
+    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dPf, idx_dtau, F, T, Ys, complex_tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dQf, idx_dtau, F, T, Ys, complex_tap, V).imag
+    dPt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dPt, idx_dtau, F, T, Ys, complex_tap, V).real
+    dQt_dtau_ = deriv.dSt_dtau_csc(nbr, idx_dQt, idx_dtau, F, T, Ys, complex_tap, V).imag
 
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
@@ -347,7 +345,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
     def x2var(self, x: Vec) -> None:
         """
-        Convert X to decission variables
+        Convert X to decision variables
         :param x: solution vector
         """
         a = len(self.idx_dVa)
@@ -363,7 +361,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
     def var2x(self) -> Vec:
         """
-        Convert the internal decission variables into the vector
+        Convert the internal decision variables into the vector
         :return: Vector
         """
         return np.r_[
@@ -420,7 +418,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             conn=self.nc.passive_branch_data.conn,
             seq=1,
             add_windings_phase=False,
-            verbose=self.options.verbose,
         )
 
         # compute the complex voltage
@@ -456,7 +453,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Qt - self.nc.active_branch_data.Qset[self.idx_dQt]
         ]
 
-        # compute the rror
+        # compute the error
         return compute_fx_error(_f), x
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
@@ -484,8 +481,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Yshunt_bus=self.nc.get_Yshunt_bus_pu(),
             conn=self.nc.passive_branch_data.conn,
             seq=1,
-            add_windings_phase=False,
-            verbose=self.options.verbose,
+            add_windings_phase=False
         )
 
         # compute the complex voltage
@@ -630,7 +626,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                 # recompute the error based on the new Scalc and S0
                 self._f = self.fx()
 
-                # compute the rror
+                # compute the error
                 self._error = compute_fx_error(self._f)
 
         # converged?
@@ -786,7 +782,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                              F=F,
                              T=T,
                              Ys=self.Ys,
-                             kconv=self.nc.passive_branch_data.k,
                              complex_tap=tap,
                              tap_modules=tap_modules,
                              Bc=self.nc.passive_branch_data.B,

@@ -7,11 +7,10 @@ from __future__ import annotations
 import numpy as np
 
 from typing import Union, List
-from GridCal.Gui.messages import warning_msg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox, QCheckBox
 from GridCal.Gui.gui_functions import get_list_model
-from GridCal.Gui.messages import error_msg
+from GridCal.Gui.messages import error_msg, warning_msg, yes_no_question
 from GridCalEngine.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 
 
@@ -169,6 +168,17 @@ class LineEditor(QDialog):
         self.b_spinner.setValue(b_us)
         self.b_spinner.setSuffix(" uS/Km")
 
+        # Circuit Index
+        max_circuits = 0
+        if isinstance(self.current_template, OverheadLineType):
+            max_circuits = self.current_template.n_circuits
+        self.circuit_idx = QDoubleSpinBox()
+        self.circuit_idx.setMinimum(1)
+        self.circuit_idx.setMaximum(max_circuits)
+        self.circuit_idx.setDecimals(0)
+        self.circuit_idx.setValue(float(self.line.circuit_idx))
+        self.circuit_idx.setSuffix("")
+
         # apply to profile
         self.apply_to_profile = QCheckBox()
         self.apply_to_profile.setToolTip("Apply the newly computed values like the rating to the profile")
@@ -184,6 +194,9 @@ class LineEditor(QDialog):
         if templates is not None:
             self.layout.addWidget(QLabel("Available templates"))
             self.layout.addWidget(self.catalogue_combo)
+            self.catalogue_combo.currentIndexChanged.connect(self.update_max_circuits)
+            self.layout.addWidget((QLabel("Circuit index:")))
+            self.layout.addWidget(self.circuit_idx)
             self.layout.addWidget(self.load_template_btn)
             self.layout.addWidget(QLabel(""))
 
@@ -223,22 +236,35 @@ class LineEditor(QDialog):
             if self.selected_template is not None:
                 self.line.disable_auto_updates()
                 self.line.set_length(val=length)
+                self.line.set_circuit_idx(val=int(self.circuit_idx.value()), obj=self.selected_template)
                 self.line.apply_template(obj=self.selected_template, Sbase=self.Sbase, freq=self.frequency)
                 self.line.enable_auto_updates()
+                self.accept()
             else:
-                wf = 2 * np.pi * self.frequency
-                self.line.fill_design_properties(
-                    r_ohm=self.r_spinner.value(),  # ohm / km
-                    x_ohm=self.x_spinner.value(),  # ohm / km
-                    c_nf=self.b_spinner.value() * 1e3 / wf,  # nF / km
-                    length=length,  # km
-                    Imax=self.i_spinner.value(),  # KA
-                    freq=self.frequency,  # Hz
-                    Sbase=self.Sbase,  # MVA
-                    apply_to_profile=self.apply_to_profile.isChecked()
+                response = yes_no_question(
+                    text="Warning: You did not load template values. The circuit index will not be updated. "
+                         "Line parameters will be based on the provided values for Length, Max Current, Resistance, "
+                         "Reactance, and Susceptance.\n\n"
+                         "Do you want to continue without a template?",
+                    title="No Template Selected"
                 )
 
-            self.accept()
+                if response:  # User selected Yes
+                    wf = 2 * np.pi * self.frequency
+                    self.line.fill_design_properties(
+                        r_ohm=self.r_spinner.value(),  # ohm / km
+                        x_ohm=self.x_spinner.value(),  # ohm / km
+                        c_nf=self.b_spinner.value() * 1e3 / wf,  # nF / km
+                        length=length,  # km
+                        Imax=self.i_spinner.value(),  # KA
+                        freq=self.frequency,  # Hz
+                        Sbase=self.Sbase,  # MVA
+                        apply_to_profile=self.apply_to_profile.isChecked()
+                    )
+                    self.accept()
+                else:
+                    # User canceled, do nothing
+                    return
         else:
             error_msg(text="The length cannot be 0!", title="Accept line design values")
 
@@ -268,13 +294,14 @@ class LineEditor(QDialog):
         elif isinstance(template, OverheadLineType):
             if self.current_template.check():
                 R1, X1, Bsh1, I_kA = self.current_template.get_sequence_values(
-                    circuit_idx=self.line.circuit_idx,
+                    circuit_idx=int(self.circuit_idx.value()),
                     seq=1
                 )
                 self.i_spinner.setValue(I_kA)
                 self.r_spinner.setValue(R1)
                 self.x_spinner.setValue(X1)
                 self.b_spinner.setValue(Bsh1)
+                self.circuit_idx.setMaximum(self.current_template.n_circuits)
             else:
                 warning_msg(text=f"The template {self.current_template.name} contains errors",
                             title="Load template")
@@ -291,3 +318,20 @@ class LineEditor(QDialog):
 
             if idx > -1:
                 self.load_template(template=self.templates[idx])
+
+    def update_max_circuits(self):
+        """
+        Update the maximum number of circuits
+        :return:
+        """
+
+        if self.templates is not None:
+            idx = self.catalogue_combo.currentIndex()
+
+            if idx > -1:
+                template = self.templates[idx]
+
+                if isinstance(template, OverheadLineType):
+                    self.circuit_idx.setMaximum(template.n_circuits)
+                else:
+                    self.circuit_idx.setMaximum(1)

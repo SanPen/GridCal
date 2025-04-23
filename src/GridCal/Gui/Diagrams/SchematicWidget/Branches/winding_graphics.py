@@ -46,6 +46,14 @@ class WindingGraphicItem(LineGraphicTemplateItem):
         self.parent_tr3_graphics_item = None
         self.winding_number = 0
 
+    @property
+    def api_object(self) -> Winding:
+        return self._api_object
+
+    @api_object.setter
+    def api_object(self, api_object: Winding):
+        self._api_object = api_object
+
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -93,27 +101,24 @@ class WindingGraphicItem(LineGraphicTemplateItem):
             del_icon = QIcon()
             del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
             ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
+            ra2.triggered.connect(self.delete)
 
             menu.exec_(event.screenPos())
         else:
             pass
 
-    def remove(self, ask=True):
+    def delete(self, ask=True):
         """
         Remove this object in the diagram and the API
         @return:
         """
-        if ask:
-            dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
-                                 'Remove branch')
-        else:
-            ok = True
+        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
-        if ok:
-            self.editor.circuit.delete_branch(self.api_object)
-            self.editor.delete_diagram_element(self.api_object)
+        if deleted:
+            # self.editor.circuit.delete_branch(self.api_object)
+            # self.editor.delete_element_utility_function(self.api_object)
 
             # unregister the winding
             self.parent_tr3_graphics_item.remove_winding(self.winding_number)
+
+

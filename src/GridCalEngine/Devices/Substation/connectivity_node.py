@@ -13,14 +13,17 @@ from GridCalEngine.enumerations import DeviceType
 
 class ConnectivityNode(PhysicalDevice):
 
-    def __init__(self, name='CN',
+    def __init__(self,
+                 name='CN',
                  idtag=None,
                  code='',
                  dc: bool = False,
                  default_bus: Union[None, Bus] = None,
                  voltage_level: Union[VoltageLevel, None] = None,
                  internal: bool = False,
-                 Vnom: float = 10.0):
+                 Vnom: float = 10.0,
+                 xpos=0,
+                 ypos=0):
         """
         Constructor
         :param name: Name of the connectivity node
@@ -31,6 +34,8 @@ class ConnectivityNode(PhysicalDevice):
         :param voltage_level: Substation of this connectivity node (optional)
         :param internal: Is internal?
         :param Vnom: Nominal voltage in kV
+        :param xpos: x position in px
+        :param ypos: y position in px
         """
         PhysicalDevice.__init__(self,
                                 name=name,
@@ -50,6 +55,9 @@ class ConnectivityNode(PhysicalDevice):
 
         self.Vnom = float(Vnom) if voltage_level is None else voltage_level.Vnom
 
+        self.x = float(xpos)
+        self.y = float(ypos)
+
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the cn.')
 
         self.register(key="dc", tpe=bool, definition="is this a DC connectivity node?")
@@ -62,6 +70,11 @@ class ConnectivityNode(PhysicalDevice):
 
         self.register(key="voltage_level", tpe=DeviceType.VoltageLevelDevice,
                       definition="Voltage level of this connectivity node (optional)")
+
+        self.register(key='x', units='px', tpe=float, definition='x position in pixels.', profile_name='',
+                      editable=False)
+        self.register(key='y', units='px', tpe=float, definition='y position in pixels.', profile_name='',
+                      editable=False)
 
     @property
     def bus(self) -> Bus:

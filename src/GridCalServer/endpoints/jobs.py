@@ -35,9 +35,6 @@ def generate_job_file_path(job_id: str):
     return os.path.join(get_fs_folder(), f"{job_id}.zip")
 
 
-
-
-
 async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     """
     Action called on the upload
@@ -121,7 +118,8 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
             try:
                 driver = run_job(grid=grid, job=job)
             except Exception as e:
-                return {"success": False, "results": None, "msg": f"{e}"}
+                print("Job running error:\n", e)
+                return {"success": False, "results": None, "msg": f"Job running error"}
 
             job.status = JobStatus.Done
             JOBS_LIST.pop(job.id_tag)
@@ -155,7 +153,7 @@ async def jobs_list():
 async def delete_job(job_id: str):
     """
     Delete a specific job by ID
-    :param job_id: The ID of the job to delete
+    :param job_id: The ID of the job to delete_with_dialogue
     :return: A message indicating the result
     """
     if job_id in JOBS_LIST:

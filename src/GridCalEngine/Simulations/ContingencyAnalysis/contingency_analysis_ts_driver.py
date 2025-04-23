@@ -19,6 +19,7 @@ from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_contingencies, translate_contingency_report
+from GridCalEngine.Compilers.circuit_to_gslv import (gslv_contingencies)
 from GridCalEngine.Utils.NumericalMethods.weldorf_online_stddev import WeldorfOnlineStdDevMat
 
 
@@ -31,23 +32,25 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     def __init__(self,
                  grid: MultiCircuit,
-                 options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions],
-                 time_indices: IntVec,
+                 options: ContingencyAnalysisOptions,
+                 time_indices: IntVec | None = None,
                  clustering_results: Union["ClusteringResults", None] = None,
                  engine: EngineType = EngineType.GridCal):
         """
-        Contingecny analysis constructor
-        :param grid: Multicircuit instance
+        Contingency analysis constructor
+        :param grid: MultiCircuit instance
         :param options: ContingencyAnalysisOptions instance
         :param time_indices: array of time indices to simulate
         :param clustering_results: ClusteringResults instance (optional)
         :param engine: Calculation engine to use
         """
-        TimeSeriesDriverTemplate.__init__(self,
-                                          grid=grid,
-                                          time_indices=time_indices,
-                                          clustering_results=clustering_results,
-                                          engine=engine)
+        TimeSeriesDriverTemplate.__init__(
+            self,
+            grid=grid,
+            time_indices=grid.get_all_time_indices() if time_indices is None else time_indices,
+            clustering_results=clustering_results,
+            engine=engine
+        )
 
         # Options to use
         self.options: Union[ContingencyAnalysisOptions, LinearAnalysisOptions] = options
@@ -56,10 +59,10 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.results: ContingencyAnalysisTimeSeriesResults = ContingencyAnalysisTimeSeriesResults(
             n=self.grid.get_bus_number(),
             nbr=self.grid.get_branch_number_wo_hvdc(),
-            time_array=self.grid.time_profile[time_indices],
+            time_array=self.grid.time_profile[self.time_indices],
             bus_names=self.grid.get_bus_names(),
             branch_names=self.grid.get_branch_names_wo_hvdc(),
-            bus_types=np.ones(self.grid.get_bus_number()),
+            bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             con_names=self.grid.get_contingency_group_names(),
             clustering_results=clustering_results
         )
@@ -117,7 +120,7 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             if self.clustering_results is not None:
                 t_prob = self.clustering_results.sampled_probabilities[it]
             else:
-                t_prob = 1.0/len(self.time_indices)
+                t_prob = 1.0 / len(self.time_indices)
 
             res_t = cdriver.run_at(t_idx=int(t), t_prob=t_prob)
 
@@ -188,6 +191,38 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         return results
 
+    def run_gslv(self) -> ContingencyAnalysisTimeSeriesResults:
+        """
+        Run with Newton Power Analytics
+        :return:
+        """
+        res = gslv_contingencies(circuit=self.grid,
+                                 con_opt=self.options,
+                                 time_series=True,
+                                 time_indices=self.time_indices)
+
+        time_array = self.grid.time_profile[self.time_indices]
+
+        nb = self.grid.get_bus_number()
+        results = ContingencyAnalysisTimeSeriesResults(
+            n=nb,
+            nbr=self.grid.get_branch_number_wo_hvdc(),
+            time_array=time_array,
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            bus_names=self.grid.get_bus_names(),
+            bus_types=np.ones(nb, dtype=int),
+            con_names=self.grid.get_contingency_group_names(),
+            clustering_results=self.clustering_results
+        )
+
+        # results.S[t, :] = res_t.S.real.max(axis=0)
+        results.max_flows = res.max_values.Sf
+        results.max_loading = res.max_values.loading
+
+        # translate_contingency_report(newton_report=res.report, gridcal_report=results.report)
+
+        return results
+
     def run(self) -> None:
         """
         Run contingency analysis time series
@@ -200,6 +235,10 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         elif self.engine == EngineType.NewtonPA:
             self.report_text('Running Newton power analytics... ')
             self.results = self.run_newton_pa()
+
+        elif self.engine == EngineType.GSLV:
+            self.report_text('Running gslv... ')
+            self.results = self.run_gslv()
 
         else:
             # default to GridCal mode

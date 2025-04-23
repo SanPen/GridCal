@@ -312,7 +312,7 @@ class ObjectsModel(WrappableTableModel):
                     else:
                         value2 = value
 
-                    self.objects[obj_idx].set_vaule(prop=prop, t_idx=self.time_index_, value=value2)
+                    self.objects[obj_idx].set_value(prop=prop, t_idx=self.time_index_, value=value2)
                 else:
                     pass  # the column cannot be edited
             else:

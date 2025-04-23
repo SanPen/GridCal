@@ -331,7 +331,7 @@ class ServerDriver(QThread):
         """
         Delete a specific job by ID using the REST API.
 
-        :param job_id: The ID of the job to delete
+        :param job_id: The ID of the job to delete_with_dialogue
         :param api_key: The API key for authentication
         :return: Response from the server
         """

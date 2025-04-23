@@ -45,15 +45,16 @@ class Investment(EditableDevice):
         # Contingency type
         self.device_idtag: str = device_idtag
         self.CAPEX: float = CAPEX
-        self.OPEX: float = OPEX
+        # self.OPEX: float = OPEX
         self._group: InvestmentsGroup = group
         self.status: bool = status
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
         self.register(key='CAPEX', units='M€', tpe=float,
-                      definition='Capital expenditures. This is the initial investment.')
-        self.register(key='OPEX', units='M€', tpe=float,
-                      definition='Operation expenditures. Maintenance costs among other recurrent costs.')
+                      definition='Capital expenditures. This is the investment value, '
+                                 'it overrides the CAPEX value of the device if it exits.')
+        # self.register(key='OPEX', units='M€', tpe=float,
+        #               definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')

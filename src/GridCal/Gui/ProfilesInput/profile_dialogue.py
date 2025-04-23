@@ -814,7 +814,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                     # pick a random source
                     rnd_idx_s = randint(0, len(source_indices) - 1)
 
-                    # pick and delete a random destination
+                    # pick and delete_with_dialogue a random destination
                     rnd_idx_o = randint(0, len(destination_indices) - 1)
 
                     # get the actual index

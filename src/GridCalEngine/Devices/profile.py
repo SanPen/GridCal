@@ -259,6 +259,11 @@ class Profile:
         :param arr:
         :return:
         """
+        if self.size() > 0:
+            if len(arr) != self.size():
+                raise ValueError("The array must have the same size as the profile")
+
+
         if len(arr) > 0:
 
             # Count occurrences of each element in the array
@@ -340,7 +345,7 @@ class Profile:
                 self._is_sparse = True
                 self._sparse_array = SparseArray(data_type=self.dtype)
                 self._sparse_array.default_value = self.default_value
-                print("Initializing sparse when querying, this signals a mis initilaization")
+                print("Initializing sparse when querying, this signals a mis initialization")
                 return self.default_value
             else:
                 return self._dense_array[key]

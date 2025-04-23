@@ -64,7 +64,7 @@ class Ui_Dialog(object):
         self.reject_selected_pushButton = QPushButton(self.frame_2)
         self.reject_selected_pushButton.setObjectName(u"reject_selected_pushButton")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon1.addFile(u":/Icons/icons/delete_with_dialogue.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.reject_selected_pushButton.setIcon(icon1)
 
         self.horizontalLayout.addWidget(self.reject_selected_pushButton)

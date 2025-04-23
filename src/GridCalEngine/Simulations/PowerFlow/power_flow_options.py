@@ -19,7 +19,6 @@ class PowerFlowOptions(OptionsTemplate):
                  initialize_with_existing_solution: bool = False,
                  tolerance: float = 1e-6,
                  max_iter: int = 25,
-                 max_outer_loop_iter: int = 100,
                  control_q: bool = True,
                  control_taps_modules: bool = True,
                  control_taps_phase: bool = True,
@@ -32,6 +31,7 @@ class PowerFlowOptions(OptionsTemplate):
                  trust_radius: float = 1.0,
                  backtracking_parameter: float = 0.05,
                  use_stored_guess: bool = False,
+                 initialize_angles: bool = False,
                  generate_report: bool = False):
         """
         Power flow options class
@@ -40,7 +40,6 @@ class PowerFlowOptions(OptionsTemplate):
         :param verbose: Print additional details in the console (0: no details, 1: some details, 2: all details)
         :param tolerance: Solution tolerance for the power flow numerical methods
         :param max_iter: Maximum number of iterations for the power flow numerical method
-        :param max_outer_loop_iter: Maximum number of iterations for the controls outer loop
         :param control_q: Control mode for the PV nodes reactive power limits
         :param apply_temperature_correction: Apply the temperature correction to the resistance of the Branches?
         :param branch_impedance_tolerance_mode: Type of modification of the Branches impedance
@@ -49,6 +48,7 @@ class PowerFlowOptions(OptionsTemplate):
         :param trust_radius: trust radius used in some numerical methods like NR. It should be < 1.
         :param backtracking_parameter: parameter used to correct the "bad" iterations, typically 0.5
         :param use_stored_guess: Use the existing solution from the Bus class (Vm0, Va0)
+        :param initialize_angles: Use a linear power flow to initialize the voltage guess
         :param generate_report: Generate the power flow report after the solution?
         """
         OptionsTemplate.__init__(self, name='PowerFlowOptions')
@@ -60,8 +60,6 @@ class PowerFlowOptions(OptionsTemplate):
         self.tolerance = tolerance
 
         self.max_iter = max_iter
-
-        self.max_outer_loop_iter = max_outer_loop_iter
 
         self.control_Q = control_q
 
@@ -91,13 +89,14 @@ class PowerFlowOptions(OptionsTemplate):
 
         self.use_stored_guess = use_stored_guess
 
+        self.initialize_angles = initialize_angles
+
         self.generate_report = generate_report
 
         self.register(key="solver_type", tpe=SolverType)
         self.register(key="retry_with_other_methods", tpe=bool)
         self.register(key="tolerance", tpe=float)
         self.register(key="max_iter", tpe=int)
-        self.register(key="max_outer_loop_iter", tpe=int)
         self.register(key="control_Q", tpe=bool)
         self.register(key="verbose", tpe=int)
         self.register(key="initialize_with_existing_solution", tpe=bool)
@@ -112,4 +111,5 @@ class PowerFlowOptions(OptionsTemplate):
         self.register(key="trust_radius", tpe=float)
         self.register(key="backtracking_parameter", tpe=float)
         self.register(key="use_stored_guess", tpe=bool)
+        self.register(key="initialize_angles", tpe=bool)
         self.register(key="generate_report", tpe=bool)

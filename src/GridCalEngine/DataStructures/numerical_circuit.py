@@ -134,6 +134,7 @@ def build_branches_C_coo_2(bus_active: IntVec,
     data = np.empty(nelm * 2, dtype=np.int64)
 
     ii = 0
+    br_count = 0
 
     for k in range(len(F1)):
         if active1[k]:
@@ -141,16 +142,17 @@ def build_branches_C_coo_2(bus_active: IntVec,
             t = T1[k]
             if bus_active[f] and bus_active[t]:
                 # C[k, f] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = f
                 data[ii] = 1
                 ii += 1
 
                 # C[k, t] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = t
                 data[ii] = 1
                 ii += 1
+        br_count += 1
 
     for k in range(len(F2)):
         if active2[k]:
@@ -158,16 +160,17 @@ def build_branches_C_coo_2(bus_active: IntVec,
             t = T2[k]
             if bus_active[f] and bus_active[t]:
                 # C[k, f] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = f
                 data[ii] = 1
                 ii += 1
 
                 # C[k, t] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = t
                 data[ii] = 1
                 ii += 1
+        br_count += 1
 
     return i[:ii], j[:ii], data[:ii], nelm
 
@@ -209,6 +212,7 @@ def build_branches_C_coo_3(bus_active: IntVec,
     data = np.empty(nelm * 2, dtype=np.int64)
 
     ii = 0
+    br_count = 0
 
     for k in range(len(F1)):
         if active1[k]:
@@ -216,16 +220,17 @@ def build_branches_C_coo_3(bus_active: IntVec,
             t = T1[k]
             if bus_active[f] and bus_active[t]:
                 # C[k, f] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = f
                 data[ii] = 1
                 ii += 1
 
                 # C[k, t] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = t
                 data[ii] = 1
                 ii += 1
+        br_count += 1
 
     for k in range(len(F2)):
         if active2[k]:
@@ -233,16 +238,17 @@ def build_branches_C_coo_3(bus_active: IntVec,
             t = T2[k]
             if bus_active[f] and bus_active[t]:
                 # C[k, f] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = f
                 data[ii] = 1
                 ii += 1
 
                 # C[k, t] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = t
                 data[ii] = 1
                 ii += 1
+        br_count += 1
 
     for k in range(len(F3)):
         if active3[k]:
@@ -250,16 +256,17 @@ def build_branches_C_coo_3(bus_active: IntVec,
             t = T3[k]
             if bus_active[f] and bus_active[t]:
                 # C[k, f] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = f
                 data[ii] = 1
                 ii += 1
 
                 # C[k, t] = 1
-                i[ii] = k
+                i[ii] = br_count
                 j[ii] = t
                 data[ii] = 1
                 ii += 1
+        br_count += 1
 
     return i[:ii], j[:ii], data[:ii], nelm
 
@@ -557,13 +564,6 @@ class NumericalCircuit:
         self.ngen = len(self.generator_data)
         self.nbatt = len(self.battery_data)
         self.nshunt = len(self.shunt_data)
-
-        # self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
-        # self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
-
-        if self.active_branch_data.any_pf_control is False:
-            if self.vsc_data.nelm > 0:
-                self.active_branch_data.any_pf_control = True
 
     def copy(self) -> "NumericalCircuit":
         """

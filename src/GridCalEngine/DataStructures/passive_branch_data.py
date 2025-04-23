@@ -45,8 +45,6 @@ class PassiveBranchData(BranchParentData):
         self.m_taps = SparseObjectArray(n=self.nelm)
         self.tau_taps = SparseObjectArray(n=self.nelm)
 
-        self.k: Vec = np.ones(nelm, dtype=float)
-
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
@@ -92,8 +90,6 @@ class PassiveBranchData(BranchParentData):
         data.m_taps = self.m_taps.slice(elm_idx)
         data.tau_taps = self.tau_taps.slice(elm_idx)
 
-        data.k = self.k[elm_idx]
-
         data.virtual_tap_f = self.virtual_tap_f[elm_idx]
         data.virtual_tap_t = self.virtual_tap_t[elm_idx]
 
@@ -125,7 +121,6 @@ class PassiveBranchData(BranchParentData):
         data.conn = self.conn.copy()  # winding connection
         data.m_taps = self.m_taps.copy()
         data.tau_taps = self.tau_taps.copy()
-        data.k = self.k.copy()
 
         data.virtual_tap_f = self.virtual_tap_f.copy()
         data.virtual_tap_t = self.virtual_tap_t.copy()

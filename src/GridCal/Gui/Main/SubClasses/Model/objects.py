@@ -295,7 +295,7 @@ class ObjectsTableMain(DiagramsMain):
         mdl = self.get_current_objects_model_view()
         if mdl is not None:
             mdl.copy_to_clipboard()
-            print('Copied!')
+            self.show_info_toast('Copied!')
         else:
             warning_msg('There is no data displayed, please display one', 'Copy profile to clipboard')
 
@@ -523,21 +523,23 @@ class ObjectsTableMain(DiagramsMain):
 
         if len(selected_objects):
 
-            ok = yes_no_question('Are you sure that you want to delete the selected elements?', 'Delete')
+            ok = yes_no_question('Are you sure that you want to delete_with_dialogue the selected elements?', 'Delete')
             if ok:
                 for obj in selected_objects:
 
-                    # delete from the database
+                    # delete_with_dialogue from the database
                     self.circuit.delete_element(obj=obj)
 
-                    # delete from all diagrams
+                    # delete_with_dialogue from all diagrams
                     for diagram in self.diagram_widgets_list:
-                        diagram.delete_diagram_element(device=obj, propagate=False)
+                        diagram.delete_element_utility_function(device=obj, propagate=False)
 
                 # update the view
                 self.view_objects_data()
                 self.update_from_to_list_views()
                 self.update_date_dependent_combos()
+
+                self.show_info_toast(f"{len(selected_objects)} objects deleted")
 
     def duplicate_selected_objects(self):
         """
@@ -582,8 +584,10 @@ class ObjectsTableMain(DiagramsMain):
                     self.view_objects_data()
                     self.update_from_to_list_views()
                     self.update_date_dependent_combos()
+
+                    self.show_info_toast(f"{len(selected_objects)} substations merged")
             else:
-                info_msg(f'Merge function not available for {selected_objects[0].device_type.value} devices')
+                self.show_warning_toast(f'Merge function not available for {selected_objects[0].device_type.value} devices')
 
     def copy_selected_idtag(self):
         """
@@ -598,6 +602,8 @@ class ObjectsTableMain(DiagramsMain):
             cb.clear()
             lst = list()
             cb.setText("\n".join([obj.idtag for obj in selected_objects]))
+
+            self.show_info_toast("Copied!")
 
     def add_objects_to_current_diagram(self):
         """
@@ -652,6 +658,8 @@ class ObjectsTableMain(DiagramsMain):
                                                 diagram=diagram)
             self.set_diagrams_list_view()
 
+            self.show_info_toast(f"{diagram.name} added")
+
     def add_new_map_from_database_selection(self):
         """
         Create a New map from a buses selection
@@ -698,6 +706,8 @@ class ObjectsTableMain(DiagramsMain):
                                                 diagram=diagram)
             self.set_diagrams_list_view()
 
+            self.show_info_toast(f"{diagram.name} added")
+
     def crop_model_to_buses_selection(self):
         """
         Crop model to buses selection
@@ -707,7 +717,7 @@ class ObjectsTableMain(DiagramsMain):
 
         if len(selected_buses):
 
-            ok = yes_no_question(text="This will delete all buses and their connected elements that were not selected."
+            ok = yes_no_question(text="This will delete_with_dialogue all buses and their connected elements that were not selected."
                                       "This cannot be undone and it is dangerous if you don't know"
                                       "what you are doing. \nAre you sure?",
                                  title="Crop model to buses selection?")
@@ -720,6 +730,8 @@ class ObjectsTableMain(DiagramsMain):
 
                 for bus in to_be_deleted:
                     self.circuit.delete_bus(obj=bus, delete_associated=True)
+
+                self.show_info_toast(f"{len(to_be_deleted)} buses removed from the model")
 
     def add_objects(self):
         """
@@ -1092,13 +1104,14 @@ class ObjectsTableMain(DiagramsMain):
                 logger = bs.Logger()
 
                 t_idx = self.get_objects_time_index()
-
+                attr_list = list()
                 for index in indices:
                     i = index.row()
                     p_idx = index.column()
                     elm = model.objects[i]
                     attr = model.attributes[p_idx]
                     gc_prop = elm.registered_properties[attr]
+                    attr_list.append(attr)
                     if gc_prop.has_profile():
                         val = elm.get_value(prop=gc_prop, t_idx=t_idx)
                         profile = elm.get_profile_by_prop(prop=gc_prop)
@@ -1109,6 +1122,9 @@ class ObjectsTableMain(DiagramsMain):
                 if logger.size():
                     logs_window = LogsDialogue("Assign to profile", logger=logger)
                     logs_window.exec()
+                else:
+                    lst = ", ".join(attr_list)
+                    self.show_info_toast(f"{lst} assigned to profile")
         else:
             info_msg("Select a cell or a column first", "Assign to profile")
 
@@ -1182,11 +1198,11 @@ class ObjectsTableMain(DiagramsMain):
 
     def delete_inconsistencies(self):
         """
-        Call delete shit
+        Call delete_with_dialogue shit
         :return:
         """
         ok = yes_no_question(
-            "This action removes all disconnected devices with no active profile and remove all small islands",
+            "This action removes all disconnected devices with no active profile and delete all small islands",
             "Delete inconsistencies")
 
         if ok:
@@ -1218,13 +1234,13 @@ class ObjectsTableMain(DiagramsMain):
                     buses_to_delete.append(bus)
                     buses_to_delete_idx.append(r)
 
-        # delete the grphics from all diagrams
+        # delete_with_dialogue the grphics from all diagrams
         self.delete_from_all_diagrams(elements=buses_to_delete)
 
         for elm in buses_to_delete:
             logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
 
-        # search other elements to delete
+        # search other elements to delete_with_dialogue
         for dev_lst in [self.circuit.lines,
                         self.circuit.dc_lines,
                         self.circuit.vsc_devices,
@@ -1248,7 +1264,7 @@ class ObjectsTableMain(DiagramsMain):
         Clean the DataBase
         """
 
-        ok = yes_no_question("This action may delete unused objects and references, \nAre you sure?",
+        ok = yes_no_question("This action may delete_with_dialogue unused objects and references, \nAre you sure?",
                              title="DB clean")
 
         if ok:

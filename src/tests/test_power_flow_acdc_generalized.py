@@ -108,13 +108,8 @@ def test_ieee_grids():
         p_gc = solution.Sf.real
         p_psse = df_p.values[:, 0]
 
-        # br_codes = [e.code for e in main_circuit.get_branches_wo_hvdc()]
-        # p_gc_df = pd.DataFrame(data=p_gc, columns=[0], index=br_codes)
-        # pf_diff_df = p_gc_df - df_p
-
         v_ok = np.allclose(v_gc, v_psse, atol=1e-2)
         flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
-        # flow_ok = (np.abs(pf_diff_df.values) < 1e-3).all()
 
         if not v_ok:
             print('power flow voltages test for {} failed'.format(fname))
@@ -130,7 +125,7 @@ def test_zip() -> None:
     Test the power flow with ZIP loads compared to PSSe
     """
 
-    fname = os.path.join('data', 'grids', 'ZIP_load_example.raw')
+    fname = os.path.join('data', 'grids', 'ZIP_load_example.gridcal')
     grid = FileOpen(fname).open()
 
     options = PowerFlowOptions(tolerance=1e-6)
@@ -438,12 +433,12 @@ def test_fubm_new() -> None:
     problem, solution = solve_generalized(grid=grid, options=options)
 
     vm = np.abs(solution.V)
-    expected_vm = np.abs(np.array([1.01+0j, 
-                                   1.0120148113290914-0.00414941372825624j, 
-                                   1.01116+0j, 
-                                   1.0111600156849796+0j,
-                                   1.0117031232472475-0.03475745116898685j,
-                                   1.0194294344036188-0.03411199600606859j]))
+    expected_vm = np.abs(np.array([1.01 + 0j,
+                                   1.0120148113290914 - 0.00414941372825624j,
+                                   1.01116 + 0j,
+                                   1.0111600156849796 + 0j,
+                                   1.0117031232472475 - 0.03475745116898685j,
+                                   1.0194294344036188 - 0.03411199600606859j]))
 
     ok = np.allclose(vm, expected_vm, rtol=1e-4)
     assert ok
@@ -466,14 +461,13 @@ def test_hvdc_new() -> None:
                                    verbose=1)
     problem, solution = solve_generalized(grid=grid, options=options)
 
-    vm = np.abs(solution.V)
-    expected_vm = np.abs([1.0233985 -0.00175023j, 
-                          1.12339917-0.00136459j,
-                          1.02343677-0.00175086j,
-                          1.0222    +0.j        ,
-                          1.0111    +0.j        ])
+    expected_vm = np.array([1.0233985 - 0.00175023j,
+                            1.12339917 - 0.00136459j,
+                            1.02343677 - 0.00175086j,
+                            1.0222 + 0.j,
+                            1.0111 + 0.j])
 
-    ok = np.allclose(vm, expected_vm, rtol=1e-4)
+    ok = np.allclose(solution.V, expected_vm, rtol=1e-4)
     assert ok
 
 
@@ -485,23 +479,23 @@ def test_power_flow_12bus_acdc() -> None:
 
     grid = gce.open_file(fname)
 
-    expected_v = np.array([1.+0.j,
-                           0.99993477-0.01142182j,
-                           0.981475 -0.02798462j,
-                           0.99961098-0.02789078j,
-                           0.9970314 +0.j, 
-                           0.9921219 +0.j, 
-                           1.+0.j,
-                           0.9967762 +0.j,
-                           0.99174229-0.02349737j,
-                           0.99263056-0.02449658j,
-                           1.+0.j,
-                           0.99972273-0.0235469j,
-                           0.99752297-0.01554718j,
-                           0.99999114-0.00421027j,
-                           0.99937536-0.03533967j,
-                           0.99964957-0.02647153j,
-                           0.99799207+0.j])
+    expected_v = np.array([1. + 0.j,
+                           0.99993477 - 0.01142182j,
+                           0.981475 - 0.02798462j,
+                           0.99961098 - 0.02789078j,
+                           0.9970314 + 0.j,
+                           0.9921219 + 0.j,
+                           1. + 0.j,
+                           0.9967762 + 0.j,
+                           0.99174229 - 0.02349737j,
+                           0.99263056 - 0.02449658j,
+                           1. + 0.j,
+                           0.99972273 - 0.0235469j,
+                           0.99752297 - 0.01554718j,
+                           0.99999114 - 0.00421027j,
+                           0.99937536 - 0.03533967j,
+                           0.99964957 - 0.02647153j,
+                           0.99799207 + 0.j])
 
     # ------------------------------------------------------------------------------------------------------------------
     # for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
@@ -527,7 +521,7 @@ def test_power_flow_12bus_acdc() -> None:
     assert grid.vsc_devices[2].control1_val == abs(solution.V[6])
     assert grid.vsc_devices[2].control2_val == solution.St_vsc[2].imag
 
-    assert grid.vsc_devices[3].control1_val == solution.Pf_vsc[3] 
+    assert grid.vsc_devices[3].control1_val == solution.Pf_vsc[3]
     assert grid.vsc_devices[3].control2_val == solution.St_vsc[3].imag
 
     assert grid.transformers2w[2].vset == abs(solution.V[13])

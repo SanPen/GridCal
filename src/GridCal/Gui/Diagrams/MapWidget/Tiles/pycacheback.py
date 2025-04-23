@@ -96,7 +96,7 @@ class PyCacheBack(dict):
     def _reorder_lru(self, key, remove=False):
         """Move key in LRU (if it exists) to 'recent' end.
 
-        If 'remove' is True just remove from the LRU.
+        If 'delete' is True just delete from the LRU.
         """
 
         try:

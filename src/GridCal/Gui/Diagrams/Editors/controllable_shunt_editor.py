@@ -85,6 +85,7 @@ class ControllableShuntEditor(QDialog):
 
         self.setLayout(layout)
 
+
     def get_active_steps(self) -> np.ndarray:
         """
 

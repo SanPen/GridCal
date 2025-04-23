@@ -358,7 +358,6 @@ def convert_branches(circuit: MultiCircuit,
                                  # Beq_min=table[i, matpower_branches.BEQ_MIN],
                                  rate=rate,
                                  kdp=br.kdp,
-                                 k=br.k2,
                                  # tap_phase_control_mode=tap_phase_control_mode,
                                  # tap_module_control_mode=tap_module_control_mode,
                                  # Pset=Pset,
@@ -513,7 +512,7 @@ def convert_branches(circuit: MultiCircuit,
             # add device to the circuit
             circuit.add_dc_line(obj=dc_line)
 
-            # delete the line from the circuit
+            # delete_with_dialogue the line from the circuit
             circuit.delete_line(line)
             logger.add_info('Converted to DC line', line.name)
 
@@ -634,14 +633,14 @@ def convert_converters(circuit: MultiCircuit,
         rectifier   =   convmode>0;
         inverter    =   convmode<0;
         """
-        Ibase = m_grid.Sbase/ (math.sqrt(3) * br.base_kvac)
+        Ibase = m_grid.Sbase / (math.sqrt(3) * br.base_kvac)
         if br.p_g > 0:
-            alpha3 = br.loss_crec*Ibase**2/m_grid.Sbase
+            alpha3 = br.loss_crec * Ibase ** 2 / m_grid.Sbase
         else:
-            alpha3 = br.loss_cinv*Ibase**2/m_grid.Sbase
+            alpha3 = br.loss_cinv * Ibase ** 2 / m_grid.Sbase
 
-        alpha2 = br.loss_b*Ibase/m_grid.Sbase
-        alpha1 = br.loss_a/m_grid.Sbase
+        alpha2 = br.loss_b * Ibase / m_grid.Sbase
+        alpha1 = br.loss_a / m_grid.Sbase
 
         branch = dev.VSC(
             bus_from=bus_f,

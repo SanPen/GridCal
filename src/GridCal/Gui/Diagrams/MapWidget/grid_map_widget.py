@@ -3,24 +3,26 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+import ast
 import os
 from typing import Union, List, Set, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
 import pandas as pd
+from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from matplotlib import pyplot as plt
 
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton
 from collections.abc import Callable
-from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool,
-                            QEventLoop)
+from PySide6.QtCore import (Qt, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex, QRunnable, QThreadPool)
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
-from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
-from GridCal.Gui.general_dialogues import CheckListDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line, accept_line_connection
@@ -47,15 +49,14 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathL
 from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
-from GridCal.Gui.Diagrams.MapWidget.Branches.new_line_dialogue import NewMapLineDialogue
+from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, MapDiagramScene
+from GridCal.Gui.Diagrams.Editors.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.object_model import ObjectsModel
-from GridCal.Gui.messages import error_msg, info_msg
+from GridCal.Gui.messages import error_msg, yes_no_question
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -271,18 +272,18 @@ class GridMapWidget(BaseDiagramWidget):
         """
         self.diagram = diagram
 
-    def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True):
+    def delete_element_utility_function(self, device: ALL_DEV_TYPES, propagate: bool = True):
         """
 
         :param device:
-        :param propagate: Propagate the delete to other diagrams?
+        :param propagate: Propagate the action to other diagrams?
         :return:
         """
         self.diagram.delete_device(device=device)
         graphic_object: ALL_MAP_GRAPHICS = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            self.remove_from_scene(graphic_object)
+            self._remove_from_scene(graphic_object)
 
         if propagate:
             self.gui.call_delete_db_element(caller=self, api_obj=device)
@@ -304,12 +305,23 @@ class GridMapWidget(BaseDiagramWidget):
         """
         self.diagram.name = val
 
-    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, ALL_MAP_GRAPHICS]]:
+    @property
+    def diagram_scene(self) -> MapDiagramScene:
+        return self.map.diagram_scene
+
+    def _get_selected(self) -> List[ALL_MAP_GRAPHICS | QGraphicsItem]:
         """
         Get selection
-        :return: List of EditableDevice, QGraphicsItem
+        :return: List of ALL_MAP_GRAPHICS
         """
-        return [(elm.api_object, elm) for elm in self.map.diagram_scene.selectedItems()]
+        return [elm for elm in self.diagram_scene.selectedItems()]
+
+    def _get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get a list of the API objects from the selection
+        :return: List[EditableDevice]
+        """
+        return [e.api_object for e in self._get_selected()]
 
     def get_selected_line_segments_tup(self) -> List[Tuple[Line, (MapAcLine,
                                                                   MapDcLine,
@@ -321,7 +333,7 @@ class GridMapWidget(BaseDiagramWidget):
         :return: List of (Line, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)) tuples
         """
         selected_line_segments = []
-        for item in self.map.diagram_scene.selectedItems():
+        for item in self.diagram_scene.selectedItems():
             if (hasattr(item, 'api_object') and hasattr(item, 'container')
                     and isinstance(item.container,
                                    (MapAcLine,
@@ -338,10 +350,22 @@ class GridMapWidget(BaseDiagramWidget):
         :return: List of (Substation, SubstationGraphicItem) tuples
         """
         selected_substations = []
-        for item in self.map.diagram_scene.selectedItems():
+        for item in self.diagram_scene.selectedItems():
             if hasattr(item, 'api_object') and isinstance(item, SubstationGraphicItem):
                 selected_substations.append((item.api_object, item))
         return selected_substations
+
+    def get_selected_linelocations_tup(self) -> List[Tuple[LineLocation, LineLocationGraphicItem]]:
+        """
+        Get only selected Line Locations from the scene
+
+        :return: List of (LineLocation, LineLocationGraphicItem) tuples
+        """
+        selected_linelocations = []
+        for item in self.diagram_scene.selectedItems():
+            if hasattr(item, 'api_object') and isinstance(item, LineLocationGraphicItem):
+                selected_linelocations.append((item.api_object, item))
+        return selected_linelocations
 
     def add_to_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
@@ -349,47 +373,45 @@ class GridMapWidget(BaseDiagramWidget):
         :param graphic_object: Graphic object associated
         """
 
-        self.map.diagram_scene.addItem(graphic_object)
+        self.diagram_scene.addItem(graphic_object)
 
-    def remove_only_graphic_element(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
+    def _remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS | GenericDiagramWidget) -> None:
         """
-        Removes only the graphic elements, not the api_object
-        :param graphic_object: Graphic object associated
-        """
-        self.map.diagram_scene.removeItem(graphic_object)
-
-    def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
-        """
-        Add item to the diagram and the diagram scene
+        Remove item from the diagram scene
         :param graphic_object: Graphic object associated
         """
         api_object = getattr(graphic_object, 'api_object', None)
         if api_object is not None:
             self.graphics_manager.delete_device(api_object)
-        self.map.diagram_scene.removeItem(graphic_object)
+        self.diagram_scene.removeItem(graphic_object)
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
                        graphic_object: ALL_MAP_GRAPHICS = None,
                        delete_from_db: bool = False) -> None:
         """
-        Remove device from the diagram and the database
+        Remove device from the diagram and the database.
+        If removing from the database, this propagates to all diagrams
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
         :param delete_from_db: Delete the element also from the database?
         """
 
-        if graphic_object is not None:
-            if isinstance(graphic_object, SubstationGraphicItem):
-                self.remove_substation(substation=graphic_object,
-                                       delete_from_db=delete_from_db)
-
-            elif isinstance(graphic_object, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)):
-                self.remove_branch_graphic(line=graphic_object, delete_from_db=delete_from_db)
-
-        self.delete_diagram_element(device=device, propagate=delete_from_db)
-
-        self.object_editor_table.setModel(None)
+        # call the parent functionality, this propagated to other diagrams if delete_from_db
+        deleted: bool = super().remove_element(device=device,
+                                               graphic_object=graphic_object,
+                                               delete_from_db=delete_from_db)
+        # if deleted:
+        #
+        #     if isinstance(graphic_object, SubstationGraphicItem):
+        #         self.remove_substation(substation=graphic_object,
+        #                                delete_from_db=delete_from_db)
+        #
+        #     elif isinstance(graphic_object, (MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine)):
+        #         self.remove_branch_graphic(line=graphic_object, delete_from_db=delete_from_db)
+        # else:
+        #     # the notifications are handled by the parent
+        #     pass
 
     def zoom_callback(self, zoom_level: int) -> None:
         """
@@ -539,11 +561,11 @@ class GridMapWidget(BaseDiagramWidget):
     def remove_line_location_graphic(self, node: LineLocationGraphicItem):
         """
         Removes node from diagram and scene
-        :param node: Node to remove
+        :param node: Node to delete
         """
 
-        nod = self.graphics_manager.delete_device(node.api_object)
-        self.map.diagram_scene.removeItem(nod)
+        self.graphics_manager.delete_device(node.api_object)
+        self._remove_from_scene(node)
 
     def remove_substation(self,
                           api_object: Substation,
@@ -555,24 +577,29 @@ class GridMapWidget(BaseDiagramWidget):
         :param api_object: Substation object from the MultiCircuit
         :param substation_buses: List of buses associated to this substation
         :param voltage_levels:  List of voltage levels associated to this substation
-        :param delete_from_db: Does it remove the objects from the Database too (bool)
+        :param delete_from_db: Does it delete the objects from the Database too (bool)
         """
 
         # Remove from graphics manager and scene
         sub = self.graphics_manager.delete_device(api_object)
-        self.map.diagram_scene.removeItem(sub)
+        self._remove_from_scene(sub)
 
-        # Find and delete all lines connected to the substation
+        # Find and delete_with_dialogue all lines connected to the substation
         for tpe in [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]:
-            for elm in self.graphics_manager.get_device_type_list(tpe):
-                if elm.api_object.get_substation_from() == api_object or elm.api_object.get_substation_to() == api_object:
-                    self.graphics_manager.delete_device(elm.api_object)
-                    for segment in elm.segments_list:
-                        self.map.diagram_scene.removeItem(segment)
-                    for lineloc in elm.nodes_list:
-                        self.map.diagram_scene.removeItem(lineloc)
 
-        # Finally, delete from the database if requested
+            for elm in self.graphics_manager.get_device_type_list(tpe):
+
+                if elm.api_object.get_substation_from() == api_object or elm.api_object.get_substation_to() == api_object:
+
+                    self.graphics_manager.delete_device(elm.api_object)
+
+                    for segment in elm.segments_list:
+                        self._remove_from_scene(segment)
+
+                    for line_loc in elm.nodes_list:
+                        self._remove_from_scene(line_loc)
+
+        # Finally, delete_with_dialogue from the database if requested
         if delete_from_db:
             # Delete buses associated with this substation
             for bus in substation_buses:
@@ -584,57 +611,56 @@ class GridMapWidget(BaseDiagramWidget):
 
             # Delete the substation itself
             self.circuit.delete_substation(obj=api_object)
-
-    def show_devices_to_disconnect_dialog(self,
-                                          devices: List[ALL_DEV_TYPES],
-                                          buses: List[Bus],
-                                          voltage_levels: List[VoltageLevel],
-                                          dialog_title: str):
-        """
-        Show a dialog with the list of all devices that will be disconnected
-        
-        :param devices: List of devices to be disconnected
-        :param buses: List of buses associated with the substation
-        :param voltage_levels: List of voltage levels associated with the substation
-        :param dialog_title: Title for the dialog
-        """
-        from GridCal.Gui.general_dialogues import ElementsDialogue
-        from GridCalEngine.Devices.Parents.editable_device import GCProp
-
-        # Combine all devices
-        all_devices = devices + buses + voltage_levels
-
-        if not all_devices:
-            info_msg('No devices to disconnect', dialog_title)
-            return
-
-        # Create custom properties for name, type, and ID tag
-        name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name',
-                           display=True, editable=False)
-
-        type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type',
-                           display=True, editable=False)
-
-        idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag',
-                            display=True, editable=False)
-
-        custom_props = [name_prop, type_prop, idtag_prop]
-
-        # Create and show the dialog
-        dialog = ElementsDialogue(name=dialog_title, elements=all_devices)
-
-        # Replace the model with our custom one that only shows name, type, and idtag
-        model = ObjectsModel(objects=all_devices,
-                             time_index=None,
-                             property_list=custom_props,
-                             parent=dialog.objects_table,
-                             editable=False)
-
-        dialog.objects_table.setModel(model)
-
-        # Make the dialog modal so the user must acknowledge it before continuing
-        dialog.setModal(True)
-        dialog.exec()
+    #
+    # def show_devices_to_disconnect_dialog(self,
+    #                                       devices: List[ALL_DEV_TYPES],
+    #                                       buses: List[Bus],
+    #                                       voltage_levels: List[VoltageLevel],
+    #                                       dialog_title: str):
+    #     """
+    #     Show a dialog with the list of all devices that will be disconnected
+    #
+    #     :param devices: List of devices to be disconnected
+    #     :param buses: List of buses associated with the substation
+    #     :param voltage_levels: List of voltage levels associated with the substation
+    #     :param dialog_title: Title for the dialog
+    #     """
+    #
+    #
+    #     # Combine all devices
+    #     all_devices = devices + buses + voltage_levels
+    #
+    #     if not all_devices:
+    #         info_msg('No devices to disconnect', dialog_title)
+    #         return
+    #
+    #     # Create custom properties for name, type, and ID tag
+    #     name_prop = GCProp(prop_name='name', tpe=str, units='', definition='Device name',
+    #                        display=True, editable=False)
+    #
+    #     type_prop = GCProp(prop_name='device_type', tpe=DeviceType, units='', definition='Device type',
+    #                        display=True, editable=False)
+    #
+    #     idtag_prop = GCProp(prop_name='idtag', tpe=str, units='', definition='ID tag',
+    #                         display=True, editable=False)
+    #
+    #     custom_props = [name_prop, type_prop, idtag_prop]
+    #
+    #     # Create and show the dialog
+    #     dialog = ElementsDialogue(name=dialog_title, elements=all_devices)
+    #
+    #     # Replace the model with our custom one that only shows name, type, and idtag
+    #     model = ObjectsModel(objects=all_devices,
+    #                          time_index=None,
+    #                          property_list=custom_props,
+    #                          parent=dialog.objects_table,
+    #                          editable=False)
+    #
+    #     dialog.objects_table.setModel(model)
+    #
+    #     # Make the dialog modal so the user must acknowledge it before continuing
+    #     dialog.setModal(True)
+    #     dialog.exec()
 
     def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES | MapLineContainer, delete_from_db: bool = False):
         """
@@ -650,39 +676,10 @@ class GridMapWidget(BaseDiagramWidget):
                 self.circuit.delete_branch(obj=line.api_object)
 
             for seg in lin.segments_list:
-                self.map.diagram_scene.removeItem(seg)
+                self._remove_from_scene(seg)
 
-            for lineloc in lin.nodes_list:
-                self.map.diagram_scene.removeItem(lineloc)
-
-    def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
-        """
-        Delete the selected items from the diagram
-        """
-        # get the selected objects
-        selected = self.get_selected()
-
-        if len(selected) > 0:
-
-            dlg = CheckListDialogue(
-                objects_list=[f"{elm.device_type.value}: {elm.name}" for elm, graphic_obj in selected],
-                title="Delete Selected"
-            )
-
-            dlg.setModal(True)
-            dlg.exec()
-
-            if dlg.is_accepted:
-
-                for i in dlg.selected_indices:
-                    elm, graphic_obj = selected[i]
-                    self.remove_element(device=elm,
-                                        graphic_object=graphic_obj,
-                                        delete_from_db=delete_from_db)
-                    # self.remove_from_scene(graphic_obj)
-
-        else:
-            info_msg('Choose some elements from the schematic', 'Delete')
+            for line_loc in lin.nodes_list:
+                self._remove_from_scene(line_loc)
 
     def add_api_line(self, api_object: Line) -> MapAcLine:
         """
@@ -1036,8 +1033,8 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
         print('Updating device sizes!')
-        self.map.diagram_scene.blockSignals(True)
-        self.map.diagram_scene.invalidate(self.map.diagram_scene.sceneRect())
+        self.diagram_scene.blockSignals(True)
+        self.diagram_scene.invalidate(self.diagram_scene.sceneRect())
 
         branch_width = self.diagram.min_branch_width  # self.get_branch_width()
         arrow_width = self.diagram.arrow_size  # self.get_arrow_scale()
@@ -1066,20 +1063,8 @@ class GridMapWidget(BaseDiagramWidget):
             elm_graphics.set_api_object_color()
             elm_graphics.set_size(r=se_width)
 
-        self.map.diagram_scene.blockSignals(False)
-        self.map.diagram_scene.update(self.map.diagram_scene.sceneRect())
-
-    def change_size_and_pen_width_all(self, new_radius, pen_width):
-        """
-        Change the size and pen width of all elements in Schema.
-        :param new_radius: New radius for the nodes.
-        :param pen_width: New pen width for the nodes.
-        """
-        dev_dict = self.graphics_manager.get_device_type_dict(device_type=DeviceType.LineLocation)
-
-        for idtag, graphic_object in dev_dict.items():
-            graphic_object.resize(new_radius)
-            graphic_object.change_pen_width(pen_width)
+        self.diagram_scene.blockSignals(False)
+        self.diagram_scene.update(self.diagram_scene.sceneRect())
 
     def center(self):
         """
@@ -1400,6 +1385,58 @@ class GridMapWidget(BaseDiagramWidget):
             gelm.api_object.lat = gelm.lat
             gelm.api_object.long = gelm.lon
 
+        ok = yes_no_question(title='Update lengths?',
+                             text='Do you want to update lengths of lines? \n'
+                                  'IMPORTANT: This will take into account every movement of substation and line '
+                                  'locations. If you are unsure of the effects of this updating, click no and perform '
+                                  'the individual length update in a new map or in the specific line.')
+        if ok:
+            line_graphics_list = self.graphics_manager.graphic_dict[DeviceType.LineDevice]
+
+            for key, line_graphic in line_graphics_list.items():
+                line_graphic.calculate_total_length()
+
+            self.gui.show_info_toast(message='Line lengths UPDATED')
+
+
+        else:
+            self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
+    def reset_coordinates(self):
+        """
+        Consolidate the graphic elements' x, y coordinates into the API DB values
+        """
+        graphics_substations: List[SubstationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.SubstationDevice)
+        graphics_linelocations: List[LineLocationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.LineLocation)
+
+        for gelm in graphics_substations:
+            gelm.move_to_api_coordinates(question=False)
+
+        for gelm in graphics_linelocations:
+            gelm.move_to_api_coordinates(question=False)
+
+        # self.update()
+        # self.refresh()
+
+        # ok = yes_no_question(title='Update lengths?',
+        #                      text='Do you want to update lengths of lines? \n'
+        #                           'IMPORTANT: This will take into account the reseting of every substation and line  '
+        #                           'location. If you are unsure of the effects of this updating, click no and perform '
+        #                           'the individual length update in a new map or in the specific line.')
+        # if ok:
+        #     line_graphics_list = self.graphics_manager.graphic_dict[DeviceType.LineDevice]
+        #
+        #     for key, line_graphic in line_graphics_list.items():
+        #         line_graphic.calculate_total_length()
+
+        #     self.gui.show_info_toast(message='Line lengths UPDATED')
+        #
+        #
+        # else:
+        #     self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
     def plot_substation(self, i: int, api_object: Substation):
         """
         Plot branch results
@@ -1474,7 +1511,366 @@ class GridMapWidget(BaseDiagramWidget):
                 # plot the profiles
                 plt.show()
         else:
-            info_msg("There are no time series, so nothing to plot :/")
+            self.gui.show_error_toast("There are no time series, so nothing to plot :/")
+
+    def transform_waypoint_to_substation(self):
+
+        selected_lineloc = self.get_selected_linelocations_tup()
+
+
+        if len(selected_lineloc) != 1:
+            self.gui.show_error_toast('More than one waypoint selected. Could not determine where '
+                                      'the substation should be created.')
+            return
+
+        ok = yes_no_question(title='Transform waypoint to substation?',
+                             text='Do you want to transform to substation the selected '
+                                  'waypoint? This operation will split the line at the '
+                                  'selected location, and will connect the new ends to '
+                                  'the new substation.')
+
+        if ok:
+
+            splitting_index = None
+
+            line_graphic = selected_lineloc[0][1].line_container
+            line = line_graphic.api_object
+
+            selected_waypoint = selected_lineloc[0][0]
+            wp_graphic = selected_lineloc[0][1]
+
+            for i, lineloc in enumerate(line.locations.data):
+                if lineloc == selected_waypoint:
+                    splitting_index = i
+                    break
+                else:
+                    pass
+
+            if splitting_index is not None:
+
+                message = ''
+                municipality = line.bus_from.substation.municipality
+                region = line.bus_from.substation.region
+                community = line.bus_from.substation.community
+                country = line.bus_from.substation.country
+
+                if country != line.bus_to.substation.country:
+                    message += ('Country of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.\n')
+                if community != line.bus_to.substation.community:
+                    message += ('Community of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.\n')
+                if region != line.bus_to.substation.region:
+                    message += ('Region of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.\n')
+                if municipality != line.bus_to.substation.municipality:
+                    message += ('Municipality of the from and to buses does not match. Correct manually if the used '
+                                'is not correct.')
+
+                loc = line.locations.data[splitting_index]
+                added_se = Substation(latitude=loc.lat, longitude=loc.long, region=region, community=community,
+                                      municipality=municipality, country=country)
+                added_se.color = '#0000FF'
+
+                added_vl = VoltageLevel(Vnom=line.bus_from.Vnom, substation=added_se)
+                added_bus = Bus(latitude=loc.lat, longitude=loc.long, voltage_level=added_vl,
+                                substation=added_se, Vnom=added_vl.Vnom)
+
+                linelocs1 = line.locations.data[:splitting_index]
+                linelocs2 = line.locations.data[splitting_index + 1:]
+
+                length1 = 0
+                length2 = 0
+
+                if len(linelocs1) == 0:
+
+                    lat1 = line.bus_from.latitude
+                    lon1 = line.bus_from.longitude
+                    lat2 = added_bus.latitude
+                    lon2 = added_bus.longitude
+                    length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                else:
+
+                    for i in range(len(linelocs1) + 1):
+                        if i == 0:
+
+                            lat1 = line.bus_from.latitude
+                            lon1 = line.bus_from.longitude
+                            lat2 = linelocs1[i].lat
+                            lon2 = linelocs1[i].long
+                            length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                        elif i == len(linelocs1):
+
+                            lat1 = linelocs1[i - 1].lat
+                            lon1 = linelocs1[i - 1].long
+                            lat2 = added_bus.latitude
+                            lon2 = added_bus.longitude
+                            length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                        else:
+
+                            lat1 = linelocs1[i - 1].lat
+                            lon1 = linelocs1[i - 1].long
+                            lat2 = linelocs1[i].lat
+                            lon2 = linelocs1[i].long
+                            length1 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                if len(linelocs2) == 0:
+
+                    lat1 = added_bus.latitude
+                    lon1 = added_bus.longitude
+                    lat2 = line.bus_to.latitude
+                    lon2 = line.bus_to.longitude
+                    length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                else:
+
+                    for i in range(len(linelocs2) + 1):
+                        if i == 0:
+
+                            lat1 = added_bus.latitude
+                            lon1 = added_bus.longitude
+                            lat2 = linelocs2[i].lat
+                            lon2 = linelocs2[i].long
+                            length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                        elif i == len(linelocs2):
+
+                            lat1 = linelocs2[i - 1].lat
+                            lon1 = linelocs2[i - 1].long
+                            lat2 = line.bus_to.latitude
+                            lon2 = line.bus_to.longitude
+                            length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                        else:
+
+                            lat1 = linelocs2[i - 1].lat
+                            lon1 = linelocs2[i - 1].long
+                            lat2 = linelocs2[i].lat
+                            lon2 = linelocs2[i].long
+                            length2 += haversine_distance(lat1, lon1, lat2, lon2)
+
+                line1 = Line(name=line.name, code=line.code, bus_from=line.bus_from, bus_to=added_bus,
+                             circuit_idx=line.circuit_idx, length=length1)
+                line2 = Line(name=line.name, code=line.code, bus_from=added_bus, bus_to=line.bus_to,
+                             circuit_idx=line.circuit_idx, length=length2)
+
+                template = line.template
+                if isinstance(template, OverheadLineType):
+                    template.compute()
+                line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+
+                line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+
+                line1.color = line.color
+                line2.color = line.color
+
+                for i, loc in enumerate(linelocs1):
+                    line1.locations.add(idtag=loc.idtag, latitude=loc.lat, longitude=loc.long, sequence=i, altitude=0)
+                for i, loc in enumerate(linelocs2):
+                    line2.locations.add(idtag=loc.idtag, latitude=loc.lat, longitude=loc.long, sequence=i, altitude=0)
+
+                self.circuit.add_substation(added_se)
+                self.circuit.add_voltage_level(added_vl)
+                self.circuit.add_bus(added_bus)
+                self.circuit.add_line(line1)
+                self.circuit.add_line(line2)
+
+                se_graphics = self.add_api_substation(api_object=added_se,
+                                                      lat=added_se.latitude,
+                                                      lon=added_se.longitude)
+                vl_graphic = self.add_api_voltage_level(api_object=added_vl, substation_graphics=se_graphics)
+                self.add_api_line(api_object=line1)
+                self.add_api_line(api_object=line2)
+                se_graphics.resize_voltage_levels()
+                self.remove_element(device=line, graphic_object=line_graphic, delete_from_db=True)
+
+                if message != '':
+                    self.gui.show_warning_toast(message=message)
+
+            else:
+                self.gui.show_error_toast(
+                    'The waypoint selected is not included in the selected line\'s waypoint. Operation not performed.')
+                return
+
+    def merge_selected_lines(self):
+
+        selected_lines = self.get_selected_line_segments_tup()
+
+        if len(selected_lines) != 2:
+            self.gui.show_error_toast('Line merging not done. Number of lines selected should be exactly equal to 2.')
+            return
+
+        line1 = selected_lines[0][0]
+        line2 = selected_lines[1][0]
+        line1_graphic = selected_lines[0][1]
+        line2_graphic = selected_lines[1][1]
+
+        if line1.template != line2.template:
+            self.gui.show_error_toast('Line merging could not be done, lines have different templates. Check if that '
+                                      'is correct, and apply the same template before trying again '
+                                      'if you want to merge them.')
+            return
+
+        if ((line1.bus_from == line2.bus_from and line1.bus_to == line2.bus_to) or
+                (line1.bus_from == line2.bus_to and line1.bus_to == line2.bus_from)):
+            self.gui.show_error_toast('Line merging not done. The lines selected were parallel, this operation is not '
+                                      'suitable.')
+            return
+
+        if line1.circuit_idx == line2.circuit_idx:
+            circ_idx = line1.circuit_idx
+
+        else:
+
+            inpt = InputNumberDialogue(
+                min_value=1,
+                max_value=10,
+                default_value=0,
+                title="Select circuit ID",
+                text="Circuit ID",
+                is_int=True
+            )
+
+            inpt.exec()
+
+            if inpt.is_accepted:
+                circ_idx = inpt.value
+                if circ_idx > line1.template.n_circuits:
+                    self.gui.show_error_toast(f'The circuit id introduced is greater than the maximum id that this '
+                                              f'template can use. The template has {line1.template.n_circuits}, the '
+                                              f'maximum possible value for the circuit_idx is '
+                                              f'{line1.template.n_circuits}, try again.')
+                    return
+                else:
+                    pass
+            else:
+                self.gui.show_error_toast(f'Dialogue not accepted. Operation not performed.')
+                return
+
+        list_locations = line1.locations.data
+        list_lineloc2 = line2.locations.data
+
+        if line1.bus_from == line2.bus_from:
+
+            bus_from = line1.bus_to
+            bus_to = line2.bus_to
+            joint_bus = line1.bus_from
+            list_locations.reverse()
+
+        elif line1.bus_from == line2.bus_to:
+
+            bus_from = line1.bus_to
+            bus_to = line2.bus_from
+            joint_bus = line1.bus_from
+            list_locations.reverse()
+            list_lineloc2.reverse()
+
+        elif line1.bus_to == line2.bus_from:
+
+            bus_from = line1.bus_from
+            bus_to = line2.bus_to
+            joint_bus = line1.bus_to
+
+        elif line1.bus_to == line2.bus_to:
+
+            bus_from = line1.bus_from
+            bus_to = line2.bus_from
+            joint_bus = line1.bus_to
+            list_lineloc2.reverse()
+
+        else:
+            self.gui.show_error_toast(
+                'Line merging not done. The lines selected were not connected at any of its ends.')
+            return
+
+        osmids = line1.code
+        osmids += ' ' + line2.code
+
+        jll = 0
+        for loc1 in list_locations:
+            loc1.seq = jll
+            jll += 1
+
+        list_locations.append(LineLocation(lat=joint_bus.latitude, lon=joint_bus.longitude, seq=jll, z=0))
+
+        jll += 1
+
+        for loc2 in list_lineloc2:
+            loc2.seq = jll
+            list_locations.append(loc2)
+            jll += 1
+
+        new_line = Line(name=f'{line1.name} {line2.name}', code=osmids,
+                        bus_from=bus_from, bus_to=bus_to,
+                        length=line1.length + line2.length, circuit_idx=circ_idx)
+        new_line.color = line1.color
+        line1.template.compute()
+        new_line.apply_template(obj=line1.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+
+        previous_coordinates = [0, 0]
+
+        for loc in list_locations:
+            if [loc.lat, loc.long] != previous_coordinates:
+                new_line.locations.add(idtag=loc.idtag,
+                                       latitude=loc.lat,
+                                       longitude=loc.long,
+                                       sequence=loc.seq)
+                previous_coordinates = [loc.lat, loc.long]
+            else:
+                pass
+
+        self.circuit.add_line(new_line)
+        self.circuit.delete_line(line1)
+        self.circuit.delete_line(line2)
+
+        self.remove_branch_graphic(line=line1_graphic)
+        self.remove_branch_graphic(line=line2_graphic)
+        self.add_api_line(api_object=new_line)
+
+        self.gui.show_info_toast(message='Line merging successful!')
+
+        ok = yes_no_question(
+            text='Do you want to delete the substation where the lines were connecting? This will'
+                 ' open the substation deletion menu, with the information of the items that would '
+                 'be removed.', title='Remove substation?')
+        if ok:
+            merging_substation = self.graphics_manager.query(elm=joint_bus.substation)
+            merging_substation.remove_function_from_schematic_and_db()
+
+    def consolidate_object_coordinates(self):
+        selected_lines = self.get_selected_line_segments_tup()
+        selected_substations = self.get_selected_substations_tup()
+        line_graphics_list = []
+        for subst, subst_graphic in selected_substations:
+            subst.latitude = subst_graphic.lat
+            subst.longitude = subst_graphic.lon
+
+        for line, line_graphic in selected_lines:
+            line_graphics_list.append(line_graphic)
+            for gelm in line_graphic.nodes_list:
+                gelm.api_object.lat = gelm.lat
+                gelm.api_object.long = gelm.lon
+
+        ok = yes_no_question(title='Update lengths?',
+                             text='Do you want to update lengths of lines? \n'
+                                  'IMPORTANT: This will take into account every movement of substation and line '
+                                  'locations. If you are unsure of the effects of this updating, click no and perform '
+                                  'the individual length update in a new map or in the specific line.')
+        if ok:
+
+            for line_graphic in line_graphics_list:
+                line_graphic.calculate_total_length()
+
+            self.gui.show_info_toast(message='Line lengths UPDATED')
+
+
+        else:
+            self.gui.show_info_toast(message='Line lengths NOT UPDATED')
+
+        return
 
     def split_line_to_substation(self):
         """
@@ -1696,12 +2092,13 @@ class GridMapWidget(BaseDiagramWidget):
         line2_graphic = self.add_api_line(line2)
 
         # Remove the original line from the circuit and map
-        # Ensure we remove the correct graphic container
+        # Ensure we delete the correct graphic container
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
 
         # Recalculate lengths based on new waypoints
-        line1.update_length()
-        line2.update_length()
+
+        line1_graphic.calculate_total_length()
+        line2_graphic.calculate_total_length()
 
         self.gui.show_info_toast(
             f'{line1.name} ({line1.length:.3f}km) and {line2.name} ({line2.length:.3f}km) created. {line_api.name} removed.'
@@ -1813,51 +2210,24 @@ class GridMapWidget(BaseDiagramWidget):
         from the waypoint.
         """
         # Get selected items
-        selected_items = self.get_selected()
+        selected_items = self._get_selected()
 
         # Find the substation and waypoint in the selection
-        selected_substation = None
-        selected_waypoint = None
-
-        for api_obj, graphic_obj in selected_items:
-            if isinstance(api_obj, Substation) and isinstance(graphic_obj, SubstationGraphicItem):
-                selected_substation = (api_obj, graphic_obj)
-            elif isinstance(graphic_obj, LineLocationGraphicItem):
-                selected_waypoint = graphic_obj
+        list_sel_substations = self.get_selected_substations_tup()
+        list_sel_waypoint = self.get_selected_linelocations_tup()
 
         # Check if we have a substation and a waypoint selected
-        if selected_substation is None or selected_waypoint is None:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Please select one substation and one waypoint.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
+        if len(list_sel_substations) != 1 or len(list_sel_waypoint) != 1:
+            self.gui.show_error_toast(message="Please select exactly one substation and one waypoint.")
             return
 
+        selected_waypoint = list_sel_waypoint[0][1]
         # Get the line container from the waypoint
-        original_line_container = selected_waypoint.line_container
-
-        if original_line_container is None:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Could not determine which line the waypoint belongs to.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
-            return
-
-        # Get the line API object
+        original_line_container = list_sel_waypoint[0][1].line_container
         line_api = original_line_container.api_object
 
-        if not isinstance(line_api, Line):
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("The waypoint must belong to a line.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
-            return
-
         # Get the API objects
-        substation_api, substation_graphic = selected_substation
+        substation_api, substation_graphic = list_sel_substations[0]
 
         # Get the waypoint coordinates
         waypoint_lat = selected_waypoint.lat
@@ -1871,20 +2241,37 @@ class GridMapWidget(BaseDiagramWidget):
                 break
 
         if waypoint_idx == -1:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Information)
-            msg.setText("Selected waypoint not found in the line's waypoints.")
-            msg.setWindowTitle("Selection Error")
-            msg.exec()
+            self.gui.show_error_toast(message="Selected waypoint not found in the line's waypoints.")
             return
 
         # Step 1: Create a new substation at the waypoint location
         new_substation_name = f"{line_api.name}_Junction"
 
+        # --- Safely evaluate line_api.code ---
+        code_list = []  # Default to empty list
+        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code,
+                                                                      str):  # Check if it exists, is not empty, and is a string
+            try:
+                evaluated_code = ast.literal_eval(line_api.code)
+                # Ensure it's a list or treat as single item if string
+                if isinstance(evaluated_code, list):
+                    code_list = evaluated_code
+                elif isinstance(evaluated_code, str):
+                    code_list = [evaluated_code]  # Treat literal string as single code
+                # Add handling for other literal types if needed, otherwise they result in empty list
+            except (ValueError, SyntaxError, TypeError):
+                # Handle cases where the string is not a valid literal
+                # If it doesn't look like a list, treat the original string as the code
+                if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                    code_list = [line_api.code]
+
+        # Modify the code list
+        new_code_list = [f"{subcode}_Junction" for subcode in code_list]
+        # --- End safe evaluation ---
+
         # Create the new substation
         new_substation = Substation(name=new_substation_name,
-                                    code=f"{line_api.code}_Junction" if hasattr(line_api,
-                                                                                'code') and line_api.code else "",
+                                    code=str(new_code_list),  # Store as string representation of list
                                     latitude=waypoint_lat,
                                     longitude=waypoint_lon)
 
@@ -1928,8 +2315,6 @@ class GridMapWidget(BaseDiagramWidget):
             bus_name = f"{substation_api.name} {vnom} kV Bus"
             suitable_bus_in_selected = Bus(name=bus_name,
                                            Vnom=vnom,
-                                           vmin=0.9,
-                                           vmax=1.1,
                                            voltage_level=voltage_level_in_selected,
                                            substation=substation_api)
 
@@ -2004,19 +2389,27 @@ class GridMapWidget(BaseDiagramWidget):
         # Line 1: from original bus_from to new_bus
         line1_name = f"{line_api.name}_1"
 
-        # Handle the code property - it might be a list of strings
-        if hasattr(line_api, 'code') and line_api.code is not None:
-            if isinstance(line_api.code, list):
-                line1_code = [f"{code}_1" for code in line_api.code]
-            else:
-                line1_code = f"{line_api.code}_1"
-        else:
-            line1_code = ""
+        # --- Safely evaluate line_api.code for line1 ---
+        code_list_for_line1 = []  # Default to empty list
+        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str):
+            try:
+                evaluated_code = ast.literal_eval(line_api.code)
+                if isinstance(evaluated_code, list):
+                    code_list_for_line1 = evaluated_code
+                elif isinstance(evaluated_code, str):
+                    code_list_for_line1 = [evaluated_code]
+            except (ValueError, SyntaxError, TypeError):
+                if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                    code_list_for_line1 = [line_api.code]
+
+        # Modify the code list
+        line1_modified_code_list = [f"{subcode}_1" for subcode in code_list_for_line1]
+        # --- End safe evaluation for line1 ---
 
         line1 = Line(name=line1_name,
                      bus_from=line_api.bus_from,
                      bus_to=new_bus,
-                     code=line1_code,
+                     code=str(line1_modified_code_list),  # Store as string representation
                      r=line_api.R * ratio1,  # Set impedance proportional to length
                      x=line_api.X * ratio1,
                      b=line_api.B * ratio1,
@@ -2049,19 +2442,27 @@ class GridMapWidget(BaseDiagramWidget):
         # Line 2: from new_bus to original bus_to
         line2_name = f"{line_api.name}_2"
 
-        # Handle the code property for line 2
-        if hasattr(line_api, 'code') and line_api.code is not None:
-            if isinstance(line_api.code, list):
-                line2_code = [f"{code}_2" for code in line_api.code]
-            else:
-                line2_code = f"{line_api.code}_2"
-        else:
-            line2_code = ""
+        # --- Safely evaluate line_api.code for line2 ---
+        code_list_for_line2 = []  # Default to empty list
+        if hasattr(line_api, 'code') and line_api.code and isinstance(line_api.code, str):
+            try:
+                evaluated_code = ast.literal_eval(line_api.code)
+                if isinstance(evaluated_code, list):
+                    code_list_for_line2 = evaluated_code
+                elif isinstance(evaluated_code, str):
+                    code_list_for_line2 = [evaluated_code]
+            except (ValueError, SyntaxError, TypeError):
+                if not line_api.code.strip().startswith('[') and not line_api.code.strip().endswith(']'):
+                    code_list_for_line2 = [line_api.code]
+
+        # Modify the code list
+        line2_modified_code_list = [f"{subcode}_2" for subcode in code_list_for_line2]
+        # --- End safe evaluation for line2 ---
 
         line2 = Line(name=line2_name,
                      bus_from=new_bus,
                      bus_to=line_api.bus_to,
-                     code=line2_code,
+                     code=str(line2_modified_code_list),  # Store as string representation
                      r=line_api.R * ratio2,  # Set impedance proportional to length
                      x=line_api.X * ratio2,
                      b=line_api.B * ratio2,
@@ -2150,8 +2551,8 @@ class GridMapWidget(BaseDiagramWidget):
         line2_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
         connection_line_graphic.set_width_scale(width=branch_width, arrow_width=arrow_size)
 
-        # Explicitly remove the waypoint graphic from the scene to prevent artifact
-        self.map.diagram_scene.removeItem(selected_waypoint)
+        # Explicitly delete the waypoint graphic from the scene to prevent artifact
+        self._remove_from_scene(selected_waypoint)
 
         # Remove the original line
         self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
@@ -2264,7 +2665,8 @@ class GridMapWidget(BaseDiagramWidget):
         # Remove past graphic item and add the new one
 
         self.remove_branch_graphic(line=line_graphic, delete_from_db=False)
-        self.add_api_line(api_object=line_api)
+        line = self.add_api_line(api_object=line_api)
+        line.calculate_total_length()
 
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)

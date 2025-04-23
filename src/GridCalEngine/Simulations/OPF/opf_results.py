@@ -65,13 +65,15 @@ class OptimalPowerFlowResults(ResultsTemplate):
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower],
 
-                                                    ResultTypes.LoadResults: [ResultTypes.LoadShedding],
+                                                    ResultTypes.LoadResults: [ResultTypes.LoadShedding,
+                                                                              ResultTypes.LoadSheddingCost],
 
                                                     ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
                                                                                 ResultTypes.BranchActivePowerTo,
                                                                                 ResultTypes.BranchLoading,
                                                                                 ResultTypes.BranchLosses,
                                                                                 ResultTypes.BranchOverloads,
+                                                                                ResultTypes.BranchOverloadsCost,
                                                                                 ResultTypes.BranchTapAngle],
 
                                                     ResultTypes.HvdcResults: [ResultTypes.HvdcPowerFrom,
@@ -117,10 +119,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.bus_shadow_prices = np.zeros(n, dtype=float)
 
         self.load_shedding = np.zeros(nload, dtype=float)
+        self.load_shedding_cost = np.zeros(nload, dtype=float)
 
         self.Sf = np.zeros(m, dtype=float)
         self.St = np.zeros(m, dtype=float)
         self.overloads = np.zeros(m, dtype=float)
+        self.overloads_cost = np.zeros(m, dtype=float)
         self.loading = np.zeros(m, dtype=float)
         self.losses = np.zeros(m, dtype=float)
         self.phase_shift = np.zeros(m, dtype=float)
@@ -180,10 +184,12 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.register(name='bus_shadow_prices', tpe=Vec)
 
         self.register(name='load_shedding', tpe=Vec)
+        self.register(name='load_shedding_cost', tpe=Vec)
 
         self.register(name='Sf', tpe=CxVec)
         self.register(name='St', tpe=CxVec)
         self.register(name='overloads', tpe=Vec)
+        self.register(name='overloads_cost', tpe=Vec)
         self.register(name='loading', tpe=Vec)
         self.register(name='losses', tpe=Vec)
         self.register(name='phase_shift', tpe=Vec)
@@ -385,6 +391,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 xlabel='',
                                 units='(MW)')
 
+        elif result_type == ResultTypes.BranchOverloadsCost:
+
+            return ResultsTable(data=self.overloads_cost,
+                                index=self.branch_names,
+                                idx_device_type=DeviceType.BranchDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=str(result_type.value),
+                                ylabel='(Currency)',
+                                xlabel='',
+                                units='(Currency)')
+
         elif result_type == ResultTypes.BranchLosses:
 
             return ResultsTable(data=self.losses.real,
@@ -420,6 +438,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
+
+        elif result_type == ResultTypes.LoadSheddingCost:
+
+            return ResultsTable(data=self.load_shedding_cost,
+                                index=self.load_names,
+                                idx_device_type=DeviceType.LoadLikeDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=str(result_type.value),
+                                ylabel='(Currency)',
+                                xlabel='',
+                                units='(Currency)')
 
         elif result_type == ResultTypes.GeneratorShedding:
 

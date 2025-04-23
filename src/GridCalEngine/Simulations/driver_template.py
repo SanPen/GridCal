@@ -234,8 +234,8 @@ class TimeSeriesDriverTemplate(DriverTemplate):
         :return:
         """
         # gather the fuels and emission rates matrices
-        gen_emissions_rates_matrix = self.grid.get_emission_rates_sparse_matrix()
-        gen_fuel_rates_matrix = self.grid.get_fuel_rates_sparse_matrix()
+        gen_emissions_rates_matrix = self.grid.get_gen_emission_rates_sparse_matrix()
+        gen_fuel_rates_matrix = self.grid.get_gen_fuel_rates_sparse_matrix()
 
         system_fuel = (gen_fuel_rates_matrix * gen_p.T).T
         system_emissions = (gen_emissions_rates_matrix * gen_p.T).T

@@ -68,6 +68,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             hvdc_names=self.grid.get_hvdc_names(),
             fuel_names=self.grid.get_fuel_names(),
             emission_names=self.grid.get_emission_names(),
+            technology_names=self.grid.get_technology_names(),
             fluid_node_names=self.grid.get_fluid_node_names(),
             fluid_path_names=self.grid.get_fluid_path_names(),
             fluid_injection_names=self.grid.get_fluid_injection_names(),
@@ -142,7 +143,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      skip_generation_limits=self.opf_options.skip_generation_limits,
                                      consider_contingencies=self.opf_options.consider_contingencies,
                                      contingency_groups_used=self.opf_options.contingency_groups_used,
-                                     unit_Commitment=self.opf_options.unit_commitment,
+                                     unit_commitment=self.opf_options.unit_commitment,
                                      ramp_constraints=self.opf_options.unit_commitment,
                                      all_generators_fixed=False,
                                      lodf_threshold=self.opf_options.lodf_tolerance,
@@ -197,7 +198,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.results.system_fuel = opf_vars.sys_vars.system_fuel
         self.results.system_emissions = opf_vars.sys_vars.system_emissions
-        self.results.system_energy_cost = opf_vars.sys_vars.system_energy_cost
+        self.results.system_energy_cost = opf_vars.sys_vars.system_unit_energy_cost
 
         # set converged for all t to the value of acceptable solution
         self.results.converged = np.array([opf_vars.acceptable_solution] * opf_vars.nt)

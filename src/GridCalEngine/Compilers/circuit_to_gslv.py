@@ -8,14 +8,13 @@ import warnings
 import numpy as np
 from typing import List, Dict, Union, Tuple, TYPE_CHECKING
 
-import GridCalEngine
 from GridCalEngine import TapModuleControl, TapPhaseControl
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, ContingencyMethod, ContingencyOperationTypes,
-                                        BuildStatus, BranchGroupTypes)
+                                        BuildStatus, BranchGroupTypes, ConverterControlType)
 import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -32,7 +31,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
-GSLV_RECOMMENDED_VERSION = "0.0.4"
+GSLV_RECOMMENDED_VERSION = "0.2.0"
 GSLV_VERSION = ''
 GSLV_AVAILABLE = False
 try:
@@ -91,6 +90,21 @@ try:
         ContingencyOperationTypes.PowerPercentage: pg.ContingencyOperationTypes.PowerPercentage,
     }
 
+    contingency_method_dict = {
+        ContingencyMethod.PTDF: pg.ContingencyMethod.PTDF,
+        ContingencyMethod.PowerFlow: pg.ContingencyMethod.PowerFlow,
+        ContingencyMethod.HELM: pg.ContingencyMethod.HELM,
+    }
+
+    converter_control_type_dict = {
+        ConverterControlType.Vm_dc: pg.ConverterControlType.Vm_dc,
+        ConverterControlType.Vm_ac: pg.ConverterControlType.Vm_ac,
+        ConverterControlType.Va_ac: pg.ConverterControlType.Va_ac,
+        ConverterControlType.Qac: pg.ConverterControlType.Q_ac,
+        ConverterControlType.Pdc: pg.ConverterControlType.P_dc,
+        ConverterControlType.Pac: pg.ConverterControlType.P_ac,
+    }
+
 except ImportError as e:
     pg = None
     GSLV_AVAILABLE = False
@@ -99,6 +113,7 @@ except ImportError as e:
     tap_module_control_mode_dict = dict()
     tap_phase_control_mode_dict = dict()
     contingency_ops_type_dict = dict()
+    contingency_method_dict = dict()
 
 
 def get_gslv_mip_solvers_list() -> List[str]:
@@ -177,7 +192,7 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
 
                 # we pick all the profile
                 if len(data) > 0:
-                    gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+                    gslv_profile.init_sparse(default_value=gc_profile.default_value, data=data)
 
             else:
                 assert len(time_indices) == n_time
@@ -192,7 +207,7 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
                 else:
                     data = sp_arr2.get_map()
 
-                gslv_profile.init_sparse(default_val=gc_profile.default_value, data=data)
+                gslv_profile.init_sparse(default_value=gc_profile.default_value, data=data)
 
         else:
             if time_indices is None:
@@ -540,8 +555,6 @@ def convert_contingencies(elm: dev.Contingency,
     :param groups_dict:
     :return:
     """
-
-
 
     return pg.Contingency(idtag=elm.idtag,
                           device_idtag=elm.device_idtag,
@@ -1234,7 +1247,8 @@ def convert_battery(k: int, elm: dev.Battery, bus_dict: Dict[str, "pg.Bus"], n_t
     :param opf_results:
     :return:
     """
-    gen = pg.Battery(nt=n_time,
+    gen = pg.Battery(
+        nt=n_time,
                      name=elm.name,
                      idtag=elm.idtag,
                      P=elm.P,
@@ -1250,7 +1264,8 @@ def convert_battery(k: int, elm: dev.Battery, bus_dict: Dict[str, "pg.Bus"], n_t
                      Enom=elm.Enom,
                      charge_efficiency=elm.charge_efficiency,
                      discharge_efficiency=elm.discharge_efficiency,
-                     is_controlled=elm.is_controlled, )
+                     is_controlled=elm.is_controlled,
+    )
 
     gen.bus = bus_dict[elm.bus.idtag]
 
@@ -1460,21 +1475,59 @@ def convert_transformer(elm: dev.Transformer2W,
                            nt=n_time,
                            HV=elm.HV,
                            LV=elm.LV,
-                           rate=elm.rate if elm.rate > 0 else 9999,
+                           nominal_power=elm.Sn,
+                           copper_losses=elm.Pcu,
+                           iron_losses=elm.Pfe,
+                           no_load_current=elm.I0,
+                           short_circuit_voltage=elm.Vsc,
                            active=elm.active,
+                           rate=elm.rate if elm.rate > 0 else 9999,
+
                            r=elm.R,
                            x=elm.X,
                            g=elm.G,
                            b=elm.B,
-                           monitor_loading=elm.monitor_loading,
-                           contingency_enabled=elm.contingency_enabled,
+
                            tap_module=elm.tap_module,
-                           tap_phase=elm.tap_phase)
+                           tap_module_max = elm.tap_module_max,
+                           tap_module_min=elm.tap_module_min,
+
+                           tap_phase=elm.tap_phase,
+                           tap_phase_max=elm.tap_phase_max,
+                           tap_phase_min=elm.tap_phase_min,
+
+                           tolerance=elm.tolerance,
+
+                           cost=elm.Cost,
+                           mttf=elm.mttf,
+                           mttr=elm.mttr,
+
+                           vset=elm.vset,
+                           Pset=elm.Pset,
+                           Qset=elm.Qset,
+
+                           temp_base=elm.temp_base,
+                           temp_oper=elm.temp_oper,
+                           alpha=elm.alpha,
+
+                           tap_module_control_mode=tap_module_control_mode_dict[elm.tap_module_control_mode],
+                           tap_phase_control_mode=tap_phase_control_mode_dict[elm.tap_phase_control_mode],
+
+                           contingency_factor=elm.contingency_factor,
+                           protection_rating_factor=elm.protection_rating_factor,
+
+                           contingency_enabled=elm.contingency_enabled,
+                           monitor_loading=elm.monitor_loading,
+
+                           )
 
     tr2.tap_phase_min = elm.tap_phase_min
     tr2.tap_phase_max = elm.tap_phase_max
     tr2.tap_module_min = elm.tap_module_min
     tr2.tap_module_max = elm.tap_module_max
+
+    if elm.regulation_bus is not None:
+        tr2.regulation_bus = bus_dict[elm.regulation_bus.idtag]
 
     fill_profile(gslv_profile=tr2.active,
                  gc_profile=elm.active_prof,
@@ -1555,10 +1608,9 @@ def convert_transformer(elm: dev.Transformer2W,
 
     # control vars
     if override_controls:
-        tr2.tap_module_control_mode = pg.TapModuleControl.fixed
-        tr2.tap_phase_control_mode = pg.TapPhaseControl.fixed
+        tr2.tap_module_control_mode.fill(pg.TapModuleControl.fixed)
+        tr2.tap_phase_control_mode.fill(pg.TapPhaseControl.fixed)
     else:
-        # tr2.setAllControlMode(ctrl_dict[elm.control_mode])
         pass
 
     return tr2
@@ -1630,11 +1682,6 @@ def convert_transformer3w(elm: dev.Transformer3W,
     # this is because the central node is in the buses list already from GridCal
     tr3.central_node = bus_dict[elm.bus0.idtag]
 
-    if use_time_series:
-        pass
-    else:
-        pass
-
     return tr3
 
 
@@ -1675,20 +1722,38 @@ def convert_vsc(elm: dev.VSC, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     :param time_indices:
     :return:
     """
-    vsc = pg.Vsc(idtag=elm.idtag,
-                 code=str(elm.code),
-                 name=elm.name,
-                 calc_node_from=bus_dict[elm.bus_from.idtag],
-                 calc_node_to=bus_dict[elm.bus_to.idtag],
-                 nt=n_time,
-                 active=elm.active, )
 
-    vsc.alpha1 = elm.alpha1
-    vsc.alpha2 = elm.alpha2
-    vsc.alpha3 = elm.alpha3
-
-    vsc.setAllMonitorloading(elm.monitor_loading)
-    vsc.setAllContingencyenabled(elm.contingency_enabled)
+    vsc = pg.Vsc(
+        nt=n_time,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        name=elm.name,
+        idtag=elm.idtag,
+        code=str(elm.code),
+        active=elm.active,
+        rate=9999.0,
+        kdp=elm.kdp,
+        alpha1=elm.alpha1,
+        alpha2=elm.alpha2,
+        alpha3=elm.alpha3,
+        mttf=elm.mttf,
+        mttr=elm.mttr,
+        overload_cost=elm.Cost,
+        contingency_factor=elm.contingency_factor,
+        protection_rating_factor=elm.protection_rating_factor,
+        contingency_enabled=elm.contingency_enabled,
+        monitor_loading=elm.monitor_loading,
+        capex=elm.capex,
+        opex=elm.opex,
+        build_status=build_status_dict[elm.build_status],
+        control1=converter_control_type_dict[elm.control1],
+        control2=converter_control_type_dict[elm.control2],
+        control1_val=elm.control1_val,
+        control2_val=elm.control2_val,
+        #     TODO: extend the search
+        control1_dev=bus_dict.get(elm.control1_dev, None),
+        control2_dev=bus_dict.get(elm.control2_dev, None)
+    )
 
     fill_profile(gslv_profile=vsc.active,
                  gc_profile=elm.active_prof,
@@ -1753,18 +1818,20 @@ def convert_dc_line(elm: dev.DcLine, bus_dict: Dict[str, "pg.Bus"], n_time: int,
     :param time_indices:
     :return:
     """
-    lne = pg.DcLine(idtag=elm.idtag,
-                    name=elm.name,
-                    calc_node_from=bus_dict[elm.bus_from.idtag],
-                    calc_node_to=bus_dict[elm.bus_to.idtag],
-                    nt=n_time,
-                    length=elm.length,
-                    rate=elm.rate,
-                    active_default=elm.active,
-                    r=elm.R,
-                    monitor_loading_default=elm.monitor_loading,
-                    monitor_contingency_default=elm.contingency_enabled
-                    )
+    lne = pg.DcLine(
+        idtag=elm.idtag,
+        code=str(elm.code),
+        name=elm.name,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        nt=n_time,
+        length=elm.length,
+        rate=elm.rate if elm.rate > 0 else 9999,
+        active=elm.active,
+        r=float(elm.R),
+        monitor_loading=elm.monitor_loading,
+        contingency_enabled=elm.contingency_enabled,
+    )
 
     fill_profile(gslv_profile=lne.active,
                  gc_profile=elm.active_prof,
@@ -1831,30 +1898,30 @@ def convert_hvdc_line(elm: dev.HvdcLine, bus_dict: Dict[str, "pg.Bus"], n_time: 
     :return:
     """
 
-    hvdc = pg.HvdcLine(idtag=elm.idtag,
-                       code=str(elm.code),
-                       name=elm.name,
-                       calc_node_from=bus_dict[elm.bus_from.idtag],
-                       calc_node_to=bus_dict[elm.bus_to.idtag],
-                       cn_from=None,
-                       cn_to=None,
-                       nt=n_time,
-                       active_default=int(elm.active),
-                       rate=elm.rate,
-                       contingency_rate=elm.rate * elm.contingency_factor,
-                       monitor_loading_default=1,
-                       monitor_contingency_default=1,
-                       P=elm.Pset,
-                       Vf=elm.Vset_f,
-                       Vt=elm.Vset_t,
-                       r=elm.r,
-                       angle_droop=elm.angle_droop,
-                       length=elm.length,
-                       min_firing_angle_f=elm.min_firing_angle_f,
-                       max_firing_angle_f=elm.max_firing_angle_f,
-                       min_firing_angle_t=elm.min_firing_angle_t,
-                       max_firing_angle_t=elm.max_firing_angle_t,
-                       control_mode=hvdc_control_mode_dict[elm.control_mode])
+    hvdc = pg.HvdcLine(
+        idtag=elm.idtag,
+        code=str(elm.code),
+        name=elm.name,
+        bus_from=bus_dict[elm.bus_from.idtag],
+        bus_to=bus_dict[elm.bus_to.idtag],
+        nt=n_time,
+        active=elm.active,
+        rate=elm.rate,
+        contingency_factor=elm.contingency_factor,
+        # monitor_loading=elm.monitor_loading,
+        # contingency_enabled=elm.contingency_enabled,
+        pset=elm.Pset,
+        Vset_f=elm.Vset_f,
+        Vset_t=elm.Vset_t,
+        r=float(elm.r),
+        angle_droop=elm.angle_droop,
+        length=elm.length,
+        min_firing_angle_f=elm.min_firing_angle_f,
+        max_firing_angle_f=elm.max_firing_angle_f,
+        min_firing_angle_t=elm.min_firing_angle_t,
+        max_firing_angle_t=elm.max_firing_angle_t,
+        control_mode=hvdc_control_mode_dict[elm.control_mode]
+    )
 
     fill_profile(gslv_profile=hvdc.active,
                  gc_profile=elm.active_prof,
@@ -2434,3 +2501,66 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults") ->
     #         results.convergence_reports.append(report)
 
     return results
+
+
+def gslv_contingencies(circuit: MultiCircuit,
+                       con_opt: ContingencyAnalysisOptions,
+                       time_series: bool = False,
+                       time_indices: Union[IntVec, None] = None) -> "pg.ContingencyAnalysisResults":
+    """
+    GSLV power flow
+    :param circuit: MultiCircuit instance
+    :param pf_opt: Power Flow Options
+    :param time_series: Compile with GridCal time series?
+    :param time_indices: Array of time indices
+    :param opf_results: Instance of
+    :return: GSLV Power flow results object
+    """
+    override_branch_controls = not (con_opt.pf_options.control_taps_modules and con_opt.pf_options.control_taps_phase)
+
+    gslv_grid, _ = to_gslv(circuit,
+                           use_time_series=time_series,
+                           time_indices=None,
+                           override_branch_controls=override_branch_controls,
+                           opf_results=None)
+
+    con_opt_gslv = pg.ContingencyAnalysisOptions(
+        use_provided_flows=con_opt.use_provided_flows,
+        Pf=con_opt.Pf,
+        pf_options=get_gslv_pf_options(con_opt.pf_options),
+        lin_options=pg.LinearAnalysisOptions(
+            distributeSlack=con_opt.lin_options.distribute_slack,
+            correctValues=con_opt.lin_options.correct_values,
+            ptdfThreshold=con_opt.lin_options.ptdf_threshold,
+            lodfThreshold=con_opt.lin_options.lodf_threshold,
+        ),
+        use_srap=con_opt.use_srap,
+        srap_max_power=con_opt.srap_max_power,
+        srap_top_n=con_opt.srap_top_n,
+        srap_dead_band=con_opt.srap_deadband,
+        srap_rever_to_nominal_rating=con_opt.srap_rever_to_nominal_rating,
+        detailed_massive_report=con_opt.detailed_massive_report,
+        contingency_dead_band=con_opt.contingency_deadband,
+        contingency_method=contingency_method_dict[con_opt.contingency_method],
+    )
+
+    if time_series:
+        # it is already sliced to the relevant time indices
+        if time_indices is None:
+            time_indices = [i for i in range(circuit.get_time_number())]
+        else:
+            time_indices = list(time_indices)
+        n_threads = 0  # max threads
+    else:
+        time_indices = [0]
+        n_threads = 1
+
+    logger = pg.Logger()
+
+    res = pg.run_contingencies(grid=gslv_grid,
+                               options=con_opt_gslv,
+                               n_threads=n_threads,
+                               time_indices=time_indices,
+                               logger=logger)
+
+    return res

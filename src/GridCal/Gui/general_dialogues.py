@@ -565,6 +565,99 @@ class CheckListDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+
+class DeleteDialogue(QtWidgets.QDialog):
+    """
+    New profile dialogue window
+    """
+
+    def __init__(self,
+                 names_list: List[str],
+                 title='Select objects',
+                 delete_from_db: bool = False,
+                 ask_for_group_name: bool = False,
+                 group_label: str = "",
+                 group_text: str = "",
+                 checks=True,
+                 check_value=True):
+        """
+
+        :param names_list: List of names to display
+        :param title: Window title
+        :param ask_for_group_name: Ask for a group name (i.e. investments group name...)
+        :param group_label: Name of the property
+        :param group_text: Tentative group name
+        """
+        QtWidgets.QDialog.__init__(self)
+        self.setObjectName("self")
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+
+        self.is_accepted: bool = False
+        self.selected_indices: List[int] = list()
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText("Selected objects")
+
+        self.group_label = QtWidgets.QLabel()
+        self.group_label.setText(group_label)
+        self.group_name_text = QtWidgets.QTextEdit()
+        self.group_name_text.setText(group_text)
+        self.group_name_text.setMaximumHeight(30)
+
+        # list
+        self.list_view = QtWidgets.QListView()
+        self.mdl = get_list_model(names_list, checks=checks, check_value=check_value)
+        self.list_view.setModel(self.mdl)
+
+        # delete_with_dialogue from DB check
+        self.delete_from_db_check = QtWidgets.QCheckBox()
+        self.delete_from_db_check.setText(r'Remove from the database')
+        self.delete_from_db_check.setChecked(delete_from_db)
+
+        # accept button
+        self.accept_btn = QtWidgets.QPushButton()
+        self.accept_btn.setText('Accept')
+        self.accept_btn.clicked.connect(self.accept_click)
+
+        # add all to the GUI
+        if ask_for_group_name:
+            self.main_layout.addWidget(self.group_label)
+            self.main_layout.addWidget(self.group_name_text)
+
+        self.main_layout.addWidget(self.label1)
+        self.main_layout.addWidget(self.list_view)
+        self.main_layout.addWidget(self.delete_from_db_check)
+        self.main_layout.addWidget(self.accept_btn)
+
+        self.setLayout(self.main_layout)
+
+        self.setWindowTitle(title)
+
+        h = 260
+        self.resize(h, int(0.8 * h))
+
+    @property
+    def delete_from_db(self):
+        return self.delete_from_db_check.isChecked()
+
+    def get_group_text(self) -> str:
+        """
+        Get the group text
+        :return: string
+        """
+        return self.group_name_text.toPlainText()
+
+    def accept_click(self):
+        """
+        Accept and close
+        """
+        self.is_accepted = True
+
+        self.selected_indices = get_checked_indices(self.mdl)
+        self.accept()
+
+
 class InputNumberDialogue(QtWidgets.QDialog):
     """
     New InputNumberDialogue window

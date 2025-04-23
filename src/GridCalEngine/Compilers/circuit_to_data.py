@@ -69,7 +69,7 @@ def set_bus_control_voltage(i: int,
     """
     if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
         if remote_control and j > -1 and j != i:
-            # remove voltage control
+            # delete voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
             bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
@@ -120,7 +120,7 @@ def set_bus_control_voltage_vsc(i: int,
     """
     if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
         if remote_control and j > -1 and j != i:
-            # remove voltage control
+            # delete voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
             # bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             bus_data.is_p_controlled[j] = True
@@ -288,173 +288,189 @@ def get_load_data(data: LoadData,
     ii = 0
     for elm in circuit.get_loads():
 
-        i = bus_dict[elm.bus]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-        data.bus_idx[ii] = i
-        data.original_idx[ii] = ii
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        if time_series:
-            if opf_results is not None:
-                data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx]) - opf_results.load_shedding[t_idx, ii]
-            else:
-                data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
-
-            data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
-            data.Y[ii] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
-
-            data.active[ii] = elm.active_prof[t_idx]
-            data.cost[ii] = elm.Cost_prof[t_idx]
-
+        if elm.bus is None:
+            data.bus_idx[ii] = -1
+            data.active[ii] = False
         else:
-            if opf_results is not None:
-                data.S[ii] = complex(elm.P, elm.Q) - opf_results.load_shedding[ii]
+            i = bus_dict[elm.bus]
+
+            data.names[ii] = elm.name
+            data.idtag[ii] = elm.idtag
+            data.bus_idx[ii] = i
+            data.original_idx[ii] = ii
+            data.mttf[ii] = elm.mttf
+            data.mttr[ii] = elm.mttr
+
+            if time_series:
+                if opf_results is not None:
+                    data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx]) - opf_results.load_shedding[t_idx, ii]
+                else:
+                    data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
+
+                data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+                data.Y[ii] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
+
+                data.active[ii] = elm.active_prof[t_idx]
+                data.cost[ii] = elm.Cost_prof[t_idx]
+
             else:
-                data.S[ii] = complex(elm.P, elm.Q)
+                if opf_results is not None:
+                    data.S[ii] = complex(elm.P, elm.Q) - opf_results.load_shedding[ii]
+                else:
+                    data.S[ii] = complex(elm.P, elm.Q)
 
-            data.I[ii] = complex(elm.Ir, elm.Ii)
-            data.Y[ii] = complex(elm.G, elm.B)
-            data.active[ii] = elm.active
-            data.cost[ii] = elm.Cost
+                data.I[ii] = complex(elm.Ir, elm.Ii)
+                data.Y[ii] = complex(elm.G, elm.B)
+                data.active[ii] = elm.active
+                data.cost[ii] = elm.Cost
 
-        if elm.use_kw:
-            # pass kW to MW
-            data.S[ii] /= 1000.0
-            data.I[ii] /= 1000.0
-            data.Y[ii] /= 1000.0
-            data.cost[ii] /= 1000.0
+            if elm.use_kw:
+                # pass kW to MW
+                data.S[ii] /= 1000.0
+                data.I[ii] /= 1000.0
+                data.Y[ii] /= 1000.0
+                data.cost[ii] /= 1000.0
 
-        # reactive power sharing data
-        if data.active[ii]:
-            bus_data.q_fixed[i] -= data.S[ii].imag
-            bus_data.ii_fixed[i] -= data.I[ii].imag
-            bus_data.b_fixed[i] -= data.Y[ii].imag
+            # reactive power sharing data
+            if data.active[ii]:
+                bus_data.q_fixed[i] -= data.S[ii].imag
+                bus_data.ii_fixed[i] -= data.I[ii].imag
+                bus_data.b_fixed[i] -= data.Y[ii].imag
 
         # data.C_bus_elm[i, ii] = 1
         ii += 1
 
     for elm in circuit.get_static_generators():
 
-        i = bus_dict[elm.bus]
-        data.bus_idx[ii] = i
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-        data.original_idx[ii] = ii
-
-        if time_series:
-            data.S[ii] -= complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
-            data.active[ii] = elm.active_prof[t_idx]
-            data.cost[ii] = elm.Cost_prof[t_idx]
-
+        if elm.bus is None:
+            data.bus_idx[ii] = -1
+            data.active[ii] = False
         else:
-            data.S[ii] -= complex(elm.P, elm.Q)
-            data.active[ii] = elm.active
-            data.cost[ii] = elm.Cost
+            i = bus_dict[elm.bus]
+            data.bus_idx[ii] = i
+            data.names[ii] = elm.name
+            data.idtag[ii] = elm.idtag
+            data.original_idx[ii] = ii
 
-        if elm.use_kw:
-            # pass kW to MW
-            data.S[ii] /= 1000.0
-            data.cost[ii] /= 1000.0
+            if time_series:
+                data.S[ii] -= complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
+                data.active[ii] = elm.active_prof[t_idx]
+                data.cost[ii] = elm.Cost_prof[t_idx]
 
-        # reactive power sharing data
-        if data.active[ii]:
-            bus_data.q_fixed[i] += data.S[ii].imag
-            # bus_data.ii_fixed[i] += data.I[ii].imag
-            # bus_data.b_fixed[i] += data.Y[ii].imag
+            else:
+                data.S[ii] -= complex(elm.P, elm.Q)
+                data.active[ii] = elm.active
+                data.cost[ii] = elm.Cost
+
+            if elm.use_kw:
+                # pass kW to MW
+                data.S[ii] /= 1000.0
+                data.cost[ii] /= 1000.0
+
+            # reactive power sharing data
+            if data.active[ii]:
+                bus_data.q_fixed[i] += data.S[ii].imag
+                # bus_data.ii_fixed[i] += data.I[ii].imag
+                # bus_data.b_fixed[i] += data.Y[ii].imag
 
         # data.C_bus_elm[i, ii] = 1
         ii += 1
 
     for elm in circuit.get_external_grids():
 
-        i = bus_dict[elm.bus]
-        data.bus_idx[ii] = i
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-        data.original_idx[ii] = ii
-
-        # change stuff depending on the modes
-        if elm.mode == ExternalGridMode.VD:
-            # bus_data.bus_types[i] = BusMode.Slack_tpe.value  # set as Slack
-            bus_data.set_bus_mode(i, BusMode.Slack_tpe)
-
-            set_bus_control_voltage(i=i,
-                                    j=-1,
-                                    remote_control=False,
-                                    bus_name=elm.bus.name,
-                                    bus_data=bus_data,
-                                    bus_voltage_used=bus_voltage_used,
-                                    candidate_Vm=elm.Vm_prof[t_idx] if time_series else elm.Vm,
-                                    use_stored_guess=use_stored_guess,
-                                    logger=logger)
-
-        elif elm.mode == ExternalGridMode.PV:
-
-            set_bus_control_voltage(i=i,
-                                    j=-1,
-                                    remote_control=False,
-                                    bus_name=elm.bus.name,
-                                    bus_data=bus_data,
-                                    bus_voltage_used=bus_voltage_used,
-                                    candidate_Vm=elm.Vm_prof[t_idx] if time_series else elm.Vm,
-                                    use_stored_guess=use_stored_guess,
-                                    logger=logger)
-
-        if time_series:
-            data.S[ii] += complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
-            data.active[ii] = elm.active_prof[t_idx]
-
+        if elm.bus is None:
+            data.bus_idx[ii] = -1
+            data.active[ii] = False
         else:
-            data.S[ii] += complex(elm.P, elm.Q)
-            data.active[ii] = elm.active
+            i = bus_dict[elm.bus]
+            data.bus_idx[ii] = i
+            data.names[ii] = elm.name
+            data.idtag[ii] = elm.idtag
+            data.original_idx[ii] = ii
 
-        if elm.use_kw:
-            # pass kW to MW
-            data.S[ii] /= 1000.0
-            data.cost[ii] /= 1000.0
+            # change stuff depending on the modes
+            if elm.mode == ExternalGridMode.VD:
+                # bus_data.bus_types[i] = BusMode.Slack_tpe.value  # set as Slack
+                bus_data.set_bus_mode(i, BusMode.Slack_tpe)
 
-        # reactive power sharing data
-        if data.active[ii]:
-            bus_data.q_fixed[i] += data.S[ii].imag
-            bus_data.ii_fixed[i] += data.I[ii].imag
-            bus_data.b_fixed[i] += data.Y[ii].imag
+                set_bus_control_voltage(i=i,
+                                        j=-1,
+                                        remote_control=False,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vm_prof[t_idx] if time_series else elm.Vm,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
+
+            elif elm.mode == ExternalGridMode.PV:
+
+                set_bus_control_voltage(i=i,
+                                        j=-1,
+                                        remote_control=False,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vm_prof[t_idx] if time_series else elm.Vm,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
+
+            if time_series:
+                data.S[ii] += complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
+                data.active[ii] = elm.active_prof[t_idx]
+
+            else:
+                data.S[ii] += complex(elm.P, elm.Q)
+                data.active[ii] = elm.active
+
+            if elm.use_kw:
+                # pass kW to MW
+                data.S[ii] /= 1000.0
+                data.cost[ii] /= 1000.0
+
+            # reactive power sharing data
+            if data.active[ii]:
+                bus_data.q_fixed[i] += data.S[ii].imag
+                bus_data.ii_fixed[i] += data.I[ii].imag
+                bus_data.b_fixed[i] += data.Y[ii].imag
 
         # data.C_bus_elm[i, ii] = 1
         ii += 1
 
     for elm in circuit.get_current_injections():
 
-        i = bus_dict[elm.bus]
-        data.bus_idx[ii] = i
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-        data.original_idx[ii] = ii
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        if time_series:
-            data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
-            data.active[ii] = elm.active_prof[t_idx]
-            data.cost[ii] = elm.Cost_prof[t_idx]
-
+        if elm.bus is None:
+            data.bus_idx[ii] = -1
+            data.active[ii] = False
         else:
-            data.I[ii] += complex(elm.Ir, elm.Ii)
-            data.active[ii] = elm.active
-            data.cost[ii] = elm.Cost
+            i = bus_dict[elm.bus]
+            data.bus_idx[ii] = i
+            data.names[ii] = elm.name
+            data.idtag[ii] = elm.idtag
+            data.original_idx[ii] = ii
+            data.mttf[ii] = elm.mttf
+            data.mttr[ii] = elm.mttr
 
-        if elm.use_kw:
-            # pass kW to MW
-            data.I[ii] /= 1000.0
-            data.cost[ii] /= 1000.0
+            if time_series:
+                data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+                data.active[ii] = elm.active_prof[t_idx]
+                data.cost[ii] = elm.Cost_prof[t_idx]
 
-            # reactive power sharing data
-        if data.active[ii]:
-            bus_data.q_fixed[i] += data.S[ii].imag
-            bus_data.ii_fixed[i] += data.I[ii].imag
-            bus_data.b_fixed[i] += data.Y[ii].imag
+            else:
+                data.I[ii] += complex(elm.Ir, elm.Ii)
+                data.active[ii] = elm.active
+                data.cost[ii] = elm.Cost
+
+            if elm.use_kw:
+                # pass kW to MW
+                data.I[ii] /= 1000.0
+                data.cost[ii] /= 1000.0
+
+                # reactive power sharing data
+            if data.active[ii]:
+                bus_data.q_fixed[i] += data.S[ii].imag
+                bus_data.ii_fixed[i] += data.I[ii].imag
+                bus_data.b_fixed[i] += data.Y[ii].imag
 
         # data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -492,109 +508,118 @@ def get_shunt_data(
     ii = 0
     for k, elm in enumerate(circuit.get_shunts()):
 
-        i = bus_dict[elm.bus]
-        data.bus_idx[k] = i
-        data.names[k] = elm.name
-        data.idtag[k] = elm.idtag
-        data.original_idx[ii] = ii
-        data.mttf[k] = elm.mttf
-        data.mttr[k] = elm.mttr
-
-        if time_series:
-            data.active[k] = elm.active_prof[t_idx]
-            data.Y[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
+        if elm.bus is None:
+            data.bus_idx[k] = -1
+            data.active[k] = False
         else:
-            data.active[k] = elm.active
-            data.Y[k] = complex(elm.G, elm.B)
 
-        if elm.use_kw:
-            # pass kW to MW
-            data.Y[ii] /= 1000.0
+            i = bus_dict[elm.bus]
+            data.bus_idx[k] = i
+            data.names[k] = elm.name
+            data.idtag[k] = elm.idtag
+            data.original_idx[ii] = ii
+            data.mttf[k] = elm.mttf
+            data.mttr[k] = elm.mttr
 
-        # reactive power sharing data
-        if data.active[ii]:
-            bus_data.b_fixed[i] += data.Y[ii].imag
+            if time_series:
+                data.active[k] = elm.active_prof[t_idx]
+                data.Y[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
+            else:
+                data.active[k] = elm.active
+                data.Y[k] = complex(elm.G, elm.B)
+
+            if elm.use_kw:
+                # pass kW to MW
+                data.Y[ii] /= 1000.0
+
+            # reactive power sharing data
+            if data.active[ii]:
+                bus_data.b_fixed[i] += data.Y[ii].imag
 
         # data.C_bus_elm[i, k] = 1
         ii += 1
 
     for elm in circuit.get_controllable_shunts():
 
-        i = bus_dict[elm.bus]
-        data.bus_idx[ii] = i
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-        data.original_idx[ii] = ii
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        data.controllable[ii] = elm.is_controlled
-        data.vset[ii] = elm.Vset
-        data.qmin[ii] = elm.Bmin
-        data.qmax[ii] = elm.Bmax
-
-        if time_series:
-            data.Y[ii] += complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
-            data.active[ii] = elm.active_prof[t_idx]
-            data.cost[ii] = elm.Cost_prof[t_idx]
-
-            if elm.is_controlled and elm.active_prof[t_idx]:
-
-                if elm.control_bus_prof[t_idx] is not None:
-                    remote_control = True
-                    j = bus_dict[elm.control_bus_prof[t_idx]]
-                else:
-                    remote_control = False
-                    j = -1
-
-                data.controllable_bus_idx[ii] = j
-
-                set_bus_control_voltage(i=i,
-                                        j=j,
-                                        remote_control=remote_control and control_remote_voltage,
-                                        bus_name=elm.bus.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset_prof[t_idx],
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
-
+        if elm.bus is None:
+            data.bus_idx[ii] = -1
+            data.active[ii] = False
         else:
-            data.Y[ii] += complex(elm.G, elm.B)
-            data.active[ii] = elm.active
-            data.cost[ii] = elm.Cost
+            i = bus_dict[elm.bus]
+            data.bus_idx[ii] = i
+            data.names[ii] = elm.name
+            data.idtag[ii] = elm.idtag
+            data.original_idx[ii] = ii
+            data.mttf[ii] = elm.mttf
+            data.mttr[ii] = elm.mttr
 
-            if elm.is_controlled and elm.active:
-                if elm.control_bus is not None:
-                    remote_control = True
-                    j = bus_dict[elm.control_bus]
-                else:
-                    remote_control = False
-                    j = -1
+            data.controllable[ii] = elm.is_controlled
+            data.vset[ii] = elm.Vset
+            data.qmin[ii] = elm.Bmin
+            data.qmax[ii] = elm.Bmax
 
-                data.controllable_bus_idx[ii] = j
+            if time_series:
+                data.Y[ii] += complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
+                data.active[ii] = elm.active_prof[t_idx]
+                data.cost[ii] = elm.Cost_prof[t_idx]
 
-                set_bus_control_voltage(i=i,
-                                        j=j,
-                                        remote_control=remote_control and control_remote_voltage,
-                                        bus_name=elm.bus.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset,
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                if elm.is_controlled and elm.active_prof[t_idx]:
 
-        if elm.use_kw:
-            # pass kW to MW
-            data.Y[ii] /= 1000.0
+                    if elm.control_bus_prof[t_idx] is not None:
+                        remote_control = True
+                        j = bus_dict[elm.control_bus_prof[t_idx]]
+                    else:
+                        remote_control = False
+                        j = -1
 
-        # reactive power sharing data
-        if data.active[ii]:
-            if data.controllable[ii]:
-                bus_data.q_shared_total[i] += data.Y[ii].imag
-                data.q_share[ii] = data.Y[ii].imag
+                    data.controllable_bus_idx[ii] = j
+
+                    set_bus_control_voltage(i=i,
+                                            j=j,
+                                            remote_control=remote_control and control_remote_voltage,
+                                            bus_name=elm.bus.name,
+                                            bus_data=bus_data,
+                                            bus_voltage_used=bus_voltage_used,
+                                            candidate_Vm=elm.Vset_prof[t_idx],
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
+
             else:
-                bus_data.b_fixed[i] += data.Y[ii].imag
+                data.Y[ii] += complex(elm.G, elm.B)
+                data.active[ii] = elm.active
+                data.cost[ii] = elm.Cost
+
+                if elm.is_controlled and elm.active:
+                    if elm.control_bus is not None:
+                        remote_control = True
+                        j = bus_dict[elm.control_bus]
+                    else:
+                        remote_control = False
+                        j = -1
+
+                    data.controllable_bus_idx[ii] = j
+
+                    set_bus_control_voltage(i=i,
+                                            j=j,
+                                            remote_control=remote_control and control_remote_voltage,
+                                            bus_name=elm.bus.name,
+                                            bus_data=bus_data,
+                                            bus_voltage_used=bus_voltage_used,
+                                            candidate_Vm=elm.Vset,
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
+
+            if elm.use_kw:
+                # pass kW to MW
+                data.Y[ii] /= 1000.0
+
+            # reactive power sharing data
+            if data.active[ii]:
+                if data.controllable[ii]:
+                    bus_data.q_shared_total[i] += data.Y[ii].imag
+                    data.q_share[ii] = data.Y[ii].imag
+                else:
+                    bus_data.b_fixed[i] += data.Y[ii].imag
 
         # data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -628,6 +653,10 @@ def fill_generator_parent(
     :param control_remote_voltage:
     :return:
     """
+    if elm.bus is None:
+        data.bus_idx[k] = -1
+        data.active[k] = False
+        return
 
     i = bus_dict[elm.bus]
     data.bus_idx[k] = i
@@ -655,6 +684,7 @@ def fill_generator_parent(
     data.min_time_down[k] = elm.MinTimeDown
 
     data.dispatchable[k] = elm.enabled_dispatch
+    data.capex[k] = elm.capex
 
     data.snom[k] = elm.Snom
 
@@ -1074,6 +1104,14 @@ def fill_controllable_branch(
                                  value=elm.vset,
                                  expected_value=bus_data.Vbus[bus_idx])
 
+        # modify the voltage angle guess using the phase
+        if ctrl_data.tap_angle[ii] != 0:
+            f = bus_dict[elm.bus_from]
+            t = bus_dict[elm.bus_to]
+            Vm = abs(bus_data.Vbus[f])
+            Va = np.angle(bus_data.Vbus[f], deg=False)
+            bus_data.Vbus[f] = Vm * np.exp(1j * (Va + ctrl_data.tap_angle[ii]))
+
 
 def get_branch_data(
         data: PassiveBranchData,
@@ -1399,7 +1437,6 @@ def set_control_dev(k: int,
                     control_bus_idx: IntVec,
                     control_branch_idx: IntVec,
                     bus_dict: Dict[Bus, int],
-                    branch_dict: Dict[BRANCH_TYPES, int],
                     bus_data: BusData,
                     bus_voltage_used: BoolVec,
                     use_stored_guess: bool,
@@ -1554,7 +1591,6 @@ def get_vsc_data(
                             control_bus_idx=data.control1_bus_idx,
                             control_branch_idx=data.control1_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -1566,7 +1602,6 @@ def get_vsc_data(
                             control_bus_idx=data.control2_bus_idx,
                             control_branch_idx=data.control2_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -1591,7 +1626,6 @@ def get_vsc_data(
                             control_bus_idx=data.control1_bus_idx,
                             control_branch_idx=data.control1_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -1604,7 +1638,6 @@ def get_vsc_data(
                             control_bus_idx=data.control2_bus_idx,
                             control_branch_idx=data.control2_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -1913,6 +1946,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  control_taps_modules: bool = True,
                                  control_taps_phase: bool = True,
                                  control_remote_voltage: bool = True,
+                                 fill_gep: bool = False,
                                  logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
@@ -1927,6 +1961,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param control_taps_modules: control taps modules?
     :param control_taps_phase: control taps phase?
     :param control_remote_voltage: control remote voltage?
+    :param fill_gep: fill generation expansion planning parameters?
     :param logger: Logger instance
     :return: NumericalCircuit instance
     """
@@ -1935,7 +1970,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     time_series = t_idx is not None
 
     bus_voltage_used = np.zeros(circuit.get_bus_number(), dtype=bool)
-
+    ngen = circuit.get_generators_number()
+    nbatt = circuit.get_batteries_number()
     # declare the numerical circuit
     nc = NumericalCircuit(
         nbus=circuit.get_bus_number(),
@@ -1945,8 +1981,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         nhvdc=circuit.get_hvdc_number(),
         nvsc=circuit.get_vsc_number(),
         nload=circuit.get_load_like_device_number(),
-        ngen=circuit.get_generators_number(),
-        nbatt=circuit.get_batteries_number(),
+        ngen=ngen,
+        nbatt=nbatt,
         nshunt=circuit.get_shunt_like_device_number(),
         nfluidnode=circuit.get_fluid_nodes_number(),
         nfluidturbine=circuit.get_fluid_turbines_number(),
@@ -2111,7 +2147,44 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
             t_idx=t_idx
         )
 
+    if fill_gep:
+
+        # formulate the investment
+        gen_dict = {elm.idtag: (idx, elm) for idx, elm in enumerate(circuit.generators)}
+        batt_dict = {elm.idtag: (idx, elm) for idx, elm in enumerate(circuit.batteries)}
+
+        for investment in circuit.investments:
+
+            # search in generators
+            data = gen_dict.get(investment.device_idtag, None)
+            if data is not None:
+                idx, elm = data
+
+                if investment.CAPEX != 0.0:  # overwrite the base capex
+                    nc.generator_data.capex[idx] = investment.CAPEX
+
+                nc.generator_data.is_candidate[idx] = True
+                nc.generator_data.discount_rate[idx] = investment.group.discount_rate
+            else:
+
+                # search in batteries
+                data = batt_dict.get(investment.device_idtag, None)
+                if data is not None:
+                    idx, elm = data
+
+                    if investment.CAPEX != 0.0:  # overwrite the base capex
+                        nc.battery_data.capex[idx] = investment.CAPEX
+
+                    nc.battery_data.is_candidate[idx] = True
+                    nc.battery_data.discount_rate[idx] = investment.group.discount_rate
+                else:
+                    logger.add_error("Could not find investment device", value=investment.device_idtag)
+
     nc.bus_dict = bus_dict
     nc.consolidate_information()
+
+    if nc.active_branch_data.any_pf_control is False:
+        if nc.vsc_data.nelm > 0:
+            nc.active_branch_data.any_pf_control = True
 
     return nc

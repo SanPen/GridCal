@@ -35,7 +35,7 @@ NEW_STANDARD_ICON_MAP = {
     QStyle.StandardPixmap.SP_DialogApplyButton: {"id": "check_circle"},
     QStyle.StandardPixmap.SP_DialogCancelButton: {"id": "cancel"},
     QStyle.StandardPixmap.SP_DialogCloseButton: {"id": "close"},
-    QStyle.StandardPixmap.SP_DialogDiscardButton: {"id": "delete"},
+    QStyle.StandardPixmap.SP_DialogDiscardButton: {"id": "delete_with_dialogue"},
     QStyle.StandardPixmap.SP_DialogHelpButton: {"id": "help"},
     QStyle.StandardPixmap.SP_DialogNoButton: {"id": "not_interested"},
     QStyle.StandardPixmap.SP_DialogOkButton: {"id": "check"},
@@ -73,7 +73,7 @@ NEW_STANDARD_ICON_MAP = {
     QStyle.StandardPixmap.SP_TitleBarUnshadeButton: {"id": "chevron_right", "rotate": "90"},
     QStyle.StandardPixmap.SP_ToolBarHorizontalExtensionButton: {"id": "double_arrow"},
     QStyle.StandardPixmap.SP_ToolBarVerticalExtensionButton: {"id": "double_arrow", "rotate": 90},
-    QStyle.StandardPixmap.SP_TrashIcon: {"id": "delete", "os": ["Windows"]},
+    QStyle.StandardPixmap.SP_TrashIcon: {"id": "delete_with_dialogue", "os": ["Windows"]},
     QStyle.StandardPixmap.SP_VistaShield: {"id": "security", "os": ["Darwin", "Linux"]},
 }
 

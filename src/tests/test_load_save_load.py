@@ -51,7 +51,7 @@ def test_load_save_load() -> None:
         # asset for failing
         assert equal
 
-        # if all ok, we can remove the test file
+        # if all ok, we can delete the test file
         os.remove(fname2)
 
 

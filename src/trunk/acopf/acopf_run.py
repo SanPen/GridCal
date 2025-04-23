@@ -2,7 +2,7 @@ import os
 import GridCalEngine.api as gce
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_new import run_nonlinear_opf
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 # from GridCalEngine.enumerations import TransformerControlType
@@ -305,10 +305,14 @@ def case14():
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
 
+    for load in range(len(grid.loads)):
+        grid.loads[load].Cost = 9.0
+    grid.loads[1].P = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=True)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFstd,
-                                              ips_tolerance=1e-6, ips_iterations=50, ips_control_q_limits=True, verbose=1)
-    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+                                              ips_tolerance=1e-8, ips_iterations=50, ips_control_q_limits=True, verbose=1)
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                            load_shedding=False)
     print('')
 
 
@@ -550,7 +554,7 @@ if __name__ == '__main__':
     # two_grids_of_3bus()
     # case9()
     # case14_linear_vs_nonlinear()
-    # case14()
+    case14()
     # case_gb()
     # case6ww()
     #  case_pegase89()
@@ -559,4 +563,4 @@ if __name__ == '__main__':
     # casehvdc()
     # caseREE()
     # case_nodalcap()
-    superconductor()
+    # superconductor()

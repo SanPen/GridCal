@@ -3,12 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING, Callable
 import darkdetect
-from PySide6.QtCore import Qt, QPointF
-from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem,
-                               QGraphicsRectItem, QGraphicsEllipseItem)
-from PySide6.QtGui import QColor
+from PySide6.QtCore import Qt, QPointF, QLineF
+from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem, QGraphicsItemGroup,
+                               QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsTextItem)
+from PySide6.QtGui import QColor, QPen, QPolygon
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -69,106 +69,6 @@ else:
     set_light_mode()
 
 
-class Polygon(QGraphicsPolygonItem):
-    """
-    PolygonItem
-    """
-
-    def __init__(self, parent):
-        """
-        Constructor
-        :param parent:
-        """
-        super().__init__(parent)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
-
-    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
-        """
-
-        :param change:
-        :param value:
-        :return:
-        """
-        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
-        return super(QGraphicsPolygonItem, self).itemChange(change, value)
-
-
-class Square(QGraphicsRectItem):
-    """
-    Square
-    """
-
-    def __init__(self, parent):
-        """
-        Constructor
-        :param parent:
-        """
-        super().__init__(parent)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
-
-    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
-        """
-
-        :param change:
-        :param value:
-        :return:
-        """
-        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
-        return super(QGraphicsRectItem, self).itemChange(change, value)
-
-
-class Circle(QGraphicsEllipseItem):
-    """
-    Circle
-    """
-
-    def __init__(self, parent):
-        """
-        Constructor
-        :param parent:
-        """
-        super().__init__(parent)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
-
-    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
-        """
-
-        :param change:
-        :param value:
-        :return:
-        """
-        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
-        return super(QGraphicsEllipseItem, self).itemChange(change, value)
-
-
-class Line(QGraphicsLineItem):
-    """
-    Line
-    """
-
-    def __init__(self, parent):
-        """
-        Constructor
-        :param parent:
-        """
-        super().__init__(parent)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
-
-    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
-        """
-
-        :param change:
-        :param value:
-        :return:
-        """
-        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.parentItem().update_nexus(value)
-        return super(QGraphicsLineItem, self).itemChange(change, value)
-
-
 class GenericDiagramWidget:
     """
     Generic DataBase Widget
@@ -187,17 +87,21 @@ class GenericDiagramWidget:
         :param draw_labels:
         """
 
-        self.parent = parent
+        self._parent = parent
 
-        self.api_object: ALL_DEV_TYPES = api_object
+        self._api_object: ALL_DEV_TYPES = api_object
 
-        self.editor: Union[SchematicWidget, GridMapWidget] = editor
+        self._editor: Union[SchematicWidget, GridMapWidget] = editor
 
         self._draw_labels: bool = draw_labels
 
         # color
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
+
+    @property
+    def api_object(self) -> ALL_DEV_TYPES:
+        return self._api_object
 
     @property
     def draw_labels(self) -> bool:
@@ -216,7 +120,7 @@ class GenericDiagramWidget:
         self._draw_labels = value
 
         # update editor diagram position
-        self.editor.update_label_drwaing_status(device=self.api_object, draw_labels=self._draw_labels)
+        self._editor.update_label_drwaing_status(device=self.api_object, draw_labels=self._draw_labels)
 
     def recolour_mode(self) -> None:
         """
@@ -257,3 +161,200 @@ class GenericDiagramWidget:
         :return:
         """
         self.draw_labels = not self.draw_labels
+
+    def delete_from_associations(self):
+        """
+        Delete this object from other associations, i.e. for a line, delete from the terminal connections
+        :return:
+        """
+        pass
+
+    def get_associated_widgets(self) -> List["GenericDiagramWidget"]:
+        """
+        Get a list of all graphical elements associated with this widget.
+        In the case of a BusGraphicsItem, it will be all the shunt connections
+        plus the LineGraphicItems connecting to it, etc.
+        This function is meant to be overloaded.
+        :return:
+        """
+        return list()
+
+    def get_extra_graphics(self) -> List[QGraphicsItem]:
+        """
+        Get a list of all QGraphicsItem elements associated with this widget.
+        In the case of a GeneratorGraphicsItem, it will be all the nexus
+        This function is meant to be overloaded.
+        :return:
+        """
+        return list()
+
+
+class Polygon(QGraphicsPolygonItem):
+    """
+    PolygonItem
+    """
+
+    def __init__(self, parent, polygon: QPolygon, update_nexus_fcn: Callable[[QPointF], None]):
+        """
+        Constructor
+        :param parent:
+        """
+        super().__init__(parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        self.setPolygon(polygon)
+        self.update_nexus_fcn = update_nexus_fcn
+
+    def setPen(self, pen: QPen):
+        super().setPen(pen)
+        pass
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+            self.update_nexus_fcn(value)
+        return super(QGraphicsPolygonItem, self).itemChange(change, value)
+
+
+class Square(QGraphicsRectItem):
+    """
+    Square
+    """
+
+    def __init__(self, parent, h: int, w: int, label_letter: str, update_nexus_fcn: Callable[[QPointF], None]):
+        """
+        Constructor
+        :param parent:
+        """
+        super().__init__(parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        self.setRect(0, 0, h, w)
+
+        self.label = QGraphicsTextItem(label_letter, parent=self)
+        self.label.setPos(h / 4, w / 5)
+        self.update_nexus_fcn = update_nexus_fcn
+
+    def setPen(self, pen: QPen):
+        super().setPen(pen)
+        self.label.setDefaultTextColor(pen.color())
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+            self.update_nexus_fcn(value)
+        return super(QGraphicsRectItem, self).itemChange(change, value)
+
+
+class Circle(QGraphicsEllipseItem):
+    """
+    Circle
+    """
+
+    def __init__(self, parent, h: int, w: int, label_letter: str, update_nexus_fcn: Callable[[QPointF], None]):
+        """
+        Constructor
+        :param parent:
+        """
+        super().__init__(parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        self.setRect(0, 0, h, w)
+
+        self.label = QGraphicsTextItem(label_letter, parent=self)
+        self.label.setPos(h / 4, w / 5)
+        self.update_nexus_fcn = update_nexus_fcn
+
+    def setPen(self, pen: QPen):
+        super().setPen(pen)
+        self.label.setDefaultTextColor(pen.color())
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+            self.update_nexus_fcn(value)
+        return super(QGraphicsEllipseItem, self).itemChange(change, value)
+
+
+class Condenser(QGraphicsItemGroup):
+    """
+    Square
+    """
+
+    def __init__(self, parent, h: int, w: int, update_nexus_fcn: Callable[[QPointF], None]):
+        """
+        Constructor
+        :param parent:
+        """
+        super().__init__(parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        lines_data = list()
+        lines_data.append(QLineF(QPointF(w / 2, 0), QPointF(w / 2, h * 0.4)))
+        lines_data.append(QLineF(QPointF(0, h * 0.4), QPointF(w, h * 0.4)))
+        lines_data.append(QLineF(QPointF(0, h * 0.6), QPointF(w, h * 0.6)))
+        lines_data.append(QLineF(QPointF(w / 2, h * 0.6), QPointF(w / 2, h)))
+        lines_data.append(QLineF(QPointF(0, h * 1), QPointF(w, h * 1)))
+        lines_data.append(QLineF(QPointF(w * 0.15, h * 1.1), QPointF(w * 0.85, h * 1.1)))
+        lines_data.append(QLineF(QPointF(w * 0.3, h * 1.2), QPointF(w * 0.7, h * 1.2)))
+
+        self.lines = list()
+        for l in lines_data:
+            l1 = QGraphicsLineItem(parent)
+            l1.setLine(l)
+            self.lines.append(l1)
+            self.addToGroup(l1)
+
+        self.update_nexus_fcn = update_nexus_fcn
+
+    def setPen(self, pen: QPen):
+        for l in self.lines:
+            l.setPen(pen)
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+            self.update_nexus_fcn(value)
+        return super(QGraphicsItemGroup, self).itemChange(change, value)
+
+
+class Line(QGraphicsLineItem):
+    """
+    Line
+    """
+
+    def __init__(self, parent, update_nexus_fcn: Callable[[QPointF], None]):
+        """
+        Constructor
+        :param parent:
+        """
+        super().__init__(parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        self.update_nexus_fcn = update_nexus_fcn
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Union[int, QPointF]) -> Union[int, QPointF]:
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+            self.update_nexus_fcn(value)
+        return super(QGraphicsLineItem, self).itemChange(change, value)

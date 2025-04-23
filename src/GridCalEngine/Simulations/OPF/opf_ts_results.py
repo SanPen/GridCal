@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
+import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
@@ -34,6 +36,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                  hvdc_names: StrVec,
                  fuel_names: StrVec,
                  emission_names: StrVec,
+                 technology_names: StrVec,
                  fluid_node_names: StrVec,
                  fluid_path_names: StrVec,
                  fluid_injection_names: StrVec,
@@ -61,6 +64,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         :param hvdc_names:
         :param fuel_names:
         :param emission_names:
+        :param technology_names:
         :param fluid_node_names:
         :param fluid_path_names:
         :param fluid_injection_names:
@@ -91,19 +95,24 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                                                                    ResultTypes.GeneratorCost,
                                                                                    ResultTypes.GeneratorProducing,
                                                                                    ResultTypes.GeneratorStartingUp,
-                                                                                   ResultTypes.GeneratorShuttingDown
+                                                                                   ResultTypes.GeneratorShuttingDown,
+                                                                                   ResultTypes.GeneratorInvested,
                                                                                    ],
 
                                                     ResultTypes.ShuntResults: [ResultTypes.ShuntReactivePower],
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower,
-                                                                                 ResultTypes.BatteryEnergy],
+                                                                                 ResultTypes.BatteryEnergy,
+                                                                                 ResultTypes.BatteryInvested, ],
 
-                                                    ResultTypes.LoadResults: [ResultTypes.LoadShedding],
+                                                    ResultTypes.LoadResults: [ResultTypes.LoadPower,
+                                                                              ResultTypes.LoadShedding,
+                                                                              ResultTypes.LoadSheddingCost],
 
                                                     ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
                                                                                 ResultTypes.BranchLoading,
                                                                                 ResultTypes.BranchOverloads,
+                                                                                ResultTypes.BranchOverloadsCost,
                                                                                 ResultTypes.BranchTapAngle],
 
                                                     ResultTypes.ReportsResults: [ResultTypes.ContingencyFlowsReport],
@@ -123,7 +132,14 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
                                                     ResultTypes.SystemResults: [ResultTypes.SystemFuel,
                                                                                 ResultTypes.SystemEmissions,
-                                                                                ResultTypes.SystemEnergyCost]
+                                                                                ResultTypes.SystemEnergyCost,
+                                                                                ResultTypes.SystemEnergyTotalCost,
+                                                                                ResultTypes.PowerByTechnology],
+
+                                                    ResultTypes.SpecialPlots: [
+                                                        ResultTypes.OpfBalancePlot,
+                                                        # ResultTypes.OpfTechnologyPlot
+                                                    ],
                                                     },
                                  time_array=time_array,
                                  clustering_results=clustering_results,
@@ -138,6 +154,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.hvdc_names = hvdc_names
         self.fuel_names = fuel_names
         self.emission_names = emission_names
+        self.technology_names = technology_names
         self.bus_types = bus_types
         self.fluid_node_names = fluid_node_names
         self.fluid_path_names = fluid_path_names
@@ -145,6 +162,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         nfuels = len(fuel_names)
         nemissions = len(emission_names)
+        ntech = len(technology_names)
         nsh = len(shunt_like_names)
 
         self.voltage = np.zeros((nt, n), dtype=complex)
@@ -157,6 +175,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.losses = np.zeros((nt, m), dtype=float)
         self.phase_shift = np.zeros((nt, m), dtype=float)
         self.overloads = np.zeros((nt, m), dtype=float)
+        self.overloads_cost = np.zeros((nt, m), dtype=float)
         self.rates = np.zeros(m)
         self.contingency_rates = np.zeros(m)
         self.contingency_flows_list = list()
@@ -166,7 +185,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
 
+        self.load_power = np.zeros((nt, nload), dtype=float)
         self.load_shedding = np.zeros((nt, nload), dtype=float)
+        self.load_shedding_cost = np.zeros((nt, nload), dtype=float)
 
         self.generator_power = np.zeros((nt, ngen), dtype=float)
         self.generator_reactive_power = np.zeros((nt, ngen), dtype=float)
@@ -175,11 +196,13 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.generator_producing = np.zeros((nt, ngen), dtype=bool)
         self.generator_starting_up = np.zeros((nt, ngen), dtype=bool)
         self.generator_shutting_down = np.zeros((nt, ngen), dtype=bool)
+        self.generator_invested = np.zeros((nt, ngen), dtype=bool)
 
         self.shunt_like_reactive_power = np.zeros((nt, nsh), dtype=float)
 
         self.battery_power = np.zeros((nt, nbat), dtype=float)
         self.battery_energy = np.zeros((nt, nbat), dtype=float)
+        self.battery_invested = np.zeros((nt, nbat), dtype=bool)
 
         self.fluid_node_current_level = np.zeros((nt, n_fluid_node), dtype=float)
         self.fluid_node_flow_in = np.zeros((nt, n_fluid_node), dtype=float)
@@ -191,9 +214,11 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.fluid_injection_flow = np.zeros((nt, n_fluid_injection), dtype=float)
 
         self.converged = np.empty(nt, dtype=bool)
-        self.system_fuel = np.empty((nt, nemissions), dtype=float)
-        self.system_emissions = np.empty((nt, nfuels), dtype=float)
+        self.system_fuel = np.empty((nt, nfuels), dtype=float)
+        self.system_emissions = np.empty((nt, nemissions), dtype=float)
         self.system_energy_cost = np.empty(nt, dtype=float)
+        self.system_total_energy_cost = np.empty(nt, dtype=float)
+        self.power_by_technology = np.empty((nt, ntech), dtype=float)
 
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
@@ -209,7 +234,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='Sbus', tpe=CxMat)
         self.register(name='bus_shadow_prices', tpe=Mat)
 
+        self.register(name='load_power', tpe=Mat)
         self.register(name='load_shedding', tpe=Mat)
+        self.register(name='load_shedding_cost', tpe=Mat)
 
         self.register(name='Sf', tpe=CxMat)
         self.register(name='St', tpe=CxMat)
@@ -217,6 +244,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='losses', tpe=Mat)
         self.register(name='phase_shift', tpe=Mat)
         self.register(name='overloads', tpe=Mat)
+        self.register(name='overloads_cost', tpe=Mat)
         self.register(name='rates', tpe=Vec)
         self.register(name='contingency_rates', tpe=Vec)
         self.register(name='contingency_flows_list', tpe=list)
@@ -244,6 +272,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='generator_producing', tpe=Mat)
         self.register(name='generator_starting_up', tpe=Mat)
         self.register(name='generator_shutting_down', tpe=Mat)
+        self.register(name='generator_invested', tpe=Mat)
 
         self.register(name='shunt_like_reactive_power', tpe=Mat)
 
@@ -253,6 +282,8 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.register(name='system_fuel', tpe=Mat)
         self.register(name='system_emissions', tpe=Mat)
         self.register(name='system_energy_cost', tpe=Mat)
+        self.register(name='system_total_energy_cost', tpe=Mat)
+        self.register(name='power_by_technology', tpe=Mat)
 
         self.register(name='converged', tpe=BoolVec)
 
@@ -261,7 +292,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         :param nc:
         """
-        rates = nc.Rates.T
+        rates = nc.passive_branch_data.rates.T
         self.loading = self.Sf / (rates + 1e-9)
 
     def set_at(self, t, res: OptimalPowerFlowResults):
@@ -404,6 +435,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 xlabel='',
                                 units='(MW)')
 
+        elif result_type == ResultTypes.BranchOverloadsCost:
+
+            return ResultsTable(data=np.abs(self.overloads_cost),
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.branch_names,
+                                cols_device_type=DeviceType.BranchDevice,
+                                title=str(result_type.value),
+                                ylabel='(Currency)',
+                                xlabel='',
+                                units='(Currency)')
+
         elif result_type == ResultTypes.BranchLosses:
 
             return ResultsTable(data=self.losses.real,
@@ -536,6 +579,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 xlabel='',
                                 units='(m3/s)')
 
+        elif result_type == ResultTypes.LoadPower:
+
+            return ResultsTable(data=self.load_power,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.load_names,
+                                cols_device_type=DeviceType.LoadLikeDevice,
+                                title=str(result_type.value),
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
+
         elif result_type == ResultTypes.LoadShedding:
 
             return ResultsTable(data=self.load_shedding,
@@ -547,6 +602,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
+
+        elif result_type == ResultTypes.LoadSheddingCost:
+
+            return ResultsTable(data=self.load_shedding_cost,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.load_names,
+                                cols_device_type=DeviceType.LoadLikeDevice,
+                                title=str(result_type.value),
+                                ylabel='(Currency)',
+                                xlabel='',
+                                units='(Currency)')
 
         elif result_type == ResultTypes.GeneratorPower:
 
@@ -632,6 +699,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 xlabel='',
                                 units='')
 
+        elif result_type == ResultTypes.GeneratorInvested:
+
+            return ResultsTable(data=self.generator_invested,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.generator_names,
+                                cols_device_type=DeviceType.GeneratorDevice,
+                                title=str(result_type.value),
+                                ylabel='',
+                                xlabel='',
+                                units='')
+
         elif result_type == ResultTypes.ShuntReactivePower:
 
             return ResultsTable(data=self.shunt_like_reactive_power,
@@ -659,6 +738,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         elif result_type == ResultTypes.BatteryEnergy:
 
             return ResultsTable(data=self.battery_energy,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.battery_names,
+                                cols_device_type=DeviceType.BatteryDevice,
+                                title=str(result_type.value),
+                                ylabel='(MWh)',
+                                xlabel='',
+                                units='(MWh)')
+
+        elif result_type == ResultTypes.BatteryInvested:
+
+            return ResultsTable(data=self.battery_invested,
                                 index=pd.to_datetime(self.time_array),
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.battery_names,
@@ -704,6 +795,29 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 xlabel='',
                                 units='(Currency/MWh)')
 
+        elif result_type == ResultTypes.SystemEnergyTotalCost:
+
+            return ResultsTable(data=self.system_total_energy_cost,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=['System cost'],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=str(result_type.value),
+                                ylabel='(Currency)',
+                                xlabel='',
+                                units='(Currency)')
+
+        elif result_type == ResultTypes.PowerByTechnology:
+
+            return ResultsTable(data=self.power_by_technology,
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=self.technology_names,
+                                cols_device_type=DeviceType.Technology,
+                                title=str(result_type.value),
+                                ylabel='(MW)',
+                                xlabel='',
+                                units='(MW)')
         elif result_type == ResultTypes.ContingencyFlowsReport:
             y = list()
             index = list()
@@ -729,5 +843,56 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 cols_device_type=DeviceType.NoDevice,
                                 title=str(result_type.value))
 
+        elif result_type == ResultTypes.OpfBalancePlot:
+            # the generation already accounts for the shedding
+            generation = self.generator_power.sum(axis=1) + self.battery_power.sum(axis=1)
+            load = self.load_power.sum(axis=1) - self.load_shedding.sum(axis=1)
+
+            if self.plotting_allowed():
+                plt.ion()
+                fig = plt.figure(figsize=(8, 6))
+                ax3 = plt.subplot(1, 1, 1)
+                ax3.plot(generation, label='Generation')
+                ax3.plot(load, label='Load')
+                ax3.legend()
+                fig.suptitle(str(result_type.value))
+                plt.tight_layout()
+                plt.show()
+
+            return ResultsTable(data=np.c_[generation, load],
+                                index=pd.to_datetime(self.time_array),
+                                idx_device_type=DeviceType.TimeDevice,
+                                columns=np.array(['Generation (MW)', 'Load (MW)']),
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MW)',
+                                units='(MW)')
+
+        # elif result_type == ResultTypes.OpfTechnologyPlot:
+        #     # the generation already accounts for the shedding
+        #     generation = self.generator_power.sum(axis=1) + self.battery_power.sum(axis=1)
+        #     load = self.load_power.sum(axis=1) - self.load_shedding.sum(axis=1)
+        #
+        #     if self.plotting_allowed():
+        #         plt.ion()
+        #         fig = plt.figure(figsize=(8, 6))
+        #         ax3 = plt.subplot(1, 1, 1)
+        #
+        #         # for i in range(self.power_by_technology.shape[1]):
+        #         ax3.stackplot(x=self.time_array, y=self.power_by_technology, labels=self.technology_names)
+        #
+        #         ax3.legend()
+        #         fig.suptitle(str(result_type.value))
+        #         plt.tight_layout()
+        #         plt.show()
+        #
+        #     return ResultsTable(data=np.c_[generation, load],
+        #                         index=pd.to_datetime(self.time_array),
+        #                         idx_device_type=DeviceType.TimeDevice,
+        #                         columns=np.array(['Generation (MW)', 'Load (MW)']),
+        #                         cols_device_type=DeviceType.NoDevice,
+        #                         title=result_type.value,
+        #                         ylabel='(MW)',
+        #                         units='(MW)')
         else:
             raise Exception('Result type not understood:' + str(result_type))

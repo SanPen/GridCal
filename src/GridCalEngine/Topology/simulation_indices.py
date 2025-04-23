@@ -54,7 +54,7 @@ def compile_types(Pbus: Vec,
                 # all the generators are injecting zero, pick the first pv
                 i = pv[0]
 
-            # delete the selected pv bus from the pv list and put it in the slack list
+            # delete_with_dialogue the selected pv bus from the pv list and put it in the slack list
             pv = np.delete(pv, np.where(pv == i)[0])
             ref = np.array([i])
 

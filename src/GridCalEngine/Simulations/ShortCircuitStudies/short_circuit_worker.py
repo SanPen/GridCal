@@ -16,11 +16,13 @@ from GridCalEngine.enumerations import FaultType
 from GridCalEngine.basic_structures import CxVec, Vec
 
 
-# Sfb, Stb, If, It, Vbranch, loading, losses
 def short_circuit_post_process(
         calculation_inputs: NumericalCircuit,
-        V: CxVec, branch_rates: Vec,
-        Yf: sp.csc_matrix, Yt: sp.csc_matrix) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
+        V: CxVec,
+        branch_rates: Vec,
+        Yf: sp.csc_matrix,
+        Yt: sp.csc_matrix
+) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Compute the important results for short-circuits
     :param calculation_inputs: instance of Circuit

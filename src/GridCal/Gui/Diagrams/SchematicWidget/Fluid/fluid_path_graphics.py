@@ -5,7 +5,7 @@
 from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPen, QIcon, QPixmap, QColor
+from PySide6.QtGui import QPen, QColor
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget, ACTIVE
@@ -60,9 +60,13 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                         w=self.width,
                         style=self.style)
 
+    @property
+    def api_object(self) -> FluidPath:
+        return self._api_object
+
     def set_api_object_color(self):
         """
-        Gether the color from the api object and apply
+        Gather the color from the api object and apply
         :return:
         """
         self.color = QColor(self.api_object.color) if self.api_object is not None else ACTIVE['fluid']
@@ -100,7 +104,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
     def mouseDoubleClickEvent(self, event):
         """
-        On double click, edit
+        On double-click, edit
         :param event:
         :return:
         """
@@ -132,7 +136,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
             add_menu_entry(menu=menu,
                            text="Delete",
                            icon_path=":/Icons/icons/delete3.svg",
-                           function_ptr=self.remove)
+                           function_ptr=self.delete)
 
             menu.addSection('Convert to')
             add_menu_entry(menu=menu,
@@ -169,4 +173,4 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         ok = yes_no_question('Are you sure that you want to convert this fluid path into a line?',
                              'Convert fluid path')
         if ok:
-            self.editor.convert_fluid_path_to_line(element=self.api_object, item_graphic=self)
+            self._editor.convert_fluid_path_to_line(element=self.api_object, item_graphic=self)

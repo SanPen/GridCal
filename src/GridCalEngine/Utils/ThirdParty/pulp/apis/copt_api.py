@@ -623,12 +623,12 @@ class COPT_DLL(LpSolver):
                 # Delete problem
                 rc = self.DeleteProb(byref(self.coptprob))
                 if rc != 0:
-                    raise PulpSolverError("COPT_PULP: Failed to delete problem")
+                    raise PulpSolverError("COPT_PULP: Failed to delete_with_dialogue problem")
 
                 # Delete environment
                 rc = self.DeleteEnv(byref(self.coptenv))
                 if rc != 0:
-                    raise PulpSolverError("COPT_PULP: Failed to delete environment")
+                    raise PulpSolverError("COPT_PULP: Failed to delete_with_dialogue environment")
 
                 # Reset to None
                 self.coptenv = None

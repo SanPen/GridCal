@@ -62,8 +62,6 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
 
         self.editor: GridMapWidget = editor  # to reinforce the type
 
-        self.api_object: VoltageLevel = api_object  # to reinforce the type
-
         self.radius = r * api_object.Vnom * 0.01
 
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
@@ -74,7 +72,10 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Create a pen with reduced line width
-        self.change_pen_width(0.5)
+        pen = self.pen()
+        pen.setWidth(0)  # set the pen width to 0
+        self.setPen(pen)
+
         # Create a pen with reduced line width
         se_color = self.api_object.substation.color if self.api_object.substation is not None else QColor("#3d7d95")
         self.color = QColor(se_color)
@@ -95,11 +96,15 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.needsUpdate = False
         self.setZValue(0)
 
+    @property
+    def api_object(self) -> VoltageLevel:
+        return self._api_object
+
     def center_on_substation(self) -> None:
         """
         Centers the graphic item on the substation
         """
-        parent_center = self.parent.get_center_pos()
+        parent_center = self._parent.get_center_pos()
         xc = parent_center.x() - self.rect().width() / 2
         yc = parent_center.y() - self.rect().height() / 2
         self.setRect(xc, yc, self.rect().width(), self.rect().height())
@@ -153,27 +158,27 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         Returns a copy of the VoltageLevelGraphicItem with a different parent
         :param new_parent: New Substation Graphic item parent
-        :return: Copy of the VL Grpahic Item with new parent.
+        :return: Copy of the VL Graphic Item with new parent.
         """
-        return VoltageLevelGraphicItem(parent=new_parent, editor=new_parent.editor, api_object=self.api_object,
-                                       r=self.radius / self.api_object.Vnom / 0.01, draw_labels=self.draw_labels)
-
-
-
+        return VoltageLevelGraphicItem(parent=new_parent,
+                                       editor=new_parent.editor,
+                                       api_object=self.api_object,
+                                       r=self.radius / self.api_object.Vnom / 0.01,
+                                       draw_labels=self.draw_labels)
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
         """
         if self.hovered:
-            self.parent.mouseMoveEvent(event)
+            self._parent.mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        self.parent.mousePressEvent(event)
+        self._parent.mousePressEvent(event)
         self.editor.disableMove = True
         self.update_position_at_the_diagram()  # always update
 
@@ -185,7 +190,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         Event handler for mouse release events.
         """
         super().mouseReleaseEvent(event)
-        self.parent.mouseReleaseEvent(event)
+        self._parent.mouseReleaseEvent(event)
         self.editor.disableMove = True
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
@@ -246,22 +251,13 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
 
         return center_point
 
-    def change_pen_width(self, width: float) -> None:
-        """
-        Change the pen width for the node.
-        :param width: New pen width.
-        """
-        pen = self.pen()
-        pen.setWidth(width)  # keep this and do not change to setWidthF
-        self.setPen(pen)
-
     def add_bus(self):
         """
         Add bus
         """
         bus = Bus(name=f"Bus {self.api_object.name}",
                   Vnom=self.api_object.Vnom,
-                  substation=self.parent.api_object,
+                  substation=self._parent.api_object,
                   voltage_level=self.api_object)
 
         self.editor.circuit.add_bus(obj=bus)

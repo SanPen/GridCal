@@ -249,7 +249,7 @@ class GeneratorQCurveEditor(QDialog):
             row = selected_indexes[0].row()
             self.table_model.delRow(row)
         else:
-            # if no selection, delete the last row
+            # if no selection, delete_with_dialogue the last row
             self.table_model.delLastRow()
 
     def sort(self):
