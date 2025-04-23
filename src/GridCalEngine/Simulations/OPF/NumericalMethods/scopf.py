@@ -1306,6 +1306,7 @@ def scopf_MP_OPF(nc: NumericalCircuit,
 
     if W_k_vec is not None:
         n_cuts = len(W_k_vec)
+        print('n_cuts', n_cuts)
     else:
         n_cuts = 0
 
@@ -1980,6 +1981,8 @@ def case_loop() -> None:
 
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
+    prob_cont = 0
+
     # Start main loop over iterations
     for klm in range(20):
         print(f"General iteration {klm + 1} of 20")
@@ -1989,7 +1992,7 @@ def case_loop() -> None:
         # Global slack and weight trackers
         v_slacks = np.zeros(n_con_groups)
         f_slacks = np.zeros(n_con_groups)
-        prob_cont = 0
+        viols = 0
         W_k_vec = np.zeros(n_con_groups)
         Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
         u_j_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
@@ -2043,10 +2046,11 @@ def case_loop() -> None:
                         W_k_local[ic] = slack_sol_cont.W_k
 
                         if slack_sol_cont.W_k > 0.0001:
-                            W_k_vec[prob_cont] = slack_sol_cont.W_k
-                            Z_k_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.Z_k
-                            u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
+                            W_k_vec[viols] = slack_sol_cont.W_k
+                            Z_k_vec[viols, island.generator_data.original_idx] = slack_sol_cont.Z_k
+                            u_j_vec[viols, island.generator_data.original_idx] = slack_sol_cont.u_j
                             prob_cont += 1
+                            viols += 1
 
                         print('nbus', island.nbus, 'ngen', island.ngen)
 
@@ -2080,7 +2084,7 @@ def case_loop() -> None:
             iteration_data['max_flow_slack'].append(0.1)
             iteration_data['avg_flow_slack'].append(0.1)
             print('Contingencies have not been initialised')
-        iteration_data['num_violations'].append(prob_cont)
+        iteration_data['num_violations'].append(viols)
 
         # Run the MP with information from the SPs
         print("--- Feeding SPs info to MP ---")
