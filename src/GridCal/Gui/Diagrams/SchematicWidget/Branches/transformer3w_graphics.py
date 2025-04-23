@@ -15,6 +15,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.gui_functions import add_menu_entry
@@ -176,6 +177,19 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             if self.connection_lines[i] is not None:
                 self.connection_lines[i].recolour_mode()
 
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        self.api_object.winding1.active = val
+        self.api_object.winding2.active = val
+        self.api_object.winding3.active = val
+
+        self.recolour_mode()
+
     def set_winding_tool_tips(self) -> None:
         """
         Set
@@ -244,7 +258,13 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             menu = QMenu()
             menu.addSection("3w-Transformer")
 
-            # menu.addSeparator()
+            add_menu_entry(menu=menu,
+                           text="Active",
+                           function_ptr=self.enable_disable_toggle,
+                           checkeable=True,
+                           checked_value=self.api_object.active)
+
+            menu.addSeparator()
 
             add_menu_entry(menu=menu,
                            text="Edit",
@@ -259,6 +279,29 @@ class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             menu.exec_(event.screenPos())
         else:
             pass
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
+
+            if self._editor.circuit.get_time_number() > 0:
+                ok = yes_no_question('Do you want to update the time series active status accordingly?',
+                                     'Update time series active status')
+
+                if ok:
+                    # change the bus state (time series)
+                    self._editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object.winding1, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object.winding2, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object.winding3, override_question=True)
+
 
     def add_big_marker(self, color=Qt.GlobalColor.red, tool_tip_text=""):
         """

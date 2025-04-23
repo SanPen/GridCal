@@ -1360,12 +1360,12 @@ class GridMapWidget(BaseDiagramWidget):
         return GridMapWidget(
             gui=self.gui,
             tile_src=self.map.tile_src,
-            start_level=self.diagram.start_level,
-            longitude=self.diagram.longitude,
-            latitude=self.diagram.latitude,
-            name=self.diagram.name,
+            start_level=d_copy.start_level,
+            longitude=d_copy.longitude,
+            latitude=d_copy.latitude,
+            name=d_copy.name,
             circuit=self.circuit,
-            diagram=self.diagram,
+            diagram=d_copy,
         )
 
     def consolidate_coordinates(self):

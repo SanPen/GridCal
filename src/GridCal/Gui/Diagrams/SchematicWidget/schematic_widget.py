@@ -769,6 +769,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                            prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding1, graphic=w1_graphics)
+                        graphic_object.connection_lines[0] = w1_graphics
 
                         w2_graphics = self.add_api_winding(branch=elm.winding2,
                                                            from_port=graphic_object.terminals[1],
@@ -776,6 +777,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                            prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding2, graphic=w2_graphics)
+                        graphic_object.connection_lines[1] = w2_graphics
 
                         w3_graphics = self.add_api_winding(branch=elm.winding3,
                                                            from_port=graphic_object.terminals[2],
@@ -783,6 +785,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                            prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding3, graphic=w3_graphics)
+                        graphic_object.connection_lines[2] = w3_graphics
 
                         graphic_object.set_position(x=location.x, y=location.y)
                         graphic_object.change_size(h=location.h, w=location.w)
@@ -3239,9 +3242,6 @@ class SchematicWidget(BaseDiagramWidget):
             self.recolour_mode()
 
     def colour_results(self,
-                       # buses: List[Bus],
-                       # branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
-                       # hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
                        Sf: CxVec,
@@ -3415,7 +3415,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                                               add_switch=True)):
 
                         # try to find the diagram object of the DB object
-                        graphic_object = self.graphics_manager.query(branch)
+                        graphic_object: BRANCH_GRAPHICS = self.graphics_manager.query(branch)
 
                         if graphic_object:
 
@@ -3468,16 +3468,6 @@ class SchematicWidget(BaseDiagramWidget):
                                     if theta is not None:
                                         tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
-                                # if branch.device_type == DeviceType.VscDevice:
-                                #     if ma is not None:
-                                #         tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
-                                #
-                                #     if theta is not None:
-                                #         tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
-
-                                # if Beq is not None:
-                                #     tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
-
                                 graphic_object.setToolTipText(tooltip)
                                 graphic_object.set_colour(color, w, style)
 
@@ -3491,6 +3481,12 @@ class SchematicWidget(BaseDiagramWidget):
                                 style = Qt.PenStyle.DashLine
                                 color = QColor(115, 115, 115, 255)  # gray
                                 graphic_object.set_pen(QPen(color, w, style))
+                                graphic_object.setToolTipText("")
+                                if hasattr(graphic_object, 'set_arrows_with_power'):
+                                    graphic_object.set_arrows_with_power(
+                                        Sf=None, St=None
+                                    )
+
                         else:
                             # No diagram object
                             pass
@@ -4340,7 +4336,7 @@ class SchematicWidget(BaseDiagramWidget):
         return SchematicWidget(
             gui=self.gui,
             circuit=self.circuit,
-            diagram=self.diagram,
+            diagram=d_copy,
             default_bus_voltage=self.default_bus_voltage,
             time_index=self.get_time_index(),
             prefer_node_breaker=self.prefer_node_breaker,
