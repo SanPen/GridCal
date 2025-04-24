@@ -216,9 +216,9 @@ def control_q_inside_method(Scalc: CxVec, S0: CxVec,
 
 
 @nb.njit()
-def control_q_josep_method(Scalc: CxVec, S0: CxVec,
-                           pv: IntVec, i_u_vm: IntVec, i_k_q: IntVec,
-                           Qmin: Vec, Qmax: Vec):
+def control_q_for_generalized_method(Scalc: CxVec, S0: CxVec,
+                                     pv: IntVec, i_u_vm: IntVec, i_k_q: IntVec,
+                                     Qmin: Vec, Qmax: Vec):
     """
     Control of reactive power within the numerical method
     Assume we only want to change regular PV buses to PQ buses (as in the conventional method)

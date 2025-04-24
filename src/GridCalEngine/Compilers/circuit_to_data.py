@@ -69,7 +69,7 @@ def set_bus_control_voltage(i: int,
     """
     if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
         if remote_control and j > -1 and j != i:
-            # remove voltage control
+            # delete voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
             bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             # bus_data.bus_types[i] = BusMode.P_tpe.value  # local bus to P type
@@ -120,7 +120,7 @@ def set_bus_control_voltage_vsc(i: int,
     """
     if bus_data.bus_types[i] != BusMode.Slack_tpe.value:  # if it is not Slack
         if remote_control and j > -1 and j != i:
-            # remove voltage control
+            # delete voltage control
             # bus_data.bus_types[j] = BusMode.PQV_tpe.value  # remote bus to PQV type
             # bus_data.set_bus_mode(j, BusMode.PQV_tpe)
             bus_data.is_p_controlled[j] = True
@@ -1437,7 +1437,6 @@ def set_control_dev(k: int,
                     control_bus_idx: IntVec,
                     control_branch_idx: IntVec,
                     bus_dict: Dict[Bus, int],
-                    branch_dict: Dict[BRANCH_TYPES, int],
                     bus_data: BusData,
                     bus_voltage_used: BoolVec,
                     use_stored_guess: bool,
@@ -1592,7 +1591,6 @@ def get_vsc_data(
                             control_bus_idx=data.control1_bus_idx,
                             control_branch_idx=data.control1_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -1604,7 +1602,6 @@ def get_vsc_data(
                             control_bus_idx=data.control2_bus_idx,
                             control_branch_idx=data.control2_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -1629,7 +1626,6 @@ def get_vsc_data(
                             control_bus_idx=data.control1_bus_idx,
                             control_branch_idx=data.control1_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -1642,7 +1638,6 @@ def get_vsc_data(
                             control_bus_idx=data.control2_bus_idx,
                             control_branch_idx=data.control2_branch_idx,
                             bus_dict=bus_dict,
-                            branch_dict=branch_dict,
                             bus_data=bus_data,
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
@@ -2187,5 +2182,9 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     nc.bus_dict = bus_dict
     nc.consolidate_information()
+
+    if nc.active_branch_data.any_pf_control is False:
+        if nc.vsc_data.nelm > 0:
+            nc.active_branch_data.any_pf_control = True
 
     return nc

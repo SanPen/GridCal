@@ -280,7 +280,7 @@ class IdentifiedObject:
             # try to parse the value
             val = index_find(xml_line, L2[0], L2[1])
 
-            # remove the pound
+            # delete the pound
             if len(val) > 0:
                 if val[0] == '#':
                     val = val[1:]

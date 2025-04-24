@@ -90,7 +90,7 @@ def interpret_line(raw_line: str, splitter=','):
         else:
 
             if "/" in elm:
-                # the line might end with a comment "/ whatever" so we must remove the comment
+                # the line might end with a comment "/ whatever" so we must delete the comment
                 print("Comment detected:", elm, end="")
                 ss = elm.split("/")
                 elm = ss[0]
@@ -140,7 +140,7 @@ def read_and_split(file_name: str, text_func=None, progress_func=None) -> (List[
         for line_ in my_file:
 
             if line_[0] != '@':
-                # remove garbage
+                # delete garbage
                 lne: str = str(line_).strip()
 
                 if lne.startswith("program"):

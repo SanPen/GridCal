@@ -32,10 +32,13 @@ from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
+
+NODE_GRAPHIC = BusGraphicItem | CnGraphicItem | BusBarGraphicItem | FluidNodeGraphicItem
 
 
 class TransformerSymbol(QGraphicsRectItem):
@@ -517,6 +520,26 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         self.set_colour(self.color, self.width, self.style)
 
+    @property
+    def parent(self) -> NODE_GRAPHIC:
+        return self._parent
+
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
+
+    @property
+    def api_object(self) -> BRANCH_TYPES:
+        return self._api_object
+
+    def delete_from_associations(self):
+        """
+        Delete this object from other associations, i.e. for a line, delete from the terminal connections
+        :return:
+        """
+        self._from_port.delete_hosting_connection(graphic_obj=self)
+        self._to_port.delete_hosting_connection(graphic_obj=self)
+
     def get_terminal_from(self) -> Union[None, BarTerminalItem, RoundTerminalItem]:
         """
         Get the terminal from
@@ -606,23 +629,14 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         Remove this object in the diagram
         @return:
         """
-        self.editor.remove_from_scene(self)
+        self.editor._remove_from_scene(self)
 
-    def remove(self, ask=True):
+    def delete(self, ask=True):
         """
         Remove this object in the diagram and the API
         @return:
         """
-        if ask:
-            dtype = self.api_object.device_type.value
-            ok = yes_no_question(f'Do you want to remove the {dtype} {self.api_object.name}?',
-                                 f'Remove {dtype}')
-        else:
-            ok = True
-
-        if ok:
-            self.editor.circuit.delete_branch(obj=self.api_object)
-            self.editor.delete_diagram_element(device=self.api_object)
+        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
     def enable_disable_toggle(self):
         """
@@ -635,13 +649,13 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
             else:
                 self.set_enable(True)
 
-            if self.editor.circuit.get_time_number() > 0:
+            if self._editor.circuit.get_time_number() > 0:
                 ok = yes_no_question('Do you want to update the time series active status accordingly?',
                                      'Update time series active status')
 
                 if ok:
                     # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object, override_question=True)
 
     def set_enable(self, val=True):
         """
@@ -677,8 +691,8 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.get_branches().index(self.api_object)
-        self.editor.plot_branch(i, self.api_object)
+        i = self._editor.circuit.get_branches().index(self.api_object)
+        self._editor.plot_branch(i, self.api_object)
 
     def set_from_port(self, from_port: BarTerminalItem):
         """
@@ -794,13 +808,13 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         Assign the snapshot rate to the profile
         """
-        self.editor.set_rate_to_profile(self.api_object)
+        self._editor.set_rate_to_profile(self.api_object)
 
     def assign_status_to_profile(self):
         """
         Assign the snapshot rate to the profile
         """
-        self.editor.set_active_status_to_profile(self.api_object)
+        self._editor.set_active_status_to_profile(self.api_object)
 
     def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
         """
@@ -847,7 +861,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         change the from or to bus of the nbranch with another selected bus
         """
-        self.editor.change_bus(line_graphics=self)
+        self._editor.change_bus(line_graphics=self)
 
     def get_from_graphic_object(self):
         """
@@ -1010,28 +1024,28 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         :return:
         """
-        return self.get_from_graphic_object().api_object
+        return self.get_from_graphic_object()._api_object
 
     def get_busbar_to(self) -> BusBar:
         """
 
         :return:
         """
-        return self.get_to_graphic_object().api_object
+        return self.get_to_graphic_object()._api_object
 
     def get_fluid_node_from(self) -> FluidNode:
         """
 
         :return:
         """
-        return self.get_from_graphic_object().api_object
+        return self.get_from_graphic_object()._api_object
 
     def get_fluid_node_to(self) -> FluidNode:
         """
 
         :return:
         """
-        return self.get_to_graphic_object().api_object
+        return self.get_to_graphic_object()._api_object
 
     def get_fluid_node_graphics_from(self) -> FluidNodeGraphicItem:
         """

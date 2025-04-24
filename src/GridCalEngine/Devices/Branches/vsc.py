@@ -32,7 +32,6 @@ class VSC(BranchParent):
                  active=True,
                  rate=1e-9,
                  kdp=-0.05,
-                 k=1.0,
                  alpha1=0.0001,
                  alpha2=0.015,
                  alpha3=0.2,

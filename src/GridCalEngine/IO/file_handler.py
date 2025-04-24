@@ -661,7 +661,7 @@ class FileSave:
                                              profiles_to_export=profiles_to_export,
                                              version=model_version,
                                              desc="Test description.",
-                                             scenariotime=scenario_time,
+                                             scenario_time=scenario_time,
                                              logger=logger)
 
         cim_exporter = CimExporter(cgmes_circuit=cgmes_circuit,

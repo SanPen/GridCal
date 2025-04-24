@@ -3,7 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, List, TYPE_CHECKING
+
+from GridCalEngine.enumerations import DeviceType
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.gui_functions import add_menu_entry
 from PySide6 import QtWidgets
@@ -87,6 +89,21 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         # Assign color to the node
         self.set_default_color()
 
+    @property
+    def api_object(self) -> LineLocation:
+        return self._api_object
+
+    @property
+    def editor(self) -> GridMapWidget:
+        return self._editor
+
+    def get_associated_widgets(self) -> List[MapLineContainer]:
+        """
+        This forwards to the map line container for the appropriate deletion of everything
+        :return:
+        """
+        return [self.line_container]
+
     def get_center_pos(self) -> QPointF:
         """
 
@@ -114,7 +131,6 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
 
         if self.enabled:
             self.update_real_pos()
-            self.needs_update = True
             self.line_container.update_connectors()
 
     def update_position_at_the_diagram(self) -> None:
@@ -125,16 +141,14 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         center_point = self.get_pos()
 
         self.lat, self.lon = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
-                                                    y=center_point.y() + real_position.y())
+                                                     y=center_point.y() + real_position.y())
 
         # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
         self.editor.update_diagram_element(device=self.api_object,
-                                           latitude=self.lat,
-                                           longitude=self.lon,
-                                           graphic_object=self)
-
-        print()
+                                            latitude=self.lat,
+                                            longitude=self.lon,
+                                            graphic_object=self)
 
     def update_database_position(self) -> None:
         """
@@ -144,7 +158,7 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         center_point = self.get_pos()
 
         self.lat, self.lon = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
-                                                    y=center_point.y() + real_position.y())
+                                                     y=center_point.y() + real_position.y())
 
         # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
@@ -241,47 +255,40 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         """
         menu = QMenu()
 
-        # add_menu_entry(menu=menu,
-        #                text="Merge",
-        #                icon_path="",
-        #                function_ptr=self.MergeFunction)
-        #
-        # add_menu_entry(menu=menu,
-        #                text="Split",
-        #                icon_path=":/Icons/icons/divide.svg",
-        #                function_ptr=self.SplitFunction)
-
         add_menu_entry(menu=menu,
                        text="Delete",
-                       icon_path=":/Icons/icons/delete.svg",
+                       icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove)
 
+        add_menu_entry(menu=menu,
+                       text="Transform waypoint into substation",
+                       function_ptr=self.editor.transform_waypoint_to_substation,
+                       icon_path=":/Icons/icons/divide.svg")
+
+        menu.addSeparator()
+
+        has_substation = False
+
+        for graphic_obj in self.editor._get_selected():
+            if hasattr(graphic_obj, 'api_object'):
+                if hasattr(graphic_obj.api_object, 'device_type'):
+                    if graphic_obj.api_object.device_type == DeviceType.SubstationDevice:
+                        has_substation = True
+
+        if has_substation:
+
+            add_menu_entry(menu=menu,
+                           text="Connect line to selected substation (T-joint) at this waypoint",
+                           function_ptr=self.editor.create_t_joint_to_substation,
+                           icon_path=":/Icons/icons/divide.svg")
+
         menu.exec_(event.screenPos())
-
-    def AddFunction(self):
-        """
-
-        :return:
-        """
-        self.line_container.insert_new_node_at_position(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
-
-    def SplitFunction(self):
-        """
-
-        :return:
-        """
-        self.line_container.split_Line(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
 
     def remove(self):
         """
         Remove
         """
         self.line_container.removeNode(node=self)
-
 
     def setNodeColor(self, inner_color: QColor, border_color: QColor = None) -> None:
         """
@@ -344,3 +351,5 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         pen = self.pen()
         pen.setWidth(width)
         self.setPen(pen)
+
+

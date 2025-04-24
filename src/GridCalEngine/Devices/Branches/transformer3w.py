@@ -233,6 +233,10 @@ class Transformer3W(PhysicalDevice):
         """
         return self._winding1
 
+    @winding1.setter
+    def winding1(self, val: Winding):
+        self._winding1 = val
+
     @property
     def winding2(self) -> Winding:
         """
@@ -241,6 +245,10 @@ class Transformer3W(PhysicalDevice):
         """
         return self._winding2
 
+    @winding2.setter
+    def winding2(self, val: Winding):
+        self._winding2 = val
+
     @property
     def winding3(self) -> Winding:
         """
@@ -248,6 +256,10 @@ class Transformer3W(PhysicalDevice):
         :return: Winding
         """
         return self._winding3
+
+    @winding3.setter
+    def winding3(self, val: Winding):
+        self._winding3 = val
 
     @property
     def active_prof(self) -> Profile:

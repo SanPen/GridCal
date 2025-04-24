@@ -5,10 +5,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtGui import QPen
-from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
+from PySide6.QtWidgets import (QMenu)
 from GridCalEngine.Devices.Fluid.fluid_turbine import FluidTurbine
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, Circle
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 
@@ -34,28 +33,16 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
                                               editor=editor,
                                               device_type_name='fluid_turbine',
                                               w=40,
-                                              h=40)
+                                              h=40,
+                                              glyph=Circle(self, 40, 40, "T"))
 
-        pen = QPen(self.color, self.width, self.style)
+    @property
+    def api_object(self) -> FluidTurbine:
+        return self._api_object
 
-        self.glyph = Circle(self)
-        self.glyph.setRect(0, 0, self.h, self.w)
-        self.glyph.setPen(pen)
-        self.addToGroup(self.glyph)
-
-        self.label = QGraphicsTextItem('T', parent=self.glyph)
-        self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 5)
-
-        self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_nexus(self.pos())
-
-    def mouseDoubleClickEvent(self, event):
-        """
-
-        :param event:
-        """
-        pass
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
 
     def recolour_mode(self) -> None:
         """
@@ -75,7 +62,6 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
         pen = QPen(self.color, self.width, self.style)
         self.glyph.setPen(pen)
         self.nexus.setPen(pen)
-        self.label.setDefaultTextColor(self.color)
 
     def contextMenuEvent(self, event):
         """
@@ -96,7 +82,7 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
         add_menu_entry(menu=menu,
                        text="Delete",
                        icon_path=":/Icons/icons/delete3.svg",
-                       function_ptr=self.remove)
+                       function_ptr=self.delete)
 
         add_menu_entry(menu=menu,
                        text="Change bus",
@@ -104,59 +90,3 @@ class FluidTurbineGraphicItem(InjectionTemplateGraphicItem):
                        function_ptr=self.change_bus)
 
         menu.exec_(event.screenPos())
-
-    def enable_disable_toggle(self):
-        """
-
-        @return:
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.set_enable(False)
-            else:
-                self.set_enable(True)
-
-            if self.editor.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
-
-    def enable_disable_control_toggle(self):
-        """
-        Enable / Disable device voltage control
-        """
-        if self.api_object is not None:
-            self.api_object.is_controlled = not self.api_object.is_controlled
-
-    def set_enable(self, val=True):
-        """
-        Set the enable value, graphically and in the API
-        @param val:
-        @return:
-        """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.label.setDefaultTextColor(self.color)
-
-    def plot(self):
-        """
-        Plot API objects profiles
-        """
-        # time series object from the last simulation
-        ts = self.editor.circuit.time_profile
-
-        # plot the profiles
-        # self.api_object.plot_profiles(time=ts)

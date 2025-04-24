@@ -128,8 +128,7 @@ def compute_admittances(R: Vec,
                         Yshunt_bus: CxVec,
                         conn: Union[List[WindingsConnection], ObjVec],
                         seq: int,
-                        add_windings_phase: bool = False,
-                        verbose: int = 0) -> AdmittanceMatrices:
+                        add_windings_phase: bool = False) -> AdmittanceMatrices:
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
 
@@ -147,7 +146,6 @@ def compute_admittances(R: Vec,
     :param seq: Sequence [0, 1, 2]
     :param conn: array of windings connections (numpy array of WindingsConnection)
     :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)
-    :param verbose
     :return: Admittance instance
     """
 
@@ -156,7 +154,7 @@ def compute_admittances(R: Vec,
 
     # form the admittance matrices
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
-    bc2 = (G + 1j * B) / 2.0  # shunt admittance
+    ysh_2 = (G + 1j * B) / 2.0  # shunt admittance
 
     # compose the primitives
     if add_windings_phase:
@@ -178,20 +176,20 @@ def compute_admittances(R: Vec,
                 elif con == WindingsConnection.GD:
                     ysf[i] = ys[i]
 
-            yff = (ysf + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+            yff = (ysf + ysh_2) / (tap_module * tap_module * vtap_f * vtap_f)
             yft = -ysft / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
             ytf = -ysft / (tap_module * np.exp(+1.0j * tap_angle) * vtap_t * vtap_f)
-            ytt = (yst + bc2) / (vtap_t * vtap_t)
+            ytt = (yst + ysh_2) / (vtap_t * vtap_t)
 
         elif seq == 2:  # negative sequence
             # only need to include the phase shift of +-30 degrees
             factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1
                                    for con in conn])
 
-            yff = (ys + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+            yff = (ys + ysh_2) / (tap_module * tap_module * vtap_f * vtap_f)
             yft = -ys / (tap_module * np.exp(+1.0j * tap_angle) * vtap_f * vtap_t) * np.conj(factor_psh)
             ytf = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_t * vtap_f) * factor_psh
-            ytt = (ys + bc2) / (vtap_t * vtap_t)
+            ytt = (ys + ysh_2) / (vtap_t * vtap_t)
 
         elif seq == 1:  # positive sequence
 
@@ -199,44 +197,24 @@ def compute_admittances(R: Vec,
             factor_psh = np.array([r30_deg if con == WindingsConnection.GD or con == WindingsConnection.SD else 1.0
                                    for con in conn])
 
-            yff = (ys + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+            yff = (ys + ysh_2) / (tap_module * tap_module * vtap_f * vtap_f)
             yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t) * factor_psh
             ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f) * np.conj(factor_psh)
-            ytt = (ys + bc2) / (vtap_t * vtap_t)
+            ytt = (ys + ysh_2) / (vtap_t * vtap_t)
         else:
             raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
 
     else:  # original
 
-        yff = (ys + bc2) / (tap_module * tap_module * vtap_f * vtap_f)
+        yff = (ys + ysh_2) / (tap_module * tap_module * vtap_f * vtap_f)
         yft = -ys / (tap_module * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
         ytf = -ys / (tap_module * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-        ytt = (ys + bc2) / (vtap_t * vtap_t)
-
-        # tap = tap_module * np.exp(1.0j * tap_angle)
-        # Ytt = ys + 1j * bc2
-        # Yff = Gsw + ((Ytt + 1j * Beq) / (k*k * tap * np.conj(tap)))
-        # Yft = - ys / (k * np.conj(tap))
-        # Ytf = - ys / (k * tap)
-
-        if verbose > 0:
-            print('yff:', yff)
-            print('yft:', yft)
-            print('ytf:', ytf)
-            print('ytt:', ytt)
-
-    # yff *= active
-    # yft *= active
-    # ytf *= active
-    # ytt *= active
+        ytt = (ys + ysh_2) / (vtap_t * vtap_t)
 
     # compose the matrices
     Yf = sp.diags(yff) * Cf + sp.diags(yft) * Ct
     Yt = sp.diags(ytf) * Cf + sp.diags(ytt) * Ct
     Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
-
-    if verbose > 0:
-        print('Ybus:', Ybus.toarray())
 
     return AdmittanceMatrices(Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Cf.tocsc(), Ct.tocsc(),
                               yff, yft, ytf, ytt, Yshunt_bus)

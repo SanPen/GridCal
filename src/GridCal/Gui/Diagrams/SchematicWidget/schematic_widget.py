@@ -64,9 +64,9 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.switch_graphics import Switch
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, GenericDiagramWidget
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.general_dialogues import InputNumberDialogue, CheckListDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
@@ -500,7 +500,7 @@ class SchematicWidget(BaseDiagramWidget):
         :return:
         """
         if event.key() == Qt.Key.Key_Delete:
-            self.delete_Selected_from_widget(delete_from_db=True)
+            self.delete_selected_from_widget(delete_from_db=True)
 
     def zoom_in(self, scale_factor: float = 1.15) -> None:
         """
@@ -733,7 +733,7 @@ class SchematicWidget(BaseDiagramWidget):
 
                         # create the bus children
                         graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_cn.get(graphic_object.api_object.cn, dict())
+                            injections_by_tpe=inj_dev_by_cn.get(graphic_object._api_object.cn, dict())
                         )
 
                         graphic_object.change_size(w=location.w)
@@ -769,6 +769,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                            prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding1, graphic=w1_graphics)
+                        graphic_object.connection_lines[0] = w1_graphics
 
                         w2_graphics = self.add_api_winding(branch=elm.winding2,
                                                            from_port=graphic_object.terminals[1],
@@ -776,6 +777,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                            prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding2, graphic=w2_graphics)
+                        graphic_object.connection_lines[1] = w2_graphics
 
                         w3_graphics = self.add_api_winding(branch=elm.winding3,
                                                            from_port=graphic_object.terminals[2],
@@ -783,6 +785,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                            prefer_node_breaker=prefer_node_breaker,
                                                            logger=logger)
                         self.graphics_manager.add_device(elm=elm.winding3, graphic=w3_graphics)
+                        graphic_object.connection_lines[2] = w3_graphics
 
                         graphic_object.set_position(x=location.x, y=location.y)
                         graphic_object.change_size(h=location.h, w=location.w)
@@ -958,75 +961,16 @@ class SchematicWidget(BaseDiagramWidget):
         else:
             warn("Null graphics skipped")
 
-    def remove_from_scene(self, graphic_object: QGraphicsItem = None) -> None:
+    def _remove_from_scene(self, graphic_object: QGraphicsItem | GenericDiagramWidget) -> None:
         """
-        Add item to the diagram and the diagram scene
+        Remove item from the diagram scene
         :param graphic_object: Graphic object associated
         """
         if graphic_object is not None:
             if graphic_object.scene() is not None:
-
-                # try to remove nexus and children
-                if isinstance(graphic_object,
-                              (BusGraphicItem, CnGraphicItem,
-                               BusBarGraphicItem, FluidNodeGraphicItem)):
-
-                    for g in graphic_object.shunt_children:
-                        self.diagram_scene.removeItem(g.nexus)
-
                 self.diagram_scene.removeItem(graphic_object)
             else:
-                warn(f"Null scene for {graphic_object}, was it deleted already?")
-
-    def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True) -> None:
-        """
-        Delete device from the diagram registry
-        :param device: EditableDevice
-        :param propagate: Propagate the delete action to other diagrams?
-        """
-        self.diagram.delete_device(device=device)
-        graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
-
-        if graphic_object is not None:
-            self.remove_from_scene(graphic_object)
-
-        if propagate:
-            self.gui.call_delete_db_element(caller=self, api_obj=device)
-
-    def remove_element(self,
-                       device: ALL_DEV_TYPES,
-                       graphic_object: Union[QGraphicsItem, None] = None,
-                       delete_from_db: bool = False) -> None:
-        """
-        Remove device from the diagram and the database
-        :param device: EditableDevice
-        :param graphic_object: optionally provide the graphics object associated
-        :param delete_from_db: Delete the element also from the database?
-        """
-
-        if graphic_object is not None and device is not None:
-
-            # NOTE: This function already deleted from the database and other diagrams
-            self.delete_diagram_element(device=device, propagate=delete_from_db)
-
-            if isinstance(graphic_object,
-                          (BusGraphicItem, CnGraphicItem,
-                           BusBarGraphicItem, FluidNodeGraphicItem)):
-                graphic_object.delete_all_connections(ask=False, delete_from_db=delete_from_db)
-
-        else:
-            warn(f"Graphic object {graphic_object} and device {device} are none")
-
-        self.object_editor_table.setModel(None)
-
-    def delete_diagram_elements(self, elements: List[ALL_DEV_TYPES]):
-        """
-        Delete device from the diagram registry
-        :param elements:
-        :return:
-        """
-        for elm in elements:
-            self.delete_diagram_element(elm)
+                self.gui.show_warning_toast(f"Null scene for {graphic_object}, was it deleted already?")
 
     def set_selected_buses(self, buses: List[Bus]):
         """
@@ -1073,37 +1017,6 @@ class SchematicWidget(BaseDiagramWidget):
                     idx, bus = cn_dict[idtag]
                     lst.append((idx, bus, graphic_object))
         return lst
-
-    def delete_Selected_from_widget(self, delete_from_db: bool) -> None:
-        """
-        Delete the selected items from the diagram
-        """
-        # get the selected objects
-        selected = self.get_selected()
-
-        if len(selected) > 0:
-
-            dlg = CheckListDialogue(
-                objects_list=[f"{elm.device_type.value}: {elm.name}" for elm, graphic_obj in selected],
-                title="Delete Selected"
-            )
-
-            dlg.setModal(True)
-            dlg.exec()
-
-            if dlg.is_accepted:
-
-                for i in dlg.selected_indices:
-                    elm, graphic_obj = selected[i]
-                    self.remove_element(device=elm,
-                                        graphic_object=graphic_obj,
-                                        delete_from_db=delete_from_db)
-                    # self.remove_from_scene(graphic_obj)
-                    if hasattr(graphic_obj, 'nexus'):
-                        self.remove_from_scene(graphic_obj.nexus)
-
-        else:
-            info_msg('Choose some elements from the schematic', 'Delete')
 
     def get_buses(self) -> List[Tuple[int, Bus, BusGraphicItem]]:
         """
@@ -1261,7 +1174,7 @@ class SchematicWidget(BaseDiagramWidget):
 
         self.add_to_scene(graphic_object=winding_graphics)
 
-        self.update_diagram_element(device=winding_graphics.api_object,
+        self.update_diagram_element(device=winding_graphics._api_object,
                                     draw_labels=winding_graphics.draw_labels,
                                     graphic_object=winding_graphics)
 
@@ -1599,10 +1512,10 @@ class SchematicWidget(BaseDiagramWidget):
                         else:
                             warn('unknown connection')
 
-            # remove from the hosted connections
+            # delete from the hosted connections
             self.started_branch.unregister_port_from()
             self.started_branch.unregister_port_to()
-            self.remove_from_scene(self.started_branch)
+            self._remove_from_scene(self.started_branch)
 
             # release this pointer
             self.started_branch = None
@@ -1647,7 +1560,7 @@ class SchematicWidget(BaseDiagramWidget):
                     min_y = min(min_y, y)
 
                 # apply changes to the diagram coordinates
-                self.diagram.update_xy(api_object=item.api_object, x=x, y=y)
+                self.diagram.update_xy(api_object=item._api_object, x=x, y=y)
 
         # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
@@ -1707,8 +1620,6 @@ class SchematicWidget(BaseDiagramWidget):
         :param margin_factor:
         :param elements: list of API
         """
-        node_like_types = [BusGraphicItem, FluidNodeGraphicItem, CnGraphicItem,
-                           BusBarGraphicItem, Transformer3WGraphicItem]
 
         min_x = sys.maxsize
         min_y = sys.maxsize
@@ -1716,7 +1627,11 @@ class SchematicWidget(BaseDiagramWidget):
         max_y = -sys.maxsize
         if elements is None:
             for item in self.diagram_scene.items():
-                if type(item) in node_like_types:
+                if isinstance(item, (BusGraphicItem,
+                                     FluidNodeGraphicItem,
+                                     CnGraphicItem,
+                                     BusBarGraphicItem,
+                                     Transformer3WGraphicItem)):
                     x = item.pos().x()
                     y = item.pos().y()
 
@@ -1726,7 +1641,11 @@ class SchematicWidget(BaseDiagramWidget):
                     min_y = min(min_y, y)
         else:
             for item in self.diagram_scene.items():
-                if type(item) in node_like_types:
+                if isinstance(item, (BusGraphicItem,
+                                     FluidNodeGraphicItem,
+                                     CnGraphicItem,
+                                     BusBarGraphicItem,
+                                     Transformer3WGraphicItem)):
 
                     if item.api_object in elements:
                         x = item.pos().x()
@@ -1883,7 +1802,7 @@ class SchematicWidget(BaseDiagramWidget):
         fill the x and y value from the latitude and longitude values
         :param destructive: if true, the values are overwritten regardless, otherwise only if x and y are 0
         :param factor: Explosion factor
-        :param remove_offset: remove the sometimes huge offset coming from pyproj
+        :param remove_offset: delete the sometimes huge offset coming from pyproj
         :return Logger object
         """
 
@@ -1905,7 +1824,7 @@ class SchematicWidget(BaseDiagramWidget):
         x *= - factor
         y *= - factor
 
-        # remove the offset
+        # delete the offset
         if remove_offset:
             x_min = np.min(x)
             y_max = np.max(y)
@@ -2578,9 +2497,9 @@ class SchematicWidget(BaseDiagramWidget):
                                     draw_labels=True,
                                     graphic_object=tr3_graphic_object)
 
-        self.update_diagram_element(device=conn1.api_object, graphic_object=conn1)
-        self.update_diagram_element(device=conn2.api_object, graphic_object=conn2)
-        self.update_diagram_element(device=conn3.api_object, graphic_object=conn3)
+        self.update_diagram_element(device=conn1._api_object, graphic_object=conn1)
+        self.update_diagram_element(device=conn2._api_object, graphic_object=conn2)
+        self.update_diagram_element(device=conn3._api_object, graphic_object=conn3)
 
         return tr3_graphic_object
 
@@ -2658,8 +2577,8 @@ class SchematicWidget(BaseDiagramWidget):
         # update position
         graphic_object.update_ports()
 
-        # delete from the schematic
-        self.remove_from_scene(line_graphic)
+        # delete_with_dialogue from the schematic
+        self._remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=hvdc, x=0, y=0, w=0, h=0, r=0,
                                     draw_labels=graphic_object.draw_labels,
@@ -2685,13 +2604,13 @@ class SchematicWidget(BaseDiagramWidget):
         # update position
         graphic_object.update_ports()
 
-        # delete from the schematic
-        self.remove_from_scene(line_graphic)
+        # delete_with_dialogue from the schematic
+        self._remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=transformer, x=0, y=0, w=0, h=0, r=0,
                                     draw_labels=graphic_object.draw_labels,
                                     graphic_object=graphic_object)
-        # self.delete_diagram_element(device=line)
+        # self.delete_element_utility_function(device=line)
 
     def convert_line_to_vsc(self, line: Line, line_graphic: LineGraphicItem):
         """
@@ -2713,8 +2632,8 @@ class SchematicWidget(BaseDiagramWidget):
         # update position
         graphic_object.update_ports()
 
-        # delete from the schematic
-        self.remove_from_scene(line_graphic)
+        # delete_with_dialogue from the schematic
+        self._remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=vsc, x=0, y=0, w=0, h=0, r=0,
                                     draw_labels=graphic_object.draw_labels,
@@ -2740,8 +2659,8 @@ class SchematicWidget(BaseDiagramWidget):
         # update position
         graphic_object.update_ports()
 
-        # delete from the schematic
-        self.remove_from_scene(line_graphic)
+        # delete_with_dialogue from the schematic
+        self._remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=upfc, x=0, y=0, w=0, h=0, r=0,
                                     draw_labels=graphic_object.draw_labels,
@@ -2767,8 +2686,8 @@ class SchematicWidget(BaseDiagramWidget):
         # update position
         graphic_object.update_ports()
 
-        # delete from the schematic
-        self.remove_from_scene(line_graphic)
+        # delete_with_dialogue from the schematic
+        self._remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=series_reactance, x=0, y=0, w=0, h=0, r=0,
                                     draw_labels=graphic_object.draw_labels,
@@ -2794,8 +2713,8 @@ class SchematicWidget(BaseDiagramWidget):
         # update position
         graphic_object.update_ports()
 
-        # delete from the schematic
-        self.remove_from_scene(line_graphic)
+        # delete_with_dialogue from the schematic
+        self._remove_from_scene(line_graphic)
 
         self.update_diagram_element(device=switch, x=0, y=0, w=0, h=0, r=0,
                                     draw_labels=graphic_object.draw_labels,
@@ -2829,8 +2748,8 @@ class SchematicWidget(BaseDiagramWidget):
         fl_from.get_terminal().update()
         fl_to.get_terminal().update()
 
-        # delete from the schematic
-        self.remove_from_scene(item_graphic)
+        # delete_with_dialogue from the schematic
+        self._remove_from_scene(item_graphic)
 
         self.update_diagram_element(device=line, x=0, y=0, w=0, h=0, r=0,
                                     draw_labels=graphic_object.draw_labels,
@@ -2849,12 +2768,16 @@ class SchematicWidget(BaseDiagramWidget):
 
         # add device to the schematic
         if bus_graphic_object is not None:
+
+            # create the battery at the bus
             bus_graphic_object.add_battery(battery)
+
+            # Remove the original generator because now it is a battery
+            self.remove_element(device=graphic_object.api_object,
+                                graphic_object=graphic_object,
+                                delete_from_db=True)
         else:
             raise Exception("Bus graphics not found! this is likely a bug")
-
-        # delete from the schematic
-        graphic_object.remove(ask=False)
 
     def add_object_to_the_schematic(
             self,
@@ -3319,9 +3242,6 @@ class SchematicWidget(BaseDiagramWidget):
             self.recolour_mode()
 
     def colour_results(self,
-                       # buses: List[Bus],
-                       # branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
-                       # hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
                        Sf: CxVec,
@@ -3495,7 +3415,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                                               add_switch=True)):
 
                         # try to find the diagram object of the DB object
-                        graphic_object = self.graphics_manager.query(branch)
+                        graphic_object: BRANCH_GRAPHICS = self.graphics_manager.query(branch)
 
                         if graphic_object:
 
@@ -3548,16 +3468,6 @@ class SchematicWidget(BaseDiagramWidget):
                                     if theta is not None:
                                         tooltip += '\ntap angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
 
-                                # if branch.device_type == DeviceType.VscDevice:
-                                #     if ma is not None:
-                                #         tooltip += '\ntap module:\t' + "{:10.4f}".format(ma[i])
-                                #
-                                #     if theta is not None:
-                                #         tooltip += '\nfiring angle:\t' + "{:10.4f}".format(theta[i]) + ' rad'
-
-                                # if Beq is not None:
-                                #     tooltip += '\nBeq:\t' + "{:10.4f}".format(Beq[i])
-
                                 graphic_object.setToolTipText(tooltip)
                                 graphic_object.set_colour(color, w, style)
 
@@ -3571,6 +3481,12 @@ class SchematicWidget(BaseDiagramWidget):
                                 style = Qt.PenStyle.DashLine
                                 color = QColor(115, 115, 115, 255)  # gray
                                 graphic_object.set_pen(QPen(color, w, style))
+                                graphic_object.setToolTipText("")
+                                if hasattr(graphic_object, 'set_arrows_with_power'):
+                                    graphic_object.set_arrows_with_power(
+                                        Sf=None, St=None
+                                    )
+
                         else:
                             # No diagram object
                             pass
@@ -3806,19 +3722,19 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     graphical_obj.recolour_mode()
 
-    def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, QGraphicsItem]]:
+    def _get_selected(self) -> List[GenericDiagramWidget | QGraphicsItem]:
         """
         Get selection
         :return: List of EditableDevice, QGraphicsItem
         """
-        return [(elm.api_object, elm) for elm in self.diagram_scene.selectedItems()]
+        return [elm for elm in self.diagram_scene.selectedItems()]
 
-    def get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
+    def _get_selection_api_objects(self) -> List[ALL_DEV_TYPES]:
         """
         Get a list of the API objects from the selection
         :return: List[EditableDevice]
         """
-        return [e.api_object for e in self.diagram_scene.selectedItems()]
+        return [e.api_object for e in self._get_selected()]
 
     def create_schematic_from_selection(self) -> SchematicDiagram:
         """
@@ -3829,7 +3745,7 @@ class SchematicWidget(BaseDiagramWidget):
 
         # first pass (only buses)
         bus_dict = dict()
-        for item in self.diagram_scene.selectedItems():
+        for item in self._get_selected():
             if isinstance(item, BusGraphicItem):
                 # check that the bus is in the original diagram
                 location = self.diagram.query_point(item.api_object)
@@ -3897,7 +3813,7 @@ class SchematicWidget(BaseDiagramWidget):
 
                 idx = list(self.circuit.get_adjacent_buses(A, k))
 
-                # remove the elements already in the selection
+                # delete the elements already in the selection
                 for i in range(len(idx) - 1, 0, -1):
                     if k == idx[i]:
                         idx.pop(i)
@@ -3917,8 +3833,8 @@ class SchematicWidget(BaseDiagramWidget):
                     x_arr.append(loc_i.x)
                     y_arr.append(loc_i.y)
 
-                x_m = np.mean(x_arr)
-                y_m = np.mean(y_arr)
+                x_m = float(np.mean(x_arr))
+                y_m = float(np.mean(y_arr))
 
                 delta_i = np.sqrt((graphic_object.x() - x_m) ** 2 + (graphic_object.y() - y_m) ** 2)
 
@@ -4021,7 +3937,7 @@ class SchematicWidget(BaseDiagramWidget):
                 # plot the profiles
                 plt.show()
         else:
-            info_msg("There are no time series, so nothing to plot :/")
+            self.gui.show_error_toast("There are no time series, so nothing to plot :/")
 
     def plot_fluid_node(self, i: int, api_object: FluidNode):
         """
@@ -4076,7 +3992,7 @@ class SchematicWidget(BaseDiagramWidget):
                 # plot the profiles
                 plt.show()
         else:
-            info_msg("There are no time series, so nothing to plot :/")
+            self.gui.show_error_toast("There are no time series, so nothing to plot :/")
 
     def split_line_now(self, line_graphics: LineGraphicItem, position: float, extra_km: float):
         """
@@ -4420,7 +4336,7 @@ class SchematicWidget(BaseDiagramWidget):
         return SchematicWidget(
             gui=self.gui,
             circuit=self.circuit,
-            diagram=self.diagram,
+            diagram=d_copy,
             default_bus_voltage=self.default_bus_voltage,
             time_index=self.get_time_index(),
             prefer_node_breaker=self.prefer_node_breaker,
@@ -4446,6 +4362,9 @@ class SchematicWidget(BaseDiagramWidget):
             gelm.api_object.y = gelm.y()
 
     def reset_coordinates(self):
+        """
+        Reset coordinates to the stored ones in the DataBase
+        """
         graphics: List[BusGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusDevice)
         for gelm in graphics:
             gelm.x = gelm.api_object.x
@@ -4460,6 +4379,7 @@ class SchematicWidget(BaseDiagramWidget):
         for gelm in graphics:
             gelm.x = gelm.api_object.x
             gelm.y = gelm.api_object.y
+
 
 def generate_schematic_diagram(buses: List[Bus],
                                busbars: List[BusBar],
@@ -4660,7 +4580,7 @@ List[FluidPath]]:
             transformers2w.append(obj)
 
         elif obj.device_type == DeviceType.Transformer3WDevice:
-            transformers3w.append(obj)
+            transformers3w.append(obj)  # TODO: think about this, because indeed a TR3 is never found this way
 
         elif obj.device_type == DeviceType.WindingDevice:
             windings.append(obj)

@@ -10,7 +10,7 @@ from PySide6.QtGui import QPen, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
+from GridCal.Gui.Diagrams.Editors.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCalEngine.Devices.Branches.line import Line, SequenceLineType
@@ -49,18 +49,9 @@ class LineGraphicItem(LineGraphicTemplateItem):
                                          api_object=api_object,
                                          draw_labels=draw_labels)
 
-    def remove_symbol(self) -> None:
-        """
-        Remove all symbols
-        """
-        for elm in [self.symbol]:
-            if elm is not None:
-                try:
-                    self.editor.remove_from_scene(elm)
-                    # sip.delete(elm)
-                    elm = None
-                except:
-                    pass
+    @property
+    def api_object(self) -> Line:
+        return self._api_object
 
     def make_switch_symbol(self):
         """
@@ -169,8 +160,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
             add_menu_entry(menu=menu,
                            text="Delete",
-                           function_ptr=self.remove,
-                           icon_path=":/Icons/icons/delete3.svg")
+                           function_ptr=self.delete,
+                           icon_path=":/Icons/icons/delete_schematic.svg")
 
             menu.addSection('Convert to')
 
@@ -236,18 +227,6 @@ class LineGraphicItem(LineGraphicTemplateItem):
         current_template = self.api_object.template
         dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
                          templates=templates, current_template=current_template)
-        if dlg.exec():
-            pass
-
-    def show_line_editor(self):
-        """
-        Open the appropriate editor dialogue
-        :return:
-        """
-        Sbase = self.editor.circuit.Sbase
-
-        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
-                         templates=None, current_template=None)
         if dlg.exec():
             pass
 

@@ -266,12 +266,12 @@ class SparseArray:
                  If n is smaller than the current container size, the content is
                  reduced to its first n elements, removing those beyond (and destroying them)
         """
-        if n < self._size:  # we need to remove the elements out of range
+        if n < self._size:  # we need to delete the elements out of range
 
             for key, val in self._map.items():
 
                 if key >= n:
-                    # remove elements whose index is now out of bounds from
+                    # delete elements whose index is now out of bounds from
                     # the index -> value map.
                     del self._map[key]
 
@@ -458,12 +458,12 @@ class SparseObjectArray:
                  If n is smaller than the current container size, the content is
                  reduced to its first n elements, removing those beyond (and destroying them)
         """
-        if n < self._size:  # we need to remove the elements out of range
+        if n < self._size:  # we need to delete the elements out of range
 
             for key, val in self._map.items():
 
                 if key >= n:
-                    # remove elements whose index is now out of bounds from
+                    # delete elements whose index is now out of bounds from
                     # the index -> value map.
                     del self._map[key]
 

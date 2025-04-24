@@ -442,7 +442,7 @@ def kron_reduction(mat, keep, embed):
     Perform the Kron reduction
     :param mat: primitive matrix
     :param keep: indices to keep
-    :param embed: indices to remove / embed
+    :param embed: indices to delete / embed
     :return:
     """
     Zaa = mat[np.ix_(keep, keep)]
@@ -517,7 +517,7 @@ def wire_bundling(phases_set, primitive, phases_vector):
 
         if len(wires_indices) > 1:
 
-            # get the first wire and remove it from the wires list
+            # get the first wire and delete it from the wires list
             i = wires_indices[0]
 
             # wires to keep

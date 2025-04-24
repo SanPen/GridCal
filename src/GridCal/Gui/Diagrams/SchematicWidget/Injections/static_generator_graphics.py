@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsTextItem
 from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square, Condenser
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
@@ -28,131 +28,11 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
                                               parent=parent,
                                               api_obj=api_obj,
                                               editor=editor,
-                                              device_type_name='generator',
+                                              device_type_name='static_generator',
                                               w=40,
                                               h=40)
+        self.set_glyph(glyph=Square(self, h=40, w=40, label_letter="S", update_nexus_fcn=self.update_nexus))
 
-        pen = QPen(self.color, self.width, self.style)
-
-        self.glyph = Square(self)
-        self.glyph.setRect(0, 0, self.h, self.w)
-        self.glyph.setPen(pen)
-        self.addToGroup(self.glyph)
-
-        self.label = QGraphicsTextItem('S', parent=self.glyph)
-        self.label.setDefaultTextColor(self.color)
-        self.label.setPos(self.h / 4, self.w / 5)
-
-        self.setPos(self.parent.x(), self.parent.y() + 100)
-        self.update_nexus(self.pos())
-
-    def recolour_mode(self):
-        """
-        Change the colour according to the system theme
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.color = ACTIVE['color']
-                self.style = ACTIVE['style']
-            else:
-                self.color = DEACTIVATED['color']
-                self.style = DEACTIVATED['style']
-        else:
-            self.color = ACTIVE['color']
-            self.style = ACTIVE['style']
-
-        pen = QPen(self.color, self.width, self.style)
-        self.glyph.setPen(pen)
-        self.nexus.setPen(pen)
-        self.label.setDefaultTextColor(self.color)
-
-    def contextMenuEvent(self, event):
-        """
-        Display context menu
-        @param event:
-        @return:
-        """
-        menu = QMenu()
-        menu.addSection("Static generator")
-
-        pe = menu.addAction('Active')
-        pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
-        pe.triggered.connect(self.enable_disable_toggle)
-
-        pa = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-        pa.setIcon(plot_icon)
-        pa.triggered.connect(self.plot)
-
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
-
-        rabf = menu.addAction('Change bus')
-        move_bus_icon = QIcon()
-        move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-        rabf.setIcon(move_bus_icon)
-        rabf.triggered.connect(self.change_bus)
-
-        menu.exec_(event.screenPos())
-
-    def enable_disable_toggle(self):
-        """
-
-        @return:
-        """
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.set_enable(False)
-            else:
-                self.set_enable(True)
-
-            if self.editor.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
-
-    def set_enable(self, val=True):
-        """
-        Set the enable value, graphically and in the API
-        @param val:
-        @return:
-        """
-        self.api_object.active = val
-        if self.api_object is not None:
-            if self.api_object.active:
-                self.style = ACTIVE['style']
-                self.color = ACTIVE['color']
-            else:
-                self.style = DEACTIVATED['style']
-                self.color = DEACTIVATED['color']
-        else:
-            self.style = OTHER['style']
-            self.color = OTHER['color']
-        self.glyph.setPen(QPen(self.color, self.width, self.style))
-        self.label.setDefaultTextColor(self.color)
-
-    def plot(self):
-        """
-        Plot API objects profiles
-        """
-        # time series object from the last simulation
-        ts = self.editor.circuit.time_profile
-
-        # plot the profiles
-        self.api_object.plot_profiles(time=ts)
-
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        """
-        mouse press: display the editor
-        :param QGraphicsSceneMouseEvent:
-        :return:
-        """
-        self.editor.set_editor_model(api_object=self.api_object)
+    @property
+    def api_object(self) -> StaticGenerator:
+        return self._api_object

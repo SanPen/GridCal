@@ -4,7 +4,7 @@ import sys
 
 
 def handle_item_changed(item, column):
-    if item.parent() is None:  # Root item
+    if item._parent() is None:  # Root item
         state = item.checkState(0)
         for i in range(item.childCount()):
             item.child(i).setCheckState(0, state)

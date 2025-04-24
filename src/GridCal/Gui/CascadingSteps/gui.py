@@ -71,7 +71,7 @@ class Ui_Dialog(object):
         self.clear_cascade_pushButton = QPushButton(self.frame_11)
         self.clear_cascade_pushButton.setObjectName(u"clear_cascade_pushButton")
         icon3 = QIcon()
-        icon3.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon3.addFile(u":/Icons/icons/delete_with_dialogue.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.clear_cascade_pushButton.setIcon(icon3)
 
         self.horizontalLayout_3.addWidget(self.clear_cascade_pushButton)

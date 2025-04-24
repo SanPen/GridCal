@@ -46,7 +46,7 @@ def txt2mat(txt: str, line_splitter=';', to_float=True):
     lines = txt.strip().split('\n')
     # del lines[-1]
 
-    # preprocess lines (remove the comments)
+    # preprocess lines (delete the comments)
     lines2 = list()
     for i, line in enumerate(lines):
         if line.lstrip()[0] != '%':
@@ -628,7 +628,7 @@ def parse_branches_data(circuit: MultiCircuit,
             # add device to the circuit
             circuit.add_dc_line(obj=dc_line)
 
-            # delete the line from the circuit
+            # delete_with_dialogue the line from the circuit
             circuit.delete_line(line)
             logger.add_info('Converted to DC line', line.name)
 

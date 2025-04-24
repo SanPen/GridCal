@@ -10369,8 +10369,6 @@ QProgressBar::chunk{
     <addaction name="actionDisable_all_results_tags"/>
     <addaction name="actionEnable_all_results_tags"/>
     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
-    <addaction name="actionDelete_from_the_diagram"/>
-    <addaction name="actionDelete_selected"/>
     <addaction name="menuBus_Branch_options"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_map"/>
@@ -10381,6 +10379,7 @@ QProgressBar::chunk{
     <addaction name="actionZoom_out"/>
     <addaction name="actionCenter_view"/>
     <addaction name="actionSearchDiagram"/>
+    <addaction name="actionDelete_selected"/>
     <addaction name="separator"/>
     <addaction name="actionTakePicture"/>
     <addaction name="actionRecord_video"/>
@@ -10462,7 +10461,6 @@ QProgressBar::chunk{
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
    <addaction name="actionDelete_selected"/>
-   <addaction name="actionDelete_from_the_diagram"/>
    <addaction name="separator"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
    <addaction name="separator"/>
@@ -10916,13 +10914,13 @@ QProgressBar::chunk{
   <action name="actionDelete_selected">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/delete_db.svg</normaloff>:/Icons/icons/delete_db.svg</iconset>
+     <normaloff>:/Icons/icons/delete_schematic.svg</normaloff>:/Icons/icons/delete_schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>Delete selected objects from the db</string>
+    <string>Delete selected</string>
    </property>
    <property name="toolTip">
-    <string>Delete selected objects from the diagrams and the database</string>
+    <string>Delete selected objects from the diagrams and optionally from the database</string>
    </property>
    <property name="font">
     <font>
@@ -10930,7 +10928,7 @@ QProgressBar::chunk{
     </font>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Del</string>
+    <string>Del</string>
    </property>
   </action>
   <action name="actionLinearAnalysis">
@@ -11933,23 +11931,6 @@ QProgressBar::chunk{
     <font>
      <pointsize>10</pointsize>
     </font>
-   </property>
-  </action>
-  <action name="actionDelete_from_the_diagram">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/delete_schematic.svg</normaloff>:/Icons/icons/delete_schematic.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Delete selected from the diagram</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-   <property name="shortcut">
-    <string>Del</string>
    </property>
   </action>
   <action name="actionRecord_video">

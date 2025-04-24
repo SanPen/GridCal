@@ -10,6 +10,8 @@ from PySide6.QtCore import Qt, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
+from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import SHUNT_GRAPHICS
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
@@ -80,7 +82,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.w = w if w >= self.min_w else self.min_w
 
         # loads, shunts, generators, etc...
-        self.shunt_children = list()
+        self._child_graphics: List[SHUNT_GRAPHICS] = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -140,7 +142,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.label.setDefaultTextColor(ACTIVE['text'])
         self.set_tile_color(self.color)
 
-        for e in self.shunt_children:
+        for e in self._child_graphics:
             if e is not None:
                 e.recolour_mode()
 
@@ -151,14 +153,14 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             event: QGraphicsSceneMouseEvent inherited
         """
         super().mouseMoveEvent(event)
-        self.editor.update_diagram_element(device=self.api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=self.w,
-                                           h=self.h,
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
-                                           graphic_object=self)
+        self._editor.update_diagram_element(device=self.api_object,
+                                            x=self.pos().x(),
+                                            y=self.pos().y(),
+                                            w=self.w,
+                                            h=self.h,
+                                            r=self.rotation(),
+                                            draw_labels=self.draw_labels,
+                                            graphic_object=self)
 
     def add_big_marker(self, color: Union[None, QColor] = QColor(255, 0, 0, 255), tool_tip_text: str = ""):
         """
@@ -179,7 +181,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.editor.remove_from_scene(self.big_marker)
+            self._editor._remove_from_scene(self.big_marker)
             self.big_marker = None
 
     def set_position(self, x: float, y: float) -> None:
@@ -208,7 +210,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Merge another BusGraphicItem into this
         :param other_bus_graphic: BusGraphicItem
         """
-        self.shunt_children += other_bus_graphic.shunt_children
+        self._child_graphics += other_bus_graphic._child_graphics
 
     def update(self, rect: Union[QRectF, QRect] = ...):
         """
@@ -250,14 +252,14 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.arrange_children()
 
         # update editor diagram position
-        self.editor.update_diagram_element(device=self.api_object,
-                                           x=self.pos().x(),
-                                           y=self.pos().y(),
-                                           w=w,
-                                           h=int(self.min_h),
-                                           r=self.rotation(),
-                                           draw_labels=self.draw_labels,
-                                           graphic_object=self)
+        self._editor.update_diagram_element(device=self.api_object,
+                                            x=self.pos().x(),
+                                            y=self.pos().y(),
+                                            w=w,
+                                            h=int(self.min_h),
+                                            r=self.rotation(),
+                                            draw_labels=self.draw_labels,
+                                            graphic_object=self)
 
         return w, self.min_h
 
@@ -268,10 +270,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             Nothing
         """
         y0 = self.h + 40
-        n = len(self.shunt_children)
+        n = len(self._child_graphics)
         inc_x = self.w / (n + 1)
         x = inc_x
-        for elm in self.shunt_children:
+        for elm in self._child_graphics:
             elm.setPos(x - elm.w / 2, y0)
             x += inc_x
 
@@ -479,14 +481,14 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Assign the snapshot rate to the profile
         """
-        self.editor.set_active_status_to_profile(self.api_object)
+        self._editor.set_active_status_to_profile(self.api_object)
 
     def delete_all_connections(self, ask: bool, delete_from_db: bool) -> None:
         """
         Delete all bus connections
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this busbar',
+            ok = yes_no_question('Are you sure that you want to delete this busbar',
                                  'Remove bus from schematic and DB' if delete_from_db else "Remove bus from schematic")
         else:
             ok = True
@@ -500,12 +502,20 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+            ok = yes_no_question('Are you sure that you want to delete this bus', 'Remove bus')
         else:
             ok = True
 
         if ok:
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
+            self._editor.remove_element(device=self.api_object, graphic_object=self)
+
+    def delete_child(self, obj: SHUNT_GRAPHICS | InjectionTemplateGraphicItem):
+        """
+        Delete a child object
+        :param obj:
+        :return:
+        """
+        self._child_graphics.remove(obj)
 
     def update_color(self):
         """
@@ -597,7 +607,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
 
         if self.api_object.device_type == DeviceType.BusBarDevice:
-            self.editor.set_editor_model(api_object=self.api_object)
+            self._editor.set_editor_model(api_object=self.api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
@@ -658,10 +668,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_load(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_load(cn=self._api_object.cn)
 
-        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -671,10 +681,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param api_obj: If None, a new shunt is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_shunt(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_shunt(cn=self._api_object.cn)
 
-        _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -684,10 +694,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param api_obj: if None, a new generator is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_generator(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_generator(cn=self._api_object.cn)
 
-        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
         return _grph
 
@@ -698,10 +708,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_static_generator(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_static_generator(cn=self._api_object.cn)
 
-        _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -713,10 +723,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_battery(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_battery(cn=self._api_object.cn)
 
-        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -728,10 +738,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_external_grid(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_external_grid(cn=self._api_object.cn)
 
-        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -743,10 +753,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_current_injection(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_current_injection(cn=self._api_object.cn)
 
-        _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -758,10 +768,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_controllable_shunt(cn=self.api_object.cn)
+            api_obj = self._editor.circuit.add_controllable_shunt(cn=self._api_object.cn)
 
-        _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
-        self.shunt_children.append(_grph)
+        _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self._editor)
+        self._child_graphics.append(_grph)
         self.arrange_children()
 
         return _grph
@@ -779,7 +789,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :return:
         """
         vm = format_str.format(Vm)
-        vm_kv = format_str.format(Vm * self.api_object.Vnom)
+        vm_kv = format_str.format(Vm * self._api_object.Vnom)
         va = format_str.format(Va)
         msg = f"Bus {i}"
         if tpe is not None:
@@ -792,7 +802,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             q = format_str.format(Q)
             msg += f"P={p} MW<br>Q={q} MVAr"
 
-        title = self.api_object.name if self.api_object is not None else ""
+        title = self._api_object.name if self._api_object is not None else ""
         self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
                            f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
 
@@ -800,10 +810,10 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
     def __str__(self):
 
-        if self.api_object is None:
+        if self._api_object is None:
             return f"BusBar graphics {hex(id(self))}"
         else:
-            return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
+            return f"Graphics of {self._api_object.name} [{hex(id(self))}]"
 
     def __repr__(self):
         return str(self)

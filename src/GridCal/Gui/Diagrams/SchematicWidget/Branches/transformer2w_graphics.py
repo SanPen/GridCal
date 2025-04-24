@@ -10,8 +10,8 @@ from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_editor import TransformerEditor
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_taps_editor import TransformerTapsEditor
+from GridCal.Gui.Diagrams.Editors.transformer_editor import TransformerEditor
+from GridCal.Gui.Diagrams.Editors.transformer_taps_editor import TransformerTapsEditor
 from GridCalEngine.Devices.Branches.transformer import Transformer2W, TransformerType
 from GridCalEngine.enumerations import DeviceType, TapModuleControl
 
@@ -47,6 +47,10 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                                          api_object=api_object,
                                          draw_labels=draw_labels)
 
+    @property
+    def api_object(self) -> Transformer2W:
+        return self._api_object
+
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -71,7 +75,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
 
             add_menu_entry(menu=menu,
                            text="Delete",
-                           function_ptr=self.remove,
+                           function_ptr=self.delete,
                            icon_path=":/Icons/icons/delete3.svg")
 
             add_menu_entry(menu=menu,

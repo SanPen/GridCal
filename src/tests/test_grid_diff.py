@@ -44,7 +44,7 @@ def test_grid_modifications() -> None:
     """
     This test does the following:
     We open IEEE14 as if we were modifying the grid in two different computers.
-    We add stuff, delete stuff and modify stuff, including some collisions when editing.
+    We add stuff, delete_with_dialogue stuff and modify stuff, including some collisions when editing.
     We compute the difference between the modified grids and the base, and we merge
     We should get a file with the independent modifications, and some sort of message for colliding modifications
     """

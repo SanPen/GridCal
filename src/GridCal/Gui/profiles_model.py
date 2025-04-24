@@ -37,7 +37,7 @@ class ObjectHistory:
         :param data: dictionary {column index -> profile array}
         """
 
-        # if the stack is too long delete the oldest entry
+        # if the stack is too long delete_with_dialogue the oldest entry
         if len(self.undo_stack) > (self.max_undo_states + 1):
             self.undo_stack.pop(0)
 

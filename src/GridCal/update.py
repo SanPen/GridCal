@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-
+from __future__ import annotations
 from typing import Tuple
 import subprocess
 import sys
@@ -10,7 +10,7 @@ import packaging.version as pkg
 from GridCal.__version__ import __GridCal_VERSION__
 
 
-def find_latest_version(name: str = 'GridCal') -> str:
+def find_latest_version(name: str = 'GridCal') -> str | None:
     """
     Find the latest version of a package
     :param name: name of the Package
@@ -23,6 +23,10 @@ def find_latest_version(name: str = 'GridCal') -> str:
     latest_version = latest_version[latest_version.find('(from versions:') + 15:]
     latest_version = latest_version[:latest_version.find(')')]
     latest_version = latest_version.replace(' ', '').split(',')[-1]
+
+    if latest_version == 'none':
+        return None
+
     return latest_version
 
 
@@ -43,7 +47,8 @@ def check_version(name: str = 'GridCal') -> Tuple[int, str]:
 
     # pipy_version = pkg_resources.parse_version(latest_version)
     # gc_version = pkg_resources.parse_version(__GridCal_VERSION__)
-    pipy_version = pkg.parse(latest_version)
+    print(f"{name} latest version: {latest_version}")
+    pipy_version = pkg.parse(latest_version) if latest_version is not None else None
     gc_version = pkg.parse(__GridCal_VERSION__)
 
     if pipy_version is None:

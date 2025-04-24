@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
+from typing import List
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject, cgmesProfile
 
 
@@ -10,14 +11,14 @@ class FullModel(IdentifiedObject):
     def __init__(self, rdfid, tpe):
         IdentifiedObject.__init__(self, rdfid, tpe)
 
-        self.scenarioTime: str = None
-        self.created: str = None
-        self.version: str = None
-        self.profile: str | list = None
-        self.modelingAuthoritySet: str = None
-        self.DependentOn: str | list = None
-        self.longDependentOnPF: str = None
-        self.Supersedes: str = None
+        self.scenarioTime: str | None = None
+        self.created: str | None = None
+        self.version: str | None = None
+        self.profile: str | List[str] | None = None  # TODO: Crazy polymorphism
+        self.modelingAuthoritySet: str | List[str] | None = None  # TODO: Crazy polymorphism
+        self.DependentOn: str | list | None = None  # TODO: Crazy polymorphism
+        self.longDependentOnPF: str | None = None
+        self.Supersedes: str | None = None
 
         self.register_property(
             name='scenarioTime',

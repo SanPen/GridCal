@@ -686,6 +686,12 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             self.toast_manager.show_info_toast("Profiles loaded for assigning...")
 
+            # If the columns in the loaded data file do not match the length of the objects,
+            # it likely indicates an update of profiles. Therefore, uncheck the checkbox to preserve the original
+            # profiles that are not included in the update.
+            if self.original_data_frame.shape[1] != len(self.objects):
+                self.ui.setUnassignedToZeroCheckBox.setChecked(False)
+
         else:
             if logger.has_logs():
                 dlg = LogsDialogue("Import issues", logger)
@@ -814,7 +820,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                     # pick a random source
                     rnd_idx_s = randint(0, len(source_indices) - 1)
 
-                    # pick and delete a random destination
+                    # pick and delete_with_dialogue a random destination
                     rnd_idx_o = randint(0, len(destination_indices) - 1)
 
                     # get the actual index

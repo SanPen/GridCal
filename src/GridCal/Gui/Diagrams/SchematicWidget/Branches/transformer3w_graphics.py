@@ -6,16 +6,16 @@ from __future__ import annotations
 import numpy as np
 from typing import List, TYPE_CHECKING
 from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
+from PySide6.QtGui import QPen, QCursor, QColor
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_editor import Transformer3WEditor
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED
+from GridCal.Gui.Diagrams.Editors.transformer3w_editor import Transformer3WEditor
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, GenericDiagramWidget
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
-from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.gui_functions import add_menu_entry
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
-class Transformer3WGraphicItem(QGraphicsRectItem):
+class Transformer3WGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -51,6 +51,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :param index:
         :param draw_labels:
         """
+        GenericDiagramWidget.__init__(self, parent=parent, api_object=elm, editor=editor, draw_labels=True)
         QGraphicsRectItem.__init__(self, parent=parent)
         self.n_windings = 3
         self.min_w = 180.0
@@ -59,9 +60,6 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.h = 70
         self.w = 80
         self.setRect(0.0, 0.0, self.w, self.h)
-
-        self.api_object: Transformer3W = elm
-        self.editor = editor
 
         self.draw_labels = draw_labels
 
@@ -134,6 +132,28 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         # other actions
         self.set_winding_tool_tips()
 
+    @property
+    def api_object(self) -> Transformer3W:
+        return self._api_object
+
+    @property
+    def editor(self) -> SchematicWidget:
+        return self._editor
+
+    def get_associated_widgets(self) -> List[WindingGraphicItem]:
+        """
+
+        :return:
+        """
+        return self.connection_lines
+
+    def get_extra_graphics(self):
+        """
+        Get a list of all QGraphicsItem that are not GenericDiagramWidget elements associated with this widget.
+        :return:
+        """
+        return self.winding_circles + self.terminals
+
     def recolour_mode(self):
         """
         Change the colour according to the system theme
@@ -156,6 +176,19 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
             if self.connection_lines[i] is not None:
                 self.connection_lines[i].recolour_mode()
+
+    def set_enable(self, val=True):
+        """
+        Set the enable value, graphically and in the API
+        @param val:
+        @return:
+        """
+        self.api_object.active = val
+        self.api_object.winding1.active = val
+        self.api_object.winding2.active = val
+        self.api_object.winding3.active = val
+
+        self.recolour_mode()
 
     def set_winding_tool_tips(self) -> None:
         """
@@ -205,7 +238,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
     def mouseDoubleClickEvent(self, event):
         """
-        On double click, edit
+        On double-click, edit
         :param event:
         :return:
         """
@@ -225,7 +258,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             menu = QMenu()
             menu.addSection("3w-Transformer")
 
-            # menu.addSeparator()
+            add_menu_entry(menu=menu,
+                           text="Active",
+                           function_ptr=self.enable_disable_toggle,
+                           checkeable=True,
+                           checked_value=self.api_object.active)
+
+            menu.addSeparator()
 
             add_menu_entry(menu=menu,
                            text="Edit",
@@ -234,12 +273,35 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
             add_menu_entry(menu=menu,
                            text="Delete",
-                           function_ptr=self.remove,
-                           icon_path=":/Icons/icons/delete3.svg")
+                           function_ptr=self.delete,
+                           icon_path=":/Icons/icons/delete_schematic.svg")
 
             menu.exec_(event.screenPos())
         else:
             pass
+
+    def enable_disable_toggle(self):
+        """
+
+        @return:
+        """
+        if self.api_object is not None:
+            if self.api_object.active:
+                self.set_enable(False)
+            else:
+                self.set_enable(True)
+
+            if self._editor.circuit.get_time_number() > 0:
+                ok = yes_no_question('Do you want to update the time series active status accordingly?',
+                                     'Update time series active status')
+
+                if ok:
+                    # change the bus state (time series)
+                    self._editor.set_active_status_to_profile(self.api_object, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object.winding1, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object.winding2, override_question=True)
+                    self._editor.set_active_status_to_profile(self.api_object.winding3, override_question=True)
+
 
     def add_big_marker(self, color=Qt.GlobalColor.red, tool_tip_text=""):
         """
@@ -259,7 +321,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         Delete the big marker
         """
         if self.big_marker is not None:
-            self.editor.remove_from_scene(self.big_marker)
+            self.editor._remove_from_scene(self.big_marker)
             self.big_marker = None
 
     def change_size(self, w, h):
@@ -427,7 +489,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
     def arrange_children(self) -> None:
         """
         this function is necessary because this graphic item behaves like a bus,
-        but the the function itself does nothing
+        but the function itself does nothing
         """
         pass
 
@@ -448,30 +510,12 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         self.winding_circles[i].setPen(QPen(color, self.pen_width, self.style))
         self.terminals[i].setPen(QPen(color, self.pen_width, self.style))
 
-    def delete_all_connections(self, delete_from_db: bool = True):
-        """
-        Delete all bus connections
-        """
-        for t in self.terminals:
-            t.remove_all_connections(delete_from_db=delete_from_db)
-
-        for c in self.connection_lines:
-            self.editor.remove_from_scene(c)
-
-    def remove(self, ask=True):
+    def delete(self):
         """
         Remove this element
         @return:
         """
-        if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus',
-                                 'Remove bus')
-        else:
-            ok = True
-
-        if ok:
-            self.delete_all_connections(delete_from_db=True)
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
+        deleted, delete_from_db_final = self.editor.delete_with_dialogue(selected=[self], delete_from_db=False)
 
     def edit(self):
         """

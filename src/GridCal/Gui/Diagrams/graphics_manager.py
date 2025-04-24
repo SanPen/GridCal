@@ -121,7 +121,7 @@ class GraphicsManager:
             elm_dict = self.graphic_dict.get(device.device_type, None)
 
             if elm_dict is not None:
-                # the category does exist, delete from it
+                # the category does exist, delete_with_dialogue from it
                 graphic = elm_dict.get(device.idtag, None)
 
                 if graphic:

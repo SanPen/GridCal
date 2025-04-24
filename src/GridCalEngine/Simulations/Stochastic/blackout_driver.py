@@ -280,7 +280,7 @@ class CascadingDriver(DriverTemplate):
             # For every circuit, run the model (time series, lhs, or whatever)
             model_simulator.run()
 
-            # remove grid elements (Branches)
+            # delete grid elements (Branches)
             idx, criteria = self.remove_probability_based(nc, model_simulator.results,
                                                           max_val=1.0, min_prob=0.1)
 

@@ -351,7 +351,7 @@ class Ui_mainWindow(object):
         self.cancelButton.setObjectName(u"cancelButton")
         self.cancelButton.setMinimumSize(QSize(0, 24))
         icon17 = QIcon()
-        icon17.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon17.addFile(u":/Icons/icons/delete_with_dialogue.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.cancelButton.setIcon(icon17)
 
         self.gridLayout_7.addWidget(self.cancelButton, 1, 0, 1, 1)
