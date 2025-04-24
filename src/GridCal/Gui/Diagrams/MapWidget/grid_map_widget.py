@@ -2285,7 +2285,7 @@ class GridMapWidget(BaseDiagramWidget):
                                     code=str(new_code_list),  # Store as string representation of list
                                     latitude=waypoint_lat,
                                     longitude=waypoint_lon)
-
+        new_substation.color = '#6495ED'
         self.circuit.add_substation(obj=new_substation)
         new_substation_graphic = self.add_api_substation(api_object=new_substation, lat=waypoint_lat, lon=waypoint_lon)
 
@@ -2535,7 +2535,16 @@ class GridMapWidget(BaseDiagramWidget):
                                length=distance,
                                rate=line_api.rate,
                                contingency_factor=line_api.contingency_factor,
-                               protection_rating_factor=line_api.protection_rating_factor)
+                               protection_rating_factor=line_api.protection_rating_factor,
+                               circuit_idx=line_api.circuit_idx)
+
+        if isinstance(line_api.template, OverheadLineType):
+            template = line_api.template
+            template.compute()
+        else:
+            template = line_api.template
+
+        connection_line.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
