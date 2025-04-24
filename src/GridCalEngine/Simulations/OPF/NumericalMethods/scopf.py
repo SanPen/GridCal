@@ -1308,7 +1308,6 @@ def scopf_MP_OPF(nc: NumericalCircuit,
     if W_k_vec is not None:
         n_cuts = len(W_k_vec)
         print('n_cuts', n_cuts)
-        print('n_cuts', n_cuts)
     else:
         n_cuts = 0
 
@@ -1934,8 +1933,8 @@ def case_loop() -> None:
     # Load basic grid
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
     # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
-    file_path = 'src/trunk/scopf/bus5_v12.gridcal'
-    # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
+    # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
+    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
@@ -1981,24 +1980,27 @@ def case_loop() -> None:
         'avg_voltage_slack': [],
         'max_flow_slack': [],
         'avg_flow_slack': [],
-        'total_cost': []
+        'total_cost': [],
+        'num_cuts': []
     }
 
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
+    max_iter = 20
     tolerance = 1e-4
 
     # Start main loop over iterations
-    for klm in range(1):
-        print(f"General iteration {klm + 1} of 20")
+    for klm in range(max_iter):
+        print(f"General iteration {klm + 1} of {max_iter}")
+        if klm == 1:
+            print('')
 
         n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
 
         # Global slack and weight trackers
         v_slacks = np.zeros(n_con_groups)
         f_slacks = np.zeros(n_con_groups)
-        viols = 0
         viols = 0
         W_k_vec = np.zeros(n_con_groups)
         Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
@@ -2058,7 +2060,6 @@ def case_loop() -> None:
                             u_j_vec[viols, island.generator_data.original_idx] = slack_sol_cont.u_j
                             prob_cont += 1
                             viols += 1
-                            viols += 1
 
                         print('nbus', island.nbus, 'ngen', island.ngen)
 
@@ -2086,11 +2087,11 @@ def case_loop() -> None:
             iteration_data['max_flow_slack'].append(f_slacks.max())
             iteration_data['avg_flow_slack'].append(f_slacks.mean())
         else:
-            iteration_data['max_wk'].append(0.1)
-            iteration_data['max_voltage_slack'].append(0.1)
-            iteration_data['avg_voltage_slack'].append(0.1)
-            iteration_data['max_flow_slack'].append(0.1)
-            iteration_data['avg_flow_slack'].append(0.1)
+            iteration_data['max_wk'].append(1e-3)
+            iteration_data['max_voltage_slack'].append(1e-3)
+            iteration_data['avg_voltage_slack'].append(1e-3)
+            iteration_data['max_flow_slack'].append(1e-3)
+            iteration_data['avg_flow_slack'].append(1e-3)
             print('Contingencies have not been initialised')
         iteration_data['num_violations'].append(viols)
         iteration_data['num_violations'].append(viols)
@@ -2120,6 +2121,8 @@ def case_loop() -> None:
 
         if viols == 0:
             break
+        iteration_data['num_cuts'].append(prob_cont)
+        print(f"Total number of cuts: {iteration_data['num_cuts'][-1]}")
 
     # Plot the results
     plot_scopf_progress(iteration_data)
