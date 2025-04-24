@@ -117,13 +117,6 @@ class BranchParentData:
         Branch-bus connectivity matrix
         :return:
         """
-        # mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)
-        # for k in range(self.nelm):
-        #     # if self.active[k]:
-        #     mat[k, self.F[k]] = 1
-        #     mat[k, self.T[k]] = 1
-        # return mat.tocsc()
-
         i = np.r_[np.arange(self.nelm, dtype=int), np.arange(self.nelm, dtype=int)]
         j = np.r_[self.F, self.T]
         data = np.ones(self.nelm * 2, dtype=int)
