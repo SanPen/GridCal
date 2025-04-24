@@ -9,6 +9,7 @@ import numpy as np
 from typing import List, Dict, Union, Tuple, TYPE_CHECKING
 
 from GridCalEngine import TapModuleControl, TapPhaseControl
+from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -2585,6 +2586,7 @@ def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, verb
     if np.allclose(arr, arr_expected, atol=tol):
         if verbose:
             print('ok:', name, test)
+            print('ok:', name, test)
         return 0
     else:
         diff = arr - arr_expected
@@ -2620,13 +2622,16 @@ def CheckArrEq(arr: Vec, arr_expected: Vec, name: str, test: str, verbose=False)
 def convert_arr(arr, d: Dict):
     return np.array([d[e] for e in arr])
 
-def compare_branch_parent_data( gslv_branch_data: pg.BranchParentData, gc_branch_data: "BranchParentData", tol: float,
+def compare_branch_parent_data( gslv_branch_data: pg.BranchParentData,
+                                gc_branch_data: BranchParentData,
+                                tol: float,
                                 parent_name: str):
     """
 
-    :param nc_gslv:
-    :param nc_gc:
+    :param gslv_branch_data:
+    :param gc_branch_data:
     :param tol:
+    :param parent_name:
     :return:
     """
     errors = 0
@@ -2647,11 +2652,15 @@ def compare_branch_parent_data( gslv_branch_data: pg.BranchParentData, gc_branch
     errors += CheckArr(gslv_branch_data.mttf, gc_branch_data.mttf, tol, parent_name, 'mttf')
     errors += CheckArr(gslv_branch_data.mttr, gc_branch_data.mttr, tol, parent_name, 'mttr')
 
-    errors += CheckArr(gslv_branch_data.contingency_enabled, gc_branch_data.contingency_enabled, tol, parent_name, 'contingency_enabled')
-    errors += CheckArr(gslv_branch_data.monitor_loading, gc_branch_data.monitor_loading, tol, parent_name, 'monitor_loading')
+    errors += CheckArr(gslv_branch_data.contingency_enabled, gc_branch_data.contingency_enabled, tol,
+                       parent_name, 'contingency_enabled')
+    errors += CheckArr(gslv_branch_data.monitor_loading, gc_branch_data.monitor_loading, tol,
+                       parent_name, 'monitor_loading')
 
-    errors += CheckArr(gslv_branch_data.overload_cost, gc_branch_data.overload_cost, tol, parent_name, 'overload_cost')
-    errors += CheckArr(gslv_branch_data.original_idx, gc_branch_data.original_idx, tol, parent_name, 'original_idx')
+    errors += CheckArr(gslv_branch_data.overload_cost, gc_branch_data.overload_cost, tol,
+                       parent_name, 'overload_cost')
+    errors += CheckArr(gslv_branch_data.original_idx, gc_branch_data.original_idx, tol,
+                       parent_name, 'original_idx')
     #errors += CheckArr(gslv_branch_data.reducible, gc_branch_data.reducible, tol, parent_name, 'reducible')
 
     return errors

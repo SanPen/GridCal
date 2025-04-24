@@ -1452,7 +1452,6 @@ def set_control_dev(k: int,
     :param control_bus_idx: array to be filled in
     :param control_branch_idx: array to be filled in
     :param bus_dict: dictionary to be filled in
-    :param branch_dict: dictionary to be filled in
     :param bus_data: bus data
     :param bus_voltage_used: used bus voltage
     :param use_stored_guess:
@@ -1569,6 +1568,8 @@ def get_vsc_data(
         data.mttr[i] = elm.mttr
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
+        data.original_idx[i] = i
+
         data.F[i] = f
         data.T[i] = t
 
@@ -1687,6 +1688,7 @@ def get_hvdc_data(data: HvdcData,
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
+        data.original_idx[i] = i
 
         # hvdc values
         data.names[i] = elm.name

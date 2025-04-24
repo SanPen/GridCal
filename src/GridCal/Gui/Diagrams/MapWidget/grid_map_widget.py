@@ -436,14 +436,14 @@ class GridMapWidget(BaseDiagramWidget):
         Zoom in
         """
         if self.map.level + 1 <= self.map.max_level:
-            self.map.zoom_level(level=self.map.level + 1)
+            self.map.set_zoom_level(level=self.map.level + 1)
 
     def zoom_out(self):
         """
         Zoom out
         """
         if self.map.level - 1 >= self.map.min_level:
-            self.map.zoom_level(level=self.map.level - 1)
+            self.map.set_zoom_level(level=self.map.level - 1)
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """

@@ -171,7 +171,8 @@ class DiagramsMain(CompiledArraysMain):
             CartoDbTiles(
                 name='Open Street Map',
                 tiles_dir=os.path.join(tiles_path(), 'osm'),
-                tile_servers=["https://tile.openstreetmap.org"]
+                tile_servers=["https://tile.openstreetmap.org"],
+                max_zoom=21
             ),
             # OimTiles(
             #     name='Open infra Map',

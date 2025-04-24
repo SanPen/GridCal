@@ -1515,14 +1515,10 @@ class NumericalCircuit:
 
     def get_island(self,
                    bus_idx: IntVec,
-                   consider_hvdc_as_island_links: bool = False,
-                   consider_vsc_as_island_links: bool = True,
                    logger: Logger | None = None) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
-        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
-        :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :param logger: Logger
         :return: NumericalCircuit
         """
@@ -1596,12 +1592,8 @@ class NumericalCircuit:
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx, bus_map=bus_map)
         nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx, bus_map=bus_map)
         nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx, bus_map=bus_map)
-
-        if consider_hvdc_as_island_links:
-            nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
-
-        if consider_vsc_as_island_links:
-            nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
+        nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
+        nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
 
         return nc
 
@@ -1632,14 +1624,10 @@ class NumericalCircuit:
         for island_bus_indices in idx_islands:
             if ignore_single_node_islands:
                 if len(island_bus_indices) > 1:
-                    island = self.get_island(island_bus_indices,
-                                             consider_hvdc_as_island_links=consider_hvdc_as_island_links,
-                                             logger=logger)
+                    island = self.get_island(bus_idx=island_bus_indices, logger=logger)
                     circuit_islands.append(island)
             else:
-                island = self.get_island(island_bus_indices,
-                                         consider_hvdc_as_island_links=consider_hvdc_as_island_links,
-                                         logger=logger)
+                island = self.get_island(bus_idx=island_bus_indices, logger=logger)
                 circuit_islands.append(island)
 
         return circuit_islands
@@ -1647,8 +1635,8 @@ class NumericalCircuit:
     def compare(self, nc_2: "NumericalCircuit", tol=1e-6) -> Tuple[bool, Logger]:
         """
         Compare this numerical circuit with another numerical circuit
-        :param nc_2: NumericalCircuit
-        :param tol: NumericalCircuit
+        :param nc_2: other NumericalCircuit
+        :param tol: tolerance for numerical values
         :return: Logger with the errors and warning events
         """
 
