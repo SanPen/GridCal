@@ -1095,19 +1095,6 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
         data.Qmax_bus_ = qlim.qmax_bus
         data.Qmin_bus_ = qlim.qmin_bus
 
-        control_indices = npa_data.getSimulationIndices(Sbus=data.Sbus_[:, 0])
-
-        data.k_pf_tau = control_indices.k_pf_tau
-        data.k_qf_m = control_indices.k_qf_m
-        data.k_zero_beq = control_indices.k_qf_beq
-        data.k_vf_beq = control_indices.k_vf_beq
-        data.k_vt_m = control_indices.k_v_m
-        data.k_qt_m = control_indices.k_qt_m
-        data.k_pf_dp = control_indices.k_pf_dp
-        data.i_vsc = control_indices.i_vsc
-        data.i_vf_beq = control_indices.i_vf_beq
-        data.i_vt_m = control_indices.i_vt_m
-
         data_lst.append(data)
 
     return data_lst

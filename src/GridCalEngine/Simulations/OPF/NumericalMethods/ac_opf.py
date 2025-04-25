@@ -633,9 +633,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Va_min = nc.bus_data.angle_min
 
     # Transformer control modes and line parameters to calculate the associated derivatives w.r.t the tap variables.
-    k_m = indices.k_m
-    k_tau = indices.k_tau
-    k_mtau = indices.k_mtau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
     R = nc.passive_branch_data.R
     X = nc.passive_branch_data.X
 

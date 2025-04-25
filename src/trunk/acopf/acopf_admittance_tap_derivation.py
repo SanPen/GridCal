@@ -134,16 +134,15 @@ def compute_finitediff_admittances(nc: NumericalCircuit, tol=1e-5):
     :return:
     """
     indices = nc.get_simulation_indices()
-    k_m = indices.k_m
-    k_tau = indices.k_tau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
 
     # base values
     adm0 = nc.get_admittance_matrices()
 
     # Modify tap modules
-    nc.passive_branch_data.tap_module[k_m] += tol
+    nc.active_branch_data.tap_module[k_m] += tol
     adm1 = nc.get_admittance_matrices()
-    nc.passive_branch_data.tap_module[k_m] -= tol
+    nc.active_branch_data.tap_module[k_m] -= tol
 
     dYf_dm = (adm1.Yf - adm0.Yf) / tol
     dYt_dm = (adm1.Yt - adm0.Yt) / tol
@@ -168,15 +167,13 @@ def compute_analytic_admittances_2dev(nc: NumericalCircuit):
     :return:
     """
     indices = nc.get_simulation_indices()
-    k_m = indices.k_m
-    k_tau = indices.k_tau
-    k_mtau = indices.k_mtau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
 
-    tapm = nc.passive_branch_data.tap_module
-    tapt = nc.passive_branch_data.tap_angle
+    tapm = nc.active_branch_data.tap_module
+    tapt = nc.active_branch_data.tap_angle
 
-    Cf = nc.Cf
-    Ct = nc.Ct
+    Cf = nc.passive_branch_data.Cf
+    Ct = nc.passive_branch_data.Ct
     ys = 1.0 / (nc.passive_branch_data.R + 1.0j * nc.passive_branch_data.X + 1e-20)
 
     # Second partial derivative with respect to tap module
@@ -253,16 +250,15 @@ def compute_finitediff_admittances_2dev(nc: NumericalCircuit, tol=1e-5):
     :return:
     """
     indices = nc.get_simulation_indices()
-    k_m = indices.k_m
-    k_tau = indices.k_tau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
 
     # Refference
     dY0_dm, dYf0_dm, dYt0_dm, dY0_dt, dYf0_dt, dYt0_dt = compute_finitediff_admittances(nc)
 
     # Modify the tap module
-    nc.passive_branch_data.tap_module[k_m] += tol
+    nc.active_branch_data.tap_module[k_m] += tol
     dY_dm, dYf_dm, dYt_dm, dY_dt, dYf_dt, dYt_dt = compute_finitediff_admittances(nc)
-    nc.passive_branch_data.tap_module[k_m] -= tol
+    nc.active_branch_data.tap_module[k_m] -= tol
 
     dYf_dmdm = (dYf_dm - dYf0_dm) / tol
     dYt_dmdm = (dYt_dm - dYt0_dm) / tol

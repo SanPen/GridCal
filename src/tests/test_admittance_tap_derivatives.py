@@ -79,10 +79,7 @@ def compute_analytic_admittances(nc: NumericalCircuit):
     :return:
     """
     indices = nc.get_simulation_indices()
-
-    k_m = indices.k_m
-    k_tau = indices.k_tau
-    k_mtau = indices.k_mtau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
 
     tapm = nc.active_branch_data.tap_module
     tapt = nc.active_branch_data.tap_angle
@@ -139,8 +136,7 @@ def compute_finitediff_admittances(nc: NumericalCircuit, tol=1e-5):
     :return:
     """
     indices = nc.get_simulation_indices()
-    k_m = indices.k_m
-    k_tau = indices.k_tau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
 
     # base values
     adm0 = nc.get_admittance_matrices()
@@ -173,9 +169,7 @@ def compute_analytic_admittances_2dev(nc: NumericalCircuit):
     :return:
     """
     indices = nc.get_simulation_indices()
-    k_m = indices.k_m
-    k_tau = indices.k_tau
-    k_mtau = indices.k_mtau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
 
     tapm = nc.active_branch_data.tap_module
     tapt = nc.active_branch_data.tap_angle
@@ -258,10 +252,9 @@ def compute_finitediff_admittances_2dev(nc: NumericalCircuit, tol=1e-5):
     :return:
     """
     indices = nc.get_simulation_indices()
-    k_m = indices.k_m
-    k_tau = indices.k_tau
+    k_m, k_tau, k_mtau = indices.get_branch_controls_indices()
 
-    # Refference
+    # Reference
     dY0_dm, dYf0_dm, dYt0_dm, dY0_dt, dYf0_dt, dYt0_dt = compute_finitediff_admittances(nc)
 
     # Modify the tap module
