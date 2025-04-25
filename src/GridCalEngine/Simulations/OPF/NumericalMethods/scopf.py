@@ -1977,8 +1977,14 @@ def case_loop() -> None:
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v4.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v0_freeze.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v5.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v6.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v7.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case14_cont_v8.gridcal')
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
@@ -1999,7 +2005,7 @@ def case_loop() -> None:
                                                 ips_tolerance=1e-8,
                                                 ips_iterations=50,
                                                 acopf_mode=AcOpfMode.ACOPFslacks,
-                                                verbose=1)
+                                                verbose=0)
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
@@ -2031,7 +2037,7 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 10
+    max_iter = 5
     tolerance = 1e-4
 
     # Start main loop over iterations
