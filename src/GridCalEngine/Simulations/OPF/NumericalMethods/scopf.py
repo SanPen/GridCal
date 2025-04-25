@@ -566,8 +566,10 @@ def scopf_subproblem(nc: NumericalCircuit,
                      opf_options: OptimalPowerFlowOptions,
                      debug: bool = False,
                      use_autodiff: bool = False,
+                     pf_init: bool = False,
                      Sbus_pf: Union[CxVec, None] = None,
                      load_shedding: bool = False,
+                     voltage_pf : Union[CxVec, None] = None,
                      plot_error: bool = False,
                      mp_results: NonlinearSCOPFResults = None,
                      logger: Logger = Logger()) -> NonlinearSCOPFResults:
@@ -793,17 +795,36 @@ def scopf_subproblem(nc: NumericalCircuit,
     # ignore power from Z and I of the load
 
     # Init
-    p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:ngen]] +
-                   nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
-    q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:ngen]] +
-                   nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
-    p0gen = mp_results.Pg[nc.generator_data.original_idx]
-    q0gen = mp_results.Qg[nc.generator_data.original_idx]
-    va0 = np.angle(nc.bus_data.Vbus)
-    vm0 = (Vm_max + Vm_min) / 2
-    tapm0 = nc.active_branch_data.tap_module[k_m]
-    tapt0 = nc.active_branch_data.tap_angle[k_tau]
-    Pf0_hvdc = np.zeros(n_disp_hvdc)
+
+    if pf_init:
+        # TODO: try to substitute by using nc.generator_data.get_injections_per_bus()
+        gen_in_bus = np.zeros(nbus)
+        for i in range(Cgen.shape[0]):
+            gen_in_bus[i] = np.sum(Cgen[i])
+        ngenforgen = Cgen.T @ gen_in_bus
+        allPgen = Cgen.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
+        allQgen = Cgen.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
+        Sg_undis = allPgen[gen_nondisp_idx] + 1j * allQgen[gen_nondisp_idx]
+        p0gen = np.r_[allPgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
+        q0gen = np.r_[allQgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
+        vm0 = np.abs(voltage_pf)
+        va0 = np.angle(voltage_pf)
+        tapm0 = nc.active_branch_data.tap_module[k_m]
+        tapt0 = nc.active_branch_data.tap_angle[k_tau]
+        Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
+
+    else:
+        p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:ngen]] +
+                    nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
+        q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:ngen]] +
+                    nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
+        p0gen = mp_results.Pg[nc.generator_data.original_idx]
+        q0gen = mp_results.Qg[nc.generator_data.original_idx]
+        va0 = np.angle(nc.bus_data.Vbus)
+        vm0 = (Vm_max + Vm_min) / 2
+        tapm0 = nc.active_branch_data.tap_module[k_m]
+        tapt0 = nc.active_branch_data.tap_angle[k_tau]
+        Pf0_hvdc = np.zeros(n_disp_hvdc)
 
     # compose the initial values
     x0 = var2x(Va=va0,
@@ -1826,8 +1847,23 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
     # compile the system
     # nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx, logger=logger)
 
-    Sbus_pf = nc.bus_data.installed_power
-    voltage_pf = nc.bus_data.Vbus
+    # Sbus_pf = nc.bus_data.installed_power
+    # voltage_pf = nc.bus_data.Vbus
+
+    if pf_init:
+        if Sbus_pf0 is None:
+            # run power flow to initialize
+            pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+            Sbus_pf = pf_results.Sbus
+            voltage_pf = pf_results.voltage
+        else:
+            # pick the passed values
+            Sbus_pf = Sbus_pf0
+            voltage_pf = voltage_pf0
+    else:
+        # initialize with sensible values
+        Sbus_pf = nc.bus_data.installed_power
+        voltage_pf = nc.bus_data.Vbus
 
     # split into islands, but considering the HVDC lines as actual links
     islands = nc.split_into_islands(ignore_single_node_islands=True,
@@ -1848,8 +1884,10 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
                                           opf_options=opf_options,
                                           debug=debug,
                                           use_autodiff=use_autodiff,
+                                          pf_init=pf_init,
                                           Sbus_pf=Sbus_pf[island.bus_data.original_idx],
                                           load_shedding=load_shedding,
+                                          voltage_pf=voltage_pf,
                                           plot_error=plot_error,
                                           mp_results=mp_results,
                                           logger=logger)
@@ -1939,8 +1977,8 @@ def case_loop() -> None:
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
-    # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
@@ -1993,7 +2031,7 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 1
+    max_iter = 10
     tolerance = 1e-4
 
     # Start main loop over iterations
@@ -2050,7 +2088,7 @@ def case_loop() -> None:
                             opf_options=opf_slack_options,
                             pf_init=True,
                             mp_results=acopf_results,
-                            load_shedding=False
+                            load_shedding=False,
                         )
 
                         # Collect slacks
