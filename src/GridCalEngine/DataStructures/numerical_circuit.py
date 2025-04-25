@@ -852,7 +852,6 @@ class NumericalCircuit:
                                     tap_module_control_mode=self.active_branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.active_branch_data.tap_phase_control_mode,
                                     tap_controlled_buses=self.active_branch_data.tap_controlled_buses,
-                                    is_converter=np.zeros(self.nbr, dtype=bool),
                                     F=self.passive_branch_data.F,
                                     T=self.passive_branch_data.T,
                                     is_dc_bus=self.bus_data.is_dc,

@@ -91,19 +91,17 @@ class SimulationIndices:
                  tap_module_control_mode: List[TapModuleControl],
                  tap_phase_control_mode: List[TapPhaseControl],
                  tap_controlled_buses: IntVec,
-                 is_converter: BoolVec,
                  F: IntVec,
                  T: IntVec,
                  is_dc_bus: BoolVec,
                  force_only_pq_pv_vd_types=False):
         """
 
-        :param bus_types: Bus type initial guess array
-        :param Pbus: Active power per bus array
-        :param tap_module_control_mode: TapModuleControl control mode array
-        :param tap_phase_control_mode: TapPhaseControl control mode array
+        :param bus_types: Array of Bus type initial guess
+        :param Pbus: Array of Active power per bus
+        :param tap_module_control_mode: Array of TapModuleControl control mode
+        :param tap_phase_control_mode: Array of TapPhaseControl control mode
         :param tap_controlled_buses: Array of bus indices where the tap module control occurs
-        :param is_converter: Array of is converter per branch?
         :param is_dc_bus: Array of is DC ? per bus
         :param force_only_pq_pv_vd_types: if true, all bus types are forced into PQ PV or VD,
                                           for certain types of simulations that cannot handle other bus types
