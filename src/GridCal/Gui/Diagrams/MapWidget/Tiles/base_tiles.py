@@ -287,12 +287,13 @@ class BaseTiles:
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[int, int]:
         """
         Convert geo to tile fractional coordinates for level in use.
+        Note that we assume the point *is* on the map!
         :param longitude: geo longitude in degrees
         :param latitude: geo latitude in degrees
-        Note that we assume the point *is* on the map!
+        :return x_tile, y_tile (tile fractional X, Y coordinate)
         """
 
-        raise Exception('You must override BaseTiles.Geo2Tile(xgeo, ygeo)')
+        raise Exception('You must override BaseTiles.Geo2Tile(longitude, latitude)')
 
     def Tile2Geo(self, x_tile: float, y_tile: float) -> Tuple[float, float]:
         """
@@ -304,4 +305,4 @@ class BaseTiles:
         Note that we assume the point *is* on the map!
         """
 
-        raise Exception('You must override BaseTiles.Tile2Geo(xtile, ytile)')
+        raise Exception('You must override BaseTiles.Tile2Geo(x_tile, y_tile)')

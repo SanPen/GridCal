@@ -653,7 +653,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         self.is_vm_controlled[island_bus_idx] = True
                         u_cbr_m.append(k)
                 else:
-                    print("Warning: Controlled bus index outside of the island, skipping control")
+                    self.logger.add_error("Controlled bus index outside of the island, skipping control",
+                                          device=self.nc.passive_branch_data.idtag[k],)
 
             elif ctrl_m == TapModuleControl.Qf:
                 u_cbr_m.append(k)

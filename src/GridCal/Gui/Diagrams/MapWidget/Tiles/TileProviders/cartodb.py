@@ -30,7 +30,9 @@ from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 
 class CartoDbTiles(Tiles):
-    """An object to source server tiles for pySlipQt."""
+    """
+    An object to source server tiles for pySlipQt.
+    """
 
     def __init__(self, tiles_dir='open_street_map_tiles',
                  http_proxy=None,

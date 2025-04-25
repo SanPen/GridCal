@@ -134,6 +134,9 @@ class Tiles(BaseTiles):
         tile_extension = os.path.splitext(url_path)[1][1:]
         tile_extension_lower = tile_extension.lower()  # ensure lower case
 
+        if tile_extension_lower == "":
+            tile_extension_lower = 'jpg'
+
         # determine the file bitmap type
         try:
             self.filetype = self.AllowedFileTypes[tile_extension_lower]
