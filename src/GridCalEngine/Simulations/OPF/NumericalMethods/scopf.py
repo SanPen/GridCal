@@ -1188,6 +1188,9 @@ def scopf_MP_OPF(nc: NumericalCircuit,
     Pg_max[slackgens] = nc.generator_data.pmax[slackgens] / Sbase
     Pg_min[slackgens] = nc.generator_data.pmin[slackgens] / Sbase
 
+    # Pg_max[slackgens] = (nc.generator_data.p[slackgens] + 0.1 * (nc.generator_data.pmax[slackgens] - nc.generator_data.p[slackgens])) / Sbase
+    # Pg_min[slackgens] = (nc.generator_data.p[slackgens] + 0.1 * (nc.generator_data.pmin[slackgens] - nc.generator_data.p[slackgens])) / Sbase
+
     Qg_max = nc.generator_data.qmax / Sbase
     Qg_min = nc.generator_data.qmin / Sbase
 
@@ -1934,7 +1937,10 @@ def case_loop() -> None:
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
     # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
-    file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
+    # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
@@ -1955,7 +1961,7 @@ def case_loop() -> None:
                                                 ips_tolerance=1e-8,
                                                 ips_iterations=50,
                                                 acopf_mode=AcOpfMode.ACOPFslacks,
-                                                verbose=False)
+                                                verbose=1)
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
@@ -1987,7 +1993,7 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 20
+    max_iter = 1
     tolerance = 1e-4
 
     # Start main loop over iterations
@@ -2073,7 +2079,7 @@ def case_loop() -> None:
             # Revert contingency
             nc.set_con_or_ra_status(contingencies, revert=True)
 
-        if n_con_groups > prob_cont > 0:
+        if viols > 0:
             # crop the dimension 0
             W_k_vec = W_k_vec[:prob_cont]
             Z_k_vec = Z_k_vec[:prob_cont, :]
