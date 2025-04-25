@@ -8,7 +8,7 @@ import warnings
 import numpy as np
 from typing import List, Dict, Union, Tuple, TYPE_CHECKING
 
-from GridCalEngine import TapModuleControl, TapPhaseControl
+from GridCalEngine import TapModuleControl, TapPhaseControl, BusMode
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.profile import Profile
@@ -104,6 +104,14 @@ try:
         ConverterControlType.Qac: pg.ConverterControlType.Q_ac,
         ConverterControlType.Pdc: pg.ConverterControlType.P_dc,
         ConverterControlType.Pac: pg.ConverterControlType.P_ac,
+    }
+
+    bus_type_dict = {
+        BusMode.PQ_tpe.value: pg.BusMode.PQ,
+        BusMode.PV_tpe.value: pg.BusMode.PV,
+        BusMode.Slack_tpe.value: pg.BusMode.Slack,
+        BusMode.P_tpe.value: pg.BusMode.P,
+        BusMode.PQV_tpe.value: pg.BusMode.PQV,
     }
 
 except ImportError as e:
@@ -2580,7 +2588,8 @@ def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, verb
     """
     if arr.shape != arr_expected.shape:
         print('failed (shape):', name, test)
-        print(f"got: {arr}, \nexpected: {arr_expected}")
+        print(f"got     : {arr}, \n"
+              f"expected: {arr_expected}")
         return 1
 
     if np.allclose(arr, arr_expected, atol=tol):
@@ -2607,7 +2616,8 @@ def CheckArrEq(arr: Vec, arr_expected: Vec, name: str, test: str, verbose=False)
     """
     if arr.shape != arr_expected.shape:
         print('failed (shape):', name, test)
-        print(f"got: {arr}, \nexpected: {arr_expected}")
+        print(f"got     : {arr}, \n"
+              f"expected: {arr_expected}")
         return 1
 
     if np.all(arr == arr_expected):
@@ -2622,10 +2632,11 @@ def CheckArrEq(arr: Vec, arr_expected: Vec, name: str, test: str, verbose=False)
 def convert_arr(arr, d: Dict):
     return np.array([d[e] for e in arr])
 
-def compare_branch_parent_data( gslv_branch_data: pg.BranchParentData,
-                                gc_branch_data: BranchParentData,
-                                tol: float,
-                                parent_name: str):
+
+def compare_branch_parent_data(gslv_branch_data: pg.BranchParentData,
+                               gc_branch_data: BranchParentData,
+                               tol: float,
+                               parent_name: str):
     """
 
     :param gslv_branch_data:
@@ -2661,7 +2672,7 @@ def compare_branch_parent_data( gslv_branch_data: pg.BranchParentData,
                        parent_name, 'overload_cost')
     errors += CheckArr(gslv_branch_data.original_idx, gc_branch_data.original_idx, tol,
                        parent_name, 'original_idx')
-    #errors += CheckArr(gslv_branch_data.reducible, gc_branch_data.reducible, tol, parent_name, 'reducible')
+    # errors += CheckArr(gslv_branch_data.reducible, gc_branch_data.reducible, tol, parent_name, 'reducible')
 
     return errors
 
@@ -2676,9 +2687,18 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     """
     errors = 0
 
+    # bus data
+    errors += CheckArr(nc_gslv.bus_data.active, nc_gc.bus_data.active, tol, 'BusData', 'active')
+    errors += CheckArr(nc_gslv.bus_data.Vbus.real, nc_gc.bus_data.Vbus.real, tol, 'BusData', 'V0')
+    errors += CheckArr(nc_gslv.bus_data.installed_power, nc_gc.bus_data.installed_power, tol,
+                       'BusData', 'installed power')
+    errors += CheckArrEq(np.array(nc_gslv.bus_data.bus_types),
+                         convert_arr(nc_gc.bus_data.bus_types, bus_type_dict),
+                         'BusData', 'bus_types')
 
     # branch data
-    errors += compare_branch_parent_data(nc_gslv.passive_branch_data, nc_gc.passive_branch_data, tol, "PassiveBranchData")
+    errors += compare_branch_parent_data(nc_gslv.passive_branch_data, nc_gc.passive_branch_data, tol,
+                                         "PassiveBranchData")
     errors += CheckArr(nc_gslv.passive_branch_data.R, nc_gc.passive_branch_data.R, tol, 'PassiveBranchData', 'r')
     errors += CheckArr(nc_gslv.passive_branch_data.X, nc_gc.passive_branch_data.X, tol, 'PassiveBranchData', 'x')
     errors += CheckArr(nc_gslv.passive_branch_data.G, nc_gc.passive_branch_data.G, tol, 'PassiveBranchData', 'g')
@@ -2709,10 +2729,14 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     errors += CheckArr(nc_gslv.vsc_data.control1_val, nc_gc.vsc_data.control1_val, tol, 'VscData', 'control1_val')
     errors += CheckArr(nc_gslv.vsc_data.control2_val, nc_gc.vsc_data.control2_val, tol, 'VscData', 'control2_val')
 
-    errors += CheckArr(nc_gslv.vsc_data.control1_bus_idx, nc_gc.vsc_data.control1_bus_idx, tol, 'VscData', 'control1_bus_idx')
-    errors += CheckArr(nc_gslv.vsc_data.control2_bus_idx, nc_gc.vsc_data.control2_bus_idx, tol, 'VscData', 'control2_bus_idx')
-    errors += CheckArr(nc_gslv.vsc_data.control1_branch_idx, nc_gc.vsc_data.control1_branch_idx, tol, 'VscData', 'control1_branch_idx')
-    errors += CheckArr(nc_gslv.vsc_data.control2_branch_idx, nc_gc.vsc_data.control2_branch_idx, tol, 'VscData', 'control2_branch_idx')
+    errors += CheckArr(nc_gslv.vsc_data.control1_bus_idx, nc_gc.vsc_data.control1_bus_idx, tol, 'VscData',
+                       'control1_bus_idx')
+    errors += CheckArr(nc_gslv.vsc_data.control2_bus_idx, nc_gc.vsc_data.control2_bus_idx, tol, 'VscData',
+                       'control2_bus_idx')
+    errors += CheckArr(nc_gslv.vsc_data.control1_branch_idx, nc_gc.vsc_data.control1_branch_idx, tol, 'VscData',
+                       'control1_branch_idx')
+    errors += CheckArr(nc_gslv.vsc_data.control2_branch_idx, nc_gc.vsc_data.control2_branch_idx, tol, 'VscData',
+                       'control2_branch_idx')
 
     # HVDC data
     errors += compare_branch_parent_data(nc_gslv.hvdc_data, nc_gc.hvdc_data, tol, "HvdcData")
@@ -2734,14 +2758,6 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     errors += CheckArr(nc_gslv.hvdc_data.Qmax_f, nc_gc.hvdc_data.Qmax_f, tol, 'HvdcData', 'Qmax_f')
     errors += CheckArr(nc_gslv.hvdc_data.Qmin_t, nc_gc.hvdc_data.Qmin_t, tol, 'HvdcData', 'Qmin_t')
     errors += CheckArr(nc_gslv.hvdc_data.Qmax_t, nc_gc.hvdc_data.Qmax_t, tol, 'HvdcData', 'Qmax_t')
-
-    # bus data
-    # tpes = convert_bus_types(nc_gslv.bus_data.types)
-    errors += CheckArr(nc_gslv.bus_data.active, nc_gc.bus_data.active, tol, 'BusData', 'active')
-    errors += CheckArr(nc_gslv.bus_data.Vbus.real, nc_gc.bus_data.Vbus.real, tol, 'BusData', 'V0')
-    errors += CheckArr(nc_gslv.bus_data.installed_power, nc_gc.bus_data.installed_power, tol,
-                       'BusData', 'installed power')
-    # CheckArr(tpes, nc_gc.bus_data.bus_types, tol, 'BusData', 'types')
 
     # generator data
     errors += CheckArr(nc_gslv.generator_data.bus_idx, nc_gc.generator_data.bus_idx, tol, 'GenData', 'bus_idx')
@@ -2781,6 +2797,9 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     errors += CheckArr(gslv_inj.real, gc_inj.real, tol, 'Pbus', 'P')
     errors += CheckArr(gslv_inj.imag, gc_inj.imag, tol, 'Qbus', 'Q')
 
+    errors += CheckArrEq(np.array(gslv_types.types),
+                         convert_arr(gc_types.bus_types, bus_type_dict),
+                         'Types', 'bus_types')
     errors += CheckArr(gslv_types.pq, gc_types.pq, tol, 'Types', 'pq')
     errors += CheckArr(gslv_types.pv, gc_types.pv, tol, 'Types', 'pv')
     errors += CheckArr(gslv_types.vd, gc_types.vd, tol, 'Types', 'vd')

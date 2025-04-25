@@ -354,16 +354,7 @@ class NumericalCircuit:
             'Pt_set',
             'Qt_set',
         ],
-        "Branch indices": [
-            'branch_ctrl',
-            'k_pf_tau',
-            'k_pt_tau',
-            'k_qf_m',
-            'k_qt_m',
-            'k_qf_beq',
-            'k_v_m',
-            'k_v_beq',
-        ],
+
         "System matrices": [
             'Ybus',
             'G',
@@ -1302,53 +1293,7 @@ class NumericalCircuit:
                 index=self.passive_branch_data.names,
             )
 
-        elif structure_type == 'k_pf_tau':
-            df = pd.DataFrame(
-                data=idx.k_pf_tau.astype(int).astype(str),
-                columns=['k_pf_tau'],
-                index=self.passive_branch_data.names[idx.k_pf_tau],
-            )
 
-        elif structure_type == 'k_pt_tau':
-            df = pd.DataFrame(
-                data=idx.k_pt_tau.astype(int).astype(str),
-                columns=['k_pt_tau'],
-                index=self.passive_branch_data.names[idx.k_pt_tau],
-            )
-
-        elif structure_type == 'k_qf_m':
-            df = pd.DataFrame(
-                data=idx.k_qf_m.astype(int).astype(str),
-                columns=['k_qf_m'],
-                index=self.passive_branch_data.names[idx.k_qf_m],
-            )
-
-        elif structure_type == 'k_qt_m':
-            df = pd.DataFrame(
-                data=idx.k_qt_m.astype(int).astype(str),
-                columns=['k_qt_m'],
-                index=self.passive_branch_data.names[idx.k_qt_m],
-            )
-
-        elif structure_type == 'k_qf_beq':
-            df = pd.DataFrame(
-                data=idx.k_qf_beq.astype(int).astype(str),
-                columns=['k_qf_beq'],
-                index=self.passive_branch_data.names[idx.k_qf_beq],
-            )
-
-        elif structure_type == 'k_v_m':
-            df = pd.DataFrame(
-                data=idx.k_v_m.astype(int).astype(str),
-                columns=['k_v_m'],
-                index=self.passive_branch_data.names[idx.k_v_m],
-            )
-        elif structure_type == 'k_v_beq':
-            df = pd.DataFrame(
-                data=idx.k_v_beq.astype(int).astype(str),
-                columns=['k_v_beq'],
-                index=self.passive_branch_data.names[idx.k_v_beq],
-            )
         elif structure_type == 'idx_dPf':
             df = pd.DataFrame(
                 data=formulation.idx_dPf.astype(int).astype(str),

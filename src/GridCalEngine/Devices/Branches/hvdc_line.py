@@ -18,7 +18,7 @@ from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
-def firing_angles_to_reactive_limits(P, alphamin, alphamax) -> Tuple[float, float]:
+def firing_angles_to_reactive_limits(P: float, alphamin: float, alphamax: float) -> Tuple[float, float]:
     """
     Convert firing angles to reactive power limits
     :param P: Active power (MW)
@@ -45,7 +45,9 @@ def firing_angles_to_reactive_limits(P, alphamin, alphamax) -> Tuple[float, floa
     return Qmin, Qmax
 
 
-def getFromAndToPowerAt(Pset, theta_f, theta_t, Vnf, Vnt, v_set_f, v_set_t, Sbase, r1, angle_droop, rate,
+def getFromAndToPowerAt(Pset: float, theta_f: float, theta_t: float,
+                        Vnf: float, Vnt: float, v_set_f: float, v_set_t: float,
+                        Sbase: float, r1: float, angle_droop: float, rate: float,
                         free: bool, in_pu: bool = False):
     """
     Compute the power and losses
@@ -158,7 +160,7 @@ class HvdcLine(BranchParent):
         :param name: name of the line
         :param idtag:  id tag of the line
         :param active:  Is the line active?
-        :param code: Secondary code for compatibilty
+        :param code: Secondary code for compatibility
         :param rate:  Line rate in MVA
         :param Pset:  Active power set point
         :param r: Line resistance (Ohm)
@@ -234,14 +236,6 @@ class HvdcLine(BranchParent):
         self.max_firing_angle_f = float(max_firing_angle_f)
         self.min_firing_angle_t = float(min_firing_angle_t)
         self.max_firing_angle_t = float(max_firing_angle_t)
-
-        self.Qmin_f, self.Qmax_f = firing_angles_to_reactive_limits(self.Pset,
-                                                                    self.min_firing_angle_f,
-                                                                    self.max_firing_angle_f)
-
-        self.Qmin_t, self.Qmax_t = firing_angles_to_reactive_limits(self.Pset,
-                                                                    self.min_firing_angle_t,
-                                                                    self.max_firing_angle_t)
 
         self.capex = float(capex)
 
@@ -581,3 +575,15 @@ class HvdcLine(BranchParent):
         Get the branch defining coordinates
         """
         return [self.bus_from.get_coordinates(), self.bus_to.get_coordinates()]
+
+    def get_q_limits(self, P: float) -> Tuple[float, float, float, float]:
+        """
+        Get reactive power limits
+        :param P: Pset value
+        :return: Qmin_f, Qmax_f, Qmin_t, Qmax_t
+        """
+        Qmin_f, Qmax_f = firing_angles_to_reactive_limits(P, self.min_firing_angle_f, self.max_firing_angle_f)
+
+        Qmin_t, Qmax_t = firing_angles_to_reactive_limits(P, self.min_firing_angle_t, self.max_firing_angle_t)
+
+        return Qmin_f, Qmax_f, Qmin_t, Qmax_t
