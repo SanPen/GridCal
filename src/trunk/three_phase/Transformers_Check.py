@@ -1,33 +1,12 @@
-from sympy import symbols, Matrix
 import numpy as np
-import sympy as sp
 np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 
-def clean_matrix(matrix, threshold=1e-10):
-    cleaned_matrix = []
-    for row in matrix:
-        cleaned_row = []
-        for expr in row:
-            cleaned_expr = 0
-            for term in expr.as_ordered_terms():
-                coeff, symbol = term.as_coeff_Mul()
-                if abs(coeff.evalf()) >= threshold:
-                    cleaned_expr += coeff * symbol
-            cleaned_row.append(cleaned_expr)
-        cleaned_matrix.append(cleaned_row)
-    return sp.Matrix(cleaned_matrix)
+yff = -1j * 10
+yft = 1j * 8
+ytf = 1j * 8.5
+ytt = -1j * 9.5
 
-yff = symbols('yff')
-yft = symbols('yft')
-ytf = symbols('ytf')
-ytt = symbols('ytt')
-
-yff = 1
-yft = 1
-ytf = 1
-ytt = 1
-
-Y_2x2 = Matrix([
+Y_2x2 = np.array([
     [yff, yft],
     [ytf, ytt]
 ])
@@ -38,7 +17,7 @@ Yprimitive[0:2,0:2] = Y_2x2
 Yprimitive[2:4,2:4] = Y_2x2
 Yprimitive[4:6,4:6] = Y_2x2
 
-connexion = 'Dz'
+connexion = 'Yy'
 
 Cu = np.zeros((6, 6))
 Ci = np.zeros((6, 6))
@@ -324,9 +303,8 @@ Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 print()
 print(Ytrafo)
 print()
-
-cleaned = clean_matrix(Ytrafo, threshold=1e-10)
-sp.pprint(cleaned)
+print(type(Ytrafo))
+print()
 
 U = 230 # Voltage module [V]
 UA = U * np.exp(1j * 0)
@@ -336,7 +314,7 @@ Ua = UA
 Ub = UB
 Uc = UC
 Ustar = np.array([UA, UB, UC, Ua, Ub, Uc])
-I = cleaned @ U
+I = Ytrafo @ U
 print(I)
 
 # Extract yff, yft, ytf, ytt for the 9 possible combinations

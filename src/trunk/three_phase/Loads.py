@@ -1,7 +1,12 @@
 import numpy as np
-
+from sympy import symbols, Matrix, simplify
+from scipy.linalg import block_diag
+import scipy.sparse as sp
 np.set_printoptions(linewidth=20000, precision=2, suppress=True)
 
+"""
+Power Definition
+"""
 U = 230 # Voltage module [V]
 theta = 0 # Voltage phase [rad]
 I = 10 # Current module [A]
@@ -26,24 +31,57 @@ print('\nS_star = \n', Sstar)
 # Connectivity matrices
 Cu = np.array([[1,-1,0], [0,1,-1], [-1,0,1]]) # U_ph-ph = Cu @ U_ph-n
 Ci = np.array([[1,0,-1], [-1,1,0], [0,-1,1]]) # I_ph-n = Ci @ I_ph-ph
-Cu_pinv = np.linalg.pinv(Cu) # Pseudoinverse of Cu
-Ci_pinv = np.linalg.pinv(Ci) # Pseudoinverse of Ci
 
 Udelta = Cu @ Ustar # Phase-to-phase voltages [V]
-Idelta = Ci_pinv @ Istar # Phase-to-phase currents [A]
+Idelta = np.linalg.pinv(Ci) @ Istar # Phase-to-phase currents [A]
 
 # Delta power [VA]
 Sdelta = Udelta * np.conjugate(Idelta)
 print('\nS_delta = \n', Sdelta)
 
-
-# --- Compute S_star from S_delta using the derived relationship ---
-D_Udelta = np.diag(Udelta)  # diag(U_delta)
-D_Udelta_inv = np.diag(1 / Udelta)  # diag(U_delta)^{-1}
-C_u_pinv_Udelta = Cu_pinv @ Udelta  # C_u^+ @ U_delta
-D_Cu_pinv_Udelta = np.diag(C_u_pinv_Udelta)  # diag(C_u^+ @ U_delta)
-
-# S_star = diag(Cu^+ @ U_delta) @ Ci^* @ diag(U_delta)^{-1} @ S_delta
-S_star_computed = D_Cu_pinv_Udelta @ np.conj(Ci) @ D_Udelta_inv @ Sdelta
-
+# Compute S_star from S_delta using the derived relationship
+S_star_computed = np.diag(Ustar) @ Ci @ np.diag(1 / (Cu @ Ustar)) @ Sdelta
 print("\nStar power computed from S_delta (S_star_computed):\n", S_star_computed)
+
+"""
+Impedance Definition
+"""
+#connexion = 'Star'
+
+#if connexion == 'Star':
+    #Ya = Ga + 1j * Ba
+    #Yb = Ga + 1j * Ba
+    #Yc = Ga + 1j * Ba
+    #else:
+    #Yab = Gab + 1j * Bab
+    #Ybc = Gbc + 1j * Bbc
+    #Yca = Gca + 1j * Bca
+    #Ya = ( Yab*Ybc + Ybc*Yca + Yca*Yab ) / Ybc
+    #Yb = ( Yab*Ybc + Ybc*Yca + Yca*Yab ) / Yca
+    #Yc = ( Yab*Ybc + Ybc*Yca + Yca*Yab ) / Yab
+
+#Y = block_diag(Ya, Yb, Yc) # Mejor pasar el vector
+#print('\nY = \n', Y)
+
+Ua, Ub, Uc = symbols('Ua, Ub, Uc')
+Sab, Sbc, Sca = symbols('Sab, Sbc, Sca')
+
+Uabc = Matrix([
+    [Ua, 0, 0],
+    [0, Ub, 0],
+    [0, 0, Uc]
+])
+
+Udelta = Matrix([
+    [1 / (Ua - Ub), 0, 0],
+    [0, 1 / (Ub - Uc), 0],
+    [0, 0, 1 / (Uc - Ua)]
+])
+
+S = Matrix([
+    [Sab],
+    [Sbc],
+    [Sca]
+])
+
+print(Uabc @ Ci @ Udelta @ S)
