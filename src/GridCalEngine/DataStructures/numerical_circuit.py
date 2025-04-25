@@ -103,8 +103,8 @@ def build_reducible_branches_C_coo(F: IntVec, T: IntVec, reducible: IntVec, acti
 
 @nb.njit(cache=True)
 def build_branches_C_coo_2(bus_active: IntVec,
-                           F1: IntVec, T1: IntVec, active1: IntVec,
-                           F2: IntVec, T2: IntVec, active2: IntVec):
+                           F1: IntVec, T1: IntVec, active1: BoolVec,
+                           F2: IntVec, T2: IntVec, active2: BoolVec):
     """
     Build the COO coordinates of the C matrix
     :param bus_active: array of bus active values
@@ -177,9 +177,9 @@ def build_branches_C_coo_2(bus_active: IntVec,
 
 @nb.njit(cache=True)
 def build_branches_C_coo_3(bus_active: IntVec,
-                           F1: IntVec, T1: IntVec, active1: IntVec,
-                           F2: IntVec, T2: IntVec, active2: IntVec,
-                           F3: IntVec, T3: IntVec, active3: IntVec):
+                           F1: IntVec, T1: IntVec, active1: BoolVec,
+                           F2: IntVec, T2: IntVec, active2: BoolVec,
+                           F3: IntVec, T3: IntVec, active3: BoolVec):
     """
     Build the COO coordinates of the C matrix
     :param bus_active: array of bus active values

@@ -112,8 +112,6 @@ class Profile:
 
         self._initialized: bool = False
 
-        self._default_value = default_value
-
         if arr is not None:
             self.set(arr=arr)
 
@@ -149,12 +147,15 @@ class Profile:
         """
         if self._sparse_array is not None:
             return self._sparse_array.get_map()
+        else:
+            print("no sparse array!")
+            return dict()
 
     @property
     def dtype(self) -> Union[bool, int, float, DeviceType]:
         """
-        Get the declared type
-        :return: type
+        Get the declared data type
+        :return: data type
         """
         return self._dtype
 
@@ -164,7 +165,10 @@ class Profile:
         Get the declared type
         :return: default_value
         """
-        return self._default_value
+        if self.sparse_array is not None:
+            return self.sparse_array.default_value
+        else:
+            return 0
 
     @default_value.setter
     def default_value(self, val):
@@ -173,7 +177,6 @@ class Profile:
         :param val:
         :return:
         """
-        self._default_value = val
         if self.sparse_array is not None:
             self.sparse_array.default_value = self.default_value
 

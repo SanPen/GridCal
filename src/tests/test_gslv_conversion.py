@@ -210,7 +210,7 @@ def test_contingencies_ts():
 
 
 if __name__ == '__main__':
-    test_gslv_compatibility()
-    # test_gslv_compatibility_ts()
+    # test_gslv_compatibility()
+    test_gslv_compatibility_ts()
     # test_power_flow_ts()
     # test_contingencies_ts()
