@@ -98,6 +98,6 @@ def populate_tree(tree_widget, base: MultiCircuit, diff: MultiCircuit,
                         [f"{diff_name}", f"{elm.device_type.value}", "Mod", f"{elm.idtag}", 
                          f"{elm.name}", prop.name, str(base_val), str(new_val)]
                     )
-                    child_item.setCheckState(0, Qt.CheckState.Unchecked)
+                    child_item.setCheckState(0, Qt.CheckState.Checked)
 
     return all_no_action

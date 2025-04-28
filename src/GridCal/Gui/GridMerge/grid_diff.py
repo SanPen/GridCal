@@ -55,7 +55,7 @@ class GridDiffDialogue(QtWidgets.QDialog):
 
         self._new_grid: MultiCircuit = grid
 
-        self.all_elms_base_dict, ok = self._new_grid.get_all_elements_dict(logger=self.logger)
+        _, ok = self._new_grid.get_all_elements_dict(logger=self.logger)
 
         if not ok:
             dlg = LogsDialogue('The circuit has duplicated idtags and cannot be differentiated :(', self.logger)
@@ -122,6 +122,9 @@ class GridDiffDialogue(QtWidgets.QDialog):
                 # assign the loaded circuit
                 if self.open_file_thread_object.circuit is not None:
                     base_grid: MultiCircuit = self.open_file_thread_object.circuit
+
+                    # Create the base dictionary
+                    self.all_elms_base_dict, _ = base_grid.get_all_elements_dict(logger=self.logger)
 
                     ok, logger, self._diff = self._new_grid.differentiate_circuits(base_grid=base_grid,
                                                                                    detailed_profile_comparison=True)
