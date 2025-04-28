@@ -328,16 +328,10 @@ class Profile:
             if self._is_sparse:
                 return self._sparse_array == other._sparse_array
             else:
-                if self.dtype == float:
-                    return np.allclose(self._dense_array, other._dense_array, atol=1.e-10)
-                else:
-                    return np.array_equal(self._dense_array, other._dense_array)
+                return np.array_equal(self._dense_array, other._dense_array)
 
         else:
             return False
-
-    def __ne__(self, other: "Profile") -> bool:
-        return not self.__eq__(other)
 
     def __getitem__(self, key: int):
         """
