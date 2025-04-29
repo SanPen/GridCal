@@ -33,7 +33,7 @@ Yprimitive[0:2,0:2] = Y_2x2
 Yprimitive[2:4,2:4] = Y_2x2
 Yprimitive[4:6,4:6] = Y_2x2
 
-connexion = 'Zy'
+connexion = 'Zz'
 
 Cu = np.zeros((6, 6))
 Ci = np.zeros((6, 6))
@@ -124,14 +124,12 @@ elif connexion == 'Dy':
 
 elif connexion == 'Yz':
     Yprimitive = np.zeros((12, 12), dtype=object)
-
     Yprimitive[0:2, 0:2] = Y_2x2
     Yprimitive[2:4, 2:4] = Y_2x2
     Yprimitive[4:6, 4:6] = Y_2x2
     Yprimitive[6:8, 6:8] = Y_2x2
     Yprimitive[8:10, 8:10] = Y_2x2
     Yprimitive[10:12, 10:12] = Y_2x2
-
     Cu = np.zeros((6, 12))
     Cu[0, 0] = 1
     Cu[0, 2] = 1
@@ -145,7 +143,6 @@ elif connexion == 'Yz':
     Cu[4, 11] = -1
     Cu[5, 9] = 1
     Cu[5, 3] = -1
-
     Ci = np.zeros((12, 6))
     Ci[0, 0] = 1
     Ci[1, 3] = 1
@@ -163,19 +160,17 @@ elif connexion == 'Yz':
 
 elif connexion == 'Zy':
     Yprimitive = np.zeros((12, 12), dtype=object)
-
     Yprimitive[0:2, 0:2] = Y_2x2
     Yprimitive[2:4, 2:4] = Y_2x2
     Yprimitive[4:6, 4:6] = Y_2x2
     Yprimitive[6:8, 6:8] = Y_2x2
     Yprimitive[8:10, 8:10] = Y_2x2
     Yprimitive[10:12, 10:12] = Y_2x2
-
     Cu = np.zeros((6, 12))
     Cu[0, 0] = 1
     Cu[0, 6] = -1
     Cu[1, 4] = 1
-    Cu[1, 11] = -1
+    Cu[1, 10] = -1
     Cu[2, 8] = 1
     Cu[2, 2] = -1
     Cu[3, 1] = 1
@@ -184,7 +179,6 @@ elif connexion == 'Zy':
     Cu[4, 7] = 1
     Cu[5, 9] = 1
     Cu[5, 11] = 1
-
     Ci = np.zeros((12, 6))
     Ci[0, 0] = 1
     Ci[1, 3] = 1
@@ -198,26 +192,52 @@ elif connexion == 'Zy':
     Ci[9, 5] = 1
     Ci[10, 1] = -1
     Ci[11, 5] = 1
-
-    print()
-    print(Yprimitive)
-    print()
-    print(Cu)
-    print()
-    print(Ci)
-    print()
     Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 
-elif connexion == 'Dz':
+elif connexion == 'Zz':
     Yprimitive = np.zeros((12, 12), dtype=object)
-
     Yprimitive[0:2, 0:2] = Y_2x2
     Yprimitive[2:4, 2:4] = Y_2x2
     Yprimitive[4:6, 4:6] = Y_2x2
     Yprimitive[6:8, 6:8] = Y_2x2
     Yprimitive[8:10, 8:10] = Y_2x2
     Yprimitive[10:12, 10:12] = Y_2x2
+    Cu = np.zeros((6, 12))
+    Cu[0, 0] = 1
+    Cu[0, 6] = -1
+    Cu[1, 4] = 1
+    Cu[1, 10] = -1
+    Cu[2, 8] = 1
+    Cu[2, 2] = -1
+    Cu[3, 1] = 1
+    Cu[3, 7] = -1
+    Cu[4, 5] = 1
+    Cu[4, 11] = -1
+    Cu[5, 9] = 1
+    Cu[5, 3] = -1
+    Ci = np.zeros((12, 6))
+    Ci[0, 0] = 1
+    Ci[1, 3] = 1
+    Ci[2, 2] = -1
+    Ci[3, 5] = -1
+    Ci[4, 1] = 1
+    Ci[5, 4] = 1
+    Ci[6, 0] = -1
+    Ci[7, 3] = -1
+    Ci[8, 2] = 1
+    Ci[9, 5] = 1
+    Ci[10, 1] = -1
+    Ci[11, 4] = -1
+    Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 
+elif connexion == 'Dz':
+    Yprimitive = np.zeros((12, 12), dtype=object)
+    Yprimitive[0:2, 0:2] = Y_2x2
+    Yprimitive[2:4, 2:4] = Y_2x2
+    Yprimitive[4:6, 4:6] = Y_2x2
+    Yprimitive[6:8, 6:8] = Y_2x2
+    Yprimitive[8:10, 8:10] = Y_2x2
+    Yprimitive[10:12, 10:12] = Y_2x2
     Cu_left = np.zeros((6, 6))
     Cu_left[0, 0] = 1
     Cu_left[0, 1] = -1
@@ -228,7 +248,6 @@ elif connexion == 'Dz':
     Cu_left[3, 3] = 1
     Cu_left[4, 4] = 1
     Cu_left[5, 5] = 1
-
     Cu_right = np.zeros((6, 12))
     Cu_right[0, 0] = 1
     Cu_right[0, 2] = 1
@@ -242,7 +261,6 @@ elif connexion == 'Dz':
     Cu_right[4, 11] = -1
     Cu_right[5, 9] = 1
     Cu_right[5, 3] = -1
-
     Ci_left = np.zeros((12, 12))
     Ci_left[0, 0] = 1
     Ci_left[0, 8] = -1
@@ -262,7 +280,6 @@ elif connexion == 'Dz':
     Ci_left[9, 7] = 1
     Ci_left[10, 9] = 1
     Ci_left[11, 11] = 1
-
     Ci_right = np.zeros((12, 6))
     Ci_right[0, 0] = 1
     Ci_right[1, 0] = 1
@@ -276,27 +293,18 @@ elif connexion == 'Dz':
     Ci_right[9, 3] = -1
     Ci_right[10, 5] = 1
     Ci_right[11, 4] = -1
-
     Cu = np.linalg.pinv(Cu_left) @ Cu_right
     Ci = np.linalg.pinv(Ci_left) @ Ci_right
-
-    print()
-    print(Cu)
-    print()
-    print(Ci)
-    print()
     Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 
 elif connexion == 'Zd':
     Yprimitive = np.zeros((12, 12), dtype=object)
-
     Yprimitive[0:2, 0:2] = Y_2x2
     Yprimitive[2:4, 2:4] = Y_2x2
     Yprimitive[4:6, 4:6] = Y_2x2
     Yprimitive[6:8, 6:8] = Y_2x2
     Yprimitive[8:10, 8:10] = Y_2x2
     Yprimitive[10:12, 10:12] = Y_2x2
-
     Cu_left = np.zeros((6, 6))
     Cu_left[0, 0] = 1
     Cu_left[1, 1] = 1
@@ -307,7 +315,6 @@ elif connexion == 'Zd':
     Cu_left[4, 5] = -1
     Cu_left[5, 3] = -1
     Cu_left[5, 5] = 1
-
     Cu_right = np.zeros((6, 12))
     Cu_right[0, 0] = 1
     Cu_right[0, 6] = -1
@@ -321,7 +328,6 @@ elif connexion == 'Zd':
     Cu_right[4, 7] = 1
     Cu_right[5, 9] = 1
     Cu_right[5, 11] = 1
-
     Ci_left = np.zeros((12, 12))
     Ci_left[0, 0] = 1
     Ci_left[1, 2] = 1
@@ -341,7 +347,6 @@ elif connexion == 'Zd':
     Ci_left[10, 5] = -1
     Ci_left[11, 11] = 1
     Ci_left[11, 7] = -1
-
     Ci_right = np.zeros((12, 6))
     Ci_right[0, 0] = 1
     Ci_right[1, 2] = -1
@@ -355,17 +360,9 @@ elif connexion == 'Zd':
     Ci_right[9, 4] = 1
     Ci_right[10, 5] = 1
     Ci_right[11, 5] = 1
-
     Cu = np.linalg.pinv(Cu_left) @ Cu_right
     Ci = np.linalg.pinv(Ci_left) @ Ci_right
-
-    print()
-    print(Cu)
-    print()
-    print(Ci)
-    print()
     Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
-
 
 cleaned = clean_matrix(Ytrafo, threshold=1e-10)
 sp.pprint(cleaned)
