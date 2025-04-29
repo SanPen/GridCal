@@ -28,11 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="ZigZag transformer connections">
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/transformer_primitives.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Transformer primitives">
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/load_primitives_I.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/load_primitives_S.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/load_primitives_Y.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/var_primitives.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Transformers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Transformers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Transformers_Check.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Transformers_Check.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -194,6 +195,7 @@
     "Python.line_constants.executor": "Run",
     "Python.line_constants_bundle.executor": "Run",
     "Python.line_constants_wire_bundling.executor": "Run",
+    "Python.load_primitives_I.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
     "Python.python_console.executor": "Run",
@@ -1732,7 +1734,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="585" />
+    <option name="localTasksCounter" value="586" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1778,7 +1780,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Removed qtconsole dependency in the engine&#10;Added dependency_map_of_gridcal.txt&#10;Fixed bugs in test_ac_opf.py" />
     <MESSAGE value="5.3.6" />
     <MESSAGE value="Early console substitution working" />
     <MESSAGE value="Improved console to be interactive" />
@@ -1803,7 +1804,8 @@
     <MESSAGE value="ZigZag admittance matrix" />
     <MESSAGE value="Three-phase loads" />
     <MESSAGE value="ZigZag transformer connections" />
-    <option name="LAST_COMMIT_MESSAGE" value="ZigZag transformer connections" />
+    <MESSAGE value="Transformer primitives" />
+    <option name="LAST_COMMIT_MESSAGE" value="Transformer primitives" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
