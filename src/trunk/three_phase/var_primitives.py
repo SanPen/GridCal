@@ -1,13 +1,16 @@
 import numpy as np
 
-conn = 'Y'
-equipment = 'L'
+def var_compensation_admittance(connection: str,
+                                G: float,
+                                B: float,
+                                Unom: float
+                                ):
 
-if equipment == 'L':
-    Y = np.array([1 / (1j * 2 * np.pi * f * L), 1 / (1j * 2 * np.pi * f * L), 1 / (1j * 2 * np.pi * f * L)])
+    Yphase = ((G - 1j * B) * 1e6) / (Unom * 1e3)**2
 
-elif equipment == 'C':
-    Y = np.array([1j * 2 * np.pi * f * C, 1j * 2 * np.pi * f * C, 1j * 2 * np.pi * f * C])
+    if connection == 'D':
+        Yphase = 3 * Yphase
 
-if conn == 'D':
-    Y = 3 * Y
+    Y = np.array([Yphase, Yphase, Yphase])
+
+    return Y
