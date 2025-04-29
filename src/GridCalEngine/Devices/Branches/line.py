@@ -325,7 +325,7 @@ class Line(BranchParent):
             raise Exception("Template must be set before changing the circuit index.")
         if not isinstance(obj, (OverheadLineType, UndergroundLineType, SequenceLineType)):
             raise Exception("Invalid template type. Must be OverheadLineType, UndergroundLineType, or SequenceLineType.")
-        if val > obj.n_circuits:
+        if val > obj.n_circuits and isinstance(obj, OverheadLineType):
             raise Exception("Circuit index exceeds the number of circuits in the template.")
         if val <= 0:
             raise Exception("Circuit index must be greater than 0.")

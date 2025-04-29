@@ -82,21 +82,6 @@ def parse_idtag(val: Union[str, None]) -> str:
     else:
         return str(val)
 
-def smart_compare(a, b, atol = 1.e-10):
-    """
-    Compares two Python objects with tolerance for numerical values.
-
-    If both inputs are numeric (int, float, complex, or NumPy numbers),
-    the function uses `np.isclose()` to compare them. For all other types, it falls back to
-    standard equality comparison (`==`).
-
-    a :First object to compare.
-    b :Second object to compare.
-    :return: bool
-    """
-    if isinstance(a, float) and isinstance(b, float):
-        return np.isclose(a, b, atol=atol)
-    return a == b
 
 class GCProp:
     """
@@ -894,7 +879,7 @@ class EditableDevice:
             v1 = self.get_property_value(prop=prop, t_idx=None)
             v2 = other.get_property_value(prop=prop, t_idx=None)
 
-            if not smart_compare(v1, v2):
+            if v1 != v2:
                 logger.add_info(msg="Different snapshot values",
                                 device_class=self.device_type.value,
                                 device_property=prop.name,
@@ -922,7 +907,7 @@ class EditableDevice:
                         v1 = p1[t_idx]
                         v2 = p2[t_idx]
 
-                        if not smart_compare(v1, v2):
+                        if v1 != v2:
                             logger.add_info(msg="Different time series values",
                                             device_class=self.device_type.value,
                                             device_property=prop.name,
@@ -934,7 +919,7 @@ class EditableDevice:
                         v1b = self.get_property_value(prop=prop, t_idx=t_idx)
                         v2b = other.get_property_value(prop=prop, t_idx=t_idx)
 
-                        if not smart_compare(v1, v1b):
+                        if v1 != v1b:
                             logger.add_info(
                                 msg="Profile values differ with different getter methods!",
                                 device_class=self.device_type.value,
@@ -944,7 +929,7 @@ class EditableDevice:
                                 expected_value=v1)
                             action = ActionType.Modify
 
-                        if not smart_compare(v2, v2b):
+                        if v2 != v2b:
                             logger.add_info(
                                 msg="Profile getting values differ with different getter methods!",
                                 device_class=self.device_type.value,

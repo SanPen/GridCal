@@ -1715,10 +1715,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                        x=self.var2x(),
                                        h=1e-8)
 
-            if self.options.verbose > 1:
-                print("(pf_generalized_formulation.py) J: ")
-                print(J.toarray())
-                print("J shape: ", J.shape)
             return J
 
         else:
@@ -1804,11 +1800,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 Yx=self.adm.Ybus.data
             )
 
-            if self.options.verbose > 1:
-                print("(pf_generalized_formulation.py) J: ")
-                print(J_sym.toarray())
-                print("J shape: ", J_sym.shape)
-
             return J_sym
 
     def get_x_names(self) -> List[str]:
@@ -1816,20 +1807,20 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         Names matching x
         :return:
         """
-        cols = [f'dVa {i}' for i in self.i_u_va]
-        cols += [f'dVm {i}' for i in self.i_u_vm]
+        cols = [f'dVa_{i}' for i in self.i_u_va]
+        cols += [f'dVm_{i}' for i in self.i_u_vm]
 
-        cols += [f'dPf_var_vsc {i}' for i in self.u_vsc_pf]
-        cols += [f'dPt_var_vsc {i}' for i in self.u_vsc_pt]
-        cols += [f'dQt_var_vsc {i}' for i in self.u_vsc_qt]
+        cols += [f'dPf_vsc_{i}' for i in self.u_vsc_pf]
+        cols += [f'dPt_vsc_{i}' for i in self.u_vsc_pt]
+        cols += [f'dQt_vsc_{i}' for i in self.u_vsc_qt]
 
-        cols += [f'dPf_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
-        cols += [f'dPt_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
-        cols += [f'dQf_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
-        cols += [f'dQt_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+        cols += [f'dPf_hvdc_{i}' for i in range(self.nc.hvdc_data.nelm)]
+        cols += [f'dPt_hvdc_{i}' for i in range(self.nc.hvdc_data.nelm)]
+        cols += [f'dQf_hvdc_{i}' for i in range(self.nc.hvdc_data.nelm)]
+        cols += [f'dQt_hvdc_{i}' for i in range(self.nc.hvdc_data.nelm)]
 
-        cols += [f'dm {i}' for i in self.u_cbr_m]
-        cols += [f'dtau {i}' for i in self.u_cbr_tau]
+        cols += [f'dm_{i}' for i in self.u_cbr_m]
+        cols += [f'dtau_{i}' for i in self.u_cbr_tau]
 
         return cols
 
@@ -1839,16 +1830,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :return:
         """
 
-        rows = [f'dP {i}' for i in self.i_k_p]
-        rows += [f'dQ {i}' for i in self.i_k_q]
-        rows += [f'dloss_vsc {i}' for i in range(self.nc.vsc_data.nelm)]
-        rows += [f'dloss_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
-        rows += [f'dinj_hvdc {i}' for i in range(self.nc.hvdc_data.nelm)]
+        rows = [f'dP_{i}' for i in self.i_k_p]
+        rows += [f'dQ_{i}' for i in self.i_k_q]
+        rows += [f'dloss_vsc_{i}' for i in range(self.nc.vsc_data.nelm)]
+        rows += [f'dloss_hvdc_{i}' for i in range(self.nc.hvdc_data.nelm)]
+        rows += [f'dinj_hvdc_{i}' for i in range(self.nc.hvdc_data.nelm)]
 
-        rows += [f'dPf {i}' for i in self.k_cbr_pf]
-        rows += [f'dPt {i}' for i in self.k_cbr_pt]
-        rows += [f'dQf {i}' for i in self.k_cbr_qf]
-        rows += [f'dQt {i}' for i in self.k_cbr_qt]
+        rows += [f'dPf_{i}' for i in self.k_cbr_pf]
+        rows += [f'dPt_{i}' for i in self.k_cbr_pt]
+        rows += [f'dQf_{i}' for i in self.k_cbr_qf]
+        rows += [f'dQt_{i}' for i in self.k_cbr_qt]
 
         return rows
 

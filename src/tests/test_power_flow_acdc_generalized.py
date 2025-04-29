@@ -581,7 +581,8 @@ def test_transformer_m_lims() -> None:
                                    control_taps_phase=False,
                                    control_remote_voltage=False,
                                    apply_temperature_correction=False,
-                                   distributed_slack=False)
+                                   distributed_slack=False,
+                                   orthogonalize_controls=True,)
 
         problem, solution = solve_generalized(grid=grid, options=options)
 
@@ -648,8 +649,4 @@ if __name__ == "__main__":
     # test_generator_Q_lims()
     # test_transformer_m_lims()
     # test_transformer_tau_lims()
-
-    pass
-
-if __name__ == "__main__":
     test_power_flow_12bus_acdc()
