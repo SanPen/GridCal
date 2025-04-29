@@ -273,7 +273,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results = self.run_newton_pa(time_indices=self.time_indices)
 
         elif self.engine == EngineType.GSLV:
-            self.report_text('Running Newton power analytics... ')
+            self.report_text('Running GSLV... ')
             self.results = self.run_gslv(time_indices=self.time_indices)
 
         elif self.engine == EngineType.PGM:

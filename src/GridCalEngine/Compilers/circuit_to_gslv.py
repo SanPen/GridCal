@@ -198,13 +198,22 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
 
                 if isinstance(default_val, TapPhaseControl):
                     data = convert_tap_phase_control_mode_dict(data=gc_profile.sparse_array.get_map())
+
+                    # we pick all the profile
+                    gslv_profile.init_sparse(default_value=tap_phase_control_mode_dict[gc_profile.default_value],
+                                             data=data)
+
                 elif isinstance(default_val, TapModuleControl):
                     data = convert_tap_module_control_mode_dict(data=gc_profile.sparse_array.get_map())
+
+                    # we pick all the profile
+                    gslv_profile.init_sparse(default_value=tap_module_control_mode_dict[gc_profile.default_value],
+                                             data=data)
                 else:
                     data = gc_profile.sparse_array.get_map()
 
-                # we pick all the profile
-                gslv_profile.init_sparse(default_value=gc_profile.default_value, data=data)
+                    # we pick all the profile
+                    gslv_profile.init_sparse(default_value=gc_profile.default_value, data=data)
 
             else:
                 assert len(time_indices) == n_time
@@ -214,12 +223,18 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
 
                 if isinstance(default_val, TapPhaseControl):
                     data = convert_tap_phase_control_mode_dict(data=sp_arr2.get_map())
+                    gslv_profile.init_sparse(default_value=tap_phase_control_mode_dict[gc_profile.default_value],
+                                             data=data)
+
                 elif isinstance(default_val, TapModuleControl):
                     data = convert_tap_module_control_mode_dict(data=sp_arr2.get_map())
+                    gslv_profile.init_sparse(default_value=tap_module_control_mode_dict[gc_profile.default_value],
+                                             data=data)
+
                 else:
                     data = sp_arr2.get_map()
-
-                gslv_profile.init_sparse(default_value=gc_profile.default_value, data=data)
+                    gslv_profile.init_sparse(default_value=gc_profile.default_value,
+                                             data=data)
 
         else:
             if time_indices is None:
