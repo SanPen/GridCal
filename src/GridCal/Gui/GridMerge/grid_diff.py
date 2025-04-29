@@ -8,6 +8,7 @@ import os
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
+from typing import Dict
 from GridCal.Gui.GridMerge.build_diff_tree import populate_tree
 from GridCal.Gui.GridMerge.grid_diff_gui import Ui_Dialog
 from GridCal.Gui.general_dialogues import LogsDialogue
@@ -55,6 +56,7 @@ class GridDiffDialogue(QtWidgets.QDialog):
 
         self._new_grid: MultiCircuit = grid
 
+        self.all_elms_base_dict: Dict[str, ALL_DEV_TYPES] = {}
         _, ok = self._new_grid.get_all_elements_dict(logger=self.logger)
 
         if not ok:
