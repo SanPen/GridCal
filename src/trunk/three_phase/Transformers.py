@@ -3,7 +3,7 @@ import numpy as np
 import sympy as sp
 np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 
-def clean_matrix(matrix, threshold=1e-10):
+def clean_matrix(matrix, threshold=1e-10, decimals=2):
     cleaned_matrix = []
     for row in matrix:
         cleaned_row = []
@@ -12,8 +12,9 @@ def clean_matrix(matrix, threshold=1e-10):
             for term in expr.as_ordered_terms():
                 coeff, symbol = term.as_coeff_Mul()
                 if abs(coeff.evalf()) >= threshold:
-                    cleaned_expr += coeff * symbol
-            cleaned_row.append(cleaned_expr)
+                    rounded_coeff = sp.N(coeff, decimals)
+                    cleaned_expr += rounded_coeff * symbol
+            cleaned_row.append(sp.N(cleaned_expr, decimals))
         cleaned_matrix.append(cleaned_row)
     return sp.Matrix(cleaned_matrix)
 
@@ -22,23 +23,17 @@ yft = symbols('yft')
 ytf = symbols('ytf')
 ytt = symbols('ytt')
 
-yff = 1
-yft = 1
-ytf = 1
-ytt = 1
-
 Y_2x2 = Matrix([
     [yff, yft],
     [ytf, ytt]
 ])
 
 Yprimitive = np.zeros((6, 6), dtype=object)
-
 Yprimitive[0:2,0:2] = Y_2x2
 Yprimitive[2:4,2:4] = Y_2x2
 Yprimitive[4:6,4:6] = Y_2x2
 
-connexion = 'Dz'
+connexion = 'Zy'
 
 Cu = np.zeros((6, 6))
 Ci = np.zeros((6, 6))
@@ -50,7 +45,13 @@ if connexion == 'Yy':
     Cu[3, 4] = 1
     Cu[4, 2] = 1
     Cu[5, 5] = 1
-    Ci = np.linalg.inv(Cu)
+    Ci[0, 0] = 1
+    Ci[1, 2] = 1
+    Ci[2, 4] = 1
+    Ci[3, 1] = 1
+    Ci[4, 3] = 1
+    Ci[5, 5] = 1
+    Ytrafo = Ci @ Yprimitive @ Cu
 
 elif connexion == 'Dd':
     Cu[0,0] = 1 / np.sqrt(3)
@@ -77,6 +78,7 @@ elif connexion == 'Dd':
     Ci[4,1] = -1 / np.sqrt(3)
     Ci[5,5] = 1 / np.sqrt(3)
     Ci[5,3] = -1 / np.sqrt(3)
+    Ytrafo = Ci @ Yprimitive @ Cu
 
 elif connexion == 'Yd':
     Cu[0,0] = 1 # U1 = UA
@@ -97,6 +99,7 @@ elif connexion == 'Yd':
     Ci[4,1] = -1 / np.sqrt(3)
     Ci[5,5] = 1 / np.sqrt(3) # Ic = I6 - I4
     Ci[5,3] = -1 / np.sqrt(3)
+    Ytrafo = Ci @ Yprimitive @ Cu
 
 elif connexion == 'Dy':
     Cu[0, 0] = 1 / np.sqrt(3) # U1 = UA - UB
@@ -117,6 +120,7 @@ elif connexion == 'Dy':
     Ci[3, 1] = 1 # Ia = I2
     Ci[4, 3] = 1  # Ib = I4
     Ci[5, 5] = 1  # Ic = I6
+    Ytrafo = Ci @ Yprimitive @ Cu
 
 elif connexion == 'Yz':
     Yprimitive = np.zeros((12, 12), dtype=object)
@@ -155,6 +159,7 @@ elif connexion == 'Yz':
     Ci[9, 5] = 1
     Ci[10, 2] = 1
     Ci[11, 4] = -1
+    Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 
 elif connexion == 'Zy':
     Yprimitive = np.zeros((12, 12), dtype=object)
@@ -167,8 +172,41 @@ elif connexion == 'Zy':
     Yprimitive[10:12, 10:12] = Y_2x2
 
     Cu = np.zeros((6, 12))
+    Cu[0, 0] = 1
+    Cu[0, 6] = -1
+    Cu[1, 4] = 1
+    Cu[1, 11] = -1
+    Cu[2, 8] = 1
+    Cu[2, 2] = -1
+    Cu[3, 1] = 1
+    Cu[3, 3] = 1
+    Cu[4, 5] = 1
+    Cu[4, 7] = 1
+    Cu[5, 9] = 1
+    Cu[5, 11] = 1
 
     Ci = np.zeros((12, 6))
+    Ci[0, 0] = 1
+    Ci[1, 3] = 1
+    Ci[2, 2] = -1
+    Ci[3, 3] = 1
+    Ci[4, 1] = 1
+    Ci[5, 4] = 1
+    Ci[6, 0] = -1
+    Ci[7, 4] = 1
+    Ci[8, 2] = 1
+    Ci[9, 5] = 1
+    Ci[10, 1] = -1
+    Ci[11, 5] = 1
+
+    print()
+    print(Yprimitive)
+    print()
+    print(Cu)
+    print()
+    print(Ci)
+    print()
+    Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 
 elif connexion == 'Dz':
     Yprimitive = np.zeros((12, 12), dtype=object)
@@ -242,6 +280,13 @@ elif connexion == 'Dz':
     Cu = np.linalg.pinv(Cu_left) @ Cu_right
     Ci = np.linalg.pinv(Ci_left) @ Ci_right
 
+    print()
+    print(Cu)
+    print()
+    print(Ci)
+    print()
+    Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
+
 elif connexion == 'Zd':
     Yprimitive = np.zeros((12, 12), dtype=object)
 
@@ -314,29 +359,15 @@ elif connexion == 'Zd':
     Cu = np.linalg.pinv(Cu_left) @ Cu_right
     Ci = np.linalg.pinv(Ci_left) @ Ci_right
 
+    print()
+    print(Cu)
+    print()
+    print(Ci)
+    print()
+    Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 
-print()
-print(Cu)
-print()
-print(Ci)
-print()
-Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
-print()
-print(Ytrafo)
-print()
 
 cleaned = clean_matrix(Ytrafo, threshold=1e-10)
 sp.pprint(cleaned)
-
-U = 230 # Voltage module [V]
-UA = U * np.exp(1j * 0)
-UB = U * np.exp(1j * -2*np.pi/3)
-UC = U * np.exp(1j * 2*np.pi/3)
-Ua = UA
-Ub = UB
-Uc = UC
-Ustar = np.array([UA, UB, UC, Ua, Ub, Uc])
-I = cleaned @ U
-print(I)
 
 # Extract yff, yft, ytf, ytt for the 9 possible combinations

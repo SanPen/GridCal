@@ -1,10 +1,17 @@
+from sympy import symbols, Matrix
 import numpy as np
+import sympy as sp
 np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 
 yff = -1j * 10
 yft = 1j * 8
 ytf = 1j * 8.5
 ytt = -1j * 9.5
+
+yff = symbols('yff')
+yft = symbols('yft')
+ytf = symbols('ytf')
+ytt = symbols('ytt')
 
 Y_2x2 = np.array([
     [yff, yft],
@@ -300,10 +307,8 @@ print()
 print(Ci)
 print()
 Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
-print()
+print('Ytrafo =')
 print(Ytrafo)
-print()
-print(type(Ytrafo))
 print()
 
 U = 230 # Voltage module [V]
@@ -313,8 +318,9 @@ UC = U * np.exp(1j * 2*np.pi/3)
 Ua = UA
 Ub = UB
 Uc = UC
-Ustar = np.array([UA, UB, UC, Ua, Ub, Uc])
+U = np.array([UA, UB, UC, Ua, Ub, Uc])
 I = Ytrafo @ U
+print('I =')
 print(I)
 
 # Extract yff, yft, ytf, ytt for the 9 possible combinations
