@@ -10,4 +10,4 @@ elif equipment == 'C':
     Y = np.array([1j * 2 * np.pi * f * C, 1j * 2 * np.pi * f * C, 1j * 2 * np.pi * f * C])
 
 if conn == 'D':
-    Y = 3*Y
+    Y = 3 * Y
