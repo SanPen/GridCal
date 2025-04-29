@@ -9,7 +9,7 @@ from GridCal.Gui.GridMerge.grid_diff import GridDiffDialogue
 import GridCalEngine.api as gce
 
 
-folder = "/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data"
+folder = "C:/Users/eRoots1/PycharmProjects/GridCal/src/tests/data"
 
 original = gce.open_file(filename=os.path.join(folder, "grids", "IEEE57.gridcal"))  # we use this for diff
 
