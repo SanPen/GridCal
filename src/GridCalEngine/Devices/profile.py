@@ -326,12 +326,18 @@ class Profile:
         if self._is_sparse == other._is_sparse:
 
             if self._is_sparse:
-                return self._sparse_array == other._sparse_array
-            else:
-                if self.dtype == float:
-                    return np.allclose(self._dense_array, other._dense_array, atol=1.e-10)
+                if self._sparse_array is None and other._sparse_array is None:
+                    return self.default_value == other.default_value
                 else:
-                    return np.array_equal(self._dense_array, other._dense_array)
+                    return self._sparse_array == other._sparse_array
+            else:
+                if self._dense_array is None and other._dense_array is None:
+                    return self.default_value == other.default_value
+                else:
+                    if self.dtype == float:
+                        return np.allclose(self._dense_array, other._dense_array, atol=1.e-10)
+                    else:
+                        return np.array_equal(self._dense_array, other._dense_array)
 
         else:
             return False
