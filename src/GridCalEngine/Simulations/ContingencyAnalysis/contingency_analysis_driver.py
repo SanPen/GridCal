@@ -167,14 +167,25 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         elif self.engine == EngineType.GSLV:
 
-            self.report_text("Running contingencies in newton...")
+            self.report_text("Running contingencies in gslv...")
             con_res = gslv_contingencies(circuit=self.grid,
                                          con_opt=self.options,
                                          time_series=False,
                                          time_indices=None)
 
-            self.results = translate_newton_pa_contingencies(grid=self.grid,
-                                                             con_res=con_res)
+            self.results = ContingencyAnalysisResults(
+                ncon=self.grid.get_contingency_groups_number(),
+                nbus=self.grid.get_bus_number(),
+                nbr=self.grid.get_branch_number_wo_hvdc(),
+                bus_names=self.grid.get_bus_names(),
+                branch_names=self.grid.get_branch_names_wo_hvdc(),
+                bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
+                con_names=np.array(self.grid.get_contingency_group_names())
+            )
+
+            # results.S[t, :] = res_t.S.real.max(axis=0)
+            self.results.max_flows = con_res.max_values.Sf[0, :]
+            self.results.max_loading = con_res.max_values.loading[0, :]
 
         return self.results
 
