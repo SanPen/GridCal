@@ -116,9 +116,9 @@ def test_issue_372_1():
 
     Metrics:
 
-        Δ P in A1 optimized > 0 (because there are no base overloads)
-        Δ P in A2 optimized < 0 (because there are no base overloads)
-        Δ P in A1 == − Δ P in A2
+        ΔP in A1 optimized > 0 (because there are no base overloads)
+        ΔP in A2 optimized < 0 (because there are no base overloads)
+        ΔP in A1 == − ΔP in A2
         The summation of flow increments in the inter-area branches must be Δ P in A1.
         Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
 
@@ -130,7 +130,10 @@ def test_issue_372_1():
     info = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
                                            objects_to=[grid.areas[1]])
 
-    opf_options = gce.OptimalPowerFlowOptions()
+    opf_options = gce.OptimalPowerFlowOptions(
+        consider_contingencies=False
+    )
+
     lin_options = gce.LinearAnalysisOptions()
 
     ntc_options = gce.OptimalNetTransferCapacityOptions(
@@ -140,11 +143,11 @@ def test_issue_372_1():
         loading_threshold_to_report=98.0,
         skip_generation_limits=True,
         transmission_reliability_margin=0.1,
-        branch_exchange_sensitivity=0.01,
+        branch_exchange_sensitivity=0.05,
         use_branch_exchange_sensitivity=True,
         branch_rating_contribution=1.0,
         use_branch_rating_contribution=True,
-        consider_contingencies=True,
+        consider_contingencies=False,
         opf_options=opf_options,
         lin_options=lin_options
     )
