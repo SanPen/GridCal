@@ -13,7 +13,8 @@ class Wire(EditableDevice):
     to compose towers
     """
 
-    def __init__(self, name='', idtag: Union[str, None] = None,
+    def __init__(self, name='',
+                 idtag: Union[str, None] = None,
                  r: float = 0.01,
                  max_current: float = 1.0,
                  stranding: str = "",

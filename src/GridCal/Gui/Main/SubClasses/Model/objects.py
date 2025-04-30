@@ -833,7 +833,7 @@ class ObjectsTableMain(DiagramsMain):
             elif elm_type == DeviceType.WireDevice.value:
 
                 name = f'Wire {len(self.circuit.wire_types) + 1}'
-                obj = dev.Wire(name=name, r_ext=0.01, r=0.01, x=0)
+                obj = dev.Wire(name=name)
                 self.circuit.add_wire(obj)
 
             elif elm_type == DeviceType.TransformerTypeDevice.value:
