@@ -94,5 +94,202 @@ def test_ntc_ieee_14() -> None:
     assert res.converged
 
 
+def test_issue_372_1():
+    """
+    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823645586
+
+    Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
+
+    Test:
+
+        Given a base situation (simulated with a linear power flow)
+        We define the exchange from A1->A2
+        Run the NTC optimization
+
+    Run options:
+
+        No contingencies
+        HVDC mode: Pset
+        Phase shifter (branch 8): tap_phase_control_mode: fixed.
+        All generators enable_dispatch = True
+        Exchange sensitivity criteria: use alpha = 5%
+
+    Metrics:
+
+        Δ P in A1 optimized > 0 (because there are no base overloads)
+        Δ P in A2 optimized < 0 (because there are no base overloads)
+        Δ P in A1 == − Δ P in A2
+        The summation of flow increments in the inter-area branches must be Δ P in A1.
+        Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
+
+    """
+    fname = os.path.join('data', 'grids', 'IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal')
+
+    grid = gce.open_file(fname)
+
+    info = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
+                                           objects_to=[grid.areas[1]])
+
+    opf_options = gce.OptimalPowerFlowOptions()
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+
+def test_issue_372_2():
+    """
+    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823683335
+
+    Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
+
+    Test:
+
+        Given a base situation (simulated with a linear power flow)
+        We define the exchange from A1->A2
+        Run the NTC optimization
+
+    Run options:
+
+        No contingencies
+        HVDC mode: Pset
+        Phase shifter (branch 8): tap_phase_control_mode: Pt.
+        All generators enable_dispatch = True
+        Exchange sensitivity criteria: use alpha = 5%
+
+    Metrics:
+
+        Δ P in A1 optimized > 0 (because there are no base overloads)
+        Δ P in A2 optimized < 0 (because there are no base overloads)
+        Δ P in A1 == − Δ P in A2
+        The summation of flow increments in the inter-area branches must be Δ P in A1.
+        Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
+        The total exchange should be greater than in _test1.
+
+    """
+    pass
+
+
+def test_issue_372_3():
+    """
+    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823722874
+
+    Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
+
+    Test:
+
+        Given a base situation (simulated with a linear power flow)
+        We define the exchange from A1->A2
+        Run the NTC optimization
+
+    Run options:
+
+        No contingencies
+        HVDC mode: free
+        Phase shifter (branch 8): tap_phase_control_mode: fixed.
+        All generators enable_dispatch = True
+        Exchange sensitivity criteria: use alpha = 5%
+
+    Metrics:
+
+        Δ P in A1 optimized > 0 (because there are no base overloads)
+        Δ P in A2 optimized < 0 (because there are no base overloads)
+        Δ P in A1 == − Δ P in A2
+        The summation of flow increments in the inter-area branches must be Δ P in A1.
+        Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
+        The total exchange should be greater than in _test1.
+        The HVDC power must be: P0 + angle_droop · ( theta_f − theta_t ) (all in proper units)
+
+    """
+    pass
+
+
+def test_issue_372_4():
+    """
+    https://github.com/SanPen/GridCal/issues/372#issuecomment-2823729822
+
+    Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
+
+    Test:
+
+        Given a base situation (simulated with a linear power flow)
+        We define the exchange from A1->A2
+        Run the NTC optimization
+
+    Run options:
+
+        Enable all contingencies
+        HVDC mode: Pset
+        Phase shifter (branch 8): tap_phase_control_mode: Pt.
+        All generators enable_dispatch = True
+        Exchange sensitivity criteria: use alpha = 5%
+
+    Metrics:
+
+        Δ P in A1 optimized > 0 (because there are no base overloads)
+        Δ P in A2 optimized < 0 (because there are no base overloads)
+        Δ P in A1 == − Δ P in A2
+        The summation of flow increments in the inter-area branches must be Δ P in A1.
+        Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
+        The total exchange should be greater than in _test1.
+        We expect less exchange than test 2.
+
+    """
+    pass
+
+
+def test_issue_372_5():
+    """
+    https://github.com/SanPen/GridCal/issues/372#issuecomment-2824174417
+
+    Using the grid IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal
+
+    Test:
+
+        Given a base situation (simulated with a linear power flow)
+        We define the exchange from A1->A2
+        Run the NTC optimization
+
+    Run options:
+
+        All contingencies
+        HVDC mode: free
+        Phase shifter (branch 8): tap_phase_control_mode: fixed.
+        All generators enable_dispatch = True
+        Exchange sensitivity criteria: use alpha = 5%
+
+    Metrics:
+
+        Δ P in A1 optimized > 0 (because there are no base overloads)
+        Δ P in A2 optimized < 0 (because there are no base overloads)
+        Δ P in A1 == − Δ P in A2
+        The summation of flow increments in the inter-area branches must be Δ P in A1.
+        Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
+        The total exchange should be greater than in _test1.
+        The HVDC power must be: P0 + angle_droop · ( theta_f − theta_t ) (all in proper units)
+
+    """
+    pass
+
+
 if __name__ == '__main__':
-    test_ntc_ieee_14()
+    test_issue_372_1()
