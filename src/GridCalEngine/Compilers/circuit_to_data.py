@@ -920,7 +920,7 @@ def fill_parent_branch(i: int,
                        data: PassiveBranchData,
                        bus_dict: Dict[Bus, int],
                        t_idx: int = -1,
-                       time_series: bool = False, ):
+                       time_series: bool = False):
     """
 
     :param i:
@@ -1129,7 +1129,8 @@ def get_branch_data(
         control_taps_modules: bool = True,
         control_taps_phase: bool = True,
         control_remote_voltage: bool = True,
-        logger: Logger = Logger()
+        logger: Logger = Logger(),
+        three_phase: bool = False
 ) -> Dict[BRANCH_TYPES, int]:
     """
     Compile BranchData for a time step or the snapshot
@@ -1153,6 +1154,7 @@ def get_branch_data(
     """
 
     branch_dict: Dict[BRANCH_TYPES, int] = dict()
+    idx3 = np.array(range(3))
 
     ii = 0
 
@@ -1183,6 +1185,13 @@ def get_branch_data(
         data.R2[ii] = elm.R2
         data.X2[ii] = elm.X2
         data.B2[ii] = elm.B2
+
+        if three_phase:
+            k3 = 3 * ii + idx3
+            data.Yff3[k3, :] = elm.ys.values
+            data.Yft3[k3, :] = elm.ys.values
+            data.Ytf3[k3, :] = elm.ys.values
+            data.Ytt3[k3, :] = elm.ys.values
 
         # store for later
         branch_dict[elm] = ii

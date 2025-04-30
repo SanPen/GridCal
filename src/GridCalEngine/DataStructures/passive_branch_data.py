@@ -48,6 +48,11 @@ class PassiveBranchData(BranchParentData):
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
+        self.Yff3 = np.zeros((self.nelm * 3, 3), dtype=float)
+        self.Yft3 = np.zeros((self.nelm * 3, 3), dtype=float)
+        self.Ytf3 = np.zeros((self.nelm * 3, 3), dtype=float)
+        self.Ytt3 = np.zeros((self.nelm * 3, 3), dtype=float)
+
     def size(self) -> int:
         """
         Get size of the structure
