@@ -8,8 +8,9 @@ def transformer_admittance(vector_group: str,
                            ytt: complex
                            ):
 
+    phase_displacement = (np.exp(1j + np.deg2rad(clock_notation * 30)))
+
     if vector_group == 'Yy':
-        phase_displacement = (np.exp(1j + np.deg2rad(clock_notation * 30)))
         Yff = np.array([
             [yff, 0, 0],
             [0, yff, 0],
@@ -38,14 +39,14 @@ def transformer_admittance(vector_group: str,
             [0, 0, yff]
         ])
         Yft = np.array([
-            [yft/np.sqrt(3), -yft/np.sqrt(3), 0],
-            [0, yft/np.sqrt(3), -yft/np.sqrt(3)],
-            [-yft/np.sqrt(3), 0, yft/np.sqrt(3)]
+            [yft/np.conj(phase_displacement)/np.sqrt(3), -yft/np.conj(phase_displacement)/np.sqrt(3), 0],
+            [0, yft/np.conj(phase_displacement)/np.sqrt(3), -yft/np.conj(phase_displacement)/np.sqrt(3)],
+            [-yft/np.conj(phase_displacement)/np.sqrt(3), 0, yft/np.conj(phase_displacement)/np.sqrt(3)]
         ])
         Ytf = np.array([
-            [ytf/np.sqrt(3), 0, -ytf/np.sqrt(3)],
-            [-ytf/np.sqrt(3), ytf/np.sqrt(3), 0],
-            [0, -ytf/np.sqrt(3), ytf/np.sqrt(3)]
+            [ytf/phase_displacement/np.sqrt(3), 0, -ytf/phase_displacement/np.sqrt(3)],
+            [-ytf/phase_displacement/np.sqrt(3), ytf/phase_displacement/np.sqrt(3), 0],
+            [0, -ytf/phase_displacement/np.sqrt(3), ytf/phase_displacement/np.sqrt(3)]
         ])
         Ytt = np.array([
             [2*ytt/3, -ytt/3, -ytt/3],
@@ -60,14 +61,14 @@ def transformer_admittance(vector_group: str,
             [0, 0, yff/2]
         ])
         Yft = np.array([
-            [yft/4, 0, -yft/4],
-            [-yft/4, yft/4, 0],
-            [0, -yft/4, yft/4]
+            [yft/np.conj(phase_displacement)/4, 0, -yft/np.conj(phase_displacement)/4],
+            [-yft/np.conj(phase_displacement)/4, yft/np.conj(phase_displacement)/4, 0],
+            [0, -yft/np.conj(phase_displacement)/4, yft/np.conj(phase_displacement)/4]
         ])
         Ytf = np.array([
-            [ytf/4, -ytf/4, 0],
-            [0, ytf/4, -ytf/4],
-            [-ytf/4, 0, ytf/4]
+            [ytf/phase_displacement/4, -ytf/phase_displacement/4, 0],
+            [0, ytf/phase_displacement/4, -ytf/phase_displacement/4],
+            [-ytf/phase_displacement/4, 0, ytf/phase_displacement/4]
         ])
         Ytt = np.array([
             [ytt/2, 0, 0],
@@ -82,14 +83,14 @@ def transformer_admittance(vector_group: str,
             [-yff/3, -yff/3, 2*yff/3]
         ])
         Yft = np.array([
-            [yft/np.sqrt(3), 0, -yft/np.sqrt(3)],
-            [-yft/np.sqrt(3), yft/np.sqrt(3), 0],
-            [0, -yft/np.sqrt(3), yft/np.sqrt(3)]
+            [yft/np.conj(phase_displacement)/np.sqrt(3), 0, -yft/np.conj(phase_displacement)/np.sqrt(3)],
+            [-yft/np.conj(phase_displacement)/np.sqrt(3), yft/np.conj(phase_displacement)/np.sqrt(3), 0],
+            [0, -yft/np.conj(phase_displacement)/np.sqrt(3), yft/np.conj(phase_displacement)/np.sqrt(3)]
         ])
         Ytf = np.array([
-            [ytf/np.sqrt(3), -ytf/np.sqrt(3), 0],
-            [0, ytf/np.sqrt(3), -ytf/np.sqrt(3)],
-            [-ytf/np.sqrt(3), 0, ytf/np.sqrt(3)]
+            [ytf/phase_displacement/np.sqrt(3), -ytf/phase_displacement/np.sqrt(3), 0],
+            [0, ytf/phase_displacement/np.sqrt(3), -ytf/phase_displacement/np.sqrt(3)],
+            [-ytf/phase_displacement/np.sqrt(3), 0, ytf/phase_displacement/np.sqrt(3)]
         ])
         Ytt = np.array([
             [ytt, 0, 0],
@@ -104,14 +105,14 @@ def transformer_admittance(vector_group: str,
             [-yff/3, -yff/3, 2*yff/3]
         ])
         Yft = np.array([
-            [2*yft/3, -yft/3, -yft/3],
-            [-yft/3, 2*yft/3, -yft/3],
-            [-yft/3, -yft/3, 2*yft/3]
+            [2*yft/np.conj(phase_displacement)/3, -yft/np.conj(phase_displacement)/3, -yft/np.conj(phase_displacement)/3],
+            [-yft/np.conj(phase_displacement)/3, 2*yft/np.conj(phase_displacement)/3, -yft/np.conj(phase_displacement)/3],
+            [-yft/np.conj(phase_displacement)/3, -yft/np.conj(phase_displacement)/3, 2*yft/np.conj(phase_displacement)/3]
         ])
         Ytf = np.array([
-            [2*ytf/3, -ytf/3, -ytf/3],
-            [-ytf/3, 2*ytf/3, -ytf/3],
-            [-ytf/3, -ytf/3, 2*ytf/3]
+            [2*ytf/phase_displacement/3, -ytf/phase_displacement/3, -ytf/phase_displacement/3],
+            [-ytf/phase_displacement/3, 2*ytf/phase_displacement/3, -ytf/phase_displacement/3],
+            [-ytf/phase_displacement/3, -ytf/phase_displacement/3, 2*ytf/phase_displacement/3]
         ])
         Ytt = np.array([
             [2*ytt/3, -ytt/3, -ytt/3],
@@ -126,14 +127,14 @@ def transformer_admittance(vector_group: str,
             [-yff/2, -yff/2, yff]
         ])
         Yft = np.array([
-            [yft/4, yft/4, -yft/2],
-            [-yft/2, yft/4, yft/4],
-            [yft/4, -yft/2, yft/4]
+            [yft/np.conj(phase_displacement)/4, yft/np.conj(phase_displacement)/4, -yft/np.conj(phase_displacement)/2],
+            [-yft/np.conj(phase_displacement)/2, yft/np.conj(phase_displacement)/4, yft/np.conj(phase_displacement)/4],
+            [yft/np.conj(phase_displacement)/4, -yft/np.conj(phase_displacement)/2, yft/np.conj(phase_displacement)/4]
         ])
         Ytf = np.array([
-            [ytf/4, -ytf/2, ytf/4],
-            [ytf/4, ytf/4, -ytf/2],
-            [-ytf/2, ytf/4, ytf/4]
+            [ytf/phase_displacement/4, -ytf/phase_displacement/2, ytf/phase_displacement/4],
+            [ytf/phase_displacement/4, ytf/phase_displacement/4, -ytf/phase_displacement/2],
+            [-ytf/phase_displacement/2, ytf/phase_displacement/4, ytf/phase_displacement/4]
         ])
         Ytt = np.array([
             [ytt/2, 0, 0],
@@ -148,14 +149,14 @@ def transformer_admittance(vector_group: str,
             [0, 0, yff/2]
         ])
         Yft = np.array([
-            [yft/4, -yft/4, 0],
-            [0, yft/4, -yft/4],
-            [-yft/4, 0, yft/4]
+            [yft/np.conj(phase_displacement)/4, -yft/np.conj(phase_displacement)/4, 0],
+            [0, yft/np.conj(phase_displacement)/4, -yft/np.conj(phase_displacement)/4],
+            [-yft/np.conj(phase_displacement)/4, 0, yft/np.conj(phase_displacement)/4]
         ])
         Ytf = np.array([
-            [ytf/4, 0, -ytf/4],
-            [-ytf/4, ytf/4, 0],
-            [0, -ytf/4, ytf/4]
+            [ytf/phase_displacement/4, 0, -ytf/phase_displacement/4],
+            [-ytf/phase_displacement/4, ytf/phase_displacement/4, 0],
+            [0, -ytf/phase_displacement/4, ytf/phase_displacement/4]
         ])
         Ytt = np.array([
             [ytt/2, 0, 0],
@@ -170,14 +171,14 @@ def transformer_admittance(vector_group: str,
             [0, 0, yff/2]
         ])
         Yft = np.array([
-            [yft/4, -yft/2, yft/4],
-            [yft/4, yft/4, -yft/2],
-            [-yft/2, yft/4, yft/4]
+            [yft/np.conj(phase_displacement)/4, -yft/np.conj(phase_displacement)/2, yft/np.conj(phase_displacement)/4],
+            [yft/np.conj(phase_displacement)/4, yft/np.conj(phase_displacement)/4, -yft/np.conj(phase_displacement)/2],
+            [-yft/np.conj(phase_displacement)/2, yft/np.conj(phase_displacement)/4, yft/np.conj(phase_displacement)/4]
         ])
         Ytf = np.array([
-            [ytf/4, ytf/4, -ytf/2],
-            [-ytf/2, ytf/4, ytf/4],
-            [ytf/4, -ytf/2, ytf/4]
+            [ytf/phase_displacement/4, ytf/phase_displacement/4, -ytf/phase_displacement/2],
+            [-ytf/phase_displacement/2, ytf/phase_displacement/4, ytf/phase_displacement/4],
+            [ytf/phase_displacement/4, -ytf/phase_displacement/2, ytf/phase_displacement/4]
         ])
         Ytt = np.array([
             [ytt, -ytt/2, -ytt/2],
@@ -192,14 +193,14 @@ def transformer_admittance(vector_group: str,
             [0, 0, yff/2]
         ])
         Yft = np.array([
-            [yft/2, 0, 0],
-            [0, yft/2, 0],
-            [0, 0, yft/2]
+            [yft/np.conj(phase_displacement)/2, 0, 0],
+            [0, yft/np.conj(phase_displacement)/2, 0],
+            [0, 0, yft/np.conj(phase_displacement)/2]
         ])
         Ytf = np.array([
-            [ytf/2, 0, 0],
-            [0, ytf/2, 0],
-            [0, 0, ytf/2]
+            [ytf/phase_displacement/2, 0, 0],
+            [0, ytf/phase_displacement/2, 0],
+            [0, 0, ytf/phase_displacement/2]
         ])
         Ytt = np.array([
             [ytt/2, 0, 0],
