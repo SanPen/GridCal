@@ -1187,11 +1187,19 @@ def get_branch_data(
         data.B2[ii] = elm.B2
 
         if three_phase:
+            """
+            yff = ys_abc + ysh_abc / 2
+            yft = - ys_abc
+            ytf = - ys_abc
+            ytt = ys_abc + ysh_abc / 2
+            """
             k3 = 3 * ii + idx3
-            data.Yff3[k3, :] = elm.ys.values
-            data.Yft3[k3, :] = elm.ys.values
-            data.Ytf3[k3, :] = elm.ys.values
-            data.Ytt3[k3, :] = elm.ys.values
+            y1 = elm.ys.values + elm.ysh.values / 2.0
+            y2 = - elm.ys.values
+            data.Yff3[k3, :] = y1
+            data.Yft3[k3, :] = y2
+            data.Ytf3[k3, :] = y2
+            data.Ytt3[k3, :] = y1
 
         # store for later
         branch_dict[elm] = ii
@@ -1266,6 +1274,15 @@ def get_branch_data(
         data.X2[ii] = elm.X2
         data.G2[ii] = elm.G2
         data.B2[ii] = elm.B2
+
+        if three_phase:
+            k3 = 3 * ii + idx3
+            (data.Yff3[k3, :],
+            data.Yft3[k3, :],
+            data.Ytf3[k3, :],
+            data.Ytt3[k3, :]) = elm.transformer_admittance(vtap_f=data.virtual_tap_f[ii],
+                                                           vtap_t=data.virtual_tap_t[ii],
+                                                           logger=logger)
 
         data.conn[ii] = elm.conn
         data.m_taps[ii] = elm.tap_changer.tap_modules_array

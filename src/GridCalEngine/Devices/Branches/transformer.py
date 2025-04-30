@@ -7,12 +7,12 @@ from __future__ import annotations
 import numpy as np
 from typing import Tuple
 
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, Mat
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl,
-                                        TapModuleControl, SubObjectType, TapChangerTypes)
+                                        TapModuleControl, SubObjectType, TapChangerTypes, WindingType)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -220,7 +220,11 @@ class Transformer2W(ControllableBranchParent):
         self.template: TransformerType = template
 
         # association with transformer templates
-        self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)
+        # self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)
+
+        self._conn_f: WindingType = WindingType.GroundedStar
+        self._conn_t: WindingType = WindingType.Delta
+        self._vector_group_number: int = 0
 
         # register
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
@@ -234,11 +238,56 @@ class Transformer2W(ControllableBranchParent):
         self.register(key='conn', units='', tpe=WindingsConnection,
                       definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
 
+        self.register(key='conn_f', units='', tpe=WindingType,
+                      definition='Winding 3 phase connection at the from side')
+
+        self.register(key='conn_t', units='', tpe=WindingType,
+                      definition='Winding 3 phase connection at the to side')
+
+        self.register(key='vector_group_number', units='', tpe=int,
+                      definition='Vector group number. It indicates the structural phase:'
+                                 'phase = vector_group_number · 30º')
+
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
 
-        self.register(key='possible_transformer_types', units='', tpe=SubObjectType.Associations,
-                      definition='Possible transformer types (>1 to denote association), - to denote no association',
-                      display=False)
+        # self.register(key='possible_transformer_types', units='', tpe=SubObjectType.Associations,
+        #               definition='Possible transformer types (>1 to denote association), - to denote no association',
+        #               display=False)
+
+    @property
+    def conn_f(self) -> WindingType:
+        return self._conn_f
+
+    @conn_f.setter
+    def conn_f(self, val: WindingType):
+        if isinstance(val, WindingType):
+            self._conn_f = val
+        else:
+            raise Exception("Conn_f is not a WindingType")
+
+    @property
+    def conn_t(self) -> WindingType:
+        return self._conn_t
+
+    @conn_t.setter
+    def conn_t(self, val: WindingType):
+        if isinstance(val, WindingType):
+            self._conn_t = val
+        else:
+            raise Exception("Conn_t is not a WindingType")
+
+    @property
+    def vector_group_number(self) -> int:
+        return self._vector_group_number
+
+    @vector_group_number.setter
+    def vector_group_number(self, val: int):
+
+        val = int(val)
+        if 0 <= val <= 11:
+            self._vector_group_number = val
+        else:
+            print("Vector group out of range (0-11)")
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """
@@ -263,7 +312,7 @@ class Transformer2W(ControllableBranchParent):
         else:
             self.LV = LV
 
-    def get_from_to_nominal_voltages(self) -> Tuple[float, float]:
+    def get_from_to_nominal_voltages(self) -> Tuple[float, float, bool]:
         """
 
         :return:
@@ -278,12 +327,14 @@ class Transformer2W(ControllableBranchParent):
             # the HV side is on the from side
             tpe_f_v = self.HV
             tpe_t_v = self.LV
+            hv_at_from = True
         else:
             # the HV side is on the to side
             tpe_t_v = self.HV
             tpe_f_v = self.LV
+            hv_at_from = False
 
-        return tpe_f_v, tpe_t_v
+        return tpe_f_v, tpe_t_v, hv_at_from
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
@@ -299,7 +350,7 @@ class Transformer2W(ControllableBranchParent):
         bus_t_v = self.bus_to.Vnom
 
         # obtain the nominal voltages at the from and to sides
-        tpe_f_v, tpe_t_v = self.get_from_to_nominal_voltages()
+        tpe_f_v, tpe_t_v, _ = self.get_from_to_nominal_voltages()
 
         tap_f = tpe_f_v / bus_f_v if bus_f_v > 0 else 1.0
         tap_t = tpe_t_v / bus_t_v if bus_t_v > 0 else 1.0
@@ -312,7 +363,7 @@ class Transformer2W(ControllableBranchParent):
 
         return tap_f, tap_t
 
-    def apply_template(self, obj: TransformerType, Sbase, logger=Logger()):
+    def apply_template(self, obj: TransformerType, Sbase: float, logger=Logger()):
         """
         Apply a branch template to this object
         :param obj: TransformerType or Tower object
@@ -345,6 +396,16 @@ class Transformer2W(ControllableBranchParent):
             self.LV = obj.LV
 
             self.tap_changer = obj.get_tap_changer()
+
+            # set the from and to connection types of the windings
+            _, _, hv_at_from = self.get_from_to_nominal_voltages()
+
+            if hv_at_from:
+                self.conn_f = obj.conn_hv
+                self.conn_t = obj.conn_lv
+            else:
+                self.conn_t = obj.conn_hv
+                self.conn_f = obj.conn_lv
 
             if self.template is not None:
                 if obj != self.template:
@@ -400,7 +461,7 @@ class Transformer2W(ControllableBranchParent):
         return errors
 
     def fill_design_properties(self, Pcu: float, Pfe: float, I0: float, Vsc: float, Sbase: float,
-                               round_vals: bool=False) -> "Transformer2W":
+                               round_vals: bool = False) -> "Transformer2W":
         """
         Fill R, X, G, B from the short circuit study values
         :param Pcu: copper_losses (kW)
@@ -487,3 +548,233 @@ class Transformer2W(ControllableBranchParent):
                               name='type from ' + self.name)
 
         return tpe
+
+    def transformer_admittance(self,
+                               vtap_f: float,
+                               vtap_t: float,
+                               logger: Logger) -> Tuple[Mat, Mat, Mat, Mat]:
+        """
+        Get the transformer 3-phase primitives
+        :param vtap_f: virtual tap from
+        :param vtap_t: virtual tap to
+        :param logger: Logger
+        :return: 3x3 matrices -> Yff, Yft, Ytf, Ytt
+        """
+
+        phase_displacement = np.deg2rad(self.vector_group_number * 30.0)
+
+        ys = 1.0 / (self.R + 1j * self.X + 1e-20)
+        ysh = self.G + 1j * self.B
+
+        yff = (ys + ysh / 2) / (self.tap_module * self.tap_module * vtap_f * vtap_f)
+        yft = -ys / (self.tap_module * np.exp(-1.0j * (self.tap_phase + phase_displacement)) * vtap_f * vtap_t)
+        ytf = -ys / (self.tap_module * np.exp(1.0j * (self.tap_phase + phase_displacement)) * vtap_t * vtap_f)
+        ytt = (ys + ysh / 2) / (vtap_t * vtap_t)
+
+        conn_y_from = self.conn_f == WindingType.Star or self.conn_f == WindingType.GroundedStar
+        conn_y_to = self.conn_t == WindingType.Star or self.conn_t == WindingType.GroundedStar
+
+        if conn_y_from and conn_y_to:  # Yy
+            Yff = np.array([
+                [yff, 0, 0],
+                [0, yff, 0],
+                [0, 0, yff]
+            ])
+            Yft = np.array([
+                [yft, 0, 0],
+                [0, yft, 0],
+                [0, 0, yft]
+            ])
+            Ytf = np.array([
+                [ytf, 0, 0],
+                [0, ytf, 0],
+                [0, 0, ytf]
+            ])
+            Ytt = np.array([
+                [ytt, 0, 0],
+                [0, ytt, 0],
+                [0, 0, ytt]
+            ])
+
+        elif conn_y_from and self.conn_t == WindingType.Delta:  # 'Yd'
+            Yff = np.array([
+                [yff, 0, 0],
+                [0, yff, 0],
+                [0, 0, yff]
+            ])
+            Yft = np.array([
+                [yft / np.sqrt(3), -yft / np.sqrt(3), 0],
+                [0, yft / np.sqrt(3), -yft / np.sqrt(3)],
+                [-yft / np.sqrt(3), 0, yft / np.sqrt(3)]
+            ])
+            Ytf = np.array([
+                [ytf / np.sqrt(3), 0, -ytf / np.sqrt(3)],
+                [-ytf / np.sqrt(3), ytf / np.sqrt(3), 0],
+                [0, -ytf / np.sqrt(3), ytf / np.sqrt(3)]
+            ])
+            Ytt = np.array([
+                [2 * ytt / 3, -ytt / 3, -ytt / 3],
+                [-ytt / 3, 2 * ytt / 3, -ytt / 3],
+                [-ytt / 3, -ytt / 3, 2 * ytt / 3]
+            ])
+
+        elif conn_y_from and self.conn_t == WindingType.ZigZag:  # 'Yz'
+            Yff = np.array([
+                [yff / 2, 0, 0],
+                [0, yff / 2, 0],
+                [0, 0, yff / 2]
+            ])
+            Yft = np.array([
+                [yft / 4, 0, -yft / 4],
+                [-yft / 4, yft / 4, 0],
+                [0, -yft / 4, yft / 4]
+            ])
+            Ytf = np.array([
+                [ytf / 4, -ytf / 4, 0],
+                [0, ytf / 4, -ytf / 4],
+                [-ytf / 4, 0, ytf / 4]
+            ])
+            Ytt = np.array([
+                [ytt / 2, 0, 0],
+                [0, ytt / 2, 0],
+                [0, 0, ytt / 2]
+            ])
+
+        elif self.conn_f == WindingType.Delta and conn_y_to:  # 'Dy':
+            Yff = np.array([
+                [2 * yff / 3, -yff / 3, -yff / 3],
+                [-yff / 3, 2 * yff / 3, -yff / 3],
+                [-yff / 3, -yff / 3, 2 * yff / 3]
+            ])
+            Yft = np.array([
+                [yft / np.sqrt(3), 0, -yft / np.sqrt(3)],
+                [-yft / np.sqrt(3), yft / np.sqrt(3), 0],
+                [0, -yft / np.sqrt(3), yft / np.sqrt(3)]
+            ])
+            Ytf = np.array([
+                [ytf / np.sqrt(3), -ytf / np.sqrt(3), 0],
+                [0, ytf / np.sqrt(3), -ytf / np.sqrt(3)],
+                [-ytf / np.sqrt(3), 0, ytf / np.sqrt(3)]
+            ])
+            Ytt = np.array([
+                [ytt, 0, 0],
+                [0, ytt, 0],
+                [0, 0, ytt]
+            ])
+
+        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.Delta:  # 'Dd':
+            Yff = np.array([
+                [2 * yff / 3, -yff / 3, -yff / 3],
+                [-yff / 3, 2 * yff / 3, -yff / 3],
+                [-yff / 3, -yff / 3, 2 * yff / 3]
+            ])
+            Yft = np.array([
+                [2 * yft / 3, -yft / 3, -yft / 3],
+                [-yft / 3, 2 * yft / 3, -yft / 3],
+                [-yft / 3, -yft / 3, 2 * yft / 3]
+            ])
+            Ytf = np.array([
+                [2 * ytf / 3, -ytf / 3, -ytf / 3],
+                [-ytf / 3, 2 * ytf / 3, -ytf / 3],
+                [-ytf / 3, -ytf / 3, 2 * ytf / 3]
+            ])
+            Ytt = np.array([
+                [2 * ytt / 3, -ytt / 3, -ytt / 3],
+                [-ytt / 3, 2 * ytt / 3, -ytt / 3],
+                [-ytt / 3, -ytt / 3, 2 * ytt / 3]
+            ])
+
+        elif self.conn_f == WindingType.Delta and self.conn_t == WindingType.ZigZag:  # 'Dz':
+            Yff = np.array([
+                [yff, -yff / 2, -yff / 2],
+                [-yff / 2, yff, -yff / 2],
+                [-yff / 2, -yff / 2, yff]
+            ])
+            Yft = np.array([
+                [yft / 4, yft / 4, -yft / 2],
+                [-yft / 2, yft / 4, yft / 4],
+                [yft / 4, -yft / 2, yft / 4]
+            ])
+            Ytf = np.array([
+                [ytf / 4, -ytf / 2, ytf / 4],
+                [ytf / 4, ytf / 4, -ytf / 2],
+                [-ytf / 2, ytf / 4, ytf / 4]
+            ])
+            Ytt = np.array([
+                [ytt / 2, 0, 0],
+                [0, ytt / 2, 0],
+                [0, 0, ytt / 2]
+            ])
+
+        elif self.conn_f == WindingType.ZigZag and conn_y_to:  # 'Zy':
+            Yff = np.array([
+                [yff / 2, 0, 0],
+                [0, yff / 2, 0],
+                [0, 0, yff / 2]
+            ])
+            Yft = np.array([
+                [yft / 4, -yft / 4, 0],
+                [0, yft / 4, -yft / 4],
+                [-yft / 4, 0, yft / 4]
+            ])
+            Ytf = np.array([
+                [ytf / 4, 0, -ytf / 4],
+                [-ytf / 4, ytf / 4, 0],
+                [0, -ytf / 4, ytf / 4]
+            ])
+            Ytt = np.array([
+                [ytt / 2, 0, 0],
+                [0, ytt / 2, 0],
+                [0, 0, ytt / 2]
+            ])
+
+        elif self.conn_f == WindingType.ZigZag and self.conn_t == WindingType.Delta:  # 'Zd':
+            Yff = np.array([
+                [yff / 2, 0, 0],
+                [0, yff / 2, 0],
+                [0, 0, yff / 2]
+            ])
+            Yft = np.array([
+                [yft / 4, -yft / 2, yft / 4],
+                [yft / 4, yft / 4, -yft / 2],
+                [-yft / 2, yft / 4, yft / 4]
+            ])
+            Ytf = np.array([
+                [ytf / 4, ytf / 4, -ytf / 2],
+                [-ytf / 2, ytf / 4, ytf / 4],
+                [ytf / 4, -ytf / 2, ytf / 4]
+            ])
+            Ytt = np.array([
+                [ytt, -ytt / 2, -ytt / 2],
+                [-ytt / 2, ytt, -ytt / 2],
+                [-ytt / 2, -ytt / 2, ytt]
+            ])
+
+        elif self.conn_f == WindingType.ZigZag and self.conn_t == WindingType.ZigZag:  # 'Zz':
+            Yff = np.array([
+                [yff / 2, 0, 0],
+                [0, yff / 2, 0],
+                [0, 0, yff / 2]
+            ])
+            Yft = np.array([
+                [yft / 2, 0, 0],
+                [0, yft / 2, 0],
+                [0, 0, yft / 2]
+            ])
+            Ytf = np.array([
+                [ytf / 2, 0, 0],
+                [0, ytf / 2, 0],
+                [0, 0, ytf / 2]
+            ])
+            Ytt = np.array([
+                [ytt / 2, 0, 0],
+                [0, ytt / 2, 0],
+                [0, 0, ytt / 2]
+            ])
+
+        else:
+            logger.add_error("transformer_admittance: Unknown vector group", device=self.name)
+            zeros = np.zeros((3, 3), dtype=float)
+            return zeros, zeros, zeros, zeros
+
+        return Yff, Yft, Ytf, Ytt

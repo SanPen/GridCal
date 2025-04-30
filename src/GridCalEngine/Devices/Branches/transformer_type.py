@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from typing import Tuple, Union
 from numpy import sqrt
-from GridCalEngine.enumerations import TapChangerTypes
+from GridCalEngine.enumerations import TapChangerTypes, WindingType
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 
@@ -71,6 +71,10 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = float(gx_hv1)
 
+        self.conn_hv: WindingType = WindingType.GroundedStar
+        self.conn_lv: WindingType = WindingType.Delta
+        self.vector_group_number: int = 0
+
         # The tap changer parameters are stored and used with the help of the TapChanger object
         self._tap_changer = TapChanger(total_positions=total_positions,
                                        neutral_position=neutral_position,
@@ -89,8 +93,18 @@ class TransformerType(EditableDevice):
         self.register(key='tc_type', units='', tpe=TapChangerTypes, definition='Regulation type')
         self.register(key='total_positions', units='', tpe=int, definition='Number of tap positions')
         self.register(key='dV', units='p.u.', tpe=float, definition='Voltage increment per step')
-        self.register(key='neutral_position', units='', tpe=int, definition='neutral poition couting from zero')
+        self.register(key='neutral_position', units='', tpe=int, definition='neutral position counting from zero')
         self.register(key='asymmetry_angle', units='deg', tpe=float, definition='Asymmetry_angle')
+
+        self.register(key='conn_hv', units='', tpe=WindingType,
+                      definition='Winding 3 phase connection at the from side')
+
+        self.register(key='conn_lv', units='', tpe=WindingType,
+                      definition='Winding 3 phase connection at the to side')
+
+        self.register(key='vector_group_number', units='', tpe=int,
+                      definition='Vector group number. It indicates the structural phase:'
+                                 'phase = vector_group_number · 30º')
 
         self.register(key='tap_module_min', units='p.u.', tpe=float, definition='Min tap module', editable=False)
         self.register(key='tap_module_max', units='p.u.', tpe=float, definition='Max tap module', editable=False)

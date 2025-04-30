@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import numpy as np
 from typing import Union
+
+from GridCalEngine import WindingType
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (BuildStatus, TapModuleControl, TapPhaseControl, SubObjectType, TapChangerTypes)
