@@ -1984,7 +1984,8 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v5.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v6.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v7.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case14_cont_v8.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v8.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
