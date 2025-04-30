@@ -365,6 +365,8 @@ class BranchNtcVars:
     def get_values(self, Sbase: float, model: LpModel) -> "BranchNtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
+        :param Sbase:
+        :param model:
         :return: BranchVars
         """
         nt, n_elm = self.flows.shape
