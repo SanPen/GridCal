@@ -4,27 +4,107 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from unittest.mock import patch
-from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType, Wire
+from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
-from GridCalEngine.Devices.Branches.line import Line
+from src.GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine import GridCalEngine as gce
 
 
 def test_valid_circuit_idx():
-    """
-    Create a 3 circuit tower, assign the circuit 2 to a line, check that it is what we said
-    :return:
-    """
     line = Line()
-    wire = Wire()
-    template = OverheadLineType()
+    tower = gce.OverheadLineType(name="400 kV quadruple circuit triplex")
+    tower.Vnom = 400
+    tower.earth_resistivity = 200
 
-    for i in range(9):
-        template.add_wire_relationship(wire, i, 7, i + 1)
+    wire = gce.Wire(
+        name="402-AL1/52-ST1A",
+        code="LA 455 CONDOR",
+        diameter=27.72,
+        r=0.0718,
+        max_current=0.799,
+        material="ACSR"
+    )
 
-    assert template.n_circuits == 3
+    neutral_wire = gce.Wire(
+        name="OPGW 25kA 17.10",
+        code="OPGW",
+        diameter=17.1,
+        r=0.373,
+        max_current=25,
+        is_tube=True,
+        diameter_internal=9.7,
+        material="ACS"
+    )
 
-    line.set_circuit_idx(2, template)
+    # triplex wires A1
+    tower.add_wire_relationship(wire=wire, xpos=-13 - 0.2, ypos=22, phase=1)
+    tower.add_wire_relationship(wire=wire, xpos=-13 + 0.2, ypos=22, phase=1)
+    tower.add_wire_relationship(wire=wire, xpos=-13, ypos=22 - 0.34, phase=1)
+
+    # triplex wires B1
+    tower.add_wire_relationship(wire=wire, xpos=-13 - 0.2, ypos=29, phase=2)
+    tower.add_wire_relationship(wire=wire, xpos=-13 + 0.2, ypos=29, phase=2)
+    tower.add_wire_relationship(wire=wire, xpos=-13, ypos=29 - 0.34, phase=2)
+
+    # triplex wires C1
+    tower.add_wire_relationship(wire=wire, xpos=-13 - 0.2, ypos=36, phase=3)
+    tower.add_wire_relationship(wire=wire, xpos=-13 + 0.2, ypos=36, phase=3)
+    tower.add_wire_relationship(wire=wire, xpos=-13, ypos=36 - 0.34, phase=3)
+
+    # triplex wires A2
+    tower.add_wire_relationship(wire=wire, xpos=-7 - 0.2, ypos=22, phase=4)
+    tower.add_wire_relationship(wire=wire, xpos=-7 + 0.2, ypos=22, phase=4)
+    tower.add_wire_relationship(wire=wire, xpos=-7, ypos=22 - 0.34, phase=4)
+
+    # triplex wires B2
+    tower.add_wire_relationship(wire=wire, xpos=-7 - 0.2, ypos=29, phase=5)
+    tower.add_wire_relationship(wire=wire, xpos=-7 + 0.2, ypos=29, phase=5)
+    tower.add_wire_relationship(wire=wire, xpos=-7, ypos=29 - 0.34, phase=5)
+
+    # triplex wires C2
+    tower.add_wire_relationship(wire=wire, xpos=-7 - 0.2, ypos=36, phase=6)
+    tower.add_wire_relationship(wire=wire, xpos=-7 + 0.2, ypos=36, phase=6)
+    tower.add_wire_relationship(wire=wire, xpos=-7, ypos=36 - 0.34, phase=6)
+
+    # triplex wires A3
+    tower.add_wire_relationship(wire=wire, xpos=7 - 0.2, ypos=22, phase=7)
+    tower.add_wire_relationship(wire=wire, xpos=7 + 0.2, ypos=22, phase=7)
+    tower.add_wire_relationship(wire=wire, xpos=7, ypos=22 - 0.34, phase=7)
+
+    # triplex wires B3
+    tower.add_wire_relationship(wire=wire, xpos=7 - 0.2, ypos=29, phase=8)
+    tower.add_wire_relationship(wire=wire, xpos=7 + 0.2, ypos=29, phase=8)
+    tower.add_wire_relationship(wire=wire, xpos=7, ypos=29 - 0.34, phase=8)
+
+    # triplex wires C3
+    tower.add_wire_relationship(wire=wire, xpos=7 - 0.2, ypos=36, phase=9)
+    tower.add_wire_relationship(wire=wire, xpos=7 + 0.2, ypos=36, phase=9)
+    tower.add_wire_relationship(wire=wire, xpos=7, ypos=36 - 0.34, phase=9)
+
+    # triplex wires A4
+    tower.add_wire_relationship(wire=wire, xpos=13 - 0.2, ypos=22, phase=10)
+    tower.add_wire_relationship(wire=wire, xpos=13 + 0.2, ypos=22, phase=10)
+    tower.add_wire_relationship(wire=wire, xpos=13, ypos=22 - 0.34, phase=10)
+
+    # triplex wires B4
+    tower.add_wire_relationship(wire=wire, xpos=13 - 0.2, ypos=29, phase=11)
+    tower.add_wire_relationship(wire=wire, xpos=13 + 0.2, ypos=29, phase=11)
+    tower.add_wire_relationship(wire=wire, xpos=13, ypos=29 - 0.34, phase=11)
+
+    # triplex wires C4
+    tower.add_wire_relationship(wire=wire, xpos=13 - 0.2, ypos=36, phase=12)
+    tower.add_wire_relationship(wire=wire, xpos=13 + 0.2, ypos=36, phase=12)
+    tower.add_wire_relationship(wire=wire, xpos=13, ypos=36 - 0.34, phase=12)
+
+    # neutral/optic
+    tower.add_wire_relationship(wire=neutral_wire, xpos=-6, ypos=41, phase=0)
+    tower.add_wire_relationship(wire=neutral_wire, xpos=6, ypos=41, phase=0)
+
+    tower.compute()
+
+    line.set_circuit_idx(2, tower)
+
     assert line._circuit_idx == 2
 
 

@@ -30,10 +30,9 @@ def compare_inputs(grid_gslv: "pg.MultiCircuit", grid_gc: gce.MultiCircuit, tol=
 
     # ------------------------------------------------------------------------------------------------------------------
     #  Compare base data
-    errors = compare_nc(nc_gslv, nc_gc, tol)
+    errors = compare_nc(nc_gslv=nc_gslv, nc_gc=nc_gc, tol=tol)
 
     # compare islands
-
     gslv_islands = nc_gslv.split_into_islands()
     gc_islands = nc_gc.split_into_islands()
 
@@ -43,7 +42,7 @@ def compare_inputs(grid_gslv: "pg.MultiCircuit", grid_gc: gce.MultiCircuit, tol=
         print("*" * 200)
         print("Comparing island", i)
         print("*" * 200)
-        errors += compare_nc(gslv_islands[i], gc_islands[i], tol)
+        errors += compare_nc(nc_gslv=gslv_islands[i], nc_gc=gc_islands[i], tol=tol)
 
     return errors
 
@@ -211,7 +210,7 @@ def test_contingencies_ts():
 
 
 if __name__ == '__main__':
-    test_gslv_compatibility()
-    # test_gslv_compatibility_ts()
+    # test_gslv_compatibility()
+    test_gslv_compatibility_ts()
     # test_power_flow_ts()
     # test_contingencies_ts()

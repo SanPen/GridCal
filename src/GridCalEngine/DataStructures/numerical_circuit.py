@@ -103,8 +103,8 @@ def build_reducible_branches_C_coo(F: IntVec, T: IntVec, reducible: IntVec, acti
 
 @nb.njit(cache=True)
 def build_branches_C_coo_2(bus_active: IntVec,
-                           F1: IntVec, T1: IntVec, active1: IntVec,
-                           F2: IntVec, T2: IntVec, active2: IntVec):
+                           F1: IntVec, T1: IntVec, active1: BoolVec,
+                           F2: IntVec, T2: IntVec, active2: BoolVec):
     """
     Build the COO coordinates of the C matrix
     :param bus_active: array of bus active values
@@ -177,9 +177,9 @@ def build_branches_C_coo_2(bus_active: IntVec,
 
 @nb.njit(cache=True)
 def build_branches_C_coo_3(bus_active: IntVec,
-                           F1: IntVec, T1: IntVec, active1: IntVec,
-                           F2: IntVec, T2: IntVec, active2: IntVec,
-                           F3: IntVec, T3: IntVec, active3: IntVec):
+                           F1: IntVec, T1: IntVec, active1: BoolVec,
+                           F2: IntVec, T2: IntVec, active2: BoolVec,
+                           F3: IntVec, T3: IntVec, active3: BoolVec):
     """
     Build the COO coordinates of the C matrix
     :param bus_active: array of bus active values
@@ -354,16 +354,7 @@ class NumericalCircuit:
             'Pt_set',
             'Qt_set',
         ],
-        "Branch indices": [
-            'branch_ctrl',
-            'k_pf_tau',
-            'k_pt_tau',
-            'k_qf_m',
-            'k_qt_m',
-            'k_qf_beq',
-            'k_v_m',
-            'k_v_beq',
-        ],
+
         "System matrices": [
             'Ybus',
             'G',
@@ -861,7 +852,6 @@ class NumericalCircuit:
                                     tap_module_control_mode=self.active_branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.active_branch_data.tap_phase_control_mode,
                                     tap_controlled_buses=self.active_branch_data.tap_controlled_buses,
-                                    is_converter=np.zeros(self.nbr, dtype=bool),
                                     F=self.passive_branch_data.F,
                                     T=self.passive_branch_data.T,
                                     is_dc_bus=self.bus_data.is_dc,
@@ -1302,53 +1292,7 @@ class NumericalCircuit:
                 index=self.passive_branch_data.names,
             )
 
-        elif structure_type == 'k_pf_tau':
-            df = pd.DataFrame(
-                data=idx.k_pf_tau.astype(int).astype(str),
-                columns=['k_pf_tau'],
-                index=self.passive_branch_data.names[idx.k_pf_tau],
-            )
 
-        elif structure_type == 'k_pt_tau':
-            df = pd.DataFrame(
-                data=idx.k_pt_tau.astype(int).astype(str),
-                columns=['k_pt_tau'],
-                index=self.passive_branch_data.names[idx.k_pt_tau],
-            )
-
-        elif structure_type == 'k_qf_m':
-            df = pd.DataFrame(
-                data=idx.k_qf_m.astype(int).astype(str),
-                columns=['k_qf_m'],
-                index=self.passive_branch_data.names[idx.k_qf_m],
-            )
-
-        elif structure_type == 'k_qt_m':
-            df = pd.DataFrame(
-                data=idx.k_qt_m.astype(int).astype(str),
-                columns=['k_qt_m'],
-                index=self.passive_branch_data.names[idx.k_qt_m],
-            )
-
-        elif structure_type == 'k_qf_beq':
-            df = pd.DataFrame(
-                data=idx.k_qf_beq.astype(int).astype(str),
-                columns=['k_qf_beq'],
-                index=self.passive_branch_data.names[idx.k_qf_beq],
-            )
-
-        elif structure_type == 'k_v_m':
-            df = pd.DataFrame(
-                data=idx.k_v_m.astype(int).astype(str),
-                columns=['k_v_m'],
-                index=self.passive_branch_data.names[idx.k_v_m],
-            )
-        elif structure_type == 'k_v_beq':
-            df = pd.DataFrame(
-                data=idx.k_v_beq.astype(int).astype(str),
-                columns=['k_v_beq'],
-                index=self.passive_branch_data.names[idx.k_v_beq],
-            )
         elif structure_type == 'idx_dPf':
             df = pd.DataFrame(
                 data=formulation.idx_dPf.astype(int).astype(str),
@@ -1515,14 +1459,10 @@ class NumericalCircuit:
 
     def get_island(self,
                    bus_idx: IntVec,
-                   consider_hvdc_as_island_links: bool = False,
-                   consider_vsc_as_island_links: bool = True,
                    logger: Logger | None = None) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
-        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
-        :param consider_vsc_as_island_links: Consider the VSC devices as a regular branch?
         :param logger: Logger
         :return: NumericalCircuit
         """
@@ -1596,12 +1536,8 @@ class NumericalCircuit:
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx, bus_map=bus_map)
         nc.generator_data = self.generator_data.slice(elm_idx=gen_idx, bus_idx=bus_idx, bus_map=bus_map)
         nc.shunt_data = self.shunt_data.slice(elm_idx=shunt_idx, bus_idx=bus_idx, bus_map=bus_map)
-
-        if consider_hvdc_as_island_links:
-            nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
-
-        if consider_vsc_as_island_links:
-            nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
+        nc.vsc_data = self.vsc_data.slice(elm_idx=vsc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
+        nc.hvdc_data = self.hvdc_data.slice(elm_idx=hvdc_idx, bus_idx=bus_idx, bus_map=bus_map, logger=logger)
 
         return nc
 
@@ -1632,14 +1568,10 @@ class NumericalCircuit:
         for island_bus_indices in idx_islands:
             if ignore_single_node_islands:
                 if len(island_bus_indices) > 1:
-                    island = self.get_island(island_bus_indices,
-                                             consider_hvdc_as_island_links=consider_hvdc_as_island_links,
-                                             logger=logger)
+                    island = self.get_island(bus_idx=island_bus_indices, logger=logger)
                     circuit_islands.append(island)
             else:
-                island = self.get_island(island_bus_indices,
-                                         consider_hvdc_as_island_links=consider_hvdc_as_island_links,
-                                         logger=logger)
+                island = self.get_island(bus_idx=island_bus_indices, logger=logger)
                 circuit_islands.append(island)
 
         return circuit_islands
@@ -1647,8 +1579,8 @@ class NumericalCircuit:
     def compare(self, nc_2: "NumericalCircuit", tol=1e-6) -> Tuple[bool, Logger]:
         """
         Compare this numerical circuit with another numerical circuit
-        :param nc_2: NumericalCircuit
-        :param tol: NumericalCircuit
+        :param nc_2: other NumericalCircuit
+        :param tol: tolerance for numerical values
         :return: Logger with the errors and warning events
         """
 

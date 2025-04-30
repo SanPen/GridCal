@@ -1452,7 +1452,6 @@ def set_control_dev(k: int,
     :param control_bus_idx: array to be filled in
     :param control_branch_idx: array to be filled in
     :param bus_dict: dictionary to be filled in
-    :param branch_dict: dictionary to be filled in
     :param bus_data: bus data
     :param bus_voltage_used: used bus voltage
     :param use_stored_guess:
@@ -1569,6 +1568,8 @@ def get_vsc_data(
         data.mttr[i] = elm.mttr
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
+        data.original_idx[i] = i
+
         data.F[i] = f
         data.T[i] = t
 
@@ -1687,14 +1688,15 @@ def get_hvdc_data(data: HvdcData,
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
+        data.original_idx[i] = i
+        data.dispatchable[i] = int(elm.dispatchable)
+        data.F[i] = f
+        data.T[i] = t
 
         # hvdc values
         data.names[i] = elm.name
         data.idtag[i] = elm.idtag
 
-        data.dispatchable[i] = int(elm.dispatchable)
-        data.F[i] = f
-        data.T[i] = t
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
@@ -1780,10 +1782,8 @@ def get_hvdc_data(data: HvdcData,
         data.Vnf[i] = elm.bus_from.Vnom
         data.Vnt[i] = elm.bus_to.Vnom
 
-        data.Qmin_f[i] = elm.Qmin_f
-        data.Qmax_f[i] = elm.Qmax_f
-        data.Qmin_t[i] = elm.Qmin_t
-        data.Qmax_t[i] = elm.Qmax_t
+        (data.Qmin_f[i], data.Qmax_f[i],
+         data.Qmin_t[i], data.Qmax_t[i]) = elm.get_q_limits(P=data.Pset[i])
 
 
 def get_fluid_node_data(data: FluidNodeData,

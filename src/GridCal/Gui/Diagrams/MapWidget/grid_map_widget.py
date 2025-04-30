@@ -436,14 +436,14 @@ class GridMapWidget(BaseDiagramWidget):
         Zoom in
         """
         if self.map.level + 1 <= self.map.max_level:
-            self.map.zoom_level(level=self.map.level + 1)
+            self.map.set_zoom_level(level=self.map.level + 1)
 
     def zoom_out(self):
         """
         Zoom out
         """
         if self.map.level - 1 >= self.map.min_level:
-            self.map.zoom_level(level=self.map.level - 1)
+            self.map.set_zoom_level(level=self.map.level - 1)
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
@@ -2034,7 +2034,8 @@ class GridMapWidget(BaseDiagramWidget):
                      length=length1,  # Set the actual calculated length
                      rate=line_api.rate,
                      contingency_factor=line_api.contingency_factor,
-                     protection_rating_factor=line_api.protection_rating_factor)
+                     protection_rating_factor=line_api.protection_rating_factor,
+                     circuit_idx=line_api.circuit_idx)
 
         # Line 2: from new bus to bus_to 
         line2 = Line(name=f"{line_api.name}_2",
@@ -2054,7 +2055,17 @@ class GridMapWidget(BaseDiagramWidget):
                      length=length2,  # Set the actual calculated length
                      rate=line_api.rate,
                      contingency_factor=line_api.contingency_factor,
-                     protection_rating_factor=line_api.protection_rating_factor)
+                     protection_rating_factor=line_api.protection_rating_factor,
+                     circuit_idx=line_api.circuit_idx)
+
+        if isinstance(line_api.template, OverheadLineType):
+            template = line_api.template
+            template.compute()
+        else:
+            template = line_api.template
+
+        line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2093,8 +2104,8 @@ class GridMapWidget(BaseDiagramWidget):
 
         # Remove the original line from the circuit and map
         # Ensure we delete the correct graphic container
-        self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
-
+        # self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
+        self.remove_element(device=line_api, graphic_object=original_line_container, delete_from_db=True)
         # Recalculate lengths based on new waypoints
 
         line1_graphic.calculate_total_length()
@@ -2274,7 +2285,7 @@ class GridMapWidget(BaseDiagramWidget):
                                     code=str(new_code_list),  # Store as string representation of list
                                     latitude=waypoint_lat,
                                     longitude=waypoint_lon)
-
+        new_substation.color = '#6495ED'
         self.circuit.add_substation(obj=new_substation)
         new_substation_graphic = self.add_api_substation(api_object=new_substation, lat=waypoint_lat, lon=waypoint_lon)
 
@@ -2422,7 +2433,8 @@ class GridMapWidget(BaseDiagramWidget):
                      length=length1,  # Set the actual calculated length
                      rate=line_api.rate,
                      contingency_factor=line_api.contingency_factor,
-                     protection_rating_factor=line_api.protection_rating_factor)
+                     protection_rating_factor=line_api.protection_rating_factor,
+                     circuit_idx=line_api.circuit_idx)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2475,7 +2487,17 @@ class GridMapWidget(BaseDiagramWidget):
                      length=length2,  # Set the actual calculated length
                      rate=line_api.rate,
                      contingency_factor=line_api.contingency_factor,
-                     protection_rating_factor=line_api.protection_rating_factor)
+                     protection_rating_factor=line_api.protection_rating_factor,
+                     circuit_idx=line_api.circuit_idx)
+
+        if isinstance(line_api.template, OverheadLineType):
+            template = line_api.template
+            template.compute()
+        else:
+            template=line_api.template
+
+        line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2513,7 +2535,16 @@ class GridMapWidget(BaseDiagramWidget):
                                length=distance,
                                rate=line_api.rate,
                                contingency_factor=line_api.contingency_factor,
-                               protection_rating_factor=line_api.protection_rating_factor)
+                               protection_rating_factor=line_api.protection_rating_factor,
+                               circuit_idx=line_api.circuit_idx)
+
+        if isinstance(line_api.template, OverheadLineType):
+            template = line_api.template
+            template.compute()
+        else:
+            template = line_api.template
+
+        connection_line.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2555,7 +2586,8 @@ class GridMapWidget(BaseDiagramWidget):
         self._remove_from_scene(selected_waypoint)
 
         # Remove the original line
-        self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
+        self.remove_element(device=line_api, graphic_object=original_line_container, delete_from_db=True)
+        # self.remove_branch_graphic(line=original_line_container, delete_from_db=True)
 
         # Notify the user
         msg = QMessageBox()

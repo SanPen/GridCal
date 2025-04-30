@@ -237,7 +237,10 @@ class LineEditor(QDialog):
                 self.line.disable_auto_updates()
                 self.line.set_length(val=length)
                 self.line.set_circuit_idx(val=int(self.circuit_idx.value()), obj=self.selected_template)
-                self.line.apply_template(obj=self.selected_template, Sbase=self.Sbase, freq=self.frequency)
+                template = self.selected_template
+                if isinstance(template, OverheadLineType):
+                    template.compute()
+                self.line.apply_template(obj=template, Sbase=self.Sbase, freq=self.frequency)
                 self.line.enable_auto_updates()
                 self.accept()
             else:
@@ -292,8 +295,8 @@ class LineEditor(QDialog):
             self.selected_template = template
 
         elif isinstance(template, OverheadLineType):
-            if self.current_template.check():
-                R1, X1, Bsh1, I_kA = self.current_template.get_sequence_values(
+            if template.check():
+                R1, X1, Bsh1, I_kA = template.get_sequence_values(
                     circuit_idx=int(self.circuit_idx.value()),
                     seq=1
                 )
@@ -301,9 +304,9 @@ class LineEditor(QDialog):
                 self.r_spinner.setValue(R1)
                 self.x_spinner.setValue(X1)
                 self.b_spinner.setValue(Bsh1)
-                self.circuit_idx.setMaximum(self.current_template.n_circuits)
+                self.circuit_idx.setMaximum(template.n_circuits)
             else:
-                warning_msg(text=f"The template {self.current_template.name} contains errors",
+                warning_msg(text=f"The template {template.name} contains errors",
                             title="Load template")
 
             self.selected_template = template

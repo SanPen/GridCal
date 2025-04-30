@@ -15,7 +15,7 @@ from GridCalEngine.Utils.Sparse.csc import diags
 from GridCalEngine.Compilers.circuit_to_data import NumericalCircuit
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_power, polar_to_rect)
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import AcOpfMode
+from GridCalEngine.enumerations import AcOpfMode, BusMode, TapPhaseControl, TapModuleControl
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger, csr_matrix, csc_matrix
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import get_Sf, get_St
 from GridCalEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx import IpsSolution
@@ -174,8 +174,14 @@ class NonLinearOptimalPfProblem:
         self.Sbase = nc.Sbase
         self.from_idx = nc.passive_branch_data.F
         self.to_idx = nc.passive_branch_data.T
+
         self.indices = nc.get_simulation_indices(Sbus=Sbus_pf)
         self.slack = self.indices.vd
+        self.k_m = np.zeros(0, dtype=int)
+        self.k_tau = np.zeros(0, dtype=int)
+        self.k_mtau = np.zeros(0, dtype=int)
+        self.analyze_branch_controls()
+
         self.slackgens = np.where(self.nc.generator_data.get_bus_indices() == self.slack)[0]
 
         self.Sd = - nc.load_data.get_injections_per_bus() / self.Sbase
@@ -255,9 +261,7 @@ class NonLinearOptimalPfProblem:
         self.Ctmon = nc.passive_branch_data.monitored_Ct(self.br_mon_idx)
         self.Ctmon_t = self.Ctmon.T
 
-        self.k_m = self.indices.k_m
-        self.k_tau = self.indices.k_tau
-        self.k_mtau = self.indices.k_mtau
+
         self.R = nc.passive_branch_data.R
         self.X = nc.passive_branch_data.X
 
@@ -442,7 +446,76 @@ class NonLinearOptimalPfProblem:
         self.Sf2 = np.conj(self.Sf) * self.Sf
         self.St2 = np.conj(self.St) * self.St
 
-        # Predefine the objective function
+
+    def analyze_branch_controls(self) -> None:
+        """
+        Analyze the control branches and compute the indices
+        :return: None
+        """
+        k_pf_tau = list()
+        k_pt_tau = list()
+        k_qf_m = list()
+        k_qt_m = list()
+        k_v_m = list()
+
+        for k in range(self.nc.nbr):
+
+            ctrl_m = self.nc.active_branch_data.tap_module_control_mode[k]
+            ctrl_tau = self.nc.active_branch_data.tap_phase_control_mode[k]
+
+            # analyze tap-module controls
+            if ctrl_m == TapModuleControl.Vm:
+
+                # In any other case, the voltage is managed by the tap module
+                k_v_m.append(k)
+
+            elif ctrl_m == TapModuleControl.Qf:
+
+                k_qf_m.append(k)
+
+            elif ctrl_m == TapModuleControl.Qt:
+                k_qt_m.append(k)
+
+            elif ctrl_m == TapModuleControl.fixed:
+                pass
+
+            elif ctrl_m == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase module mode {ctrl_m}")
+
+            # analyze tap-phase controls
+            if ctrl_tau == TapPhaseControl.Pf:
+                k_pf_tau.append(k)
+
+            elif ctrl_tau == TapPhaseControl.Pt:
+                k_pt_tau.append(k)
+
+            elif ctrl_tau == TapPhaseControl.fixed:
+                if ctrl_m == TapModuleControl.fixed:
+                    conv_type = 1
+
+            # elif ctrl_tau == TapPhaseControl.Droop:
+            #     pass
+
+            elif ctrl_tau == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
+
+
+        # convert lists to integer arrays
+        k_pf_tau = np.array(k_pf_tau, dtype=int)
+        k_pt_tau = np.array(k_pt_tau, dtype=int)
+        k_qf_m = np.array(k_qf_m, dtype=int)
+        k_qt_m = np.array(k_qt_m, dtype=int)
+        k_v_m = np.array(k_v_m, dtype=int)
+
+        self.k_m = np.r_[k_v_m, k_qf_m, k_qt_m]
+        self.k_tau = np.r_[k_pf_tau, k_pt_tau]
+        self.k_mtau = np.intersect1d(self.k_m, self.k_tau)
 
     def var2x(self) -> Vec:
         return np.r_[

@@ -1,9 +1,8 @@
 import os
+import time
 import pandas as pd
 import multiprocessing as mp
 import GridCalEngine as gce
-
-
 
 
 def run_grid(fname):
@@ -21,7 +20,8 @@ def run_grid(fname):
             grid=grid,
             options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
                                          retry_with_other_methods=False,
-                                         use_stored_guess=False)
+                                         use_stored_guess=False),
+            # engine=gce.EngineType.GSLV
         )
         flat_start = True
 
@@ -31,7 +31,8 @@ def run_grid(fname):
                 grid=grid,
                 options=gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
                                              retry_with_other_methods=False,
-                                             use_stored_guess=True)
+                                             use_stored_guess=True),
+                # engine=gce.EngineType.GSLV
             )
             flat_start = False
 
@@ -73,9 +74,21 @@ def test_all_matpower_grids():
     folder = os.path.join("data", "grids", "Matpower")
     gce.power_flow(gce.open_file(os.path.join(folder, "case_ieee30.m")))
 
+
+    start_time = time.time()
+
     for root, dirs, files in os.walk(folder):
         for file in files:
             if file.endswith(".m"):
                 path = os.path.join(root, file)
                 assert run_grid(path)
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Execution time: {elapsed_time:.2f} seconds")
+
+
+if __name__ == "__main__":
+
+    test_all_matpower_grids()
 

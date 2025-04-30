@@ -1971,7 +1971,7 @@ class MultiCircuit(Assets):
                                                  expected_value=v1)
                         if prop.has_profile():
                             p1 = elm1.get_profile_by_prop(prop=prop)
-                            p2 = elm1.get_profile_by_prop(prop=prop)
+                            p2 = elm2.get_profile_by_prop(prop=prop)
 
                             if p1 != p2:
                                 logger.add_error(msg="Different profile values",
