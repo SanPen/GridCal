@@ -32,7 +32,6 @@ class GeneratorData:
         self.active: BoolVec = np.zeros(nelm, dtype=bool)
         self.p: Vec = np.zeros(nelm, dtype=float)
 
-        self.p3_delta = np.zeros(self.nelm * 3, dtype=float)
         self.p3_star = np.zeros(self.nelm * 3, dtype=float)
 
         self.pf: Vec = np.zeros(nelm, dtype=float)

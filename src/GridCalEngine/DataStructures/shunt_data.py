@@ -33,8 +33,8 @@ class ShuntData:
 
         self.Y: CxVec = np.zeros(nelm, dtype=complex)
 
-        self.Y3_delta = np.zeros(self.nelm * 3, dtype=float)
-        self.Y3_star = np.zeros(self.nelm * 3, dtype=float)
+        self.Y3_delta = np.zeros(self.nelm * 3, dtype=complex)
+        self.Y3_star = np.zeros(self.nelm * 3, dtype=complex)
 
         self.qmin: Vec = np.zeros(nelm, dtype=float)
         self.qmax: Vec = np.zeros(nelm, dtype=float)

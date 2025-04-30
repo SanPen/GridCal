@@ -30,14 +30,14 @@ class LoadData:
         self.I: Vec = np.zeros(nelm, dtype=complex)
         self.Y: Vec = np.zeros(nelm, dtype=complex)
 
-        self.S3_delta = np.zeros(self.nelm * 3, dtype=float)
-        self.S3_star = np.zeros(self.nelm * 3, dtype=float)
+        self.S3_delta = np.zeros(self.nelm * 3, dtype=complex)
+        self.S3_star = np.zeros(self.nelm * 3, dtype=complex)
 
-        self.I3_delta = np.zeros(self.nelm * 3, dtype=float)
-        self.I3_star = np.zeros(self.nelm * 3, dtype=float)
+        self.I3_delta = np.zeros(self.nelm * 3, dtype=complex)
+        self.I3_star = np.zeros(self.nelm * 3, dtype=complex)
 
-        self.Y3_delta = np.zeros(self.nelm * 3, dtype=float)
-        self.Y3_star = np.zeros(self.nelm * 3, dtype=float)
+        self.Y3_delta = np.zeros(self.nelm * 3, dtype=complex)
+        self.Y3_star = np.zeros(self.nelm * 3, dtype=complex)
 
         # reliability
         self.mttf: Vec = np.zeros(nelm, dtype=float)
