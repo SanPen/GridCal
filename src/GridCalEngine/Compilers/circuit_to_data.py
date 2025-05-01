@@ -1566,12 +1566,16 @@ def get_vsc_data(
 
         data.mttf[i] = elm.mttf
         data.mttr[i] = elm.mttr
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
+        f_dcp = bus_dict[elm.bus_dc_p]
+        t_dcn = bus_dict[elm.bus_dc_n]
+        t_ac = bus_dict[elm.bus_ac]
+
         data.original_idx[i] = i
 
-        data.F[i] = f
-        data.T[i] = t
+        data.F_dcp[i] = f_dcp
+        data.F_dcn[i] = t_dcn
+        data.T_ac[i] = t_ac
+
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
@@ -1585,7 +1589,8 @@ def get_vsc_data(
             data.control2[ii] = elm.control2_prof[t_idx]
             data.control1_val[ii] = elm.control1_val_prof[t_idx]
             data.control2_val[ii] = elm.control2_val_prof[t_idx]
-            set_control_dev(k=ii, f=f, t=t,
+            # Using DC_positive to set the controls, may need to also pass DC_negative
+            set_control_dev(k=ii, f=f_dcp, t=t_ac,
                             control=data.control1[ii],
                             control_dev=elm.control1_dev_prof[t_idx],
                             control_val=data.control1_val[ii],
@@ -1596,7 +1601,7 @@ def get_vsc_data(
                             bus_voltage_used=bus_voltage_used,
                             use_stored_guess=use_stored_guess,
                             logger=logger)
-            set_control_dev(k=ii, f=f, t=t,
+            set_control_dev(k=ii, f=f_dcp, t=t_ac,
                             control=data.control2[ii],
                             control_dev=elm.control2_dev_prof[t_idx],
                             control_val=data.control2_val[ii],
@@ -1620,7 +1625,7 @@ def get_vsc_data(
             data.control2[ii] = elm.control2
             data.control1_val[ii] = elm.control1_val
             data.control2_val[ii] = elm.control2_val
-            set_control_dev(k=ii, f=f, t=t,
+            set_control_dev(k=ii, f=f_dcp, t=t_ac,
                             control=data.control1[ii],
                             control_dev=elm.control1_dev,
                             control_val=data.control1_val[ii],
@@ -1632,7 +1637,7 @@ def get_vsc_data(
                             use_stored_guess=use_stored_guess,
                             logger=logger)
 
-            set_control_dev(k=ii, f=f, t=t,
+            set_control_dev(k=ii, f=f_dcp, t=t_ac,
                             control=data.control2[ii],
                             control_dev=elm.control2_dev,
                             control_val=data.control2_val[ii],

@@ -1393,14 +1393,14 @@ class NumericalCircuit:
             i, j, data, n_elm = build_branches_C_coo_3(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
-                F2=self.vsc_data.F, T2=self.vsc_data.T, active2=self.vsc_data.active,
+                F2=self.vsc_data.F_dcp, T2=self.vsc_data.T_ac, active2=self.vsc_data.active,
                 F3=self.hvdc_data.F, T3=self.hvdc_data.T, active3=self.hvdc_data.active,
             )
         else:
             i, j, data, n_elm = build_branches_C_coo_2(
                 bus_active=self.bus_data.active,
                 F1=self.passive_branch_data.F, T1=self.passive_branch_data.T, active1=self.passive_branch_data.active,
-                F2=self.vsc_data.F, T2=self.vsc_data.T, active2=self.vsc_data.active,
+                F2=self.vsc_data.F_dcp, T2=self.vsc_data.T_ac, active2=self.vsc_data.active,
             )
 
         C = sp.coo_matrix((data, (i, j)), shape=(n_elm, self.bus_data.nbus), dtype=int)
@@ -1486,8 +1486,8 @@ class NumericalCircuit:
 
         vsc_idx = tp.get_island_branch_indices(bus_map=bus_map,
                                                elm_active=self.vsc_data.active,
-                                               F=self.vsc_data.F,
-                                               T=self.vsc_data.T)
+                                               F=self.vsc_data.F_dcp,
+                                               T=self.vsc_data.T_ac)
 
         load_idx = tp.get_island_monopole_indices(bus_map=bus_map,
                                                   elm_active=self.load_data.active,
