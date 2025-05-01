@@ -1355,20 +1355,17 @@ class SchematicWidget(BaseDiagramWidget):
                                 vsc_terminal_index = 2
                             else:
                                 warn(f"Unknown VSC terminal type: {vsc_terminal_type}")
-                                continue # Skip if terminal type is unknown
 
                             # Ensure target is valid (Bus, CN, BusBar)
                             if not isinstance(target_object, (Bus, ConnectivityNode, BusBar)):
                                 warn(f"Cannot connect VSC terminal to {type(target_object)}")
-                                # Don't create the line, just clean up started_branch later
 
                             else:
                                 # Create the visual line
                                 conn_line = LineGraphicTemplateItem(
                                     from_port=self.started_branch.get_terminal_from(),
                                     to_port=arriving_widget,
-                                    editor=self
-                                )
+                                    editor=self)
 
                                 # Set the connection in the VSC graphics/API
                                 if isinstance(target_object, Bus):
@@ -1389,8 +1386,9 @@ class SchematicWidget(BaseDiagramWidget):
                         # --- Handle VSC Terminal Connection --- END
 
                         # Set the target port for the temporary line *after* VSC check
-                        if self.started_branch: # Check if it wasn't already cleared by VSC logic
-                            self.started_branch.set_to_port(arriving_widget)
+                        # if self.started_branch: # Check if it wasn't already cleared by VSC logic
+                        self.started_branch.set_to_port(arriving_widget)
+
 
                         if self.started_branch.connected_between_buses():  # electrical branch between electrical buses
 
