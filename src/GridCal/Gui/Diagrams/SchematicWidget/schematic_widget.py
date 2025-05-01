@@ -1325,15 +1325,11 @@ class SchematicWidget(BaseDiagramWidget):
         # Clear or finnish the started connection:
         if self.started_branch is not None:
 
-            # Store terminals before potential modification
-            from_terminal = self.started_branch.get_terminal_from()
-            to_terminal = None # Will be set if connection is valid
-
             items = self.diagram_scene.items(event.scenePos())  # get the widgets at the mouse position
 
             for arriving_widget in items:
                 if isinstance(arriving_widget,
-                              Union[BarTerminalItem, RoundTerminalItem]):  # arrivinf to a bus or bus-bar
+                              Union[BarTerminalItem, RoundTerminalItem]):  # arriving to a bus or bus-bar
 
                     if arriving_widget.get_parent() is not self.started_branch.get_terminal_from_parent():  # forbid connecting to itself
 
@@ -1406,19 +1402,18 @@ class SchematicWidget(BaseDiagramWidget):
                         # Set the target port for the temporary line *after* VSC check
                         if self.started_branch: # Check if it wasn't already cleared by VSC logic
                             self.started_branch.set_to_port(arriving_widget)
-                        to_terminal = arriving_widget
 
                         if self.started_branch.connected_between_buses():  # electrical branch between electrical buses
 
-                            if self.started_branch.should_be_a_converter():
-                                # different DC status -> VSC
+                            # if self.started_branch.should_be_a_converter():
+                            #     # different DC status -> VSC
 
-                                self.create_vsc(bus_from=self.started_branch.get_bus_from(),
-                                                bus_to=self.started_branch.get_bus_to(),
-                                                from_port=self.started_branch.get_terminal_from(),
-                                                to_port=self.started_branch.get_terminal_to())
+                            #     self.create_vsc(bus_from=self.started_branch.get_bus_from(),
+                            #                     bus_to=self.started_branch.get_bus_to(),
+                            #                     from_port=self.started_branch.get_terminal_from(),
+                            #                     to_port=self.started_branch.get_terminal_to())
 
-                            elif self.started_branch.should_be_a_dc_line():
+                            if self.started_branch.should_be_a_dc_line():
                                 # both buses are DC
 
                                 self.create_dc_line(bus_from=self.started_branch.get_bus_from(),
@@ -1647,6 +1642,11 @@ class SchematicWidget(BaseDiagramWidget):
                 # remove the temporary started_branch line.
                 if not permanent_graphic_created:
                     self._remove_from_scene(self.started_branch)
+
+            # delete from the hosted connections
+            self.started_branch.unregister_port_from()
+            self.started_branch.unregister_port_to()
+            self._remove_from_scene(self.started_branch)
 
             # release this pointer
             self.started_branch = None

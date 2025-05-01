@@ -125,19 +125,11 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         painter.setPen(pen)
         painter.drawLine(QPoint(self.w, 0), QPoint(0, self.h))
 
-        # Draw AC/DC symbols near terminals (optional)
+        # Draw AC/DC symbols inside the box near terminals
         text_rect_size = 15
-        painter.drawText(QRectF(self.w + 2, self.h / 2 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "~") # AC ~ symbol to the right
-        painter.drawText(QRectF(-text_rect_size - 2, self.h * 0.2 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "+") # DC+ symbol to the left
-        painter.drawText(QRectF(-text_rect_size - 2, self.h * 0.8 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "-") # DC- symbol to the left
-
-        # Draw selection rectangle if selected
-        if self.isSelected():
-            select_pen = QPen(Qt.GlobalColor.yellow, 1, Qt.PenStyle.DashLine)
-            painter.setPen(select_pen)
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-            painter.drawRect(self.boundingRect().adjusted(-2, -2, 2, 2))
-
+        painter.drawText(QRectF(self.w * 0.8 - text_rect_size / 2, self.h / 2 - text_rect_size / 2 * 1.3, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "~")
+        painter.drawText(QRectF(self.w * 0.15 - text_rect_size / 2, self.h * 0.35 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "+")
+        painter.drawText(QRectF(self.w * 0.15 - text_rect_size / 2, self.h * 0.65 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "-")
 
     def set_terminal_tooltips(self):
         """Set tooltips for the terminals."""
@@ -412,7 +404,6 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         else:
             print("Error: Cannot set control_v_to, AC bus not connected.")
 
-
     def assign_rate_to_profile(self):
         """
         Assign the snapshot rate to the profile
@@ -424,3 +415,10 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         Assign the snapshot rate to the profile
         """
         self._editor.set_active_status_to_profile(self.api_object)
+
+    def plot_profiles(self) -> None:
+        """
+        Plot the time series profiles
+        @return:
+        """
+        pass
