@@ -92,17 +92,26 @@ class VSC(PhysicalDevice):
                                 code=code,
                                 device_type=DeviceType.VscDevice)
 
-        if bus_dc_p.is_dc and bus_dc_n.is_dc and not bus_ac.is_dc:
-            self._bus_dc_p = bus_dc_p
-            self._bus_dc_n = bus_dc_n
-            self._bus_ac = bus_ac
+        if bus_dc_p is not None and bus_dc_n is not None and bus_ac is not None:
+            if bus_dc_p.is_dc and bus_dc_n.is_dc and not bus_ac.is_dc:
+                self._bus_dc_p = bus_dc_p
+                self._bus_dc_n = bus_dc_n
+                self._bus_ac = bus_ac
 
-            self._cn_dc_p = cn_dc_p
-            self._cn_dc_n = cn_dc_n
-            self._cn_ac = cn_ac
+                self._cn_dc_p = cn_dc_p
+                self._cn_dc_n = cn_dc_n
+                self._cn_ac = cn_ac
+            else:
+                raise Exception('Impossible connecting a VSC device here. '
+                                'VSC devices must be connected between 1 AC and 2 DC buses')
         else:
-            raise Exception('Impossible connecting a VSC device here. '
-                            'VSC devices must be connected between 1 AC and 2 DC buses')
+            self._bus_dc_p = None
+            self._bus_dc_n = None
+            self._bus_ac = None
+
+            self._cn_dc_p = None
+            self._cn_dc_n = None
+            self._cn_ac = None
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
@@ -121,7 +130,7 @@ class VSC(PhysicalDevice):
 
         self.build_status = build_status
 
-        self._rate = rate
+        self._rate = float(rate)
         self._rate_prof = Profile(default_value=rate, data_type=float)
 
         self._contingency_factor = float(contingency_factor)
@@ -167,10 +176,9 @@ class VSC(PhysicalDevice):
         self.register(key='cn_ac', units="", tpe=DeviceType.ConnectivityNodeDevice, 
                       definition='AC connectivity node', editable=False)
 
-        self.register(key='active', units="", definition='Is active?', profile_name="active_prof")
+        self.register(key='active', units="", definition='Is active?', tpe=bool, profile_name="active_prof")
 
-        self.register(key='rate', units='MVA', definition='Nominal power', 
-                      tpe=float, definition='Rating', profile_name="rate_prof")
+        self.register(key='rate', units='MVA', definition='Nominal power', tpe=float, profile_name="rate_prof")
 
         self.register('contingency_factor', units="p.u.", tpe=float,
                       definition='Rating multiplier for contingencies', profile_name="contingency_factor_prof")
@@ -364,6 +372,21 @@ class VSC(PhysicalDevice):
             raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
 
     @property
+    def rate(self):
+        """
+        Rate (MVA)
+        :return:
+        """
+        return self._rate
+
+    @rate.setter
+    def rate(self, val: float):
+        if isinstance(val, float):
+            self._rate = val
+        else:
+            raise ValueError(f'{val} is not a float')
+
+    @property
     def rate_prof(self) -> Profile:
         """
         Cost profile
@@ -430,21 +453,6 @@ class VSC(PhysicalDevice):
             self._Cost_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
-
-    @property
-    def rate(self):
-        """
-        Rate (MVA)
-        :return:
-        """
-        return self._rate
-
-    @rate.setter
-    def rate(self, val: float):
-        if isinstance(val, float):
-            self._rate = val
-        else:
-            raise ValueError(f'{val} is not a float')
 
     @property
     def contingency_factor(self):

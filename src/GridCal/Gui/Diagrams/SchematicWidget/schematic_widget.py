@@ -109,12 +109,14 @@ class SchematicLibraryModel(QStandardItemModel):
         self.fluid_node_name = "Fluid-node"
         self.cn_name = "Connectivity node"
         self.bb_name = "Bus bar"
+        self.vsc_name = "VSC" # Add VSC name
 
         self.add(name=self.bus_name, icon_name="bus_icon")
         self.add(name=self.transformer3w_name, icon_name="transformer3w")
         self.add(name=self.fluid_node_name, icon_name="dam")
         self.add(name=self.cn_name, icon_name="cn_icon")
         self.add(name=self.bb_name, icon_name="bus_bar_icon")
+        self.add(name=self.vsc_name, icon_name="vsc_icon") # Add VSC to the list
 
     def add(self, name: str, icon_name: str):
         """
@@ -175,6 +177,13 @@ class SchematicLibraryModel(QStandardItemModel):
         :return:
         """
         return self.to_bytes_array(self.bb_name)
+
+    def get_vsc_mime_data(self) -> QByteArray:
+        """
+        Get mime data for VSC.
+        :return:
+        """
+        return self.to_bytes_array(self.vsc_name)
 
     def mimeTypes(self) -> List[str]:
         """
@@ -457,6 +466,12 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_object = self.create_bus_bar_graphics(node=obj, x=x0, y=y0, h=20, w=80)
                 self.circuit.add_bus_bar(obj)
 
+            elif obj_type == self.library_model.get_vsc_mime_data():
+                # Create VSC API object
+                obj = VSC(name=f'VSC {len(self.circuit.vsc_devices)}')
+                graphic_object = self.create_vsc_graphics(elm=obj, x=x0, y=y0)
+                self.circuit.add_vsc(obj)
+
             else:
                 # unrecognized drop
                 return
@@ -603,6 +618,18 @@ class SchematicWidget(BaseDiagramWidget):
 
         graphic_object = BusBarGraphicItem(editor=self, busbar=node, x=x, y=y, h=h, w=w,
                                            draw_labels=draw_labels)
+        return graphic_object
+
+    def create_vsc_graphics(self, elm: VSC, x: float, y: float) -> VscGraphicItem:
+        """
+        Add VSC to the graphics
+        :param elm: VSC
+        :param x: x coordinate
+        :param y: y coordinate
+        :return: VscGraphicItem
+        """
+        graphic_object = VscGraphicItem(editor=self, api_object=elm)
+        graphic_object.setPos(QPointF(x, y))
         return graphic_object
 
     def draw_additional_diagram(self,
@@ -2304,30 +2331,42 @@ class SchematicWidget(BaseDiagramWidget):
                                    logger=logger)
 
     def add_api_vsc(self,
-                    branch: VSC,
-                    from_port: OPTIONAL_PORT = None,
-                    to_port: OPTIONAL_PORT = None,
-                    draw_labels: bool = True,
-                    prefer_node_breaker: bool = False,
+                    elm: VSC,
                     logger: Logger = Logger()) -> Union[VscGraphicItem, None]:
         """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        :param draw_labels: Draw labels?
-        :param prefer_node_breaker: Prefer node breaker representation?
+        add API VSC to the Scene
+        :param elm: VSC instance
         :param logger: Logger
         :return: SeriesReactanceGraphicItem or None
         """
 
-        return self.add_api_branch(branch=branch,
-                                   new_graphic_func=VscGraphicItem,
-                                   from_port=from_port,
-                                   to_port=to_port,
-                                   prefer_node_breaker=prefer_node_breaker,
-                                   draw_labels=draw_labels,
-                                   logger=logger)
+        port_ac = self.find_port(bus=elm.bus_ac)
+        port_dcp = self.find_port(bus=elm.bus_dcp)
+        port_dcn = self.find_port(bus=elm.bus_dcv)
+        
+        # search for the api object, because it may be created already
+        graphic_object = self.graphics_manager.query(elm=elm)
+
+        if graphic_object is None:
+
+            if port_ac is not None and port_dcp is not None and port_dcn is not None:
+
+                vsc_graphic_object = self.create_vsc_graphics(vsc=elm, x=elm.x, y=elm.y)
+
+                self.add_to_scene(graphic_object=vsc_graphic_object)
+
+                vsc_graphic_object.redraw()
+                self.update_diagram_element(device=elm, x=0, y=0, w=0, h=0, r=0,
+                                            draw_labels=vsc_graphic_object.draw_labels,
+                                            graphic_object=vsc_graphic_object)
+                return vsc_graphic_object
+            else:
+                logger.add_warning(msg="VSC's ports were not found in the diagram",
+                                   device=elm.name)
+                return None
+
+        else:
+            return graphic_object
 
     def add_api_upfc(self,
                      branch: UPFC,
