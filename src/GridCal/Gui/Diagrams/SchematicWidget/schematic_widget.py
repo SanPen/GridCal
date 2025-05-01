@@ -1557,16 +1557,12 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
-                            permanent_graphic_created = True
-
                         elif self.started_branch.connected_between_bus_and_cn():
 
                             self.create_line(bus_from=self.started_branch.get_bus_from(),
                                              cn_to=self.started_branch.get_cn_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
-
-                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_cn_and_bus():
 
@@ -1575,16 +1571,12 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
-                            permanent_graphic_created = True
-
                         elif self.started_branch.connected_between_cn():
 
                             self.create_line(cn_from=self.started_branch.get_cn_from(),
                                              cn_to=self.started_branch.get_cn_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
-
-                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_busbar_and_bus():
 
@@ -1593,16 +1585,12 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
-                            permanent_graphic_created = True
-
                         elif self.started_branch.connected_between_bus_and_busbar():
 
                             self.create_line(bus_from=self.started_branch.get_bus_from(),
                                              cn_to=self.started_branch.get_busbar_to().cn,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
-
-                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_busbar_and_cn():
 
@@ -1611,8 +1599,6 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
-                            permanent_graphic_created = True
-
                         elif self.started_branch.connected_between_cn_and_busbar():
 
                             self.create_line(cn_from=self.started_branch.get_cn_from(),
@@ -1620,16 +1606,12 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
-                            permanent_graphic_created = True
-
                         elif self.started_branch.connected_between_busbar():
 
                             self.create_line(cn_from=self.started_branch.get_busbar_from().cn,
                                              cn_to=self.started_branch.get_busbar_to().cn,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
-
-                            permanent_graphic_created = True
 
                         else:
                             warn('unknown connection')
@@ -1639,14 +1621,9 @@ class SchematicWidget(BaseDiagramWidget):
             # The actual connection line was created and stored within the VSC graphic item earlier
             if self.started_branch is not None:
                 # If no persistent graphic was created (invalid connection or just visual VSC link),
-                # remove the temporary started_branch line.
-                if not permanent_graphic_created:
-                    self._remove_from_scene(self.started_branch)
-
-            # delete from the hosted connections
-            self.started_branch.unregister_port_from()
-            self.started_branch.unregister_port_to()
-            self._remove_from_scene(self.started_branch)
+                self.started_branch.unregister_port_from()
+                self.started_branch.unregister_port_to()
+                self._remove_from_scene(self.started_branch)
 
             # release this pointer
             self.started_branch = None
