@@ -45,8 +45,9 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         GenericDiagramWidget.__init__(self, parent=parent, api_object=api_object, editor=editor, draw_labels=draw_labels)
         QGraphicsRectItem.__init__(self, parent=parent)
 
-        self.w = 80  # Width of the VSC symbol
-        self.h = 60  # Height of the VSC symbol
+        # Make it a square
+        self.w = 60  # Width of the VSC symbol
+        self.h = self.w  # Height of the VSC symbol
         self.setRect(0.0, 0.0, self.w, self.h)
 
         self.draw_labels = draw_labels
@@ -58,14 +59,10 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             self.style = ACTIVE['style']
         else:
             self.color = DEACTIVATED['color']
-            self.style = DEACTIVATED['style']
 
-        # Setup flags and cursor
+        # Setup pen, brush, flags and cursor
         self.setPen(QPen(self.color, self.pen_width, self.style))
-        # Use a semi-transparent fill for the main body
-        fill_color = QColor(self.color)
-        fill_color.setAlpha(80)
-        self.setBrush(QBrush(fill_color))
+        self.setBrush(Qt.BrushStyle.NoBrush) # Set transparent background
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -78,9 +75,9 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         # AC terminal on the right middle
         t_ac_pos = QPoint(self.w, self.h / 2)
         # DC+ terminal on the left top
-        t_dc_p_pos = QPoint(0, self.h * 0.25)
+        t_dc_p_pos = QPoint(0, self.h * 0.2)
         # DC- terminal on the left bottom
-        t_dc_n_pos = QPoint(0, self.h * 0.75)
+        t_dc_n_pos = QPoint(0, self.h * 0.8)
 
         self.terminals: List[RoundTerminalItem] = list()
         self.connection_lines: List[LineGraphicTemplateItem | None] = [None, None, None] # Index 0: AC, 1: DC+, 2: DC-
@@ -118,33 +115,21 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
 
     def paint(self, painter: QPainter, option, widget=None) -> None:
         """Paint the VSC symbol."""
-        # Draw the main rectangle
+        # Draw the main rectangle (square)
         painter.setPen(QPen(self.color, self.pen_width, self.style))
-        fill_color = QColor(self.color)
-        fill_color.setAlpha(80)
-        painter.setBrush(QBrush(fill_color))
+        painter.setBrush(Qt.BrushStyle.NoBrush) # Ensure transparent background
         painter.drawRect(self.rect())
 
-        # Draw a simple converter symbol (->|) inside
+        # Draw a diagonal line from top-right to bottom-left
         pen = QPen(self.color, self.pen_width)
         painter.setPen(pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        center_y = self.h / 2
-        arrow_x_start = self.w * 0.3
-        arrow_x_end = self.w * 0.7
-        arrow_y = center_y
-        # Arrow line
-        painter.drawLine(QPoint(arrow_x_start, arrow_y), QPoint(arrow_x_end, arrow_y))
-        # Arrow head
-        painter.drawLine(QPoint(arrow_x_end, arrow_y), QPoint(arrow_x_end - 5, arrow_y - 5))
-        painter.drawLine(QPoint(arrow_x_end, arrow_y), QPoint(arrow_x_end - 5, arrow_y + 5))
-        # Vertical bar
-        painter.drawLine(QPoint(arrow_x_end, arrow_y - 10), QPoint(arrow_x_end, arrow_y + 10))
+        painter.drawLine(QPoint(self.w, 0), QPoint(0, self.h))
 
         # Draw AC/DC symbols near terminals (optional)
-        painter.drawText(QRectF(self.w - 15, center_y - 15, 15, 15), Qt.AlignmentFlag.AlignCenter, "~") # AC
-        painter.drawText(QRectF(5, self.h * 0.25 - 15, 15, 15), Qt.AlignmentFlag.AlignCenter, "+") # DC+
-        painter.drawText(QRectF(5, self.h * 0.75 - 15, 15, 15), Qt.AlignmentFlag.AlignCenter, "-") # DC-
+        text_rect_size = 15
+        painter.drawText(QRectF(self.w + 2, self.h / 2 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "~") # AC ~ symbol to the right
+        painter.drawText(QRectF(-text_rect_size - 2, self.h * 0.2 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "+") # DC+ symbol to the left
+        painter.drawText(QRectF(-text_rect_size - 2, self.h * 0.8 - text_rect_size / 2, text_rect_size, text_rect_size), Qt.AlignmentFlag.AlignCenter, "-") # DC- symbol to the left
 
         # Draw selection rectangle if selected
         if self.isSelected():
@@ -177,18 +162,15 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
 
     def recolour_mode(self):
         """Change the colour according to the system theme and active state."""
+        if self.api_object is None:
+            return
+
         if self.api_object.active:
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
-        else:
-            self.color = DEACTIVATED['color']
-            self.style = DEACTIVATED['style']
 
         pen = QPen(self.color, self.pen_width, self.style)
-        fill_color = QColor(self.color)
-        fill_color.setAlpha(80)
         self.setPen(pen)
-        self.setBrush(QBrush(fill_color))
 
         for terminal in self.terminals:
             terminal.setPen(pen)
@@ -253,22 +235,21 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
             if bus.is_dc:
                  print(f"Warning: Connecting AC terminal of VSC {self.api_object.name} to DC bus {bus.name}")
             self.api_object.bus_ac = bus
-            self.api_object.cn_ac = conn_line.to_port.get_cn() # Assuming line connects TO the bus terminal
+            self.api_object.cn_ac = None # Explicitly connected to Bus
         elif terminal_index == 1: # DC+ Terminal
             if not bus.is_dc:
                  print(f"Warning: Connecting DC+ terminal of VSC {self.api_object.name} to AC bus {bus.name}")
             self.api_object.bus_dc_p = bus
-            self.api_object.cn_dc_p = conn_line.to_port.get_cn()
+            self.api_object.cn_dc_p = None # Explicitly connected to Bus
         elif terminal_index == 2: # DC- Terminal
             if not bus.is_dc:
                  print(f"Warning: Connecting DC- terminal of VSC {self.api_object.name} to AC bus {bus.name}")
             self.api_object.bus_dc_n = bus
-            self.api_object.cn_dc_n = conn_line.to_port.get_cn()
+            self.api_object.cn_dc_n = None # Explicitly connected to Bus
 
         # Store connection line
         self.connection_lines[terminal_index] = conn_line
         self.set_terminal_tooltips()
-        self.editor.viewport().update()
 
     def set_connection_cn(self, terminal_index: int, cn: ConnectivityNode, conn_line: LineGraphicTemplateItem, set_voltage: bool = True):
          """ Set a connection to a specific terminal using a connectivity node. """
@@ -284,17 +265,17 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
          if terminal_index == 0: # AC Terminal
              if bus.is_dc:
                  print(f"Warning: Connecting AC terminal of VSC {self.api_object.name} to DC bus {bus.name}")
-             self.api_object.bus_ac = bus
+             self.api_object.bus_ac = cn.bus # Store parent bus
              self.api_object.cn_ac = cn
          elif terminal_index == 1: # DC+ Terminal
              if not bus.is_dc:
                  print(f"Warning: Connecting DC+ terminal of VSC {self.api_object.name} to AC bus {bus.name}")
-             self.api_object.bus_dc_p = bus
+             self.api_object.bus_dc_p = cn.bus # Store parent bus
              self.api_object.cn_dc_p = cn
          elif terminal_index == 2: # DC- Terminal
              if not bus.is_dc:
                  print(f"Warning: Connecting DC- terminal of VSC {self.api_object.name} to AC bus {bus.name}")
-             self.api_object.bus_dc_n = bus
+             self.api_object.bus_dc_n = cn.bus # Store parent bus
              self.api_object.cn_dc_n = cn
 
          # Store connection line

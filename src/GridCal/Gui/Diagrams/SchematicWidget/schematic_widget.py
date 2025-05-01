@@ -8,7 +8,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
-from typing import List, Set, Dict, Union, Tuple, TYPE_CHECKING
+from typing import List, Set, Dict, Union, Tuple, TYPE_CHECKING, cast
 from collections.abc import Callable
 from warnings import warn
 import networkx as nx
@@ -1321,8 +1321,13 @@ class SchematicWidget(BaseDiagramWidget):
         @return:
         """
 
+        permanent_graphic_created = False # Flag to track if a persistent graphic was made
         # Clear or finnish the started connection:
         if self.started_branch is not None:
+
+            # Store terminals before potential modification
+            from_terminal = self.started_branch.get_terminal_from()
+            to_terminal = None # Will be set if connection is valid
 
             items = self.diagram_scene.items(event.scenePos())  # get the widgets at the mouse position
 
@@ -1332,7 +1337,76 @@ class SchematicWidget(BaseDiagramWidget):
 
                     if arriving_widget.get_parent() is not self.started_branch.get_terminal_from_parent():  # forbid connecting to itself
 
-                        self.started_branch.set_to_port(arriving_widget)
+                        # --- Handle VSC Terminal Connection --- START
+                        is_vsc_connection = False
+                        vsc_graphic = None
+                        target_bus_cn_graphic = None
+                        vsc_terminal_index = -1
+                        target_object = None # Bus, CN, or BusBar API object
+
+                        # Check if starting from VSC terminal
+                        if isinstance(self.started_branch.get_terminal_from(), RoundTerminalItem) \
+                                and isinstance(self.started_branch.get_terminal_from_parent(), VscGraphicItem):
+                            is_vsc_connection = True
+                            vsc_graphic = cast(VscGraphicItem, self.started_branch.get_terminal_from_parent())
+                            vsc_terminal_type = self.started_branch.get_terminal_from()
+                            target_object = arriving_widget.parent.api_object
+
+                        # If it's a VSC connection, handle it and skip other checks
+                        if is_vsc_connection:
+                            if vsc_terminal_type.name == "ac":
+                                vsc_terminal_index = 0
+                            elif vsc_terminal_type.name == "dc_p":
+                                vsc_terminal_index = 1
+                            elif vsc_terminal_type.name == "dc_n":
+                                vsc_terminal_index = 2
+                            else:
+                                warn(f"Unknown VSC terminal type: {vsc_terminal_type}")
+                                continue # Skip if terminal type is unknown
+
+                            # Ensure target is valid (Bus, CN, BusBar)
+                            if not isinstance(target_object, (Bus, ConnectivityNode, BusBar)):
+                                warn(f"Cannot connect VSC terminal to {type(target_object)}")
+                                # Don't create the line, just clean up started_branch later
+
+                            else:
+                                # Create the visual line
+                                conn_line = LineGraphicTemplateItem(
+                                    from_port=self.started_branch.get_terminal_from(),
+                                    to_port=arriving_widget,
+                                    editor=self
+                                )
+                                self.add_to_scene(conn_line)
+                                conn_line.setZValue(-1)
+
+                                # Set the connection in the VSC graphics/API
+                                if isinstance(target_object, Bus):
+                                    vsc_graphic.set_connection(vsc_terminal_index, target_object, conn_line)
+                                    permanent_graphic_created = True # VSC connection line is persistent
+                                elif isinstance(target_object, ConnectivityNode):
+                                     vsc_graphic.set_connection_cn(vsc_terminal_index, target_object, conn_line)
+                                     permanent_graphic_created = True # VSC connection line is persistent
+                                elif isinstance(target_object, BusBar):
+                                     # Connect to the BusBar's underlying ConnectivityNode
+                                     vsc_graphic.set_connection_cn(vsc_terminal_index, target_object.cn, conn_line)
+                                     permanent_graphic_created = True # VSC connection line is persistent
+
+                                # --- Crucial Fix: Reset started_branch immediately --- 
+                                # Remove the temporary graphic line itself
+                                self._remove_from_scene(self.started_branch)
+                                # --- End Fix ---
+
+                                self.started_branch = None
+                                # Skip other connection logic
+                                # The cleanup outside the loop will handle started_branch
+                                break # Exit the inner loop once connection is handled
+
+                        # --- Handle VSC Terminal Connection --- END
+
+                        # Set the target port for the temporary line *after* VSC check
+                        if self.started_branch: # Check if it wasn't already cleared by VSC logic
+                            self.started_branch.set_to_port(arriving_widget)
+                        to_terminal = arriving_widget
 
                         if self.started_branch.connected_between_buses():  # electrical branch between electrical buses
 
@@ -1366,6 +1440,8 @@ class SchematicWidget(BaseDiagramWidget):
                                                  from_port=self.started_branch.get_terminal_from(),
                                                  to_port=self.started_branch.get_terminal_to())
 
+                            permanent_graphic_created = True
+
                         elif self.started_branch.conneted_between_tr3_and_bus():
 
                             tr3_graphic_object: Transformer3WGraphicItem = self.started_branch.get_from_graphic_object()
@@ -1398,6 +1474,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                                   conn=winding_graphics,
                                                                   set_voltage=True)
                                 tr3_graphic_object.update_conn()  # create winding
+                                permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1431,6 +1508,7 @@ class SchematicWidget(BaseDiagramWidget):
                                                                   conn=winding_graphics,
                                                                   set_voltage=True)
                                 tr3_graphic_object.update_conn()
+                                permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
 
@@ -1438,6 +1516,8 @@ class SchematicWidget(BaseDiagramWidget):
                                                    target=self.started_branch.get_fluid_node_to(),
                                                    from_port=self.started_branch.get_terminal_from(),
                                                    to_port=self.started_branch.get_terminal_to())
+
+                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_fluid_node_and_bus():
 
@@ -1460,6 +1540,8 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
+                            permanent_graphic_created = True
+
                         elif self.started_branch.connected_between_bus_and_fluid_node():
                             # electrical bus
                             bus = self.started_branch.get_bus_from()
@@ -1480,12 +1562,16 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
+                            permanent_graphic_created = True
+
                         elif self.started_branch.connected_between_bus_and_cn():
 
                             self.create_line(bus_from=self.started_branch.get_bus_from(),
                                              cn_to=self.started_branch.get_cn_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
+
+                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_cn_and_bus():
 
@@ -1494,12 +1580,16 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
+                            permanent_graphic_created = True
+
                         elif self.started_branch.connected_between_cn():
 
                             self.create_line(cn_from=self.started_branch.get_cn_from(),
                                              cn_to=self.started_branch.get_cn_to(),
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
+
+                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_busbar_and_bus():
 
@@ -1508,12 +1598,16 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
+                            permanent_graphic_created = True
+
                         elif self.started_branch.connected_between_bus_and_busbar():
 
                             self.create_line(bus_from=self.started_branch.get_bus_from(),
                                              cn_to=self.started_branch.get_busbar_to().cn,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
+
+                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_busbar_and_cn():
 
@@ -1522,12 +1616,16 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
+                            permanent_graphic_created = True
+
                         elif self.started_branch.connected_between_cn_and_busbar():
 
                             self.create_line(cn_from=self.started_branch.get_cn_from(),
                                              cn_to=self.started_branch.get_busbar_to().cn,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
+
+                            permanent_graphic_created = True
 
                         elif self.started_branch.connected_between_busbar():
 
@@ -1536,13 +1634,19 @@ class SchematicWidget(BaseDiagramWidget):
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 
+                            permanent_graphic_created = True
+
                         else:
                             warn('unknown connection')
 
-            # delete from the hosted connections
-            self.started_branch.unregister_port_from()
-            self.started_branch.unregister_port_to()
-            self._remove_from_scene(self.started_branch)
+            # If a VSC connection was made, the temporary line might still be the 'started_branch'
+            # It needs to be removed from the scene if it wasn't used to create a *new* API object
+            # The actual connection line was created and stored within the VSC graphic item earlier
+            if self.started_branch is not None:
+                # If no persistent graphic was created (invalid connection or just visual VSC link),
+                # remove the temporary started_branch line.
+                if not permanent_graphic_created:
+                    self._remove_from_scene(self.started_branch)
 
             # release this pointer
             self.started_branch = None
@@ -2341,8 +2445,8 @@ class SchematicWidget(BaseDiagramWidget):
         """
 
         port_ac = self.find_port(bus=elm.bus_ac)
-        port_dcp = self.find_port(bus=elm.bus_dcp)
-        port_dcn = self.find_port(bus=elm.bus_dcv)
+        port_dcp = self.find_port(bus=elm.bus_dc_p)
+        port_dcn = self.find_port(bus=elm.bus_dc_n)
         
         # search for the api object, because it may be created already
         graphic_object = self.graphics_manager.query(elm=elm)
@@ -3593,10 +3697,10 @@ class SchematicWidget(BaseDiagramWidget):
                                 tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
                                 tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
                                 graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                     St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                                                                   St=vsc_Pt[i] + 1j * vsc_Qt[i])
                             else:
                                 graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                     St=-vsc_Pf[i] + 1j * vsc_Qt[i])
+                                                                   St=-vsc_Pf[i] + 1j * vsc_Qt[i])
 
                             graphic_object.setToolTipText(tooltip)
                             graphic_object.set_colour(color, w, style)
