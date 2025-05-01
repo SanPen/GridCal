@@ -225,17 +225,17 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         # Update API object
         if terminal_index == 0: # AC Terminal
             if bus.is_dc:
-                 print(f"Warning: Connecting AC terminal of VSC {self.api_object.name} to DC bus {bus.name}")
+                self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
             self.api_object.bus_ac = bus
             self.api_object.cn_ac = None # Explicitly connected to Bus
         elif terminal_index == 1: # DC+ Terminal
             if not bus.is_dc:
-                 print(f"Warning: Connecting DC+ terminal of VSC {self.api_object.name} to AC bus {bus.name}")
+                self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
             self.api_object.bus_dc_p = bus
             self.api_object.cn_dc_p = None # Explicitly connected to Bus
         elif terminal_index == 2: # DC- Terminal
             if not bus.is_dc:
-                 print(f"Warning: Connecting DC- terminal of VSC {self.api_object.name} to AC bus {bus.name}")
+                self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
             self.api_object.bus_dc_n = bus
             self.api_object.cn_dc_n = None # Explicitly connected to Bus
 
@@ -256,17 +256,17 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
          bus = cn.bus # Get the bus from the CN
          if terminal_index == 0: # AC Terminal
              if bus.is_dc:
-                 print(f"Warning: Connecting AC terminal of VSC {self.api_object.name} to DC bus {bus.name}")
+                 self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
              self.api_object.bus_ac = cn.bus # Store parent bus
              self.api_object.cn_ac = cn
          elif terminal_index == 1: # DC+ Terminal
              if not bus.is_dc:
-                 print(f"Warning: Connecting DC+ terminal of VSC {self.api_object.name} to AC bus {bus.name}")
+                 self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
              self.api_object.bus_dc_p = cn.bus # Store parent bus
              self.api_object.cn_dc_p = cn
          elif terminal_index == 2: # DC- Terminal
              if not bus.is_dc:
-                 print(f"Warning: Connecting DC- terminal of VSC {self.api_object.name} to AC bus {bus.name}")
+                 self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
              self.api_object.bus_dc_n = cn.bus # Store parent bus
              self.api_object.cn_dc_n = cn
 
