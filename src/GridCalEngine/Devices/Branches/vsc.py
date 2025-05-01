@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
-class VSC(BranchParent):
+class VSC(PhysicalDevice):
 
     def __init__(self,
                  bus_dc_p: Bus | None = None,
@@ -103,8 +103,6 @@ class VSC(BranchParent):
         else:
             raise Exception('Impossible connecting a VSC device here. '
                             'VSC devices must be connected between 1 AC and 2 DC buses')
-
-
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
