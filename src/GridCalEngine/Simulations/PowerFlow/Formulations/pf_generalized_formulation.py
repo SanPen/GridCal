@@ -654,7 +654,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         u_cbr_m.append(k)
                 else:
                     self.logger.add_error("Controlled bus index outside of the island, skipping control",
-                                          device=self.nc.passive_branch_data.idtag[k],)
+                                          device=self.nc.passive_branch_data.idtag[k], )
 
             elif ctrl_m == TapModuleControl.Qf:
                 u_cbr_m.append(k)
@@ -1197,10 +1197,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 + len(self.u_cbr_m)
                 + len(self.u_cbr_tau))
 
-    def compute_f(self, x: Vec) -> Vec:
+    def compute_f(self, x: Vec, update_class_vars: bool = False) -> Vec:
         """
         Compute the residual vector
         :param x: Solution vector
+        :param update_class_vars: Update the class vars related to the calculation step
         :return: Residual vector
         """
 
@@ -1219,32 +1220,32 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         k = j + len(self.u_cbr_tau)
 
         # copy the sliceable vectors
-        Vm = self.Vm.copy()
-        Va = self.Va.copy()
-        Pf_vsc = self.Pf_vsc.copy()
-        Pt_vsc = self.Pt_vsc.copy()
-        Qt_vsc = self.Qt_vsc.copy()
+        Vm_ = self.Vm.copy()
+        Va_ = self.Va.copy()
+        Pf_vsc_ = self.Pf_vsc.copy()
+        Pt_vsc_ = self.Pt_vsc.copy()
+        Qt_vsc_ = self.Qt_vsc.copy()
 
         # update the vectors
-        Va[self.i_u_va] = x[0:a]
-        Vm[self.i_u_vm] = x[a:b]
-        Pf_vsc[self.u_vsc_pf] = x[b:c]
-        Pt_vsc[self.u_vsc_pt] = x[c:d]
-        Qt_vsc[self.u_vsc_qt] = x[d:e]
-        Pf_hvdc = x[e:f]
-        Pt_hvdc = x[f:g]
-        Qf_hvdc = x[g:h]
-        Qt_hvdc = x[h:i]
-        m = x[i:j]
-        tau = x[j:k]
+        Va_[self.i_u_va] = x[0:a]
+        Vm_[self.i_u_vm] = x[a:b]
+        Pf_vsc_[self.u_vsc_pf] = x[b:c]
+        Pt_vsc_[self.u_vsc_pt] = x[c:d]
+        Qt_vsc_[self.u_vsc_qt] = x[d:e]
+        Pf_hvdc_ = x[e:f]
+        Pt_hvdc_ = x[f:g]
+        Qf_hvdc_ = x[g:h]
+        Qt_hvdc_ = x[h:i]
+        m_ = x[i:j]
+        tau_ = x[j:k]
 
         # Controllable branches ----------------------------------------------------------------------------------------
         m2 = self.nc.active_branch_data.tap_module.copy()
         tau2 = self.nc.active_branch_data.tap_angle.copy()
-        m2[self.u_cbr_m] = m
-        tau2[self.u_cbr_tau] = tau
+        m2[self.u_cbr_m] = m_
+        tau2[self.u_cbr_tau] = tau_
 
-        self.adm = compute_admittances(
+        adm_ = compute_admittances(
             R=self.nc.passive_branch_data.R,
             X=self.nc.passive_branch_data.X,
             G=self.nc.passive_branch_data.G,
@@ -1262,9 +1263,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         )
 
         # Passive branches ---------------------------------------------------------------------------------------------
-        V = polar_to_rect(Vm, Va)
-        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
-        Scalc_passive = compute_power(self.adm.Ybus, V)
+        V = polar_to_rect(Vm_, Va_)
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm_)
+        Scalc_passive = compute_power(adm_.Ybus, V)
 
         Pf_cbr = calcSf(k=self.k_cbr_pf,
                         V=V,
@@ -1320,30 +1321,30 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # VSC ----------------------------------------------------------------------------------------------------------
         T_vsc = self.nc.vsc_data.T
-        It = np.sqrt(Pt_vsc * Pt_vsc + Qt_vsc * Qt_vsc) / Vm[T_vsc]
+        It = np.sqrt(Pt_vsc_ * Pt_vsc_ + Qt_vsc_ * Qt_vsc_) / Vm_[T_vsc]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
                      + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
-        loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
-        St_vsc = make_complex(Pt_vsc, Qt_vsc)
+        loss_vsc = PLoss_IEC - Pt_vsc_ - Pf_vsc_
+        St_vsc = make_complex(Pt_vsc_, Qt_vsc_)
 
         # HVDC ---------------------------------------------------------------------------------------------------------
-        Vmf_hvdc = Vm[self.nc.hvdc_data.F]
+        Vmf_hvdc = Vm_[self.nc.hvdc_data.F]
         zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
-        Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc / Vmf_hvdc, 2.0)
-        loss_hvdc = Ploss_hvdc - Pf_hvdc - Pt_hvdc
+        Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(Pf_hvdc_ / Vmf_hvdc, 2.0)
+        loss_hvdc = Ploss_hvdc - Pf_hvdc_ - Pt_hvdc_
 
         Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
         if len(self.hvdc_droop_idx):
-            Vaf_hvdc = Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
-            Vat_hvdc = Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
+            Vaf_hvdc = Vm_[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
+            Vat_hvdc = Vm_[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
             Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
-        inj_hvdc = Pf_hvdc - Pinj_hvdc
+        inj_hvdc = Pf_hvdc_ - Pinj_hvdc
 
-        Sf_hvdc = make_complex(Pf_hvdc, Qf_hvdc)
-        St_hvdc = make_complex(Pt_hvdc, Qt_hvdc)
+        Sf_hvdc = make_complex(Pf_hvdc_, Qf_hvdc_)
+        St_hvdc = make_complex(Pt_hvdc_, Qt_hvdc_)
 
         # total nodal power --------------------------------------------------------------------------------------------
         Scalc_active = calc_flows_active_branch_per_bus(
@@ -1354,15 +1355,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             St_hvdc=St_hvdc,
             F_vsc=self.nc.vsc_data.F,
             T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=Pf_vsc,
+            Pf_vsc=Pf_vsc_,
             St_vsc=St_vsc)
 
-        self.Scalc = Scalc_active + Scalc_passive
+        Scalc_ = Scalc_active + Scalc_passive
 
-        dS = self.Scalc - Sbus
+        dS = Scalc_ - Sbus
 
         # compose the residuals vector ---------------------------------------------------------------------------------
-        _f = np.r_[
+        f_ = np.r_[
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
             loss_vsc,
@@ -1374,7 +1375,23 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             Qt_cbr - self.cbr_qt_set
         ]
 
-        return _f
+        if update_class_vars:
+            self._Va = Va_
+            self._Vm = Vm_
+            self.Pf_vsc = Pf_vsc_
+            self.Pt_vsc = Pt_vsc_
+            self.Qt_vsc = Qt_vsc_
+            self.Pf_hvdc = Pf_hvdc_
+            self.Pt_hvdc = Pt_hvdc_
+            self.Qf_hvdc = Qf_hvdc_
+            self.Qt_hvdc = Qt_hvdc_
+            self.m = m_
+            self.tau = tau_
+            self.Scalc = Scalc_
+            self.adm = adm_
+            self._f = f_
+
+        return f_
 
     def check_error(self, x: Vec) -> Tuple[float, Vec]:
         """
@@ -1382,7 +1399,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         :param x: Solution vector
         :return: error
         """
-        _res = self.compute_f(x)
+        _res = self.compute_f(x, update_class_vars=False)
         err = compute_fx_error(_res)
 
         # compute the error
@@ -1402,7 +1419,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.V = polar_to_rect(self.Vm, self.Va)
 
         # compute f(x)
-        self._f = self.compute_f(x)
+        self._f = self.compute_f(x, update_class_vars=True)
 
         self._error = compute_fx_error(self._f)
 

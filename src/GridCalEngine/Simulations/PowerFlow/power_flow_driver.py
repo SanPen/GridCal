@@ -172,7 +172,10 @@ class PowerFlowDriver(DriverTemplate):
 
         elif self.engine == EngineType.GSLV:
 
-            res = gslv_pf(circuit=self.grid, pf_opt=self.options, time_series=False, logger=self.logger)
+            res = gslv_pf(circuit=self.grid,
+                          pf_opt=self.options,
+                          time_series=False,
+                          logger=self.logger)
 
             self.results = translate_gslv_pf_results(self.grid, res=res, logger=self.logger)
             self.results.area_names = [a.name for a in self.grid.areas]
