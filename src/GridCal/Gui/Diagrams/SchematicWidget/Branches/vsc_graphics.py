@@ -142,7 +142,7 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         """Update the connection lines attached to this item."""
         for line in self.connection_lines:
             if line is not None:
-                line.update_position()
+                line.update_ports()
 
     def get_associated_widgets(self) -> List[LineGraphicTemplateItem]:
         """Return the graphical line items connected to this VSC."""
