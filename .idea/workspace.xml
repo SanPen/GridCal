@@ -28,10 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="3-phase property and setter">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Test passed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Nordic_Grid_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/3ph_Grid.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/3ph_Grid.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/3ph_Grid.gridcal" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2335,7 +2334,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="712" />
+    <option name="localTasksCounter" value="713" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2381,7 +2380,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored unused code" />
     <MESSAGE value="added x, y to the connectivity node&#10;refactored code" />
     <MESSAGE value="Improved README.md" />
     <MESSAGE value="deleted newton related tests" />
@@ -2406,7 +2404,8 @@
     <MESSAGE value="All tests passing again" />
     <MESSAGE value="3-phase &quot;Load&quot; property and setter" />
     <MESSAGE value="3-phase property and setter" />
-    <option name="LAST_COMMIT_MESSAGE" value="3-phase property and setter" />
+    <MESSAGE value="Test passed" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test passed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
