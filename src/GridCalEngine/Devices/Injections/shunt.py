@@ -12,6 +12,7 @@ class Shunt(ShuntParent):
 
     def __init__(self, name='shunt', idtag=None, code='',
                  G=0.0, B=0.0, active=True,
+                 G1=0.0, G2=0.0, G3=0.0, B1=0.0, B2=0.0, B3=0.0,
                  mttf=0.0, mttr=0.0,
                  G0=0, B0=0,
                  capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
@@ -23,7 +24,13 @@ class Shunt(ShuntParent):
         :param code: secondary code for compatibility
         :param active:active state
         :param G: positive conductance (MW @ v=1 p.u.)
+        :param G1: phase 1 conductance (MW @ v=1 p.u.)
+        :param G2: phase 2 conductance (MW @ v=1 p.u.)
+        :param G3: phase 3 conductance (MW @ v=1 p.u.)
         :param B: positive conductance (MVAr @ v=1 p.u.)
+        :param B1: phase 1 conductance (MVAr @ v=1 p.u.)
+        :param B2: phase 2 conductance (MVAr @ v=1 p.u.)
+        :param B3: phase 3 conductance (MVAr @ v=1 p.u.)
         :param G0: zero-sequence conductance (MW @ v=1 p.u.)
         :param B0: zero-sequence conductance (MVAr @ v=1 p.u.)
         :param mttf: mean time to failure (h)
@@ -41,7 +48,13 @@ class Shunt(ShuntParent):
                              cn=None,
                              active=active,
                              G=G,
+                             G1=G1,
+                             G2=G2,
+                             G3=G3,
                              B=B,
+                             B1=B1,
+                             B2=B2,
+                             B3=B3,
                              G0=G0,
                              B0=B0,
                              Cost=0.0,
