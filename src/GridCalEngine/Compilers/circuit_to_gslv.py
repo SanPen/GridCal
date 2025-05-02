@@ -2404,10 +2404,10 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", lo
     results.loading = res.loading[0, :]
     results.losses = res.losses[0, :]
     # results.Vbranch = res.Vbranch[0, :]
-    # results.If = res.If[0, :]
-    # results.It = res.It[0, :]
-    # results.Beq = res.Beq[0, :]
-    results.m = res.tap_module[0, :]
+    results.If = res.If[0, :]
+    results.It = res.It[0, :]
+
+    results.tap_module = res.tap_module[0, :]
     results.tap_angle = res.tap_angle[0, :]
     # results.F = res.F
     # results.T = res.T
@@ -2422,6 +2422,10 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", lo
     results.St_vsc = res.St_vsc[0, :]
     results.loading_vsc = res.loading_vsc[0, :]
     results.losses_vsc = res.losses_vsc[0, :]
+
+    results.gen_q = res.gen_q[0, :]
+    results.battery_q = res.battery_q[0, :]
+    results.shunt_q = res.shunt_q[0, :]
 
     # logger.add_info("gslv time", value=res.time_array[0])
 
