@@ -1117,6 +1117,7 @@ def scopf_subproblem(nc: NumericalCircuit,
     # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
     Z_k_init = result.lam @ result.structs.Gx
     # Z_k_init = result.lam @ result.structs.Gx - result.mu @ result.structs.Hx
+    # Z_k_init = - result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
     # Z_k = Z_k_init[non_slack_idx]
     results.Z_k = Z_k_init[control_pg_idx]
@@ -1976,7 +1977,7 @@ def case_loop() -> None:
     """
     # Load basic grid
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
-    # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
+    file_path = 'src/trunk/scopf/bus5_v10.gridcal'
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
@@ -1992,7 +1993,7 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v11.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case14_cont_v12.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v12.gridcal')
 
     grid = FileOpen(file_path).open()
 
@@ -2018,7 +2019,7 @@ def case_loop() -> None:
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                         opf_options=opf_slack_options, pf_init=True, load_shedding=True)
+                                         opf_options=opf_slack_options, pf_init=True, load_shedding=False)
 
     print()
     print(f"--- Base case ---")
@@ -2046,7 +2047,7 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 1
+    max_iter = 5
     tolerance = 1e-4
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
@@ -2104,7 +2105,7 @@ def case_loop() -> None:
                             opf_options=opf_slack_options,
                             pf_init=True,
                             mp_results=acopf_results,
-                            load_shedding=True,
+                            load_shedding=False,
                         )
 
                         # Collect slacks
@@ -2164,7 +2165,8 @@ def case_loop() -> None:
                                              pf_init=True,
                                              W_k_vec=W_k_vec_used,
                                              Z_k_vec=Z_k_vec_used,
-                                             u_j_vec=u_j_vec_used)
+                                             u_j_vec=u_j_vec_used,
+                                             load_shedding=False)
 
         # Store generation cost
         total_cost = np.sum(acopf_results.Pcost)
@@ -2188,6 +2190,10 @@ def case_loop() -> None:
 
     # Plot the results
     plot_scopf_progress(iteration_data)
+
+    print(f"W_k_vec: {W_k_vec}")
+    print(f"Z_k_vec: {Z_k_vec}")
+    print(f"u_j_vec: {u_j_vec}")
 
     return None
 
