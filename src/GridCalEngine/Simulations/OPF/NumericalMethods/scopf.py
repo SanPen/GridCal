@@ -764,10 +764,14 @@ def scopf_subproblem(nc: NumericalCircuit,
         c_s = np.power(nc.passive_branch_data.overload_cost[br_mon_idx] + 0.1,
                        1.0)  # Cost squared since the slack is also squared
         c_v = nc.bus_data.cost_v[pq] + 0.1
-        sl_sf0 = np.ones(n_br_mon)
-        sl_st0 = np.ones(n_br_mon)
-        sl_vmax0 = np.ones(npq)
-        sl_vmin0 = np.ones(npq)
+        # sl_sf0 = np.ones(n_br_mon)
+        # sl_st0 = np.ones(n_br_mon)
+        # sl_vmax0 = np.ones(npq)
+        # sl_vmin0 = np.ones(npq)
+        sl_sf0 = np.ones(n_br_mon) * 0.01
+        sl_st0 = np.ones(n_br_mon) * 0.01
+        sl_vmax0 = np.ones(npq) * 0.01
+        sl_vmin0 = np.ones(npq) * 0.01
 
     else:
         nsl = 0
@@ -1113,7 +1117,6 @@ def scopf_subproblem(nc: NumericalCircuit,
     # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
     Z_k_init = result.lam @ result.structs.Gx
     # Z_k_init = result.lam @ result.structs.Gx - result.mu @ result.structs.Hx
-    # Z_k_init = result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
     # Z_k = Z_k_init[non_slack_idx]
     results.Z_k = Z_k_init[control_pg_idx]
@@ -1897,7 +1900,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
                           br_idx=island.passive_branch_data.original_idx,
                           il_idx=island.passive_branch_data.get_monitor_enabled_indices(),
                           gen_idx=island.generator_data.original_idx,
-                          load_idx=island.load_data.original_idx if load_shedding else np.array([], dtype=int),
+                          load_idx=island.bus_data.original_idx if load_shedding else np.array([], dtype=int),
                           hvdc_idx=island.hvdc_data.original_idx,
                           ncap_idx=None,
                           contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
@@ -1985,8 +1988,12 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v6.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v7.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v8.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v11.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case14_cont_v12.gridcal')
+
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
@@ -2011,7 +2018,7 @@ def case_loop() -> None:
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                         opf_options=opf_slack_options, pf_init=True, load_shedding=False)
+                                         opf_options=opf_slack_options, pf_init=True, load_shedding=True)
 
     print()
     print(f"--- Base case ---")
@@ -2039,7 +2046,7 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 5
+    max_iter = 1
     tolerance = 1e-4
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
@@ -2097,7 +2104,7 @@ def case_loop() -> None:
                             opf_options=opf_slack_options,
                             pf_init=True,
                             mp_results=acopf_results,
-                            load_shedding=False,
+                            load_shedding=True,
                         )
 
                         # Collect slacks
