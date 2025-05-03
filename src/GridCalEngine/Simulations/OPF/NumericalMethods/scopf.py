@@ -1986,6 +1986,7 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v7.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v8.gridcal')
     file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     grid = FileOpen(file_path).open()
 
     # configure grid for load shedding testing
@@ -2041,21 +2042,22 @@ def case_loop() -> None:
     max_iter = 5
     tolerance = 1e-4
 
+    n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
+    n_con_all = n_con_groups * 100
+    v_slacks = np.zeros(n_con_all)
+    f_slacks = np.zeros(n_con_all)
+    W_k_vec = np.zeros(n_con_all)
+    Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+    u_j_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+
     # Start main loop over iterations
     for klm in range(max_iter):
         print(f"General iteration {klm + 1} of {max_iter}")
         if klm == 1:
             print('')
 
-        n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
-
-        # Global slack and weight trackers
-        v_slacks = np.zeros(n_con_groups)
-        f_slacks = np.zeros(n_con_groups)
         viols = 0
-        W_k_vec = np.zeros(n_con_groups)
-        Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
-        u_j_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
+
         W_k_local = np.zeros(n_con_groups)
 
         br_lists = grid.get_branch_lists()
@@ -2106,9 +2108,9 @@ def case_loop() -> None:
                         W_k_local[ic] = slack_sol_cont.W_k
 
                         if slack_sol_cont.W_k > tolerance:
-                            W_k_vec[viols] = slack_sol_cont.W_k
-                            Z_k_vec[viols, island.generator_data.original_idx] = slack_sol_cont.Z_k
-                            u_j_vec[viols, island.generator_data.original_idx] = slack_sol_cont.u_j
+                            W_k_vec[prob_cont] = slack_sol_cont.W_k
+                            Z_k_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.Z_k
+                            u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
                             prob_cont += 1
                             viols += 1
 
@@ -2126,12 +2128,12 @@ def case_loop() -> None:
 
         if viols > 0:
             # crop the dimension 0
-            W_k_vec = W_k_vec[:prob_cont]
-            Z_k_vec = Z_k_vec[:prob_cont, :]
-            u_j_vec = u_j_vec[:prob_cont, :]
+            W_k_vec_used = W_k_vec[:prob_cont]
+            Z_k_vec_used = Z_k_vec[:prob_cont, :]
+            u_j_vec_used = u_j_vec[:prob_cont, :]
 
         # Store metrics for this iteration
-        if W_k_local.size > 0:
+        if viols > 0:
             iteration_data['max_wk'].append(W_k_local.max())
             iteration_data['max_voltage_slack'].append(v_slacks.max())
             iteration_data['avg_voltage_slack'].append(v_slacks.mean())
@@ -2144,7 +2146,7 @@ def case_loop() -> None:
             iteration_data['max_flow_slack'].append(1e-3)
             iteration_data['avg_flow_slack'].append(1e-3)
             print('Contingencies have not been initialised')
-        iteration_data['num_violations'].append(viols)
+
         iteration_data['num_violations'].append(viols)
 
         # Run the MP with information from the SPs
@@ -2153,9 +2155,9 @@ def case_loop() -> None:
                                              pf_options=pf_options,
                                              opf_options=opf_slack_options,
                                              pf_init=True,
-                                             W_k_vec=W_k_vec,
-                                             Z_k_vec=Z_k_vec,
-                                             u_j_vec=u_j_vec)
+                                             W_k_vec=W_k_vec_used,
+                                             Z_k_vec=Z_k_vec_used,
+                                             u_j_vec=u_j_vec_used)
 
         # Store generation cost
         total_cost = np.sum(acopf_results.Pcost)
@@ -2174,6 +2176,8 @@ def case_loop() -> None:
             break
         iteration_data['num_cuts'].append(prob_cont)
         print(f"Total number of cuts: {iteration_data['num_cuts'][-1]}")
+        print('-')
+        print('Length W_k_vec', len(W_k_vec))
 
     # Plot the results
     plot_scopf_progress(iteration_data)
