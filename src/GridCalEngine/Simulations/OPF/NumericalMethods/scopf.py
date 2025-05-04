@@ -607,7 +607,7 @@ def scopf_subproblem(nc: NumericalCircuit,
     slack = indices.vd
     slackgens = np.where(Cgen[slack, :].toarray() == 1)[1]
 
-    print("Slack: ", slack)
+    # print("Slack: ", slack)
 
     # # Set all generator powers except for slack
     Pg_max = np.copy(mp_results.Pg[nc.generator_data.original_idx])
@@ -1111,16 +1111,22 @@ def scopf_subproblem(nc: NumericalCircuit,
     # W_k = objective function of the SP
     # Z_k = lambda_k * dg_k/du_j + mu_k * dh_k/du_j
     # u_j = setpoints passed to the SP, they go in and out
-    results.W_k = result.structs.f
+    # results.W_k = result.structs.f
 
     # Select only the entries of Z_k also present in the MP, hence no slacks
     # Z_k_init = result.lam @ result.structs.Gx + result.mu @ result.structs.Hx
-    Z_k_init = result.lam @ result.structs.Gx
+    # Z_k_init = result.lam @ result.structs.Gx  # good one apparently
     # Z_k_init = result.lam @ result.structs.Gx - result.mu @ result.structs.Hx
     # Z_k_init = - result.mu @ result.structs.Hx
     # Z_k = Z_k_init[control_pqg_idx]
     # Z_k = Z_k_init[non_slack_idx]
-    results.Z_k = Z_k_init[control_pg_idx]
+
+    # results.Z_k = Z_k_init[control_pg_idx]
+    # results.Z_k = Z_k_init[control_pg_idx] / 100
+
+    # Refactored. Apply weights to give it more relevance
+    results.W_k = result.structs.f * 50
+    results.Z_k = (result.lam @ result.structs.Gx)[control_pg_idx] / 100
 
     # Build full x vector
     u_j_all = var2x(Va=Va,
@@ -1143,9 +1149,9 @@ def scopf_subproblem(nc: NumericalCircuit,
     results.u_j = u_j_all[control_pg_idx]
 
     # if opf_options.verbose > 0:
-    print(f"u_j: {results.u_j}")
-    print(f"W_k: {results.W_k}")
-    print(f"Z_k: {results.Z_k}")
+    # print(f"u_j: {results.u_j}")
+    # print(f"W_k: {results.W_k}")
+    # print(f"Z_k: {results.Z_k}")
 
     return results
 
@@ -1977,7 +1983,8 @@ def case_loop() -> None:
     """
     # Load basic grid
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
-    file_path = 'src/trunk/scopf/bus5_v10.gridcal'
+    # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
+    file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
@@ -2047,8 +2054,8 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 5
-    tolerance = 1e-4
+    max_iter = 15
+    tolerance = 1e-5
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
     n_con_all = n_con_groups * 100
@@ -2064,7 +2071,12 @@ def case_loop() -> None:
         if klm == 1:
             print('')
 
+        # v_slacks = np.zeros(n_con_groups)
+        # f_slacks = np.zeros(n_con_groups)
         viols = 0
+        # W_k_vec = np.zeros(n_con_groups)
+        # Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
+        # u_j_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
 
         W_k_local = np.zeros(n_con_groups)
 
@@ -2122,7 +2134,14 @@ def case_loop() -> None:
                             prob_cont += 1
                             viols += 1
 
-                        print('nbus', island.nbus, 'ngen', island.ngen)
+                        # print('nbus', island.nbus, 'ngen', island.ngen)
+                        print(f"W_k: {slack_sol_cont.W_k}")
+                        print(f"Z_k: {slack_sol_cont.Z_k}")
+                        print(f"u_j: {slack_sol_cont.u_j}")
+                        print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
+                        print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
+                        print(f"Sf slack: {slack_sol_cont.sl_sf}")
+                        print(f"St slack: {slack_sol_cont.sl_st}")
 
                     else:
                         print("No valid voltage-dependent nodes found in island. Skipping.")
@@ -2139,6 +2158,7 @@ def case_loop() -> None:
             W_k_vec_used = W_k_vec[:prob_cont]
             Z_k_vec_used = Z_k_vec[:prob_cont, :]
             u_j_vec_used = u_j_vec[:prob_cont, :]
+
 
         # Store metrics for this iteration
         if viols > 0:
@@ -2158,6 +2178,7 @@ def case_loop() -> None:
         iteration_data['num_violations'].append(viols)
 
         # Run the MP with information from the SPs
+        print('')
         print("--- Feeding SPs info to MP ---")
         acopf_results = run_nonlinear_MP_opf(nc=nc,
                                              pf_options=pf_options,
@@ -2188,12 +2209,14 @@ def case_loop() -> None:
         print('-')
         print('Length W_k_vec', len(W_k_vec))
 
+        # print(f"W_k_vec: {W_k_vec}")
+        # print(f"Z_k_vec: {Z_k_vec}")
+        # print(f"u_j_vec: {u_j_vec}")
+
     # Plot the results
     plot_scopf_progress(iteration_data)
 
-    print(f"W_k_vec: {W_k_vec}")
-    print(f"Z_k_vec: {Z_k_vec}")
-    print(f"u_j_vec: {u_j_vec}")
+
 
     return None
 
