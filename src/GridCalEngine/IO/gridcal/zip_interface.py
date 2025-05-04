@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 import json
-from io import StringIO, TextIOWrapper, BytesIO
+from io import StringIO, TextIOWrapper, BytesIO, BufferedReader
 import os
 import numpy as np
 import chardet
@@ -435,7 +435,7 @@ def load_session_driver_objects(file_name_zip: str,
     return data
 
 
-def get_xml_content(file_ptr: zipfile.ZipExtFile) -> List[str]:
+def get_xml_content(file_ptr: zipfile.ZipExtFile | BufferedReader) -> List[str]:
     """
     Reads the content of a file
     :param file_ptr: File pointer (from file or zip file)
