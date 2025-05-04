@@ -1124,8 +1124,8 @@ def scopf_subproblem(nc: NumericalCircuit,
     # results.Z_k = Z_k_init[control_pg_idx]
     # results.Z_k = Z_k_init[control_pg_idx] / 100
 
-    # Refactored. Apply weights to give it more relevance
-    results.W_k = result.structs.f * 50
+    # Refactored. Apply weights to give it more relevance and fix the 1e-4 factor
+    results.W_k = result.structs.f * 100
     results.Z_k = (result.lam @ result.structs.Gx)[control_pg_idx] / 100
 
     # Build full x vector
@@ -2168,11 +2168,11 @@ def case_loop() -> None:
             iteration_data['max_flow_slack'].append(f_slacks.max())
             iteration_data['avg_flow_slack'].append(f_slacks.mean())
         else:
-            iteration_data['max_wk'].append(1e-3)
-            iteration_data['max_voltage_slack'].append(1e-3)
-            iteration_data['avg_voltage_slack'].append(1e-3)
-            iteration_data['max_flow_slack'].append(1e-3)
-            iteration_data['avg_flow_slack'].append(1e-3)
+            iteration_data['max_wk'].append(1e-10)
+            iteration_data['max_voltage_slack'].append(1e-10)
+            iteration_data['avg_voltage_slack'].append(1e-10)
+            iteration_data['max_flow_slack'].append(1e-10)
+            iteration_data['avg_flow_slack'].append(1e-10)
             print('Contingencies have not been initialised')
 
         iteration_data['num_violations'].append(viols)
