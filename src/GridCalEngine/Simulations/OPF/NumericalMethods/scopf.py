@@ -1984,7 +1984,7 @@ def case_loop() -> None:
     # Load basic grid
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
     # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
-    file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
+    # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
@@ -2000,7 +2000,7 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v11.gridcal')
-    # file_path = os.path.join('src/trunk/scopf/case14_cont_v12.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case14_cont_v12.gridcal')
 
     grid = FileOpen(file_path).open()
 
