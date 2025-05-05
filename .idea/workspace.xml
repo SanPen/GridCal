@@ -28,9 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.3.39">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improvements in cim/cgmes bad file handling&#10;Added roundtrip trunk example">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_export.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_export.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/file_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/data_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/data_logger.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,6 +223,7 @@
     "Python.readme_checks.executor": "Run",
     "Python.readme_example.executor": "Run",
     "Python.reliability_study_run.executor": "Run",
+    "Python.round_trip.executor": "Run",
     "Python.run.executor": "Debug",
     "Python.run_child_1.executor": "Run",
     "Python.run_master.executor": "Run",
@@ -242,7 +247,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "devel",
-    "last_opened_file_path": "/home/santi/Documentos/Git/eRoots/license_server",
+    "last_opened_file_path": "/home/santi/Documentos/Git/eRoots/M-project",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -274,7 +279,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test_gslv_conversion">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -724,7 +729,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="pmode3_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="round_trip" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -733,12 +738,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/ntc" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/cgmes" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/ntc/pmode3_test.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/cgmes/round_trip.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -1097,7 +1102,7 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
-      <item itemvalue="Python.pmode3_test" />
+      <item itemvalue="Python.round_trip" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python tests.test_ntc.py" />
@@ -1106,11 +1111,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.round_trip" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for test_power_flow_acdc_generalized.test_hvdc_new" />
         <item itemvalue="Python.upload_to_pypi" />
-        <item itemvalue="Python.pmode3_test" />
-        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -2330,7 +2335,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="705" />
+    <option name="localTasksCounter" value="706" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2376,7 +2381,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Split storage vars, and now it works as expected" />
     <MESSAGE value="More refactoring" />
     <MESSAGE value="fixed most _api_object occurrences with the appropriate api_object" />
     <MESSAGE value="Fixed all _api_object typos&#10;Fixed the test_valid_circuit_idx test" />
@@ -2401,7 +2405,8 @@
     <MESSAGE value="initiated tests" />
     <MESSAGE value="GSLV improvements" />
     <MESSAGE value="5.3.39" />
-    <option name="LAST_COMMIT_MESSAGE" value="5.3.39" />
+    <MESSAGE value="Improvements in cim/cgmes bad file handling&#10;Added roundtrip trunk example" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improvements in cim/cgmes bad file handling&#10;Added roundtrip trunk example" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2759,6 +2764,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py</url>
           <line>189</line>
           <option name="timeStamp" value="2660" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
+          <line>2349</line>
+          <option name="timeStamp" value="2661" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

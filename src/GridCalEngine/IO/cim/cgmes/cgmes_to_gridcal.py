@@ -279,7 +279,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                     gc_model: MultiCircuit,
                     v_dict: Dict[str, Tuple[float, float]],
                     cn_look_up: CnLookup,
-                    logger: DataLogger) -> Dict[str, gcdev.Bus]:
+                    logger: DataLogger) -> Tuple[Dict[str, gcdev.Bus], bool]:
     """
     Convert the TopologicalNodes to Buses (CalculationNodes)
 
@@ -289,7 +289,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
     :param cn_look_up: CnLookup
     :param logger: DataLogger
     :return: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
-             Dict[str, gcdev.Bus]
+             Dict[str, gcdev.Bus], fatal error?
     """
 
     slack_id = get_slack_id(cgmes_model.cgmes_assets.SynchronousMachine_list)
@@ -310,11 +310,12 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                              device_class=tp_node.tpe,
                              device_property="nominalVoltage")
         elif nominal_voltage is None:
-            logger.add_error(msg='Nominal voltage is None. :(',
+            logger.add_error(msg='Nominal voltage is None. Maybe boundary was not attached for import :(',
                              device=tp_node.rdfid,
                              device_class=tp_node.tpe,
                              device_property="nominalVoltage")
-            raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
+            # raise Exception("Nominal voltage is missing for Bus (Maybe boundary was not attached for import) !")
+            return calc_node_dict, True
 
 
         if voltage is not None and nominal_voltage is not None:
@@ -392,7 +393,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
         cn_look_up.add_bus(bus=gcdev_elm)
         calc_node_dict[gcdev_elm.idtag] = gcdev_elm
 
-    return calc_node_dict
+    return calc_node_dict, False
 
 
 def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
@@ -2339,11 +2340,14 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model=cgmes_model,
                                                                 logger=logger)
 
-    calc_node_dict: Dict[str, gcdev.Bus] = get_gcdev_buses(cgmes_model=cgmes_model,
-                                                           gc_model=gc_model,
-                                                           v_dict=sv_volt_dict,
-                                                           cn_look_up=cn_look_up,
-                                                           logger=logger)
+    calc_node_dict, fatal_error = get_gcdev_buses(cgmes_model=cgmes_model,
+                                                   gc_model=gc_model,
+                                                   v_dict=sv_volt_dict,
+                                                   cn_look_up=cn_look_up,
+                                                   logger=logger)
+
+    if fatal_error:
+        return gc_model
 
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,

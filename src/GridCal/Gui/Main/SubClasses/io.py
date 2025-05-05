@@ -26,6 +26,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from GridCalEngine.IO.cim.cgmes.cgmes_export import get_available_cgmes_profiles
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
@@ -61,15 +62,9 @@ class IoMain(ConfigurationMain):
                                                         CGMESVersions.v3_0_0]}
         self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
 
-        self.cgmes_profiles_dict = {x.value: x for x in [cgmesProfile.EQ,
-                                                         cgmesProfile.OP,
-                                                         cgmesProfile.SC,
-                                                         cgmesProfile.TP,
-                                                         cgmesProfile.SV,
-                                                         cgmesProfile.SSH,
-                                                         cgmesProfile.DY,
-                                                         cgmesProfile.DL,
-                                                         cgmesProfile.GL]}
+        self.cgmes_profiles_dict = {key: cgmesProfile(key) for key, val in
+                                    get_available_cgmes_profiles(cgmes_version=CGMESVersions.v2_4_15).items()}
+
         self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
                                                                    checks=True, check_value=True))
 
@@ -94,6 +89,9 @@ class IoMain(ConfigurationMain):
         # Buttons
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
         self.ui.loadResultFromDiskButton.clicked.connect(self.load_results_driver)
+
+        # change
+        self.ui.cgmes_version_comboBox.currentTextChanged.connect(self.cgmes_version_change)
 
     def dragEnterEvent(self, event):
         """
@@ -410,6 +408,11 @@ class IoMain(ConfigurationMain):
                         self.rosetta_gui.set_logger(self.open_file_thread_object.cgmes_logger)
                         self.rosetta_gui.update_combo_boxes()
                         self.rosetta_gui.show()
+                    else:
+                        # else, show the logger if it is necessary
+                        if len(self.open_file_thread_object.logger) > 0:
+                            dlg = LogsDialogue('Open CGMES file logger', self.open_file_thread_object.logger)
+                            dlg.exec()
 
                 else:
                     # else, show the logger if it is necessary
@@ -573,8 +576,6 @@ class IoMain(ConfigurationMain):
                 else:
                     return
 
-
-
     def export_circuit_differential(self):
         """
         Prompt to export a diff of this circuit and a base one
@@ -593,7 +594,6 @@ class IoMain(ConfigurationMain):
 
         dlg = GridDiffDialogue(grid=self.circuit)
         dlg.exec()
-
 
     # def post_create_circuit_differential(self):
     #     """
@@ -1152,3 +1152,15 @@ class IoMain(ConfigurationMain):
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
         self.change_theme_mode()
+
+    def cgmes_version_change(self):
+        """
+        On GUI cgmes version change, display only the supported profiles
+        """
+        cgmes_version = self.cgmes_version_dict[self.ui.cgmes_version_comboBox.currentText()]
+
+        self.cgmes_profiles_dict = {key: cgmesProfile(key) for key, val in
+                                    get_available_cgmes_profiles(cgmes_version=cgmes_version).items()}
+
+        self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
+                                                                   checks=True, check_value=True))
