@@ -24,7 +24,7 @@ from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
 from GridCalEngine.DataStructures.hvdc_data import HvdcData
 from GridCalEngine.DataStructures.bus_data import BusData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, BoolVec, StrVec, CxMat
-from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
+from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, set_var_bounds, join
 from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
@@ -45,12 +45,12 @@ def formulate_monitorization_logic(monitor_only_sensitive_branches: bool,
     Function to formulate branch monitor status due the given logic
     :param monitor_only_sensitive_branches: boolean to apply sensitivity threshold to the monitorization logic.
     :param monitor_only_ntc_load_rule_branches: boolean to apply ntc load rule to the monitorization logic.
-    :param monitor_loading: Array of branch monitor loading status given by user(True/False)
+    :param monitor_loading: Array of branch monitor loading status given by the user (True / False)
     :param alpha: Array of branch sensitivity to the exchange in n condition
     :param alpha_n1: Array of branch sensitivity to the exchange in n-1 condition
     :param branch_sensitivity_threshold: branch sensitivity to the exchange threshold
     :param base_flows: branch base flows
-    :param structural_ntc: Maximun NTC available by thermal interconexion rates.
+    :param structural_ntc: Maximum NTC available by thermal interconnection rates.
     :param ntc_load_rule: percentage of loading reserved to exchange flow (Clean Energy Package rule by ACER).
     :param rates: array of branch rates
     return:
@@ -576,6 +576,7 @@ def add_linear_injections_formulation(t: Union[int, None],
     :return objective function
     """
 
+    # nodal power (p.u.), pmax (p.u.), pmin(p.u.)
     bus_pref_t, bus_pmax_t, bus_pmin_t = get_transfer_power_scaling_per_bus(
         bus_data_t=bus_data_t,
         gen_data_t=gen_data_t,
@@ -610,9 +611,6 @@ def add_linear_injections_formulation(t: Union[int, None],
             # add the deltas of the sending area
             deltas_1 += ntc_vars.bus_vars.delta_p[t, k]
 
-    # maximize the deltas of the sending area
-    # f_obj -= deltas_1
-
     deltas_2 = 0.0
     for k in bus_a2_idx:
         if bus_data_t.active[k] and proportions[k] != 0:
@@ -626,10 +624,7 @@ def add_linear_injections_formulation(t: Union[int, None],
             # add the deltas of the sending area
             deltas_2 += ntc_vars.bus_vars.delta_p[t, k]
 
-    # maximize the deltas of the sending area
-    # f_obj -= deltas_2
-
-    # the increase in the area 1 must be aqual to the decrease in the area 2, since
+    # the increase in area 1 must be equal to the decrease in area 2, since
     # we have declared the deltas positive for the sending and receiving areas
     prob.add_cst(
         cst=deltas_1 == deltas_2,
@@ -638,20 +633,11 @@ def add_linear_injections_formulation(t: Union[int, None],
 
     # now, formulate the final injections for all buses
     for k in range(bus_data_t.nbus):
-        # declare bus injections
-        ntc_vars.bus_vars.Pcalc[t, k] = prob.add_var(
-            lb=bus_pmin_t[k],
-            ub=bus_pmax_t[k],
-            name=join("inj_p", [t, k], "_")
-        )
 
         # we compute the injections power:
         # P = Pset + proportion · ΔP
         # the proportion is positive for the sending buses and negative for the receiving buses
-        prob.add_cst(
-            cst=ntc_vars.bus_vars.Pcalc[t, k] == p_bus_t[k] + proportions[k] * ntc_vars.bus_vars.delta_p[t, k],
-            name=join("bus_balance", [t, k], "_")
-        )
+        ntc_vars.bus_vars.Pcalc[t, k] += p_bus_t[k] + proportions[k] * ntc_vars.bus_vars.delta_p[t, k]
 
     return f_obj
 
@@ -686,8 +672,8 @@ def add_linear_branches_formulation(t_idx: int,
     :param ntc_load_rule
     :param alpha_threshold
     :param alpha
-    :param inf: number considered infinte
-    :param add_flow_slacks: add aslacks to the branch flows?
+    :param inf: number considered infinite
+    :param add_flow_slacks: add slacks to the branch flows?
     :return objective function
     """
     f_obj = 0.0
@@ -1081,7 +1067,6 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                                                         areas_dict=areas_dict,
                                                         logger=logger)
 
-
     # branch index, branch object, flow sense w.r.t the area exchange
     bus_a1_idx_set = set(bus_a1_idx)
     bus_a2_idx_set = set(bus_a2_idx)
@@ -1263,4 +1248,3 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     logger += lp_model.logger
 
     return vars_v
-

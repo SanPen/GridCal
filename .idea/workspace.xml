@@ -28,11 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="new numba 0.6.1, we can finally upgrade numpy">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved NTC calculation">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/theory/net_transfer_capacity.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_gslv.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_ntc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ntc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -229,7 +228,7 @@
     "Python.short_circuit_driver.executor": "Run",
     "Python.stack_plot_pos_neg.executor": "Run",
     "Python.test_gslv_conversion.executor": "Debug",
-    "Python.test_ntc.executor": "Debug",
+    "Python.test_ntc.executor": "Run",
     "Python.test_power_flow.executor": "Run",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
     "Python.toast_widget.executor": "Run",
@@ -276,7 +275,7 @@
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Branches" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.test_ntc">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -2332,7 +2331,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="703" />
+    <option name="localTasksCounter" value="704" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2378,7 +2377,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added power by technology summary at the OPF results&#10;Much better implementation of the stacked results plot" />
     <MESSAGE value="Split storage vars, and now it works as expected" />
     <MESSAGE value="More refactoring" />
     <MESSAGE value="fixed most _api_object occurrences with the appropriate api_object" />
@@ -2403,7 +2401,8 @@
     <MESSAGE value="gslv interface improvements" />
     <MESSAGE value="initiated tests" />
     <MESSAGE value="new numba 0.6.1, we can finally upgrade numpy" />
-    <option name="LAST_COMMIT_MESSAGE" value="new numba 0.6.1, we can finally upgrade numpy" />
+    <MESSAGE value="Improved NTC calculation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved NTC calculation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2736,6 +2735,11 @@
           <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
           <line>245</line>
           <option name="timeStamp" value="2606" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
+          <line>178</line>
+          <option name="timeStamp" value="2607" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
