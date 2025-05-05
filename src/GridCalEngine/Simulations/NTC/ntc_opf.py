@@ -739,16 +739,16 @@ def add_linear_branches_formulation(t_idx: int,
                     name=join("Branch_flow_set_with_ps_", [t_idx, m], "_")
                 )
 
-                # power injected and subtracted due to the phase shift
-                bus_vars.Pcalc[t_idx, fr] = -bk * branch_vars.tap_angles[t_idx, m]
-                bus_vars.Pcalc[t_idx, to] = bk * branch_vars.tap_angles[t_idx, m]
-
             else:  # rest of the branches
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 prob.add_cst(
                     cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
                                                              bus_vars.theta[t_idx, to]),
                     name=join("Branch_flow_set_", [t_idx, m], "_"))
+
+            # We save in Pcalc the balance of the branch flows
+            bus_vars.Pcalc[t_idx, fr] -= branch_vars.flows[t_idx, m]
+            bus_vars.Pcalc[t_idx, to] += branch_vars.flows[t_idx, m]
 
             # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N condition
             if monitor_only_ntc_load_rule_branches:
@@ -974,7 +974,6 @@ def add_linear_hvdc_formulation(t_idx: int,
 
 
 def add_linear_node_balance(t_idx: int,
-                            Bbus,
                             vd: IntVec,
                             bus_data: BusData,
                             bus_vars: BusNtcVars,
@@ -982,23 +981,18 @@ def add_linear_node_balance(t_idx: int,
     """
     Add the kirchhoff nodal equality
     :param t_idx: time step
-    :param Bbus: susceptance matrix (complete)
     :param vd: Array of slack indices
     :param bus_data: BusData
     :param bus_vars: BusVars
     :param prob: LpModel
     """
-    B = Bbus.tocsc()
 
-    P_esp = bus_vars.Pcalc[t_idx, :]
-
-    # calculate the linear nodal injection
-    P_calc = lpDot(B, bus_vars.theta[t_idx, :])
+    # Note: At this point, Pcalc has all the devices' power summed up inside (including branches)
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
         bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=P_calc[k] == P_esp[k],
+            cst=bus_vars.Pcalc[t_idx, k] == 0,
             name=join("kirchhoff_", [t_idx, k], "_"))
 
     for i in vd:
@@ -1079,7 +1073,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     t_idx = 0
 
     # compile the circuit at the master time index ------------------------------------------------------------
-    # note: There are very little chances of simplifying this step and experience shows it is not
+    # note: There are very small chances of simplifying this step and experience shows it is not
     #        worth the effort, so compile every time step
     nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
                                                         t_idx=t,  # yes, this is not a bug
@@ -1092,9 +1086,10 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     bus_a1_idx_set = set(bus_a1_idx)
     bus_a2_idx_set = set(bus_a2_idx)
 
-    # find the inter space branches given the bus indices of each space
+    # find the inter-space branches given the bus indices of each space
     mip_vars.branch_vars.inter_space_branches = nc.passive_branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
                                                                                        bus_idx_to=bus_a2_idx_set)
+
     mip_vars.hvdc_vars.inter_space_hvdc = nc.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
                                                                        bus_idx_to=bus_a2_idx_set)
 
@@ -1185,10 +1180,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         )
 
         # formulate nodes ---------------------------------------------------------------------------------------
-        adml = nc.get_linear_admittance_matrices(indices=indices)
-
         add_linear_node_balance(t_idx=t_idx,
-                                Bbus=adml.Bbus,
                                 vd=indices.vd,
                                 bus_data=nc.bus_data,
                                 bus_vars=mip_vars.bus_vars,

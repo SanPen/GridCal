@@ -59,7 +59,7 @@ def test_ntc_ieee_14() -> None:
     :return:
     """
     np.set_printoptions(precision=4)
-    fname = os.path.join('data', 'grids', 'IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal')
+    fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
 
     grid = gce.open_file(fname)
 
@@ -119,11 +119,11 @@ def test_issue_372_1():
         ΔP in A1 optimized > 0 (because there are no base overloads)
         ΔP in A2 optimized < 0 (because there are no base overloads)
         ΔP in A1 == − ΔP in A2
-        The summation of flow increments in the inter-area branches must be Δ P in A1.
+        The summation of flow increments in the inter-area branches must be ΔP in A1.
         Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
 
     """
-    fname = os.path.join('data', 'grids', 'IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal')
+    fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
 
     grid = gce.open_file(fname)
 
@@ -131,7 +131,8 @@ def test_issue_372_1():
                                            objects_to=[grid.areas[1]])
 
     opf_options = gce.OptimalPowerFlowOptions(
-        consider_contingencies=False
+        consider_contingencies=False,
+        export_model_fname="test_issue_372_1.lp"
     )
 
     lin_options = gce.LinearAnalysisOptions()
@@ -143,7 +144,7 @@ def test_issue_372_1():
         loading_threshold_to_report=98.0,
         skip_generation_limits=True,
         transmission_reliability_margin=0.1,
-        branch_exchange_sensitivity=0.05,
+        branch_exchange_sensitivity=0.0,
         use_branch_exchange_sensitivity=True,
         branch_rating_contribution=1.0,
         use_branch_rating_contribution=True,
@@ -157,6 +158,25 @@ def test_issue_372_1():
     drv.run()
 
     res = drv.results
+
+    bus_area_indices = grid.get_bus_area_indices()
+    a1 = np.where(bus_area_indices == 0)[0]
+    a2 = np.where(bus_area_indices == 1)[0]
+
+    theta = np.angle(res.voltage)
+
+    assert res.converged[0]
+
+    # ΔP in A1 optimized > 0 (because there are no base overloads)
+    assert res.dSbus[a1].sum() > 0
+
+    # ΔP in A2 optimized < 0 (because there are no base overloads)
+    assert res.dSbus[a2].sum() < 0
+
+    # ΔP in A1 == − ΔP in A2
+    assert np.isclose(res.dSbus[a1].sum(), -res.dSbus[a2].sum(), atol=1e-6)
+
+    print()
 
 
 def test_issue_372_2():
@@ -295,4 +315,5 @@ def test_issue_372_5():
 
 
 if __name__ == '__main__':
+    # test_ntc_ultra_simple()
     test_issue_372_1()
