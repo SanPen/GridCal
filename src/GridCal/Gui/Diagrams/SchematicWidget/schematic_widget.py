@@ -43,7 +43,7 @@ from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
-from GridCalEngine.enumerations import DeviceType, ResultTypes
+from GridCalEngine.enumerations import DeviceType, ResultTypes, TerminalType
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
@@ -1334,7 +1334,6 @@ class SchematicWidget(BaseDiagramWidget):
                         # --- Handle VSC Terminal Connection --- START
                         is_vsc_connection = False
                         vsc_graphic = None
-                        vsc_terminal_index = -1
                         target_object = None # Bus, CN, or BusBar API object
 
                         # Check if starting from VSC terminal
@@ -1347,12 +1346,12 @@ class SchematicWidget(BaseDiagramWidget):
 
                         # If it's a VSC connection, handle it and skip other checks. Use enums
                         if is_vsc_connection:
-                            if vsc_terminal_type.name == "ac":
-                                vsc_terminal_index = 0
-                            elif vsc_terminal_type.name == "dc_p":
-                                vsc_terminal_index = 1
-                            elif vsc_terminal_type.name == "dc_n":
-                                vsc_terminal_index = 2
+                            if vsc_terminal_type.terminal_type == TerminalType.AC:
+                                vsc_terminal_class = TerminalType.AC
+                            elif vsc_terminal_type.terminal_type == TerminalType.DC_P:
+                                vsc_terminal_class = TerminalType.DC_P
+                            elif vsc_terminal_type.terminal_type == TerminalType.DC_N:
+                                vsc_terminal_class = TerminalType.DC_N
                             else:
                                 warn(f"Unknown VSC terminal type: {vsc_terminal_type}")
 
@@ -1369,11 +1368,11 @@ class SchematicWidget(BaseDiagramWidget):
 
                                 # Set the connection in the VSC graphics/API
                                 if isinstance(target_object, Bus):
-                                    vsc_graphic.set_connection(vsc_terminal_index, target_object, conn_line)
+                                    vsc_graphic.set_connection(vsc_terminal_class, target_object, conn_line)
                                 elif isinstance(target_object, ConnectivityNode):
-                                    vsc_graphic.set_connection_cn(vsc_terminal_index, target_object, conn_line)
+                                    vsc_graphic.set_connection_cn(vsc_terminal_class, target_object, conn_line)
                                 elif isinstance(target_object, BusBar):
-                                    vsc_graphic.set_connection_cn(vsc_terminal_index, target_object.cn, conn_line)
+                                    vsc_graphic.set_connection_cn(vsc_terminal_class, target_object.cn, conn_line)
 
                                 self.add_to_scene(conn_line)
 

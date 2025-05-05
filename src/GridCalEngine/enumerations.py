@@ -684,6 +684,46 @@ class WindingsConnection(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+class TerminalType(Enum):
+    """
+    Terminal types
+    """
+    # AC: AC converter side
+    # DC+: DC+ converter side
+    # DC-: DC- converter side
+    # OTHER: Other terminal type such as in transformer3w
+    AC = 'AC'
+    DC_P = 'DC+'
+    DC_N = 'DC-'
+    OTHER = 'Other'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return TerminalType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
 class ActionType(Enum):
     """
     ActionType

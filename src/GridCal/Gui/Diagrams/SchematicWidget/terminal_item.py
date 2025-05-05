@@ -8,6 +8,8 @@ from PySide6.QtCore import Qt, QPointF, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import (QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
 
+from GridCalEngine.enumerations import TerminalType
+
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -264,6 +266,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
                  name: str,
                  editor: SchematicWidget,
                  parent: Union[CnGraphicItem, Transformer3WGraphicItem],
+                 terminal_type: TerminalType=TerminalType.OTHER,
                  h=10.0,
                  w=10.0):
         """
@@ -282,6 +285,8 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         self.style = ACTIVE['style']
         self.setBrush(Qt.GlobalColor.darkGray)
         self.setPen(QPen(self.color, self.pen_width, self.style))
+
+        self.terminal_type = terminal_type
 
         # terminal parent object
         self.parent: Union[BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = parent

@@ -15,7 +15,7 @@ from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget, ACTIVE, 
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import DeviceType, ConverterControlType # Assuming VSC controls might be relevant later
+from GridCalEngine.enumerations import DeviceType, ConverterControlType, TerminalType # Assuming VSC controls might be relevant later
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -69,6 +69,8 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
 
         if pos is not None:
             self.setPos(pos)
+        else:
+            self.setPos(QPoint(0, 0))
 
         # --- Create Terminals ---
         # Terminal positions (relative to the item's top-left corner 0,0)
@@ -79,29 +81,34 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         # DC- terminal on the left bottom
         t_dc_n_pos = QPoint(0, self.h * 0.8)
 
-        self.terminals: List[RoundTerminalItem] = list()
-        self.connection_lines: List[LineGraphicTemplateItem | None] = [None, None, None] # Index 0: AC, 1: DC+, 2: DC-
+        # self.terminals: List[RoundTerminalItem] = list()
+        self.terminal_ac: RoundTerminalItem | None = None
+        self.terminal_dc_p: RoundTerminalItem | None = None
+        self.terminal_dc_n: RoundTerminalItem | None = None
+        self.conn_line_ac: LineGraphicTemplateItem | None = None
+        self.conn_line_dc_p: LineGraphicTemplateItem | None = None
+        self.conn_line_dc_n: LineGraphicTemplateItem | None = None
 
         # AC Terminal (Index 0)
-        terminal_ac = RoundTerminalItem("ac", parent=self, editor=self.editor)
+        terminal_ac = RoundTerminalItem("ac", parent=self, editor=self.editor, terminal_type=TerminalType.AC)
         terminal_ac.setPos(t_ac_pos)
         terminal_ac.setRotation(0) # Points right
         terminal_ac.setPen(QPen(self.color, self.pen_width, self.style))
-        self.terminals.append(terminal_ac)
+        self.terminal_ac = terminal_ac
 
         # DC+ Terminal (Index 1)
-        terminal_dc_p = RoundTerminalItem("dc_p", parent=self, editor=self.editor)
+        terminal_dc_p = RoundTerminalItem("dc_p", parent=self, editor=self.editor, terminal_type=TerminalType.DC_P)
         terminal_dc_p.setPos(t_dc_p_pos)
         terminal_dc_p.setRotation(180) # Points left
         terminal_dc_p.setPen(QPen(self.color, self.pen_width, self.style))
-        self.terminals.append(terminal_dc_p)
+        self.terminal_dc_p = terminal_dc_p
 
         # DC- Terminal (Index 2)
-        terminal_dc_n = RoundTerminalItem("dc_n", parent=self, editor=self.editor)
+        terminal_dc_n = RoundTerminalItem("dc_n", parent=self, editor=self.editor, terminal_type=TerminalType.DC_N)
         terminal_dc_n.setPos(t_dc_n_pos)
         terminal_dc_n.setRotation(180) # Points left
         terminal_dc_n.setPen(QPen(self.color, self.pen_width, self.style))
-        self.terminals.append(terminal_dc_n)
+        self.terminal_dc_n = terminal_dc_n
 
         self.set_terminal_tooltips()
 
@@ -134,23 +141,26 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
     def set_terminal_tooltips(self):
         """Set tooltips for the terminals."""
         if self.api_object:
-            self.terminals[0].setToolTip(f"AC Terminal ({self.api_object.bus_to.name if self.api_object.bus_to else 'Unconnected'})")
-            self.terminals[1].setToolTip(f"DC+ Terminal ({self.api_object.bus_from.name if self.api_object.bus_from else 'Unconnected'})")
-            self.terminals[2].setToolTip(f"DC- Terminal ({self.api_object.bus_dc_n.name if self.api_object.bus_dc_n else 'Unconnected'})")
+            self.terminal_ac.setToolTip(f"AC Terminal ({self.api_object.bus_to.name if self.api_object.bus_to else 'Unconnected'})")
+            self.terminal_dc_p.setToolTip(f"DC+ Terminal ({self.api_object.bus_from.name if self.api_object.bus_from else 'Unconnected'})")
+            self.terminal_dc_n.setToolTip(f"DC- Terminal ({self.api_object.bus_dc_n.name if self.api_object.bus_dc_n else 'Unconnected'})")
 
     def update_conn(self):
         """Update the connection lines attached to this item."""
-        for line in self.connection_lines:
-            if line is not None:
-                line.update_ports()
+        if self.conn_line_ac is not None:
+            self.conn_line_ac.update_ports()
+        if self.conn_line_dc_p is not None:
+            self.conn_line_dc_p.update_ports()
+        if self.conn_line_dc_n is not None:
+            self.conn_line_dc_n.update_ports()
 
     def get_associated_widgets(self) -> List[LineGraphicTemplateItem]:
         """Return the graphical line items connected to this VSC."""
-        return [line for line in self.connection_lines if line is not None]
+        return [self.conn_line_ac, self.conn_line_dc_p, self.conn_line_dc_n]
 
     def get_extra_graphics(self):
          """Return terminals associated with this widget."""
-         return self.terminals
+         return [self.terminal_ac, self.terminal_dc_p, self.terminal_dc_n]
 
     def recolour_mode(self):
         """Change the colour according to the system theme and active state."""
@@ -164,12 +174,17 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         pen = QPen(self.color, self.pen_width, self.style)
         self.setPen(pen)
 
-        for terminal in self.terminals:
-            terminal.setPen(pen)
+        self.terminal_ac.setPen(pen)
+        self.terminal_dc_p.setPen(pen)
+        self.terminal_dc_n.setPen(pen)
 
-        for line in self.connection_lines:
-            if line is not None:
-                line.recolour_mode()
+        if self.conn_line_ac is not None:
+            self.conn_line_ac.recolour_mode()
+        if self.conn_line_dc_p is not None:
+            self.conn_line_dc_p.recolour_mode()
+        if self.conn_line_dc_n is not None:
+            self.conn_line_dc_n.recolour_mode()
+
         self.update() # Request repaint
 
     def set_enable(self, val=True):
@@ -204,8 +219,9 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
     def delete(self):
         """Delete the VSC and its connections."""
         # Remove connections first
-        for i in range(len(self.connection_lines)):
-             self.remove_connection(i)
+        self.remove_connection(self.conn_line_ac)
+        self.remove_connection(self.conn_line_dc_p)
+        self.remove_connection(self.conn_line_dc_n)
 
         # Remove the item itself
         self.editor.scene().removeItem(self)
@@ -213,92 +229,105 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         self.editor.circuit.remove_vsc(self.api_object)
         self.editor.viewport().update()
 
-    def set_connection(self, terminal_index: int, bus: Bus, conn_line: LineGraphicTemplateItem, set_voltage: bool = True):
+    def set_connection(self, terminal_type: TerminalType, bus: Bus, conn_line: LineGraphicTemplateItem):
         """Set a connection to a specific terminal."""
-        if not (0 <= terminal_index < 3):
-             print(f"Error: Invalid terminal index {terminal_index} for VSC {self.api_object.name}")
-             return
-
+        if terminal_type == TerminalType.OTHER:
+            print(f"Error: Invalid terminal type {terminal_type} for VSC {self.api_object.name}")
+            return
+        elif terminal_type == TerminalType.AC:
+            self.conn_line_ac = conn_line
+        elif terminal_type == TerminalType.DC_P:
+            self.conn_line_dc_p = conn_line
+        elif terminal_type == TerminalType.DC_N:
+            self.conn_line_dc_n = conn_line
+        
         # Remove existing connection if any
-        self.remove_connection(terminal_index)
+        self.remove_connection(conn_line)
+
+        right_connection = False
 
         # Update API object
-        if terminal_index == 0: # AC Terminal
+        if terminal_type == TerminalType.AC: # AC Terminal
             if bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
-            self.api_object.bus_to = bus
-            self.api_object.cn_to = None # Explicitly connected to Bus
-        elif terminal_index == 1: # DC+ Terminal
+            else:
+                self.api_object.bus_to = bus
+                self.api_object.cn_to = None # Explicitly connected to Bus
+                right_connection = True
+        elif terminal_type == TerminalType.DC_P: # DC+ Terminal
             if not bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-            self.api_object.bus_from = bus
-            self.api_object.cn_from = None # Explicitly connected to Bus
-        elif terminal_index == 2: # DC- Terminal
+            else:
+                self.api_object.bus_from = bus
+                self.api_object.cn_from = None # Explicitly connected to Bus
+                right_connection = True
+        elif terminal_type == TerminalType.DC_N: # DC- Terminal
             if not bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-            self.api_object.bus_dc_n = bus
-            self.api_object.cn_dc_n = None # Explicitly connected to Bus
+            else:
+                self.api_object.bus_dc_n = bus
+                self.api_object.cn_dc_n = None # Explicitly connected to Bus
+                right_connection = True
 
-        # Store connection line
-        self.connection_lines[terminal_index] = conn_line
-        self.set_terminal_tooltips()
+        if right_connection:
+            # Store connection line
+            self.set_terminal_tooltips()
+        else:
+            self.editor.scene().removeItem(conn_line)
+            # self.remove_connection(terminal_index)
 
-    def set_connection_cn(self, terminal_index: int, cn: ConnectivityNode, conn_line: LineGraphicTemplateItem, set_voltage: bool = True):
+    def set_connection_cn(self, terminal_type: TerminalType, cn: ConnectivityNode, conn_line: LineGraphicTemplateItem, set_voltage: bool = True):
          """ Set a connection to a specific terminal using a connectivity node. """
-         if not (0 <= terminal_index < 3):
-             print(f"Error: Invalid terminal index {terminal_index} for VSC {self.api_object.name}")
+         if terminal_type == TerminalType.OTHER:
+             print(f"Error: Invalid terminal type {terminal_type} for VSC {self.api_object.name}")
              return
 
          # Remove existing connection if any
-         self.remove_connection(terminal_index)
+         self.remove_connection(terminal_type)
 
          # Update API object
          bus = cn.bus # Get the bus from the CN
-         if terminal_index == 0: # AC Terminal
+         if terminal_type == TerminalType.AC: # AC Terminal
              if bus.is_dc:
                  self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
              self.api_object.bus_to = cn.bus # Store parent bus
              self.api_object.cn_to = cn
-         elif terminal_index == 1: # DC+ Terminal
+         elif terminal_type == TerminalType.DC_P: # DC+ Terminal
              if not bus.is_dc:
                  self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
              self.api_object.bus_from = cn.bus # Store parent bus
              self.api_object.cn_from = cn
-         elif terminal_index == 2: # DC- Terminal
+         elif terminal_type == TerminalType.DC_N: # DC- Terminal
              if not bus.is_dc:
                  self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
              self.api_object.bus_dc_n = cn.bus # Store parent bus
              self.api_object.cn_dc_n = cn
 
          # Store connection line
-         self.connection_lines[terminal_index] = conn_line
          self.set_terminal_tooltips()
-         self.editor.viewport().update()
+        #  self.editor.viewport().update()
 
 
-    def remove_connection(self, terminal_index: int):
+    def remove_connection(self, conn_line: LineGraphicTemplateItem):
         """Remove a connection from a specific terminal."""
-        if not (0 <= terminal_index < 3):
-             return
-        if self.connection_lines[terminal_index] is not None:
-             line = self.connection_lines[terminal_index]
-             # Remove the line from the scene
-             if line.scene():
-                 line.scene().removeItem(line)
-             # Clear the reference
-             self.connection_lines[terminal_index] = None
-             # Optionally clear the bus/cn reference in the api_object
-             if terminal_index == 0:
-                 self.api_object.bus_to = None
-                 self.api_object.cn_to = None
-             elif terminal_index == 1:
-                 self.api_object.bus_from = None
-                 self.api_object.cn_from = None
-             elif terminal_index == 2:
-                 self.api_object.bus_dc_n = None
-                 self.api_object.cn_dc_n = None
-             self.set_terminal_tooltips()
-             self.editor.viewport().update()
+        if conn_line is None:
+            return
+        else:
+            line = conn_line
+            # Remove the line from the scene
+            if line.scene():
+                line.scene().removeItem(line)
+            # Optionally clear the bus/cn reference in the api_object
+            if line == self.conn_line_ac:
+                self.api_object.bus_to = None
+                self.api_object.cn_to = None
+            elif line == self.conn_line_dc_p:
+                self.api_object.bus_from = None
+                self.api_object.cn_from = None
+            elif line == self.conn_line_dc_n:
+                self.api_object.bus_dc_n = None
+                self.api_object.cn_dc_n = None
+            self.set_terminal_tooltips()
 
 
     def contextMenuEvent(self, event):
@@ -375,13 +404,9 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         Sets control1 to Vm_dcp.
         """
         if self.api_object.bus_to and self.api_object.bus_from:
-            self.api_object.control1 = ConverterControlType.Vm_ac
-            self.api_object.control1_dev = self.api_object.bus_to
+            self.api_object.control1 = ConverterControlType.Vm_dc
+            self.api_object.control1_dev = self.api_object.bus_from
             self.api_object.control1_val = 1.0 # Default to 1.0 pu
-
-            self.api_object.control2 = ConverterControlType.Vm_dc
-            self.api_object.control2_dev = self.api_object.bus_from
-            self.api_object.control2_val = 1.0 # Default to 1.0 pu
 
             print(f"VSC {self.api_object.name} control set: Control1=Vm_dcp (Bus: {self.api_object.bus_from.name})")
             self.editor.set_editor_model(api_object=self.api_object) # Refresh editor view
