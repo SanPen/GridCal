@@ -1368,13 +1368,14 @@ class SchematicWidget(BaseDiagramWidget):
 
                                 # Set the connection in the VSC graphics/API
                                 if isinstance(target_object, Bus):
-                                    vsc_graphic.set_connection(vsc_terminal_class, target_object, conn_line)
+                                    have_to_conn_line = vsc_graphic.set_connection(vsc_terminal_class, target_object, conn_line)
                                 elif isinstance(target_object, ConnectivityNode):
-                                    vsc_graphic.set_connection_cn(vsc_terminal_class, target_object, conn_line)
+                                    have_to_conn_line = vsc_graphic.set_connection_cn(vsc_terminal_class, target_object, conn_line)
                                 elif isinstance(target_object, BusBar):
-                                    vsc_graphic.set_connection_cn(vsc_terminal_class, target_object.cn, conn_line)
+                                    have_to_conn_line = vsc_graphic.set_connection_cn(vsc_terminal_class, target_object.cn, conn_line)
 
-                                self.add_to_scene(conn_line)
+                                if have_to_conn_line:
+                                    self.add_to_scene(conn_line)
 
                                 self._remove_from_scene(self.started_branch)
 
