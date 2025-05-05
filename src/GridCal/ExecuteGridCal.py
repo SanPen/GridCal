@@ -12,7 +12,7 @@ sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCal.__version__ import about_msg
 
 # NOTE: For some reason I cannot begin to comprehend, the activation fails on windows if called before the GUI...
-# import GridCalEngine.Utils.ThirdParty.gslv.gslv_activation
+import GridCalEngine.Utils.ThirdParty.gslv.gslv_activation
 
 from GridCal.Gui.Main.GridCalMain import runGridCal
 

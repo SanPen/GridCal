@@ -28,9 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Some cgmes handling improvements">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed the round trip">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes/round_trip.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/cgmes/round_trip.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_segment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_segment.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2331,7 +2331,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="707" />
+    <option name="localTasksCounter" value="708" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2377,7 +2377,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed most _api_object occurrences with the appropriate api_object" />
     <MESSAGE value="Fixed all _api_object typos&#10;Fixed the test_valid_circuit_idx test" />
     <MESSAGE value="Touched on some CGMES craziness..." />
     <MESSAGE value="Fixed VL border issue" />
@@ -2402,7 +2401,8 @@
     <MESSAGE value="5.3.39" />
     <MESSAGE value="Improvements in cim/cgmes bad file handling&#10;Added roundtrip trunk example" />
     <MESSAGE value="Some cgmes handling improvements" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some cgmes handling improvements" />
+    <MESSAGE value="Fixed the round trip" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed the round trip" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
