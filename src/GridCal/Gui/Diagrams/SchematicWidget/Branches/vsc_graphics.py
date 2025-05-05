@@ -134,8 +134,8 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
     def set_terminal_tooltips(self):
         """Set tooltips for the terminals."""
         if self.api_object:
-            self.terminals[0].setToolTip(f"AC Terminal ({self.api_object.bus_ac.name if self.api_object.bus_ac else 'Unconnected'})")
-            self.terminals[1].setToolTip(f"DC+ Terminal ({self.api_object.bus_dc_p.name if self.api_object.bus_dc_p else 'Unconnected'})")
+            self.terminals[0].setToolTip(f"AC Terminal ({self.api_object.bus_to.name if self.api_object.bus_to else 'Unconnected'})")
+            self.terminals[1].setToolTip(f"DC+ Terminal ({self.api_object.bus_from.name if self.api_object.bus_from else 'Unconnected'})")
             self.terminals[2].setToolTip(f"DC- Terminal ({self.api_object.bus_dc_n.name if self.api_object.bus_dc_n else 'Unconnected'})")
 
     def update_conn(self):
@@ -226,13 +226,13 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         if terminal_index == 0: # AC Terminal
             if bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
-            self.api_object.bus_ac = bus
-            self.api_object.cn_ac = None # Explicitly connected to Bus
+            self.api_object.bus_to = bus
+            self.api_object.cn_to = None # Explicitly connected to Bus
         elif terminal_index == 1: # DC+ Terminal
             if not bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-            self.api_object.bus_dc_p = bus
-            self.api_object.cn_dc_p = None # Explicitly connected to Bus
+            self.api_object.bus_from = bus
+            self.api_object.cn_from = None # Explicitly connected to Bus
         elif terminal_index == 2: # DC- Terminal
             if not bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
@@ -257,13 +257,13 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
          if terminal_index == 0: # AC Terminal
              if bus.is_dc:
                  self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
-             self.api_object.bus_ac = cn.bus # Store parent bus
-             self.api_object.cn_ac = cn
+             self.api_object.bus_to = cn.bus # Store parent bus
+             self.api_object.cn_to = cn
          elif terminal_index == 1: # DC+ Terminal
              if not bus.is_dc:
                  self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-             self.api_object.bus_dc_p = cn.bus # Store parent bus
-             self.api_object.cn_dc_p = cn
+             self.api_object.bus_from = cn.bus # Store parent bus
+             self.api_object.cn_from = cn
          elif terminal_index == 2: # DC- Terminal
              if not bus.is_dc:
                  self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
@@ -289,11 +289,11 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
              self.connection_lines[terminal_index] = None
              # Optionally clear the bus/cn reference in the api_object
              if terminal_index == 0:
-                 self.api_object.bus_ac = None
-                 self.api_object.cn_ac = None
+                 self.api_object.bus_to = None
+                 self.api_object.cn_to = None
              elif terminal_index == 1:
-                 self.api_object.bus_dc_p = None
-                 self.api_object.cn_dc_p = None
+                 self.api_object.bus_from = None
+                 self.api_object.cn_from = None
              elif terminal_index == 2:
                  self.api_object.bus_dc_n = None
                  self.api_object.cn_dc_n = None
@@ -374,16 +374,16 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
         Set control mode to regulate DC voltage based on DC+ side (Interpretation).
         Sets control1 to Vm_dcp.
         """
-        if self.api_object.bus_ac and self.api_object.bus_dc_p:
+        if self.api_object.bus_to and self.api_object.bus_from:
             self.api_object.control1 = ConverterControlType.Vm_ac
-            self.api_object.control1_dev = self.api_object.bus_ac
+            self.api_object.control1_dev = self.api_object.bus_to
             self.api_object.control1_val = 1.0 # Default to 1.0 pu
 
             self.api_object.control2 = ConverterControlType.Vm_dc
-            self.api_object.control2_dev = self.api_object.bus_dc_p
+            self.api_object.control2_dev = self.api_object.bus_from
             self.api_object.control2_val = 1.0 # Default to 1.0 pu
 
-            print(f"VSC {self.api_object.name} control set: Control1=Vm_dcp (Bus: {self.api_object.bus_dc_p.name})")
+            print(f"VSC {self.api_object.name} control set: Control1=Vm_dcp (Bus: {self.api_object.bus_from.name})")
             self.editor.set_editor_model(api_object=self.api_object) # Refresh editor view
         else:
             print("Error: Cannot set control_v_from, DC+ bus not connected.")

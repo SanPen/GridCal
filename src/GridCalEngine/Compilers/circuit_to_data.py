@@ -1566,9 +1566,9 @@ def get_vsc_data(
 
         data.mttf[i] = elm.mttf
         data.mttr[i] = elm.mttr
-        f_dcp = bus_dict[elm.bus_dc_p]
+        f_dcp = bus_dict[elm.bus_from]
         t_dcn = bus_dict[elm.bus_dc_n]
-        t_ac = bus_dict[elm.bus_ac]
+        t_ac = bus_dict[elm.bus_to]
 
         data.original_idx[i] = i
 

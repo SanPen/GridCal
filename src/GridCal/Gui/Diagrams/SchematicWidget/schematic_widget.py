@@ -2397,8 +2397,8 @@ class SchematicWidget(BaseDiagramWidget):
         :return: SeriesReactanceGraphicItem or None
         """
 
-        port_ac = self.find_port(bus=elm.bus_ac)
-        port_dcp = self.find_port(bus=elm.bus_dc_p)
+        port_ac = self.find_port(bus=elm.bus_to)
+        port_dcp = self.find_port(bus=elm.bus_from)
         port_dcn = self.find_port(bus=elm.bus_dc_n)
         
         # search for the api object, because it may be created already

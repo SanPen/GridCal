@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
-class VSC(PhysicalDevice):
+class VSC(BranchParent):
 
     def __init__(self,
                  bus_dc_p: Bus | None = None,
@@ -86,58 +86,65 @@ class VSC(PhysicalDevice):
         :param control2:
         """
 
-        PhysicalDevice.__init__(self,
-                                name=name,
-                                idtag=idtag,
-                                code=code,
-                                device_type=DeviceType.VscDevice)
+        BranchParent.__init__(self,
+                              name=name,
+                              idtag=idtag,
+                              code=code,
+                              bus_from=bus_dc_p,
+                              bus_to=bus_ac,
+                              cn_from=cn_dc_p,
+                              cn_to=cn_ac,
+                              active=active,
+                              reducible=False,
+                              rate=rate,
+                              contingency_factor=contingency_factor,
+                              protection_rating_factor=protection_rating_factor,
+                              contingency_enabled=contingency_enabled,
+                              monitor_loading=monitor_loading,
+                              mttf=mttf,
+                              mttr=mttr,
+                              build_status=build_status,
+                              capex=capex,
+                              opex=opex,
+                              cost=cost,
+                              device_type=DeviceType.VscDevice)
 
         if bus_dc_p is not None and bus_dc_n is not None and bus_ac is not None:
             if bus_dc_p.is_dc and bus_dc_n.is_dc and not bus_ac.is_dc:
-                self._bus_dc_p = bus_dc_p
-                self._bus_dc_n = bus_dc_n
-                self._bus_ac = bus_ac
+                # self._bus_dc_p = bus_dc_p
+                # self._bus_dc_n = bus_dc_n
+                # self._bus_ac = bus_ac
 
-                self._cn_dc_p = cn_dc_p
+                # self._cn_dc_p = cn_dc_p
+                # self._cn_dc_n = cn_dc_n
+                # self._cn_ac = cn_ac
+
+                self._bus_from = bus_dc_p
+                self._bus_dc_n = bus_dc_n
+                self._bus_to = bus_ac
+
+                self._cn_from = cn_dc_p
                 self._cn_dc_n = cn_dc_n
-                self._cn_ac = cn_ac
+                self._cn_to = cn_ac
             else:
                 raise Exception('Impossible connecting a VSC device here. '
                                 'VSC devices must be connected between 1 AC and 2 DC buses')
         else:
-            self._bus_dc_p = None
+            # self._bus_dc_p = None
+            # self._bus_dc_n = None
+            # self._bus_ac = None
+
+            # self._cn_dc_p = None
+            # self._cn_dc_n = None
+            # self._cn_ac = None
+
+            self._bus_from = None
             self._bus_dc_n = None
-            self._bus_ac = None
+            self._bus_to = None
 
-            self._cn_dc_p = None
+            self._cn_from = None
             self._cn_dc_n = None
-            self._cn_ac = None
-
-        self.active = bool(active)
-        self._active_prof = Profile(default_value=self.active, data_type=bool)
-
-        self.contingency_enabled: bool = contingency_enabled
-
-        self.monitor_loading: bool = monitor_loading
-
-        self.mttf = mttf
-        self.mttr = mttr
-
-        self.Cost = cost
-        self._Cost_prof = Profile(default_value=cost, data_type=float)
-        self.capex = capex
-        self.opex = opex
-
-        self.build_status = build_status
-
-        self._rate = float(rate)
-        self._rate_prof = Profile(default_value=rate, data_type=float)
-
-        self._contingency_factor = float(contingency_factor)
-        self._contingency_factor_prof = Profile(default_value=contingency_factor, data_type=float)
-
-        self._protection_rating_factor = float(protection_rating_factor)
-        self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor, data_type=float)
+            self._cn_to = None
 
         self.kdp = float(kdp)
         self.alpha1 = float(alpha1)
@@ -162,43 +169,19 @@ class VSC(PhysicalDevice):
         self._control2_val = float(control2_val)
         self._control2_val_prof: Profile = Profile(default_value=self._control2_val, data_type=float)
 
-        self.register(key='bus_dc_p', units="", tpe=DeviceType.BusDevice, 
-                      definition='DC positive bus', editable=False)
+        # self.register(key='bus_dc_p', units="", tpe=DeviceType.BusDevice, 
+        #               definition='DC positive bus', editable=False)
         self.register(key='bus_dc_n', units="", tpe=DeviceType.BusDevice, 
                       definition='DC negative bus', editable=False)
-        self.register(key='bus_ac', units="", tpe=DeviceType.BusDevice,
-                      definition='AC bus', editable=False)
+        # self.register(key='bus_ac', units="", tpe=DeviceType.BusDevice,
+        #               definition='AC bus', editable=False)
 
-        self.register(key='cn_dc_p', units="", tpe=DeviceType.ConnectivityNodeDevice, 
-                      definition='DC positive connectivity node', editable=False)
+        # self.register(key='cn_dc_p', units="", tpe=DeviceType.ConnectivityNodeDevice, 
+        #               definition='DC positive connectivity node', editable=False)
         self.register(key='cn_dc_n', units="", tpe=DeviceType.ConnectivityNodeDevice, 
                       definition='DC negative connectivity node', editable=False)
-        self.register(key='cn_ac', units="", tpe=DeviceType.ConnectivityNodeDevice, 
-                      definition='AC connectivity node', editable=False)
-
-        self.register(key='active', units="", definition='Is active?', tpe=bool, profile_name="active_prof")
-
-        self.register(key='rate', units='MVA', definition='Nominal power', tpe=float, profile_name="rate_prof")
-
-        self.register('contingency_factor', units="p.u.", tpe=float,
-                      definition='Rating multiplier for contingencies', profile_name="contingency_factor_prof")
-
-        self.register('protection_rating_factor', units="p.u.", tpe=float,
-                      definition='Rating multiplier that indicates the maximum flow before the protections tripping',
-                      profile_name="protection_rating_factor_prof")
-
-        self.register('monitor_loading', units="", tpe=bool,
-                      definition="Monitor this device loading for OPF, NTC or contingency studies.")
-        self.register('mttf', units="h", tpe=float, definition="Mean time to failure")
-        self.register('mttr', units="h", tpe=float, definition="Mean time to repair")
-
-        self.register('Cost', units="e/MWh", tpe=float,
-                      definition="Cost of overloads. Used in OPF", profile_name="Cost_prof")
-
-        self.register('build_status', units="", tpe=BuildStatus,
-                      definition="Branch build status. Used in expansion planning.")
-        self.register('capex', units="e/MW", tpe=float, definition="Cost of investment. Used in expansion planning.")
-        self.register('opex', units="e/MWh", tpe=float, definition="Cost of operation. Used in expansion planning.")
+        # self.register(key='cn_ac', units="", tpe=DeviceType.ConnectivityNodeDevice, 
+        #               definition='AC connectivity node', editable=False)
 
         self.register(key='alpha1', units='', tpe=float,
                       definition='Losses constant parameter (IEC 62751-2 loss Correction).')
@@ -234,25 +217,25 @@ class VSC(PhysicalDevice):
         self.register(key='control2_dev', units="", tpe=DeviceType.BusOrBranch, profile_name="control2_dev_prof",
                       definition='Controlled device, None to apply to this converter', editable=False)
 
-    @property
-    def bus_dc_p(self) -> Bus:
-        """
-        Get the DC positive bus
-        """
-        return self._bus_dc_p
+    # @property
+    # def bus_dc_p(self) -> Bus:
+    #     """
+    #     Get the DC positive bus
+    #     """
+    #     return self._bus_dc_p
 
-    @bus_dc_p.setter
-    def bus_dc_p(self, value: Bus):
-        if value is None:
-            self._bus_dc_p = value
-        else:
-            if isinstance(value, Bus):
-                if value.is_dc:
-                    self._bus_dc_p = value
-                else:
-                    raise Exception('This should be a DC bus')
-            else:
-                raise Exception(str(type(value)) + 'not supported to be set into a _bus_dc_p')
+    # @bus_dc_p.setter
+    # def bus_dc_p(self, value: Bus):
+    #     if value is None:
+    #         self._bus_dc_p = value
+    #     else:
+    #         if isinstance(value, Bus):
+    #             if value.is_dc:
+    #                 self._bus_dc_p = value
+    #             else:
+    #                 raise Exception('This should be a DC bus')
+    #         else:
+    #             raise Exception(str(type(value)) + 'not supported to be set into a _bus_dc_p')
 
     @property
     def bus_dc_n(self) -> Bus:
@@ -274,45 +257,45 @@ class VSC(PhysicalDevice):
             else:
                 raise Exception(str(type(value)) + 'not supported to be set into a _bus_dc_n')
 
-    @property
-    def bus_ac(self) -> Bus:
-        """
-        Get the AC bus
-        """
-        return self._bus_ac
+    # @property
+    # def bus_ac(self) -> Bus:
+    #     """
+    #     Get the AC bus
+    #     """
+    #     return self._bus_ac
 
-    @bus_ac.setter
-    def bus_ac(self, value: Bus):
-        if value is None:
-            self._bus_ac = value
-        else:
-            if isinstance(value, Bus):
-                if not value.is_dc:
-                    self._bus_ac = value
-                else:
-                    raise Exception('This should be an AC bus')
-            else:
-                raise Exception(str(type(value)) + 'not supported to be set into a _bus_ac')
+    # @bus_ac.setter
+    # def bus_ac(self, value: Bus):
+    #     if value is None:
+    #         self._bus_ac = value
+    #     else:
+    #         if isinstance(value, Bus):
+    #             if not value.is_dc:
+    #                 self._bus_ac = value
+    #             else:
+    #                 raise Exception('This should be an AC bus')
+    #         else:
+    #             raise Exception(str(type(value)) + 'not supported to be set into a _bus_ac')
 
-    @property
-    def cn_dc_p(self) -> ConnectivityNode:
-        """
-        Get the DC positive connectivity node
-        """
-        return self._cn_dc_p
+    # @property
+    # def cn_dc_p(self) -> ConnectivityNode:
+    #     """
+    #     Get the DC positive connectivity node
+    #     """
+    #     return self._cn_dc_p
 
-    @cn_dc_p.setter
-    def cn_dc_p(self, val: ConnectivityNode):
-        if val is None:
-            self._cn_dc_p = val
-        else:
-            if isinstance(val, ConnectivityNode):
-                self._cn_dc_p = val
+    # @cn_dc_p.setter
+    # def cn_dc_p(self, val: ConnectivityNode):
+    #     if val is None:
+    #         self._cn_dc_p = val
+    #     else:
+    #         if isinstance(val, ConnectivityNode):
+    #             self._cn_dc_p = val
 
-                if self.bus_dc_p is None:
-                    self.bus_dc_p = self._cn_dc_p.bus
-            else:
-                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
+    #             if self.bus_dc_p is None:
+    #                 self.bus_dc_p = self._cn_dc_p.bus
+    #         else:
+    #             raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
 
     @property
     def cn_dc_n(self) -> ConnectivityNode:
@@ -334,155 +317,25 @@ class VSC(PhysicalDevice):
             else:
                 raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
 
-    @property
-    def cn_ac(self) -> ConnectivityNode:
-        """
-        Get the AC connectivity node
-        """
-        return self._cn_ac
+    # @property
+    # def cn_ac(self) -> ConnectivityNode:
+    #     """
+    #     Get the AC connectivity node
+    #     """
+    #     return self._cn_ac
 
-    @cn_ac.setter
-    def cn_ac(self, val: ConnectivityNode):
-        if val is None:
-            self._cn_ac = val
-        else:
-            if isinstance(val, ConnectivityNode):
-                self._cn_ac = val
+    # @cn_ac.setter
+    # def cn_ac(self, val: ConnectivityNode):
+    #     if val is None:
+    #         self._cn_ac = val
+    #     else:
+    #         if isinstance(val, ConnectivityNode):
+    #             self._cn_ac = val
 
-                if self.bus_ac is None:
-                    self.bus_ac = self._cn_ac.bus
-            else:
-                raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
-
-    @property
-    def active_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._active_prof
-
-    @active_prof.setter
-    def active_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._active_prof = val
-        elif isinstance(val, np.ndarray):
-            self._active_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')
-
-    @property
-    def rate(self):
-        """
-        Rate (MVA)
-        :return:
-        """
-        return self._rate
-
-    @rate.setter
-    def rate(self, val: float):
-        if isinstance(val, float):
-            self._rate = val
-        else:
-            raise ValueError(f'{val} is not a float')
-
-    @property
-    def rate_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._rate_prof
-
-    @rate_prof.setter
-    def rate_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._rate_prof = val
-        elif isinstance(val, np.ndarray):
-            self._rate_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a rate_prof')
-
-    @property
-    def contingency_factor_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._contingency_factor_prof
-
-    @contingency_factor_prof.setter
-    def contingency_factor_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._contingency_factor_prof = val
-        elif isinstance(val, np.ndarray):
-            self._contingency_factor_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a contingency_factor_prof')
-
-    @property
-    def protection_rating_factor_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._protection_rating_factor_prof
-
-    @protection_rating_factor_prof.setter
-    def protection_rating_factor_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._protection_rating_factor_prof = val
-        elif isinstance(val, np.ndarray):
-            self._protection_rating_factor_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a protection_rating_factor_prof')
-
-    @property
-    def Cost_prof(self) -> Profile:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._Cost_prof
-
-    @Cost_prof.setter
-    def Cost_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._Cost_prof = val
-        elif isinstance(val, np.ndarray):
-            self._Cost_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
-
-    @property
-    def contingency_factor(self):
-        """
-        Rate (MVA)
-        :return:
-        """
-        return self._contingency_factor
-
-    @contingency_factor.setter
-    def contingency_factor(self, val: float):
-        if isinstance(val, float):
-            self._contingency_factor = val
-        else:
-            raise ValueError(f'{val} is not a float')
-
-    @property
-    def protection_rating_factor(self):
-        """
-        Rate (MVA)
-        :return:
-        """
-        return self._protection_rating_factor
-
-    @protection_rating_factor.setter
-    def protection_rating_factor(self, val: float):
-        if isinstance(val, float):
-            self._protection_rating_factor = val
-        else:
-            raise ValueError(f'{val} is not a float')
+    #             if self.bus_ac is None:
+    #                 self.bus_ac = self._cn_ac.bus
+    #         else:
+    #             raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')
 
     @property
     def control1(self):
@@ -680,7 +533,7 @@ class VSC(PhysicalDevice):
         """
         Get the line defining coordinates
         """
-        return [self.bus_dc_p.get_coordinates(), self.bus_dc_n.get_coordinates(), self.bus_ac.get_coordinates()]
+        return [self.bus_from.get_coordinates(), self.bus_dc_n.get_coordinates(), self.bus_to.get_coordinates()]
 
     # def correct_buses_connection(self) -> None:
     #     """
