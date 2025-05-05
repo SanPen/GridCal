@@ -317,7 +317,7 @@ class MapLineSegment(QGraphicsLineItem):
         x, y = scene_pos.x(), scene_pos.y()
         lat, lon = self.editor.to_lat_lon(x=x, y=y)
         add_menu_entry(menu=menu,
-                       text="Open in google earth",
+                       text="Open in Street view",
                        function_ptr=lambda: open_street_view(lat, lon),
                        icon_path=":/Icons/icons/map.svg")
 

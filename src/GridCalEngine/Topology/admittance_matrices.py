@@ -153,7 +153,7 @@ def compute_admittances(R: Vec,
     # Gsw = G0sw + a * np.power(If, 2) + b * If + c
 
     # form the admittance matrices
-    ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance
+    ys = 1.0 / (R + 1.0j * (X + 1e-20))  # series admittance
     ysh_2 = (G + 1j * B) / 2.0  # shunt admittance
 
     # compose the primitives

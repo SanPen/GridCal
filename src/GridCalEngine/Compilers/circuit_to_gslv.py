@@ -3,27 +3,30 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-import os.path
-import warnings
+import time
 import numpy as np
 from typing import List, Dict, Union, Tuple, TYPE_CHECKING
 
-from GridCalEngine import TapModuleControl, TapPhaseControl, BusMode
+from GridCalEngine.Utils.ThirdParty.gslv.gslv_activation import (pg, build_status_dict, tap_module_control_mode_dict,
+                                                                 tap_phase_control_mode_dict, hvdc_control_mode_dict,
+                                                                 group_type_dict, contingency_ops_type_dict,
+                                                                 contingency_method_dict, converter_control_type_dict,
+                                                                 bus_type_dict,
+                                                                 GSLV_AVAILABLE, GSLV_VERSION,
+                                                                 GSLV_RECOMMENDED_VERSION)
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
-                                        ZonalGrouping, MIPSolvers, ContingencyMethod, ContingencyOperationTypes,
-                                        BuildStatus, BranchGroupTypes, ConverterControlType)
 import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-
+from GridCalEngine import TapModuleControl, TapPhaseControl
+from GridCalEngine.enumerations import SolverType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 
-from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCalEngine.basic_structures import ConvergenceReport
+
+from GridCalEngine.basic_structures import Logger
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -32,97 +35,6 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
-GSLV_RECOMMENDED_VERSION = "0.2.0"
-GSLV_VERSION = ''
-GSLV_AVAILABLE = False
-try:
-    import pygslv as pg
-
-    pg.activate(os.path.join(get_create_gridcal_folder(), "license.gslv"), verbose=True)
-
-    # activate
-    if not pg.isLicensed():
-        # license not found
-        GSLV_AVAILABLE = False
-    else:
-        # already activated
-        GSLV_AVAILABLE = True
-        GSLV_VERSION = pg.get_version()
-
-    if GSLV_AVAILABLE:
-        if GSLV_VERSION < GSLV_RECOMMENDED_VERSION:
-            warnings.warn(f"Recommended version for GSLV is {GSLV_RECOMMENDED_VERSION} "
-                          f"instead of {GSLV_VERSION}")
-
-    build_status_dict = {
-        BuildStatus.Planned: pg.BuildStatus.Planned,
-        BuildStatus.Commissioned: pg.BuildStatus.Commissioned,
-        BuildStatus.Candidate: pg.BuildStatus.Candidate,
-        BuildStatus.Decommissioned: pg.BuildStatus.Decommissioned,
-        BuildStatus.PlannedDecommission: pg.BuildStatus.PlannedDecommission,
-    }
-
-    tap_module_control_mode_dict = {
-        TapModuleControl.fixed: pg.TapModuleControl.fixed,
-        TapModuleControl.Qf: pg.TapModuleControl.Qf,
-        TapModuleControl.Qt: pg.TapModuleControl.Qt,
-        TapModuleControl.Vm: pg.TapModuleControl.Vm,
-    }
-
-    tap_phase_control_mode_dict = {
-        TapPhaseControl.fixed: pg.TapPhaseControl.fixed,
-        TapPhaseControl.Pf: pg.TapPhaseControl.Pf,
-        TapPhaseControl.Pt: pg.TapPhaseControl.Pt,
-    }
-
-    hvdc_control_mode_dict = {
-        HvdcControlType.type_0_free: pg.HvdcControlType.type_0_free,
-        HvdcControlType.type_1_Pset: pg.HvdcControlType.type_1_Pset,
-    }
-
-    group_type_dict = {
-        BranchGroupTypes.GenericGroup: pg.BranchGroupTypes.GenericGroup,
-        BranchGroupTypes.TransformerGroup: pg.BranchGroupTypes.TransformerGroup,
-        BranchGroupTypes.LineSegmentsGroup: pg.BranchGroupTypes.LineSegmentsGroup,
-    }
-
-    contingency_ops_type_dict = {
-        ContingencyOperationTypes.Active: pg.ContingencyOperationTypes.Active,
-        ContingencyOperationTypes.PowerPercentage: pg.ContingencyOperationTypes.PowerPercentage,
-    }
-
-    contingency_method_dict = {
-        ContingencyMethod.PTDF: pg.ContingencyMethod.PTDF,
-        ContingencyMethod.PowerFlow: pg.ContingencyMethod.PowerFlow,
-        ContingencyMethod.HELM: pg.ContingencyMethod.HELM,
-    }
-
-    converter_control_type_dict = {
-        ConverterControlType.Vm_dc: pg.ConverterControlType.Vm_dc,
-        ConverterControlType.Vm_ac: pg.ConverterControlType.Vm_ac,
-        ConverterControlType.Va_ac: pg.ConverterControlType.Va_ac,
-        ConverterControlType.Qac: pg.ConverterControlType.Q_ac,
-        ConverterControlType.Pdc: pg.ConverterControlType.P_dc,
-        ConverterControlType.Pac: pg.ConverterControlType.P_ac,
-    }
-
-    bus_type_dict = {
-        BusMode.PQ_tpe.value: pg.BusMode.PQ,
-        BusMode.PV_tpe.value: pg.BusMode.PV,
-        BusMode.Slack_tpe.value: pg.BusMode.Slack,
-        BusMode.P_tpe.value: pg.BusMode.P,
-        BusMode.PQV_tpe.value: pg.BusMode.PQV,
-    }
-
-except ImportError as e:
-    pg = None
-    GSLV_AVAILABLE = False
-    GSLV_VERSION = ''
-    build_status_dict = dict()
-    tap_module_control_mode_dict = dict()
-    tap_phase_control_mode_dict = dict()
-    contingency_ops_type_dict = dict()
-    contingency_method_dict = dict()
 
 
 def get_gslv_mip_solvers_list() -> List[str]:
@@ -187,8 +99,6 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
     :param n_time: number of time steps
     :param default_val: Default value
     """
-
-
 
     if use_time_series:
         if gc_profile.is_sparse:
@@ -2418,7 +2328,8 @@ def gslv_pf(circuit: MultiCircuit,
             pf_opt: PowerFlowOptions,
             time_series: bool = False,
             time_indices: Union[IntVec, None] = None,
-            opf_results: Union[None, OptimalPowerFlowResults] = None) -> "pg.PowerFlowResults":
+            opf_results: Union[None, OptimalPowerFlowResults] = None,
+            logger: Logger = Logger()) -> "pg.PowerFlowResults":
     """
     GSLV power flow
     :param circuit: MultiCircuit instance
@@ -2449,19 +2360,23 @@ def gslv_pf(circuit: MultiCircuit,
         time_indices = [0]
         n_threads = 1
 
+    t0 = time.time()
     pf_res = pg.multi_island_pf(grid=gslv_grid,
                                 options=pf_options,
                                 time_indices=time_indices,
                                 n_threads=n_threads)
 
+    logger.add_info("gslv time", value=f"{(time.time() - t0)} s")
+
     return pf_res
 
 
-def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults") -> PowerFlowResults:
+def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", logger: Logger) -> PowerFlowResults:
     """
     Translate the GSLV Power Analytics results back to GridCal
     :param grid: MultiCircuit instance
     :param res: GSLV's PowerFlowResults instance
+    :param logger: Logger
     :return: PowerFlowResults instance
     """
     results = PowerFlowResults(
@@ -2489,10 +2404,10 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults") ->
     results.loading = res.loading[0, :]
     results.losses = res.losses[0, :]
     # results.Vbranch = res.Vbranch[0, :]
-    # results.If = res.If[0, :]
-    # results.It = res.It[0, :]
-    # results.Beq = res.Beq[0, :]
-    results.m = res.tap_module[0, :]
+    results.If = res.If[0, :]
+    results.It = res.It[0, :]
+
+    results.tap_module = res.tap_module[0, :]
     results.tap_angle = res.tap_angle[0, :]
     # results.F = res.F
     # results.T = res.T
@@ -2502,6 +2417,18 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults") ->
     results.Pt_hvdc = res.Pt_hvdc[0, :]
     results.loading_hvdc = res.loading_hvdc[0, :]
     results.losses_hvdc = res.losses_hvdc[0, :]
+
+    results.Pf_vsc = res.Pf_vsc[0, :]
+    results.St_vsc = res.St_vsc[0, :]
+    results.loading_vsc = res.loading_vsc[0, :]
+    results.losses_vsc = res.losses_vsc[0, :]
+
+    results.gen_q = res.gen_q[0, :]
+    results.battery_q = res.battery_q[0, :]
+    results.shunt_q = res.shunt_q[0, :]
+
+    # logger.add_info("gslv time", value=res.time_array[0])
+
     # results.bus_area_indices = grid.get_bus_area_indices()
     # results.area_names = [a.name for a in grid.areas]
     # results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists
@@ -2657,8 +2584,8 @@ def compare_branch_parent_data(gslv_branch_data: pg.BranchParentData,
     # branch data
     errors += CheckArrEq(np.array(gslv_branch_data.idtag), np.array(gc_branch_data.idtag), parent_name, 'idtag')
     errors += CheckArrEq(gslv_branch_data.F, gc_branch_data.F, parent_name, 'F')
-    errors += CheckArrEq(gslv_branch_data.T, gc_branch_data.T,  parent_name, 'T')
-    errors += CheckArrEq(gslv_branch_data.active, gc_branch_data.active,  parent_name, 'active')
+    errors += CheckArrEq(gslv_branch_data.T, gc_branch_data.T, parent_name, 'T')
+    errors += CheckArrEq(gslv_branch_data.active, gc_branch_data.active, parent_name, 'active')
     errors += CheckArr(gslv_branch_data.rates, gc_branch_data.rates, tol, parent_name, 'rates')
 
     errors += CheckArr(gslv_branch_data.contingency_rates, gc_branch_data.contingency_rates, tol,
@@ -2671,14 +2598,14 @@ def compare_branch_parent_data(gslv_branch_data: pg.BranchParentData,
     errors += CheckArr(gslv_branch_data.mttr, gc_branch_data.mttr, tol, parent_name, 'mttr')
 
     errors += CheckArrEq(gslv_branch_data.contingency_enabled, gc_branch_data.contingency_enabled,
-                       parent_name, 'contingency_enabled')
+                         parent_name, 'contingency_enabled')
     errors += CheckArrEq(gslv_branch_data.monitor_loading, gc_branch_data.monitor_loading,
-                       parent_name, 'monitor_loading')
+                         parent_name, 'monitor_loading')
 
     errors += CheckArr(gslv_branch_data.overload_cost, gc_branch_data.overload_cost, tol,
                        parent_name, 'overload_cost')
     errors += CheckArrEq(gslv_branch_data.original_idx, gc_branch_data.original_idx,
-                       parent_name, 'original_idx')
+                         parent_name, 'original_idx')
     # errors += CheckArr(gslv_branch_data.reducible, gc_branch_data.reducible, tol, parent_name, 'reducible')
 
     return errors
@@ -2695,7 +2622,7 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     errors = 0
 
     # bus data
-    errors += CheckArrEq(nc_gslv.bus_data.active, nc_gc.bus_data.active,  'BusData', 'active')
+    errors += CheckArrEq(nc_gslv.bus_data.active, nc_gc.bus_data.active, 'BusData', 'active')
     errors += CheckArr(nc_gslv.bus_data.Vbus.real, nc_gc.bus_data.Vbus.real, tol, 'BusData', 'V0')
     errors += CheckArr(nc_gslv.bus_data.installed_power, nc_gc.bus_data.installed_power, tol,
                        'BusData', 'installed power')
@@ -2736,14 +2663,14 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     errors += CheckArr(nc_gslv.vsc_data.control1_val, nc_gc.vsc_data.control1_val, tol, 'VscData', 'control1_val')
     errors += CheckArr(nc_gslv.vsc_data.control2_val, nc_gc.vsc_data.control2_val, tol, 'VscData', 'control2_val')
 
-    errors += CheckArrEq(nc_gslv.vsc_data.control1_bus_idx, nc_gc.vsc_data.control1_bus_idx,  'VscData',
-                       'control1_bus_idx')
-    errors += CheckArrEq(nc_gslv.vsc_data.control2_bus_idx, nc_gc.vsc_data.control2_bus_idx,  'VscData',
-                       'control2_bus_idx')
-    errors += CheckArrEq(nc_gslv.vsc_data.control1_branch_idx, nc_gc.vsc_data.control1_branch_idx,  'VscData',
-                       'control1_branch_idx')
-    errors += CheckArrEq(nc_gslv.vsc_data.control2_branch_idx, nc_gc.vsc_data.control2_branch_idx,  'VscData',
-                       'control2_branch_idx')
+    errors += CheckArrEq(nc_gslv.vsc_data.control1_bus_idx, nc_gc.vsc_data.control1_bus_idx, 'VscData',
+                         'control1_bus_idx')
+    errors += CheckArrEq(nc_gslv.vsc_data.control2_bus_idx, nc_gc.vsc_data.control2_bus_idx, 'VscData',
+                         'control2_bus_idx')
+    errors += CheckArrEq(nc_gslv.vsc_data.control1_branch_idx, nc_gc.vsc_data.control1_branch_idx, 'VscData',
+                         'control1_branch_idx')
+    errors += CheckArrEq(nc_gslv.vsc_data.control2_branch_idx, nc_gc.vsc_data.control2_branch_idx, 'VscData',
+                         'control2_branch_idx')
 
     # HVDC data
     errors += compare_branch_parent_data(nc_gslv.hvdc_data, nc_gc.hvdc_data, tol, "HvdcData")
@@ -2768,8 +2695,8 @@ def compare_nc(nc_gslv: "pg.NumericalCircuit", nc_gc: NumericalCircuit, tol: flo
     errors += CheckArr(nc_gslv.hvdc_data.Qmax_t, nc_gc.hvdc_data.Qmax_t, tol, 'HvdcData', 'Qmax_t')
 
     # generator data
-    errors += CheckArrEq(nc_gslv.generator_data.bus_idx, nc_gc.generator_data.bus_idx,  'GenData', 'bus_idx')
-    errors += CheckArrEq(nc_gslv.generator_data.active, nc_gc.generator_data.active,  'GenData', 'active')
+    errors += CheckArrEq(nc_gslv.generator_data.bus_idx, nc_gc.generator_data.bus_idx, 'GenData', 'bus_idx')
+    errors += CheckArrEq(nc_gslv.generator_data.active, nc_gc.generator_data.active, 'GenData', 'active')
     errors += CheckArr(nc_gslv.generator_data.p, nc_gc.generator_data.p, tol, 'GenData', 'P')
     errors += CheckArr(nc_gslv.generator_data.pf, nc_gc.generator_data.pf, tol, 'GenData', 'Pf')
     errors += CheckArr(nc_gslv.generator_data.v, nc_gc.generator_data.v, tol, 'GenData', 'v')

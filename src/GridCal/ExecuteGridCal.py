@@ -10,10 +10,13 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCal.__version__ import about_msg
-from GridCal.Gui.Main.GridCalMain import runGridCal
-import platform
 
-os.environ['JUPYTER_PLATFORM_DIRS'] = "1"
+# NOTE: For some reason I cannot begin to comprehend, the activation fails on windows if called before the GUI...
+import GridCalEngine.Utils.ThirdParty.gslv.gslv_activation
+
+from GridCal.Gui.Main.GridCalMain import runGridCal
+
+import platform
 
 if platform.system() == 'Windows':
     # this makes the icon display properly under windows
@@ -29,4 +32,3 @@ if __name__ == "__main__":
     # os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"  # this forces QT-only menus and look and feel
 
     runGridCal()
-

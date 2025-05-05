@@ -21,6 +21,32 @@ import xml.etree.ElementTree as Et
 import xml.dom.minidom
 
 
+def get_available_cgmes_profiles(cgmes_version: CGMESVersions):
+    if cgmes_version == CGMESVersions.v2_4_15:
+        return {
+            "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
+                   "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
+                   "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
+            "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
+            "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
+            "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"],
+            "GL": ["http://entsoe.eu/CIM/GeographicalLocation/2/1"]
+        }
+    elif cgmes_version == CGMESVersions.v3_0_0:
+        return {
+            "EQ": ["http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0"],
+            "OP": ["http://iec.ch/TC57/ns/CIM/Operation-EU/3.0"],
+            "SC": ["http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
+            "SSH": ["http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0"],
+            "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
+            "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"],
+            "GL": ["http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0"]
+        }
+    else:
+        print(f"CGMES Version not suported {cgmes_version.value}")
+        return dict()
+
+
 class CimExporter:
     def __init__(self, cgmes_circuit: CgmesCircuit, profiles_to_export: List[cgmesProfile], one_file_per_profile: bool):
         self.cgmes_circuit = cgmes_circuit
@@ -48,15 +74,7 @@ class CimExporter:
                 "xmlns:entsoe": "http://entsoe.eu/CIM/SchemaExtension/3/1#",
                 "xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
             }
-            self.profile_uris = {
-                "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
-                       "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
-                       "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
-                "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
-                "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
-                "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"],
-                "GL": ["http://entsoe.eu/CIM/GeographicalLocation/2/1"]
-            }
+            self.profile_uris = get_available_cgmes_profiles(cgmes_version=cgmes_circuit.cgmes_version)
 
             self.enum_dict = dict()
             self.about_dict = dict()
@@ -101,15 +119,8 @@ class CimExporter:
                 "xmlns:eu": "http://iec.ch/TC57/CIM100-European#",
                 "xmlns:rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
             }
-            self.profile_uris = {
-                "EQ": ["http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0"],
-                "OP": ["http://iec.ch/TC57/ns/CIM/Operation-EU/3.0"],
-                "SC": ["http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
-                "SSH": ["http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0"],
-                "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
-                "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"],
-                "GL": ["http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0"]
-            }
+            self.profile_uris = get_available_cgmes_profiles(cgmes_version=cgmes_circuit.cgmes_version)
+
             self.enum_dict = dict()
             self.about_dict = dict()
             for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):

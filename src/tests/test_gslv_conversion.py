@@ -209,8 +209,75 @@ def test_contingencies_ts():
     res = drv.results
 
 
+def test_results_compatibility():
+    """
+    Test to check the 1:1 results of gslv
+    :return:
+    """
+
+    if not GSLV_AVAILABLE:
+        return
+
+    paths = [
+        # "data/grids/Matpower/case57.m",
+        # "data/grids/Matpower/case3012wp.m"
+        # "data/grids/Matpower/case16am.m"
+    ]
+
+    # run this one to compile the stuff
+    folder = os.path.join("data", "grids", "Matpower")
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith(".m"):
+                path = os.path.join(root, file)
+                paths.append(path)
+
+    for path in paths:
+        fname = os.path.basename(path)
+
+        grid = gce.open_file(filename=path)
+
+        # if grid.get_bus_number() < 2000000000:
+        print("^" * 100)
+        print("Testing: ", fname)
+        gslv_grid, _ = to_gslv(grid, use_time_series=False)
+
+        inpt_err_number = 0
+        # inpt_err_number = compare_inputs(grid_gslv=gslv_grid, grid_gc=grid)
+
+        # power flow ---------------------------------------------------------------
+
+        options = gce.PowerFlowOptions(verbose=0,
+                                       use_stored_guess=True,
+                                       retry_with_other_methods=False,
+                                       solver_type=gce.SolverType.NR,
+                                       control_q=False,
+                                       tolerance=1e-8)
+
+        drv_gc = gce.PowerFlowDriver(grid=grid,
+                                     options=options,
+                                     engine=gce.EngineType.GridCal)
+        drv_gc.run()
+        res_gc = drv_gc.results
+
+        drv_gslv = gce.PowerFlowDriver(grid=grid,
+                                       options=options,
+                                       engine=gce.EngineType.GSLV)
+        drv_gslv.run()
+        res_gslv = drv_gslv.results
+
+        all_ok, logger = res_gc.compare(res_gslv, tol=1e-4)
+
+        if not all_ok or inpt_err_number > 0:
+            logger.print(title=path)
+            gce.save_file(grid=grid, filename=os.path.join("output", fname + ".gridcal"))
+            print()
+        assert all_ok
+
+
 if __name__ == '__main__':
     # test_gslv_compatibility()
-    test_gslv_compatibility_ts()
+    # test_gslv_compatibility_ts()
     # test_power_flow_ts()
     # test_contingencies_ts()
+    test_results_compatibility()

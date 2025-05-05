@@ -14,7 +14,7 @@ from GridCalEngine.IO.cim.cim16.cim_circuit import CIMCircuit
 from GridCalEngine.data_logger import DataLogger
 
 
-def read_cim_files(cim_files):
+def read_cim_files(cim_files, logger: DataLogger):
     """
     Reads a list of .zip or xml into a dictionary of file name -> list of text lines
     :param cim_files: list of file names
@@ -49,8 +49,13 @@ def read_cim_files(cim_files):
         elif file_extension == '.zip':
             # read the content of a zip file
             d = get_xml_from_zip(file_name_zip=cim_files)
-            for key, value in d.items():
-                data[key] = value
+
+            if d is not None:
+                for key, value in d.items():
+                    data[key] = value
+            else:
+                logger.add_error("BadZipFile", value=cim_files)
+                print(f"BadZipFile {cim_files}")
 
     return data
 
@@ -968,7 +973,7 @@ class CIMImport:
         self.cim = CIMCircuit(text_func=self.text_func, progress_func=self.progress_func, logger=self.logger)
 
         # import the cim files' content into a dictionary
-        data = read_cim_files(cim_files)
+        data = read_cim_files(cim_files=cim_files, logger=self.logger)
 
         lst2 = sort_cim_files(list(data.keys()))
         # Parse the files

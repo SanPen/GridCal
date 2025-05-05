@@ -204,7 +204,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                       pf_opt=self.options,
                       time_series=True,
                       time_indices=time_indices,
-                      opf_results=self.opf_time_series_results)
+                      opf_results=self.opf_time_series_results,
+                      logger=self.logger)
 
         n = self.grid.get_bus_number()
         results = PowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
@@ -250,6 +251,11 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         results.hvdc_loading = res.loading_hvdc
         results.hvdc_losses = res.losses_hvdc
         results.error_values = res.error_values
+
+        results.Pf_vsc = res.Pf_vsc
+        results.St_vsc = res.St_vsc
+        results.loading_vsc = res.loading_vsc
+        results.losses_vsc = res.losses_vsc
 
         return results
 

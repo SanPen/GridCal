@@ -5,29 +5,41 @@
 from __future__ import annotations
 from typing import Tuple
 import subprocess
+import requests
 import sys
 import packaging.version as pkg
 from GridCal.__version__ import __GridCal_VERSION__
 
 
-def find_latest_version(name: str = 'GridCal') -> str | None:
-    """
-    Find the latest version of a package
-    :param name: name of the Package
-    :return: version string
-    """
-    latest_version = str(subprocess.run([sys.executable, '-m', 'pip',
-                                         'install', f'{name}==random',
-                                         '--break-system-packages'],
-                                        capture_output=True, text=True))
-    latest_version = latest_version[latest_version.find('(from versions:') + 15:]
-    latest_version = latest_version[:latest_version.find(')')]
-    latest_version = latest_version.replace(' ', '').split(',')[-1]
+# def find_latest_version(name: str = 'GridCal') -> str | None:
+#     """
+#     Find the latest version of a package
+#     :param name: name of the Package
+#     :return: version string
+#     """
+#     latest_version = str(subprocess.run([sys.executable, '-m', 'pip',
+#                                          'install', f'{name}==random',
+#                                          '--break-system-packages'],
+#                                         capture_output=True, text=True))
+#     latest_version = latest_version[latest_version.find('(from versions:') + 15:]
+#     latest_version = latest_version[:latest_version.find(')')]
+#     latest_version = latest_version.replace(' ', '').split(',')[-1]
+#
+#     if latest_version == 'none':
+#         return None
+#
+#     return latest_version
 
-    if latest_version == 'none':
+
+def find_latest_version(package_name: str = 'GridCal'):
+    try:
+        url = f"https://pypi.org/pypi/{package_name}/json"
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        return data["info"]["version"]
+    except Exception:
         return None
-
-    return latest_version
 
 
 def check_version(name: str = 'GridCal') -> Tuple[int, str]:
@@ -43,7 +55,7 @@ def check_version(name: str = 'GridCal') -> Tuple[int, str]:
     +1: we are behind pipy, we can update
     """
 
-    latest_version = find_latest_version(name=name)
+    latest_version = find_latest_version(package_name=name)
 
     # pipy_version = pkg_resources.parse_version(latest_version)
     # gc_version = pkg_resources.parse_version(__GridCal_VERSION__)

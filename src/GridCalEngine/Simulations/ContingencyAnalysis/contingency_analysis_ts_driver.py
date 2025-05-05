@@ -237,7 +237,7 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results = self.run_newton_pa()
 
         elif self.engine == EngineType.GSLV:
-            self.report_text('Running gslv... ')
+            self.report_text('Running contingencies in gslv... ')
             self.results = self.run_gslv()
 
         else:

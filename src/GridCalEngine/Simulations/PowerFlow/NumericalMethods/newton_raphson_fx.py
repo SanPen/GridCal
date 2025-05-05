@@ -53,7 +53,10 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
     error_evolution[iteration] = problem.error
 
     if verbose > 0:
-        print(f'It {iteration}, error {problem.error}, converged {problem.converged}, x {x}, dx not computed yet')
+        print('-' * 200)
+        print(f'Iter: {iteration}')
+        print('-' * 200)
+        print("x:\n", problem.get_x_df(x))
 
     if problem.converged:
         return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
@@ -101,11 +104,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 print("(newton_raphson_fx.py) Singular Jacobian")
                 return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
-            if verbose > 1:
-                print("J:\n", problem.get_jacobian_df(J))
-                print("F:\n", problem.get_f_df(f))
-                print("dx:\n", problem.get_x_df(dx))
-
             # line search
             mu = trust0
             x_sol = x
@@ -116,17 +114,19 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             update_controls = error < (tol * 100)
             error, converged, x, f = problem.update(x=x_sol, update_controls=update_controls)
 
-            if verbose > 1:
-                print("x:\n", problem.get_x_df(x))
-
             # save the error evolution
             error0 = error
             error_evolution[iteration] = error
 
-            if verbose > 0:
-                if verbose == 1:
-                    print(f'It {iteration}, error {error}, converged {converged}')
-                else:
-                    print(f'error {error}, \n converged {converged}')
+            if verbose > 1:
+                print("J:\n", problem.get_jacobian_df(J))
+                print("f:\n", problem.get_f_df(f))
+                print("dx:\n", problem.get_x_df(dx))
+                print("x:\n", problem.get_x_df(x))
+                print(f'error {error}, \n converged {converged}')
+
+            elif verbose == 1:
+                print(f'It {iteration}, error {error}, converged {converged}')
+
 
     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)

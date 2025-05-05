@@ -167,10 +167,11 @@ def merge(A: Dict[str, Dict[str, Dict[str, str]]],
                                 pass
 
 
-def read_cgmes_files(cim_files: Union[List[str], str]) -> Dict[str, List[str]]:
+def read_cgmes_files(cim_files: Union[List[str], str], logger: DataLogger) -> Dict[str, List[str]]:
     """
     Reads a list of .zip or xml into a dictionary of file name -> list of text lines
     :param cim_files: list of file names
+    :param logger: DataLogger instance
     :return: dictionary of file name -> list of text lines
     """
     # read files and sort them in the preferred reading order
@@ -189,21 +190,28 @@ def read_cgmes_files(cim_files: Union[List[str], str]) -> Dict[str, List[str]]:
             elif file_extension == '.zip':
                 # read the content of a zip file
                 d = get_xml_from_zip(file_name_zip=f)
-                for key, value in d.items():
-                    data[key] = value
+                if d is not None:
+                    for key, value in d.items():
+                        data[key] = value
+                else:
+                    logger.add_error("BadZipFile", value=f)
+                    print(f"BadZipFile {f}")
     else:
         name, file_extension = os.path.splitext(cim_files)
 
         if file_extension == '.xml':
-            file_ptr = open(cim_files, 'rb')
-            data[name] = get_xml_content(file_ptr)
-            file_ptr.close()
+            with open(cim_files, 'rb') as file_ptr:
+                data[name] = get_xml_content(file_ptr=file_ptr)
 
         elif file_extension == '.zip':
             # read the content of a zip file
             d = get_xml_from_zip(file_name_zip=cim_files)
-            for key, value in d.items():
-                data[key] = value
+            if d is not None:
+                for key, value in d.items():
+                    data[key] = value
+            else:
+                logger.add_error("BadZipFile", value=cim_files)
+                print(f"BadZipFile {cim_files}")
 
     return data
 
@@ -324,7 +332,7 @@ class CgmesDataParser(BaseCircuit):
                           "http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0",
                           "http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"]
         # import the cim files' content into a dictionary
-        data = read_cgmes_files(files)
+        data = read_cgmes_files(cim_files=files, logger=self.logger)
         # Parse the files
         i = 0
         for file_name, file_data in data.items():
