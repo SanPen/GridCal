@@ -229,98 +229,96 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
     def set_connection(self, terminal_type: TerminalType, bus: Bus, conn_line: LineGraphicTemplateItem):
         """Set a connection to a specific terminal."""
 
-
-        # # Check if terminal is already connected
-        # if terminal_type == TerminalType.AC and self.conn_line_ac is not None:
-        #     print(f"AC terminal of VSC {self.api_object.name} is already connected.")
-        #     return False # Indicate failure
-        # elif terminal_type == TerminalType.DC_P and self.conn_line_dc_p is not None:
-        #     print(f"DC+ terminal of VSC {self.api_object.name} is already connected.")
-        #     return False # Indicate failure
-        # elif terminal_type == TerminalType.DC_N and self.conn_line_dc_n is not None:
-        #     print(f"DC- terminal of VSC {self.api_object.name} is already connected.")
-        #     return False # Indicate failure
-
-       # Check type compatibility and update API / store line
+        success = False
+        # Check type compatibility and update API / store line
         if terminal_type == TerminalType.OTHER:
             print(f"Error: Invalid terminal type {terminal_type} for VSC {self.api_object.name}")
-            return False # Indicate failure
 
         elif terminal_type == TerminalType.AC:
             if bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
-                return False # Indicate failure
             elif self.conn_line_ac is not None:
                 self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
-                return False # Indicate failure
             else:
                 self.api_object.bus_to = bus
                 self.conn_line_ac = conn_line
                 self.api_object.cn_to = None
                 self.set_terminal_tooltips()
-                return True # Indicate success
+                success = True
 
         elif terminal_type == TerminalType.DC_P:
             if not bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-                return False # Indicate failure
             elif self.conn_line_dc_p is not None:
                 self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
-                return False # Indicate failure               
             else:
                 self.api_object.bus_from = bus
                 self.conn_line_dc_p = conn_line
                 self.api_object.cn_from = None
                 self.set_terminal_tooltips()
-                return True # Indicate success
+                success = True
 
         elif terminal_type == TerminalType.DC_N:
             if not bus.is_dc:
                 self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-                return False # Indicate failure
             elif self.conn_line_dc_n is not None:
                 self.editor.gui.show_error_toast(f"DC- terminal of VSC {self.api_object.name} is already connected.")
-                return False # Indicate failure
             else:
                 self.api_object.bus_dc_n = bus
                 self.conn_line_dc_n = conn_line
                 self.api_object.cn_dc_n = None
                 self.set_terminal_tooltips()
-                return True # Indicate success
+                success = True
 
-        # Should not be reached if terminal_type is valid
-        return False
+        return success
 
     def set_connection_cn(self, terminal_type: TerminalType, cn: ConnectivityNode, conn_line: LineGraphicTemplateItem, set_voltage: bool = True):
-         """ Set a connection to a specific terminal using a connectivity node. """
-         if terminal_type == TerminalType.OTHER:
-             print(f"Error: Invalid terminal type {terminal_type} for VSC {self.api_object.name}")
-             return
+        """ Set a connection to a specific terminal using a connectivity node. """
 
-         # Remove existing connection if any
-         self.remove_connection(terminal_type)
+        success = False
+        # Check type compatibility and update API / store line
+        if terminal_type == TerminalType.OTHER:
+            print(f"Error: Invalid terminal type {terminal_type} for VSC {self.api_object.name}")
 
-         # Update API object
-         bus = cn.bus # Get the bus from the CN
-         if terminal_type == TerminalType.AC: # AC Terminal
-             if bus.is_dc:
-                 self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC bus '{bus.name}'")
-             self.api_object.bus_to = cn.bus # Store parent bus
-             self.api_object.cn_to = cn
-         elif terminal_type == TerminalType.DC_P: # DC+ Terminal
-             if not bus.is_dc:
-                 self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-             self.api_object.bus_from = cn.bus # Store parent bus
-             self.api_object.cn_from = cn
-         elif terminal_type == TerminalType.DC_N: # DC- Terminal
-             if not bus.is_dc:
-                 self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC bus '{bus.name}'")
-             self.api_object.bus_dc_n = cn.bus # Store parent bus
-             self.api_object.cn_dc_n = cn
+        elif terminal_type == TerminalType.AC:
+            if cn.dc:
+                self.editor.gui.show_error_toast(f"Connecting AC terminal of VSC '{self.api_object.name}' to DC node '{cn.name}'")
+            elif self.conn_line_ac is not None:
+                self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
+            else:
+                self.api_object.bus_to = cn.bus
+                self.conn_line_ac = conn_line
+                self.api_object.cn_to = cn
+                self.set_terminal_tooltips()
+                success = True
 
-         # Store connection line
-         self.set_terminal_tooltips()
-        #  self.editor.viewport().update()
+        elif terminal_type == TerminalType.DC_P:
+            if not cn.dc:
+                self.editor.gui.show_error_toast(f"Connecting DC+ terminal of VSC '{self.api_object.name}' to AC node '{cn.name}'")
+            elif self.conn_line_dc_p is not None:
+                self.editor.gui.show_error_toast(f"AC terminal of VSC {self.api_object.name} is already connected.")
+            else:
+                cn.bus.is_dc = True
+                self.api_object.bus_from = cn.bus
+                self.conn_line_dc_p = conn_line
+                self.api_object.cn_from = cn
+                self.set_terminal_tooltips()
+                success = True
+
+        elif terminal_type == TerminalType.DC_N:
+            if not cn.dc:
+                self.editor.gui.show_error_toast(f"Connecting DC- terminal of VSC '{self.api_object.name}' to AC node '{cn.name}'")
+            elif self.conn_line_dc_n is not None:
+                self.editor.gui.show_error_toast(f"DC- terminal of VSC {self.api_object.name} is already connected.")
+            else:
+                cn.bus.is_dc = True
+                self.api_object.bus_dc_n = cn.bus
+                self.conn_line_dc_n = conn_line
+                self.api_object.cn_dc_n = cn
+                self.set_terminal_tooltips()
+                success = True
+
+        return success
 
 
     def remove_connection(self, conn_line: LineGraphicTemplateItem):
