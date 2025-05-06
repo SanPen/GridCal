@@ -47,6 +47,40 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     ]
 
 
+def delta2StarAdmittance(Yab: complex,
+                         Ybc: complex,
+                         Yca: complex):
+    """
+    Converts Delta to Star in admittances
+    :param Yab:
+    :param Ybc:
+    :param Yca:
+    :return: Ya, Yb, Yc
+    """
+    return np.array([
+        (Yab * Ybc + Ybc * Yca + Yca * Yab) / Ybc,
+        (Yab * Ybc + Ybc * Yca + Yca * Yab) / Yca,
+        (Yab * Ybc + Ybc * Yca + Yca * Yab) / Yab
+    ])
+
+
+def delta2StarCurrent(Iab: complex,
+                      Ibc: complex,
+                      Ica: complex):
+    """
+    Converts delta to scar in currents
+    :param Iab:
+    :param Ibc:
+    :param Ica:
+    :return: Ia, Ib, Ic
+    """
+    return np.array([
+        Iab - Ica,
+        Ibc - Iab,
+        Ica - Ibc
+    ])
+
+
 def set_bus_control_voltage(i: int,
                             j: int,
                             remote_control: bool,
@@ -287,7 +321,7 @@ def get_load_data(data: LoadData,
     :param fill_three_phase: Fill the tree phase info?
     :return:
     """
-
+    idx3 = np.array([0, 1, 2])
     ii = 0
     for elm in circuit.get_loads():
 
@@ -329,17 +363,20 @@ def get_load_data(data: LoadData,
                         data.S3_delta[3 * ii + 1] = complex(elm.P2_prof[t_idx], elm.Q2_prof[t_idx])
                         data.S3_delta[3 * ii + 2] = complex(elm.P3_prof[t_idx], elm.Q3_prof[t_idx])
 
-                        data.I3_delta[3 * ii + 0] = complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx])
-                        data.I3_delta[3 * ii + 1] = complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx])
-                        data.I3_delta[3 * ii + 2] = complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
+                        data.I3_star[3 * ii + idx3] = delta2StarCurrent(
+                            Iab=complex(elm.Ir1_prof[t_idx], elm.Ii1_prof[t_idx]),
+                            Ibc=complex(elm.Ir2_prof[t_idx], elm.Ii2_prof[t_idx]),
+                            Ica=complex(elm.Ir3_prof[t_idx], elm.Ii3_prof[t_idx])
+                        )
 
-                        data.Y3_delta[3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
-                        data.Y3_delta[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
-                        data.Y3_delta[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                            Yab=complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx]),
+                            Ybc=complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx]),
+                            Yca=complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        )
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
-
 
                 data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
                 data.Y[ii] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
@@ -373,13 +410,17 @@ def get_load_data(data: LoadData,
                             data.S3_delta[3 * ii + 1] = complex(elm.P2, elm.Q2)
                             data.S3_delta[3 * ii + 2] = complex(elm.P3, elm.Q3)
 
-                            data.I3_delta[3 * ii + 0] = complex(elm.Ir1, elm.Ii1)
-                            data.I3_delta[3 * ii + 1] = complex(elm.Ir2, elm.Ii2)
-                            data.I3_delta[3 * ii + 2] = complex(elm.Ir3, elm.Ii3)
+                            data.I3_star[3 * ii + idx3] = delta2StarCurrent(
+                                Iab=complex(elm.Ir1[t_idx], elm.Ii1[t_idx]),
+                                Ibc=complex(elm.Ir2[t_idx], elm.Ii2[t_idx]),
+                                Ica=complex(elm.Ir3[t_idx], elm.Ii3[t_idx])
+                            )
 
-                            data.Y3_delta[3 * ii + 0] = complex(elm.G1, elm.B1)
-                            data.Y3_delta[3 * ii + 1] = complex(elm.G2, elm.B2)
-                            data.Y3_delta[3 * ii + 2] = complex(elm.G3, elm.B3)
+                            data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                                Yab=complex(elm.G1, elm.B1),
+                                Ybc=complex(elm.G2, elm.B2),
+                                Yca=complex(elm.G3, elm.B3)
+                            )
                         else:
                             raise Exception(f"Unhandled connection type {elm.conn}")
 
@@ -667,6 +708,7 @@ def get_shunt_data(
     :param fill_three_phase:
     :return:
     """
+    idx3 = np.array([0, 1, 2])
 
     ii = 0
     for k, elm in enumerate(circuit.get_shunts()):
@@ -697,9 +739,11 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_delta[3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
-                        data.Y3_delta[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
-                        data.Y3_delta[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                            Yab=complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx]),
+                            Ybc=complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx]),
+                            Yca=complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        )
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -718,9 +762,12 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_delta[3 * ii + 0] = complex(elm.G1, elm.B1)
-                        data.Y3_delta[3 * ii + 1] = complex(elm.G2, elm.B2)
-                        data.Y3_delta[3 * ii + 2] = complex(elm.G3, elm.B3)
+                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                            Yab=complex(elm.G1, elm.B1),
+                            Ybc=complex(elm.G2, elm.B2),
+                            Yca=complex(elm.G3, elm.B3)
+                        )
+
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
 
@@ -768,9 +815,11 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_delta[3 * ii + 0] = complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx])
-                        data.Y3_delta[3 * ii + 1] = complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx])
-                        data.Y3_delta[3 * ii + 2] = complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                            Yab=complex(elm.G1_prof[t_idx], elm.B1_prof[t_idx]),
+                            Ybc=complex(elm.G2_prof[t_idx], elm.B2_prof[t_idx]),
+                            Yca=complex(elm.G3_prof[t_idx], elm.B3_prof[t_idx])
+                        )
 
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
@@ -811,9 +860,12 @@ def get_shunt_data(
 
                     elif elm.conn == ShuntConnectionType.Delta:
 
-                        data.Y3_delta[3 * ii + 0] = complex(elm.G1, elm.B1)
-                        data.Y3_delta[3 * ii + 1] = complex(elm.G2, elm.B2)
-                        data.Y3_delta[3 * ii + 2] = complex(elm.G3, elm.B3)
+                        data.Y3_star[3 * ii + idx3] = delta2StarAdmittance(
+                            Yab=complex(elm.G1, elm.B1),
+                            Ybc=complex(elm.G2, elm.B2),
+                            Yca=complex(elm.G3, elm.B3)
+                        )
+
                     else:
                         raise Exception(f"Unhandled connection type {elm.conn}")
 
@@ -1515,11 +1567,11 @@ def get_branch_data(
         if fill_three_phase:
             k3 = 3 * ii + idx3
             (data.Yff3[k3, :],
-            data.Yft3[k3, :],
-            data.Ytf3[k3, :],
-            data.Ytt3[k3, :]) = elm.transformer_admittance(vtap_f=data.virtual_tap_f[ii],
-                                                           vtap_t=data.virtual_tap_t[ii],
-                                                           logger=logger)
+             data.Yft3[k3, :],
+             data.Ytf3[k3, :],
+             data.Ytt3[k3, :]) = elm.transformer_admittance(vtap_f=data.virtual_tap_f[ii],
+                                                            vtap_t=data.virtual_tap_t[ii],
+                                                            logger=logger)
 
         data.conn[ii] = elm.conn
         data.m_taps[ii] = elm.tap_changer.tap_modules_array
@@ -1959,7 +2011,6 @@ def get_hvdc_data(data: HvdcData,
         # hvdc values
         data.names[i] = elm.name
         data.idtag[i] = elm.idtag
-
 
         if time_series:
             data.active[i] = elm.active_prof[t_idx]
