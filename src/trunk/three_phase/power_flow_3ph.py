@@ -3,7 +3,9 @@ import GridCalEngine.api as gce
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
-grid = gce.open_file("3ph_Grid.gridcal")
+# grid = gce.open_file("3ph_Grid.gridcal")
+# grid = gce.open_file("src/trunk/three_phase/3ph_Grid.gridcal")
+grid = gce.open_file("src/trunk/three_phase/3ph_Grid_v2.gridcal")
 
 nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True)
 
@@ -24,7 +26,9 @@ print("J:\n", problem.get_jacobian_df(problem.Jacobian()))
 res = newton_raphson_fx(problem=problem)
 
 print(res.converged)
+print(res.iterations)
 print("Vm:\n", np.abs(res.V))
+print("Va:\n", np.angle(res.V)*180/np.pi)
 print("Sbus:\n", res.Scalc)
 print("Pf:\n", res.Sf.real)
 print("Pt:\n", res.St.real)
