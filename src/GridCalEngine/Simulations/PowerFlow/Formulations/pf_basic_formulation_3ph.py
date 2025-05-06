@@ -454,15 +454,15 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
         Sf, St, If, It, Vbranch, loading, losses, Sbus = power_flow_post_process_nonlinear(
             Sbus=self.Scalc,
             V=self.V,
-            F=self.nc.passive_branch_data.F,
-            T=self.nc.passive_branch_data.T,
+            F=expand_indices_3ph(self.nc.passive_branch_data.F),
+            T=expand_indices_3ph(self.nc.passive_branch_data.T),
             pv=self.pv,
             vd=self.vd,
             Ybus=self.Ybus,
             Yf=self.Yf,
             Yt=self.Yt,
             Yshunt_bus=self.Yshunt_bus,
-            branch_rates=self.nc.passive_branch_data.rates,
+            branch_rates=expand3ph(self.nc.passive_branch_data.rates),
             Sbase=self.nc.Sbase
         )
 

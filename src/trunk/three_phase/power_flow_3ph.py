@@ -1,4 +1,4 @@
-
+import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
@@ -24,4 +24,7 @@ print("J:\n", problem.get_jacobian_df(problem.Jacobian()))
 res = newton_raphson_fx(problem=problem)
 
 print(res.converged)
-print(res.V)
+print("Vm:\n", np.abs(res.V))
+print("Sbus:\n", res.Scalc)
+print("Pf:\n", res.Sf.real)
+print("Pt:\n", res.St.real)
