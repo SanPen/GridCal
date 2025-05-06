@@ -16,7 +16,7 @@ P0 = 4  # example offset
 k = 1  # example slope
 rate_hvdc = 10  # |Pf| can never exceed this
 rate_line = 0
-M = 1 * rate_hvdc  # exact, tight value — NOT an arbitrary big number
+M = 2 * rate_hvdc  # exact, tight value — NOT an arbitrary big number
 x = 0.5
 load = 9
 

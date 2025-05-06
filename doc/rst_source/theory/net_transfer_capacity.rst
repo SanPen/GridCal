@@ -135,7 +135,15 @@ Angle droop mode (AC emulation)
 
 .. math::
 
-    flow_k = P0_k + k \cdot (\theta_f - \theta_t)
+    y = P0_k + k \cdot (\theta_f - \theta_t)
+
+Conditional equality (:math:`flow_k = y`  only if z = 1)
+
+.. math::
+
+    -M \cdot (1 - z)  \leq y - flow_k \leq M \cdot (1 - z)
+
+
 
 
 Now, we add the flows to the nodal balance summation, just like we would with the branches:
