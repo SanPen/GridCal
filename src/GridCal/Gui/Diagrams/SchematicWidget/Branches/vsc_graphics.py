@@ -5,8 +5,8 @@
 from __future__ import annotations
 import numpy as np
 from typing import TYPE_CHECKING, List, Union, cast
-from PySide6.QtCore import Qt, QPoint, QRectF
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QPen, QBrush, QColor, QCursor
+from PySide6.QtCore import Qt, QPoint, QRectF, QPointF
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QPen, QBrush, QColor, QCursor, QTransform
 from PySide6.QtWidgets import QMenu, QGraphicsItem, QGraphicsRectItem, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.gui_functions import add_menu_entry
@@ -319,6 +319,28 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
                 success = True
 
         return success
+
+    def redraw(self):
+        """
+
+        :return:
+        """
+        # h = self.parent.pos2.y() - self.parent.pos1.y()
+        # b = self.parent.pos2.x() - self.parent.pos1.x()
+        h1 = self.terminal_ac.pos().y() - (self.terminal_dc_p.pos().y() + self.terminal_dc_n.pos().y()) / 2.0
+        b1 = self.terminal_ac.pos().x() - (self.terminal_dc_p.pos().x() + self.terminal_dc_n.pos().x()) / 2.0
+        ang = np.arctan2(h1, b1)
+        h2 = self.rect().height() / 2.0
+        w2 = self.rect().width() / 2.0
+        a = h2 * np.cos(ang) - w2 * np.sin(ang)
+        b = w2 * np.sin(ang) + h2 * np.cos(ang)
+
+        center = (self.terminal_ac.pos() + (self.terminal_dc_p.pos() + self.terminal_dc_n.pos()) * 0.5) * 0.5 - QPointF(a, b)
+
+        transform = QTransform()
+        transform.translate(center.x(), center.y())
+        transform.rotate(np.rad2deg(ang))
+        self.setTransform(transform)
 
 
     def remove_connection(self, conn_line: LineGraphicTemplateItem):

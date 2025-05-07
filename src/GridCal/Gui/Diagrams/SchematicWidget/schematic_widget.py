@@ -850,10 +850,12 @@ class SchematicWidget(BaseDiagramWidget):
             elif category == DeviceType.VscDevice.value:
 
                 for idtag, location in points_group.locations.items():
-                    self.add_api_vsc(branch=location.api_object,
-                                     draw_labels=location.draw_labels,
-                                     prefer_node_breaker=prefer_node_breaker,
+                    self.add_api_vsc(elm=location.api_object,
                                      logger=logger)
+                    # self.add_api_vsc(branch=location.api_object,
+                    #                  draw_labels=location.draw_labels,
+                    #                  prefer_node_breaker=prefer_node_breaker,
+                    #                  logger=logger)
 
             elif category == DeviceType.UpfcDevice.value:
 
@@ -2393,6 +2395,8 @@ class SchematicWidget(BaseDiagramWidget):
         """
         add API VSC to the Scene
         :param elm: VSC instance
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
         :param logger: Logger
         :return: SeriesReactanceGraphicItem or None
         """
@@ -2408,7 +2412,7 @@ class SchematicWidget(BaseDiagramWidget):
 
             if port_ac is not None and port_dcp is not None and port_dcn is not None:
 
-                vsc_graphic_object = self.create_vsc_graphics(vsc=elm, x=elm.x, y=elm.y)
+                vsc_graphic_object = self.create_vsc_graphics(elm=elm, x=elm.x, y=elm.y)
 
                 self.add_to_scene(graphic_object=vsc_graphic_object)
 

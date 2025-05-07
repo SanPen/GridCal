@@ -53,7 +53,9 @@ class VSC(BranchParent):
                  control1_val: float = 1.0,
                  control2_val: float = 0.0,
                  control1_dev: Bus | BRANCH_TYPES | None = None,
-                 control2_dev: Bus | BRANCH_TYPES | None = None):
+                 control2_dev: Bus | BRANCH_TYPES | None = None,
+                 x: float = 0.0,
+                 y: float = 0.0):
         """
         Voltage source converter (VSC) with 3 terminals
         :param bus_dc_p:
@@ -84,6 +86,8 @@ class VSC(BranchParent):
         :param build_status:
         :param control1:
         :param control2:
+        :param x: graphical x position (px)
+        :param y: graphical y position (px)
         """
 
         BranchParent.__init__(self,
@@ -169,6 +173,9 @@ class VSC(BranchParent):
         self._control2_val = float(control2_val)
         self._control2_val_prof: Profile = Profile(default_value=self._control2_val, data_type=float)
 
+        self.x = float(x)
+        self.y = float(y)
+
         # self.register(key='bus_dc_p', units="", tpe=DeviceType.BusDevice, 
         #               definition='DC positive bus', editable=False)
         self.register(key='bus_dc_n', units="", tpe=DeviceType.BusDevice, 
@@ -216,6 +223,9 @@ class VSC(BranchParent):
 
         self.register(key='control2_dev', units="", tpe=DeviceType.BusOrBranch, profile_name="control2_dev_prof",
                       definition='Controlled device, None to apply to this converter', editable=False)
+
+        self.register(key='x', units='px', tpe=float, definition='x position')
+        self.register(key='y', units='px', tpe=float, definition='y position')
 
     # @property
     # def bus_dc_p(self) -> Bus:
