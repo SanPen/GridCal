@@ -1999,8 +1999,10 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
-    # file_path = os.path.join('src/trunk/scopf/case14_cont_v11.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case14_cont_v12.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v3.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
+    # ieee 39 is infeasible
 
     grid = FileOpen(file_path).open()
 
@@ -2134,14 +2136,14 @@ def case_loop() -> None:
                             prob_cont += 1
                             viols += 1
 
-                        # print('nbus', island.nbus, 'ngen', island.ngen)
-                        print(f"W_k: {slack_sol_cont.W_k}")
-                        print(f"Z_k: {slack_sol_cont.Z_k}")
-                        print(f"u_j: {slack_sol_cont.u_j}")
-                        print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
-                        print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
-                        print(f"Sf slack: {slack_sol_cont.sl_sf}")
-                        print(f"St slack: {slack_sol_cont.sl_st}")
+                            # print('nbus', island.nbus, 'ngen', island.ngen)
+                            print(f"W_k: {slack_sol_cont.W_k}")
+                            print(f"Z_k: {slack_sol_cont.Z_k}")
+                            print(f"u_j: {slack_sol_cont.u_j}")
+                            print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
+                            print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
+                            print(f"Sf slack: {slack_sol_cont.sl_sf}")
+                            print(f"St slack: {slack_sol_cont.sl_st}")
 
                     else:
                         print("No valid voltage-dependent nodes found in island. Skipping.")
