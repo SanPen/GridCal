@@ -28,12 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Three-phase test grid">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed bug in the time series power flow when there are hvdc lines">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/3ph_Grid_v2.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/3ph_Grid_v2.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,18 +70,12 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="372_migrate_ntc_2025" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "alexblancoeroots"
-  }
-}]]></component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
       <filtered-out-file-type name="LOCAL_BRANCH" />
@@ -94,12 +84,13 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/SanPen/GridCal.git",
-    "accountId": "1acef425-303f-45a5-9f13-1a5d8e86b985"
-  }
-}]]></component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="master" />
+      </list>
+    </option>
+  </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" root0="FORCE_HIGHLIGHTING" />
@@ -128,7 +119,7 @@
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="1bGvT9JqoJhBes9WGdphyWxAfMi" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+  <component name="ProjectLevelVcsManager">
     <OptionsSetting value="false" id="Update" />
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -204,7 +195,7 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python tests.test_ntc.py.executor": "Debug",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
@@ -221,13 +212,13 @@
     "Python.overhead_line_calcs.executor": "Run",
     "Python.pmode3_test.executor": "Run",
     "Python.post_example.executor": "Run",
-    "Python.power_flow_3ph.executor": "Debug",
     "Python.pymoo_example.executor": "Debug",
     "Python.python_console.executor": "Run",
     "Python.raw_imp_exp_test.executor": "Run",
     "Python.readme_checks.executor": "Run",
     "Python.readme_example.executor": "Run",
     "Python.reliability_study_run.executor": "Run",
+    "Python.round_trip.executor": "Debug",
     "Python.run.executor": "Debug",
     "Python.run_child_1.executor": "Run",
     "Python.run_master.executor": "Run",
@@ -235,8 +226,8 @@
     "Python.server_example.executor": "Run",
     "Python.short_circuit_driver.executor": "Run",
     "Python.stack_plot_pos_neg.executor": "Run",
-    "Python.test_gslv_conversion.executor": "Debug",
-    "Python.test_ntc.executor": "Run",
+    "Python.test_gslv_conversion.executor": "Run",
+    "Python.test_ntc.executor": "Debug",
     "Python.test_power_flow.executor": "Run",
     "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
     "Python.toast_widget.executor": "Run",
@@ -250,8 +241,8 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "#352 on #343__3phase",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal",
+    "git-widget-placeholder": "#343__3phase",
+    "last_opened_file_path": "/home/santi/Documentos/Git/eRoots/M-project",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -276,14 +267,14 @@
       <recent name="$PROJECT_DIR$/src/trunk/server" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/IO/iidm/devices" />
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/IO/iidm" />
+      <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams" />
       <recent name="$PROJECT_DIR$/src/trunk/line_parameters" />
-      <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
-      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
-      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Branches" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.power_flow_3ph">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -345,15 +336,6 @@
       <option name="CUSTOM_SETTINGS" value="false" />
       <option name="USE_OPTIONS" value="false" />
       <option name="OPTIONS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="MatlabApplication">
-      <option name="FILE_PATH" value="" />
-      <option name="INTERPRETER_PATH" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="PARAMETERS" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="MatlabApplication">
@@ -685,6 +667,15 @@
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="MatlabApplication">
+      <option name="FILE_PATH" value="" />
+      <option name="INTERPRETER_PATH" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="PARAMETERS" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
       <method v="2" />
     </configuration>
     <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -733,7 +724,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="pmode3_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="round_trip" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -742,35 +733,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/ntc" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/cgmes" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/ntc/pmode3_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="power_flow_3ph" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/three_phase" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/cgmes/round_trip.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -1070,6 +1038,24 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="pytest for test_power_flow_acdc_generalized.test_hvdc_new" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_power_flow_acdc_generalized.test_hvdc_new&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -1111,19 +1097,19 @@
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
-      <item itemvalue="Python.power_flow_3ph" />
-      <item itemvalue="Python.pmode3_test" />
+      <item itemvalue="Python.round_trip" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python tests.test_ntc.py" />
+      <item itemvalue="Python tests.pytest for test_power_flow_acdc_generalized.test_hvdc_new" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.power_flow_3ph" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python.pmode3_test" />
+        <item itemvalue="Python.round_trip" />
+        <item itemvalue="Python tests.pytest for test_power_flow_acdc_generalized.test_hvdc_new" />
         <item itemvalue="Python.upload_to_pypi" />
       </list>
     </recent_temporary>
@@ -1131,7 +1117,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-a5bc9544c897-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.23654.177" />
+        <option value="bundled-python-sdk-348a24fa61fa-5312c7369657-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.23774.444" />
       </set>
     </attachedChunks>
   </component>
@@ -2344,7 +2330,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="705" />
+    <option name="localTasksCounter" value="711" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2377,7 +2363,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/#343_3phase" />
+                        <option value="immprove_map_performance" />
                       </list>
                     </value>
                   </entry>
@@ -2390,11 +2376,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More refactoring" />
-    <MESSAGE value="fixed most _api_object occurrences with the appropriate api_object" />
-    <MESSAGE value="Fixed all _api_object typos&#10;Fixed the test_valid_circuit_idx test" />
-    <MESSAGE value="Touched on some CGMES craziness..." />
-    <MESSAGE value="Fixed VL border issue" />
     <MESSAGE value="Refactored unused code" />
     <MESSAGE value="added x, y to the connectivity node&#10;refactored code" />
     <MESSAGE value="Improved README.md" />
@@ -2412,10 +2393,15 @@
     <MESSAGE value="5.3.37" />
     <MESSAGE value="gslv interface improvements" />
     <MESSAGE value="initiated tests" />
-    <MESSAGE value="new numba 0.6.1, we can finally upgrade numpy" />
-    <MESSAGE value="Improved NTC calculation" />
-    <MESSAGE value="Improved NTC calculation&#10;Added net_transfer capacity docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved NTC calculation&#10;Added net_transfer capacity docs" />
+    <MESSAGE value="GSLV improvements" />
+    <MESSAGE value="5.3.39" />
+    <MESSAGE value="Improvements in cim/cgmes bad file handling&#10;Added roundtrip trunk example" />
+    <MESSAGE value="Some cgmes handling improvements" />
+    <MESSAGE value="Fixed the round trip" />
+    <MESSAGE value="minimal changes" />
+    <MESSAGE value="early iidm reader" />
+    <MESSAGE value="Fixed bug in the time series power flow when there are hvdc lines" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug in the time series power flow when there are hvdc lines" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2720,16 +2706,6 @@
           <option name="timeStamp" value="2596" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py</url>
-          <line>439</line>
-          <option name="timeStamp" value="2598" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>1187</line>
-          <option name="timeStamp" value="2599" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
           <line>131</line>
           <option name="timeStamp" value="2600" />
@@ -2750,19 +2726,9 @@
           <option name="timeStamp" value="2606" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>178</line>
-          <option name="timeStamp" value="2607" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py</url>
-          <line>18</line>
-          <option name="timeStamp" value="2608" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
-          <line>224</line>
-          <option name="timeStamp" value="2609" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py</url>
+          <line>131</line>
+          <option name="timeStamp" value="2613" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

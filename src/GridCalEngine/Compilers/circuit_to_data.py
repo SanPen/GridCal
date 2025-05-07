@@ -242,7 +242,8 @@ def get_bus_data(bus_data: BusData,
                  areas_dict: Dict[Area, int],
                  t_idx: int = -1,
                  time_series=False,
-                 use_stored_guess=False) -> None:
+                 use_stored_guess=False,
+                 fill_three_phase: bool = False) -> None:
     """
 
     :param bus_data: BusData
@@ -1099,6 +1100,7 @@ def get_generator_data(
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
+        fill_three_phase: bool = False
 ) -> Dict[str, int]:
     """
 
@@ -1131,7 +1133,8 @@ def get_generator_data(
                               t_idx=t_idx,
                               time_series=time_series,
                               use_stored_guess=use_stored_guess,
-                              control_remote_voltage=control_remote_voltage)
+                              control_remote_voltage=control_remote_voltage,
+                              fill_three_phase=fill_three_phase)
 
         if opf_results is not None:
             # overwrite P with the OPF results
@@ -1155,6 +1158,7 @@ def get_battery_data(
         time_series=False,
         use_stored_guess=False,
         control_remote_voltage: bool = True,
+        fill_three_phase: bool = False
 ) -> None:
     """
 
@@ -1184,7 +1188,8 @@ def get_battery_data(
                               t_idx=t_idx,
                               time_series=time_series,
                               use_stored_guess=use_stored_guess,
-                              control_remote_voltage=control_remote_voltage)
+                              control_remote_voltage=control_remote_voltage,
+                              fill_three_phase=fill_three_phase)
 
         data.enom[k] = elm.Enom
         data.min_soc[k] = elm.min_soc
@@ -2321,7 +2326,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         t_idx=t_idx,
         time_series=time_series,
         areas_dict=areas_dict,
-        use_stored_guess=use_stored_guess
+        use_stored_guess=use_stored_guess,
+        fill_three_phase=fill_three_phase
     )
 
     gen_dict = get_generator_data(
@@ -2335,7 +2341,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         logger=logger,
         opf_results=opf_results,
         use_stored_guess=use_stored_guess,
-        control_remote_voltage=control_remote_voltage
+        control_remote_voltage=control_remote_voltage,
+        fill_three_phase= fill_three_phase
     )
 
     get_battery_data(
@@ -2349,7 +2356,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         logger=logger,
         opf_results=opf_results,
         use_stored_guess=use_stored_guess,
-        control_remote_voltage=control_remote_voltage
+        control_remote_voltage=control_remote_voltage,
+        fill_three_phase=fill_three_phase
     )
 
     get_shunt_data(
@@ -2362,7 +2370,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         time_series=time_series,
         logger=logger,
         use_stored_guess=use_stored_guess,
-        control_remote_voltage=control_remote_voltage
+        control_remote_voltage=control_remote_voltage,
+        fill_three_phase=fill_three_phase
     )
 
     get_load_data(
@@ -2375,7 +2384,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
         t_idx=t_idx,
         time_series=time_series,
         opf_results=opf_results,
-        use_stored_guess=use_stored_guess
+        use_stored_guess=use_stored_guess,
+        fill_three_phase=fill_three_phase
     )
 
     branch_dict = get_branch_data(

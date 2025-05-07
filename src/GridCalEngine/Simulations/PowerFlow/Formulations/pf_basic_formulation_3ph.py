@@ -65,7 +65,7 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         f3 = 3 * f + idx3
         Ysh_bus[f3] += nc.load_data.Y3_star[k3]
 
-    Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus)
+    Ybus = Cf.T @ Yf + Ct.T @ Yt + diags(Ysh_bus / nc.Sbase)
 
     return Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Ysh_bus
 
@@ -199,8 +199,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         self.nc = nc
 
-        self.S0: CxVec = compute_Sbus_star(nc)
-        self.I0: CxVec = compute_Ibus(nc)
+        self.S0: CxVec = compute_Sbus_star(nc) / nc.Sbase
+        self.I0: CxVec = compute_Ibus(nc) / nc.Sbase
 
         self.Ybus, self.Yf, self.Yt, self.Yshunt_bus = compute_ybus(nc)
 

@@ -25,8 +25,8 @@ print("J:\n", problem.get_jacobian_df(problem.Jacobian()))
 
 res = newton_raphson_fx(problem=problem)
 
-print(res.converged)
-print(res.iterations)
+print("Converged: ", res.converged)
+print("Iter: ", res.iterations)
 print("Vm:\n", np.abs(res.V))
 print("Va:\n", np.angle(res.V)*180/np.pi)
 print("Sbus:\n", res.Scalc)
