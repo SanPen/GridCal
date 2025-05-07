@@ -41,7 +41,8 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     :param json_data: the grid info generated with 'gather_model_as_jsons_for_communication'
     """
     grid = parse_gridcal_data(data=json_data)
-    print(f'Circuit loaded alright nbus{grid.get_bus_number()}, nbr{grid.get_branch_number()}')
+    print(f'Circuit loaded alright nbus{grid.get_bus_number()}, '
+          f'nbr{grid.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)}')
 
     if 'instruction' in json_data:
         instruction = RemoteInstruction(data=json_data['instruction'])
@@ -101,7 +102,8 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
 
     grid: MultiCircuit = parse_gridcal_data(data=json_data)
 
-    print(f'Circuit loaded alright nbus{grid.get_bus_number()}, nbr{grid.get_branch_number()}')
+    print(f'Circuit loaded alright nbus{grid.get_bus_number()}, '
+          f'nbr{grid.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)}')
 
     if 'instruction' in json_data:
         instruction = RemoteInstruction(data=json_data['instruction'])
