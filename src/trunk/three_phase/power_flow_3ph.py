@@ -5,7 +5,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx impo
 
 # grid = gce.open_file("3ph_Grid.gridcal")
 # grid = gce.open_file("src/trunk/three_phase/3ph_Grid.gridcal")
-grid = gce.open_file("src/trunk/three_phase/3ph_Grid_v2.gridcal")
+grid = gce.open_file("3ph_Grid_v2.gridcal")
 
 nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True)
 
@@ -14,7 +14,7 @@ V0 = nc.bus_data.Vbus
 S0 = nc.get_power_injections_pu()
 Qmax, Qmin = nc.get_reactive_power_limits()
 
-options = gce.PowerFlowOptions()
+options = gce.PowerFlowOptions(tolerance=1e-10)
 
 problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin, Qmax=Qmax, nc=nc, options=options)
 
@@ -32,3 +32,4 @@ print("Va:\n", np.angle(res.V)*180/np.pi)
 print("Sbus:\n", res.Scalc)
 print("Pf:\n", res.Sf.real)
 print("Pt:\n", res.St.real)
+print("Pt:\n", problem.S0)

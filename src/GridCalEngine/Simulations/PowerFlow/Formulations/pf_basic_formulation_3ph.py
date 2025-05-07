@@ -20,8 +20,6 @@ from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC
 
-
-
 def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matrix, CxVec]:
     """
     Compute admittances
