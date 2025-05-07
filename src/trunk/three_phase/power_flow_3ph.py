@@ -5,7 +5,8 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx impo
 
 # grid = gce.open_file("3ph_Grid.gridcal")
 # grid = gce.open_file("src/trunk/three_phase/3ph_Grid.gridcal")
-grid = gce.open_file("3ph_Grid_v2.gridcal")
+# grid = gce.open_file("3ph_Grid_v2.gridcal")
+grid = gce.open_file("ingelectus_cases/NEV Network 1.gridcal")
 
 nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True)
 

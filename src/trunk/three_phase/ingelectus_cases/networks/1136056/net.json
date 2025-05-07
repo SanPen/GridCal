@@ -1,0 +1,554 @@
+{
+    "network": {
+        "bus": {
+            "0": {
+                "slack": true,
+                "load": false,
+                "name": "3863668",
+                "type": "1136056"
+            },
+            "1": {
+                "slack": false,
+                "load": false,
+                "name": "1320607",
+                "type": "1136056"
+            },
+            "2": {
+                "slack": false,
+                "load": false,
+                "name": "3226509",
+                "type": "1136056"
+            },
+            "3": {
+                "slack": false,
+                "load": false,
+                "name": "3226520",
+                "type": "1136056"
+            },
+            "4": {
+                "slack": false,
+                "load": false,
+                "name": "1320619",
+                "type": "1136056"
+            },
+            "5": {
+                "slack": false,
+                "load": false,
+                "name": "1320626",
+                "type": "1136056"
+            },
+            "6": {
+                "slack": false,
+                "load": false,
+                "name": "2267894",
+                "type": "1136056"
+            },
+            "7": {
+                "slack": false,
+                "load": false,
+                "name": "1320703",
+                "type": "1136056"
+            },
+            "8": {
+                "slack": false,
+                "load": false,
+                "name": "1351895",
+                "type": "1136056"
+            },
+            "9": {
+                "slack": false,
+                "load": false,
+                "name": "3226539",
+                "type": "1136056"
+            },
+            "10": {
+                "slack": false,
+                "load": false,
+                "name": "1320631",
+                "type": "1136056"
+            },
+            "11": {
+                "slack": false,
+                "load": false,
+                "name": "3225843",
+                "type": "1136056"
+            },
+            "12": {
+                "slack": false,
+                "load": false,
+                "name": "3294997",
+                "type": "1136056"
+            },
+            "13": {
+                "slack": false,
+                "load": false,
+                "name": "1320643",
+                "type": "1136056"
+            },
+            "14": {
+                "slack": false,
+                "load": false,
+                "name": "2332966",
+                "type": "1136056"
+            },
+            "15": {
+                "slack": false,
+                "load": false,
+                "name": "1320655",
+                "type": "1136056"
+            },
+            "16": {
+                "slack": false,
+                "load": false,
+                "name": "2332900",
+                "type": "1136056"
+            },
+            "17": {
+                "slack": false,
+                "load": false,
+                "name": "3225929",
+                "type": "1136056"
+            },
+            "18": {
+                "slack": false,
+                "load": false,
+                "name": "2332915",
+                "type": "1136056"
+            },
+            "19": {
+                "slack": false,
+                "load": false,
+                "name": "1320679",
+                "type": "1136056"
+            },
+            "20": {
+                "slack": false,
+                "load": false,
+                "name": "3226528",
+                "type": "1136056"
+            },
+            "21": {
+                "slack": false,
+                "load": false,
+                "name": "1721323",
+                "type": "1136056"
+            },
+            "22": {
+                "slack": false,
+                "load": false,
+                "name": "1320686",
+                "type": "1136056"
+            },
+            "23": {
+                "slack": false,
+                "load": false,
+                "name": "3071540",
+                "type": "1136056"
+            },
+            "24": {
+                "slack": false,
+                "load": false,
+                "name": "2163075",
+                "type": "1136056"
+            },
+            "25": {
+                "slack": false,
+                "load": false,
+                "name": "2335504",
+                "type": "1136056"
+            },
+            "26": {
+                "slack": false,
+                "load": false,
+                "name": "1320691",
+                "type": "1136056"
+            },
+            "27": {
+                "slack": false,
+                "load": false,
+                "name": "3294670",
+                "type": "1136056"
+            },
+            "28": {
+                "slack": false,
+                "load": false,
+                "name": "3294690",
+                "type": "1136056"
+            },
+            "29": {
+                "slack": false,
+                "load": false,
+                "name": "3294697",
+                "type": "1136056"
+            },
+            "30": {
+                "slack": false,
+                "load": false,
+                "name": "1320713",
+                "type": "1136056"
+            },
+            "31": {
+                "slack": false,
+                "load": false,
+                "name": "1556485",
+                "type": "1136056"
+            },
+            "32": {
+                "slack": false,
+                "load": false,
+                "name": "1543943",
+                "type": "1136056"
+            },
+            "33": {
+                "slack": false,
+                "load": false,
+                "name": "2332972",
+                "type": "1136056"
+            },
+            "34": {
+                "slack": false,
+                "load": false,
+                "name": "2332926",
+                "type": "1136056"
+            },
+            "35": {
+                "slack": false,
+                "load": false,
+                "name": "2335510",
+                "type": "1136056"
+            },
+            "36": {
+                "slack": false,
+                "load": true,
+                "name": "15137401",
+                "type": "1136056"
+            },
+            "37": {
+                "slack": false,
+                "load": true,
+                "name": "15137501",
+                "type": "1136056"
+            },
+            "38": {
+                "slack": false,
+                "load": true,
+                "name": "100817763",
+                "type": "1136056"
+            },
+            "39": {
+                "slack": false,
+                "load": true,
+                "name": "100650947",
+                "type": "1136056"
+            },
+            "40": {
+                "slack": false,
+                "load": true,
+                "name": "100793055",
+                "type": "1136056"
+            },
+            "41": {
+                "slack": false,
+                "load": true,
+                "name": "100817812",
+                "type": "1136056"
+            },
+            "42": {
+                "slack": false,
+                "load": true,
+                "name": "100778484",
+                "type": "1136056"
+            },
+            "43": {
+                "slack": false,
+                "load": true,
+                "name": "100778441",
+                "type": "1136056"
+            },
+            "44": {
+                "slack": false,
+                "load": true,
+                "name": "102337613",
+                "type": "1136056"
+            },
+            "45": {
+                "slack": false,
+                "load": true,
+                "name": "100834090",
+                "type": "1136056"
+            }
+        },
+        "branch": {
+            "0": {
+                "type": "C350",
+                "nodefrom": 0,
+                "nodeto": 1,
+                "length": 1.0
+            },
+            "1": {
+                "type": "C304",
+                "nodefrom": 1,
+                "nodeto": 2,
+                "length": 37.0
+            },
+            "2": {
+                "type": "C304",
+                "nodefrom": 2,
+                "nodeto": 3,
+                "length": 33.0
+            },
+            "3": {
+                "type": "C304",
+                "nodefrom": 3,
+                "nodeto": 36,
+                "length": 3.0
+            },
+            "4": {
+                "type": "C350",
+                "nodefrom": 0,
+                "nodeto": 4,
+                "length": 1.0
+            },
+            "5": {
+                "type": "C304",
+                "nodefrom": 4,
+                "nodeto": 5,
+                "length": 37.0
+            },
+            "6": {
+                "type": "C304",
+                "nodefrom": 5,
+                "nodeto": 6,
+                "length": 34.0
+            },
+            "7": {
+                "type": "C309",
+                "nodefrom": 5,
+                "nodeto": 30,
+                "length": 4.0
+            },
+            "8": {
+                "type": "C309",
+                "nodefrom": 6,
+                "nodeto": 37,
+                "length": 4.0
+            },
+            "9": {
+                "type": "C304",
+                "nodefrom": 6,
+                "nodeto": 7,
+                "length": 8.0
+            },
+            "10": {
+                "type": "C304",
+                "nodefrom": 7,
+                "nodeto": 8,
+                "length": 53.0
+            },
+            "11": {
+                "type": "C304",
+                "nodefrom": 7,
+                "nodeto": 38,
+                "length": 17.0
+            },
+            "12": {
+                "type": "C304",
+                "nodefrom": 8,
+                "nodeto": 9,
+                "length": 74.0
+            },
+            "13": {
+                "type": "C307",
+                "nodefrom": 8,
+                "nodeto": 39,
+                "length": 12.0
+            },
+            "14": {
+                "type": "C304",
+                "nodefrom": 9,
+                "nodeto": 31,
+                "length": 7.74
+            },
+            "15": {
+                "type": "C350",
+                "nodefrom": 0,
+                "nodeto": 10,
+                "length": 1.0
+            },
+            "16": {
+                "type": "C304",
+                "nodefrom": 10,
+                "nodeto": 11,
+                "length": 80.0
+            },
+            "17": {
+                "type": "C304",
+                "nodefrom": 11,
+                "nodeto": 12,
+                "length": 94.0
+            },
+            "18": {
+                "type": "C304",
+                "nodefrom": 12,
+                "nodeto": 32,
+                "length": 12.0
+            },
+            "19": {
+                "type": "C350",
+                "nodefrom": 0,
+                "nodeto": 13,
+                "length": 1.0
+            },
+            "20": {
+                "type": "C304",
+                "nodefrom": 13,
+                "nodeto": 14,
+                "length": 117.0
+            },
+            "21": {
+                "type": "C304",
+                "nodefrom": 14,
+                "nodeto": 33,
+                "length": 24.55
+            },
+            "22": {
+                "type": "C350",
+                "nodefrom": 0,
+                "nodeto": 15,
+                "length": 1.0
+            },
+            "23": {
+                "type": "C304",
+                "nodefrom": 15,
+                "nodeto": 16,
+                "length": 96.0
+            },
+            "24": {
+                "type": "C304",
+                "nodefrom": 16,
+                "nodeto": 40,
+                "length": 16.0
+            },
+            "25": {
+                "type": "C304",
+                "nodefrom": 16,
+                "nodeto": 17,
+                "length": 23.0
+            },
+            "26": {
+                "type": "C304",
+                "nodefrom": 17,
+                "nodeto": 18,
+                "length": 17.0
+            },
+            "27": {
+                "type": "C304",
+                "nodefrom": 18,
+                "nodeto": 34,
+                "length": 24.48
+            },
+            "28": {
+                "type": "C350",
+                "nodefrom": 0,
+                "nodeto": 19,
+                "length": 1.0
+            },
+            "29": {
+                "type": "C304",
+                "nodefrom": 19,
+                "nodeto": 20,
+                "length": 36.0
+            },
+            "30": {
+                "type": "C304",
+                "nodefrom": 20,
+                "nodeto": 21,
+                "length": 35.0
+            },
+            "31": {
+                "type": "C304",
+                "nodefrom": 21,
+                "nodeto": 22,
+                "length": 113.0
+            },
+            "32": {
+                "type": "C304",
+                "nodefrom": 21,
+                "nodeto": 41,
+                "length": 16.0
+            },
+            "33": {
+                "type": "C309",
+                "nodefrom": 22,
+                "nodeto": 42,
+                "length": 6.0
+            },
+            "34": {
+                "type": "C304",
+                "nodefrom": 22,
+                "nodeto": 23,
+                "length": 35.0
+            },
+            "35": {
+                "type": "C309",
+                "nodefrom": 23,
+                "nodeto": 43,
+                "length": 6.0
+            },
+            "36": {
+                "type": "C304",
+                "nodefrom": 23,
+                "nodeto": 24,
+                "length": 66.0
+            },
+            "37": {
+                "type": "C307",
+                "nodefrom": 24,
+                "nodeto": 44,
+                "length": 7.0
+            },
+            "38": {
+                "type": "C304",
+                "nodefrom": 24,
+                "nodeto": 25,
+                "length": 29.0
+            },
+            "39": {
+                "type": "C304",
+                "nodefrom": 25,
+                "nodeto": 35,
+                "length": 10.75
+            },
+            "40": {
+                "type": "C350",
+                "nodefrom": 0,
+                "nodeto": 26,
+                "length": 1.0
+            },
+            "41": {
+                "type": "C304",
+                "nodefrom": 26,
+                "nodeto": 27,
+                "length": 37.0
+            },
+            "42": {
+                "type": "C304",
+                "nodefrom": 27,
+                "nodeto": 28,
+                "length": 47.0
+            },
+            "43": {
+                "type": "C304",
+                "nodefrom": 28,
+                "nodeto": 29,
+                "length": 68.0
+            },
+            "44": {
+                "type": "C304",
+                "nodefrom": 29,
+                "nodeto": 45,
+                "length": 12.0
+            }
+        }
+    }
+}
