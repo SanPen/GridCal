@@ -187,3 +187,11 @@ class VscData:
         data.control2_branch_idx = self.control2_branch_idx.copy()
 
         return data
+
+    def __len__(self) -> int:
+        """
+        Get vsc count
+        :return:
+        """
+        return self.nelm
+

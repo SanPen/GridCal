@@ -30,7 +30,7 @@ def solve_generalized(grid: gce.MultiCircuit,
         control_remote_voltage=options.control_remote_voltage,
     )
 
-    islands = nc.split_into_islands(consider_hvdc_as_island_links=True)
+    islands = nc.split_into_islands(consider_hvdc_as_island_links=False)
     logger = Logger()
 
     island = islands[0]
