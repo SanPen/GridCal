@@ -18,6 +18,7 @@ from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.generator_data import GeneratorData
+from GridCalEngine.DataStructures.battery_data import BatteryData
 from GridCalEngine.DataStructures.load_data import LoadData
 from GridCalEngine.DataStructures.passive_branch_data import PassiveBranchData
 from GridCalEngine.DataStructures.active_branch_data import ActiveBranchData
@@ -295,7 +296,8 @@ class BusNtcVars:
         self.load_shedding = np.zeros((nt, n_elm), dtype=object)
 
         # nodal gen
-        self.Pcalc = np.zeros((nt, n_elm), dtype=object)
+        self.Pinj = np.zeros((nt, n_elm), dtype=object)
+        self.Pbalance = np.zeros((nt, n_elm), dtype=object)
         self.delta_p = np.zeros((nt, n_elm), dtype=object)
         self.proportions = np.zeros((nt, n_elm), dtype=float)
 
@@ -317,15 +319,16 @@ class BusNtcVars:
                 data.theta[t, i] = model.get_value(self.theta[t, i])
                 data.shadow_prices[t, i] = model.get_dual_value(self.kirchhoff[t, i])
                 data.load_shedding[t, i] = model.get_value(self.load_shedding[t, i]) * Sbase
-                data.Pcalc[t, i] = model.get_value(self.Pcalc[t, i]) * Sbase
-                data.delta_p[t, i] = model.get_value(self.delta_p[t, i]) * Sbase * self.proportions[t, i]
+                data.Pbalance[t, i] = model.get_value(self.Pbalance[t, i]) * Sbase
+                data.Pinj[t, i] = model.get_value(self.Pinj[t, i]) * Sbase
+                data.delta_p[t, i] = model.get_value(self.delta_p[t, i]) * Sbase
 
         # format the arrays appropriately
         data.theta = data.theta.astype(float, copy=False)
 
         data.load_shedding = data.load_shedding.astype(float, copy=False)
 
-        data.Pcalc = data.Pcalc.astype(float, copy=False)
+        data.Pbalance = data.Pbalance.astype(float, copy=False)
         data.delta_p = data.delta_p.astype(float, copy=False)
 
         return data
@@ -355,7 +358,7 @@ class BranchNtcVars:
         self.alpha = np.zeros((nt, n_elm), dtype=float)
 
         self.monitor = np.zeros((nt, n_elm), dtype=bool)
-        self.monitor_logic = np.zeros((nt, n_elm), dtype=object)
+        self.monitor_logic = np.zeros((nt, n_elm), dtype=int)
 
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp], LpVar, LpVar]] = list()
@@ -376,6 +379,7 @@ class BranchNtcVars:
         data.contingency_rates = self.contingency_rates
         data.alpha = self.alpha
         data.inter_space_branches = self.inter_space_branches
+        data.monitor_logic = self.monitor_logic
 
         for t in range(nt):
             for i in range(n_elm):
@@ -440,6 +444,8 @@ class HvdcNtcVars:
         :param n_elm: Number of branches
         """
         self.flows = np.zeros((nt, n_elm), dtype=object)
+        self.z = np.zeros((nt, n_elm), dtype=object)
+        self.y = np.zeros((nt, n_elm), dtype=object)
 
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
@@ -459,6 +465,8 @@ class HvdcNtcVars:
         for t in range(nt):
             for i in range(n_elm):
                 data.flows[t, i] = model.get_value(self.flows[t, i]) * Sbase
+                data.y[t, i] = model.get_value(self.y[t, i]) * Sbase
+                data.z[t, i] = model.get_value(self.z[t, i])
 
         # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)
@@ -501,6 +509,8 @@ class NtcVars:
         self.hvdc_vars = HvdcNtcVars(nt=nt, n_elm=n_hvdc)
 
         # power shift
+        self.delta_1 = np.zeros(nt, dtype=object)  # array of vars at the beginning
+        self.delta_2 = np.zeros(nt, dtype=object)  # array of vars at the beginning
         self.power_shift = np.zeros(nt, dtype=object)  # array of vars at the beginning
 
         # structural NTC
@@ -529,8 +539,10 @@ class NtcVars:
 
         data.acceptable_solution = self.acceptable_solution
 
-        # for t in range(nt):
-        #     data.power_shift[t] = model.get_value(self.power_shift[t])
+        for t in range(self.nt):
+            data.delta_1[t] = model.get_value(self.delta_1[t])
+            data.delta_2[t] = model.get_value(self.delta_2[t])
+            data.power_shift[t] = model.get_value(self.power_shift[t])
 
         # format the arrays appropriately
         # data.power_shift = data.power_shift.astype(float, copy=False)
@@ -545,9 +557,51 @@ class NtcVars:
         return np.ones((self.nt, self.nbus)) * np.exp(1j * self.bus_vars.theta)
 
 
+def get_base_power(Sbase: float,
+                   gen_data_t: GeneratorData,
+                   batt_data_t: BatteryData,
+                   load_data_t: LoadData,
+                   logger: Logger) -> Vec:
+    """
+    Get the perfectly balanced base power
+    :param Sbase:
+    :param gen_data_t:
+    :param batt_data_t:
+    :param load_data_t:
+    :param logger:
+    :return:
+    """
+    # base power injections
+    gen_per_bus = gen_data_t.get_injections_per_bus().real / Sbase
+    batt_per_bus = batt_data_t.get_injections_per_bus().real / Sbase
+    load_per_bus = load_data_t.get_injections_per_bus().real / Sbase  # this comes with the proper sign already
+    base_power = gen_per_bus + batt_per_bus + load_per_bus
+
+    # Mandatory scaling so that we can do the deltas madness
+    diff = base_power.sum()
+    if diff != 0.0:
+        gen_sum = gen_per_bus.sum()
+        if gen_sum != 0:
+            share = gen_per_bus / gen_sum
+            gen_per_bus -= share * diff  # we make the generators balance the system
+        else:
+            raise ValueError("Cannot balance the circumstance")
+
+        base_power = gen_per_bus + batt_per_bus + load_per_bus
+        new_diff = np.sum(base_power)
+
+        if np.isclose(new_diff, 0, atol=1e-10):
+            logger.add_warning("The base circumstance had to be balanced", value=diff, expected_value=new_diff)
+        else:
+            raise ValueError("Cannot balance the circumstance")
+
+    return base_power
+
+
 def add_linear_injections_formulation(t: Union[int, None],
                                       Sbase: float,
                                       gen_data_t: GeneratorData,
+                                      batt_data_t: BatteryData,
                                       load_data_t: LoadData,
                                       bus_data_t: BusData,
                                       p_bus_t: Vec,
@@ -576,7 +630,14 @@ def add_linear_injections_formulation(t: Union[int, None],
     :return objective function
     """
 
-    # nodal power (p.u.), pmax (p.u.), pmin(p.u.)
+    # base power injections
+    base_power = get_base_power(Sbase=Sbase,
+                                gen_data_t=gen_data_t,
+                                batt_data_t=batt_data_t,
+                                load_data_t=load_data_t,
+                                logger=logger)
+
+    # returns nodal reference power (p.u.), pmax (p.u.), pmin(p.u.)
     bus_pref_t, bus_pmax_t, bus_pmin_t = get_transfer_power_scaling_per_bus(
         bus_data_t=bus_data_t,
         gen_data_t=gen_data_t,
@@ -587,6 +648,7 @@ def add_linear_injections_formulation(t: Union[int, None],
         Sbase=Sbase
     )
 
+    # compute each area's share with sign
     proportions = get_exchange_proportions(
         power=bus_pref_t,
         bus_a1_idx=bus_a1_idx,
@@ -598,46 +660,33 @@ def add_linear_injections_formulation(t: Union[int, None],
     ntc_vars.bus_vars.proportions[t, :] = proportions
 
     f_obj = 0.0
-    deltas_1 = 0.0
+    ntc_vars.delta_1[t] = prob.add_var(lb=0, ub=prob.INFINITY, name=join("Delta_up_", [t]))
+    ntc_vars.delta_2[t] = prob.add_var(lb=0, ub=prob.INFINITY, name=join("Delta_down_", [t]))
+
     for k in bus_a1_idx:
         if bus_data_t.active[k] and proportions[k] != 0:
-            # declare bus delta injections
-            ntc_vars.bus_vars.delta_p[t, k] = prob.add_var(
-                lb=0,
-                ub=prob.INFINITY,
-                name=join("dp_up_", [t, k], "_")
-            )
+            ntc_vars.bus_vars.delta_p[t, k] = ntc_vars.delta_1[t] * proportions[k]
 
-            # add the deltas of the sending area
-            deltas_1 += ntc_vars.bus_vars.delta_p[t, k]
-
-    deltas_2 = 0.0
     for k in bus_a2_idx:
         if bus_data_t.active[k] and proportions[k] != 0:
-            # declare bus delta injections
-            ntc_vars.bus_vars.delta_p[t, k] = prob.add_var(
-                lb=0,
-                ub=prob.INFINITY,
-                name=join("dp_down_", [t, k], "_")
-            )
-
-            # add the deltas of the sending area
-            deltas_2 += ntc_vars.bus_vars.delta_p[t, k]
+            # the proportion already has the sign
+            ntc_vars.bus_vars.delta_p[t, k] = ntc_vars.delta_2[t] * proportions[k]
 
     # the increase in area 1 must be equal to the decrease in area 2, since
     # we have declared the deltas positive for the sending and receiving areas
     prob.add_cst(
-        cst=deltas_1 == deltas_2,
+        cst=ntc_vars.delta_1[t] == ntc_vars.delta_2[t],
         name=join(f'deltas_equality_', [t], "_")
     )
 
     # now, formulate the final injections for all buses
     for k in range(bus_data_t.nbus):
+        # we compute the injection power: P = Pset + proportion · ΔP
+        ntc_vars.bus_vars.Pinj[t, k] += base_power[k] + ntc_vars.bus_vars.delta_p[t, k]
+        ntc_vars.bus_vars.Pbalance[t, k] += ntc_vars.bus_vars.Pinj[t, k]
 
-        # we compute the injections power:
-        # P = Pset + proportion · ΔP
-        # the proportion is positive for the sending buses and negative for the receiving buses
-        ntc_vars.bus_vars.Pcalc[t, k] += p_bus_t[k] + proportions[k] * ntc_vars.bus_vars.delta_p[t, k]
+    # minimize the power at area 2 (receiving area), maximize at area 1 (sending area)
+    f_obj += ntc_vars.delta_2[t] - ntc_vars.delta_1[t]
 
     return f_obj
 
@@ -722,19 +771,20 @@ def add_linear_branches_formulation(t_idx: int,
                     cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
                                                              bus_vars.theta[t_idx, to] +
                                                              branch_vars.tap_angles[t_idx, m]),
-                    name=join("Branch_flow_set_with_ps_", [t_idx, m], "_")
+                    name=join("flows_ps_", [t_idx, m], "_")
                 )
 
-            else:  # rest of the branches
-                # is a phase shifter device (like phase shifter transformer or VSC with P control)
+            else:
+                # rest of the branches
                 prob.add_cst(
                     cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
                                                              bus_vars.theta[t_idx, to]),
-                    name=join("Branch_flow_set_", [t_idx, m], "_"))
+                    name=join("flow_", [t_idx, m], "_")
+                )
 
             # We save in Pcalc the balance of the branch flows
-            bus_vars.Pcalc[t_idx, fr] -= branch_vars.flows[t_idx, m]
-            bus_vars.Pcalc[t_idx, to] += branch_vars.flows[t_idx, m]
+            bus_vars.Pbalance[t_idx, fr] -= branch_vars.flows[t_idx, m]
+            bus_vars.Pbalance[t_idx, to] += branch_vars.flows[t_idx, m]
 
             # Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N condition
             if monitor_only_ntc_load_rule_branches:
@@ -761,10 +811,14 @@ def add_linear_branches_formulation(t_idx: int,
             else:
                 monitor_by_sensitivity_n = True
 
+            branch_vars.monitor_logic[t_idx, m] = int(branch_data_t.monitor_loading[m]
+                                                      and monitor_by_sensitivity_n
+                                                      and monitor_by_load_rule_n)
+
             # add the rate constraint if the branch is monitored
-            if branch_data_t.monitor_loading[m] and monitor_by_sensitivity_n and monitor_by_load_rule_n:
-                if isinstance(branch_vars.flows[t_idx, m], LpVar):
-                    branch_vars.flows[t_idx, m].bounds(low=-rate_pu, up=rate_pu)
+            if branch_vars.monitor_logic[t_idx, m]:
+                # here flows is always a variable
+                branch_vars.flows[t_idx, m].bounds(low=-rate_pu, up=rate_pu)
 
     # add the inter-area flows to the objective function with the correct sign
     for k, sense in branch_vars.inter_space_branches:
@@ -805,7 +859,7 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     for c, contingency in enumerate(linear_multicontingencies.multi_contingencies):
 
         contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
-                                                                 injections=bus_vars.Pcalc[t_idx, :])
+                                                                 injections=bus_vars.Pbalance[t_idx, :])
 
         for m, contingency_flow in enumerate(contingency_flows):
             if isinstance(contingency_flow, LpExp):
@@ -904,30 +958,51 @@ def add_linear_hvdc_formulation(t_idx: int,
                 name=join("hvdc_flow_", [t_idx, m], "_")
             )
 
-            if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:
+            if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:  # P-MODE 3
 
                 # set the flow based on the angular difference
                 P0 = hvdc_data_t.Pset[m] / Sbase
 
                 # convert MW/deg to pu/rad
                 droop = hvdc_data_t.get_angle_droop_in_pu_rad_at(m, Sbase)
+
+                # y = P0 + k · (theta_f - theta_t)
                 prob.add_cst(
-                    cst=hvdc_vars.flows[t_idx, m] == P0 + droop * (
+                    cst=hvdc_vars.y[t_idx, m] == P0 + droop * (
                             vars_bus.theta[t_idx, fr] - vars_bus.theta[t_idx, to]),
                     name=join("hvdc_flow_cst_", [t_idx, m], "_")
                 )
 
+                # -M · (1 - z)  <=> y - flow_k <=> M · (1 - z)
+                hvdc_vars.z[t_idx, m] = prob.add_int(
+                    lb=0,
+                    ub=1,
+                    name=join("hvdc_flow_z_", [t_idx, m], "_")
+                )
+
+                M = 2 * hvdc_vars.rates[t_idx, m]  # this is a large enough number
+
+                prob.add_cst(
+                    cst=-M * (1 - hvdc_vars.z[t_idx, m]) <= hvdc_vars.y[t_idx, m] - hvdc_vars.flows[t_idx, m],
+                    name=join("hvdc_flow_yl_", [t_idx, m], "_")
+                )
+
+                prob.add_cst(
+                    cst=hvdc_vars.y[t_idx, m] - hvdc_vars.flows[t_idx, m] <= M * (1 - hvdc_vars.z[t_idx, m]),
+                    name=join("hvdc_flow_yp_", [t_idx, m], "_")
+                )
+
                 # add the injections matching the flow
-                vars_bus.Pcalc[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
-                vars_bus.Pcalc[t_idx, to] += hvdc_vars.flows[t_idx, m]
+                vars_bus.Pbalance[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
+                vars_bus.Pbalance[t_idx, to] += hvdc_vars.flows[t_idx, m]
 
             elif hvdc_data_t.control_mode[m] == HvdcControlType.type_1_Pset:
 
                 if hvdc_data_t.dispatchable[m]:
 
                     # add the injections matching the flow
-                    vars_bus.Pcalc[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
-                    vars_bus.Pcalc[t_idx, to] += hvdc_vars.flows[t_idx, m]
+                    vars_bus.Pbalance[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
+                    vars_bus.Pbalance[t_idx, to] += hvdc_vars.flows[t_idx, m]
 
                 else:
 
@@ -944,8 +1019,8 @@ def add_linear_hvdc_formulation(t_idx: int,
                     set_var_bounds(var=hvdc_vars.flows[t_idx, m], ub=P0, lb=P0)
 
                     # add the injections matching the flow
-                    vars_bus.Pcalc[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
-                    vars_bus.Pcalc[t_idx, to] += hvdc_vars.flows[t_idx, m]
+                    vars_bus.Pbalance[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
+                    vars_bus.Pbalance[t_idx, to] += hvdc_vars.flows[t_idx, m]
             else:
                 raise Exception('OPF: Unknown HVDC control mode {}'.format(hvdc_data_t.control_mode[m]))
         else:
@@ -978,7 +1053,7 @@ def add_linear_node_balance(t_idx: int,
     # add the equality restrictions
     for k in range(bus_data.nbus):
         bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
-            cst=bus_vars.Pcalc[t_idx, k] == 0,
+            cst=bus_vars.Pbalance[t_idx, k] == 0,
             name=join("kirchhoff_", [t_idx, k], "_"))
 
     for i in vd:
@@ -1099,6 +1174,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         t=t_idx,
         Sbase=nc.Sbase,
         gen_data_t=nc.generator_data,
+        batt_data_t=nc.battery_data,
         load_data_t=nc.load_data,
         bus_data_t=nc.bus_data,
         p_bus_t=Pbus,

@@ -96,7 +96,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
 
             self.results.voltage[t_idx, :] = opf_vars.get_voltages()[0, :]
-            self.results.Sbus[t_idx, :] = opf_vars.bus_vars.Pcalc[0, :]
+            self.results.Sbus[t_idx, :] = opf_vars.bus_vars.Pinj[0, :]
             self.results.dSbus[t_idx, :] = opf_vars.bus_vars.delta_p[0, :]
             self.results.bus_shadow_prices[t_idx, :] = opf_vars.bus_vars.shadow_prices[0, :]
             self.results.load_shedding[t_idx, :] = opf_vars.bus_vars.load_shedding[0, :]

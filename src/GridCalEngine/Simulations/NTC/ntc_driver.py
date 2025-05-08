@@ -83,7 +83,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         )
 
         self.results.voltage = opf_vars.get_voltages()[0, :]
-        self.results.Sbus = opf_vars.bus_vars.Pcalc[0, :]
+        self.results.Sbus = opf_vars.bus_vars.Pinj[0, :]
         self.results.dSbus = opf_vars.bus_vars.delta_p[0, :]
         self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
         self.results.load_shedding = opf_vars.bus_vars.load_shedding[0, :]

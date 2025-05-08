@@ -123,7 +123,8 @@ def test_issue_372_1():
         Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
 
     """
-    fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
+    # fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
+    fname = os.path.join('data', 'grids', 'IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal')
 
     grid = gce.open_file(fname)
 
