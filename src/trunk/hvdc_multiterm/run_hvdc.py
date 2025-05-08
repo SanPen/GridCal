@@ -1,3 +1,4 @@
+import os
 from typing import Tuple
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
@@ -67,7 +68,11 @@ def run_hvdc_multiterminal() -> None:
     Try the HVDC multiterminal case through scripting
     """
 
-    grid = gce.open_file("src/trunk/hvdc_multiterm/8bus_v1.gridcal")
+    # grid = gce.open_file("src/trunk/hvdc_multiterm/8bus_v1.gridcal")
+    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '8bus_v1.gridcal')
+    grid = gce.FileOpen(fname).open()
+
+
     options = PowerFlowOptions(control_q=False)
     problem, solution = solve_generalized(grid=grid, options=options)
 
