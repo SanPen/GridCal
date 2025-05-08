@@ -420,6 +420,28 @@ class OverheadLineType(EditableDevice):
             # there are no wires
             pass
 
+    def is_computed(self) -> bool:
+
+        """
+
+        return: Boolean that tells if the template has already been computed or not
+
+        """
+
+        ok = True
+        ok = ok and self.z_abc is not None
+        ok = ok and self.z_seq is not None
+        ok = ok and self.z_abcn is not None
+        ok = ok and self.z_phases_abc is not None
+        ok = ok and self.z_phases_abcn is not None
+        ok = ok and self.y_abc is not None
+        ok = ok and self.y_seq is not None
+        ok = ok and self.y_abcn is not None
+        ok = ok and self.y_phases_abc is not None
+        ok = ok and self.y_phases_abcn is not None
+
+        return ok
+
     def check(self, logger=Logger()):
         """
         Check that the wires configuration make sense

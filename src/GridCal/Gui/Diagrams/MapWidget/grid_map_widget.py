@@ -1807,7 +1807,7 @@ class GridMapWidget(BaseDiagramWidget):
                         bus_from=bus_from, bus_to=bus_to,
                         length=line1.length + line2.length, circuit_idx=circ_idx)
         new_line.color = line1.color
-        line1.template.compute()
+
         new_line.apply_template(obj=line1.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         previous_coordinates = [0, 0]
@@ -2058,14 +2058,8 @@ class GridMapWidget(BaseDiagramWidget):
                      protection_rating_factor=line_api.protection_rating_factor,
                      circuit_idx=line_api.circuit_idx)
 
-        if isinstance(line_api.template, OverheadLineType):
-            template = line_api.template
-            template.compute()
-        else:
-            template = line_api.template
-
-        line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-        line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2490,14 +2484,8 @@ class GridMapWidget(BaseDiagramWidget):
                      protection_rating_factor=line_api.protection_rating_factor,
                      circuit_idx=line_api.circuit_idx)
 
-        if isinstance(line_api.template, OverheadLineType):
-            template = line_api.template
-            template.compute()
-        else:
-            template=line_api.template
-
-        line1.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
-        line2.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        line1.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        line2.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):
@@ -2538,13 +2526,7 @@ class GridMapWidget(BaseDiagramWidget):
                                protection_rating_factor=line_api.protection_rating_factor,
                                circuit_idx=line_api.circuit_idx)
 
-        if isinstance(line_api.template, OverheadLineType):
-            template = line_api.template
-            template.compute()
-        else:
-            template = line_api.template
-
-        connection_line.apply_template(template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
+        connection_line.apply_template(line_api.template, Sbase=self.circuit.Sbase, freq=self.circuit.fBase)
 
         # Copy other properties from the original line
         if hasattr(line_api, 'color'):

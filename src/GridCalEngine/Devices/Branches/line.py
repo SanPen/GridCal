@@ -455,6 +455,12 @@ class Line(BranchParent):
         """
 
         if isinstance(obj, OverheadLineType):
+            if not obj.is_computed():
+                obj.compute()
+                if not obj.is_computed():
+                    return
+            else:
+                pass
 
             template_vn = obj.Vnom
             vn = self.get_max_bus_nominal_voltage()
