@@ -930,7 +930,8 @@ def add_linear_hvdc_formulation(t_idx: int,
                                 hvdc_data_t: HvdcData,
                                 hvdc_vars: HvdcNtcVars,
                                 vars_bus: BusNtcVars,
-                                prob: LpModel):
+                                prob: LpModel,
+                                saturate: bool = True):
     """
 
     :param t_idx:
@@ -939,6 +940,7 @@ def add_linear_hvdc_formulation(t_idx: int,
     :param hvdc_vars:
     :param vars_bus:
     :param prob:
+    :param saturate:
     :return:
     """
 
@@ -952,13 +954,6 @@ def add_linear_hvdc_formulation(t_idx: int,
 
         if hvdc_data_t.active[m]:
 
-            # declare the flow var
-            hvdc_vars.flows[t_idx, m] = prob.add_var(
-                lb=-hvdc_data_t.rates[m] / Sbase,
-                ub=hvdc_data_t.rates[m] / Sbase,
-                name=join("hvdc_flow_", [t_idx, m], "_")
-            )
-
             if hvdc_data_t.control_mode[m] == HvdcControlType.type_0_free:  # P-MODE 3
 
                 # set the flow based on the angular difference
@@ -967,31 +962,127 @@ def add_linear_hvdc_formulation(t_idx: int,
                 # convert MW/deg to pu/rad
                 droop = hvdc_data_t.get_angle_droop_in_pu_rad_at(m, Sbase)
 
-                # y = P0 + k · (theta_f - theta_t)
-                prob.add_cst(
-                    cst=hvdc_vars.y[t_idx, m] == P0 + droop * (
-                            vars_bus.theta[t_idx, fr] - vars_bus.theta[t_idx, to]),
-                    name=join("hvdc_flow_cst_", [t_idx, m], "_")
-                )
+                if saturate:
 
-                # -M · (1 - z)  <=> y - flow_k <=> M · (1 - z)
-                hvdc_vars.z[t_idx, m] = prob.add_int(
-                    lb=0,
-                    ub=1,
-                    name=join("hvdc_flow_z_", [t_idx, m], "_")
-                )
+                    """
+                    Formulation
+                    ------------------------------------------------------------
+                    
+                    1. Region selector:         
+                        z_neg + z_mid + z_pos == 1  
+                    
+                    2. Linear flow equation:    
+                        flow_lin == P0 + k * (theta_f - theta_t)
+                    
+                    3. Lower region:  flow = -rate if z_neg == 1
+                        flow <= -rate + M * (1 - z_neg)                    
+                        flow >= -rate - M * (1 - z_neg)
+                        flow_lin <= -rate + M * (1 - z_neg)
+                        
+                    4. Mid region:    flow = flow_lin if z_mid == 1
+                        flow <= flow_lin + M * (1 - z_mid)
+                        flow >= flow_lin - M * (1 - z_mid)
+                        flow_lin <= rate - epsilon + M * (1 - z_mid)
+                        flow_lin >= -rate + epsilon - M * (1 - z_mid)
+                        
+                    5. Upper region:  flow = rate if z_pos == 1
+                        flow <= rate + M * (1 - z_pos)
+                        flow >= rate - M * (1 - z_pos)
+                        flow_lin >= rate - M * (1 - z_pos)
+                    """
 
-                M = 2 * hvdc_vars.rates[t_idx, m]  # this is a large enough number
+                    hvdc_vars.flows[t_idx, m] = prob.add_var(
+                        lb=-prob.INFINITY,
+                        ub=prob.INFINITY,
+                        name=join("hvdc_flow_", [t_idx, m], "_")
+                    )
+                    flow_lin = prob.add_var(
+                        lb=-prob.INFINITY,
+                        ub=prob.INFINITY,
+                        name=join("hvdc_mid_flow_", [t_idx, m], "_")
+                    )
+                    z_neg = prob.add_int(lb=0, ub=1, name=join("hvdc_zn_", [t_idx, m], "_"))
+                    z_mid = prob.add_int(lb=0, ub=1, name=join("hvdc_zm_", [t_idx, m], "_"))
+                    z_pos = prob.add_int(lb=0, ub=1, name=join("hvdc_zp_", [t_idx, m], "_"))
+                    rate = hvdc_vars.rates[t_idx, m]
+                    M = 2 * rate + 1 # M >= 2 * rate
+                    epsilon = 1e-4
 
-                prob.add_cst(
-                    cst=-M * (1 - hvdc_vars.z[t_idx, m]) <= hvdc_vars.y[t_idx, m] - hvdc_vars.flows[t_idx, m],
-                    name=join("hvdc_flow_yl_", [t_idx, m], "_")
-                )
+                    # 1. Region selector -------------------------------------------------------------------------------
+                    prob.add_cst(
+                        cst=z_neg + z_mid + z_pos == 1.0,
+                        name=join("region_sel_", [t_idx, m], "_")
+                    )
 
-                prob.add_cst(
-                    cst=hvdc_vars.y[t_idx, m] - hvdc_vars.flows[t_idx, m] <= M * (1 - hvdc_vars.z[t_idx, m]),
-                    name=join("hvdc_flow_yp_", [t_idx, m], "_")
-                )
+                    # 2. Linear flow equation --------------------------------------------------------------------------
+                    prob.add_cst(
+                        cst=flow_lin == P0 + droop * (vars_bus.theta[t_idx, fr] - vars_bus.theta[t_idx, to]),
+                        name=join("hvdc_flow_lin_", [t_idx, m], "_")
+                    )
+
+                    # 3. Lower region:  flow = -rate if z_neg == 1 -----------------------------------------------------
+                    prob.add_cst(
+                        cst=hvdc_vars.flows[t_idx, m] <= -rate + M * (1 - z_neg),
+                        name=join("hvdc_lower1_", [t_idx, m], "_")
+                    )
+                    prob.add_cst(
+                        cst=hvdc_vars.flows[t_idx, m] >= -rate - M * (1 - z_neg),
+                        name=join("hvdc_lower2_", [t_idx, m], "_")
+                    )
+                    prob.add_cst(
+                        cst=flow_lin <= -rate + M * (1 - z_neg),
+                        name=join("hvdc_lower3_", [t_idx, m], "_")
+                    )
+
+                    # 4. Mid-region: flow = flow_lin if z_mid == 1 -----------------------------------------------------
+                    prob.add_cst(
+                        cst=hvdc_vars.flows[t_idx, m] <= flow_lin + M * (1 - z_mid),
+                        name=join("hvdc_mid1_", [t_idx, m], "_")
+                    )
+                    prob.add_cst(
+                        cst=hvdc_vars.flows[t_idx, m] >= flow_lin - M * (1 - z_mid),
+                        name=join("hvdc_mid2_", [t_idx, m], "_")
+                    )
+                    prob.add_cst(
+                        cst=flow_lin <= rate - epsilon + M * (1 - z_mid),
+                        name=join("hvdc_mid3_", [t_idx, m], "_")
+                    )
+                    prob.add_cst(
+                        cst=flow_lin >= -rate + epsilon - M * (1 - z_mid),
+                        name=join("hvdc_mid4_", [t_idx, m], "_")
+                    )
+
+                    # 5. Upper region: flow = rate if z_pos == 1 -------------------------------------------------------
+                    prob.add_cst(
+                        cst=hvdc_vars.flows[t_idx, m] <= rate + M * (1 - z_pos),
+                        name=join("hvdc_upper1_", [t_idx, m], "_")
+                    )
+                    prob.add_cst(
+                        cst=hvdc_vars.flows[t_idx, m] >= rate - M * (1 - z_pos),
+                        name=join("hvdc_upper2_", [t_idx, m], "_")
+                    )
+                    prob.add_cst(
+                        cst=flow_lin >= rate - M * (1 - z_pos),
+                        name=join("hvdc_upper3_", [t_idx, m], "_")
+                    )
+
+                else:
+
+                    # Simple Pmode 3 with no saturation magic
+
+                    # declare the flow var
+                    hvdc_vars.flows[t_idx, m] = prob.add_var(
+                        lb=-hvdc_data_t.rates[m] / Sbase,
+                        ub=hvdc_data_t.rates[m] / Sbase,
+                        name=join("hvdc_flow_", [t_idx, m], "_")
+                    )
+
+                    # flow = P0 + k · (theta_f - theta_t)
+                    prob.add_cst(
+                        cst=hvdc_vars.flows[t_idx, m] == P0 + droop * (
+                                vars_bus.theta[t_idx, fr] - vars_bus.theta[t_idx, to]),
+                        name=join("hvdc_flow_cst_", [t_idx, m], "_")
+                    )
 
                 # add the injections matching the flow
                 vars_bus.Pbalance[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
@@ -1000,6 +1091,13 @@ def add_linear_hvdc_formulation(t_idx: int,
             elif hvdc_data_t.control_mode[m] == HvdcControlType.type_1_Pset:
 
                 if hvdc_data_t.dispatchable[m]:
+
+                    # declare the flow var
+                    hvdc_vars.flows[t_idx, m] = prob.add_var(
+                        lb=-hvdc_data_t.rates[m] / Sbase,
+                        ub=hvdc_data_t.rates[m] / Sbase,
+                        name=join("hvdc_flow_", [t_idx, m], "_")
+                    )
 
                     # add the injections matching the flow
                     vars_bus.Pbalance[t_idx, fr] -= hvdc_vars.flows[t_idx, m]
@@ -1017,7 +1115,7 @@ def add_linear_hvdc_formulation(t_idx: int,
                         P0 = hvdc_data_t.Pset[m] / Sbase
 
                     # make the flow equal to P0
-                    set_var_bounds(var=hvdc_vars.flows[t_idx, m], ub=P0, lb=P0)
+                    hvdc_vars.flows[t_idx, m] = P0
 
                     # add the injections matching the flow
                     vars_bus.Pbalance[t_idx, fr] -= hvdc_vars.flows[t_idx, m]

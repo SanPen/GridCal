@@ -65,7 +65,7 @@ In case of a phase shifter transformer:
 
 .. math::
 
-    flow_k = \frac{\theta_f - \theta_t - \tau_k}{x_k}
+    flow_k = \frac{\theta_f - \theta_t + \tau_k}{x_k}
 
 
 We need to limit the flow to the line specified rating:
@@ -159,19 +159,62 @@ formulation:
 
 .. math::
 
-    y = P0_k + K_k \cdot (\theta_f - \theta_t)
+    \text{flow} =
+    \begin{cases}
+        -\text{rate} & \text{if } \text{flow\_lin} \le -\text{rate} \\
+        P_0 + k(\theta_f - \theta_t) & \text{if } -\text{rate} < \text{flow\_lin} < \text{rate} \\
+        \text{rate} & \text{if } \text{flow\_lin} \ge \text{rate}
+    \end{cases}
 
-Conditional equality (:math:`flow_k = y`  only if :math`z_k=1`)
+To implement this piecewise function we need to perform a serious
+amount of MIP magic.
+
+Selector constraint:
 
 .. math::
 
-    -M_k \cdot (1 - z_k)  \leq y - flow_k \leq M_k \cdot (1 - z_k)
+    z_{\text{neg}} + z_{\text{mid}} + z_{\text{pos}} = 1
 
-- :math:`M_k`: is an arbitrary large quantity.
-- :math:`z_k`: Binary variable (1 if using the angle droop control, 0 otherwise)
+Linear flow expression:
+
+.. math::
+
+    \text{flow\_lin} = P_0 + k(\theta_f - \theta_t)
+
+Lower flow definitionNegative flow saturation:
+
+.. math::
+
+    \text{flow} \le -\text{rate} + M(1 - z_{\text{neg}}) \\
+    \text{flow} \ge -\text{rate} - M(1 - z_{\text{neg}}) \\
+    \text{flow\_lin} \le -\text{rate} + M(1 - z_{\text{neg}})
+
+Mid-range: the droop operation zone:
+
+.. math::
+
+    \text{flow} \le \text{flow\_lin} + M(1 - z_{\text{mid}}) \\
+    \text{flow} \ge \text{flow\_lin} - M(1 - z_{\text{mid}}) \\
+    \text{flow\_lin} \le \text{rate} - \varepsilon + M(1 - z_{\text{mid}}) \\
+    \text{flow\_lin} \ge -\text{rate} + \varepsilon - M(1 - z_{\text{mid}})
+
+Upper flow definitionNegative flow saturation:
+
+.. math::
+
+    \text{flow} \le \text{rate} + M(1 - z_{\text{pos}}) \\
+    \text{flow} \ge \text{rate} - M(1 - z_{\text{pos}}) \\
+    \text{flow\_lin} \ge \text{rate} - M(1 - z_{\text{pos}})
+
+
 - :math:`K_k`: Arbitrary control parameter used.
 - :math:`P0_k`: Base power (i.e. the given market exchange for the line).
-
+- :math:`\text{flow}`: real variable to be computed
+- :math:`\text{flow\_lin}`: Auxiliary variable.
+- :math:`\text{rate}`: maximum allowable flow in either direction
+- :math:`M`: large constant for Big-M logic (e.g., :math:`M \ge 2 \cdot \text{rate}`)
+- :math:`\varepsilon`: small tolerance for strict inequalities
+- :math:`z_{\text{neg}}, z_{\text{mid}}, z_{\text{pos}} \in \{0, 1\}`
 
 Nodal balance
 ----------------
