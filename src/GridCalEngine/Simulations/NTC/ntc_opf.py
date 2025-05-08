@@ -757,7 +757,8 @@ def add_linear_branches_formulation(t_idx: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
+            if (ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf or
+                    ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pt):
 
                 # add angle
                 branch_vars.tap_angles[t_idx, m] = prob.add_var(
