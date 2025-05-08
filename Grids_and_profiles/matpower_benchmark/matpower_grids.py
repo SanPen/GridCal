@@ -38,7 +38,9 @@ def run_grid(fname):
         info = {
             "name": name,
             "n_buses": grid.get_bus_number(),
-            "n_branches": grid.get_branch_number(),
+            "n_branches": grid.get_branch_number(add_vsc=False,
+                                                 add_hvdc=False,
+                                                 add_switch=True),
             "P imbalance (%)": grid.get_imbalance() * 100.0,
             "Flat start": flat_start,
             "converged": res.converged,
@@ -51,7 +53,9 @@ def run_grid(fname):
         info = {
             "name": name,
             "n_buses": grid.get_bus_number(),
-            "n_branches": grid.get_branch_number(),
+            "n_branches": grid.get_branch_number(add_vsc=False,
+                                                 add_hvdc=False,
+                                                 add_switch=True),
             "P imbalance (%)": 0.0,
             "Flat start": True,
             "converged": True,

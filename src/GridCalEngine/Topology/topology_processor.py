@@ -341,7 +341,7 @@ def process_grid_topology_at(grid: MultiCircuit,
     process_info = TopologyProcessorInfo()
 
     # get a list of all branches
-    nbr = grid.get_branch_number() + grid.get_switches_number()
+    nbr = grid.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Compose the candidate nodes (buses)

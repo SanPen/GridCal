@@ -82,7 +82,9 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
     """
 
     # form C
-    m = circuit.get_branch_number()
+    m = circuit.get_branch_number(add_vsc=False,
+                                  add_hvdc=False,
+                                  add_switch=True)
     n = len(circuit.buses)
     buses_dict = {bus: i for i, bus in enumerate(circuit.buses)}
     C = lil_matrix((m, n), dtype=int)
@@ -229,7 +231,7 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
             text_func('Removing ' + bus.name + '...')
 
         if prog_func is not None:
-            prog_func((k+1) / total * 100.0)
+            prog_func((k + 1) / total * 100.0)
 
     return buses_merged
 
@@ -238,6 +240,7 @@ class TopologyReductionOptions:
     """
     TopologyReductionOptions
     """
+
     def __init__(self, rx_criteria=False, rx_threshold=1e-5, selected_types=BranchType.Branch):
         """
         Topology reduction options
@@ -282,7 +285,6 @@ class TopologyReduction(DriverTemplate):
 
         # for every branch in reverse order...
         for i, br_idx in enumerate(self.br_to_remove):
-
             # delete_with_dialogue branch
             removed_branch, removed_bus, updated_bus, updated_branches = reduce_grid_brute(circuit=self.grid,
                                                                                            removed_br_idx=br_idx)
@@ -355,4 +357,3 @@ class DeleteAndReduce(DriverTemplate):
 
     def start(self):
         self.run()
-
