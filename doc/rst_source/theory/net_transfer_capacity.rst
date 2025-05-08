@@ -24,18 +24,26 @@ Where:
 
 .. math::
 
-    \Delta P_{Send} = \sum^{A_{send}}_i {\Delta P_i }
+    \Delta P_i = share_i \cdot  \Delta P_{Send} \quad \forall i \in send
 
 .. math::
 
-    \Delta P_{Receive} = \sum^{A_{receive}}_i {\Delta P_i }
+    \Delta P_i = share_i \cdot  \Delta P_{Receive} \quad \forall i \in receive
 
 Finally, we add the nodal injection to the nodal balance summation
 
 .. math::
 
-    P_i = P_i + Pbase_i + share_i \cdot \Delta P_i
+    P_i = P_i + Pbase_i + \Delta P_i
 
+
+.. note::
+
+    To apply these equations, the generation and the load must be numerically equal in the grid,
+    this is, equal to the complete precision of the computer. This requirement is impossible in real life
+    since there would be losses; However, in this formulation we are
+    forcing everything to be linear and lossless. This means the the summation of the
+    :math:`Pbase` vector must be exactly zero.
 
 
 -:math:`A_{send}`: Node indices of the sending area.
