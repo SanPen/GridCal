@@ -2000,11 +2000,13 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v3.gridcal')
+    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
     # ieee 39 is infeasible
 
     grid = FileOpen(file_path).open()
+
+    print(grid.lines[0].rate)
 
     # configure grid for load shedding testing
     for ll in range(len(grid.lines)):
@@ -2070,8 +2072,6 @@ def case_loop() -> None:
     # Start main loop over iterations
     for klm in range(max_iter):
         print(f"General iteration {klm + 1} of {max_iter}")
-        if klm == 1:
-            print('')
 
         # v_slacks = np.zeros(n_con_groups)
         # f_slacks = np.zeros(n_con_groups)
@@ -2089,6 +2089,10 @@ def case_loop() -> None:
 
             contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
             print(f"\nContingency group {ic}: {contingency_group.name}")
+
+            if contingencies is None:
+                print(f"Contingencies have not been initialised.")
+                break
 
             # Set contingency status
             nc.set_con_or_ra_status(contingencies)
@@ -2175,7 +2179,7 @@ def case_loop() -> None:
             iteration_data['avg_voltage_slack'].append(1e-10)
             iteration_data['max_flow_slack'].append(1e-10)
             iteration_data['avg_flow_slack'].append(1e-10)
-            print('Contingencies have not been initialised')
+            print('Master problem solution found')
 
         iteration_data['num_violations'].append(viols)
 
@@ -2217,8 +2221,6 @@ def case_loop() -> None:
 
     # Plot the results
     plot_scopf_progress(iteration_data)
-
-
 
     return None
 
