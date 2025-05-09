@@ -2134,6 +2134,9 @@ def case_loop() -> None:
                         f_slacks[ic] = f_slack
                         W_k_local[ic] = slack_sol_cont.W_k
 
+                        print(f"Error: {slack_sol_cont.error}")
+                        print(f"u_j: {slack_sol_cont.u_j}")
+
                         if slack_sol_cont.W_k > tolerance:
                             W_k_vec[prob_cont] = slack_sol_cont.W_k
                             Z_k_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.Z_k
