@@ -1315,7 +1315,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                               mode=mode_2_int[transfer_method])
         mip_vars.branch_vars.alpha[t_idx, :] = alpha
 
-        # compute the structural NTC: this is the sum of ratings in the inter area
+        # compute the structural NTC: this is the sum of ratings in the inter-area
         structural_ntc = nc.get_structural_ntc(bus_a1_idx=bus_a1_idx, bus_a2_idx=bus_a2_idx)
         mip_vars.structural_ntc[t_idx] = structural_ntc
 
