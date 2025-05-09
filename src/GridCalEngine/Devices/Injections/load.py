@@ -170,7 +170,7 @@ class Load(LoadParent):
             print(e)
 
     @property
-    def n_customers_prof (self) -> Profile:
+    def n_customers_prof(self) -> Profile:
         """
         Cost profile
         :return: Profile
@@ -178,14 +178,13 @@ class Load(LoadParent):
         return self._n_customers_prof
 
     @n_customers_prof.setter
-    def n_customers_prof (self, val: Union[Profile, np.ndarray]):
+    def n_customers_prof(self, val: Union[Profile, np.ndarray]):
         if isinstance(val, Profile):
             self._n_customers_prof = val
         elif isinstance(val, np.ndarray):
             self._n_customers_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into n_customers_prof')
-
 
     def plot_profiles(self, time=None, show_fig=True):
         """
