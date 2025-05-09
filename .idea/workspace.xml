@@ -28,11 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed bug in the time series power flow when there are hvdc lines">
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/power_flow_1ph_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/power_flow_3ph.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Test Single and Three phase test cases." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -2327,7 +2323,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="711" />
+    <option name="localTasksCounter" value="712" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2373,7 +2369,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored unused code" />
     <MESSAGE value="added x, y to the connectivity node&#10;refactored code" />
     <MESSAGE value="Improved README.md" />
     <MESSAGE value="deleted newton related tests" />
@@ -2398,7 +2393,8 @@
     <MESSAGE value="minimal changes" />
     <MESSAGE value="early iidm reader" />
     <MESSAGE value="Fixed bug in the time series power flow when there are hvdc lines" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug in the time series power flow when there are hvdc lines" />
+    <MESSAGE value="Test Single and Three phase test cases." />
+    <option name="LAST_COMMIT_MESSAGE" value="Test Single and Three phase test cases." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
