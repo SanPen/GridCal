@@ -136,7 +136,7 @@ def test_issue_372_1():
 
     opf_options = gce.OptimalPowerFlowOptions(
         consider_contingencies=False,
-        export_model_fname="test_issue_372_1.lp"
+        # export_model_fname="test_issue_372_1.lp"
     )
 
     lin_options = gce.LinearAnalysisOptions()
@@ -237,7 +237,7 @@ def test_issue_372_2():
 
     opf_options = gce.OptimalPowerFlowOptions(
         consider_contingencies=False,
-        export_model_fname="test_issue_372_1.lp"
+        # export_model_fname="test_issue_372_1.lp"
     )
 
     lin_options = gce.LinearAnalysisOptions()
@@ -348,7 +348,7 @@ def test_issue_372_3():
 
     opf_options = gce.OptimalPowerFlowOptions(
         consider_contingencies=False,
-        export_model_fname="test_issue_372_3.lp"
+        # export_model_fname="test_issue_372_3.lp"
     )
 
     lin_options = gce.LinearAnalysisOptions()
@@ -467,7 +467,7 @@ def test_issue_372_4():
                                            objects_to=[grid.areas[1]])
 
     opf_options = gce.OptimalPowerFlowOptions(
-        export_model_fname="test_issue_372_4.lp",
+        # export_model_fname="test_issue_372_4.lp",
         contingency_groups_used=grid.contingency_groups
     )
 
@@ -583,7 +583,7 @@ def test_issue_372_5():
                                            objects_to=[grid.areas[1]])
 
     opf_options = gce.OptimalPowerFlowOptions(
-        export_model_fname="test_issue_372_4.lp",
+        # export_model_fname="test_issue_372_5.lp",
         contingency_groups_used=grid.contingency_groups
     )
 
