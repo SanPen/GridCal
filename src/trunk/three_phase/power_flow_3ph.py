@@ -42,7 +42,7 @@ def power_flow_3ph(grid):
     print('I0 = \n', problem.I0)
     print('V0 = \n', problem.V)
 
-    res = newton_raphson_fx(problem=problem, trust=0.1, max_iter=10000)
+    res = newton_raphson_fx(problem=problem)
 
     Ibus = problem.Ybus.dot(res.V)
     print('Ibus = \n', Ibus)
@@ -52,9 +52,10 @@ def power_flow_3ph(grid):
 
     return res
 
-# grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test.gridcal")
+grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test.gridcal")
 # grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test_v2.gridcal")
-grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test_v3.gridcal")
+# grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test_v3.gridcal")
+# grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test_v4.gridcal")
 
 res_1 = power_flow(grid)
 res_3ph = power_flow_3ph(grid)

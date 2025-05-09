@@ -84,7 +84,7 @@ def compute_Ibus(nc: NumericalCircuit) -> CxVec:
         f = nc.load_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Ibus[f3] += nc.load_data.I3_star[k3]
+        Ibus[f3] -= nc.load_data.I3_star[k3]
 
     return Ibus
 
@@ -103,7 +103,7 @@ def compute_Sbus_star(nc: NumericalCircuit) -> CxVec:
         f = nc.load_data.bus_idx[k]
         k3 = 3 * k + idx3
         f3 = 3 * f + idx3
-        Sbus[f3] += nc.load_data.S3_star[k3]
+        Sbus[f3] -= nc.load_data.S3_star[k3]
 
     return Sbus
 
@@ -130,9 +130,9 @@ def compute_Sbus_delta(bus_idx: IntVec, Sdelta: CxVec, V: CxVec) -> CxVec:
         bc = 3 * k + 1
         ca = 3 * k + 2
 
-        S[a] = (V[a] * Sdelta[ab]) / (V[a] - V[b]) - (V[a] * Sdelta[ca]) / (V[c] - V[a])
-        S[b] = (V[b] * Sdelta[bc]) / (V[b] - V[c]) - (V[b] * Sdelta[ab]) / (V[a] - V[b])
-        S[c] = (V[c] * Sdelta[ca]) / (V[c] - V[a]) - (V[c] * Sdelta[bc]) / (V[b] - V[c])
+        S[a] = -1 * ((V[a] * Sdelta[ab]) / (V[a] - V[b]) - (V[a] * Sdelta[ca]) / (V[c] - V[a]))
+        S[b] = -1 * ((V[b] * Sdelta[bc]) / (V[b] - V[c]) - (V[b] * Sdelta[ab]) / (V[a] - V[b]))
+        S[c] = -1 * ((V[c] * Sdelta[ca]) / (V[c] - V[a]) - (V[c] * Sdelta[bc]) / (V[b] - V[c]))
 
     return S
 
@@ -199,8 +199,8 @@ class PfBasicFormulation3Ph(PfFormulationTemplate):
 
         self.nc = nc
 
-        self.S0: CxVec = compute_Sbus_star(nc) / nc.Sbase
-        self.I0: CxVec = compute_Ibus(nc) / nc.Sbase
+        self.S0: CxVec = compute_Sbus_star(nc) / (nc.Sbase / 3)
+        self.I0: CxVec = compute_Ibus(nc) / (nc.Sbase / 3)
 
         self.Ybus, self.Yf, self.Yt, self.Yshunt_bus = compute_ybus(nc)
 

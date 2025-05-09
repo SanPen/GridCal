@@ -1488,7 +1488,7 @@ def get_branch_data(
             ytt = ys_abc + ysh_abc / 2
             """
             k3 = 3 * ii + idx3
-            y1 = elm.ys.values + elm.ysh.values / 2.0
+            y1 = elm.ys.values + elm.ysh.values / 2.0 * 1e-6
             y2 = - elm.ys.values
             data.Yff3[k3, :] = y1
             data.Yft3[k3, :] = y2
