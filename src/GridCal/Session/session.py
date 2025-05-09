@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-import numpy as np
 from uuid import uuid4
 import pandas as pd
 from PySide6.QtCore import QThread, Signal
@@ -11,10 +10,6 @@ from typing import Dict, Union, List, Tuple, Any, Generator
 from collections.abc import Callable
 from warnings import warn
 
-from GridCalEngine.Simulations import (ContingencyAnalysisOptions, AvailableTransferCapacityOptions,
-                                       ContinuationPowerFlowOptions, ContinuationPowerFlowInput, PowerFlowOptions,
-                                       ClusteringAnalysisOptions,
-                                       InvestmentsEvaluationOptions)
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import (AvailableTransferCapacityDriver,
                                                                               AvailableTransferCapacityResults)
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_ts_driver import (
@@ -41,7 +36,7 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import S
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import (StochasticPowerFlowDriver,
                                                                                StochasticPowerFlowResults)
 from GridCalEngine.Simulations.Clustering.clustering_driver import ClusteringDriver, ClusteringResults
-from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingResults, CascadingDriver
+from GridCalEngine.Simulations.Reliability.blackout_driver import CascadingResults, CascadingDriver
 from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisResults, InputsAnalysisDriver
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver import (InvestmentsEvaluationDriver,
                                                                                            InvestmentsEvaluationResults)
@@ -334,92 +329,6 @@ class SimulationSession:
         logger = Logger()
 
         time_indices = data_dict.get('time_indices', grid.get_all_time_indices())
-
-        # # get the results' object dictionary
-        # if study_name == AvailableTransferCapacityDriver.tpe.value:
-        #     drv = AvailableTransferCapacityDriver(grid=grid,
-        #                                           options=AvailableTransferCapacityOptions())
-        #
-        # elif study_name == AvailableTransferCapacityTimeSeriesDriver.tpe.value:
-        #     drv = AvailableTransferCapacityTimeSeriesDriver(grid=grid,
-        #                                                     options=AvailableTransferCapacityOptions(),
-        #                                                     time_indices=time_indices,
-        #                                                     clustering_results=None)
-        #
-        # elif study_name == ContingencyAnalysisDriver.tpe.value:
-        #     drv = ContingencyAnalysisDriver(grid=grid,
-        #                                     options=ContingencyAnalysisOptions())
-        #
-        # elif study_name == ContingencyAnalysisTimeSeriesDriver.tpe.value:
-        #     drv = ContingencyAnalysisTimeSeriesDriver(grid=grid,
-        #                                               options=ContingencyAnalysisOptions(),
-        #                                               time_indices=time_indices,
-        #                                               clustering_results=None)
-        #
-        # elif study_name == ContinuationPowerFlowDriver.tpe.value:
-        #     n = grid.get_bus_number()
-        #     drv = ContinuationPowerFlowDriver(grid=grid,
-        #                                       options=ContinuationPowerFlowOptions(),
-        #                                       inputs=ContinuationPowerFlowInput(
-        #                                           Sbase=np.zeros(n), Vbase=np.zeros(n), Starget=np.zeros(n)
-        #                                       ),
-        #                                       pf_options=PowerFlowOptions(),
-        #                                       opf_results=None)
-        #
-        # elif study_name == LinearAnalysisDriver.tpe.value:
-        #     drv = LinearAnalysisDriver(grid=grid, options=None)
-        #
-        # elif study_name == ContinuationPowerFlowDriver.tpe.value:
-        #     drv = LinearAnalysisTimeSeriesDriver(grid=grid,
-        #                                          options=None,
-        #                                          time_indices=time_indices,
-        #                                          clustering_results=None)
-        #
-        # elif study_name == OptimalPowerFlowDriver.tpe.value:
-        #     drv = OptimalPowerFlowDriver(grid=grid, options=None)
-        #
-        # elif study_name == OptimalPowerFlowTimeSeriesDriver.tpe.value:
-        #     drv = OptimalPowerFlowTimeSeriesDriver(grid=grid,
-        #                                            options=None,
-        #                                            time_indices=time_indices,
-        #                                            clustering_results=None)
-        #
-        # elif study_name == NodalCapacityTimeSeriesDriver.tpe.value:
-        #     drv = NodalCapacityTimeSeriesDriver(grid=grid,
-        #                                         options=None,
-        #                                         time_indices=time_indices,
-        #                                         clustering_results=None)
-        #
-        # elif study_name == PowerFlowDriver.tpe.value:
-        #     drv = PowerFlowDriver(grid=grid, options=PowerFlowOptions())
-        #
-        # elif study_name == PowerFlowTimeSeriesDriver.tpe.value:
-        #     drv = PowerFlowTimeSeriesDriver(grid=grid,
-        #                                     options=PowerFlowOptions(),
-        #                                     time_indices=time_indices,
-        #                                     clustering_results=None)
-        #
-        # elif study_name == ShortCircuitDriver.tpe.value:
-        #     drv = ShortCircuitDriver(grid=grid,
-        #                              options=None,
-        #                              pf_options=None,
-        #                              pf_results=None,
-        #                              opf_results=None)
-        #
-        # elif study_name == StochasticPowerFlowDriver.tpe.value:
-        #     drv = StochasticPowerFlowDriver(grid=grid, options=PowerFlowOptions())
-        #
-        # elif study_name == ClusteringDriver.tpe.value:
-        #     drv = ClusteringDriver(grid=grid, options=ClusteringAnalysisOptions(0))
-        #
-        # elif study_name == InvestmentsEvaluationDriver.tpe.value:
-        #     drv = InvestmentsEvaluationDriver(grid=grid,
-        #                                       options=InvestmentsEvaluationOptions(max_eval=0,
-        #                                                                            pf_options=PowerFlowOptions()), )
-        #
-        # else:
-        #     warn(f"Session {study_name} not implemented for disk retrieval :/")
-        #     return logger
 
         driver_tpe = SimulationTypes(study_name)
 

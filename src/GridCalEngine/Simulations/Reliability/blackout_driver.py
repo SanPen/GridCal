@@ -3,10 +3,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-from enum import Enum
 import pandas as pd
 import numpy as np
-
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
@@ -14,17 +12,8 @@ from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_results import S
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import StochasticPowerFlowDriver
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at, NumericalCircuit
-from GridCalEngine.enumerations import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes, CascadeType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-
-
-class CascadeType(Enum):
-    PowerFlow = 0,
-    LatinHypercube = 1
-
-########################################################################################################################
-# Cascading classes
-########################################################################################################################
 
 
 class CascadingReportElement:
@@ -289,11 +278,12 @@ class CascadingDriver(DriverTemplate):
             self.results.events.append(entry)
 
             # recompile grid
-            calculation_inputs = nc.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
+            calculation_inputs = nc.split_into_islands(
+                ignore_single_node_islands=self.options.ignore_single_node_islands)
 
             it += 1
 
-            prog = max(len(calculation_inputs) / (n_grids+1), it/(n_grids+1))
+            prog = max(len(calculation_inputs) / (n_grids + 1), it / (n_grids + 1))
             self.report_progress(prog * 100.0)
 
             if self.__cancel__:

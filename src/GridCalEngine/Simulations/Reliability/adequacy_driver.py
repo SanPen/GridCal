@@ -156,7 +156,7 @@ def run_events(nc: NumericalCircuit, events_list: list):
         calculation_islands = nc.split_into_islands()
 
 
-class ReliabilityStudy(DriverTemplate):
+class AdequacyOptimizationDriver(DriverTemplate):
 
     def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions):
         """

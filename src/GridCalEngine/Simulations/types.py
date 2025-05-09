@@ -27,7 +27,7 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import S
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import (StochasticPowerFlowDriver,
                                                                                StochasticPowerFlowResults)
 from GridCalEngine.Simulations.Clustering.clustering_driver import ClusteringDriver, ClusteringResults
-from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingDriver, CascadingResults
+from GridCalEngine.Simulations.Reliability.blackout_driver import CascadingDriver, CascadingResults
 from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisDriver, InputsAnalysisResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver import (InvestmentsEvaluationDriver,
                                                                                            InvestmentsEvaluationResults)

@@ -8,6 +8,22 @@ import numpy as np
 from GridCalEngine.basic_structures import IntMat, Vec, Mat
 
 
+"""
+
+(System Average Interruption Frequency Index)
+SAIFI = total number of customer interruptions / total number of customers
+
+(System Average Interruption Duration Index)
+SAIDI = Total number of customer hours of interruption / Total number of customers
+
+(Customer Average Interruption Duration Index)
+CAIDI = Total number of customer hours of interruption / total number of customer interruptions 
+
+(Average System Availability Index)
+ASAI = (8760 - SAIDI) / 8760
+
+"""
+
 @nb.njit(cache=True)
 def compose_states(mttf: float, mttr: float, horizon: int, initially_working: bool = True):
     """
