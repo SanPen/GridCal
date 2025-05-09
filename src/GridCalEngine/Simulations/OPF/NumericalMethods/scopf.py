@@ -2030,7 +2030,7 @@ def case_loop() -> None:
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                         opf_options=opf_slack_options, pf_init=True, load_shedding=False)
+                                         opf_options=opf_slack_options, pf_init=False, load_shedding=False)
 
     print()
     print(f"--- Base case ---")
