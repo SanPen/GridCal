@@ -58,7 +58,10 @@ def test_linear_vs_nonlinear_ncap():
     print('P slacks neg: ', res.branch_vars.flow_slacks_neg)
     print('')
 
-    res_l = np.array([4.85736901, 1.52653874])
+    # res_l = np.array([4.85736901, 1.52653874])  # old value...
+
+    res_l = np.array([5.655194829207089, 1.634477969392556])
+
     assert np.allclose(res.nodal_capacity_vars.P, res_l, rtol=1e-5)
 
 

@@ -28,7 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Finished current tests for the NTC" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Reliability stuff">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NodalCapacity/nodal_capacity_ts_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/NodalCapacity/nodal_capacity_ts_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_nodal_capacity.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_nodal_capacity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/test_opf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_opf.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -68,7 +74,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel" />
+        <entry key="$PROJECT_DIR$" value="372_migrate_ntc_2025" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -125,134 +131,137 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_profiles.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_tower_composition.test_acha.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_transformer_type.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ac_opf.test_superconductors_handling.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_basic.test_gridcal_basic_pi.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_grid_diff.test_add_stuff_roundtrip.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_gslv_conversion.test_gslv_compatibility.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_line_circuit_idx_setter.test_valid_circuit_idx.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_load_save_load.test_load_save_load2.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_ntc.test_issue_372_1.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ntc.test_issue_372_2.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_battery_shedding_copper_plate.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_hvdc_controls.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_not_shedding_because_of_line.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_shedding.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_shedding_because_of_line.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_opf.test_opf_load_shedding_copper_plate.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_power_flow_acdc_generalized.test_fubm_new.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_power_flow_acdc_generalized.test_hvdc_new.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_power_flow_acdc_generalized.test_ieee_grids.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_power_flow_acdc_generalized.test_voltage_control_with_ltc.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_power_flow_acdc_generalized.test_voltage_remote_control_with_generation.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_power_flow_acdc_generalized.test_zip.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_ptdf.test_ptdf_generation_contingencies.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_acha.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_rating.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_ratings_with_neutral.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_tower_composition.test_tower_composition.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_transformer_type.test_psse_conversion3.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_transformer_type.test_transformer_type.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_ac_opf.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_basic.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_contingency.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_contongencies_filters.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_grid_diff.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_gslv_conversion.py.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_nonlinear_contingency.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_opf.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_power_flow_acdc_generalized.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_ptdf.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_tower_composition.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_transformer_type.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.test_ntc.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
-    &quot;Python.LineBuilderDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.circuit_to_optimods.executor&quot;: &quot;Run&quot;,
-    &quot;Python.demo_code.executor&quot;: &quot;Run&quot;,
-    &quot;Python.demo_code2.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.demo_code3.executor&quot;: &quot;Run&quot;,
-    &quot;Python.grid_merge.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ieee9.executor&quot;: &quot;Run&quot;,
-    &quot;Python.load_designer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.make.executor&quot;: &quot;Run&quot;,
-    &quot;Python.make_wheels.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
-    &quot;Python.overhead_line_calcs.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pmode3_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.post_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.python_console.executor&quot;: &quot;Run&quot;,
-    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.readme_checks.executor&quot;: &quot;Run&quot;,
-    &quot;Python.readme_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.reliability_study_run.executor&quot;: &quot;Run&quot;,
-    &quot;Python.round_trip.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.run_child_1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run_master.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run_server_farm.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.server_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.short_circuit_driver.executor&quot;: &quot;Run&quot;,
-    &quot;Python.stack_plot_pos_neg.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_gslv_conversion.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_ntc.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.test_power_flow.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_raw_cgmes_cross_roundtrip.executor&quot;: &quot;Run&quot;,
-    &quot;Python.toast_widget.executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file (2).executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
-    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
-    &quot;Python.y_bus_composition.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.y_bus_composition_2.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;372__migrate__ntc__2025&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/eRoots/M-project&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
+    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
+    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
+    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
+    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
+    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
+    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
+    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
+    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
+    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
+    "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.Python tests in tests.executor": "Run",
+    "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
+    "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
+    "Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor": "Run",
+    "Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx.executor": "Run",
+    "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
+    "Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap.executor": "Debug",
+    "Python tests.pytest for src.tests.test_profiles.executor": "Run",
+    "Python tests.pytest for src.tests.test_tower_composition.test_acha.executor": "Run",
+    "Python tests.pytest for src.tests.test_transformer_type.executor": "Run",
+    "Python tests.pytest for src.tests.test_transformer_type.test_transformer_type.executor": "Debug",
+    "Python tests.pytest for test_ac_opf.test_superconductors_handling.executor": "Run",
+    "Python tests.pytest for test_basic.test_gridcal_basic_pi.executor": "Debug",
+    "Python tests.pytest for test_grid_diff.test_add_stuff_roundtrip.executor": "Run",
+    "Python tests.pytest for test_gslv_conversion.test_gslv_compatibility.executor": "Debug",
+    "Python tests.pytest for test_line_circuit_idx_setter.test_valid_circuit_idx.executor": "Run",
+    "Python tests.pytest for test_load_save_load.test_load_save_load2.executor": "Run",
+    "Python tests.pytest for test_ntc.test_issue_372_1.executor": "Debug",
+    "Python tests.pytest for test_ntc.test_issue_372_2.executor": "Debug",
+    "Python tests.pytest for test_opf.test_opf_battery_shedding_copper_plate.executor": "Run",
+    "Python tests.pytest for test_opf.test_opf_hvdc_controls.executor": "Run",
+    "Python tests.pytest for test_opf.test_opf_load_not_shedding_because_of_line.executor": "Debug",
+    "Python tests.pytest for test_opf.test_opf_load_shedding.executor": "Debug",
+    "Python tests.pytest for test_opf.test_opf_load_shedding_because_of_line.executor": "Run",
+    "Python tests.pytest for test_opf.test_opf_load_shedding_copper_plate.executor": "Debug",
+    "Python tests.pytest for test_power_flow_acdc_generalized.test_fubm_new.executor": "Debug",
+    "Python tests.pytest for test_power_flow_acdc_generalized.test_hvdc_new.executor": "Run",
+    "Python tests.pytest for test_power_flow_acdc_generalized.test_ieee_grids.executor": "Debug",
+    "Python tests.pytest for test_power_flow_acdc_generalized.test_voltage_control_with_ltc.executor": "Debug",
+    "Python tests.pytest for test_power_flow_acdc_generalized.test_voltage_remote_control_with_generation.executor": "Debug",
+    "Python tests.pytest for test_power_flow_acdc_generalized.test_zip.executor": "Debug",
+    "Python tests.pytest for test_ptdf.test_ptdf_generation_contingencies.executor": "Debug",
+    "Python tests.pytest for test_tower_composition.test_acha.executor": "Run",
+    "Python tests.pytest for test_tower_composition.test_rating.executor": "Debug",
+    "Python tests.pytest for test_tower_composition.test_ratings_with_neutral.executor": "Debug",
+    "Python tests.pytest for test_tower_composition.test_tower_composition.executor": "Run",
+    "Python tests.pytest for test_transformer_type.test_psse_conversion3.executor": "Debug",
+    "Python tests.pytest for test_transformer_type.test_transformer_type.executor": "Run",
+    "Python tests.pytest in test_ac_opf.py.executor": "Run",
+    "Python tests.pytest in test_basic.py.executor": "Run",
+    "Python tests.pytest in test_contingency.py.executor": "Debug",
+    "Python tests.pytest in test_contongencies_filters.py.executor": "Debug",
+    "Python tests.pytest in test_grid_diff.py.executor": "Run",
+    "Python tests.pytest in test_gslv_conversion.py.executor": "Debug",
+    "Python tests.pytest in test_nodal_capacity.py.executor": "Run",
+    "Python tests.pytest in test_nonlinear_contingency.py.executor": "Run",
+    "Python tests.pytest in test_opf.py.executor": "Run",
+    "Python tests.pytest in test_power_flow_acdc_generalized.py.executor": "Run",
+    "Python tests.pytest in test_ptdf.py.executor": "Run",
+    "Python tests.pytest in test_tower_composition.py.executor": "Run",
+    "Python tests.pytest in test_transformer_type.py.executor": "Run",
+    "Python tests.pytest in tests.executor": "Run",
+    "Python tests.test_ntc.py.executor": "Run",
+    "Python.AnalysisDialogue.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.GridCalMain.executor": "Run",
+    "Python.LineBuilderDialogue.executor": "Run",
+    "Python.cgmes_rdfs_graph.executor": "Run",
+    "Python.circuit_to_optimods.executor": "Run",
+    "Python.demo_code.executor": "Run",
+    "Python.demo_code2.executor": "Debug",
+    "Python.demo_code3.executor": "Run",
+    "Python.grid_merge.executor": "Run",
+    "Python.ieee9.executor": "Run",
+    "Python.load_designer.executor": "Run",
+    "Python.make.executor": "Run",
+    "Python.make_wheels.executor": "Run",
+    "Python.new_circuit_objects.executor": "Run",
+    "Python.overhead_line_calcs.executor": "Run",
+    "Python.pmode3_test.executor": "Run",
+    "Python.post_example.executor": "Run",
+    "Python.pymoo_example.executor": "Debug",
+    "Python.python_console.executor": "Run",
+    "Python.raw_imp_exp_test.executor": "Run",
+    "Python.readme_checks.executor": "Run",
+    "Python.readme_example.executor": "Run",
+    "Python.reliability_study_run.executor": "Run",
+    "Python.round_trip.executor": "Run",
+    "Python.run.executor": "Debug",
+    "Python.run_child_1.executor": "Run",
+    "Python.run_master.executor": "Run",
+    "Python.run_server_farm.executor": "Debug",
+    "Python.server_example.executor": "Run",
+    "Python.short_circuit_driver.executor": "Run",
+    "Python.stack_plot_pos_neg.executor": "Run",
+    "Python.test_gslv_conversion.executor": "Run",
+    "Python.test_ntc.executor": "Debug",
+    "Python.test_opf.executor": "Debug",
+    "Python.test_power_flow.executor": "Run",
+    "Python.test_raw_cgmes_cross_roundtrip.executor": "Run",
+    "Python.toast_widget.executor": "Run",
+    "Python.update_gui_file (1).executor": "Run",
+    "Python.update_gui_file (2).executor": "Run",
+    "Python.update_gui_file.executor": "Run",
+    "Python.upload_to_pypi.executor": "Run",
+    "Python.y_bus_composition.executor": "Debug",
+    "Python.y_bus_composition_2.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "devel",
+    "last_opened_file_path": "/home/santi/Documentos/Git/eRoots/tonga_planning",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -267,14 +276,14 @@
       <recent name="$PROJECT_DIR$/src/trunk/server" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams" />
       <recent name="$PROJECT_DIR$/src/trunk/line_parameters" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids/RAW" />
-      <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.test_ntc.py">
+  <component name="RunManager" selected="Python tests.pytest in tests">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -794,6 +803,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test_opf" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11 (GridCal)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/tests/test_opf.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="test_power_flow" type="PythonConfigurationType" factoryName="Python">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -992,7 +1025,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_ntc.test_issue_372_1" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1006,11 +1039,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_ntc.test_issue_372_1&quot;" />
+      <option name="_new_target" value="&quot;src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_ntc.test_issue_372_2" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest in test_nodal_capacity.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1024,11 +1057,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_ntc.test_issue_372_2&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_nodal_capacity.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_power_flow_acdc_generalized.test_hvdc_new" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest in test_opf.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1042,8 +1075,8 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_power_flow_acdc_generalized.test_hvdc_new&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_opf.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
@@ -1083,24 +1116,25 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.test_opf" />
       <item itemvalue="Python.test_ntc" />
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
       <item itemvalue="Python.test_gslv_conversion" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.test_ntc.py" />
-      <item itemvalue="Python tests.pytest for test_ntc.test_issue_372_1" />
-      <item itemvalue="Python tests.pytest for test_ntc.test_issue_372_2" />
-      <item itemvalue="Python tests.pytest for test_power_flow_acdc_generalized.test_hvdc_new" />
+      <item itemvalue="Python tests.pytest in test_opf.py" />
+      <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
+      <item itemvalue="Python tests.pytest in test_nodal_capacity.py" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.pytest for test_ntc.test_issue_372_2" />
-        <item itemvalue="Python tests.pytest for test_ntc.test_issue_372_1" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest for test_power_flow_acdc_generalized.test_hvdc_new" />
+        <item itemvalue="Python tests.pytest in test_opf.py" />
+        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest in test_nodal_capacity.py" />
+        <item itemvalue="Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap" />
       </list>
     </recent_temporary>
   </component>
@@ -2320,7 +2354,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="711" />
+    <option name="localTasksCounter" value="716" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2366,11 +2400,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored unused code" />
-    <MESSAGE value="added x, y to the connectivity node&#10;refactored code" />
-    <MESSAGE value="Improved README.md" />
-    <MESSAGE value="deleted newton related tests" />
-    <MESSAGE value="Minimal refactorings" />
     <MESSAGE value="Removed &quot;kconv&quot;" />
     <MESSAGE value="5.3.36" />
     <MESSAGE value="Removed unused code and cleaned up things in pf_generalized_formulation.py" />
@@ -2391,7 +2420,12 @@
     <MESSAGE value="Fixes on the NTC algorithm, passing early tests" />
     <MESSAGE value="More ntc testing" />
     <MESSAGE value="Finished current tests for the NTC" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finished current tests for the NTC" />
+    <MESSAGE value="deleted case14_csh.gridcal and modified test to delete the file after using it" />
+    <MESSAGE value="modified test to delete the output file after using it" />
+    <MESSAGE value="added the n_customers parameter" />
+    <MESSAGE value="refactored reliability and blackout drivers" />
+    <MESSAGE value="Reliability stuff" />
+    <option name="LAST_COMMIT_MESSAGE" value="Reliability stuff" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2641,11 +2675,6 @@
           <option name="timeStamp" value="2448" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/driver_handler.py</url>
-          <line>145</line>
-          <option name="timeStamp" value="2465" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_results.py</url>
           <line>345</line>
           <option name="timeStamp" value="2490" />
@@ -2667,17 +2696,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridMerge/grid_diff.py</url>
-          <line>130</line>
+          <line>125</line>
           <option name="timeStamp" value="2517" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridMerge/grid_diff.py</url>
-          <line>121</line>
+          <line>119</line>
           <option name="timeStamp" value="2518" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/GridMerge/grid_diff.py</url>
-          <line>133</line>
+          <line>128</line>
           <option name="timeStamp" value="2522" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2702,7 +2731,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_generalized_formulation.py</url>
-          <line>1187</line>
+          <line>1186</line>
           <option name="timeStamp" value="2599" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2726,49 +2755,79 @@
           <option name="timeStamp" value="2606" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>49</line>
-          <option name="timeStamp" value="2616" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py</url>
+          <line>170</line>
+          <option name="timeStamp" value="2656" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
-          <line>639</line>
-          <option name="timeStamp" value="2622" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py</url>
+          <line>186</line>
+          <option name="timeStamp" value="2659" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>193</line>
-          <option name="timeStamp" value="2628" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/contingency_analysis_driver.py</url>
+          <line>189</line>
+          <option name="timeStamp" value="2660" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>538</line>
-          <option name="timeStamp" value="2630" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/cgmes_to_gridcal.py</url>
+          <line>2349</line>
+          <option name="timeStamp" value="2661" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>422</line>
-          <option name="timeStamp" value="2631" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_ts_driver.py</url>
+          <line>100</line>
+          <option name="timeStamp" value="2662" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
-          <line>302</line>
-          <option name="timeStamp" value="2632" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>916</line>
+          <option name="timeStamp" value="2663" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
-          <line>858</line>
-          <option name="timeStamp" value="2634" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>907</line>
+          <option name="timeStamp" value="2664" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
-          <line>1363</line>
-          <option name="timeStamp" value="2635" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
+          <line>971</line>
+          <option name="timeStamp" value="2669" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
-          <line>1350</line>
-          <option name="timeStamp" value="2636" />
+          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
+          <line>394</line>
+          <option name="timeStamp" value="2679" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
+          <line>431</line>
+          <option name="timeStamp" value="2680" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>1392</line>
+          <option name="timeStamp" value="2681" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>750</line>
+          <option name="timeStamp" value="2683" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>2014</line>
+          <option name="timeStamp" value="2686" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
+          <line>392</line>
+          <option name="timeStamp" value="2690" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>1959</line>
+          <option name="timeStamp" value="2694" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
