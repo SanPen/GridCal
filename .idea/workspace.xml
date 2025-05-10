@@ -28,10 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Refactored the linear opf to not to use Bbus">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed the tower and the tower builder not properly showing the nominal voltage">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,7 +199,7 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python tests.test_ntc.py.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
@@ -2352,7 +2350,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="717" />
+    <option name="localTasksCounter" value="718" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2398,7 +2396,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.3.36" />
     <MESSAGE value="Removed unused code and cleaned up things in pf_generalized_formulation.py" />
     <MESSAGE value="Improvements in  pf_generalized_formulation.py and bug fixes in linear_opf_ts.py" />
     <MESSAGE value="General refactors of the derivatives in the pf_generalized_formulation.py" />
@@ -2423,7 +2420,8 @@
     <MESSAGE value="refactored reliability and blackout drivers" />
     <MESSAGE value="Reliability stuff" />
     <MESSAGE value="Refactored the linear opf to not to use Bbus" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored the linear opf to not to use Bbus" />
+    <MESSAGE value="Fixed the tower and the tower builder not properly showing the nominal voltage" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed the tower and the tower builder not properly showing the nominal voltage" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2826,11 +2824,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
           <line>1957</line>
           <option name="timeStamp" value="2694" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py</url>
-          <line>54</line>
-          <option name="timeStamp" value="2696" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py</url>
