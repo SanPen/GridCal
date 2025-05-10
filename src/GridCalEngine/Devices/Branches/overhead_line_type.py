@@ -247,7 +247,7 @@ class OverheadLineType(EditableDevice):
         self.wires_in_tower: ListOfWires = ListOfWires()
 
         # nominal voltage
-        self.Vnom = Vnom  # kV
+        self._Vnom = Vnom  # kV
 
         self.earth_resistivity = earth_resistivity  # ohm/m3
 
@@ -276,6 +276,14 @@ class OverheadLineType(EditableDevice):
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
         self.register(key='wires_in_tower', units='', tpe=SubObjectType.ListOfWires,
                       definition='List of wires', editable=False, display=False)
+
+    @property
+    def Vnom(self) -> float:
+        return self._Vnom
+
+    @Vnom.setter
+    def Vnom(self, val: float):
+        self._Vnom = float(val)
 
     @property
     def n_circuits(self) -> int:

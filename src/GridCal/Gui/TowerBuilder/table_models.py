@@ -267,9 +267,9 @@ class TowerModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self)
 
         if tower is None:
-            self.tower = OverheadLineType()
+            self._tower = OverheadLineType()
         else:
-            self.tower = tower
+            self._tower = tower
 
         # other properties
         self.edit_callback = edit_callback
@@ -279,6 +279,10 @@ class TowerModel(QtCore.QAbstractTableModel):
         self.index_prop = {0: 'name', 1: 'xpos', 2: 'ypos', 3: 'phase', 4: 'circuit_index', 5: 'phase_type'}
         self.converter = {0: str, 1: float, 2: float, 3: int, 4: int, 5: str}
         self.editable_wire = [False, True, True, True, False, False]
+
+    @property
+    def tower(self) -> OverheadLineType:
+        return self._tower
 
     def __str__(self):
         return self.tower.name
