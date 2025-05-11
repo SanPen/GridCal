@@ -1319,7 +1319,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
         # VSC ----------------------------------------------------------------------------------------------------------
-        T_vsc = self.nc.vsc_data.T
+        T_vsc = self.nc.vsc_data.T_ac
         It = np.sqrt(Pt_vsc * Pt_vsc + Qt_vsc * Qt_vsc) / Vm[T_vsc]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
