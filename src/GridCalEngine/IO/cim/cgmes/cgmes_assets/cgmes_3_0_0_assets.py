@@ -23,6 +23,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.busbar_section import Busba
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.bus_name_marker import BusNameMarker
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.caes_plant import CAESPlant
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.clamp import Clamp
+from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.cogeneration_plant import CogenerationPlant
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.combined_cycle_plant import CombinedCyclePlant
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.conducting_equipment import ConductingEquipment
@@ -343,6 +344,7 @@ class Cgmes_3_0_0_Assets:
             'CoordinateSystem': CoordinateSystem,
             'Location': Location,
             'PositionPoint': PositionPoint,
+            'FullModel': FullModel,
         }
 
         self.association_inverse_dict = {
@@ -734,3 +736,4 @@ class Cgmes_3_0_0_Assets:
         self.CoordinateSystem_list: List[CoordinateSystem] = list()
         self.Location_list: List[Location] = list()
         self.PositionPoint_list: List[PositionPoint] = list()
+        self.FullModel_list: List[FullModel] = list()

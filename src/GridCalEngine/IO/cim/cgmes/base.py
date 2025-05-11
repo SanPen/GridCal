@@ -178,27 +178,31 @@ class Base:
         """
         return True
 
-    def add_reference(self, obj, attr_name):
+    def add_reference(self, obj, attr_name, logger: DataLogger):
         """
         Adds a categorized reference to this object
         :param obj:
         :param attr_name:
+        :param logger:
         :return:
         """
-        if obj.tpe in self.references_to_me:
-            self.references_to_me[obj.tpe].add(obj)
-        else:
-            self.references_to_me[obj.tpe] = {obj}
-        if attr_name is None:
-            return
-        current_value = getattr(self, attr_name)
+        if hasattr(self, attr_name):
+            if obj.tpe in self.references_to_me:
+                self.references_to_me[obj.tpe].add(obj)
+            else:
+                self.references_to_me[obj.tpe] = {obj}
+            if attr_name is None:
+                return
+            current_value = getattr(self, attr_name)
 
-        if current_value is None:
-            setattr(self, attr_name, obj)
-        elif isinstance(current_value, list):
-            current_value.append(obj)
+            if current_value is None:
+                setattr(self, attr_name, obj)
+            elif isinstance(current_value, list):
+                current_value.append(obj)
+            else:
+                setattr(self, attr_name, [current_value, obj])
         else:
-            setattr(self, attr_name, [current_value, obj])
+            logger.add_error("Cannot add reference", device_class=self.tpe, device_property=attr_name)
 
 
     def register_property(self, name: str,

@@ -152,62 +152,63 @@ def build_cgmes_limit_dicts(cgmes_model: CgmesCircuit,
             op_lim_set = cl.OperationalLimitSet
             op_lim_type = cl.OperationalLimitType
 
-            volt = get_voltage_terminal(op_lim_set.Terminal, logger)
-            rate_mva = np.round(cl.value * volt * sqrt_3 / 1e3, 4)
+            volt: float | None = get_voltage_terminal(op_lim_set.Terminal, logger)
 
-            if isinstance(op_lim_set.Terminal.ConductingEquipment,
-                          device_type):
-                branch_id = op_lim_set.Terminal.ConductingEquipment.uuid
+            if volt is not None:
+                rate_mva = np.round(cl.value * volt * sqrt_3 / 1e3, 4)
 
-                if op_lim_type.limitType == LimitTypeKind.patl:
+                if isinstance(op_lim_set.Terminal.ConductingEquipment, device_type):
+                    branch_id = op_lim_set.Terminal.ConductingEquipment.uuid
 
-                    act_lim = patl_dict.get(branch_id, None)
-                    if act_lim is None:
-                        patl_dict[branch_id] = rate_mva
-                    elif rate_mva < act_lim:
-                        patl_dict[branch_id] = rate_mva
+                    if op_lim_type.limitType == LimitTypeKind.patl:
 
-                elif op_lim_type.limitType == LimitTypeKind.tatl:
-
-                    if op_lim_type.acceptableDuration == 900:
-
-                        act_lim = tatl_900_dict.get(branch_id, None)
+                        act_lim = patl_dict.get(branch_id, None)
                         if act_lim is None:
-                            tatl_900_dict[branch_id] = rate_mva
+                            patl_dict[branch_id] = rate_mva
                         elif rate_mva < act_lim:
-                            tatl_900_dict[branch_id] = rate_mva
+                            patl_dict[branch_id] = rate_mva
 
-                    elif op_lim_type.acceptableDuration == 60:
+                    elif op_lim_type.limitType == LimitTypeKind.tatl:
 
-                        act_lim = tatl_60_dict.get(branch_id, None)
-                        if act_lim is None:
-                            tatl_60_dict[branch_id] = rate_mva
-                        elif rate_mva < act_lim:
-                            tatl_60_dict[branch_id] = rate_mva
+                        if op_lim_type.acceptableDuration == 900:
 
+                            act_lim = tatl_900_dict.get(branch_id, None)
+                            if act_lim is None:
+                                tatl_900_dict[branch_id] = rate_mva
+                            elif rate_mva < act_lim:
+                                tatl_900_dict[branch_id] = rate_mva
+
+                        elif op_lim_type.acceptableDuration == 60:
+
+                            act_lim = tatl_60_dict.get(branch_id, None)
+                            if act_lim is None:
+                                tatl_60_dict[branch_id] = rate_mva
+                            elif rate_mva < act_lim:
+                                tatl_60_dict[branch_id] = rate_mva
+
+                        else:
+                            logger.add_warning(
+                                msg="Not supported .acceptable duration for OperationalLimitType",
+                                device=op_lim_type,
+                                device_class=op_lim_type.tpe,
+                                value=op_lim_type.acceptableDuration,
+                                comment="Currently only 900 and 60 is imported for TATL limits",
+                            )
                     else:
                         logger.add_warning(
-                            msg="Not supported .acceptable duration for OperationalLimitType",
+                            msg="Not supported .limitType duration for OperationalLimitType",
                             device=op_lim_type,
                             device_class=op_lim_type.tpe,
-                            value=op_lim_type.acceptableDuration,
-                            comment="Currently only 900 and 60 is imported for TATL limits",
+                            value=op_lim_type.limitType,
+                            comment="Currently only PATL and TATL (900, 60) type are imported",
                         )
-                else:
-                    logger.add_warning(
-                        msg="Not supported .limitType duration for OperationalLimitType",
-                        device=op_lim_type,
-                        device_class=op_lim_type.tpe,
-                        value=op_lim_type.limitType,
-                        comment="Currently only PATL and TATL (900, 60) type are imported",
-                    )
 
-            else:
-                logger.add_error(msg='ConductingEquipment is missing for terminal.',
-                                 device=op_lim_set.Terminal.rdfid,
-                                 device_class=op_lim_set.Terminal.tpe,
-                                 device_property="ConductingEquipment",
-                                 value=op_lim_set.Terminal)
+                else:
+                    logger.add_error(msg='ConductingEquipment is missing for terminal.',
+                                     device=op_lim_set.Terminal.rdfid,
+                                     device_class=op_lim_set.Terminal.tpe,
+                                     device_property="ConductingEquipment",
+                                     value=op_lim_set.Terminal)
 
     # later development
     for al in cgmes_model.cgmes_assets.ActivePowerLimit_list:
@@ -348,7 +349,7 @@ def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100)
 # endregion
 
 # region ACLineSegment
-def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger):
+def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger) -> float | None:
     """
 
     :param ac_line_segment:
@@ -430,7 +431,7 @@ def get_rate_ac_line_segment():
 # endregion
 
 # region Shunt
-def get_voltage_shunt(shunt, logger: DataLogger):
+def get_voltage_shunt(shunt, logger: DataLogger) -> float | None:
     if shunt.BaseVoltage is not None:
         return shunt.BaseVoltage.nominalVoltage
     elif shunt.nomU is not None:
@@ -488,14 +489,21 @@ def get_values_shunt(shunt,
 # endregion
 
 # region Terminal(acdc_terminal.ACDCTerminal)
-def get_voltage_terminal(terminal, logger: DataLogger):
+def get_voltage_terminal(terminal, logger: DataLogger) -> float | None:
     """
     Get the voltage of this terminal
     :return: Voltage or None
     """
-    if terminal.TopologicalNode is not None:
-        return get_nominal_voltage(terminal.TopologicalNode, logger=logger)
-    else:
+    if hasattr(terminal, "TopologicalNode"):
+        if terminal.TopologicalNode is not None:
+            return get_nominal_voltage(terminal.TopologicalNode, logger=logger)
+        else:
+            return None
+    elif hasattr(terminal, "DCTopologicalNode"):
+        logger.add_error("Cannot retrieve voltage from a DC terminal, this is a CGMES design error",
+                         device_class=terminal.tpe,
+                         device_property="DCTopologicalNode",
+                         device=terminal.uuid)
         return None
 
 
@@ -518,6 +526,7 @@ def get_nominal_voltage(topological_node, logger) -> float:
                              device_property="BaseVoltage",
                              value=topological_node.BaseVoltage,
                              expected_value='object')
+            return 0.0
     else:
         logger.add_error(msg='Missing reference',
                          device=topological_node.rdfid,

@@ -79,7 +79,7 @@ class GeneratorParent(InjectionParent):
 
         self.control_cn = control_cn
 
-        self.P = float(P)
+        self._P = float(P)
         self._P_prof = Profile(default_value=self.P, data_type=float)
 
         # Maximum dispatched power in MW
@@ -108,6 +108,25 @@ class GeneratorParent(InjectionParent):
         self.register(key='srap_enabled', units='', tpe=bool,
                       definition='Is the unit available for SRAP participation?',
                       editable=True, profile_name="srap_enabled_prof")
+
+    @property
+    def P(self)->float:
+        """
+        Get the active power value
+        :return: float
+        """
+        return self._P
+
+    @P.setter
+    def P(self, val: float):
+        """
+        Set active power value
+        :param val: some float
+        """
+        try:
+            self._P = float(val)
+        except ValueError:
+            print("The value you're trying to set into P is not a float :(")
 
     @property
     def control_bus_prof(self) -> Profile:
