@@ -69,7 +69,8 @@ def run_hvdc_multiterminal() -> None:
     """
 
     # grid = gce.open_file("src/trunk/hvdc_multiterm/8bus_v1.gridcal")
-    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '8bus_v1.gridcal')
+    # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '8bus_v1.gridcal')
+    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc1.gridcal')
     grid = gce.FileOpen(fname).open()
 
 
