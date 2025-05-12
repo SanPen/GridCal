@@ -1329,6 +1329,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
         St_vsc = make_complex(Pt_vsc, Qt_vsc)
 
+        # Add the 2nd equation per VSC
+        # current_vsc = 
+
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
         zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase

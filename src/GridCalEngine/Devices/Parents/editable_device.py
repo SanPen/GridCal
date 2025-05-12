@@ -680,7 +680,6 @@ class EditableDevice:
         :param value: Any
         """
         # set the snapshot value whatever it is
-        print(f"Setting {property_name} to {value}")
         setattr(self, property_name, value)
 
     def create_profiles(self, index):
