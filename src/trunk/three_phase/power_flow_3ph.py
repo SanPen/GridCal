@@ -52,10 +52,7 @@ def power_flow_3ph(grid):
 
     return res
 
-grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test.gridcal")
-# grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test_v2.gridcal")
-# grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test_v3.gridcal")
-# grid = gce.open_file("src/trunk/three_phase/ThreePhase_Test_v4.gridcal")
+grid = gce.open_file("ThreePhase_Test.gridcal")
 
 res_1 = power_flow(grid)
 res_3ph = power_flow_3ph(grid)
