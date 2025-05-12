@@ -29,8 +29,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved handling of sparse arrays">
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_dummy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_linux_detect.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_mac_detect.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_windows_detect.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/sparse_array.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/sparse_array.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/generic_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/generic_graphics.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -248,7 +253,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "devel",
-    "last_opened_file_path": "/home/santi/Documentos/Git/eRoots/tonga_planning",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/ThirdParty/darkdetect",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -266,11 +271,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/GridMerge" />
-      <recent name="$PROJECT_DIR$/src/trunk/server" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
@@ -1128,10 +1133,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_profiles" />
-        <item itemvalue="Python tests.pytest in test_nodal_capacity.py" />
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in test_opf.py" />
+        <item itemvalue="Python tests.pytest in test_nodal_capacity.py" />
       </list>
     </recent_temporary>
   </component>
@@ -2351,7 +2356,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="720" />
+    <option name="localTasksCounter" value="721" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
