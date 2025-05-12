@@ -32,7 +32,8 @@ def adv_jacobian(nbus: int,
                  nhvdc: int,
                  F: IntVec,
                  T: IntVec,
-                 F_vsc: IntVec,
+                 Fdcp_vsc: IntVec,
+                 Fdcn_vsc: IntVec,
                  T_vsc: IntVec,
                  F_hvdc: IntVec,
                  T_hvdc: IntVec,
@@ -48,13 +49,15 @@ def adv_jacobian(nbus: int,
                  u_cbr_m: IntVec,
                  u_cbr_tau: IntVec,
 
-                 k_cbr_pf: IntVec,
+                 k_cbr_pfp: IntVec,
+                 k_cbr_pfn: IntVec,
                  k_cbr_pt: IntVec,
                  k_cbr_qf: IntVec,
                  k_cbr_qt: IntVec,
 
                  # VSC Indices
-                 u_vsc_pf: IntVec,
+                 u_vsc_pfp: IntVec,
+                 u_vsc_pfn: IntVec,
                  u_vsc_pt: IntVec,
                  u_vsc_qt: IntVec,
 
@@ -1410,11 +1413,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
-        loss_vsc = PLoss_IEC - Pt_vsc - Pf_vsc
+        loss_vsc = PLoss_IEC - Pt_vsc - Pfp_vsc - Pfn_vsc
         St_vsc = make_complex(Pt_vsc, Qt_vsc)
 
         # Add the 2nd equation per VSC
-        # current_vsc = 
+        current_vsc = Pfp_vsc * Vm[self.nc.vsc_data.F_dcp] + Pfn_vsc * Vm[self.nc.vsc_data.F_dcp]
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
@@ -1439,9 +1442,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             T_hvdc=self.nc.hvdc_data.T,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
+            Fdcp_vsc=self.nc.vsc_data.F_dcp,
+            Fdcn_vsc=self.nc.vsc_data.F_dcn,
             T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=Pf_vsc,
+            Pfp_vsc=Pfp_vsc,
+            Pfn_vsc=Pfn_vsc,
             St_vsc=St_vsc)
 
         self.Scalc = Scalc_active + Scalc_passive
@@ -1453,6 +1458,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
             loss_vsc,
+            current_vsc,
             loss_hvdc,
             inj_hvdc,
             Pf_cbr - self.cbr_pf_set,
@@ -1736,6 +1742,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # VSC ----------------------------------------------------------------------------------------------------------
         T_vsc = self.nc.vsc_data.T
+        F_dcp = self.nc.vsc_data.F_dcp
+        F_dcn = self.nc.vsc_data.F_dcn
         It = np.sqrt(self.Pt_vsc * self.Pt_vsc + self.Qt_vsc * self.Qt_vsc) / self.Vm[T_vsc]
         It2 = It * It
         PLoss_IEC = (self.nc.vsc_data.alpha3 * It2
@@ -1743,6 +1751,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha1)
 
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
+        current_vsc = self.Pfp_vsc * self.Vm[F_dcp] + self.Pfn_vsc * self.Vm[F_dcn]
+
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
         # HVDC ---------------------------------------------------------------------------------------------------------
@@ -1768,9 +1778,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             T_hvdc=self.nc.hvdc_data.T,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
-            T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=self.Pf_vsc,
+            Fdcp_vsc=F_dcp,
+            Fdcn_vsc=F_dcn,
+            T_vsc=T_vsc,
+            Pfp_vsc=self.Pfp_vsc,
+            Pfn_vsc=self.Pfn_vsc,
             St_vsc=St_vsc)
 
         self.Scalc = Scalc_active + Scalc_passive
@@ -1782,6 +1794,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
             loss_vsc,
+            current_vsc,
             loss_hvdc,
             inj_hvdc,
             Pf_cbr - self.cbr_pf_set,
@@ -1827,7 +1840,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 nhvdc=nhvdc,
                 F=self.nc.passive_branch_data.F,
                 T=self.nc.passive_branch_data.T,
-                F_vsc=self.nc.vsc_data.F,
+                Fdcp_vsc=self.nc.vsc_data.F_dcp,
+                Fdcn_vsc=self.nc.vsc_data.F_dcn,
                 T_vsc=self.nc.vsc_data.T,
                 F_hvdc=self.nc.hvdc_data.F,
                 T_hvdc=self.nc.hvdc_data.T,
@@ -1842,13 +1856,15 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 u_cbr_m=self.u_cbr_m,
                 u_cbr_tau=self.u_cbr_tau,
 
-                k_cbr_pf=self.k_cbr_pf,
+                k_cbr_pfp=self.k_cbr_pfp,
+                k_cbr_pfn=self.k_cbr_pfn,
                 k_cbr_pt=self.k_cbr_pt,
                 k_cbr_qf=self.k_cbr_qf,
                 k_cbr_qt=self.k_cbr_qt,
 
                 # VSC Indices
-                u_vsc_pf=self.u_vsc_pf,
+                u_vsc_pfp=self.u_vsc_pfp,
+                u_vsc_pfn=self.u_vsc_pfn,
                 u_vsc_pt=self.u_vsc_pt,
                 u_vsc_qt=self.u_vsc_qt,
 
