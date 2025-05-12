@@ -18,8 +18,6 @@ from GridCal.Gui.Main.GridCalMain import runGridCal
 
 import platform
 
-# os.environ['JUPYTER_PLATFORM_DIRS'] = "1"
-
 if platform.system() == 'Windows':
     # this makes the icon display properly under windows
     myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string

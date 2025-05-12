@@ -1112,7 +1112,7 @@ class MultiCircuit(Assets):
 
     def get_inter_buses_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
         """
-        Get the inter-buese Branches. HVDC Branches are not considered
+        Get the inter-buses Branches. HVDC Branches are not considered
         :param a1: Group of Buses 1
         :param a2: Group of Buses 1
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)

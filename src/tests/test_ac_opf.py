@@ -99,7 +99,7 @@ def case14_ctrlQ_shunts() -> NonlinearOPFResults:
     grid.add_controllable_shunt(bus=grid.buses[3], api_obj=csh)
     grid.generators[2].Snom = 25.0
 
-    file_path_csh = os.path.join('data', 'grids', 'case14_csh.gridcal')
+    file_path_csh = os.path.join('data', 'output', 'case14_csh.gridcal')
     gce.save_file(grid, filename=file_path_csh)
 
     grid = gce.FileOpen(file_path_csh).open()
@@ -110,6 +110,9 @@ def case14_ctrlQ_shunts() -> NonlinearOPFResults:
                                               acopf_mode=gce.AcOpfMode.ACOPFstd, ips_control_q_limits=True, verbose=0)
 
     base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
+
+    # delete
+    os.remove(file_path_csh)
 
     return base_sol
 

@@ -35,7 +35,7 @@ _logger = get_logger(__name__)
 
 
 def _detect_system_theme(default_theme: str) -> str:
-    import darkdetect
+    import GridCal.ThirdParty.darkdetect as darkdetect
 
     system_theme = darkdetect.theme()
     if system_theme is None:

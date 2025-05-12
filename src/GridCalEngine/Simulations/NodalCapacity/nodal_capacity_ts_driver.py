@@ -160,7 +160,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      verbose=self.opf_options.verbose,
                                      robust=self.opf_options.robust)
 
-        self.results.Sbus = opf_vars.bus_vars.Pcalc + 1j * np.zeros_like(opf_vars.bus_vars.Pcalc)
+        self.results.Sbus = opf_vars.bus_vars.Pinj + 1j * np.zeros_like(opf_vars.bus_vars.Pinj)
         self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
         self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
         self.results.nodal_capacity = opf_vars.nodal_capacity_vars.P

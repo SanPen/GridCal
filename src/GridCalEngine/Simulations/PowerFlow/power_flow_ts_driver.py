@@ -71,14 +71,18 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         n = self.grid.get_bus_number()
         # m = self.grid.get_branch_number_wo_hvdc()
-        m = self.grid.get_branch_number(add_switch=True)
+        m = self.grid.get_branch_number(add_vsc=False,
+                                        add_hvdc=False,
+                                        add_switch=True)
 
         # initialize the grid time series results we will append the island results with another function
         time_series_results = PowerFlowTimeSeriesResults(n=n,
                                                          m=m,
                                                          n_hvdc=self.grid.get_hvdc_number(),
                                                          bus_names=self.grid.get_bus_names(),
-                                                         branch_names=self.grid.get_branch_names(add_switch=True),
+                                                         branch_names=self.grid.get_branch_names(add_vsc=False,
+                                                                                                 add_hvdc=False,
+                                                                                                 add_switch=True),
                                                          hvdc_names=self.grid.get_hvdc_names(),
                                                          bus_types=np.zeros(n),
                                                          time_array=self.grid.time_profile[time_indices],

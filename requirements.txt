@@ -18,7 +18,6 @@ PySide6<=6.7.2
 pyproj
 pyarrow>=18.0
 fastparquet>=2024
-darkdetect
 windpowerlib>=0.2.2
 pvlib>=0.11
 requests

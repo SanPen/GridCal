@@ -15,7 +15,7 @@ from GridCalEngine.Utils.ThirdParty.gslv.gslv_activation import (pg, build_statu
                                                                  GSLV_AVAILABLE, GSLV_VERSION,
                                                                  GSLV_RECOMMENDED_VERSION)
 from GridCalEngine.DataStructures.branch_parent_data import BranchParentData
-from GridCalEngine.basic_structures import IntVec, Vec
+from GridCalEngine.basic_structures import IntVec, Vec, ConvergenceReport
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
@@ -2404,10 +2404,10 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", lo
     results.loading = res.loading[0, :]
     results.losses = res.losses[0, :]
     # results.Vbranch = res.Vbranch[0, :]
-    # results.If = res.If[0, :]
-    # results.It = res.It[0, :]
-    # results.Beq = res.Beq[0, :]
-    results.m = res.tap_module[0, :]
+    results.If = res.If[0, :]
+    results.It = res.It[0, :]
+
+    results.tap_module = res.tap_module[0, :]
     results.tap_angle = res.tap_angle[0, :]
     # results.F = res.F
     # results.T = res.T
@@ -2423,10 +2423,22 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", lo
     results.loading_vsc = res.loading_vsc[0, :]
     results.losses_vsc = res.losses_vsc[0, :]
 
+    results.gen_q = res.gen_q[0, :]
+    results.battery_q = res.battery_q[0, :]
+    results.shunt_q = res.shunt_q[0, :]
+
+    report = ConvergenceReport()
+    report.add(method=SolverType.NR,
+               error=res.error_values[0],
+               elapsed=res.elapsed,
+               iterations=0,
+               converged=res.converged_values[0])
+
+    results.convergence_reports.append(report)
     # logger.add_info("gslv time", value=res.time_array[0])
 
-    # results.bus_area_indices = grid.get_bus_area_indices()
-    # results.area_names = [a.name for a in grid.areas]
+    results.bus_area_indices = grid.get_bus_area_indices()
+    results.area_names = [a.name for a in grid.areas]
     # results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists
 
     # for rep in res.stats[0]:

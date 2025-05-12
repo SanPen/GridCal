@@ -656,18 +656,10 @@ class SubstationGraphicItem(NodeTemplate, QGraphicsRectItem):
                                 line.bus_to = recipient_buses[line.bus_to.Vnom]
                                 line_graphic = self.editor.graphics_manager.query(elm=line)
                                 line_graphic.calculate_total_length()
-                        for load in self.editor.circuit.loads:
-                            if load.bus in removed_buses:
-                                load.bus = recipient_buses[load.bus.Vnom]
-                        for gen in self.editor.circuit.generators:
-                            if gen.bus in removed_buses:
-                                gen.bus = recipient_buses[gen.bus.Vnom]
-                        for sh in self.editor.circuit.shunts:
-                            if sh.bus in removed_buses:
-                                sh.bus = recipient_buses[sh.bus.Vnom]
-                        for csh in self.editor.circuit.controllable_shunts:
-                            if csh.bus in removed_buses:
-                                csh.bus = recipient_buses[csh.bus.Vnom]
+
+                        for inj in self.editor.circuit.get_injection_devices_iter():
+                            if inj.bus in removed_buses:
+                                inj.bus = recipient_buses[inj.bus.Vnom]
 
                         for bus in removed_buses:
                             self.editor.circuit.delete_bus(obj=bus, delete_associated=False)

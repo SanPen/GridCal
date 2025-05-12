@@ -8,8 +8,8 @@ from typing import Tuple, Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.Stochastic.reliability import compute_transition_probabilities
-from GridCalEngine.basic_structures import Vec, IntVec, Logger
+from GridCalEngine.Simulations.Reliability.reliability import compute_transition_probabilities
+from GridCalEngine.basic_structures import IntVec, Logger
 
 
 class ReliabilityIterable:

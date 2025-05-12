@@ -1867,3 +1867,34 @@ class BranchGroupTypes(Enum):
         :return:
         """
         return list(map(lambda c: c.value, cls))
+
+
+class CascadeType(Enum):
+    PowerFlow = "PowerFlow",
+    LatinHypercube = "LHS"
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return CascadeType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))

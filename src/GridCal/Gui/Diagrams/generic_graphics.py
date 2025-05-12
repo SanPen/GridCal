@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 from typing import Union, List, TYPE_CHECKING, Callable
-import darkdetect
+import GridCal.ThirdParty.darkdetect as darkdetect
 from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem, QGraphicsItemGroup,
                                QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsTextItem)

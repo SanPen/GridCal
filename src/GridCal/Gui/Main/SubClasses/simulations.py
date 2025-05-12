@@ -310,7 +310,7 @@ class SimulationsMain(TimeEventsMain):
             self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
             self.ui.solver_comboBox.setCurrentIndex(0)
 
-            mip_solvers = get_newton_mip_solvers_list()
+            mip_solvers = get_available_mip_solvers()
             self.ui.mip_solver_comboBox.setModel(gf.get_list_model(mip_solvers))
 
         elif eng == EngineType.NewtonPA:
@@ -1946,7 +1946,7 @@ class SimulationsMain(TimeEventsMain):
         """
         # get the power flow options from the GUI
         solver = self.lp_solvers_dict[self.ui.lpf_solver_comboBox.currentText()]
-        mip_solver = self.mip_solvers_dict[self.ui.mip_solver_comboBox.currentText()]
+        mip_solver = self.mip_solvers_dict.get(self.ui.mip_solver_comboBox.currentText(), MIPSolvers.HIGHS.value)
         time_grouping = self.opf_time_groups[self.ui.opf_time_grouping_comboBox.currentText()]
         zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
         pf_options = self.get_selected_power_flow_options()

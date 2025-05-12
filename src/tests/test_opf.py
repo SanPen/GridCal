@@ -384,7 +384,7 @@ def test_opf_generation_shedding():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           zonal_grouping=ZonalGrouping.All,
-                                          # export_model_fname="test_opf_load_shedding_copper_plate.lp"
+                                          export_model_fname="test_opf_gen_shedding_copper_plate.lp"
                                           )
 
     driver = OptimalPowerFlowTimeSeriesDriver(grid=grid, options=opf_options)
@@ -534,4 +534,6 @@ def test_opf_load_not_shedding_because_of_line():
 
 
 if __name__ == '__main__':
-    test_opf()
+    # test_opf()
+    test_opf_generation_shedding()
+    test_opf_battery_shedding()

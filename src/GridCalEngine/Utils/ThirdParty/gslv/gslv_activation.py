@@ -15,7 +15,7 @@ GSLV_VERSION = ''
 GSLV_AVAILABLE = False
 try:
     import pygslv as pg
-    pg.activate(os.path.join(get_create_gridcal_folder(), "license.gslv"), verbose=True)
+    pg.activate(os.path.join(get_create_gridcal_folder(), "license.gslv"), verbose=False)
 
     # activate
     if not pg.isLicensed():

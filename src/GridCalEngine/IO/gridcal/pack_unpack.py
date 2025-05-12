@@ -1008,7 +1008,9 @@ def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Uni
             # the profile was not found, so we fill it with the default stuff
             profile.fill(property_value)
         else:
-            get_profile_from_dict(profile=profile, data=json_profile, collection=collection)
+            get_profile_from_dict(profile=profile,
+                                  data=json_profile,
+                                  collection=collection)
 
 
 def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
@@ -1186,18 +1188,33 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                 try:
                                     val = gc_prop.tpe(property_value)
-                                    elm.set_snapshot_value(gc_prop.name, val)
-                                    search_and_apply_json_profile(json_entry=json_entry,
-                                                                  gc_prop=gc_prop,
-                                                                  elm=elm,
-                                                                  property_value=val)
-                                    print(f"Setting {gc_prop.name} to {val}")
 
-                                except ValueError:
-                                    print(f"Error setting {gc_prop.name} to {val}")
-                                    logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                    try:
+                                        elm.set_snapshot_value(gc_prop.name, val)
+
+                                    except ValueError as e:
+                                        logger.add_error(f'Cannot set the snapshot',
+                                                         device=elm.name,
+                                                         value=property_value,
+                                                         comment=str(e))
+
+                                    try:
+                                        search_and_apply_json_profile(json_entry=json_entry,
+                                                                      gc_prop=gc_prop,
+                                                                      elm=elm,
+                                                                      property_value=val)
+
+                                    except ValueError as e:
+                                        logger.add_error(f'Cannot set the profile',
+                                                         device=elm.name,
+                                                         value=property_value,
+                                                         comment=str(e))
+
+                                except ValueError as e:
+                                    logger.add_error(f'Cannot cast the value to the snapshot',
                                                      device=elm.name,
-                                                     value=property_value)
+                                                     value=property_value,
+                                                     comment=str(e))
 
                             else:
                                 raise Exception(f'Unsupported property type: {gc_prop.tpe}')

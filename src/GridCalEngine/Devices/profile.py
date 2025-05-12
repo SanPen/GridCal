@@ -227,7 +227,7 @@ class Profile:
         :param map_data: map with the data
         """
         self._is_sparse = True
-        self._sparse_array = SparseArray(data_type=self.dtype)
+        self._sparse_array = SparseArray(data_type=self.dtype, default_value=default_value)
         if map_data is None:
             self._sparse_array.create(size=size, default_value=default_value)
         else:
@@ -286,7 +286,7 @@ class Profile:
 
                 if check_type(dtype=self.dtype, value=base):
                     self._is_sparse = True
-                    self._sparse_array = SparseArray(data_type=self.dtype)
+                    self._sparse_array = SparseArray(data_type=self.dtype, default_value=base)
 
                     if most_common_count > 1:
                         if isinstance(arr, np.ndarray):
@@ -358,8 +358,7 @@ class Profile:
             if self._dense_array is None:
                 # WTF, initialize sparse
                 self._is_sparse = True
-                self._sparse_array = SparseArray(data_type=self.dtype)
-                self._sparse_array.default_value = self.default_value
+                self._sparse_array = SparseArray(data_type=self.dtype, default_value = self.default_value)
                 print("Initializing sparse when querying, this signals a mis initialization")
                 return self.default_value
             else:
@@ -451,7 +450,7 @@ class Profile:
         self.default_value = value
         self._is_sparse = True
         if self._sparse_array is None:
-            self._sparse_array = SparseArray(data_type=self.dtype)
+            self._sparse_array = SparseArray(data_type=self.dtype, default_value=value)
         self._sparse_array.fill(value)
         self._dense_array = None
 

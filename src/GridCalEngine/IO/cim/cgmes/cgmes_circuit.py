@@ -125,7 +125,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                                                                property_name=property_name,
                                                                association_inverse_dict=association_inverse_dict)
                                 if ref_attribute is not None:
-                                    referenced_object.add_reference(element, ref_attribute)
+                                    referenced_object.add_reference(element, ref_attribute, logger=logger)
 
                             else:
 
@@ -175,7 +175,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                                                                    property_name=property_name,
                                                                    association_inverse_dict=association_inverse_dict)
                                     if ref_attribute is not None:
-                                        referenced_object.add_reference(element, ref_attribute)
+                                        referenced_object.add_reference(element, ref_attribute, logger=logger)
 
                                 else:
 
