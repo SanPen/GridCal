@@ -1444,7 +1444,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             St_hvdc=St_hvdc,
             Fdcp_vsc=self.nc.vsc_data.F_dcp,
             Fdcn_vsc=self.nc.vsc_data.F_dcn,
-            T_vsc=self.nc.vsc_data.T,
+            T_vsc=self.nc.vsc_data.T_ac,
             Pfp_vsc=Pfp_vsc,
             Pfn_vsc=Pfn_vsc,
             St_vsc=St_vsc)
@@ -1973,10 +1973,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         loading = Sf / (self.nc.passive_branch_data.rates + 1e-9)
 
         # VSC ----------------------------------------------------------------------------------------------------------
-        Pf_vsc = self.Pf_vsc * self.nc.Sbase
+        Pf_vsc = self.Pfp_vsc * self.nc.Sbase
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc) * self.nc.Sbase
-        If_vsc = self.Pf_vsc / self.Vm[self.nc.vsc_data.F]
-        It_vsc = St_vsc / self.Vm[self.nc.vsc_data.T]
+        If_vsc = self.Pfp_vsc / self.Vm[self.nc.vsc_data.F_dcp]
+        It_vsc = St_vsc / self.Vm[self.nc.vsc_data.T_ac]
         loading_vsc = np.abs(St_vsc) / (self.nc.vsc_data.rates + 1e-20)
         losses_vsc = Pf_vsc + St_vsc.real
 
@@ -1999,9 +1999,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             T_hvdc=self.nc.hvdc_data.T,
             Sf_hvdc=Sf_hvdc,
             St_hvdc=St_hvdc,
-            F_vsc=self.nc.vsc_data.F,
-            T_vsc=self.nc.vsc_data.T,
-            Pf_vsc=self.Pf_vsc,
+            Fdcp_vsc=self.nc.vsc_data.F_dcp,
+            Fdcn_vsc=self.nc.vsc_data.F_dcn,
+            T_vsc=self.nc.vsc_data.T_ac,
+            Pfp_vsc=self.Pfp_vsc,
+            Pfn_vsc=self.Pfn_vsc,
             St_vsc=St_vsc
         )
 
