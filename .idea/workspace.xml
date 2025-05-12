@@ -28,15 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved handling of sparse arrays">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_dummy.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_linux_detect.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_mac_detect.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect/_windows_detect.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/generic_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/generic_graphics.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Embedded darkdetect" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -2356,7 +2348,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="721" />
+    <option name="localTasksCounter" value="722" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2402,7 +2394,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="General refactors of the derivatives in the pf_generalized_formulation.py" />
     <MESSAGE value="Refactor of the get_solution method in pf_generalized_formulation.py" />
     <MESSAGE value="Refactored multi_island_pf_nc to remove useless initialization" />
     <MESSAGE value="Caught possible bug in the adjacency formation" />
@@ -2427,7 +2418,8 @@
     <MESSAGE value="Fixed the tower and the tower builder not properly showing the nominal voltage" />
     <MESSAGE value="Improvements in the CGMES handling of garbage data" />
     <MESSAGE value="Improved handling of sparse arrays" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved handling of sparse arrays" />
+    <MESSAGE value="Embedded darkdetect" />
+    <option name="LAST_COMMIT_MESSAGE" value="Embedded darkdetect" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
