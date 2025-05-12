@@ -155,9 +155,9 @@ class SparseArray:
         """
         Build sparse from array
         :param array: NumericVec
-        :param default_value: defult value of the array
+        :param default_value: default value of the array
         """
-        self.default_value = default_value
+        self.default_value = self._dtype(default_value) if default_value is not None else None
         self._size = len(array)
         self._map: Dict[int, Numeric] = dict()
 
@@ -176,7 +176,7 @@ class SparseArray:
         :param map_data:
         :return:
         """
-        self.default_value = default_value
+        self.default_value = self._dtype(default_value) if default_value is not None else None
         self._size = size
         self._map = map_data
         return self
@@ -186,7 +186,7 @@ class SparseArray:
         Fill the sparse array with the same value
         :param value: any value
         """
-        self.default_value = value
+        self.default_value = self._dtype(value) if value is not None else None
         self._map = dict()
 
     def toarray(self) -> NumericVec:
