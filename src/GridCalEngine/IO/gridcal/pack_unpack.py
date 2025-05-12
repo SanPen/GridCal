@@ -1191,8 +1191,10 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                                                   gc_prop=gc_prop,
                                                                   elm=elm,
                                                                   property_value=val)
+                                    print(f"Setting {gc_prop.name} to {val}")
 
                                 except ValueError:
+                                    print(f"Error setting {gc_prop.name} to {val}")
                                     logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
                                                      device=elm.name,
                                                      value=property_value)

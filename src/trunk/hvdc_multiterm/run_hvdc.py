@@ -71,8 +71,12 @@ def run_hvdc_multiterminal() -> None:
     # grid = gce.open_file("src/trunk/hvdc_multiterm/8bus_v1.gridcal")
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', '8bus_v1.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc1.gridcal')
-    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'simple_v1.gridcal')
+    # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'simple_v1.gridcal')
+    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'debug_controls.gridcal')
     grid = gce.FileOpen(fname).open()
+
+    print(grid.vsc_devices[0].control1)
+    print(grid.vsc_devices[0].control2)
 
 
     options = PowerFlowOptions(control_q=False)
