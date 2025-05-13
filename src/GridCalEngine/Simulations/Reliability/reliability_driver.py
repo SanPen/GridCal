@@ -64,11 +64,9 @@ class ReliabilityStudy(DriverTemplate):
             else:
                 gen_pmax[:, k] = gen.P_prof.toarray() * gen.active_prof.toarray()
 
-
         load_p = np.empty((self.grid.get_time_number(), n_load), dtype=float)
         for k, load in enumerate(self.grid.loads):
             load_p[:, k] = load.active_prof.toarray() * load.P_prof.toarray()
-
 
         nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
 
@@ -82,12 +80,12 @@ class ReliabilityStudy(DriverTemplate):
         C = sp.coo_matrix((data, (i, j)), shape=(n_elm, nc.bus_data.nbus), dtype=int)
         A = (C.T @ C).tocsc()
 
-        self.lole, worst_gen = reliability_simulation(gen_mttf=gen_mttf,
-                                                      gen_mttr=gen_mttr,
-                                                      gen_pmax=gen_pmax,
-                                                      load_p=load_p,
-                                                      n_sim=self.n_sim,
-                                                      horizon=self.grid.get_time_number())
+        self.lole = reliability_simulation(gen_mttf=gen_mttf,
+                                           gen_mttr=gen_mttr,
+                                           gen_pmax=gen_pmax,
+                                           load_p=load_p,
+                                           n_sim=self.n_sim,
+                                           horizon=self.grid.get_time_number())
 
         self.lole_evolution = np.cumsum(self.lole) / (np.arange(len(self.lole)) + 1)
         print(f"LOLE: {self.lole.mean()} MWh/year")

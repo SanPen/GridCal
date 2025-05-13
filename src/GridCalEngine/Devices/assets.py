@@ -401,6 +401,13 @@ class Assets:
         """
         self._time_profile = pd.to_datetime(arr, unit='s')
 
+    def get_time_deltas_in_hours(self):
+        """
+        Get the time increments in hours
+        :return: array of time deltas where the first delta is 1
+        """
+        return np.r_[1.0, np.diff(self.get_unix_time() / 3600)]
+
     def get_time_profile_as_list(self):
         """
         Get the profiles dictionary

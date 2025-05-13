@@ -27,6 +27,108 @@ ASAI = (8760 - SAIDI) / 8760
 
 """
 
+@nb.njit(cache=True)
+def fast_dispatch_multi_battery(load, p_max_gen, cost_gen,
+                                p_max_charge, p_max_discharge,
+                                energy_max, eff_charge, eff_discharge,
+                                soc0, dt):
+    """
+    Greedy dispatch algorithm for generators and multiple battery systems.
+
+    Parameters
+    ----------
+    load : ndarray of shape (T,)
+        Load time series to be satisfied at each timestep.
+    p_max_gen : ndarray of shape (G,)
+        Maximum power output of each generator [MW].
+    cost_gen : ndarray of shape (G,)
+        Generation cost per unit energy [$/MWh] for each generator.
+    p_max_charge : ndarray of shape (B,)
+        Maximum charge power of each battery [MW].
+    p_max_discharge : ndarray of shape (B,)
+        Maximum discharge power of each battery [MW].
+    energy_max : ndarray of shape (B,)
+        Maximum energy capacity of each battery [MWh].
+    eff_charge : ndarray of shape (B,)
+        Charging efficiency of each battery.
+    eff_discharge : ndarray of shape (B,)
+        Discharging efficiency of each battery.
+    soc0 : ndarray of shape (B,)
+        Initial state of charge of each battery [MWh].
+    dt : float
+        Time step duration in hours.
+
+    Returns
+    -------
+    dispatch_gen : ndarray of shape (G, T)
+        Generator dispatch [MW].
+    dispatch_batt : ndarray of shape (B, T)
+        Battery dispatch [MW] per battery. Positive = discharge, negative = charge.
+    soc : ndarray of shape (B, T)
+        State of charge of each battery [MWh].
+    total_cost : float
+        Total generation cost [$].
+    """
+    T = len(load)
+    G = len(p_max_gen)
+    B = len(p_max_charge)
+
+    gen_order = np.argsort(cost_gen)
+
+    dispatch_gen = np.zeros((G, T))
+    dispatch_batt = np.zeros((B, T))
+    soc = np.zeros((B, T + 1))
+    total_cost = 0.0
+
+    # Set initial SOC for each battery
+    for b in range(B):
+        soc[b, 0] = soc0[b]
+
+    for t in range(T):
+        remaining = load[t]
+
+        # Dispatch generators by cost
+        for i in range(G):
+            g = gen_order[i]
+            p = min(p_max_gen[g], remaining)
+            dispatch_gen[g, t] = p
+            total_cost += p * cost_gen[g] * dt
+            remaining -= p
+            if remaining <= 1e-6:
+                break
+
+        # If remaining load > 0, discharge batteries
+        if remaining > 1e-6:
+            for b in range(B):
+                avail_energy = soc[b, t] / dt
+                p_dis = min(p_max_discharge[b], remaining / eff_discharge[b], avail_energy)
+                dispatch = p_dis * eff_discharge[b]
+                dispatch_batt[b, t] = dispatch
+                soc[b, t + 1] = soc[b, t] - p_dis * dt
+                remaining -= dispatch
+                if remaining <= 1e-6:
+                    break
+            # if unmet load still remains, it is ignored
+
+        # If remaining < 0, charge batteries
+        elif remaining < -1e-6:
+            excess = -remaining
+            for b in range(B):
+                room = (energy_max[b] - soc[b, t]) / dt
+                p_ch = min(p_max_charge[b], excess * eff_charge[b], room)
+                dispatch = -p_ch / eff_charge[b]
+                dispatch_batt[b, t] = dispatch
+                soc[b, t + 1] = soc[b, t] + p_ch * dt
+                excess -= -dispatch
+                if excess <= 1e-6:
+                    break
+        else:
+            # no battery operation needed
+            for b in range(B):
+                soc[b, t + 1] = soc[b, t]
+
+    return dispatch_gen, dispatch_batt, soc[:, :-1], total_cost
+
 
 @nb.njit(cache=True)
 def compose_states(mttf: float, mttr: float, horizon: int, initially_working: bool = True):
@@ -83,7 +185,7 @@ def compose_states(mttf: float, mttr: float, horizon: int, initially_working: bo
     return active
 
 
-@nb.njit(cache=True, parallel=True)
+@nb.njit(cache=True)
 def generate_states_matrix(mttf: Vec, mttr: Vec, horizon: int, initially_working: bool = True):
     """
     Generate random states vector (on -> off -> on -> ...)
@@ -99,7 +201,7 @@ def generate_states_matrix(mttf: Vec, mttr: Vec, horizon: int, initially_working
 
     states = np.empty((horizon, n_elm), dtype=nb.bool)
 
-    for k in nb.prange(n_elm):
+    for k in range(n_elm):
         states[:, k] = compose_states(mttf[k], mttr[k], horizon, initially_working)
 
     return states
@@ -163,7 +265,7 @@ def compute_loss_of_load_because_of_lack_of_generation(gen_pmax: Mat, load: Mat,
 
 
 @nb.njit(cache=True, parallel=True)
-def reliability_simulation(gen_mttf: Vec, gen_mttr: Vec, gen_pmax: Mat, load_p: Mat, n_sim: int, horizon: int):
+def reliability_simulation(dt: Vec, gen_mttf: Vec, gen_mttr: Vec, gen_pmax: Mat, load_p: Mat, n_sim: int, horizon: int):
     """
 
     :param gen_mttf:
@@ -175,20 +277,16 @@ def reliability_simulation(gen_mttf: Vec, gen_mttr: Vec, gen_pmax: Mat, load_p: 
     :return:
     """
     lole = np.zeros(n_sim)
-    worst_gen = gen_pmax
-    worst_lol = 0
     for sim_idx in nb.prange(n_sim):
         gen_actives = generate_states_matrix(mttf=gen_mttf, mttr=gen_mttr, horizon=horizon, initially_working=False)
 
         simulated_gen_max = gen_pmax * gen_actives
 
-        lole[sim_idx] = compute_loss_of_load_because_of_lack_of_generation(gen_pmax=simulated_gen_max, load=load_p)
+        lole[sim_idx] = compute_loss_of_load_because_of_lack_of_generation(gen_pmax=simulated_gen_max,
+                                                                           load=load_p,
+                                                                           dt=dt)
 
-        if lole[sim_idx] > worst_lol:
-            worst_lol = lole[sim_idx]
-            worst_gen = simulated_gen_max
-
-    return lole, worst_gen
+    return lole
 
 
 def get_transition_probabilities(lbda: Vec, mu: Vec) -> Tuple[Vec, Vec]:

@@ -5,171 +5,99 @@
 
 import numpy as np
 
-from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
+from scipy.sparse import lil_matrix
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from GridCalEngine.Simulations.Reliability.adequacy_results import AdequacyResults
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 import NSGA_3
+from GridCalEngine.Simulations.Reliability.reliability import reliability_simulation
+from GridCalEngine.basic_structures import Vec, IntVec
 
 
-def get_failure_time(mttf):
-    """
-    Get an array of possible failure times
-    :param mttf: mean time to failure
-    """
-    n_samples = len(mttf)
-    return -1.0 * mttf * np.log(np.random.rand(n_samples))
+class AdequacyOptimizationOptions:
 
-
-def get_repair_time(mttr):
-    """
-    Get an array of possible repair times
-    :param mttr: mean time to recovery
-    """
-    n_samples = len(mttr)
-    return -1.0 * mttr * np.log(np.random.rand(n_samples))
-
-
-def get_reliability_events(horizon, mttf, mttr, tpe: DeviceType):
-    """
-    Get random fail-repair events until a given time horizon in hours
-
-    :param horizon: maximum horizon in hours
-    :param mttf: Mean time to failure (h)
-    :param mttr: Mean time to repair (h)
-    :param tpe: device type (DeviceType)
-    :return: list of events, each event tuple has: (time in hours, element index, activation state (True/False))
-    """
-    n_samples = len(mttf)
-    t = np.zeros(n_samples)
-    done = np.zeros(n_samples, dtype=bool)
-    events = list()
-
-    if mttf.all() == 0.0:
-        return events
-
-    not_done = np.where(done == False)[0]
-    not_done_s = set(not_done)
-    while len(not_done) > 0:  # if all event get to the horizon, finnish the sampling
-
-        # simulate failure
-        t[not_done] += get_failure_time(mttf[not_done])
-        idx = np.where(t >= horizon)[0]
-        done[idx] = True
-
-        # store failure events
-        events += [(t[i], tpe, i, False) for i in (not_done_s - set(idx))]
-
-        # simulate repair
-        t[not_done] += get_repair_time(mttr[not_done])
-        idx = np.where(t >= horizon)[0]
-        done[idx] = True
-
-        # store recovery events
-        events += [(t[i], tpe, i, True) for i in (not_done_s - set(idx))]
-
-        # update not done
-        not_done = np.where(done == False)[0]
-        not_done_s = set(not_done)
-
-    # sort in place
-    # events.sort(key=lambda tup: tup[0])
-    return events
-
-
-def get_reliability_scenario(nc: NumericalCircuit, horizon=10000):
-    """
-    Get reliability events
-    :param nc: numerical circuit instance
-    :param horizon: time horizon in hours
-    :return: dictionary of events, each event tuple has:
-    (time in hours, DataType, element index, activation state (True/False))
-    """
-    all_events = list()
-
-    # TODO: Add MTTF and MTTR to data devices
-
-    # Branches
-    all_events += get_reliability_events(horizon,
-                                         nc.passive_branch_data.mttf,
-                                         nc.passive_branch_data.mttr,
-                                         DeviceType.BranchDevice)
-
-    all_events += get_reliability_events(horizon,
-                                         nc.generator_data.mttf,
-                                         nc.generator_data.mttr,
-                                         DeviceType.GeneratorDevice)
-
-    all_events += get_reliability_events(horizon,
-                                         nc.battery_data.mttf,
-                                         nc.battery_data.mttr,
-                                         DeviceType.BatteryDevice)
-
-    all_events += get_reliability_events(horizon,
-                                         nc.load_data.mttf,
-                                         nc.load_data.mttr,
-                                         DeviceType.LoadDevice)
-
-    all_events += get_reliability_events(horizon,
-                                         nc.shunt_data.mttf,
-                                         nc.shunt_data.mttr,
-                                         DeviceType.ShuntDevice)
-
-    # sort all
-    all_events.sort(key=lambda tup: tup[0])
-
-    return all_events
-
-
-def run_events(nc: NumericalCircuit, events_list: list):
-    """
-
-    :param nc:
-    :param events_list:
-    """
-    for t, tpe, i, state in events_list:
-
-        # Set the state of the event
-        if tpe == DeviceType.BusDevice:
-            pass
-
-        elif tpe == DeviceType.BranchDevice:
-            nc.passive_branch_data.active[i] = state
-
-        elif tpe == DeviceType.GeneratorDevice:
-            nc.generator_data.active[i] = state
-
-        elif tpe == DeviceType.BatteryDevice:
-            nc.battery_data.active[i] = state
-
-        elif tpe == DeviceType.ShuntDevice:
-            nc.shunt_data.active[i] = state
-
-        elif tpe == DeviceType.LoadDevice:
-            nc.load_data.active[i] = state
-
-        else:
-            pass
-
-        # compile the grid information
-        calculation_islands = nc.split_into_islands()
+    def __init__(self, n_ga_evaluations=1000, n_monte_carlo_sim=10000, save_file: bool = True):
+        self.max_ga_evaluations = n_ga_evaluations
+        self.n_monte_carlo_sim = n_monte_carlo_sim
+        self.save_file = save_file
 
 
 class AdequacyOptimizationDriver(DriverTemplate):
 
-    def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions):
+    def __init__(self, grid: MultiCircuit, options: AdequacyOptimizationOptions):
         """
         ContinuationPowerFlowDriver constructor
         @param circuit: NumericalCircuit instance
         @param pf_options: power flow options instance
         """
-        DriverTemplate.__init__(self, grid=circuit)
+        DriverTemplate.__init__(self, grid=grid)
 
         # voltage stability options
-        self.pf_options = pf_options
+        self.options = options
 
-        self.results = list()
+        self.results = AdequacyResults(investment_groups_names=grid.get_investment_groups_names(),
+                                       max_eval=self.options.max_ga_evaluations)
+
+        self.dim = 0  # to be extended
+
+        if self.options.save_file:
+            self.output_f = open("adequacy_output.csv", "w")
+        else:
+            self.output_f = None
+
+        # --------------------------------------------------------------------------------------------------------------
+        # gather problem structures
+        # --------------------------------------------------------------------------------------------------------------
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
+        self.gen_mttf = nc.generator_data.mttf
+        self.gen_mttr = nc.generator_data.mttr
+        self.gen_capex = nc.generator_data.capex * nc.generator_data.snom  # CAPEX in $
+        self.dim = len(self.grid.investments_groups)
+
+        if self.output_f is not None:
+            # write header
+            self.output_f.write("n_inv,LOLE(MWh),CAPEX(M$),"
+                                + ",".join(self.grid.get_investment_groups_names()) + "\n")
+
+        self.dt = self.grid.get_time_deltas_in_hours()
+        gen_dict = {idtag: idx for idx, idtag in enumerate(nc.generator_data.idtag)}
+        batt_dict = {idtag: idx for idx, idtag in enumerate(nc.battery_data.idtag)}
+        inv_group_dict = self.grid.get_investmenst_by_groups_index_dict()
+
+        self.dim2gen = lil_matrix((nc.generator_data.nelm, self.dim))
+        self.dim2batt = lil_matrix((nc.battery_data.nelm, self.dim))
+        self.inv_gen_idx = list()
+        self.inv_batt_idx = list()
+
+        for inv_group_idx, invs in inv_group_dict.items():
+            for investment in invs:
+                gen_idx = gen_dict.get(investment.device_idtag, None)
+                if gen_idx is not None:
+                    self.dim2gen[gen_idx, inv_group_idx] = 1
+                    self.inv_gen_idx.append(gen_idx)
+
+                else:
+                    batt_idx = batt_dict.get(investment.device_idtag, None)
+                    if batt_idx is not None:
+                        self.dim2batt[batt_idx, inv_group_idx] = 1
+                        self.inv_batt_idx.append(batt_idx)
+
+        self.inv_gen_idx = np.array(self.inv_gen_idx)
+        self.inv_batt_idx = np.array(self.inv_batt_idx)
+
+        self.gen_pmax = np.empty((self.grid.get_time_number(), nc.ngen), dtype=float)
+        for k, gen in enumerate(self.grid.generators):
+            if gen.enabled_dispatch:
+                self.gen_pmax[:, k] = gen.Snom * gen.active_prof.toarray()
+            else:
+                self.gen_pmax[:, k] = gen.P_prof.toarray() * gen.active_prof.toarray()
+
+        self.load_p = np.empty((self.grid.get_time_number(), nc.nload), dtype=float)
+        for k, load in enumerate(self.grid.loads):
+            self.load_p[:, k] = load.active_prof.toarray() * load.P_prof.toarray()
 
         self.__cancel__ = False
 
@@ -181,6 +109,52 @@ class AdequacyOptimizationDriver(DriverTemplate):
         """
         self.report_text('Running voltage collapse lambda:' + "{0:.2f}".format(lmbda) + '...')
 
+    def objective_function(self, x: IntVec):
+        """
+
+        :param x: array of active investment groups
+        :return:
+        """
+        gen_mask = self.dim2gen @ x
+        batt_mask = self.dim2batt @ x
+
+        gen_pmax = self.gen_pmax.copy()
+        gen_pmax[:, self.inv_gen_idx] *= gen_mask[self.inv_gen_idx]
+
+        invested_gen_idx = np.where(gen_mask == 1)[0]
+        capex = np.sum(self.gen_capex[invested_gen_idx])
+
+        lole_array = reliability_simulation(
+            dt=self.dt,
+            gen_mttf=self.gen_mttf,
+            gen_mttr=self.gen_mttr,
+            gen_pmax=gen_pmax,
+            load_p=self.load_p,
+            n_sim=self.options.n_monte_carlo_sim,
+            horizon=self.grid.get_time_number()
+        )
+
+        # since the lole_array are the monte carlo array values, return the last one
+        lole = lole_array[-1]
+
+        self.results.add(
+            capex=capex,
+            opex=0,
+            lole=lole,
+            overload_score=0,
+            voltage_score=0,
+            financial=0,
+            objective_function_sum=lole,
+            combination=x
+        )
+        print(f"n_inv: {sum(x)}, lole: {lole}, capex: {capex}")
+
+        if self.output_f is not None:
+            # write header
+            self.output_f.write(f"{sum(x)},{lole},{capex}" + ",".join([f"{xi}" for xi in x]) + "\n")
+
+        return lole, capex
+
     def run(self):
         """
         run the voltage collapse simulation
@@ -188,13 +162,28 @@ class AdequacyOptimizationDriver(DriverTemplate):
         """
         self.tic()
 
-        # compile the numerical circuit
-        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
+        # --------------------------------------------------------------------------------------------------------------
+        # Run the NSGA 3
+        # --------------------------------------------------------------------------------------------------------------
+        pop_size = 20
 
-        evt = get_reliability_scenario(numerical_circuit,
-                                       horizon=1)
+        X, obj_values = NSGA_3(
+            obj_func=self.objective_function,
+            n_partitions=pop_size,
+            n_var=self.dim,
+            n_obj=2,
+            max_evals=self.options.max_ga_evaluations,  # termination
+            pop_size=pop_size,
+            crossover_prob=0.8,
+            mutation_probability=0.1,
+            eta=30,
+        )
 
-        run_events(nc=numerical_circuit, events_list=evt)
+        self.X = X
+        self.obj_values = obj_values
+
+        if self.output_f is not None:
+            self.output_f.close()
 
         self.toc()
 
@@ -202,3 +191,14 @@ class AdequacyOptimizationDriver(DriverTemplate):
         self.__cancel__ = True
 
 
+if __name__ == '__main__':
+    import GridCalEngine.api as gce
+
+    fname = "/home/santi/Documentos/Git/eRoots/tonga_planning/model_conversion_and_validation/Tongatapu/models/Tongatapu_v4_2024_ts.gridcal"
+
+    grid_ = gce.open_file(fname)
+    options_ = AdequacyOptimizationOptions()
+    problem = AdequacyOptimizationDriver(grid=grid_, options=options_)
+    problem.run()
+
+    print()
