@@ -663,7 +663,79 @@ def test_issue_372_5():
     print()
 
 
+
+def test_ntc_pmode3() -> None:
+    """
+
+    :return:
+    """
+    np.set_printoptions(precision=4)
+    fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
+
+    grid = gce.open_file(fname)
+
+    grid.hvdc_lines[0].control_mode = gce.HvdcControlType.type_0_free
+    grid.hvdc_lines[0].angle_droop = 0.03  # this will force a greater pmode3 flow
+
+    a1 = [grid.areas[0]]
+    a2 = [grid.areas[1]]
+
+    info = grid.get_inter_aggregation_info(objects_from=a1,
+                                           objects_to=a2)
+
+    opf_options = gce.OptimalPowerFlowOptions()
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=True,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=True,
+        consider_contingencies=True,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    bus_area_indices = grid.get_bus_area_indices()
+
+    # List of (branch index, branch object, flow sense w.r.t the area exchange)
+    inter_info = grid.get_inter_areas_branches(a1=a1, a2=a2)
+    inter_area_branch_idx = [x[0] for x in inter_info]
+    inter_area_branch_sense = [x[2] for x in inter_info]
+
+    inter_info_hvdc = grid.get_inter_areas_hvdc_branches(a1=a1, a2=a2)
+    inter_area_hvdc_idx = [x[0] for x in inter_info_hvdc]
+    inter_area_hvdc_sense = [x[2] for x in inter_info_hvdc]
+
+
+    # Monitored & selected by the exchange sensitivity criteria branches must not be overloaded beyond 100%
+    monitor_idx = np.where(res.monitor_logic == 1)[0]
+    assert np.all(res.loading[monitor_idx] <= 1)
+
+    # The HVDC power must be: P0 + angle_droop · (theta_f − theta_t) (all in proper units)
+    dev = grid.hvdc_lines[0]
+    k = dev.angle_droop
+    theta_f = np.angle(res.voltage[3], deg=True)
+    theta_t = np.angle(res.voltage[4], deg=True)
+    hvdc_power = dev.Pset + k * (theta_f - theta_t)
+    # assert np.isclose(hvdc_power, res.hvdc_Pf[0], atol=1e-6)
+
+    assert res.converged
+
+
 if __name__ == '__main__':
     # test_ntc_ultra_simple()
-    test_issue_372_5()
+    test_ntc_pmode3()
     # test_issue_372_2()

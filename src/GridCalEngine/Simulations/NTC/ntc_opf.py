@@ -925,6 +925,361 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
     return f_obj
 
 
+def pmode3_formulation(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
+    """
+    Formulation
+    ------------------------------------------------------------
+
+    1. Region selector:
+        z_neg + z_mid + z_pos == 1
+
+    2. Linear flow equation:
+        flow_lin == P0 + k * (theta_f - theta_t)
+
+    3. Lower region:  flow = -rate if z_neg == 1
+        flow <= -rate + M * (1 - z_neg)
+        flow >= -rate - M * (1 - z_neg)
+        flow_lin <= -rate + M * (1 - z_neg)
+
+    4. Mid region:    flow = flow_lin if z_mid == 1
+        flow <= flow_lin + M * (1 - z_mid)
+        flow >= flow_lin - M * (1 - z_mid)
+        flow_lin <= rate - epsilon + M * (1 - z_mid)
+        flow_lin >= -rate + epsilon - M * (1 - z_mid)
+
+    5. Upper region:  flow = rate if z_pos == 1
+        flow <= rate + M * (1 - z_pos)
+        flow >= rate - M * (1 - z_pos)
+        flow_lin >= rate - M * (1 - z_pos)
+    """
+
+    flow = prob.add_var(
+        lb=-prob.INFINITY,
+        ub=prob.INFINITY,
+        name=join("hvdc_flow_", [t_idx, m], "_")
+    )
+    z_neg = prob.add_int(lb=0, ub=1, name=join("hvdc_zn_", [t_idx, m], "_"))
+    z_mid = prob.add_int(lb=0, ub=1, name=join("hvdc_zm_", [t_idx, m], "_"))
+    z_pos = prob.add_int(lb=0, ub=1, name=join("hvdc_zp_", [t_idx, m], "_"))
+
+    M = 2 * rate  # M >= 2 * rate
+    epsilon = 1e-4
+
+    # 1. Region selector -------------------------------------------------------------------------------
+    prob.add_cst(
+        cst=z_neg + z_mid + z_pos == 1.0,
+        name=join("region_sel_", [t_idx, m], "_")
+    )
+
+    # 2. Linear flow equation --------------------------------------------------------------------------
+    flow_lin = P0 + droop * (theta_f - theta_t)
+
+    # 3. Lower region:  flow = -rate if z_neg == 1 -----------------------------------------------------
+    prob.add_cst(
+        cst=flow <= -rate + M * (1 - z_neg),
+        name=join("hvdc_lower1_", [t_idx, m], "_")
+    )
+    prob.add_cst(
+        cst=flow >= -rate - M * (1 - z_neg),
+        name=join("hvdc_lower2_", [t_idx, m], "_")
+    )
+    prob.add_cst(
+        cst=flow_lin <= -rate + M * (1 - z_neg),
+        name=join("hvdc_lower3_", [t_idx, m], "_")
+    )
+
+    # 4. Mid-region: flow = flow_lin if z_mid == 1 -----------------------------------------------------
+    prob.add_cst(
+        cst=flow <= flow_lin + M * (1 - z_mid),
+        name=join("hvdc_mid1_", [t_idx, m], "_")
+    )
+    prob.add_cst(
+        cst=flow >= flow_lin - M * (1 - z_mid),
+        name=join("hvdc_mid2_", [t_idx, m], "_")
+    )
+    prob.add_cst(
+        cst=flow_lin <= rate - epsilon + M * (1 - z_mid),
+        name=join("hvdc_mid3_", [t_idx, m], "_")
+    )
+    prob.add_cst(
+        cst=flow_lin >= -rate + epsilon - M * (1 - z_mid),
+        name=join("hvdc_mid4_", [t_idx, m], "_")
+    )
+
+    # 5. Upper region: flow = rate if z_pos == 1 -------------------------------------------------------
+    prob.add_cst(
+        cst=flow <= rate + M * (1 - z_pos),
+        name=join("hvdc_upper1_", [t_idx, m], "_")
+    )
+    prob.add_cst(
+        cst=flow >= rate - M * (1 - z_pos),
+        name=join("hvdc_upper2_", [t_idx, m], "_")
+    )
+    prob.add_cst(
+        cst=flow_lin >= rate - M * (1 - z_pos),
+        name=join("hvdc_upper3_", [t_idx, m], "_")
+    )
+
+    return flow
+
+
+def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
+    """
+    Formulation
+    ------------------------------------------------------------
+
+    Variables:
+      flow continuous
+      flow_lin continuous
+      z1 binary
+      z2 binary
+
+    Constraints:
+      flow_lin_def: flow_lin = P0 + k * (th_f - th_t)
+
+      upper_bound_flow_le: flow <= rate + M * z1
+      upper_bound_flowlin_le: flow_lin - rate <= M * (1 - z1)
+      upper_bound_flow_ge: flow >= rate - M * (1 - z1)
+
+      lower_bound_flow_ge: flow >= -rate - M * z2
+      lower_bound_flowlin_ge: -rate - flow_lin <= M * (1 - z2)
+      lower_bound_flow_le: flow <= -rate + M * (1 - z2)
+
+      intermediate_flow_le: flow <= flow_lin + M * (z1 + z2)
+      intermediate_flow_ge: flow >= flow_lin - M * (z1 + z2)
+      intermediate_always_true: 1 - z1 - z2 <= 1
+
+      single_case_active: z1 + z2 <= 1
+    """
+
+    flow = prob.add_var(
+        lb=-prob.INFINITY,
+        ub=prob.INFINITY,
+        name=join("hvdc_flow_", [t_idx, m], "_")
+    )
+
+    flow_lin = prob.add_var(
+        lb=-prob.INFINITY,
+        ub=prob.INFINITY,
+        name=join("hvdc_flow_lin_", [t_idx, m], "_")
+    )
+    z1 = prob.add_int(lb=0, ub=1, name=join("hvdc_zn_", [t_idx, m], "_"))
+    z2 = prob.add_int(lb=0, ub=1, name=join("hvdc_zp_", [t_idx, m], "_"))
+
+    M = 2000 * rate  # M >= 2 * rate
+
+    prob.add_cst(flow_lin == P0 + droop * (theta_f - theta_t))
+
+    # upper violation
+    prob.add_cst(flow <= rate + M * z1)
+    prob.add_cst(flow_lin - rate <= M * (1 - z1))
+    prob.add_cst(flow >= rate - M * (1 - z1))
+
+    # lower violation
+    prob.add_cst(flow >= -rate - M * z2)
+    prob.add_cst(-rate - flow_lin <= M * (1 - z2))
+    prob.add_cst(flow <= -rate + M * (1 - z2))
+
+    # intermediate
+    prob.add_cst(flow <= flow_lin + M * (z1 + z2))
+    prob.add_cst(flow >= flow_lin - M * (z1 + z2))
+    prob.add_cst(1 - z1 - z2 <= 1)
+
+    # only one option at a time
+    prob.add_cst(z1 + z2 <= 1)
+
+    return flow
+
+
+def formulate_lp_abs_value(prob: LpModel, lp_var: LpVar, ub: float, M: float, name: str):
+    """
+    Generic function to compute lp abs variable
+    :param prob: lp solver instance
+    :param lp_var: variable to make abs
+    :param ub: variable upper bound
+    :param M: float value represents infinity
+    :param name: variable name
+    :return: abs variable, boolean to define sense
+    """
+
+    # define abs variable
+    lp_var_abs = prob.add_var(lb=0, ub=ub, name=name)
+
+    z = formulate_lp_piece_wise(
+        solver=prob,
+        lp_var=lp_var_abs,
+        higher_exp=lp_var,
+        lower_exp=-lp_var,
+        condition=lp_var,
+        M=M,
+        name='sense_' + name)
+
+    return lp_var_abs, z
+
+
+def formulate_lp_piece_wise(
+        solver: LpModel,
+        lp_var: Union[float, LpVar],
+        higher_exp: Union[float, LpExp, LpVar],
+        lower_exp: Union[float, LpExp, LpVar],
+        condition: Union[float, LpExp, LpVar],
+        name: str,
+        M: float):
+    """
+    Generic function to implement piece wise linear function
+    :param solver: lp solver instance
+    :param lp_var: output variable
+    :param higher_exp: expresion when condition >= 0
+    :param lower_exp: expresion when condition <= 0
+    :param condition: bounding condition
+    :param name: output variable name
+    :param M: Value representing the infinite (i.e. 1e20)
+    :return: lp_var, boolean indicating condition behavior
+    """
+
+    # Boolean variable to set step. 4 equations:
+    '''
+    Z boolean variable to define condition behavior
+       z = 1: cond <= 0
+       z = 0: cond >= 0
+    '''
+    z = solver.add_int(name='z_' + name, lb=0, ub=1)
+
+    '''
+    Behavior implementation:
+        Exp1 - M * (1-z) <= y <= Exp1 + M (1- z)
+        Exp2 - M * z <= y <= Exp2 + M * z
+    '''
+    solver.add_cst(higher_exp - M * z <= lp_var)
+    solver.add_cst(lp_var <= higher_exp + M * z)
+
+    solver.add_cst(lower_exp - M * (1 - z) <= lp_var)
+    solver.add_cst(lp_var <= lower_exp + M * (1 - z))
+
+    '''
+    Define w = cond * z:
+        To avoid boolean variable * variable
+    '''
+    # Formulate conditions
+    w = solver.add_var(lb=-M, ub=M, name='w_' + name)
+
+    '''
+    Define z=1 if cond <=0 and z=0 if cond >= 0
+       cond * (1-z) >= 0
+       cond * z <= 0
+    '''
+    solver.add_cst(condition - w >= 0)
+    solver.add_cst(w <= 0)
+
+    '''
+    w implementation (w = cond * z):
+       lb * z <= w <= ub * z
+       cond - (1-z) * M <= w <= cond + (1-z) * M
+    '''
+
+    solver.add_cst(0 - M * z <= w)
+    solver.add_cst(0 + M * z >= w)
+
+    solver.add_cst(condition - (1 - z) * M <= w)
+    solver.add_cst(condition + (1 - z) * M >= w)
+
+    return z
+
+
+def formulate_hvdc_Pmode3_single_flow(
+        solver: LpModel,
+        active,
+        P0,
+        rate,
+        Sbase,
+        angle_droop,
+        angle_max_f,
+        angle_max_t,
+        suffix,
+        angle_f,
+        angle_t,
+        inf):
+    """
+        Formulate the HVDC flow
+        :param solver: Solver instance to which add the equations
+        :param rate: HVDC rate
+        :param P0: Power offset for HVDC
+        :param angle_f: bus voltage angle node from (LP Variable)
+        :param angle_t: bus voltage angle node to (LP Variable)
+        :param angle_max_f: maximum bus voltage angle node from (LP Variable)
+        :param angle_max_t: maximum bus voltage angle node to (LP Variable)
+        :param active: Boolean. HVDC active status (True / False)
+        :param angle_droop:  Flow multiplier constant (MW/decimal degree).
+        :param Sbase: Base power (i.e. 100 MVA)
+        :param suffix: suffix to add to the constraints names.
+        :param inf: Value representing the infinite (i.e. 1e20)
+        :return:
+            - flow_f: Array of formulated HVDC flows (mix of values and variables)
+        """
+
+    if active:
+        rate = rate / Sbase
+
+        # formulate the hvdc flow as an AC line equivalent
+        # to pass from MW/deg to p.u./rad -> * 180 / pi / (sbase=100)
+        k = angle_droop * 57.295779513 / Sbase
+
+        # Variables declaration
+        if P0 > 0:
+            lim_a = P0 + k * (angle_max_f + angle_max_t)
+        else:
+            lim_a = -P0 + k * (angle_max_f + angle_max_t)
+
+        a = solver.add_var(lb=-lim_a, ub=lim_a, name='a_' + suffix)
+
+        b = solver.add_var(lb=-rate, ub=rate, name='b_' + suffix)
+
+        a_abs, za = formulate_lp_abs_value(
+            prob=solver,
+            lp_var=a,
+            ub=lim_a,
+            M=inf * 10,
+            name='a_abs_' + suffix)
+
+        b_abs, zb = formulate_lp_abs_value(
+            prob=solver,
+            lp_var=b,
+            ub=rate,
+            M=inf,  # this limit could be enough with inf value in order to improve solution convergence
+            name='b_abs_' + suffix)
+
+        # Force same power sign
+        solver.add_cst(za - zb == 0)
+
+        # Constraints formulation, 'a' is Pmode3 behavior
+        solver.add_cst(a == P0 + k * (angle_f - angle_t))
+
+        condition_ub = lim_a - rate
+        condition_lb = -rate
+
+        condition = solver.add_var(
+            lb=condition_lb,
+            ub=condition_ub,
+            name='cond_' + suffix)
+
+        solver.add_cst(condition == a_abs - rate)
+
+        # Constraints formulation, b is the solution
+        formulate_lp_piece_wise(
+            solver=solver,
+            lp_var=b_abs,
+            higher_exp=rate,
+            lower_exp=a_abs,
+            condition=condition,
+            M=inf * 10,
+            name='theoretical_unconstrainded_flow_' + suffix)
+
+    else:
+        b = 0
+
+    return b
+
+
 def add_linear_hvdc_formulation(t_idx: int,
                                 Sbase: float,
                                 hvdc_data_t: HvdcData,
@@ -963,108 +1318,37 @@ def add_linear_hvdc_formulation(t_idx: int,
                 droop = hvdc_data_t.get_angle_droop_in_pu_rad_at(m, Sbase)
 
                 if saturate:
+                    hvdc_vars.flows[t_idx, m] = pmode3_formulation(prob=prob,
+                                                                   t_idx=t_idx,
+                                                                   m=m,
+                                                                   rate=hvdc_data_t.rates[m],
+                                                                   P0=P0,
+                                                                   droop=droop,
+                                                                   theta_f=vars_bus.theta[t_idx, fr],
+                                                                   theta_t=vars_bus.theta[t_idx, to])
 
-                    """
-                    Formulation
-                    ------------------------------------------------------------
-                    
-                    1. Region selector:         
-                        z_neg + z_mid + z_pos == 1  
-                    
-                    2. Linear flow equation:    
-                        flow_lin == P0 + k * (theta_f - theta_t)
-                    
-                    3. Lower region:  flow = -rate if z_neg == 1
-                        flow <= -rate + M * (1 - z_neg)                    
-                        flow >= -rate - M * (1 - z_neg)
-                        flow_lin <= -rate + M * (1 - z_neg)
-                        
-                    4. Mid region:    flow = flow_lin if z_mid == 1
-                        flow <= flow_lin + M * (1 - z_mid)
-                        flow >= flow_lin - M * (1 - z_mid)
-                        flow_lin <= rate - epsilon + M * (1 - z_mid)
-                        flow_lin >= -rate + epsilon - M * (1 - z_mid)
-                        
-                    5. Upper region:  flow = rate if z_pos == 1
-                        flow <= rate + M * (1 - z_pos)
-                        flow >= rate - M * (1 - z_pos)
-                        flow_lin >= rate - M * (1 - z_pos)
-                    """
+                    # hvdc_vars.flows[t_idx, m] = pmode3_formulation2(prob=prob,
+                    #                                                 t_idx=t_idx,
+                    #                                                 m=m,
+                    #                                                 rate=hvdc_data_t.rates[m],
+                    #                                                 P0=P0,
+                    #                                                 droop=droop,
+                    #                                                 theta_f=vars_bus.theta[t_idx, fr],
+                    #                                                 theta_t=vars_bus.theta[t_idx, to])
 
-                    hvdc_vars.flows[t_idx, m] = prob.add_var(
-                        lb=-prob.INFINITY,
-                        ub=prob.INFINITY,
-                        name=join("hvdc_flow_", [t_idx, m], "_")
-                    )
-                    flow_lin = prob.add_var(
-                        lb=-prob.INFINITY,
-                        ub=prob.INFINITY,
-                        name=join("hvdc_mid_flow_", [t_idx, m], "_")
-                    )
-                    z_neg = prob.add_int(lb=0, ub=1, name=join("hvdc_zn_", [t_idx, m], "_"))
-                    z_mid = prob.add_int(lb=0, ub=1, name=join("hvdc_zm_", [t_idx, m], "_"))
-                    z_pos = prob.add_int(lb=0, ub=1, name=join("hvdc_zp_", [t_idx, m], "_"))
-                    rate = hvdc_vars.rates[t_idx, m]
-                    M = 2 * rate + 1 # M >= 2 * rate
-                    epsilon = 1e-4
-
-                    # 1. Region selector -------------------------------------------------------------------------------
-                    prob.add_cst(
-                        cst=z_neg + z_mid + z_pos == 1.0,
-                        name=join("region_sel_", [t_idx, m], "_")
-                    )
-
-                    # 2. Linear flow equation --------------------------------------------------------------------------
-                    prob.add_cst(
-                        cst=flow_lin == P0 + droop * (vars_bus.theta[t_idx, fr] - vars_bus.theta[t_idx, to]),
-                        name=join("hvdc_flow_lin_", [t_idx, m], "_")
-                    )
-
-                    # 3. Lower region:  flow = -rate if z_neg == 1 -----------------------------------------------------
-                    prob.add_cst(
-                        cst=hvdc_vars.flows[t_idx, m] <= -rate + M * (1 - z_neg),
-                        name=join("hvdc_lower1_", [t_idx, m], "_")
-                    )
-                    prob.add_cst(
-                        cst=hvdc_vars.flows[t_idx, m] >= -rate - M * (1 - z_neg),
-                        name=join("hvdc_lower2_", [t_idx, m], "_")
-                    )
-                    prob.add_cst(
-                        cst=flow_lin <= -rate + M * (1 - z_neg),
-                        name=join("hvdc_lower3_", [t_idx, m], "_")
-                    )
-
-                    # 4. Mid-region: flow = flow_lin if z_mid == 1 -----------------------------------------------------
-                    prob.add_cst(
-                        cst=hvdc_vars.flows[t_idx, m] <= flow_lin + M * (1 - z_mid),
-                        name=join("hvdc_mid1_", [t_idx, m], "_")
-                    )
-                    prob.add_cst(
-                        cst=hvdc_vars.flows[t_idx, m] >= flow_lin - M * (1 - z_mid),
-                        name=join("hvdc_mid2_", [t_idx, m], "_")
-                    )
-                    prob.add_cst(
-                        cst=flow_lin <= rate - epsilon + M * (1 - z_mid),
-                        name=join("hvdc_mid3_", [t_idx, m], "_")
-                    )
-                    prob.add_cst(
-                        cst=flow_lin >= -rate + epsilon - M * (1 - z_mid),
-                        name=join("hvdc_mid4_", [t_idx, m], "_")
-                    )
-
-                    # 5. Upper region: flow = rate if z_pos == 1 -------------------------------------------------------
-                    prob.add_cst(
-                        cst=hvdc_vars.flows[t_idx, m] <= rate + M * (1 - z_pos),
-                        name=join("hvdc_upper1_", [t_idx, m], "_")
-                    )
-                    prob.add_cst(
-                        cst=hvdc_vars.flows[t_idx, m] >= rate - M * (1 - z_pos),
-                        name=join("hvdc_upper2_", [t_idx, m], "_")
-                    )
-                    prob.add_cst(
-                        cst=flow_lin >= rate - M * (1 - z_pos),
-                        name=join("hvdc_upper3_", [t_idx, m], "_")
-                    )
+                    # hvdc_vars.flows[t_idx, m] = formulate_hvdc_Pmode3_single_flow(
+                    #     solver=prob,
+                    #     active=hvdc_data_t.active[m],
+                    #     P0=P0,
+                    #     rate=hvdc_data_t.rates[m],
+                    #     Sbase=Sbase,
+                    #     angle_droop=hvdc_data_t.angle_droop[m],
+                    #     angle_max_f=-6.28,
+                    #     angle_max_t=6.28,
+                    #     angle_f=vars_bus.theta[t_idx, fr],
+                    #     angle_t=vars_bus.theta[t_idx, to],
+                    #     suffix=join("", [t_idx, m], "_"),
+                    #     inf=prob.INFINITY)
 
                 else:
 
