@@ -1999,9 +1999,9 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
-    # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
-    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v11.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
     # ieee 39 is infeasible
 
@@ -2031,7 +2031,7 @@ def case_loop() -> None:
 
     nc = compile_numerical_circuit_at(grid, t_idx=None)
     acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
-                                         opf_options=opf_slack_options, pf_init=False, load_shedding=True)
+                                         opf_options=opf_slack_options, pf_init=False, load_shedding=False)
 
     print()
     print(f"--- Base case ---")
@@ -2124,7 +2124,7 @@ def case_loop() -> None:
                             opf_options=opf_slack_options,
                             pf_init=False,
                             mp_results=acopf_results,
-                            load_shedding=True,
+                            load_shedding=False,
                         )
                         print(f"Error: {slack_sol_cont.error}")
 
