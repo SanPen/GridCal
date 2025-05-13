@@ -2122,10 +2122,11 @@ def case_loop() -> None:
                             nc=island,
                             pf_options=pf_options,
                             opf_options=opf_slack_options,
-                            pf_init=True,
+                            pf_init=False,
                             mp_results=acopf_results,
                             load_shedding=False,
                         )
+                        print(f"Error: {slack_sol_cont.error}")
 
                         # Collect slacks
                         v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
@@ -2193,7 +2194,7 @@ def case_loop() -> None:
         acopf_results = run_nonlinear_MP_opf(nc=nc,
                                              pf_options=pf_options,
                                              opf_options=opf_slack_options,
-                                             pf_init=True,
+                                             pf_init=False,
                                              W_k_vec=W_k_vec_used,
                                              Z_k_vec=Z_k_vec_used,
                                              u_j_vec=u_j_vec_used,
