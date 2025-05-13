@@ -34,7 +34,7 @@ Finally, we add the nodal injection to the nodal balance summation
 
 .. math::
 
-    P_i = P_i + Pbase_i + \Delta P_i
+    P_{{balance}_i} = Pbase_i + \Delta P_i
 
 
 .. note::
@@ -52,7 +52,7 @@ Finally, we add the nodal injection to the nodal balance summation
 
 -:math:`\Delta P_i`: Power increment at the node i.
 
--:math:`P_i`: Power balance at the node i. In the end this will be a summation of terms.
+-:math:`P_{{balance}_i}`: Power balance at the node i. In the end this will be a summation of terms.
 
 -:math:`share_i`: scale for the increment at the node i. This is akin to the GLSK's.
 
@@ -87,11 +87,11 @@ Finally, we add the flows to the nodal balance summation:
 
 .. math::
 
-    P_f = P_f - flow_k
+    P_{{balance}_f} -= flow_k
 
 .. math::
 
-    P_t = P_t + flow_k
+    P_{{balance}_t} += flow_k
 
 
 -:math:`f`: index of the node "from"
@@ -116,22 +116,8 @@ Finally, we add the flows to the nodal balance summation:
 HVDC converters
 -----------------
 
-For both control modes, we need to limit the flow to the converter rating:
 
-.. math::
-
-    - rate_k \leq flow_k \leq rate_k
-
-Now, we add the flows to the nodal balance summation, just like we would with the branches:
-
-.. math::
-
-    P_f = P_f - flow_k
-
-.. math::
-
-    P_t = P_t + flow_k
-
+These are controlled branches for which the flow is determined by a control equation.
 The :math:`flow_k` value will differ depending on the control mode chosen:
 
 Power control mode
@@ -140,7 +126,11 @@ Power control mode
 This is the most common control mode of an HVDC
 converter, where the active power send is controlled and fixed.
 For out optimization, the variable :math:`flow_k` is an optimization value
-that moves freely between tha rating values.
+that moves freely between the +/- rating values.
+
+.. math::
+
+    - rate_k \leq flow_k \leq rate_k
 
 
 Angle droop mode (AC emulation)
@@ -167,11 +157,11 @@ formulation:
 
 .. math::
 
-    \text{flow} =
+    flow_k =
     \begin{cases}
-        -\text{rate} & \text{if } \text{flow\_lin} \le -\text{rate} \\
-        P_0 + k(\theta_f - \theta_t) & \text{if } -\text{rate} < \text{flow\_lin} < \text{rate} \\
-        \text{rate} & \text{if } \text{flow\_lin} \ge \text{rate}
+        -rate_k & if \quad  flow\_lin \le -rate_k \\
+        P_0 + k(\theta_f - \theta_t) & if \quad -rate_k < flow\_lin < rate_k \\
+        rate_k & if \quad flow\_lin \ge rate_k
     \end{cases}
 
 To implement this piecewise function we need to perform a serious
@@ -181,61 +171,72 @@ Selector constraint:
 
 .. math::
 
-    z_{\text{neg}} + z_{\text{mid}} + z_{\text{pos}} = 1
+    z_{neg} + z_{mid} + z_{pos} = 1
 
 Linear flow expression:
 
 .. math::
 
-    \text{flow\_lin} = P_0 + k(\theta_f - \theta_t)
+    flow\_lin = P_0 + k(\theta_f - \theta_t)
 
 Lower flow definitionNegative flow saturation:
 
 .. math::
 
-    \text{flow} \le -\text{rate} + M(1 - z_{\text{neg}}) \\
-    \text{flow} \ge -\text{rate} - M(1 - z_{\text{neg}}) \\
-    \text{flow\_lin} \le -\text{rate} + M(1 - z_{\text{neg}})
+    flow_k \le -rate_k + M(1 - z_{neg}) \\
+    flow_k \ge -rate_k - M(1 - z_{neg}) \\
+    flow\_lin \le -rate_k + M(1 - z_{neg})
 
 Mid-range: the droop operation zone:
 
 .. math::
 
-    \text{flow} \le \text{flow\_lin} + M(1 - z_{\text{mid}}) \\
-    \text{flow} \ge \text{flow\_lin} - M(1 - z_{\text{mid}}) \\
-    \text{flow\_lin} \le \text{rate} - \varepsilon + M(1 - z_{\text{mid}}) \\
-    \text{flow\_lin} \ge -\text{rate} + \varepsilon - M(1 - z_{\text{mid}})
+    flow_k \le flow\_lin + M(1 - z_{mid}) \\
+    flow_k \ge flow\_lin - M(1 - z_{mid}) \\
+    flow\_lin \le rate_k - \varepsilon + M(1 - z_{mid}) \\
+    flow\_lin \ge -rate_k + \varepsilon - M(1 - z_{mid})
 
 Upper flow definitionNegative flow saturation:
 
 .. math::
 
-    \text{flow} \le \text{rate} + M(1 - z_{\text{pos}}) \\
-    \text{flow} \ge \text{rate} - M(1 - z_{\text{pos}}) \\
-    \text{flow\_lin} \ge \text{rate} - M(1 - z_{\text{pos}})
+    flow_k \le rate_k + M(1 - z_{pos}) \\
+    flow_k \ge rate_k - M(1 - z_{pos}) \\
+    flow\_lin \ge rate_k - M(1 - z_{pos})
 
 
 - :math:`K_k`: Arbitrary control parameter used.
 - :math:`P0_k`: Base power (i.e. the given market exchange for the line).
-- :math:`\text{flow}`: real variable to be computed
-- :math:`\text{flow\_lin}`: Auxiliary variable.
-- :math:`\text{rate}`: maximum allowable flow in either direction
-- :math:`M`: large constant for Big-M logic (e.g., :math:`M \ge 2 \cdot \text{rate}`)
+- :math:`flow_k`: real variable to be computed
+- :math:`flow\_lin`: Auxiliary variable.
+- :math:`rate_k`: maximum allowable flow in either direction
+- :math:`M`: large constant for Big-M logic (e.g., :math:`M \ge 2 \cdot rate`)
 - :math:`\varepsilon`: small tolerance for strict inequalities
-- :math:`z_{\text{neg}}, z_{\text{mid}}, z_{\text{pos}} \in \{0, 1\}`
+- :math:`z_{neg}, z_{mid}, z_{pos} \in \{0, 1\}`
+
+Finally, we add the flows to the nodal balance summation, just like we would with the branches:
+
+.. math::
+
+    P_{{balance}_f} -= flow_k
+
+.. math::
+
+    P_{{balance}_t} += flow_k
 
 Nodal balance
 ----------------
 
-Finally, we create constraints where every nodal power summation is equal to zero,
-to fulfill the Bucherot theorem: All power summation at a node is zero.
+To respect the nodal flows, we create constraints where every nodal power
+summation is equal to zero to fulfill the Bucherot theorem:
+*All power summation at a node is zero*.
 
 
 .. math::
 
-    \sum^Nodes_i {P_i =0 }
+    \sum^{Nodes}_i {P_{{balance}_i} =0 }
 
-The expressions contained in :math:`P_i` will be dependent on the angles
+The expressions contained in :math:`P_{{balance}_i}` will be dependent on the angles
 :math:`\theta` because of the branches and HVDC formulations.
 Therefore the angles will be solved by the optimization too.
 However, we must take care to set the slack angles to exactly zero:

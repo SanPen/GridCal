@@ -57,6 +57,7 @@ Optimal power flow
     opf/hydro
     opf/acopf
     opf/nodal_cap_ex
+    opf/net_transfer_capacity
 
 
 Short Circuit
