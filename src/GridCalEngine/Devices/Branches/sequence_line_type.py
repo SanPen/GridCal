@@ -154,3 +154,31 @@ class SequenceLineType(EditableDevice):
                                                        Sbase=Sbase, Vnom=line_Vnom)
 
         return R, X, B, R0, X0, B0, rate
+
+    def zs012_ysabc(self):
+        z1 = self.R + 1j * self.X
+        z0 = self.R0 + 1j * self.X0
+
+        diag = (2*z1 + z0) / 3
+        off_diag = (z0 - z1) / 3
+
+        zabc = np.full((3,3), off_diag)
+        np.fill_diagonal(zabc, diag)
+
+        ysabc = np.linalg.inv(zabc)
+
+        return ysabc
+
+    def zsh012_yshabc(self):
+        z1 = 1 / (1j * 2 * np.pi * 50 * self.Cnf / 10**9 + 1e-20)
+        z0 = 1 / (1j * 2 * np.pi * 50 * self.Cnf0 / 10**9 + 1e-20)
+
+        diag = (2*z1 + z0) / 3
+        off_diag = (z0 - z1) / 3
+
+        zabc = np.full((3, 3), off_diag)
+        np.fill_diagonal(zabc, diag)
+
+        yshabc = np.linalg.inv(zabc)
+
+        return yshabc

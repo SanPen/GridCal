@@ -489,6 +489,9 @@ class Line(BranchParent):
                                          length=self.length,
                                          line_Vnom=self.get_max_bus_nominal_voltage())
 
+            self.ys.values = obj.zs012_ysabc()
+            self.ysh.values = obj.zsh012_yshabc()
+
             self.template = obj
 
         else:

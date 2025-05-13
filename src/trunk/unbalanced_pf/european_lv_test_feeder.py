@@ -15,6 +15,7 @@ def Q_from_PF(pf, p):
 
 source = gce.Bus(name='SourceBus', xpos=390872.8, ypos=392887.5, Vnom=11)
 source.is_slack = True
+grid.add_bus(obj=source)
 gen = gce.Generator(vset = 1.05)
 grid.add_generator(bus = source, api_obj = gen)
 
@@ -34,7 +35,7 @@ transformer.columns = ['name', 'phases', 'bus_from', 'bus_to', 'HV', 'LV', 'rate
 for _, row in transformer.iterrows():
 
     transformer = gce.Transformer2W(name=row['name'],
-                                    bus_from=bus_dict[row['bus_from']],
+                                    bus_from=source,
                                     bus_to= bus_dict[row['bus_to']],
                                     HV=float(row['HV']),
                                     LV=float(row['LV']),
@@ -55,9 +56,9 @@ for _, row in transformer.iterrows():
     grid.add_transformer2w(transformer)
 
 lines = pd.read_csv('European_LV_CSV/Lines.csv', header=1)
-lines_codes = pd.read_csv('European_LV_CSV/LineCodes.csv', header=1)
 lines.columns = ['names', 'bus_from', 'bus_to', 'phases', 'length[m]', 'units', 'line_code']
 lines = lines.drop(['units', 'names', 'phases'], axis=1)
+lines_codes = pd.read_csv('European_LV_CSV/LineCodes.csv', header=1)
 line_types_dict = dict()
 
 for _, row in lines_codes.iterrows():
@@ -91,13 +92,13 @@ for _, row in loads.iterrows():
     bus = bus_dict[row['Bus']]
 
     if row['phases'] == 'A':
-        load.P1 = float(row['kW']) / 1000
+        load.P1 = float(row['kW']) / 1000 /100
         load.Q1 = Q_from_PF(0.95, load.P1)
     elif row['phases'] == 'B':
-        load.P2 = float(row['kW']) / 1000
+        load.P2 = float(row['kW']) / 1000 /100
         load.Q2 = Q_from_PF(0.95, load.P2)
     else:
-        load.P3 = float(row['kW']) / 1000
+        load.P3 = float(row['kW']) / 1000 /100
         load.Q3 = Q_from_PF(0.95, load.P3)
 
     grid.add_load(bus=bus, api_obj=load)
