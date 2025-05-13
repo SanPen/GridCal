@@ -9,7 +9,6 @@ from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.repair.rounding import RoundingRepair
-# from pymoo.operators.mutation.bitflip import BitflipMutation
 from pymoo.core.sampling import Sampling
 from pymoo.core.mutation import Mutation
 
@@ -132,27 +131,26 @@ def NSGA_3(obj_func,
            mutation_probability=0.5,
            eta: float = 3.0):
     """
-
-    :param obj_func:
-    :param n_partitions:
-    :param n_var:
-    :param n_obj:
-    :param max_evals:
-    :param pop_size:
-    :param crossover_prob:
-    :param mutation_probability:
-    :param eta:
-    :return:
+    NSGA3 designed for pareto investments
+    :param obj_func: Objective function pointer [f(x)]
+    :param n_partitions: Number of partitions
+    :param n_var: Number of variables
+    :param n_obj: Number of objectives
+    :param max_evals: Maximum number of evaluations
+    :param pop_size: Population size
+    :param crossover_prob: Crossover probability
+    :param mutation_probability: Mutation probability
+    :param eta: eta parameter for the SBX crossover
+    :return: X, f
     """
     problem = GridNsga(obj_func, n_var, n_obj)
 
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=SkewedBinarySampling(),  # UniformBinarySampling() for ideal grid
+                      sampling=SkewedBinarySampling(),
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                       mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4, repair=RoundingRepair()),
-                      # selection=TournamentSelection(pressure=2),
                       eliminate_duplicates=True,
                       ref_dirs=ref_dirs)
 
