@@ -23,7 +23,7 @@ def solve_generalized(grid: gce.MultiCircuit,
         apply_temperature=False,
         branch_tolerance_mode=gce.BranchImpedanceMode.Specified,
         opf_results=None,
-        use_stored_guess=False,
+        use_stored_guess=True,
         bus_dict=None,
         areas_dict=None,
         control_taps_modules=options.control_taps_modules,
@@ -75,7 +75,7 @@ def run_hvdc_multiterminal() -> None:
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'debug_controls.gridcal')
     grid = gce.FileOpen(fname).open()
 
-    options = PowerFlowOptions(control_q=False)
+    options = PowerFlowOptions(control_q=False, use_stored_guess=True)
     problem, solution = solve_generalized(grid=grid, options=options)
 
     print(f"Converged: {solution.converged}")

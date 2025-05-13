@@ -1417,7 +1417,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_vsc = make_complex(Pt_vsc, Qt_vsc)
 
         # Add the 2nd equation per VSC
-        current_vsc = Pfp_vsc * Vm[self.nc.vsc_data.F_dcp] + Pfn_vsc * Vm[self.nc.vsc_data.F_dcp]
+        current_vsc = Pfp_vsc * Vm[self.nc.vsc_data.F_dcn] + Pfn_vsc * Vm[self.nc.vsc_data.F_dcp]
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
