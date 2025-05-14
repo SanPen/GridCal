@@ -664,10 +664,10 @@ def test_issue_372_5():
 
 
 
-def test_ntc_pmode3() -> None:
+def test_ntc_pmode_saturation() -> None:
     """
-
-    :return:
+    In this test we force one of the HVDC devices to dispatch using PMODE3 and saturate to its rating,
+    checking that the PMODE3 equation goes on to provide a larger set point
     """
     np.set_printoptions(precision=4)
     fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
@@ -735,7 +735,72 @@ def test_ntc_pmode3() -> None:
     assert res.converged
 
 
+
+def test_ntc_areas_connected_only_through_hvdc() -> None:
+    """
+    This test checks that a grid that is only joined with HVDC lines can transfer power through the 2 areas
+    """
+    np.set_printoptions(precision=4)
+    fname = os.path.join('data', 'grids', 'ntc_test_cont.gridcal')
+
+    grid = gce.open_file(fname)
+
+    # we deactivate the only AC inter-area link
+    grid.transformers2w[1].active = False
+
+    # there must be a slack per area so that this works
+    grid.buses[0].is_slack = True
+    grid.buses[7].is_slack = True
+
+    a1 = [grid.areas[0]]
+    a2 = [grid.areas[1]]
+
+    info = grid.get_inter_aggregation_info(objects_from=a1,
+                                           objects_to=a2)
+
+    opf_options = gce.OptimalPowerFlowOptions()
+    lin_options = gce.LinearAnalysisOptions()
+
+    ntc_options = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=info.idx_bus_from,
+        receiving_bus_idx=info.idx_bus_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        loading_threshold_to_report=98.0,
+        skip_generation_limits=True,
+        transmission_reliability_margin=0.1,
+        branch_exchange_sensitivity=0.01,
+        use_branch_exchange_sensitivity=False,
+        branch_rating_contribution=1.0,
+        use_branch_rating_contribution=False,
+        consider_contingencies=False,
+        opf_options=opf_options,
+        lin_options=lin_options
+    )
+
+    drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
+
+    drv.run()
+
+    res = drv.results
+
+    bus_area_indices = grid.get_bus_area_indices()
+    a1 = np.where(bus_area_indices == 0)[0]
+    a2 = np.where(bus_area_indices == 1)[0]
+
+    assert res.converged[0]
+
+    # ΔP in A1 optimized > 0 (because there are no base overloads)
+    assert res.dSbus[a1].sum() > 0
+
+    # ΔP in A2 optimized < 0 (because there are no base overloads)
+    assert res.dSbus[a2].sum() < 0
+
+    # ΔP in A1 == − ΔP in A2
+    assert np.isclose(res.dSbus[a1].sum(), -res.dSbus[a2].sum(), atol=1e-6)
+
+    assert res.converged
+
 if __name__ == '__main__':
     # test_ntc_ultra_simple()
-    test_ntc_pmode3()
+    test_ntc_areas_connected_only_through_hvdc()
     # test_issue_372_2()

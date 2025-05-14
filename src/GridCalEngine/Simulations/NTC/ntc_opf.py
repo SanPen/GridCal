@@ -561,6 +561,9 @@ def get_base_power(Sbase: float,
                    gen_data_t: GeneratorData,
                    batt_data_t: BatteryData,
                    load_data_t: LoadData,
+                   branch_data_t: PassiveBranchData,
+                   active_branch_data_t: ActiveBranchData,
+                   hvdc_data_t: HvdcData,
                    logger: Logger) -> Vec:
     """
     Get the perfectly balanced base power
@@ -568,6 +571,8 @@ def get_base_power(Sbase: float,
     :param gen_data_t:
     :param batt_data_t:
     :param load_data_t:
+    :param branch_data_t
+    :param active_branch_data_t
     :param logger:
     :return:
     """
@@ -575,7 +580,20 @@ def get_base_power(Sbase: float,
     gen_per_bus = gen_data_t.get_injections_per_bus().real / Sbase
     batt_per_bus = batt_data_t.get_injections_per_bus().real / Sbase
     load_per_bus = load_data_t.get_injections_per_bus().real / Sbase  # this comes with the proper sign already
-    base_power = gen_per_bus + batt_per_bus + load_per_bus
+
+    # contributions from phase shifters
+    # branch_bus_dp = np.zeros(branch_data_t.nbus)
+    # for k in range(branch_data_t.nelm):
+    #     if (active_branch_data_t.tap_phase_control_mode[k] == TapPhaseControl.fixed and
+    #             active_branch_data_t.tap_angle[k] != 0.0):
+    #         # this power will not be optimized and needs to be accounted for
+    #         ps = active_branch_data_t.tap_angle[k] / (branch_data_t.X[k] + 1e-20)
+    #         f = branch_data_t.F[k]
+    #         t = branch_data_t.T[k]
+    #         branch_bus_dp[f] -= ps
+    #         branch_bus_dp[t] += ps
+
+    base_power = gen_per_bus + batt_per_bus + load_per_bus # + branch_bus_dp
 
     # Mandatory scaling so that we can do the deltas madness
     diff = base_power.sum()
@@ -604,7 +622,9 @@ def add_linear_injections_formulation(t: Union[int, None],
                                       batt_data_t: BatteryData,
                                       load_data_t: LoadData,
                                       bus_data_t: BusData,
-                                      p_bus_t: Vec,
+                                      branch_data_t: PassiveBranchData,
+                                      active_branch_data_t: ActiveBranchData,
+                                      hvdc_data_t: HvdcData,
                                       bus_a1_idx: IntVec,
                                       bus_a2_idx: IntVec,
                                       transfer_method: AvailableTransferMode,
@@ -617,9 +637,9 @@ def add_linear_injections_formulation(t: Union[int, None],
     :param t: time step
     :param Sbase: base power (100 MVA)
     :param gen_data_t: GeneratorData structure
+    :param batt_data_t: BatteryData structure
     :param load_data_t: LoadData structure
     :param bus_data_t: BusData structure
-    :param p_bus_t: Real power injections per bus (p.u.)
     :param bus_a1_idx: bus indices within area "from"
     :param bus_a2_idx: bus indices within area "to"
     :param transfer_method: Exchange transfer method
@@ -635,6 +655,9 @@ def add_linear_injections_formulation(t: Union[int, None],
                                 gen_data_t=gen_data_t,
                                 batt_data_t=batt_data_t,
                                 load_data_t=load_data_t,
+                                branch_data_t=branch_data_t,
+                                active_branch_data_t=active_branch_data_t,
+                                hvdc_data_t=hvdc_data_t,
                                 logger=logger)
 
     # returns nodal reference power (p.u.), pmax (p.u.), pmin(p.u.)
@@ -694,7 +717,7 @@ def add_linear_injections_formulation(t: Union[int, None],
 def add_linear_branches_formulation(t_idx: int,
                                     Sbase: float,
                                     branch_data_t: PassiveBranchData,
-                                    ctrl_branch_data_t: ActiveBranchData,
+                                    active_branch_data_t: ActiveBranchData,
                                     branch_vars: BranchNtcVars,
                                     bus_vars: BusNtcVars,
                                     prob: LpModel,
@@ -712,7 +735,7 @@ def add_linear_branches_formulation(t_idx: int,
     :param Sbase: base power (100 MVA)
     :param branch_data_t: BranchData
     :param branch_vars: BranchVars
-    :param ctrl_branch_data_t:
+    :param active_branch_data_t:
     :param bus_vars: BusVars
     :param prob: OR problem
     :param monitor_only_ntc_load_rule_branches:
@@ -757,13 +780,13 @@ def add_linear_branches_formulation(t_idx: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if (ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf or
-                    ctrl_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pt):
+            if (active_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf or
+                    active_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pt):
 
                 # add angle
                 branch_vars.tap_angles[t_idx, m] = prob.add_var(
-                    lb=ctrl_branch_data_t.tap_angle_min[m],
-                    ub=ctrl_branch_data_t.tap_angle_max[m],
+                    lb=active_branch_data_t.tap_angle_min[m],
+                    ub=active_branch_data_t.tap_angle_max[m],
                     name=join("tap_ang_", [t_idx, m], "_")
                 )
 
@@ -776,12 +799,24 @@ def add_linear_branches_formulation(t_idx: int,
                 )
 
             else:
-                # rest of the branches
-                prob.add_cst(
-                    cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
-                                                             bus_vars.theta[t_idx, to]),
-                    name=join("flow_", [t_idx, m], "_")
-                )
+
+                if active_branch_data_t.tap_angle[m] != 0.0:
+                    branch_vars.tap_angles[t_idx, m] = active_branch_data_t.tap_angle[m]
+
+                    # rest of the branches
+                    prob.add_cst(
+                        cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
+                                                                 bus_vars.theta[t_idx, to] +
+                                                                 branch_vars.tap_angles[t_idx, m]),
+                        name=join("flow_ps_fix", [t_idx, m], "_")
+                    )
+                else:
+                    # rest of the branches with tau = 0
+                    prob.add_cst(
+                        cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.theta[t_idx, fr] -
+                                                                 bus_vars.theta[t_idx, to]),
+                        name=join("flow_", [t_idx, m], "_")
+                    )
 
             # We save in Pcalc the balance of the branch flows
             bus_vars.Pbalance[t_idx, fr] -= branch_vars.flows[t_idx, m]
@@ -1560,7 +1595,9 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         batt_data_t=nc.battery_data,
         load_data_t=nc.load_data,
         bus_data_t=nc.bus_data,
-        p_bus_t=Pbus,
+        branch_data_t=nc.passive_branch_data,
+        active_branch_data_t=nc.active_branch_data,
+        hvdc_data_t=nc.hvdc_data,
         bus_a1_idx=bus_a1_idx,
         bus_a2_idx=bus_a2_idx,
         transfer_method=transfer_method,
@@ -1609,7 +1646,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
             t_idx=t_idx,
             Sbase=nc.Sbase,
             branch_data_t=nc.passive_branch_data,
-            ctrl_branch_data_t=nc.active_branch_data,
+            active_branch_data_t=nc.active_branch_data,
             branch_vars=mip_vars.branch_vars,
             bus_vars=mip_vars.bus_vars,
             prob=lp_model,
