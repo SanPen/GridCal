@@ -2195,6 +2195,10 @@ class SimulationsMain(TimeEventsMain):
         idx_to = info.idx_bus_to
         idx_br = info.idx_branches
 
+        # HVDC
+        idx_hvdc_br = info.idx_hvdc
+        sense_hvdc_br = info.sense_hvdc
+
         if len(idx_from) == 0:
             error_msg('The "from" aggregation has no buses!')
             return None
@@ -2203,7 +2207,7 @@ class SimulationsMain(TimeEventsMain):
             error_msg('The area "to" has no buses!')
             return None
 
-        if len(idx_br) == 0:
+        if (len(idx_br) + len(idx_hvdc_br)) == 0:
             error_msg('There are no inter-area Branches!')
             return None
 

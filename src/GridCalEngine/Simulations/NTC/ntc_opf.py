@@ -1070,7 +1070,7 @@ def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
       z2 binary
 
     Constraints:
-      flow_lin_def: flow_lin = P0 + k * (th_f - th_t)
+      pmode3_eq: flow_lin = P0 + k * (th_f - th_t)
 
       upper_bound_flow_le: flow <= rate + M * z1
       upper_bound_flowlin_le: flow_lin - rate <= M * (1 - z1)
@@ -1096,32 +1096,32 @@ def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
     flow_lin = prob.add_var(
         lb=-prob.INFINITY,
         ub=prob.INFINITY,
-        name=join("hvdc_flow_lin_", [t_idx, m], "_")
+        name=join("pmode3_eq", [t_idx, m], "_")
     )
-    z1 = prob.add_int(lb=0, ub=1, name=join("hvdc_zn_", [t_idx, m], "_"))
-    z2 = prob.add_int(lb=0, ub=1, name=join("hvdc_zp_", [t_idx, m], "_"))
+    z1 = prob.add_int(lb=0, ub=1, name=join("hvdc_z1_", [t_idx, m], "_"))
+    z2 = prob.add_int(lb=0, ub=1, name=join("hvdc_z2_", [t_idx, m], "_"))
 
-    M = 2000 * rate  # M >= 2 * rate
+    M = 2 * rate  # exactly this
 
-    prob.add_cst(flow_lin == P0 + droop * (theta_f - theta_t))
+    prob.add_cst(flow_lin == P0 + droop * (theta_f - theta_t), name=f"flow_lin_def_{t_idx}_{m}")
 
     # upper violation
-    prob.add_cst(flow <= rate + M * z1)
-    prob.add_cst(flow_lin - rate <= M * (1 - z1))
-    prob.add_cst(flow >= rate - M * (1 - z1))
+    prob.add_cst(flow <= rate + M * z1, name=f"upper_bound_flow_le_{t_idx}_{m}")
+    prob.add_cst(flow_lin - rate <= M * (1 - z1), name=f"upper_bound_flowlin_le_{t_idx}_{m}")
+    prob.add_cst(flow >= rate - M * (1 - z1), name=f"upper_bound_flow_ge_{t_idx}_{m}")
 
     # lower violation
-    prob.add_cst(flow >= -rate - M * z2)
-    prob.add_cst(-rate - flow_lin <= M * (1 - z2))
-    prob.add_cst(flow <= -rate + M * (1 - z2))
+    prob.add_cst(flow >= -rate - M * z2, name=f"lower_bound_flow_ge_{t_idx}_{m}")
+    prob.add_cst(-rate - flow_lin <= M * (1 - z2), name=f"lower_bound_flowlin_ge_{t_idx}_{m}")
+    prob.add_cst(flow <= -rate + M * (1 - z2), name=f"lower_bound_flow_le_{t_idx}_{m}")
 
     # intermediate
-    prob.add_cst(flow <= flow_lin + M * (z1 + z2))
-    prob.add_cst(flow >= flow_lin - M * (z1 + z2))
-    prob.add_cst(1 - z1 - z2 <= 1)
+    prob.add_cst(flow <= flow_lin + M * (z1 + z2), name=f"intermediate_flow_le_{t_idx}_{m}")
+    prob.add_cst(flow >= flow_lin - M * (z1 + z2), name=f"intermediate_flow_ge_{t_idx}_{m}")
+    prob.add_cst(1 - z1 - z2 <= 1, name=f"intermediate_always_true_{t_idx}_{m}")
 
     # only one option at a time
-    prob.add_cst(z1 + z2 <= 1)
+    prob.add_cst(z1 + z2 <= 1, name=f"single_case_active_{t_idx}_{m}")
 
     return flow
 
@@ -1353,29 +1353,29 @@ def add_linear_hvdc_formulation(t_idx: int,
                 droop = hvdc_data_t.get_angle_droop_in_pu_rad_at(m, Sbase)
 
                 if saturate:
-                    hvdc_vars.flows[t_idx, m] = pmode3_formulation(prob=prob,
-                                                                   t_idx=t_idx,
-                                                                   m=m,
-                                                                   rate=hvdc_data_t.rates[m],
-                                                                   P0=P0,
-                                                                   droop=droop,
-                                                                   theta_f=vars_bus.theta[t_idx, fr],
-                                                                   theta_t=vars_bus.theta[t_idx, to])
+                    # hvdc_vars.flows[t_idx, m] = pmode3_formulation(prob=prob,
+                    #                                                t_idx=t_idx,
+                    #                                                m=m,
+                    #                                                rate=hvdc_data_t.rates[m] / Sbase,
+                    #                                                P0=P0,
+                    #                                                droop=droop,
+                    #                                                theta_f=vars_bus.theta[t_idx, fr],
+                    #                                                theta_t=vars_bus.theta[t_idx, to])
 
-                    # hvdc_vars.flows[t_idx, m] = pmode3_formulation2(prob=prob,
-                    #                                                 t_idx=t_idx,
-                    #                                                 m=m,
-                    #                                                 rate=hvdc_data_t.rates[m],
-                    #                                                 P0=P0,
-                    #                                                 droop=droop,
-                    #                                                 theta_f=vars_bus.theta[t_idx, fr],
-                    #                                                 theta_t=vars_bus.theta[t_idx, to])
+                    hvdc_vars.flows[t_idx, m] = pmode3_formulation2(prob=prob,
+                                                                    t_idx=t_idx,
+                                                                    m=m,
+                                                                    rate=hvdc_data_t.rates[m] / Sbase,
+                                                                    P0=P0,
+                                                                    droop=droop,
+                                                                    theta_f=vars_bus.theta[t_idx, fr],
+                                                                    theta_t=vars_bus.theta[t_idx, to])
 
                     # hvdc_vars.flows[t_idx, m] = formulate_hvdc_Pmode3_single_flow(
                     #     solver=prob,
                     #     active=hvdc_data_t.active[m],
                     #     P0=P0,
-                    #     rate=hvdc_data_t.rates[m],
+                    #     rate=hvdc_data_t.rates[m] / Sbase,
                     #     Sbase=Sbase,
                     #     angle_droop=hvdc_data_t.angle_droop[m],
                     #     angle_max_f=-6.28,
@@ -1474,8 +1474,9 @@ def add_linear_node_balance(t_idx: int,
             cst=bus_vars.Pbalance[t_idx, k] == 0,
             name=join("kirchhoff_", [t_idx, k], "_"))
 
+    Va = np.angle(bus_data.Vbus)
     for i in vd:
-        set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
+        set_var_bounds(var=bus_vars.theta[t_idx, i], lb=Va[i], ub=Va[i])
 
 
 def run_linear_ntc_opf(grid: MultiCircuit,

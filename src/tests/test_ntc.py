@@ -675,7 +675,9 @@ def test_ntc_pmode_saturation() -> None:
     grid = gce.open_file(fname)
 
     grid.hvdc_lines[0].control_mode = gce.HvdcControlType.type_0_free
-    grid.hvdc_lines[0].angle_droop = 0.03  # this will force a greater pmode3 flow
+    grid.hvdc_lines[0].angle_droop = 0.2  # this will force a greater pmode3 flow
+
+    grid.hvdc_lines[1].control_mode = gce.HvdcControlType.type_1_Pset
 
     a1 = [grid.areas[0]]
     a2 = [grid.areas[1]]
@@ -802,5 +804,5 @@ def test_ntc_areas_connected_only_through_hvdc() -> None:
 
 if __name__ == '__main__':
     # test_ntc_ultra_simple()
-    test_ntc_areas_connected_only_through_hvdc()
+    test_ntc_pmode_saturation()
     # test_issue_372_2()

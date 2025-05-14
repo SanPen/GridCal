@@ -1,54 +1,48 @@
+Delta_down_0 = 199900
+Delta_up_0 = 199900
+hvdc_flow_0_0 = 199900
+hvdc_flow_lin_0_0 = -100
+th_0_0 = 0
+th_0_1 = -0.4848136811098
+hvdc_z1_0_0 = 1
+hvdc_z2_0_0 = 0
 
-z_pos = 1
-z_mid = 0
-z_neg = 0
+# Minimize
+OBJ = Delta_down_0 - Delta_up_0 - hvdc_flow_0_0
 
-rate = 1000.0
-P0 = 0
-k = 360.0
-theta_f = 25.0
-theta_t = 20.0
-epsilon = 1e-4
-M = 2 * rate
+# Subject To
 
-# 1. Region selector:
-z_neg + z_mid + z_pos == 1
+deltas_equality_0 = - Delta_down_0 + Delta_up_0 == 0
 
-# 2. Linear flow equation:
-flow_lin = P0 + k * (theta_f - theta_t)
+kirchhoff_0_0 = - Delta_down_0 + hvdc_flow_0_0 == 0
+kirchhoff_0_1 = Delta_up_0 - hvdc_flow_0_0 == 0
 
-if flow_lin > rate:
-    z_pos = 1
-    z_mid = 0
-    z_neg = 0
-    flow = rate
+flow_lin_def_0_0 = hvdc_flow_lin_0_0 + 206.264806247 * th_0_0 - 206.264806247 * th_0_1 == 0
 
-elif flow_lin < -rate:
-    z_pos = 0
-    z_mid = 0
-    z_neg = 1
-    flow = -rate
+upper_bound_flow_ge_0_0 = hvdc_flow_0_0 - 200000 * hvdc_z1_0_0 >= -199900
+upper_bound_flow_le_0_0 = hvdc_flow_0_0 - 200000 * hvdc_z1_0_0 <= 1
+upper_bound_flowlin_le_0_0 = hvdc_flow_lin_0_0 + 200000 * hvdc_z1_0_0 <= 200100
 
-elif -rate < flow_lin < rate:
-    z_pos = 0
-    z_mid = 1
-    z_neg = 0
-    flow = flow_lin
+intermediate_always_true_0_0 = - hvdc_z1_0_0 - hvdc_z2_0_0 <= 0
+intermediate_flow_ge_0_0 = hvdc_flow_0_0 - hvdc_flow_lin_0_0 + 200000 * hvdc_z1_0_0 + 200000 * hvdc_z2_0_0 >= 0
+intermediate_flow_le_0_0 = hvdc_flow_0_0 - hvdc_flow_lin_0_0 - 200000 * hvdc_z1_0_0 - 200000 * hvdc_z2_0_0 <= 0
 
-# 3. Lower region:  flow = -rate if z_neg == 1
-ok3a = flow <= -rate + M * (1 - z_neg)
-ok3b = flow >= -rate - M * (1 - z_neg)
-ok3c = flow <= -rate + M * (1 - z_neg)
+lower_bound_flow_ge_0_0 = hvdc_flow_0_0 + 200000 * hvdc_z2_0_0 >= -1
+lower_bound_flow_le_0_0 = hvdc_flow_0_0 + 200000 * hvdc_z2_0_0 <= 199900
+lower_bound_flowlin_ge_0_0 = - hvdc_flow_lin_0_0 + 200000 * hvdc_z2_0_0 <= 200100
 
-# 4. Mid region:    flow = flow_lin if z_mid == 1
-ok4a = flow <= flow_lin + M * (1 - z_mid)
-ok4b = flow >= flow_lin - M * (1 - z_mid)
-ok4c = flow_lin <= rate - epsilon + M * (1 - z_mid)
-ok4d = flow_lin >= -rate + epsilon - M * (1 - z_mid)
+single_case_active_0_0 = hvdc_z1_0_0 + hvdc_z2_0_0 <= 1
 
-# 5. Upper region:  flow = rate if z_pos == 1
-ok5a = flow <= rate + M * (1 - z_pos)
-ok5b = flow >= rate - M * (1 - z_pos)
-ok5c = flow >= rate - M * (1 - z_pos)
-
-print()
+print("deltas_equality_0:", deltas_equality_0)
+print("kirchhoff_0_0:", kirchhoff_0_0)
+print("kirchhoff_0_1:", kirchhoff_0_1)
+print("upper_bound_flow_ge_0_0:", upper_bound_flow_ge_0_0)
+print("upper_bound_flow_le_0_0:", upper_bound_flow_le_0_0)
+print("upper_bound_flowlin_le_0_0:", upper_bound_flowlin_le_0_0)
+print("intermediate_always_true_0_0:", intermediate_always_true_0_0)
+print("intermediate_flow_ge_0_0:", intermediate_flow_ge_0_0)
+print("intermediate_flow_le_0_0:", intermediate_flow_le_0_0)
+print("lower_bound_flow_ge_0_0:", lower_bound_flow_ge_0_0)
+print("lower_bound_flow_le_0_0:", lower_bound_flow_le_0_0)
+print("lower_bound_flowlin_ge_0_0:", lower_bound_flowlin_ge_0_0)
+print("single_case_active_0_0:", single_case_active_0_0)
