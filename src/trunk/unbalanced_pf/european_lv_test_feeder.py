@@ -19,6 +19,15 @@ grid.add_bus(obj=source)
 gen = gce.Generator(vset = 1.05)
 grid.add_generator(bus = source, api_obj = gen)
 
+impedance = gce.Bus(name='ImpedanceBus', xpos=390872.8, ypos=392887.5, Vnom=11)
+grid.add_bus(obj=impedance)
+
+sequence_line_type = gce.SequenceLineType(R=0.1837, X=1.837, R0=0.1837, X0=1.837)
+grid.add_sequence_line(sequence_line_type)
+source_impedance = gce.Line(bus_from=source, bus_to=impedance)
+source_impedance.apply_template(sequence_line_type, grid.Sbase, grid.fBase, logger)
+grid.add_line(source_impedance)
+
 buses = pd.read_csv('European_LV_CSV/Buscoords.csv', skiprows=1)
 buses.columns = ['Bus', 'X', 'Y']
 bus_dict = dict()
@@ -35,24 +44,24 @@ transformer.columns = ['name', 'phases', 'bus_from', 'bus_to', 'HV', 'LV', 'rate
 for _, row in transformer.iterrows():
 
     transformer = gce.Transformer2W(name=row['name'],
-                                    bus_from=source,
+                                    bus_from=impedance,
                                     bus_to= bus_dict[row['bus_to']],
                                     HV=float(row['HV']),
                                     LV=float(row['LV']),
                                     rate=float(row['rate']),
-                                    r=float(row['%R'])/100,
-                                    x=float(row['%X'])/100
+                                    r=float(row['%R'])*1.25,
+                                    x=float(row['%X'])*1.25
                                     )
     if row['conn_HV'] == ' Delta':
-        conn_f = WindingType.Delta
+        transformer.conn_f = WindingType.Delta
     else:
-        conn_f = WindingType.GroundedStar
+        transformer.conn_f = WindingType.GroundedStar
 
     if row['conn_LV'] == ' Delta':
-        conn_t = WindingType.Delta
+        transformer.conn_t = WindingType.Delta
     else:
-        conn_t = WindingType.GroundedStar
-
+        transformer.conn_t = WindingType.GroundedStar
+    transformer.vector_group_number = 2
     grid.add_transformer2w(transformer)
 
 lines = pd.read_csv('European_LV_CSV/Lines.csv', header=1)
@@ -85,21 +94,37 @@ for _, row in lines.iterrows():
     grid.add_line(obj=line)
 
 loads = pd.read_csv('European_LV_CSV/Loads.csv', header=2)
+loads_shape = pd.read_csv('European_LV_CSV/LoadShapes.csv', header=1)
+#loads_profiles = pd.read_csv('European_LV_CSV/Load Profiles/LoadShapes.csv', header=2)
 load_phase_dict = dict()
+shape_profile = {row['Name']:row['File'] for i,row in loads_shape.iterrows()}
+
+profile_random = pd.read_csv('European_LV_CSV/Load Profiles/Load_profile_1.csv', parse_dates=['time'])
+grid.set_time_profile(unix_data=np.arange(profile_random.shape[0]))
 
 for _, row in loads.iterrows():
     load = gce.Load()
     bus = bus_dict[row['Bus']]
 
+    profile_name = shape_profile[row['Yearly']]
+    scale_df = pd.read_csv(f'European_LV_CSV/Load Profiles/{profile_name}')
+    scale = scale_df['mult'].values
+
     if row['phases'] == 'A':
-        load.P1 = float(row['kW']) / 1000 /100
+        load.P1 = float(row['kW']) / 1000
         load.Q1 = Q_from_PF(0.95, load.P1)
+        load.P1_prof = load.P1 * scale
+        load.Q1_prof = load.Q1 * scale
     elif row['phases'] == 'B':
-        load.P2 = float(row['kW']) / 1000 /100
+        load.P2 = float(row['kW']) / 1000
         load.Q2 = Q_from_PF(0.95, load.P2)
+        load.P2_prof = load.P2 * scale
+        load.Q2_prof = load.Q2 * scale
     else:
-        load.P3 = float(row['kW']) / 1000 /100
+        load.P3 = float(row['kW']) / 1000
         load.Q3 = Q_from_PF(0.95, load.P3)
+        load.P3_prof = load.P3 * scale
+        load.Q3_prof = load.Q3 * scale
 
     grid.add_load(bus=bus, api_obj=load)
 

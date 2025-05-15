@@ -70,7 +70,7 @@ def get_line_impedances_with_b(r_ohm: float, x_ohm: float, b_us: float, length: 
 class SequenceLineType(EditableDevice):
 
     def __init__(self, name='SequenceLine', idtag=None, Imax=1, Vnom=1,
-                 R=0, X=0, B=0, R0=0, X0=0, B0=0, CnF=0, CnF0=0, use_conductance: bool = False):
+                 R=1e-20, X=1e-20, B=1e-20, R0=1e-20, X0=1e-20, B0=1e-20, CnF=1e-20, CnF0=1e-20, use_conductance: bool = False):
         """
         Constructor
         :param name: name of the model

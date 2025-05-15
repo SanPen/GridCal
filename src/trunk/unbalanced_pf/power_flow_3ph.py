@@ -1,10 +1,11 @@
 import numpy as np
+import pandas as pd
 import GridCalEngine.api as gce
 from GridCalEngine.Simulations.PowerFlow.Formulations.pf_basic_formulation_3ph import PfBasicFormulation3Ph
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 
-def power_flow_3ph(grid):
-    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True)
+def power_flow_3ph(grid, t_idx=None):
+    nc = gce.compile_numerical_circuit_at(circuit=grid, fill_three_phase=True, t_idx = t_idx)
 
     V0 = nc.bus_data.Vbus
     S0 = nc.get_power_injections_pu()
@@ -19,7 +20,7 @@ def power_flow_3ph(grid):
     print('I0 = \n', problem.I0)
     print('V0 = \n', problem.V)
 
-    res = newton_raphson_fx(problem=problem)
+    res = newton_raphson_fx(problem=problem, verbose=1)
 
     Ibus = problem.Ybus.dot(res.V)
     print('Ibus = \n', Ibus)
@@ -31,9 +32,20 @@ def power_flow_3ph(grid):
 
 grid = gce.open_file("IEEE Test Distribution.gridcal")
 
-res_3ph = power_flow_3ph(grid)
+df_U_a = pd.DataFrame()
 
-print("Converged: ", res_3ph.converged)
-print("Iter: ", res_3ph.iterations)
-print("Vm:\n", np.abs(res_3ph.V))
-print("Va:\n", np.angle(res_3ph.V)*180/np.pi)
+for i in range(grid.get_time_number()):
+    res_3ph = power_flow_3ph(grid, i)
+
+    U = np.abs(res_3ph.V)
+    angle = np.angle(res_3ph.V) * (180/np.pi)
+
+    # Reshape to (n_buses, 3) where columns are [a, b, c]
+    U_reshaped = U.reshape(-1, 3)
+    angle_reshaped = angle.reshape(-1, 3)
+
+    # Add this column to the DataFrame
+    df_U_a[f't={i}'] = U_reshaped[:, 0]
+
+# Export to Excel
+df_U_a.to_excel("three_phase_results.xlsx", index=False)

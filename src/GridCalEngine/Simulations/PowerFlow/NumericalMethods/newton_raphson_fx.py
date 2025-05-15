@@ -53,10 +53,13 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
     error_evolution[iteration] = problem.error
 
     if verbose > 0:
+        print(time.time() - start)
         print(f'It {iteration}, error {problem.error}, converged {problem.converged}, x {x}, dx not computed yet')
 
     if problem.converged:
+        print(time.time() - start)
         return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+
 
     else:
 
@@ -126,7 +129,8 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             if verbose > 0:
                 if verbose == 1:
                     print(f'It {iteration}, error {error}, converged {converged}')
+                    print(time.time() - start)
                 else:
                     print(f'error {error}, \n converged {converged}')
-
+    print(time.time() - start)
     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
