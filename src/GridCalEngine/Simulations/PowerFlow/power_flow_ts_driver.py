@@ -200,7 +200,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
     def run_gslv(self, time_indices=None) -> PowerFlowTimeSeriesResults:
         """
-        Run with Newton Power Analytics
+        Run with GSLV
         :param time_indices: array of time indices
         :return:
         """
@@ -213,14 +213,14 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         n = self.grid.get_bus_number()
         results = PowerFlowTimeSeriesResults(n=self.grid.get_bus_number(),
-                                             m=self.grid.get_branch_number_wo_hvdc(),
+                                             m=self.grid.get_branch_number(add_switch=True, add_vsc=False, add_hvdc=False),
                                              n_hvdc=self.grid.get_hvdc_number(),
                                              # n_vsc=self.grid.get_vsc_number(),
                                              # n_gen=self.grid.get_generators_number(),
                                              # n_batt=self.grid.get_batteries_number(),
                                              # n_sh=self.grid.get_shunt_like_device_number(),
                                              bus_names=self.grid.get_bus_names(),
-                                             branch_names=self.grid.get_branch_names(add_switch=True),
+                                             branch_names=self.grid.get_branch_names(add_switch=True, add_vsc=False, add_hvdc=False),
                                              hvdc_names=self.grid.get_hvdc_names(),
                                              # vsc_names=self.grid.get_vsc_names(),
                                              # gen_names=self.grid.get_generator_names(),
