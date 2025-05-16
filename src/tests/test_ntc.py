@@ -453,6 +453,9 @@ def test_issue_372_4():
         The total exchange should be greater than in _test1.
         We expect less exchange than test 2.
 
+        TODO: Monitored & selected by the exchange sensitivity criteria branches flow must be lower than rate.
+        TODO: Monitored & selected by the exchange sensitivity criteria branches contingency flow must be lower than contingency rate.
+
     """
     # fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
     fname = os.path.join('data', 'grids', 'IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal')
@@ -568,6 +571,9 @@ def test_issue_372_5():
         Monitored & selected by the exchange sensitivity criteria, branches must not be overloaded beyond 100%
         The total exchange should be greater than in _test1.
         The HVDC power must be: P0 + angle_droop · (theta_f − theta_t) (all in proper units)
+
+        TODO: Monitored & selected by the exchange sensitivity criteria branches flow must be lower than rate.
+        TODO: Monitored & selected by the exchange sensitivity criteria branches contingency flow must be lower than contingency rate.
 
     """
     # fname = os.path.join('data', 'grids', 'ntc_test.gridcal')
