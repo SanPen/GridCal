@@ -2381,14 +2381,14 @@ def translate_gslv_pf_results(grid: MultiCircuit, res: "pg.PowerFlowResults", lo
     """
     results = PowerFlowResults(
         n=grid.get_bus_number(),
-        m=grid.get_branch_number_wo_hvdc(),
+        m=grid.get_branch_number(add_switch=True, add_vsc=False, add_hvdc=False),
         n_hvdc=grid.get_hvdc_number(),
         n_vsc=grid.get_vsc_number(),
         n_gen=grid.get_generators_number(),
         n_batt=grid.get_batteries_number(),
         n_sh=grid.get_shunt_like_device_number(),
         bus_names=grid.get_bus_names(),
-        branch_names=grid.get_branch_names(add_switch=True),
+        branch_names=grid.get_branch_names(add_switch=True, add_vsc=False, add_hvdc=False),
         hvdc_names=grid.get_hvdc_names(),
         vsc_names=grid.get_vsc_names(),
         gen_names=grid.get_generator_names(),
