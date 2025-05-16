@@ -147,3 +147,19 @@ def parse_xiidm_file_to_circuit_non_recursive(file_path: str) -> IidmCircuit:
             ))
 
     return circuit
+
+
+if __name__ == "__main__":
+
+    # See: https://powsybl.readthedocs.io/projects/pypowsybl/en/latest/reference/network.html
+
+    fname = "/home/santi/Documentos/Git/GitHub/RTE7000/2021/01/01/recollement-auto-20210101-0000-enrichi.xiidm"
+    # parse_xiidm_file_to_circuit_non_recursive(fname)
+    import pypowsybl as pp
+
+    grid = pp.network.load(fname)
+
+    res = pp.loadflow.run_dc(grid, pp.loadflow.Parameters(distributed_slack=False))
+
+    print()
+
