@@ -80,21 +80,23 @@ for i, elm in enumerate(grid.batteries):
     soc0[i] = elm.Enom * 0.5
     soc_min[i] = elm.Enom * elm.min_soc
 
+dt=grid.get_time_deltas_in_hours()
+
 # === Run dispatch ===
 gen_dispatch, batt_dispatch, soc, total_cost = fast_dispatch_with_renewables(
-    load=load,
+    load_profile=load,
     gen_profile=gen_profile,
-    dispatchable=dispatchable,
-    active=gen_active,
-    cost_gen=gen_cost,
-    p_max_charge=p_max_charge,
-    p_max_discharge=p_max_discharge,
-    energy_max=energy_max,
-    eff_charge=eff_charge,
-    eff_discharge=eff_discharge,
+    gen_dispatchable=dispatchable,
+    gen_active=gen_active,
+    gen_cost=gen_cost,
+    batt_p_max_charge=p_max_charge,
+    batt_p_max_discharge=p_max_discharge,
+    batt_energy_max=energy_max,
+    batt_eff_charge=eff_charge,
+    batt_eff_discharge=eff_discharge,
     soc0=soc0,
     soc_min=soc_min,
-    dt=1.0,
+    dt=dt,
     force_charge_if_low=True
 )
 

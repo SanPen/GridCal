@@ -1,16 +1,13 @@
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import fast_dispatch_with_renewables
 
-
 # === Simulation parameters ===
-T = 24   # hours
-L = 2    # loads
-G = 3    # generators (e.g., 2 dispatchable + 1 solar)
-B = 2    # batteries
-dt = 1.0
+T = 24  # hours
+L = 2  # loads
+G = 3  # generators (e.g., 2 dispatchable + 1 solar)
+B = 2  # batteries
 
 np.random.seed(0)
 
@@ -38,6 +35,7 @@ eff_discharge = np.full((T, B), 0.9)
 soc0 = np.full((B,), 20.0)
 soc_min = np.full(B, 10.0)  # minimum 10 MWh
 force_charge_if_low = True
+dt = np.ones(T)
 
 # === Run dispatch ===
 gen_dispatch, batt_dispatch, soc, total_cost = fast_dispatch_with_renewables(
@@ -65,11 +63,9 @@ df_dispatch['Supply_total'] = supply_total
 df_dispatch['Load_total'] = load_total
 df_dispatch['Load not supplied'] = load_not_supplied
 
-
 print("\nDispatch Summary:")
 print(df_dispatch)
 print(f"\nTotal Dispatch Cost: ${total_cost:.2f}")
-
 
 # === Power Balance Plot ===
 # plt.figure(figsize=(10, 5))
@@ -107,4 +103,3 @@ print(f"\nTotal Dispatch Cost: ${total_cost:.2f}")
 # plt.grid(True)
 # plt.tight_layout()
 # plt.show()
-

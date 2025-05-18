@@ -2079,44 +2079,46 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if not self.session.is_this_running(SimulationTypes.OPFTimeSeries_run):
+            if self.circuit.has_time_series:
+                if not self.session.is_this_running(SimulationTypes.OPFTimeSeries_run):
 
-                if self.circuit.time_profile is not None:
+                    if self.circuit.time_profile is not None:
 
-                    self.add_simulation(SimulationTypes.OPFTimeSeries_run)
+                        self.add_simulation(SimulationTypes.OPFTimeSeries_run)
 
-                    self.LOCK()
+                        self.LOCK()
 
-                    # Compile the grid
-                    self.ui.progress_label.setText('Compiling the grid...')
-                    QtGui.QGuiApplication.processEvents()
+                        # Compile the grid
+                        self.ui.progress_label.setText('Compiling the grid...')
+                        QtGui.QGuiApplication.processEvents()
 
-                    # get the power flow options from the GUI
-                    options = self.get_opf_options()
+                        # get the power flow options from the GUI
+                        options = self.get_opf_options()
 
-                    if options is not None:
-                        # create the OPF time series instance
-                        # if non_sequential:
-                        drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
-                                                                   options=options,
-                                                                   time_indices=self.get_time_indices(),
-                                                                   clustering_results=self.get_clustering_results())
+                        if options is not None:
+                            # create the OPF time series instance
+                            # if non_sequential:
+                            drv = sim.OptimalPowerFlowTimeSeriesDriver(grid=self.circuit,
+                                                                       options=options,
+                                                                       time_indices=self.get_time_indices(),
+                                                                       clustering_results=self.get_clustering_results())
 
-                        drv.engine = self.get_preferred_engine()
+                            drv.engine = self.get_preferred_engine()
 
-                        self.session.run(drv,
-                                         post_func=self.post_opf_time_series,
-                                         prog_func=self.ui.progressBar.setValue,
-                                         text_func=self.ui.progress_label.setText)
+                            self.session.run(drv,
+                                             post_func=self.post_opf_time_series,
+                                             prog_func=self.ui.progressBar.setValue,
+                                             text_func=self.ui.progress_label.setText)
+
+                    else:
+                        self.show_warning_toast('There are no time series...')
 
                 else:
-                    self.show_warning_toast('There are no time series...')
-
+                    self.show_warning_toast('Another OPF time series is running already...')
             else:
-                self.show_warning_toast('Another OPF time series is running already...')
-
+                self.show_error_toast("The grid doesn't have time series :/")
         else:
-            pass
+            self.show_warning_toast('Nothing to simulate...')
 
     def post_opf_time_series(self):
         """

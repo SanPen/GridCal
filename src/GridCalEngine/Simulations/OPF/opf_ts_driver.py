@@ -240,13 +240,20 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         elif self.options.solver == SolverType.SIMPLE_OPF:
 
             # AC optimal power flow
-            Pl, Pg = run_simple_dispatch_ts(grid=self.grid,
-                                            time_indices=self.time_indices,
-                                            text_prog=self.report_text,
-                                            prog_func=self.report_progress,
-                                            logger=self.logger)
+            load_profile, gen_dispatch, batt_dispatch, battery_energy, load_shedding = run_simple_dispatch_ts(
+                grid=self.grid,
+                time_indices=self.time_indices,
+                text_prog=self.report_text,
+                prog_func=self.report_progress,
+                logger=self.logger
+            )
 
-            self.results.generator_power[self.time_indices, :] = Pg  # already in MW
+            self.results.generator_power[self.time_indices, :] = gen_dispatch  # already in MW
+            self.results.battery_power[self.time_indices, :] = batt_dispatch
+            self.results.battery_energy[self.time_indices, :] = battery_energy
+
+            self.results.load_shedding[self.time_indices, :] = load_shedding
+            self.results.load_power[self.time_indices, :] = load_profile
 
         else:
             self.logger.add_error('Solver not supported in this mode', str(self.options.solver))
