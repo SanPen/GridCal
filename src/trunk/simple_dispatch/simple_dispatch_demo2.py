@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import fast_dispatch_with_renewables
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch
 import GridCalEngine.api as gce
 
 fname = os.path.join("..", "..", "..", "Grids_and_profiles", "grids", "IEEE39_1W.gridcal")
@@ -83,7 +83,7 @@ for i, elm in enumerate(grid.batteries):
 dt=grid.get_time_deltas_in_hours()
 
 # === Run dispatch ===
-gen_dispatch, batt_dispatch, soc, total_cost = fast_dispatch_with_renewables(
+gen_dispatch, batt_dispatch, soc, total_cost = greedy_dispatch(
     load_profile=load,
     gen_profile=gen_profile,
     gen_dispatchable=dispatchable,

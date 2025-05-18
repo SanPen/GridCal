@@ -7,13 +7,11 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
-from functools import cache
-
 import numpy as np
 import numba as nb
 from typing import Tuple
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.basic_structures import Vec, Mat, IntMat, IntVec, Logger
+from GridCalEngine.basic_structures import Vec, Mat, IntVec, Logger
 
 
 def run_simple_dispatch(grid: MultiCircuit,
@@ -136,7 +134,7 @@ def run_simple_dispatch_ts_old(grid: MultiCircuit,
 
 
 @nb.njit(cache=True)
-def fast_dispatch_with_renewables(
+def greedy_dispatch(
         load_profile: Mat,
 
         gen_profile: Mat,
@@ -144,6 +142,7 @@ def fast_dispatch_with_renewables(
         gen_active: Mat,
         gen_cost: Mat,
 
+        batt_active: Mat,
         batt_p_max_charge: Mat,
         batt_p_max_discharge: Mat,
         batt_energy_max: Mat,
@@ -162,6 +161,7 @@ def fast_dispatch_with_renewables(
     :param gen_dispatchable: ndarray (G,) - Boolean flag per generator (True if dispatchable).
     :param gen_active: ndarray (T, G) - Boolean array indicating whether each generator is active.
     :param gen_cost: ndarray (T, G) - Generator cost profile per timestep.
+    :param batt_active: ndarray (T, B) - Battery active states.
     :param batt_p_max_charge: ndarray (T, B) - Battery charge limits.
     :param batt_p_max_discharge: ndarray (T, B) - Battery discharge limits.
     :param batt_energy_max: ndarray (T, B) - Battery energy capacity.
@@ -226,37 +226,46 @@ def fast_dispatch_with_renewables(
         if remaining > tol:
             # Discharge batteries
             for b in range(B):
-                avail = batt_energy[t, b] / dt[t]
-                p_dis = min(batt_p_max_discharge[t, b], remaining / batt_eff_discharge[t, b], avail)
-                dispatched = p_dis * batt_eff_discharge[t, b]
-                dispatch_batt[t, b] = dispatched
-                batt_energy[t + 1, b] = batt_energy[t, b] - p_dis * dt[t]
-                remaining -= dispatched
-                if remaining <= tol:
-                    break
+                if batt_active[t, b]:
+                    avail = batt_energy[t, b] / dt[t]
+                    p_dis = min(batt_p_max_discharge[t, b], remaining / batt_eff_discharge[t, b], avail)
+                    dispatched = p_dis * batt_eff_discharge[t, b]
+                    dispatch_batt[t, b] = dispatched
+                    batt_energy[t + 1, b] = batt_energy[t, b] - p_dis * dt[t]
+                    remaining -= dispatched
+                    if remaining <= tol:
+                        break
         else:
             # Charging section (with optional forced charging if SoC < soc_min)
             excess = -remaining if remaining < -tol else 0.0
 
             for b in range(B):
-                force_charge = force_charge_if_low and batt_energy[t, b] < batt_soc_min[b]
-                room = (batt_energy_max[t, b] - batt_energy[t, b]) / dt[t]
-                p_ch_possible = batt_p_max_charge[t, b]
-                if not force_charge and excess <= 0.0:
-                    batt_energy[t + 1, b] = batt_energy[t, b]  # maintain
-                    continue
+                if batt_active[t, b]:
+                    force_charge = force_charge_if_low and batt_energy[t, b] < batt_soc_min[b]
+                    room = (batt_energy_max[t, b] - batt_energy[t, b]) / dt[t]
+                    p_ch_possible = batt_p_max_charge[t, b]
+                    if not force_charge and excess <= 0.0:
+                        batt_energy[t + 1, b] = batt_energy[t, b]  # maintain
+                        continue
 
-                p_ch = min(p_ch_possible, room)
-                if not force_charge:
-                    p_ch = min(p_ch, excess * batt_eff_charge[t, b])
+                    p_ch = min(p_ch_possible, room)
+                    if not force_charge:
+                        p_ch = min(p_ch, excess * batt_eff_charge[t, b])
 
-                dispatched = -p_ch / batt_eff_charge[t, b]
-                dispatch_batt[t, b] = dispatched
-                batt_energy[t + 1, b] = batt_energy[t, b] + p_ch * dt[t]
-                if not force_charge:
-                    excess -= -dispatched
+                    dispatched = -p_ch / batt_eff_charge[t, b]
+                    dispatch_batt[t, b] = dispatched
+                    batt_energy[t + 1, b] = batt_energy[t, b] + p_ch * dt[t]
+                    if not force_charge:
+                        excess -= -dispatched
 
-    return dispatch_gen, dispatch_batt, batt_energy[1::, :], total_cost
+    load_total = np.sum(load_profile, axis=1)
+    gen_total = np.sum(dispatch_gen, axis=1)
+    batt_total = np.sum(dispatch_batt, axis=1)
+    supply_total = gen_total + batt_total
+    load_not_supplied = load_total - supply_total
+    load_shedding = np.round(load_profile * (load_not_supplied / load_total)[:, np.newaxis], 6)
+
+    return dispatch_gen, dispatch_batt, batt_energy[1::, :], total_cost, load_not_supplied, load_shedding
 
 
 def run_simple_dispatch_ts(grid: MultiCircuit,
@@ -280,65 +289,60 @@ def run_simple_dispatch_ts(grid: MultiCircuit,
     nt = len(time_indices)
     nl = grid.get_loads_number()
     ng = grid.get_generators_number()
-    nb = grid.get_batteries_number()
+    nbatt = grid.get_batteries_number()
 
     # loads
-    load_profile = np.zeros((nt, nl))
+    load_profile = np.zeros((nt, nl), dtype=float)
     for i, elm in enumerate(grid.loads):
         load_profile[:, i] = elm.P_prof.toarray()[time_indices]
 
     # generators
-    gen_profile = np.zeros((nt, ng))
-    dispatchable = np.zeros(ng, dtype=int)
+    gen_profile = np.zeros((nt, ng), dtype=float)
+    gen_dispatchable = np.zeros(ng, dtype=int)
     gen_active = np.zeros((nt, ng), dtype=int)
-    gen_cost = np.zeros((nt, ng))
+    gen_cost = np.zeros((nt, ng), dtype=float)
     for i, elm in enumerate(grid.generators):
         gen_profile[:, i] = elm.P_prof.toarray()[time_indices]
         gen_active[:, i] = elm.active_prof.toarray()[time_indices]
         gen_cost[:, i] = elm.Cost_prof.toarray()[time_indices]
-        dispatchable[i] = elm.enabled_dispatch
+        gen_dispatchable[i] = elm.enabled_dispatch
 
     # batteries
-    p_max_charge = np.zeros((nt, nb), dtype=int)
-    p_max_discharge = np.zeros((nt, nb), dtype=int)
-    energy_max = np.zeros((nt, nb), dtype=int)
-    eff_charge = np.zeros((nt, nb), dtype=int)
-    eff_discharge = np.zeros((nt, nb), dtype=int)
-    soc0 = np.zeros(nb, dtype=int) + 0.5
-    soc_min = np.zeros(nb, dtype=int) + 0.1
+    batt_active = np.zeros((nt, nbatt), dtype=int)
+    batt_p_max_charge = np.zeros((nt, nbatt), dtype=float)
+    batt_p_max_discharge = np.zeros((nt, nbatt), dtype=float)
+    batt_energy_max = np.zeros((nt, nbatt), dtype=float)
+    batt_eff_charge = np.ones((nt, nbatt), dtype=float)
+    batt_eff_discharge = np.ones((nt, nbatt), dtype=float)
+    batt_soc0 = np.zeros(nbatt, dtype=float) + 0.5
+    batt_soc_min = np.zeros(nbatt, dtype=float) + 0.1
     for i, elm in enumerate(grid.batteries):
-        p_max_charge[:, i] = elm.Pmax * 0.5
-        p_max_discharge[:, i] = elm.Pmax * 0.5
-        energy_max[:, i] = elm.Enom
-        eff_charge[:, i] = elm.charge_efficiency if elm.charge_efficiency > 0.0 else 1.0
-        eff_discharge[:, i] = elm.discharge_efficiency if elm.discharge_efficiency > 0.0 else 1.0
-        soc0[i] = elm.Enom * 0.5
-        soc_min[i] = elm.Enom * elm.min_soc
+        batt_active[:, i] = elm.active_prof.toarray()[time_indices]
+        batt_p_max_charge[:, i] = elm.Pmax
+        batt_p_max_discharge[:, i] = elm.Pmax
+        batt_energy_max[:, i] = elm.Enom
+        batt_eff_charge[:, i] = elm.charge_efficiency if elm.charge_efficiency > 0.0 else 1.0
+        batt_eff_discharge[:, i] = elm.discharge_efficiency if elm.discharge_efficiency > 0.0 else 1.0
+        batt_soc0[i] = elm.Enom * 0.5
+        batt_soc_min[i] = elm.Enom * elm.min_soc
 
     # === Run dispatch ===
-    gen_dispatch, batt_dispatch, soc, total_cost = fast_dispatch_with_renewables(
+    gen_dispatch, batt_dispatch, batt_energy, total_cost, load_not_supplied, load_shedding = greedy_dispatch(
         load_profile=load_profile,
         gen_profile=gen_profile,
-        gen_dispatchable=dispatchable,
+        gen_dispatchable=gen_dispatchable,
         gen_active=gen_active,
         gen_cost=gen_cost,
-        batt_p_max_charge=p_max_charge,
-        batt_p_max_discharge=p_max_discharge,
-        batt_energy_max=energy_max,
-        batt_eff_charge=eff_charge,
-        batt_eff_discharge=eff_discharge,
-        batt_soc0=soc0,
-        batt_soc_min=soc_min,
+        batt_active=batt_active,
+        batt_p_max_charge=batt_p_max_charge,
+        batt_p_max_discharge=batt_p_max_discharge,
+        batt_energy_max=batt_energy_max,
+        batt_eff_charge=batt_eff_charge,
+        batt_eff_discharge=batt_eff_discharge,
+        batt_soc0=batt_soc0,
+        batt_soc_min=batt_soc_min,
         dt=grid.get_time_deltas_in_hours()[time_indices],
         force_charge_if_low=True
     )
 
-    load_total = np.sum(load_profile, axis=1)
-    gen_total = np.sum(gen_dispatch, axis=1)
-    batt_total = np.sum(batt_dispatch, axis=1)
-    supply_total = gen_total + batt_total
-    load_not_supplied = load_total - supply_total
-
-    load_shedding = np.round(load_profile * (load_not_supplied / load_total)[:, np.newaxis], 6)
-
-    return load_profile, gen_dispatch, batt_dispatch, soc, load_shedding
+    return load_profile, gen_dispatch, batt_dispatch, batt_energy, load_shedding

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import fast_dispatch_with_renewables
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import greedy_dispatch
 
 # === Simulation parameters ===
 T = 24  # hours
@@ -38,7 +38,7 @@ force_charge_if_low = True
 dt = np.ones(T)
 
 # === Run dispatch ===
-gen_dispatch, batt_dispatch, soc, total_cost = fast_dispatch_with_renewables(
+gen_dispatch, batt_dispatch, soc, total_cost = greedy_dispatch(
     load, gen_profile, dispatchable, active, cost_gen,
     p_max_charge, p_max_discharge, energy_max,
     eff_charge, eff_discharge, soc0, soc_min, dt, force_charge_if_low
