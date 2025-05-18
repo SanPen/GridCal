@@ -149,8 +149,8 @@ def fast_dispatch_with_renewables(
         batt_energy_max: Mat,
         batt_eff_charge: Mat,
         batt_eff_discharge: Mat,
-        soc0: Vec,
-        soc_min: Vec,
+        batt_soc0: Vec,
+        batt_soc_min: Vec,
 
         dt: Vec,
         force_charge_if_low: bool,
@@ -167,8 +167,8 @@ def fast_dispatch_with_renewables(
     :param batt_energy_max: ndarray (T, B) - Battery energy capacity.
     :param batt_eff_charge: ndarray (T, B) - Battery efficiencies.
     :param batt_eff_discharge: ndarray (T, B) - Battery efficiencies.
-    :param soc0: ndarray (B,) - Initial SOC.
-    :param soc_min: ndarray (B) - Battery minimum state of charge
+    :param batt_soc0: ndarray (B,) - Initial SOC.
+    :param batt_soc_min: ndarray (B) - Battery minimum state of charge
     :param dt: float - Timestep duration [h].
     :param force_charge_if_low: Force to charge if low?
     :param tol: Tolerance (numerical zero)
@@ -185,11 +185,11 @@ def fast_dispatch_with_renewables(
 
     dispatch_gen = np.zeros((T, G))
     dispatch_batt = np.zeros((T, B))
-    soc = np.zeros((T + 1, B))
+    batt_energy = np.zeros((T + 1, B))
     total_cost = 0.0
 
     # initialize the SoC
-    soc[0, :] = soc0
+    batt_energy[0, :] = batt_soc0
 
     for t in range(T):
 
@@ -226,11 +226,11 @@ def fast_dispatch_with_renewables(
         if remaining > tol:
             # Discharge batteries
             for b in range(B):
-                avail = soc[t, b] / dt[t]
+                avail = batt_energy[t, b] / dt[t]
                 p_dis = min(batt_p_max_discharge[t, b], remaining / batt_eff_discharge[t, b], avail)
                 dispatched = p_dis * batt_eff_discharge[t, b]
                 dispatch_batt[t, b] = dispatched
-                soc[t + 1, b] = soc[t, b] - p_dis * dt[t]
+                batt_energy[t + 1, b] = batt_energy[t, b] - p_dis * dt[t]
                 remaining -= dispatched
                 if remaining <= tol:
                     break
@@ -239,11 +239,11 @@ def fast_dispatch_with_renewables(
             excess = -remaining if remaining < -tol else 0.0
 
             for b in range(B):
-                force_charge = force_charge_if_low and soc[t, b] < soc_min[b]
-                room = (batt_energy_max[t, b] - soc[t, b]) / dt[t]
+                force_charge = force_charge_if_low and batt_energy[t, b] < batt_soc_min[b]
+                room = (batt_energy_max[t, b] - batt_energy[t, b]) / dt[t]
                 p_ch_possible = batt_p_max_charge[t, b]
                 if not force_charge and excess <= 0.0:
-                    soc[t + 1, b] = soc[t, b]  # maintain
+                    batt_energy[t + 1, b] = batt_energy[t, b]  # maintain
                     continue
 
                 p_ch = min(p_ch_possible, room)
@@ -252,11 +252,11 @@ def fast_dispatch_with_renewables(
 
                 dispatched = -p_ch / batt_eff_charge[t, b]
                 dispatch_batt[t, b] = dispatched
-                soc[t + 1, b] = soc[t, b] + p_ch * dt[t]
+                batt_energy[t + 1, b] = batt_energy[t, b] + p_ch * dt[t]
                 if not force_charge:
                     excess -= -dispatched
 
-    return dispatch_gen, dispatch_batt, soc[1::, :], total_cost
+    return dispatch_gen, dispatch_batt, batt_energy[1::, :], total_cost
 
 
 def run_simple_dispatch_ts(grid: MultiCircuit,
@@ -327,8 +327,8 @@ def run_simple_dispatch_ts(grid: MultiCircuit,
         batt_energy_max=energy_max,
         batt_eff_charge=eff_charge,
         batt_eff_discharge=eff_discharge,
-        soc0=soc0,
-        soc_min=soc_min,
+        batt_soc0=soc0,
+        batt_soc_min=soc_min,
         dt=grid.get_time_deltas_in_hours()[time_indices],
         force_charge_if_low=True
     )

@@ -94,8 +94,8 @@ gen_dispatch, batt_dispatch, soc, total_cost = fast_dispatch_with_renewables(
     batt_energy_max=energy_max,
     batt_eff_charge=eff_charge,
     batt_eff_discharge=eff_discharge,
-    soc0=soc0,
-    soc_min=soc_min,
+    batt_soc0=soc0,
+    batt_soc_min=soc_min,
     dt=dt,
     force_charge_if_low=True
 )
