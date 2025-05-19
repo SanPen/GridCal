@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-
+import numba as nb
 from scipy.sparse import lil_matrix
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -13,16 +13,31 @@ from GridCalEngine.Simulations.Reliability.adequacy_results import AdequacyResul
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 import NSGA_3
-from GridCalEngine.Simulations.Reliability.reliability import reliability_simulation
-from GridCalEngine.basic_structures import Vec, IntVec
+from GridCalEngine.Simulations.Reliability.reliability import (reliability_simulation,
+                                                               compute_loss_of_load_because_of_lack_of_generation)
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch
+from GridCalEngine.basic_structures import Vec, IntVec, IntMat
 
 
 class AdequacyOptimizationOptions:
 
-    def __init__(self, n_ga_evaluations=1000, n_monte_carlo_sim=10000, save_file: bool = True):
+    def __init__(self,
+                 n_ga_evaluations=1000,
+                 n_monte_carlo_sim=10000,
+                 use_monte_carlo: bool = True,
+                 save_file: bool = True):
         self.max_ga_evaluations = n_ga_evaluations
         self.n_monte_carlo_sim = n_monte_carlo_sim
+        self.use_monte_carlo = use_monte_carlo
         self.save_file = save_file
+
+
+@nb.njit(cache=True)
+def apply_actives_mask(original_active: IntMat, mask_indices: IntVec, mask: IntVec):
+    active = original_active.copy()
+    for i in mask_indices:
+        active[:, i] = mask[i]
+    return active
 
 
 class AdequacyOptimizationDriver(DriverTemplate):
@@ -51,6 +66,11 @@ class AdequacyOptimizationDriver(DriverTemplate):
         # --------------------------------------------------------------------------------------------------------------
         # gather problem structures
         # --------------------------------------------------------------------------------------------------------------
+
+        self.greedy_dispatch_inputs = GreedyDispatchInputs(grid=self.grid,
+                                                           time_indices=None,
+                                                           logger=self.logger)
+
         nc = compile_numerical_circuit_at(self.grid, t_idx=None)
         self.gen_mttf = nc.generator_data.mttf
         self.gen_mttr = nc.generator_data.mttr
@@ -88,17 +108,6 @@ class AdequacyOptimizationDriver(DriverTemplate):
         self.inv_gen_idx = np.array(self.inv_gen_idx)
         self.inv_batt_idx = np.array(self.inv_batt_idx)
 
-        self.gen_pmax = np.empty((self.grid.get_time_number(), nc.ngen), dtype=float)
-        for k, gen in enumerate(self.grid.generators):
-            if gen.enabled_dispatch:
-                self.gen_pmax[:, k] = gen.Snom * gen.active_prof.toarray()
-            else:
-                self.gen_pmax[:, k] = gen.P_prof.toarray() * gen.active_prof.toarray()
-
-        self.load_p = np.empty((self.grid.get_time_number(), nc.nload), dtype=float)
-        for k, load in enumerate(self.grid.loads):
-            self.load_p[:, k] = load.active_prof.toarray() * load.P_prof.toarray()
-
         self.__cancel__ = False
 
     def progress_callback(self, lmbda: float):
@@ -118,24 +127,74 @@ class AdequacyOptimizationDriver(DriverTemplate):
         gen_mask = self.dim2gen @ x
         batt_mask = self.dim2batt @ x
 
-        gen_pmax = self.gen_pmax.copy()
-        gen_pmax[:, self.inv_gen_idx] *= gen_mask[self.inv_gen_idx]
-
         invested_gen_idx = np.where(gen_mask == 1)[0]
         capex = np.sum(self.gen_capex[invested_gen_idx])
 
-        lole_array = reliability_simulation(
-            dt=self.dt,
-            gen_mttf=self.gen_mttf,
-            gen_mttr=self.gen_mttr,
-            gen_pmax=gen_pmax,
-            load_p=self.load_p,
-            n_sim=self.options.n_monte_carlo_sim,
-            horizon=self.grid.get_time_number()
-        )
+        gen_active = apply_actives_mask(original_active=self.greedy_dispatch_inputs.gen_active,
+                                        mask_indices=self.inv_gen_idx,
+                                        mask=gen_mask)
 
-        # since the lole_array are the monte carlo array values, return the last one
-        lole = lole_array[-1]
+        batt_active = apply_actives_mask(original_active=self.greedy_dispatch_inputs.batt_active,
+                                        mask_indices=self.inv_batt_idx,
+                                        mask=batt_mask)
+
+        # batt_pmax = self.greedy_dispatch_inputs.batt_p_max_charge.copy()
+        # batt_pmax[:, self.inv_batt_idx] *= batt_mask[self.inv_batt_idx]
+        # invested_batt_idx = np.where(batt_mask == 1)[0]
+        # capex += np.sum(self.batt_capex[invested_batt_idx])
+
+        if self.options.use_monte_carlo:
+
+            lole_array = reliability_simulation(
+                n_sim=self.options.n_monte_carlo_sim,
+                load_profile=self.greedy_dispatch_inputs.load_profile,
+
+                gen_profile=self.greedy_dispatch_inputs.gen_profile,
+                gen_p_max=self.greedy_dispatch_inputs.gen_p_max,
+                gen_p_min=self.greedy_dispatch_inputs.gen_p_min,
+                gen_dispatchable=self.greedy_dispatch_inputs.gen_dispatchable,
+                gen_active=gen_active,
+                gen_cost=self.greedy_dispatch_inputs.gen_cost,
+                gen_mttf=self.gen_mttf,
+                gen_mttr=self.gen_mttr,
+
+                batt_active=batt_active,
+                batt_p_max_charge=self.greedy_dispatch_inputs.batt_p_max_charge,
+                batt_p_max_discharge=self.greedy_dispatch_inputs.batt_p_max_discharge,
+                batt_energy_max=self.greedy_dispatch_inputs.batt_energy_max,
+                batt_eff_charge=self.greedy_dispatch_inputs.batt_eff_charge,
+                batt_eff_discharge=self.greedy_dispatch_inputs.batt_eff_discharge,
+                batt_soc0=self.greedy_dispatch_inputs.batt_soc0,
+                batt_soc_min=self.greedy_dispatch_inputs.batt_soc_min,
+                dt=self.greedy_dispatch_inputs.dt,
+                force_charge_if_low=True
+            )
+            lole = lole_array[-1]
+
+        else:
+
+            (gen_dispatch, batt_dispatch,
+             batt_energy, total_cost,
+             load_not_supplied, load_shedding) = greedy_dispatch(
+                load_profile=self.greedy_dispatch_inputs.load_profile,
+                gen_profile=self.greedy_dispatch_inputs.gen_profile,
+                gen_p_max=self.greedy_dispatch_inputs.gen_p_max,
+                gen_p_min=self.greedy_dispatch_inputs.gen_p_min,
+                gen_dispatchable=self.greedy_dispatch_inputs.gen_dispatchable,
+                gen_active=gen_active,
+                gen_cost=self.greedy_dispatch_inputs.gen_cost,
+                batt_active=batt_active,
+                batt_p_max_charge=self.greedy_dispatch_inputs.batt_p_max_charge,
+                batt_p_max_discharge=self.greedy_dispatch_inputs.batt_p_max_discharge,
+                batt_energy_max=self.greedy_dispatch_inputs.batt_energy_max,
+                batt_eff_charge=self.greedy_dispatch_inputs.batt_eff_charge,
+                batt_eff_discharge=self.greedy_dispatch_inputs.batt_eff_discharge,
+                batt_soc0=self.greedy_dispatch_inputs.batt_soc0,
+                batt_soc_min=self.greedy_dispatch_inputs.batt_soc_min,
+                dt=self.greedy_dispatch_inputs.dt,
+                force_charge_if_low=True
+            )
+            lole = np.sum(load_not_supplied)
 
         self.results.add(
             capex=capex,

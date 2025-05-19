@@ -29,13 +29,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="refactored fast_dispatch_with_renewables">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/__version__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/__version__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalServer/__version__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalServer/__version__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/simple_dispatch/simple_dispatch_demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/simple_dispatch/simple_dispatch_demo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/simple_dispatch/simple_dispatch_demo2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/simple_dispatch/simple_dispatch_demo2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/adequacy_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/adequacy_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/basic_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/basic_structures.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -205,9 +205,10 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python tests.test_ntc.py.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
+    "Python.adequacy_driver.executor": "Run",
     "Python.auto_document_models.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.circuit_to_optimods.executor": "Run",
@@ -231,6 +232,7 @@
     "Python.raw_imp_exp_test.executor": "Run",
     "Python.readme_checks.executor": "Run",
     "Python.readme_example.executor": "Run",
+    "Python.reliability_driver.executor": "Debug",
     "Python.reliability_study_run.executor": "Run",
     "Python.round_trip.executor": "Run",
     "Python.run.executor": "Debug",
@@ -241,6 +243,7 @@
     "Python.short_circuit_driver.executor": "Run",
     "Python.simple_dispatch_demo.executor": "Debug",
     "Python.simple_dispatch_demo2.executor": "Run",
+    "Python.simple_dispatch_ts.executor": "Debug",
     "Python.stack_plot_pos_neg.executor": "Run",
     "Python.test_gslv_conversion.executor": "Run",
     "Python.test_ntc.executor": "Debug",
@@ -260,7 +263,7 @@
     "Shell Script.make.sh.executor": "Run",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "devel",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/trunk/simple_dispatch",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Simulations/Reliability",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -278,11 +281,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
       <recent name="$PROJECT_DIR$/src/trunk/simple_dispatch" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCal/ThirdParty/darkdetect" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/trunk/simple_dispatch" />
@@ -292,7 +295,7 @@
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.reliability_driver">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -742,7 +745,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="example_new_england" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="adequacy_driver" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -751,12 +754,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/pf" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/pf/example_new_england.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/adequacy_driver.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -765,7 +768,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="reliability" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -774,12 +777,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -788,7 +791,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="simple_dispatch_demo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="reliability_driver" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -797,12 +800,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/simple_dispatch/simple_dispatch_demo.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability_driver.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -811,7 +814,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="simple_dispatch_demo2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="simple_dispatch_ts" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -820,12 +823,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/simple_dispatch" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/simple_dispatch/simple_dispatch_demo2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -1150,20 +1153,20 @@
       <item itemvalue="Python.test_opf" />
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
+      <item itemvalue="Python.adequacy_driver" />
+      <item itemvalue="Python.reliability" />
+      <item itemvalue="Python.reliability_driver" />
+      <item itemvalue="Python.simple_dispatch_ts" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.example_new_england" />
-      <item itemvalue="Python.make" />
-      <item itemvalue="Python.simple_dispatch_demo2" />
-      <item itemvalue="Python.simple_dispatch_demo" />
       <item itemvalue="Python tests.test_ntc.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.reliability_driver" />
+        <item itemvalue="Python.reliability" />
+        <item itemvalue="Python.adequacy_driver" />
+        <item itemvalue="Python.simple_dispatch_ts" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.simple_dispatch_demo2" />
-        <item itemvalue="Python.example_new_england" />
-        <item itemvalue="Python.simple_dispatch_demo" />
-        <item itemvalue="Python.make" />
       </list>
     </recent_temporary>
   </component>
@@ -2383,7 +2386,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="727" />
+    <option name="localTasksCounter" value="728" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2963,11 +2966,41 @@
           <line>693</line>
           <option name="timeStamp" value="2731" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability_driver.py</url>
+          <line>110</line>
+          <option name="timeStamp" value="2733" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py</url>
+          <line>420</line>
+          <option name="timeStamp" value="2736" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/adequacy_driver.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="2742" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py</url>
+          <line>403</line>
+          <option name="timeStamp" value="2743" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py</url>
+          <line>276</line>
+          <option name="timeStamp" value="2754" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="vars_v.hvdc_vars" />
+        <watch expression="gen_mask" />
+        <watch expression="elm.Pmax_prof.toarray()" />
+        <watch expression="t" />
+        <watch expression="lole" />
+        <watch expression="np.sum(load_not_supplied)" />
       </configuration>
     </watches-manager>
   </component>

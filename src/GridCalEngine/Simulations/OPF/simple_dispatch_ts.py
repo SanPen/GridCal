@@ -138,6 +138,8 @@ def greedy_dispatch(
         load_profile: Mat,
 
         gen_profile: Mat,
+        gen_p_max: Mat,
+        gen_p_min: Mat,
         gen_dispatchable: Mat,
         gen_active: Mat,
         gen_cost: Mat,
@@ -158,6 +160,8 @@ def greedy_dispatch(
     Greedy dispatch algorithm with dispatchable and non-dispatchable (e.g., renewable) generators.
     :param load_profile: ndarray (T, L) - Load time series per timestep and load element.
     :param gen_profile: ndarray (T, G) - Precomputed generator output (for renewables or constraints).
+    :param gen_p_max: ndarray (T, G) - array of generators maximum power
+    :param gen_p_min: ndarray (T, G) - array of generators minumum power
     :param gen_dispatchable: ndarray (G,) - Boolean flag per generator (True if dispatchable).
     :param gen_active: ndarray (T, G) - Boolean array indicating whether each generator is active.
     :param gen_cost: ndarray (T, G) - Generator cost profile per timestep.
@@ -188,6 +192,9 @@ def greedy_dispatch(
     batt_energy = np.zeros((T + 1, B))
     total_cost = 0.0
 
+    load_not_supplied = np.zeros(T)
+    load_total = np.zeros(T)
+
     # initialize the SoC
     batt_energy[0, :] = batt_soc0
 
@@ -195,27 +202,30 @@ def greedy_dispatch(
 
         # Step 0: Initialize the remaining load to the total load
         remaining = np.sum(load_profile[t, :])
+        load_total[t] = remaining
 
         # Step 1: Apply fixed (non-dispatchable) generation
-
         gen_order = list()
         for g in range(G):
-            if gen_active[t, g] and not gen_dispatchable[g]:
-                dispatch = min(gen_profile[t, g], remaining)
-                dispatch_gen[t, g] = dispatch
-                remaining -= dispatch
-                # No cost for renewables assumed
+            if gen_active[t, g]:
+                if gen_dispatchable[g]:
+                    # store the dispatchable generation for later
+                    gen_order.append((gen_cost[t, g], g))
+                else:
+                    # remove the generation that is fixed
+                    dispatch = min(gen_profile[t, g], remaining)
+                    dispatch_gen[t, g] = dispatch
+                    remaining -= dispatch
+                    # No cost for renewables assumed
 
         # Step 2: Dispatchable generation (sorted by cost)
         # Generate list of (cost, g) for active+dispatchable generators
-        for g in range(G):
-            if gen_active[t, g] and gen_dispatchable[g]:
-                gen_order.append((gen_cost[t, g], g))
-
         gen_order.sort()
         for cost, g in gen_order:
-            p_max = gen_profile[t, g]  # cap for dispatchable generator
+            p_max = min(gen_p_max[t, g], gen_profile[t, g])
+            p_min = min(gen_p_min[t, g], p_max)  # don't allow p_min > p_max
             p = min(p_max, remaining)
+            p = max(p, p_min) if remaining >= p_min else 0.0
             dispatch_gen[t, g] = p
             total_cost += p * gen_cost[t, g] * dt[t]
             remaining -= p
@@ -258,91 +268,154 @@ def greedy_dispatch(
                     if not force_charge:
                         excess -= -dispatched
 
-    load_total = np.sum(load_profile, axis=1)
-    gen_total = np.sum(dispatch_gen, axis=1)
-    batt_total = np.sum(dispatch_batt, axis=1)
-    supply_total = gen_total + batt_total
-    load_not_supplied = load_total - supply_total
+
+        if remaining > 0:
+            load_not_supplied[t] = remaining
+
     load_shedding = np.round(load_profile * (load_not_supplied / load_total)[:, np.newaxis], 6)
 
     return dispatch_gen, dispatch_batt, batt_energy[1::, :], total_cost, load_not_supplied, load_shedding
 
 
+class GreedyDispatchInputs:
+
+    def __init__(self, grid: MultiCircuit, time_indices: IntVec | None = None, logger: Logger = Logger()):
+        """
+
+        :param grid:
+        :param time_indices:
+        :param logger:
+        """
+
+        if time_indices is None:
+            time_indices = grid.get_all_time_indices()
+
+        nt = len(time_indices)
+        nl = grid.get_loads_number()
+        ng = grid.get_generators_number()
+        nbatt = grid.get_batteries_number()
+
+        self.dt = grid.get_time_deltas_in_hours()[time_indices]
+
+        # loads
+        self.load_profile = np.zeros((nt, nl), dtype=float)
+        for i, elm in enumerate(grid.loads):
+            self.load_profile[:, i] = elm.P_prof.toarray()[time_indices]
+
+        # generators
+        self.gen_profile = np.zeros((nt, ng), dtype=float)
+        self.gen_dispatchable = np.zeros(ng, dtype=int)
+        self.gen_active = np.zeros((nt, ng), dtype=int)
+        self.gen_cost = np.zeros((nt, ng), dtype=float)
+        self.gen_p_max = np.zeros((nt, ng), dtype=float)
+        self.gen_p_min = np.zeros((nt, ng), dtype=float)
+        for i, elm in enumerate(grid.generators):
+            self.gen_profile[:, i] = elm.P_prof.toarray()[time_indices]
+            self.gen_active[:, i] = elm.active_prof.toarray()[time_indices]
+            self.gen_cost[:, i] = elm.Cost_prof.toarray()[time_indices]
+            self.gen_p_max[:, i] = elm.Pmax_prof.toarray()[time_indices]
+            self.gen_p_min[:, i] = elm.Pmin_prof.toarray()[time_indices]
+            self.gen_dispatchable[i] = elm.enabled_dispatch
+
+        self.gen_profile = np.nan_to_num(self.gen_profile)
+
+        # batteries
+        self.batt_active = np.zeros((nt, nbatt), dtype=int)
+        self.batt_p_max_charge = np.zeros((nt, nbatt), dtype=float)
+        self.batt_p_max_discharge = np.zeros((nt, nbatt), dtype=float)
+        self.batt_energy_max = np.zeros((nt, nbatt), dtype=float)
+        self.batt_eff_charge = np.ones((nt, nbatt), dtype=float)
+        self.batt_eff_discharge = np.ones((nt, nbatt), dtype=float)
+        self.batt_soc0 = np.zeros(nbatt, dtype=float) + 0.5
+        self.batt_soc_min = np.zeros(nbatt, dtype=float) + 0.1
+        for i, elm in enumerate(grid.batteries):
+            self.batt_active[:, i] = elm.active_prof.toarray()[time_indices]
+            self.batt_p_max_charge[:, i] = elm.Pmax
+            self.batt_p_max_discharge[:, i] = elm.Pmax
+            self.batt_energy_max[:, i] = elm.Enom
+
+            if elm.charge_efficiency > 0.0:
+                self.batt_eff_charge[:, i] = elm.charge_efficiency
+            else:
+                self.batt_eff_charge[:, i] = 1.0
+                logger.add_warning("Charge efficiency is zero", device_class="Battery", device=elm.idtag)
+
+            if elm.discharge_efficiency > 0.0:
+                self.batt_eff_discharge[:, i] = elm.discharge_efficiency
+            else:
+                self.batt_eff_discharge[:, i] = 1.0
+                logger.add_warning("Discharge efficiency is zero", device_class="Battery", device=elm.idtag)
+
+            self.batt_soc0[i] = elm.Enom * 0.5
+            self.batt_soc_min[i] = elm.Enom * elm.min_soc
+
+
 def run_simple_dispatch_ts(grid: MultiCircuit,
-                           time_indices: IntVec,
+                           time_indices: IntVec | None,
                            logger: Logger,
                            text_prog=None,
                            prog_func=None) -> Tuple[Mat, Mat, Mat, Mat, Mat]:
     """
-
-    :param grid:
-    :param time_indices:
-    :param logger:
-    :param text_prog:
-    :param prog_func:
+    Run a simple (greedy) dispatch
+    :param grid: MultiCircuit
+    :param time_indices: array of time indices (optional)
+    :param logger: Logger
+    :param text_prog: text report function (optional)
+    :param prog_func: progress report function (optional)
     :return:
     """
+    if prog_func is not None:
+        prog_func(0.0)
 
-    if time_indices is None:
-        time_indices = grid.get_all_time_indices()
+    if text_prog is not None:
+        text_prog("Running simple dispatch...")
 
-    nt = len(time_indices)
-    nl = grid.get_loads_number()
-    ng = grid.get_generators_number()
-    nbatt = grid.get_batteries_number()
-
-    # loads
-    load_profile = np.zeros((nt, nl), dtype=float)
-    for i, elm in enumerate(grid.loads):
-        load_profile[:, i] = elm.P_prof.toarray()[time_indices]
-
-    # generators
-    gen_profile = np.zeros((nt, ng), dtype=float)
-    gen_dispatchable = np.zeros(ng, dtype=int)
-    gen_active = np.zeros((nt, ng), dtype=int)
-    gen_cost = np.zeros((nt, ng), dtype=float)
-    for i, elm in enumerate(grid.generators):
-        gen_profile[:, i] = elm.P_prof.toarray()[time_indices]
-        gen_active[:, i] = elm.active_prof.toarray()[time_indices]
-        gen_cost[:, i] = elm.Cost_prof.toarray()[time_indices]
-        gen_dispatchable[i] = elm.enabled_dispatch
-
-    # batteries
-    batt_active = np.zeros((nt, nbatt), dtype=int)
-    batt_p_max_charge = np.zeros((nt, nbatt), dtype=float)
-    batt_p_max_discharge = np.zeros((nt, nbatt), dtype=float)
-    batt_energy_max = np.zeros((nt, nbatt), dtype=float)
-    batt_eff_charge = np.ones((nt, nbatt), dtype=float)
-    batt_eff_discharge = np.ones((nt, nbatt), dtype=float)
-    batt_soc0 = np.zeros(nbatt, dtype=float) + 0.5
-    batt_soc_min = np.zeros(nbatt, dtype=float) + 0.1
-    for i, elm in enumerate(grid.batteries):
-        batt_active[:, i] = elm.active_prof.toarray()[time_indices]
-        batt_p_max_charge[:, i] = elm.Pmax
-        batt_p_max_discharge[:, i] = elm.Pmax
-        batt_energy_max[:, i] = elm.Enom
-        batt_eff_charge[:, i] = elm.charge_efficiency if elm.charge_efficiency > 0.0 else 1.0
-        batt_eff_discharge[:, i] = elm.discharge_efficiency if elm.discharge_efficiency > 0.0 else 1.0
-        batt_soc0[i] = elm.Enom * 0.5
-        batt_soc_min[i] = elm.Enom * elm.min_soc
+    inpts = GreedyDispatchInputs(grid=grid, time_indices=time_indices, logger=logger)
 
     # === Run dispatch ===
-    gen_dispatch, batt_dispatch, batt_energy, total_cost, load_not_supplied, load_shedding = greedy_dispatch(
-        load_profile=load_profile,
-        gen_profile=gen_profile,
-        gen_dispatchable=gen_dispatchable,
-        gen_active=gen_active,
-        gen_cost=gen_cost,
-        batt_active=batt_active,
-        batt_p_max_charge=batt_p_max_charge,
-        batt_p_max_discharge=batt_p_max_discharge,
-        batt_energy_max=batt_energy_max,
-        batt_eff_charge=batt_eff_charge,
-        batt_eff_discharge=batt_eff_discharge,
-        batt_soc0=batt_soc0,
-        batt_soc_min=batt_soc_min,
-        dt=grid.get_time_deltas_in_hours()[time_indices],
+    (gen_dispatch, batt_dispatch,
+     batt_energy, total_cost,
+     load_not_supplied, load_shedding) = greedy_dispatch(
+        load_profile=inpts.load_profile,
+        gen_profile=inpts.gen_profile,
+        gen_p_max=inpts.gen_p_max,
+        gen_p_min=inpts.gen_p_min,
+        gen_dispatchable=inpts.gen_dispatchable,
+        gen_active=inpts.gen_active,
+        gen_cost=inpts.gen_cost,
+        batt_active=inpts.batt_active,
+        batt_p_max_charge=inpts.batt_p_max_charge,
+        batt_p_max_discharge=inpts.batt_p_max_discharge,
+        batt_energy_max=inpts.batt_energy_max,
+        batt_eff_charge=inpts.batt_eff_charge,
+        batt_eff_discharge=inpts.batt_eff_discharge,
+        batt_soc0=inpts.batt_soc0,
+        batt_soc_min=inpts.batt_soc_min,
+        dt=inpts.dt,
         force_charge_if_low=True
     )
 
-    return load_profile, gen_dispatch, batt_dispatch, batt_energy, load_shedding
+    if prog_func is not None:
+        prog_func(100.0)
+
+    if text_prog is not None:
+        text_prog("Done!")
+
+    return inpts.load_profile, gen_dispatch, batt_dispatch, batt_energy, load_shedding
+
+
+if __name__ == '__main__':
+    import GridCalEngine.api as gce
+    from matplotlib import pyplot as plt
+
+    fname = "/home/santi/Documentos/Git/eRoots/tonga_planning/model_conversion_and_validation/Tongatapu/models/Tongatapu_v4_2024_ts.gridcal"
+
+    grid_ = gce.open_file(fname)
+
+    (load_profile,
+     gen_dispatch,
+     batt_dispatch,
+     batt_energy,
+     load_shedding) = run_simple_dispatch_ts(grid=grid_, time_indices=None, logger=Logger())
+
+    print()

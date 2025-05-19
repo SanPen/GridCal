@@ -10,20 +10,21 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from GridCalEngine.DataStructures.numerical_circuit import build_branches_C_coo_3
 from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch
 from GridCalEngine.Simulations.Reliability.reliability import reliability_simulation
 
 
 class ReliabilityStudy(DriverTemplate):
 
-    def __init__(self, circuit: MultiCircuit, pf_options: PowerFlowOptions,
+    def __init__(self, grid: MultiCircuit, pf_options: PowerFlowOptions,
                  n_sim: int = 1000000):
         """
         ContinuationPowerFlowDriver constructor
-        :param circuit: NumericalCircuit instance
+        :param grid: NumericalCircuit instance
         :param pf_options: power flow options instance
         :param n_sim: Number of Monte-Carlo simulations
         """
-        DriverTemplate.__init__(self, grid=circuit)
+        DriverTemplate.__init__(self, grid=grid)
 
         # voltage stability options
         self.pf_options = pf_options
@@ -32,6 +33,10 @@ class ReliabilityStudy(DriverTemplate):
 
         self.lole_evolution = np.zeros(n_sim)
         self.lole = np.zeros(n_sim)
+
+        self.greedy_dispatch_inputs = GreedyDispatchInputs(grid=grid,
+                                                           time_indices=None,
+                                                           logger=self.logger)
 
         self.__cancel__ = False
 
@@ -50,10 +55,11 @@ class ReliabilityStudy(DriverTemplate):
         """
         self.tic()
 
-        n_gen = self.grid.get_generators_number()
-        n_load = self.grid.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)
+        horizon = self.grid.get_time_number()
 
-        gen_pmax = np.empty((self.grid.get_time_number(), n_gen), dtype=float)
+        n_gen = self.grid.get_generators_number()
+
+        gen_pmax = np.empty((horizon, n_gen), dtype=float)
         gen_mttf = np.zeros(n_gen)
         gen_mttr = np.zeros(n_gen)
         for k, gen in enumerate(self.grid.generators):
@@ -64,28 +70,43 @@ class ReliabilityStudy(DriverTemplate):
             else:
                 gen_pmax[:, k] = gen.P_prof.toarray() * gen.active_prof.toarray()
 
-        load_p = np.empty((self.grid.get_time_number(), n_load), dtype=float)
-        for k, load in enumerate(self.grid.loads):
-            load_p[:, k] = load.active_prof.toarray() * load.P_prof.toarray()
+        # nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        #
+        # i, j, data, n_elm = build_branches_C_coo_3(
+        #     bus_active=nc.bus_data.active,
+        #     F1=nc.passive_branch_data.F, T1=nc.passive_branch_data.T, active1=nc.passive_branch_data.active,
+        #     F2=nc.vsc_data.F, T2=nc.vsc_data.T, active2=nc.vsc_data.active,
+        #     F3=nc.hvdc_data.F, T3=nc.hvdc_data.T, active3=nc.hvdc_data.active,
+        # )
 
-        nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        # C = sp.coo_matrix((data, (i, j)), shape=(n_elm, nc.bus_data.nbus), dtype=int)
+        # A = (C.T @ C).tocsc()
 
-        i, j, data, n_elm = build_branches_C_coo_3(
-            bus_active=nc.bus_data.active,
-            F1=nc.passive_branch_data.F, T1=nc.passive_branch_data.T, active1=nc.passive_branch_data.active,
-            F2=nc.vsc_data.F, T2=nc.vsc_data.T, active2=nc.vsc_data.active,
-            F3=nc.hvdc_data.F, T3=nc.hvdc_data.T, active3=nc.hvdc_data.active,
+        self.lole = reliability_simulation(
+            n_sim=self.n_sim,
+            load_profile=self.greedy_dispatch_inputs.load_profile,
+
+            gen_profile=self.greedy_dispatch_inputs.gen_profile,
+            gen_p_max=gen_pmax,
+            gen_p_min=self.greedy_dispatch_inputs.gen_p_min,
+            gen_dispatchable=self.greedy_dispatch_inputs.gen_dispatchable,
+            gen_active=self.greedy_dispatch_inputs.gen_active,
+            gen_cost=self.greedy_dispatch_inputs.gen_cost,
+            gen_mttf=gen_mttf,
+            gen_mttr=gen_mttr,
+
+            batt_active=self.greedy_dispatch_inputs.batt_active,
+            batt_p_max_charge=self.greedy_dispatch_inputs.batt_p_max_charge,
+            batt_p_max_discharge=self.greedy_dispatch_inputs.batt_p_max_discharge,
+            batt_energy_max=self.greedy_dispatch_inputs.batt_energy_max,
+            batt_eff_charge=self.greedy_dispatch_inputs.batt_eff_charge,
+            batt_eff_discharge=self.greedy_dispatch_inputs.batt_eff_discharge,
+            batt_soc0=self.greedy_dispatch_inputs.batt_soc0,
+            batt_soc_min=self.greedy_dispatch_inputs.batt_soc_min,
+            dt=self.greedy_dispatch_inputs.dt,
+            force_charge_if_low=True,
+            tol=1e-6
         )
-
-        C = sp.coo_matrix((data, (i, j)), shape=(n_elm, nc.bus_data.nbus), dtype=int)
-        A = (C.T @ C).tocsc()
-
-        self.lole = reliability_simulation(gen_mttf=gen_mttf,
-                                           gen_mttr=gen_mttr,
-                                           gen_pmax=gen_pmax,
-                                           load_p=load_p,
-                                           n_sim=self.n_sim,
-                                           horizon=self.grid.get_time_number())
 
         self.lole_evolution = np.cumsum(self.lole) / (np.arange(len(self.lole)) + 1)
         print(f"LOLE: {self.lole.mean()} MWh/year")
@@ -112,3 +133,18 @@ class ReliabilityStudy(DriverTemplate):
 
     def cancel(self):
         self.__cancel__ = True
+
+
+if __name__ == '__main__':
+    import GridCalEngine.api as gce
+    from matplotlib import pyplot as plt
+
+    fname = "/home/santi/Documentos/Git/eRoots/tonga_planning/model_conversion_and_validation/Tongatapu/models/Tongatapu_v4_2024_ts.gridcal"
+
+    grid_ = gce.open_file(fname)
+    options_ = PowerFlowOptions()
+    problem = ReliabilityStudy(grid=grid_, pf_options=options_, n_sim=1000)
+    problem.run()
+
+    plt.plot(problem.lole_evolution)
+    plt.show()
