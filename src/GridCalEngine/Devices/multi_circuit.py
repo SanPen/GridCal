@@ -23,7 +23,6 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.Topology.topology_processor import TopologyProcessorInfo, process_grid_topology_at
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
 
 
@@ -2483,24 +2482,6 @@ class MultiCircuit(Assets):
         bidx = [b for b in self.get_buses()]
         for b in bidx:
             self.delete_bus(b)
-
-    def process_topology_at(self,
-                            t_idx: Union[int, None] = None,
-                            logger: Union[Logger, None] = None,
-                            debug: int = 0) -> TopologyProcessorInfo:
-        """
-        Topology processor finding the Buses that calculate a certain node-breaker topology
-        This function fill the bus pointers into the grid object, and adds any new bus required for simulation
-        :param t_idx: Time index, None for the Snapshot
-        :param logger: Logger object
-        :param debug: Debug level
-        :return: TopologyProcessorInfo
-        """
-
-        return process_grid_topology_at(grid=self,
-                                        t_idx=t_idx,
-                                        logger=logger,
-                                        debug=debug)
 
     def split_line(self,
                    original_line: Union[dev.Line],

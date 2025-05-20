@@ -99,8 +99,6 @@ def test_topology_4_nodes_A():
     grid.add_load(api_obj=dev.Load(P=10), bus=b2)
     grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
 
-    logger = Logger()
-    grid.process_topology_at(logger=logger)
 
     """
     After processing,
@@ -623,33 +621,6 @@ def test_topology_2_nodes_A1():
     assert np.equal(nc.load_data.bus_idx, [0]).all()
 
 
-def test_topology_2_nodes_A2():
-    """
-    Topology test 2 Node A2
-    """
-    grid = MultiCircuit()
-
-    b0 = grid.add_bus(dev.Bus(name="B0"))
-    b1 = grid.add_bus(dev.Bus(name="B1"))
-
-    sw1 = grid.add_switch(dev.Switch(name="SW1", bus_from=b0, bus_to=b1, active=False))
-    grid.add_switch(sw1)
-
-    g1 = grid.add_generator(api_obj=dev.Generator(P=10), bus=b0)
-    ld1 = grid.add_load(api_obj=dev.Load(P=10), bus=b1)
-
-    logger = Logger()
-    tp_info = grid.process_topology_at(logger=logger)
-
-    """
-    The switch is open, the original buses must remain
-    """
-
-    nc = compile_numerical_circuit_at(grid)
-    nc.process_reducible_branches()
-
-    assert np.equal(nc.generator_data.bus_idx, [0]).all()
-    assert np.equal(nc.load_data.bus_idx, [1]).all()
 
 
 def test_topology_3_nodes_A1() -> None:

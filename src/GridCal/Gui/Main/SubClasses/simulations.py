@@ -2732,40 +2732,6 @@ class SimulationsMain(TimeEventsMain):
             for diagram_widget in self.diagram_widgets_list:
                 diagram_widget.delete_diagram_elements(elements=deleted_devices)
 
-    def run_topology_processor(self):
-        """
-        Run the topology processor on the grid completely
-        """
-
-        if not self.session.is_this_running(SimulationTypes.TopologyProcessor_run):
-
-            self.LOCK()
-
-            self.add_simulation(SimulationTypes.TopologyProcessor_run)
-
-            self.ui.progress_label.setText('Running topology processing...')
-            QtGui.QGuiApplication.processEvents()
-
-            drv = sim.TopologyProcessorDriver(self.circuit)
-
-            self.session.run(drv,
-                             post_func=self.post_topology_processor,
-                             prog_func=self.ui.progressBar.setValue,
-                             text_func=self.ui.progress_label.setText)
-
-        else:
-            self.show_warning_toast('Another simulation of the same type is running...')
-
-    def post_topology_processor(self):
-        """
-        Actions after the topology processor is done
-        """
-
-        self.remove_simulation(SimulationTypes.TopologyProcessor_run)
-
-        if not self.session.is_anything_running():
-            self.UNLOCK()
-
     def activate_clustering(self):
         """
         When activating the use of clustering, also activate time series
