@@ -2412,11 +2412,10 @@ class DiagramsMain(CompiledArraysMain):
                     # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
-                        con = dev.Investment(device_idtag=elm.idtag,
+                        con = dev.Investment(device=elm,
                                              code=elm.code,
                                              name=elm.type_name + ": " + elm.name,
                                              CAPEX=0.0,
-                                             OPEX=0.0,
                                              group=group)
                         self.circuit.add_investment(con)
             else:

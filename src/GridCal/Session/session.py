@@ -10,7 +10,6 @@ from typing import Dict, Union, List, Tuple, Any, Generator
 from collections.abc import Callable
 from warnings import warn
 
-from GridCalEngine import ReliabilityStudyDriver
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import (AvailableTransferCapacityDriver,
                                                                               AvailableTransferCapacityResults)
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_ts_driver import (

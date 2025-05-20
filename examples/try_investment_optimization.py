@@ -41,7 +41,7 @@ def add_investments_to_grid(grid):
     for i, line in enumerate(lines_list):
         grid.add_line(line)
         inv_group = dev.InvestmentsGroup(name='Ig' + str(i))
-        investment = dev.Investment(device_idtag=line.idtag, name='Investment' + str(i), CAPEX=1,
+        investment = dev.Investment(device=line, name='Investment' + str(i), CAPEX=1,
                                     group=inv_group)  # template=line.possible_tower_types[:]
         grid.add_investment(investment)
         grid.add_investments_group(inv_group)
@@ -80,7 +80,9 @@ def add_random_lines_investments(grid, num_lines):
                         r=0.02, x=0.2, b=0.02, rate=10, cost=2)
 
         inv_group = dev.InvestmentsGroup(name=f'Ig_rand_{i}')
-        investment = dev.Investment(device_idtag=line.idtag, name=f'Investment_rand_{i}', CAPEX=i % 3 + 1,
+        investment = dev.Investment(device=line,
+                                    name=f'Investment_rand_{i}',
+                                    CAPEX=i % 3 + 1,
                                     group=inv_group)
 
         # Add the line and investments to the grid

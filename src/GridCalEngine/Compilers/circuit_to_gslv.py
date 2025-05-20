@@ -572,7 +572,7 @@ def convert_investment(
                          device_idtag=elm.device_idtag,
                          group=groups_dict[elm.group],
                          CAPEX=elm.CAPEX,
-                         OPEX=elm.OPEX,
+                         OPEX=0.0,
                          status=elm.status, )
 
 

@@ -56,11 +56,10 @@ if __name__ == "__main__":
 
         # add the selection as investments to the group
         elm = grid.lines[nset_lines + ii]
-        con = Investment(device_idtag=elm.idtag,
+        con = Investment(device=elm,
                          code=elm.code,
                          name=elm.type_name + ": " + elm.name,
                          CAPEX=100,
-                         OPEX=0,
                          group=group)
         grid.add_investment(con)
 
@@ -74,11 +73,10 @@ if __name__ == "__main__":
 
         # add the selection as investments to the group
         elm = grid.transformers2w[nset_trs + ii]
-        con = Investment(device_idtag=elm.idtag,
+        con = Investment(device=elm,
                          code=elm.code,
                          name=elm.type_name + ": " + elm.name,
                          CAPEX=random.randint(1, 100),
-                         OPEX=0,
                          group=group)
         grid.add_investment(con)
 

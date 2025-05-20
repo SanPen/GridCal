@@ -612,11 +612,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
                                                      name=f'inv{elm.name}',
                                                      category='single')
                     invst = dev.Investment(idtag='',
-                                           device_idtag=elm.idtag,
+                                           device=elm,
                                            name=f'inv{elm.name}',
                                            code=elm.code,
                                            CAPEX=elm.capex,
-                                           OPEX=elm.opex,
                                            group=inv_group)
 
                     circuit.add_investments_group(inv_group)

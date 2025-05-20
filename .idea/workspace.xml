@@ -28,8 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="more work on reliability">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Integrated reliability study">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Session/session.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Session/session.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1157,11 +1160,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.reliability_driver" />
         <item itemvalue="Python.reliability" />
         <item itemvalue="Python.adequacy_driver" />
-        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -2381,7 +2384,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="729" />
+    <option name="localTasksCounter" value="730" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2427,7 +2430,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="initiated tests" />
     <MESSAGE value="GSLV improvements" />
     <MESSAGE value="5.3.39" />
     <MESSAGE value="Improvements in cim/cgmes bad file handling&#10;Added roundtrip trunk example" />
@@ -2452,7 +2454,8 @@
     <MESSAGE value="Worked on the `fast_dispatch_with_renewables` function" />
     <MESSAGE value="refactored fast_dispatch_with_renewables" />
     <MESSAGE value="more work on reliability" />
-    <option name="LAST_COMMIT_MESSAGE" value="more work on reliability" />
+    <MESSAGE value="Integrated reliability study" />
+    <option name="LAST_COMMIT_MESSAGE" value="Integrated reliability study" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2962,11 +2965,6 @@
           <option name="timeStamp" value="2731" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability_driver.py</url>
-          <line>110</line>
-          <option name="timeStamp" value="2733" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py</url>
           <line>420</line>
           <option name="timeStamp" value="2736" />
@@ -2985,6 +2983,26 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/simple_dispatch_ts.py</url>
           <line>276</line>
           <option name="timeStamp" value="2754" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>2939</line>
+          <option name="timeStamp" value="2755" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>684</line>
+          <option name="timeStamp" value="2756" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>2932</line>
+          <option name="timeStamp" value="2757" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>2934</line>
+          <option name="timeStamp" value="2759" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

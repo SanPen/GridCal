@@ -1829,7 +1829,6 @@ class MultiCircuit(Assets):
 
         return gen_tech_proportions_matrix.tocsc()
 
-
     def set_investments_status(self,
                                investments_list: List[dev.Investment],
                                status: bool,
@@ -2044,11 +2043,11 @@ class MultiCircuit(Assets):
             nt = self.get_time_number()
 
         if (self.snapshot_time.second != base_grid.snapshot_time.second or
-            self.snapshot_time.minute != base_grid.snapshot_time.minute or
-            self.snapshot_time.hour != base_grid.snapshot_time.hour or
-            self.snapshot_time.day != base_grid.snapshot_time.day or 
-            self.snapshot_time.month != base_grid.snapshot_time.month or
-            self.snapshot_time.year != base_grid.snapshot_time.year):
+                self.snapshot_time.minute != base_grid.snapshot_time.minute or
+                self.snapshot_time.hour != base_grid.snapshot_time.hour or
+                self.snapshot_time.day != base_grid.snapshot_time.day or
+                self.snapshot_time.month != base_grid.snapshot_time.month or
+                self.snapshot_time.year != base_grid.snapshot_time.year):
             logger.add_error(msg="Different snapshot times",
                              device_class="snapshot time",
                              value=str(base_grid.get_snapshot_time_unix),
@@ -2593,14 +2592,15 @@ class MultiCircuit(Assets):
         # add new stuff as new investment
         inv_group = dev.InvestmentsGroup(name=original_line.name + ' split', category='Line split')
         self.add_investments_group(inv_group)
-        self.add_investment(dev.Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
-        self.add_investment(dev.Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
-        self.add_investment(dev.Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=mid_bus.name, device=mid_bus, group=inv_group))
+        self.add_investment(dev.Investment(name=br1.name, device=br1, group=inv_group))
+        self.add_investment(dev.Investment(name=br2.name, device=br2, group=inv_group))
 
         # include the deactivation of the original line
         self.add_investment(dev.Investment(name=original_line.name,
-                                           device_idtag=original_line.idtag,
-                                           status=False, group=inv_group))
+                                           device=original_line,
+                                           status=False,
+                                           group=inv_group))
 
         return mid_sub, mid_vl, mid_bus, br1, br2
 
@@ -2751,24 +2751,17 @@ class MultiCircuit(Assets):
         # add new stuff as new investment
         inv_group = dev.InvestmentsGroup(name=original_line.name + ' in/out', category='Line in/out')
         self.add_investments_group(inv_group)
-        self.add_investment(
-            dev.Investment(name=B1.name, device_idtag=B1.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=B2.name, device_idtag=B2.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=B3.name, device_idtag=B3.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br1.name, device_idtag=br1.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br2.name, device_idtag=br2.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br3.name, device_idtag=br3.idtag, status=True, group=inv_group))
-        self.add_investment(
-            dev.Investment(name=br4.name, device_idtag=br4.idtag, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=B1.name, device=B1, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=B2.name, device=B2, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=B3.name, device=B3, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br1.name, device=br1, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br2.name, device=br2, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br3.name, device=br3, status=True, group=inv_group))
+        self.add_investment(dev.Investment(name=br4.name, device=br4, status=True, group=inv_group))
 
         # include the deactivation of the original line
         self.add_investment(dev.Investment(name=original_line.name,
-                                           device_idtag=original_line.idtag,
+                                           device=original_line,
                                            status=False, group=inv_group))
 
         return mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4
