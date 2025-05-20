@@ -634,7 +634,7 @@ class CreatedOnTheFly:
         :return:
         """
         con_group = dev.ContingencyGroup(name=elm.name)
-        conn = dev.Contingency(device_idtag=elm.idtag, prop=ContingencyOperationTypes.Active, group=con_group)
+        conn = dev.Contingency(device=elm, prop=ContingencyOperationTypes.Active, group=con_group)
 
         self.contingency_groups.append(con_group)
         self.contingencies.append(conn)

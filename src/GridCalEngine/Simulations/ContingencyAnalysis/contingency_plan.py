@@ -70,7 +70,7 @@ def add_n1_contingencies(branches: List[BRANCH_TYPES],
                 category='single',
             )
             contingency = Contingency(
-                device_idtag=b.idtag,
+                device=b,
                 name=b.name,
                 code=b.code,
                 prop=ContingencyOperationTypes.Active,
@@ -120,7 +120,7 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                         )
 
                         contingency1 = Contingency(
-                            device_idtag=branch_i.idtag,
+                            device=branch_i,
                             name=branch_i.name,
                             code=branch_i.code,
                             prop=ContingencyOperationTypes.Active,
@@ -129,7 +129,7 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                         )
 
                         contingency2 = Contingency(
-                            device_idtag=branch_j.idtag,
+                            device=branch_j,
                             name=branch_j.name,
                             code=branch_j.code,
                             prop=ContingencyOperationTypes.Active,
@@ -170,7 +170,7 @@ def add_generator_contingencies(
                 category='generator',
             )
             contingency = Contingency(
-                device_idtag=gen.idtag,
+                device=gen,
                 name=gen.name,
                 code=gen.code,
                 prop=ContingencyOperationTypes.PowerPercentage,

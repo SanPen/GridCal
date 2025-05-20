@@ -4,26 +4,29 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.pointer_device_parent import PointerDeviceParent
+from GridCalEngine.enumerations import ContingencyOperationTypes, DeviceType
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.enumerations import ContingencyOperationTypes
 
 
-class Contingency(EditableDevice):
+class Contingency(PointerDeviceParent):
     """
     The Contingency object
     """
 
     def __init__(self,
+                 device: EditableDevice | None = None,
                  idtag: Union[str, None] = None,
-                 device_idtag='',
                  name="Contingency",
                  code='',
                  prop: ContingencyOperationTypes = ContingencyOperationTypes.Active,
                  value=0.0,
-                 group: Union[None, ContingencyGroup] = None):
+                 group: Union[None, ContingencyGroup] = None,
+                 comment: str = ""):
         """
         Contingency
+        :param device: Some device to point at
         :param idtag: String. Element unique identifier
         :param name: String. Contingency name
         :param code: String. Contingency code name
@@ -32,19 +35,19 @@ class Contingency(EditableDevice):
         :param group: ContingencyGroup. Contingency group
         """
 
-        EditableDevice.__init__(self,
-                                idtag=idtag,
-                                code=code,
-                                name=name,
-                                device_type=DeviceType.ContingencyDevice)
+        PointerDeviceParent.__init__(self,
+                                     idtag=idtag,
+                                     device=device,
+                                     code=code,
+                                     name=name,
+                                     device_type=DeviceType.ContingencyDevice,
+                                     comment=comment)
 
         # Contingency type
-        self.device_idtag = device_idtag
         self._prop: ContingencyOperationTypes = prop
         self._value = value
         self._group: ContingencyGroup = group
 
-        self.register(key='device_idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='prop', units='', tpe=ContingencyOperationTypes,
                       definition=f'Object property to change')
         self.register(key='value', units='', tpe=float, definition='Property value')

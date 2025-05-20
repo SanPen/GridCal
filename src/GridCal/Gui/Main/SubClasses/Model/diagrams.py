@@ -2329,7 +2329,7 @@ class DiagramsMain(CompiledArraysMain):
 
                     for i in self.contingency_checks_diag.selected_indices:
                         elm = selected[i]
-                        con = dev.Contingency(device_idtag=elm.idtag,
+                        con = dev.Contingency(device=elm,
                                               code=elm.code,
                                               name="Contingency " + elm.name,
                                               prop=ContingencyOperationTypes.Active,
@@ -2368,7 +2368,7 @@ class DiagramsMain(CompiledArraysMain):
 
                     for i in self.ra_checks_diag.selected_indices:
                         elm = selected[i]
-                        ra = dev.RemedialAction(device_idtag=elm.idtag,
+                        ra = dev.RemedialAction(device=elm,
                                                 code=elm.code,
                                                 name="RA " + elm.name,
                                                 prop=ContingencyOperationTypes.Active,
