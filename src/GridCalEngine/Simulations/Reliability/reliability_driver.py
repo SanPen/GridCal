@@ -5,16 +5,18 @@
 
 import numpy as np
 
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.DataStructures.numerical_circuit import build_branches_C_coo_3
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch
 from GridCalEngine.Simulations.Reliability.reliability import reliability_simulation
+from GridCalEngine.Simulations.Reliability.reliability_results import ReliabilityResults
 
 
-class ReliabilityStudy(DriverTemplate):
+class ReliabilityStudyDriver(DriverTemplate):
+    name = 'Reliability analysis'
+    tpe = SimulationTypes.Reliability_run
 
     def __init__(self, grid: MultiCircuit, pf_options: PowerFlowOptions,
                  n_sim: int = 1000000):
@@ -31,8 +33,7 @@ class ReliabilityStudy(DriverTemplate):
 
         self.n_sim = n_sim
 
-        self.lole_evolution = np.zeros(n_sim)
-        self.lole = np.zeros(n_sim)
+        self.results = ReliabilityResults(nsim=n_sim)
 
         self.greedy_dispatch_inputs = GreedyDispatchInputs(grid=grid,
                                                            time_indices=None,
@@ -53,6 +54,7 @@ class ReliabilityStudy(DriverTemplate):
         run the voltage collapse simulation
         @return:
         """
+        self.report_text("Running reliability study...")
         self.tic()
 
         horizon = self.grid.get_time_number()
@@ -82,7 +84,7 @@ class ReliabilityStudy(DriverTemplate):
         # C = sp.coo_matrix((data, (i, j)), shape=(n_elm, nc.bus_data.nbus), dtype=int)
         # A = (C.T @ C).tocsc()
 
-        self.lole = reliability_simulation(
+        lole = reliability_simulation(
             n_sim=self.n_sim,
             load_profile=self.greedy_dispatch_inputs.load_profile,
 
@@ -108,28 +110,12 @@ class ReliabilityStudy(DriverTemplate):
             tol=1e-6
         )
 
-        self.lole_evolution = np.cumsum(self.lole) / (np.arange(len(self.lole)) + 1)
-        print(f"LOLE: {self.lole.mean()} MWh/year")
-
-        # fig = plt.figure(1)
-        # ax1 = fig.add_subplot(211)
-        # ax1.plot(worst_gen.sum(axis=1), label='Generation capacity')
-        # ax1.plot(load_p.sum(axis=1), label='Load')
-        # ax1.set_title("Worst situation")
-        # ax1.set_ylabel("MWh")
-        # ax1.set_xlabel("Hour of the year")
-        # ax1.legend()
-        #
-        # ax2 = fig.add_subplot(212)
-        # ax2.plot(lole_evolution, label='LOLE')
-        # ax2.set_title("LOLE evolution")
-        # ax2.set_ylabel("MWh")
-        # ax2.set_xlabel("Simulation number")
-        # ax2.legend()
-        #
-        # fig.tight_layout()
-
+        self.results.lole_evolution = np.cumsum(lole) / (np.arange(len(lole)) + 1)
+        print(f"LOLE: {lole.mean()} MWh/year")
         self.toc()
+
+        self.report_text("Done!")
+        self.done_signal.emit()
 
     def cancel(self):
         self.__cancel__ = True
@@ -143,8 +129,8 @@ if __name__ == '__main__':
 
     grid_ = gce.open_file(fname)
     options_ = PowerFlowOptions()
-    problem = ReliabilityStudy(grid=grid_, pf_options=options_, n_sim=1000)
+    problem = ReliabilityStudyDriver(grid=grid_, pf_options=options_, n_sim=1000)
     problem.run()
 
-    plt.plot(problem.lole_evolution)
+    plt.plot(problem.results.lole_evolution)
     plt.show()

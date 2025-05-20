@@ -1550,6 +1550,9 @@ class ResultTypes(Enum):
     InvestmentsIterationsPlot = 'Iterations plot'
     InvestmentsParetoPlotNSGA2 = 'Pareto plot NSGA2'
 
+    # reliability
+    ReliabilityLoleResults = "LOLE"
+
     def __str__(self):
         return self.value
 
@@ -1606,6 +1609,7 @@ class SimulationTypes(Enum):
     InvestmentsEvaluation_run = 'Investments evaluation'
     TopologyProcessor_run = 'Topology Processor'
     NodalCapacityTimeSeries_run = 'Nodal capacity time series'
+    Reliability_run = "Reliability"
 
     NoSim = "No simulation"
 

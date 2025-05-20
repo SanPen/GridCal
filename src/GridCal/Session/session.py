@@ -10,6 +10,7 @@ from typing import Dict, Union, List, Tuple, Any, Generator
 from collections.abc import Callable
 from warnings import warn
 
+from GridCalEngine import ReliabilityStudyDriver
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import (AvailableTransferCapacityDriver,
                                                                               AvailableTransferCapacityResults)
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_ts_driver import (
@@ -44,6 +45,7 @@ from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaA
 from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityResults, OptimalNetTransferCapacityDriver
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
                                                                               NodalCapacityTimeSeriesResults)
+from GridCalEngine.Simulations.Reliability.reliability_driver import ReliabilityStudyDriver, ReliabilityResults
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.results_template import DriverToSave
@@ -176,7 +178,7 @@ class SimulationSession:
         :param text_func: Function to display text
         """
 
-        # create process
+        # create a process
         thr = GcThread(driver)
         thr.progress_signal.connect(prog_func)
         thr.progress_text.connect(text_func)
@@ -528,6 +530,15 @@ class SimulationSession:
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.NodalCapacityTimeSeries_run)
+        return drv, results
+
+    @property
+    def reliability_analysis(self) -> Tuple[ReliabilityStudyDriver, ReliabilityResults]:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.Reliability_run)
         return drv, results
 
     @property

@@ -224,6 +224,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionFind_node_groups.triggered.connect(self.run_find_node_groups)
         self.ui.actionFuse_devices.triggered.connect(self.fuse_devices)
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
+        self.ui.actionReliability.triggered.connect(self.reliability_dispatcher)
 
         self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
         self.ui.actionNodal_capacity.triggered.connect(self.run_nodal_capacity)
@@ -234,7 +235,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.changed_study)
 
         # button
-        self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precission)
+        self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precision)
 
     def get_simulations(self) -> List[DRIVER_OBJECTS]:
         """
@@ -675,6 +676,7 @@ class SimulationsMain(TimeEventsMain):
             SimulationTypes.NodalCapacityTimeSeries_run.value: ':/Icons/icons/nodal_capacity.svg',
             SimulationTypes.OPF_NTC_run.value: ':/Icons/icons/ntc_opf.svg',
             SimulationTypes.OPF_NTC_TS_run.value: ':/Icons/icons/ntc_opf_ts.svg',
+            SimulationTypes.Reliability_run.value: ':/Icons/icons/reliability.svg',
         }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
@@ -925,6 +927,18 @@ class SimulationsMain(TimeEventsMain):
                 self.run_contingency_analysis_ts()
             else:
                 self.run_contingency_analysis()
+
+    def reliability_dispatcher(self):
+        """
+        Dispatch the reliability action
+        :return:
+        """
+        if self.server_driver.is_running():
+            instruction = RemoteInstruction(operation=SimulationTypes.Reliability_run)
+            self.run_remote(instruction=instruction)
+
+        else:
+            self.run_reliability()
 
     def run_power_flow(self):
         """
@@ -2877,7 +2891,62 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    def automatic_pf_precission(self):
+    def run_reliability(self):
+        """
+        Run reliability study
+        :return:
+        """
+        if self.circuit.valid_for_simulation():
+
+            if not self.session.is_this_running(SimulationTypes.Reliability_run):
+
+                self.add_simulation(SimulationTypes.Reliability_run)
+
+                self.LOCK()
+
+                # Compile the grid
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+                pf_options = self.get_selected_power_flow_options()
+
+                drv = sim.ReliabilityStudyDriver(grid=self.circuit,
+                                                 pf_options=pf_options,
+                                                 n_sim=self.ui.max_iterations_reliability_spinBox.value())
+
+                self.session.run(drv,
+                                 post_func=self.post_reliability,
+                                 prog_func=self.ui.progressBar.setValue,
+                                 text_func=self.ui.progress_label.setText)
+
+            else:
+                self.show_warning_toast('Another OPF time series is running already...')
+
+        else:
+            pass
+
+    def post_reliability(self):
+        """
+
+        :return:
+        """
+        _, results = self.session.reliability_analysis
+
+        if results is not None:
+
+            # delete from the current simulations
+            self.remove_simulation(SimulationTypes.Reliability_run)
+
+            if results is not None:
+                self.update_available_results()
+                self.colour_diagrams()
+        else:
+            pass
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()
+
+    def automatic_pf_precision(self):
         """
         Find the automatic tolerance
         :return:

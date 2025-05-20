@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import numpy as np
-from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
