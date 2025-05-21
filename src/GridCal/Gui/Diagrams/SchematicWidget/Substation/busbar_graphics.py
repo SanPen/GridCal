@@ -102,7 +102,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.tile.setOpacity(0.7)
 
         # connection terminals the block
-        self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
+        self._terminal = BarTerminalItem('s', parent=self, editor=self._editor)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style,
                                    Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 

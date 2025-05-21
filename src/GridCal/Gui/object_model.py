@@ -3,12 +3,15 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
+
+import datetime
+
 import numpy as np
 from typing import Dict, List, Union
 from PySide6 import QtCore, QtWidgets, QtGui
 from enum import EnumMeta
 from GridCal.Gui.gui_functions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
-                                       ComplexDelegate, LineLocationsDelegate)
+                                       ComplexDelegate, LineLocationsDelegate, DateTimeDelegate)
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Devices import Bus, ContingencyGroup
 from GridCalEngine.Devices.Parents.editable_device import GCProp, GCPROP_TYPES
@@ -123,7 +126,10 @@ class ObjectsModel(WrappableTableModel):
                 F(i, delegate)
 
             elif tpe is int:
-                delegate = IntDelegate(self.parent)
+                if 'date' in self.attributes[i]:
+                    delegate = DateTimeDelegate(self.parent)
+                else:
+                    delegate = IntDelegate(self.parent)
                 F(i, delegate)
 
             elif tpe is complex:
@@ -263,14 +269,23 @@ class ObjectsModel(WrappableTableModel):
             return None
 
         if index.isValid():
+            if self.transposed:
+                attr_idx = index.row()
+            else:
+                attr_idx = index.column()
+
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                return str(self.data_with_type(index))
+
+                if 'date' in self.attributes[attr_idx]:
+                    dt = QtCore.QDateTime.fromSecsSinceEpoch(self.data_with_type(index))
+                    formatted_date = dt.toString("yyyy/MM/dd")
+                    return formatted_date
+                else:
+                    return str(self.data_with_type(index))
+
             elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
 
-                if self.transposed:
-                    attr_idx = index.row()
-                else:
-                    attr_idx = index.column()
+
 
                 if 'color' in self.attributes[attr_idx]:
                     return QtGui.QColor(str(self.data_with_type(index)))

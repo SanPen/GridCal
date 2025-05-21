@@ -192,8 +192,8 @@ class TextDelegate(QtWidgets.QItemDelegate):
         """
         self.commitData.emit(self.sender())
 
-    def createEditor(self, parent: QtWidgets.QWidget, 
-                     option: QtWidgets.QStyleOptionViewItem, 
+    def createEditor(self, parent: QtWidgets.QWidget,
+                     option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QLineEdit:
         """
 
@@ -256,8 +256,8 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         """
         self.commitData.emit(self.sender())
 
-    def createEditor(self, parent: QtWidgets.QWidget, 
-                     option: QtWidgets.QStyleOptionViewItem, 
+    def createEditor(self, parent: QtWidgets.QWidget,
+                     option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QDoubleSpinBox:
         """
 
@@ -556,6 +556,57 @@ class ColorPickerDelegate(QtWidgets.QItemDelegate):
         :return:
         """
         model.setData(index, editor.currentColor().name())
+
+
+class DateTimeDelegate(QtWidgets.QItemDelegate):
+    """
+    DateTime picker delegate that handles Unix epoch seconds
+    and can be initialized with a default epoch date.
+    """
+    commitData = QtCore.Signal(object)
+
+    def __init__(self, parent, default_epoch: int = 0):
+        super().__init__(parent)
+        # Store default epoch or None
+        self.default_epoch: int = default_epoch
+
+    @QtCore.Slot()
+    def returnPressed(self):
+        self.commitData.emit(self.sender())
+
+    def createEditor(self, parent, option, index):
+        editor = QtWidgets.QDateTimeEdit(parent)
+        editor.setCalendarPopup(True)
+        editor.setDisplayFormat("yyyy/MM/dd HH:mm:ss")
+
+        # Set initial datetime from default_epoch if provided
+        if self.default_epoch is not None:
+            dt = QtCore.QDateTime.fromSecsSinceEpoch(int(self.default_epoch))
+            editor.setDateTime(dt)
+
+        editor.dateTimeChanged.connect(lambda: self.commitData.emit(editor))
+        return editor
+
+    def setEditorData(self, editor: QtWidgets.QDateTimeEdit, index):
+        editor.blockSignals(True)
+        val = index.model().data(index, QtCore.Qt.ItemDataRole.DisplayRole)
+        if isinstance(val, (int, float)):
+            dt = QtCore.QDateTime.fromSecsSinceEpoch(int(val))
+        elif isinstance(val, str):
+            dt = QtCore.QDateTime.fromString(val, "yyyy/MM/dd")
+        else:
+            # fallback to current datetime or default_epoch if provided
+            if self.default_epoch is not None:
+                dt = QtCore.QDateTime.fromSecsSinceEpoch(int(self.default_epoch))
+            else:
+                dt = QtCore.QDateTime.currentDateTime()
+        editor.setDateTime(dt)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor: QtWidgets.QDateTimeEdit, model, index):
+        dt = editor.dateTime()
+        epoch_seconds = dt.toSecsSinceEpoch()
+        model.setData(index, epoch_seconds)
 
 
 def get_list_model(lst: List[Union[str, ALL_DEV_TYPES]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
