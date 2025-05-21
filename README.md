@@ -1219,6 +1219,29 @@ Contingency flows:
 
 This simulation can also be done for time series.
 
+### Contingency analysis time series
+
+To perform the contingency analysis of a time series, it's easier to directly usi the API:
+
+```python
+import os
+import GridCalEngine as gce
+
+folder = os.path.join('Grids_and_profiles', 'grids')
+fname = os.path.join(folder, 'IEEE39_1W.gridcal')
+main_circuit = gce.open_file(fname)
+
+results = gce.contingencies_ts(circuit=main_circuit,
+                               detailed_massive_report=False,
+                               contingency_deadband=0.0,
+                               contingency_method=gce.ContingencyMethod.PowerFlow)
+```
+
+Note that the grid must have the declared contingencies saved already.
+Also note that the results are statistics, and you will not get a cube because 
+for large grids that demands terabytes of RAM memory.
+
+
 ### State estimation
 
 Now lets program the example from the state estimation reference book
