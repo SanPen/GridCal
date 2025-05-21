@@ -29,7 +29,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                  bus_names: StrVec,
                  branch_names: StrVec,
                  hvdc_names: StrVec,
-                 contingency_group_names: StrVec,):
+                 contingency_group_names: StrVec, ):
         """
 
         :param bus_names:
@@ -356,17 +356,18 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         elif result_type == ResultTypes.ContingencyFlowsReport:
             data = list()
             index = list()
-            columns = ['Monitored index', 'Contingency group index',
-                       'Contingency branch', 'Contingency group',
+            columns = ['Contingency group index', 'Contingency group',
+                       'Monitored index', 'Monitored branch',
                        'Flow (MW)', 'Loading (%)']
             for t, m, c, contingency, negative_slack, positive_slack in self.contingency_flows_list:
                 index.append("")
                 flow_c = contingency - negative_slack + positive_slack
                 loading_c = abs(flow_c) / self.contingency_rates[m] * 100
                 data.append([
-                    m, c, self.branch_names[m], self.contingency_group_names[c],
-                    np.round(flow_c, 4),
-                    np.round(loading_c, 4)
+                    # Contingency group info
+                    c, self.contingency_group_names[c],
+                    # Monitored branch info
+                    m, self.branch_names[m], np.round(flow_c, 4), np.round(loading_c, 4)
                 ])
 
             return ResultsTable(
