@@ -7,16 +7,13 @@ import numpy as np
 import numba as nb
 from scipy.sparse import lil_matrix
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.Reliability.adequacy_results import AdequacyResults
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Simulations.Adequacy.adequacy_results import AdequacyResults
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 import NSGA_3
-from GridCalEngine.Simulations.Reliability.reliability import (reliability_simulation,
-                                                               compute_loss_of_load_because_of_lack_of_generation)
+from GridCalEngine.Simulations.Reliability.reliability import (reliability_simulation)
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch
-from GridCalEngine.basic_structures import Vec, IntVec, IntMat
+from GridCalEngine.basic_structures import IntVec, IntMat
 
 
 class AdequacyOptimizationOptions:

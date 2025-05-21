@@ -303,13 +303,30 @@ class ResultsMain(SimulationsMain):
         """
         Copy the results from the OPF time series to the profiles
         """
-        _, results = self.session.optimal_power_flow_ts
 
+        # copy the snapshot if that exits
+        _, results = self.session.optimal_power_flow
+        if results is not None:
+
+            ok = yes_no_question('Are you sure that you want to overwrite '
+                                 'the generation, batteries and load snapshot values '
+                                 'with the OPF results?',
+                                 title="Overwrite profiles with OPF results")
+
+            if ok:
+                self.circuit.set_opf_snapshot_results(results)
+                self.show_info_toast("P snapshot set from the OPF results")
+
+        else:
+            self.show_warning_toast('The OPF time series has no results :(')
+
+        # copy the time series if that exists --------------------------------------------------------------------------
+        _, results = self.session.optimal_power_flow_ts
         if results is not None:
 
             ok = yes_no_question('Are you sure that you want to overwrite '
                                  'the generation, batteries and load profiles '
-                                 'with the OPF results?',
+                                 'with the OPF time series results?',
                                  title="Overwrite profiles with OPF results")
 
             if ok:

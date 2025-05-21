@@ -9,7 +9,7 @@ import cmath
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Set
+from typing import List, Dict, Tuple, Union, Set, TYPE_CHECKING
 from uuid import getnode as get_mac, uuid4
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -24,6 +24,10 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, F
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import DeviceType, ActionType, SubObjectType
+
+if TYPE_CHECKING:
+    from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 
 def get_system_user() -> str:
@@ -2758,10 +2762,10 @@ class MultiCircuit(Assets):
         self.wire_types += data.wire_types
         self.sequence_line_types += data.sequence_line_types
 
-    def set_opf_ts_results(self, results):
+    def set_opf_ts_results(self, results: OptimalPowerFlowTimeSeriesResults):
         """
-
-        :param results:
+        Assign OptimalPowerFlowTimeSeriesResults to the objects
+        :param results: OptimalPowerFlowTimeSeriesResults
         :return:
         """
         for i, elm in enumerate(self.get_generators()):
@@ -2772,3 +2776,18 @@ class MultiCircuit(Assets):
 
         for i, elm in enumerate(self.get_loads()):
             elm.P_prof.set(results.load_power[:, i])
+
+    def set_opf_snapshot_results(self, results: OptimalPowerFlowResults):
+        """
+        Assign OptimalPowerFlowResults to the objects
+        :param results:OptimalPowerFlowResults
+        :return:
+        """
+        for i, elm in enumerate(self.get_generators()):
+            elm.P = results.generator_power[i]
+
+        for i, elm in enumerate(self.get_batteries()):
+            elm.P = results.battery_power[i]
+
+        # for i, elm in enumerate(self.get_loads()):
+        #     elm.P = results.load_power[i]

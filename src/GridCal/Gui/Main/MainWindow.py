@@ -5074,7 +5074,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionTry_to_fix_buses_location.setToolTip(QCoreApplication.translate("mainWindow", u"Set selected buses location closer to their neighbours", None))
 #endif // QT_CONFIG(tooltip)
-        self.actionSet_OPF_generation_to_profiles.setText(QCoreApplication.translate("mainWindow", u"Copy OPF generation to profiles (destructive)", None))
+        self.actionSet_OPF_generation_to_profiles.setText(QCoreApplication.translate("mainWindow", u"Copy OPF generation to database (destructive)", None))
 #if QT_CONFIG(tooltip)
         self.actionSet_OPF_generation_to_profiles.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Copy OPF data</span></p><p>Destructive copy of the OPF generation results to the input profiles</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
