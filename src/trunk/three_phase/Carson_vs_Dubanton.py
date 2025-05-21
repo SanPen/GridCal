@@ -267,8 +267,8 @@ def calc_Dubanton_Z(type, R_int, cond_type, r, q, h_i, h_k, x_ik, f, rho):
     """
     # Constants
     omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
-    mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
-    p = np.sqrt(rho / omega / mu_0)  # Complex depth below earth
+    mu_0 = 4 * np.pi * 10**(-7)  # Permeability of free space [H/km]
+    p = np.sqrt( rho / (1j * omega * mu_0) )  # Complex depth below earth
 
     if type == 'self':
         # Self impedance
@@ -450,48 +450,51 @@ def calc_kron_Z(Z, n_e):
 
     return kron_Z
 
-def test():
 
-    # Impedance matrix real values [Ohm/km]
-    Z_real = np.array([
-        [0.18255834+0.73040594j, 0.04624189+0.27334251j, 0.04619516+0.22979856j],
-        [0.0462528 +0.27334251j, 0.18255834+0.73040594j, 0.04624189+0.27334251j],
-        [0.04623645+0.22979851j, 0.0462528 +0.27334251j, 0.18255834+0.73040594j]
-    ])
+"""
+# Impedance matrix real values [Ohm/km]
+Z_real = np.array([
+    [0.18255834+0.73040594j, 0.04624189+0.27334251j, 0.04619516+0.22979856j],
+    [0.0462528 +0.27334251j, 0.18255834+0.73040594j, 0.04624189+0.27334251j],
+    [0.04623645+0.22979851j, 0.0462528 +0.27334251j, 0.18255834+0.73040594j]
+])
 
-    # Admittance matrix real values [uS/km]
-    Y_real = np.array([
-        [0.+2.11654342j, 0.-0.34238869j, 0.-0.15585042j],
-        [0.-0.34238869j, 0.+2.16045495j, 0.-0.34238869j],
-        [0.-0.15585042j, 0.-0.34238869j, 0.+2.11654342j]
-    ])
+# Admittance matrix real values [uS/km]
+Y_real = np.array([
+    [0.+2.11654342j, 0.-0.34238869j, 0.-0.15585042j],
+    [0.-0.34238869j, 0.+2.16045495j, 0.-0.34238869j],
+    [0.-0.15585042j, 0.-0.34238869j, 0.+2.11654342j]
+])
+"""
 
-    # Overhead line parameters (Single circuit tower with an overhead earth wire)
-    line_dict = {
-        'mode': 'carson', # carson or dubanton
-        'f': 50,  # Nominal frequency [Hz]
-        'rho': 100,  # Earth resistivity [Ohm.m]
-        'phase_h': [27.5, 27.5, 27.5],  # Phase conductor heights [m]
-        'phase_x': [-12.65, 0, 12.65],  # Phase conductor x-axis coordinates [m]
-        'phase_cond': ['tube', 'tube', 'tube'],  # Phase conductor types ('tube' or 'solid')
-        'phase_R': [0.1363, 0.1363, 0.1363],  # Phase conductor AC resistances [Ohm/km]
-        'phase_r': [0.0105, 0.0105, 0.0105],  # Phase conductor radi [m]
-        'phase_q': [0.0045, 0.0045, 0.0045],  # Phase conductor inner tube radii [m]
-        'earth_h': [],  # Earth conductor heights [m]
-        'earth_x': [],  # Earth conductor x-axis coordinates [m]
-        'earth_cond': [],  # Earth conductor types ('tube' or 'solid')
-        'earth_R': [],  # Earth conductor AC resistances [Ohm/km]
-        'earth_r': [],  # Earth conductor radi [m]
-        'earth_q': []  # Earth conductor inner tube radii [m]
-    }
+# Overhead line parameters (Single circuit tower with an overhead earth wire)
+line_dict = {
+    'mode': 'dubanton', # carson or dubanton
+    'f': 50,  # Nominal frequency [Hz]
+    'rho': 100,  # Earth resistivity [Ohm.m]
+    'phase_h': [27.5, 27.5, 27.5],  # Phase conductor heights [m]
+    'phase_x': [-12.65, 0, 12.65],  # Phase conductor x-axis coordinates [m]
+    'phase_cond': ['tube', 'tube', 'tube'],  # Phase conductor types ('tube' or 'solid')
+    'phase_R': [0.1363, 0.1363, 0.1363],  # Phase conductor AC resistances [Ohm/km]
+    'phase_r': [0.0105, 0.0105, 0.0105],  # Phase conductor radi [m]
+    'phase_q': [0.0045, 0.0045, 0.0045],  # Phase conductor inner tube radii [m]
+    'earth_h': [],  # Earth conductor heights [m]
+    'earth_x': [],  # Earth conductor x-axis coordinates [m]
+    'earth_cond': [],  # Earth conductor types ('tube' or 'solid')
+    'earth_R': [],  # Earth conductor AC resistances [Ohm/km]
+    'earth_r': [],  # Earth conductor radi [m]
+    'earth_q': []  # Earth conductor inner tube radii [m]
+}
 
-    # Impedance matrix
-    Zp, n_p, n_e = calc_Z_matrix(line_dict)
-    Z_computed = calc_kron_Z(Zp, n_e)
+# Impedance matrix
+Zdubanton, n_p, n_e = calc_Z_matrix(line_dict)
 
-    # Admittance matrix
-    Yp, n_p, n_e = calc_Y_matrix(line_dict)
-    Y_computed = calc_kron_Z(Yp, n_e) * 1e6
+Zcarson = np.array([
+    [0.18255834+0.73040594j, 0.04624189+0.27334251j, 0.04619516+0.22979856j],
+    [0.0462528 +0.27334251j, 0.18255834+0.73040594j, 0.04624189+0.27334251j],
+    [0.04623645+0.22979851j, 0.0462528 +0.27334251j, 0.18255834+0.73040594j]
+])
 
-    assert np.allclose(Z_computed, Z_real, atol=1e-4)
-    assert np.allclose(Y_computed, Y_real, atol=1e-4)
+np.set_printoptions(precision=4, suppress=True)
+print('Carson =\n', Zcarson)
+print('\nDubanton =\n', Zdubanton)

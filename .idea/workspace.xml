@@ -28,13 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Some files">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Ua_time_series.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/compare_to_excel.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Time series comparation.">
+      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/sequence_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/sequence_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/european_lv_test_feeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/european_lv_test_feeder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/line_constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/line_constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Ua_time_series.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Ua_time_series.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/power_flow_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/power_flow_3ph.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -156,6 +154,7 @@
     "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
     "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.Python tests in line_constants.py.executor": "Debug",
     "Python tests.Python tests in tests.executor": "Run",
     "Python tests.pytest for src.tests.test_ac_opf.test_superconductors_handling.executor": "Debug",
     "Python tests.pytest for src.tests.test_basic.test_gridcal_basic_pi.executor": "Debug",
@@ -206,6 +205,7 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python tests.test_ntc.py.executor": "Debug",
     "Python.AnalysisDialogue.executor": "Run",
+    "Python.Carson_vs_Dubanton.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
@@ -257,9 +257,9 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "#352 on #343__3phase",
+    "git-widget-placeholder": "#394 on #343__3phase",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/GridCal/src/trunk/unbalanced_pf",
+    "last_opened_file_path": "C:/GridCal/src/trunk/three_phase",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -277,11 +277,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\GridCal\src\trunk\three_phase" />
       <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
       <recent name="C:\Users\alexb\OneDrive\eRoots\GridCal\src\trunk\three_phase" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCalEngine/IO/iidm/devices" />
@@ -2347,7 +2347,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="718" />
+    <option name="localTasksCounter" value="719" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2393,7 +2393,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minimal refactorings" />
     <MESSAGE value="Removed &quot;kconv&quot;" />
     <MESSAGE value="5.3.36" />
     <MESSAGE value="Removed unused code and cleaned up things in pf_generalized_formulation.py" />
@@ -2418,7 +2417,8 @@
     <MESSAGE value="European LV Test Feeder" />
     <MESSAGE value="European LV Test Feeder Power Flow" />
     <MESSAGE value="Some files" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some files" />
+    <MESSAGE value="Time series comparation." />
+    <option name="LAST_COMMIT_MESSAGE" value="Time series comparation." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2741,6 +2741,11 @@
           <url>file://$PROJECT_DIR$/src/tests/test_power_flow_acdc_generalized.py</url>
           <line>245</line>
           <option name="timeStamp" value="2606" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/three_phase/line_constants.py</url>
+          <line>168</line>
+          <option name="timeStamp" value="2609" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

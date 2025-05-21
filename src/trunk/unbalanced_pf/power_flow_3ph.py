@@ -33,6 +33,8 @@ def power_flow_3ph(grid, t_idx=None):
 grid = gce.open_file("IEEE Test Distribution.gridcal")
 
 df_U_a = pd.DataFrame()
+df_U_b = pd.DataFrame()
+df_U_c = pd.DataFrame()
 
 for i in range(grid.get_time_number()):
     res_3ph = power_flow_3ph(grid, i)
@@ -46,6 +48,10 @@ for i in range(grid.get_time_number()):
 
     # Add this column to the DataFrame
     df_U_a[f't={i}'] = U_reshaped[:, 0]
+    df_U_b[f't={i}'] = U_reshaped[:, 1]
+    df_U_c[f't={i}'] = U_reshaped[:, 2]
 
 # Export to Excel
-df_U_a.to_excel("three_phase_results.xlsx", index=False)
+df_U_a.to_excel("Ua_results.xlsx", index=False)
+df_U_b.to_excel("Ub_results.xlsx", index=False)
+df_U_c.to_excel("Uc_results.xlsx", index=False)
