@@ -1134,9 +1134,9 @@ class NumericalCircuit:
             )
 
         elif structure_type == 'Yseries':
-            adm = self.get_admittance_matrices()
+            adms = self.get_series_admittance_matrices()
             df = pd.DataFrame(
-                data=adm.Yseries.toarray(),
+                data=adms.Yseries.toarray(),
                 columns=self.bus_data.names,
                 index=self.bus_data.names,
             )
