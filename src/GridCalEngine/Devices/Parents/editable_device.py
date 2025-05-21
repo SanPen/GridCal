@@ -113,7 +113,9 @@ class GCProp:
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = None):
+                 old_names: List[str] = None,
+                 is_color: bool = False,
+                 is_date: bool = False):
         """
         GridCal property
         :param prop_name:
@@ -123,6 +125,8 @@ class GCProp:
         :param profile_name: name of the associated profile property
         :param display: Display the property in the GUI
         :param editable: Is this editable?
+        :param is_color: Is this a color? i.e. the tpe is str, but it represents a color
+        :param is_date: Is this a date? i.e. the tpe is int but represents a date
         """
 
         self.name = prop_name
@@ -138,6 +142,10 @@ class GCProp:
         self.display = display
 
         self.editable = editable
+
+        self.is_color = is_color
+
+        self.is_date = is_date
 
         self.old_names = old_names if old_names is not None else list()
 
@@ -389,7 +397,9 @@ class EditableDevice:
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = None):
+                 old_names: List[str] = None,
+                 is_color: bool = False,
+                 is_date: bool = False):
         """
         Register property
         The property must exist, and if provided, the profile_name property must exist too
@@ -412,7 +422,9 @@ class EditableDevice:
                       profile_name=profile_name,
                       display=display,
                       editable=editable,
-                      old_names=old_names)
+                      old_names=old_names,
+                      is_color=is_color,
+                      is_date=is_date)
 
         if key in self.registered_properties.keys():
             raise Exception(f"Property {key} already registered!")

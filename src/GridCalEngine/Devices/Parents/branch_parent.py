@@ -194,7 +194,8 @@ class BranchParent(PhysicalDevice):
 
         self.register('ysh', units="p.u.", tpe=SubObjectType.AdmittanceMatrix,
                       definition='Shunt admittance matrix of the branch', editable=False, display=False)
-        self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram')
+        self.register(key='color', units='', tpe=str, definition='Color to paint the element in the map diagram',
+                      is_color=True)
 
     @property
     def bus_from(self) -> Bus:

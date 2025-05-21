@@ -40,8 +40,10 @@ class PhysicalDevice(EditableDevice):
 
         self.register(key='modelling_authority', units='', tpe=DeviceType.ModellingAuthority,
                       definition='Modelling authority of this asset')
-        self.register(key='commissioned_date', units='', tpe=int, definition='Commissioned date of the asset')
-        self.register(key='decommissioned_date', units='', tpe=int, definition='Decommissioned date of the asset')
+        self.register(key='commissioned_date', units='', tpe=int, definition='Commissioned date of the asset',
+                      is_date=True)
+        self.register(key='decommissioned_date', units='', tpe=int, definition='Decommissioned date of the asset',
+                      is_date=True)
 
     @property
     def commissioned_date(self) -> int:

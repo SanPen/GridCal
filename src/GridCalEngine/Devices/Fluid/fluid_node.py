@@ -97,7 +97,8 @@ class FluidNode(PhysicalDevice):
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
 
-        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram')
+        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram',
+                      is_color=True)
 
     @property
     def spillage_cost_prof(self) -> Profile:

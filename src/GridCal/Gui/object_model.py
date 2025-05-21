@@ -106,61 +106,63 @@ class ObjectsModel(WrappableTableModel):
             F = self.parent.setItemDelegateForColumn
 
         for i in range(self.c):
-            tpe = self.attribute_types[i]
 
-            if tpe is bool:
-                delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+            if self.property_list[i].is_color:
+                delegate = ColorPickerDelegate(self.parent)
                 F(i, delegate)
 
-            elif tpe is str:
-
-                if 'color' in self.attributes[i]:
-                    delegate = ColorPickerDelegate(self.parent)
-                else:
-                    delegate = TextDelegate(self.parent)
-
-                F(i, delegate)
-
-            elif tpe is float:
-                delegate = FloatDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is int:
-                if 'date' in self.attributes[i]:
-                    delegate = DateTimeDelegate(self.parent)
-                else:
-                    delegate = IntDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is complex:
-                delegate = ComplexDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is LineLocations:
-                delegate = LineLocationsDelegate(self.parent)
-                F(i, delegate)
-
-            elif tpe is None:
-                F(i, None)
-                if len(self.non_editable_attributes) == 0:
-                    self.non_editable_attributes.append(self.attributes[i])
-
-            elif isinstance(tpe, EnumMeta):
-                objects = list(tpe)
-                values = [x.value for x in objects]
-                delegate = ComboDelegate(self.parent, objects, values)
-                F(i, delegate)
-
-            elif tpe in self.dictionary_of_lists:
-                # foreign key objects drop-down
-                objs = self.dictionary_of_lists[tpe]
-                delegate = ComboDelegate(parent=self.parent,
-                                         objects=[None] + objs,
-                                         object_names=['None'] + [x.name for x in objs])
+            elif self.property_list[i].is_date:
+                delegate = DateTimeDelegate(self.parent)
                 F(i, delegate)
 
             else:
-                F(i, None)
+                tpe = self.attribute_types[i]
+
+                if tpe is bool:
+                    delegate = ComboDelegate(self.parent, [True, False], ['True', 'False'])
+                    F(i, delegate)
+
+                elif tpe is str:
+                    delegate = TextDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is float:
+                    delegate = FloatDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is int:
+                    delegate = IntDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is complex:
+                    delegate = ComplexDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is LineLocations:
+                    delegate = LineLocationsDelegate(self.parent)
+                    F(i, delegate)
+
+                elif tpe is None:
+                    F(i, None)
+                    if len(self.non_editable_attributes) == 0:
+                        self.non_editable_attributes.append(self.attributes[i])
+
+                elif isinstance(tpe, EnumMeta):
+                    objects = list(tpe)
+                    values = [x.value for x in objects]
+                    delegate = ComboDelegate(self.parent, objects, values)
+                    F(i, delegate)
+
+                elif tpe in self.dictionary_of_lists:
+                    # foreign key objects drop-down
+                    objs = self.dictionary_of_lists[tpe]
+                    delegate = ComboDelegate(parent=self.parent,
+                                             objects=[None] + objs,
+                                             object_names=['None'] + [x.name for x in objs])
+                    F(i, delegate)
+
+                else:
+                    F(i, None)
 
     def update(self):
         """
@@ -276,7 +278,7 @@ class ObjectsModel(WrappableTableModel):
 
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
-                if 'date' in self.attributes[attr_idx]:
+                if self.property_list[attr_idx].is_date:
                     dt = QtCore.QDateTime.fromSecsSinceEpoch(self.data_with_type(index))
                     formatted_date = dt.toString("yyyy/MM/dd")
                     return formatted_date
@@ -285,9 +287,7 @@ class ObjectsModel(WrappableTableModel):
 
             elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
 
-
-
-                if 'color' in self.attributes[attr_idx]:
+                if self.property_list[attr_idx].is_color:
                     return QtGui.QColor(str(self.data_with_type(index)))
 
         return None
