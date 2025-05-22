@@ -566,18 +566,18 @@ class SimulationsMain(TimeEventsMain):
 
         results = drv.results
         for i in range(results.max_eval):
-            idx = np.where(results._x[i, :] != 0)[0]
+            idx = np.where(results.x[i, :] != 0)[0]
             if len(idx):
                 row_items = [QtGui.QStandardItem(f"Combination {i}")] + [
-                    QtGui.QStandardItem(f"{fi:.2f}") for fi in drv.results.f
+                    QtGui.QStandardItem(f"{fi:.2f}") for fi in drv.results.f[i, :]
                 ]
                 model.appendRow(row_items)
 
                 # Add names as child nodes under this combination
                 names_parent_item = row_items[0]  # Use the first column (Combination) as parent
                 for k in idx:
-                    name_item = QtGui.QStandardItem(results.f_names[k])
-                    names_parent_item.appendRow([name_item] + [QtGui.QStandardItem("") for _ in range(5)])
+                    name_item = QtGui.QStandardItem(results.x_names[k])
+                    names_parent_item.appendRow([name_item])
 
         return model
 
@@ -2600,15 +2600,18 @@ class SimulationsMain(TimeEventsMain):
                         self.show_error_toast("Objective not supported yet :/")
                         return
 
-                    drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
-                                                          options=options,
-                                                          problem=problem
-                                                          )
+                    drv = sim.InvestmentsEvaluationDriver(
+                        grid=self.circuit,
+                        options=options,
+                        problem=problem
+                    )
 
-                    self.session.run(drv,
-                                     post_func=self.post_run_investments_evaluation,
-                                     prog_func=self.ui.progressBar.setValue,
-                                     text_func=self.ui.progress_label.setText)
+                    self.session.run(
+                        drv,
+                        post_func=self.post_run_investments_evaluation,
+                        prog_func=self.ui.progressBar.setValue,
+                        text_func=self.ui.progress_label.setText
+                    )
                     self.add_simulation(SimulationTypes.InvestmentsEvaluation_run)
                     self.LOCK()
 

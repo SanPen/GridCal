@@ -113,16 +113,17 @@ class PowerFlowInvestmentProblem(BlackBoxProblemTemplate):
         Get a list of names for the elements of f
         :return:
         """
-        return np.array([e.name for e in self.grid.investments_groups])
+        return np.array(["losses score", "overload score",
+                         "voltage module_score", "voltage angle score",
+                         "financial score", "Technical score"])
 
     def get_vars_names(self) -> StrVec:
         """
         Get a list of names for the elements of x
         :return:
         """
-        return np.array(["losses score", "overload score",
-                         "voltage module_score", "voltage angle score",
-                         "financial score", "Technical score"])
+        return np.array([e.name for e in self.grid.investments_groups])
+
 
     def objective_function(self, x: Vec | IntVec) -> Vec:
         """

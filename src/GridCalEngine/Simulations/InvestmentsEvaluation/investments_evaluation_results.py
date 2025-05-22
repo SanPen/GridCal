@@ -34,8 +34,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             ResultTypes.ParetoResults: [ResultTypes.InvestmentsParetoReportResults,
                                         ResultTypes.InvestmentsParetoCombinationsResults,
-                                        ResultTypes.InvestmentsParetoObjectivesResults,
-                                        ResultTypes.InvestmentsParetoFrequencyResults],
+                                        ResultTypes.InvestmentsParetoObjectivesResults
+                                        ],
 
             ResultTypes.SpecialPlots: [ResultTypes.InvestmentsParetoPlot,
                                        ResultTypes.InvestmentsIterationsPlot],
@@ -51,7 +51,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         n_f = len(f_names)
         n_x = len(x_names)
 
-        self.max_eval = max_eval
+        self._max_eval = max_eval
         self.f_names: StrVec = f_names
         self.x_names: StrVec = x_names
         self.plot_x_idx = plot_x_idx
@@ -60,6 +60,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._x: IntVec = np.zeros((max_eval, n_x), dtype=float)
         self._f: IntVec = np.zeros((max_eval, n_f), dtype=float)
         self._f_best = np.zeros(n_f, dtype=float)
+        self._sorting_indices = np.zeros(max_eval, dtype=int)
 
         self.register(name='f_names', tpe=StrVec)
         self.register(name='x_names', tpe=StrVec)
@@ -70,6 +71,14 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='plot_y_idx', tpe=int)
 
         self.__eval_index: int = 0
+
+    @property
+    def max_eval(self) -> int:
+        return self._max_eval
+
+    @max_eval.setter
+    def max_eval(self, val: int):
+        self._max_eval = val
 
     @property
     def x(self) -> Mat:
@@ -87,15 +96,12 @@ class InvestmentsEvaluationResults(ResultsTemplate):
     def current_evaluation(self) -> int:
         return self.__eval_index
 
+    @property
+    def sorting_indices(self) -> IntVec:
+        return self._sorting_indices
+
     def get_index(self) -> StrVec:
         return np.array([f"Eval {i + 1}" for i in range(self.x.shape[0])])
-
-    def get_pareto_indices(self) -> IntVec:
-        """
-        Get and store the pareto sorting indices of the best front
-        """
-        _, _, _sorting_indices = non_dominated_sorting(y_values=self.f, x_values=self.x)
-        return _sorting_indices
 
     def set_at(self, i: int, x_vec: Vec, f_vec: Vec):
         """
@@ -122,6 +128,21 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         else:
             print('Evaluation index out of range')
 
+    def finalize(self):
+        """
+        Finalize the results after simulation
+        """
+        # crop the data to the latest call index
+        if self.__eval_index > 0:
+            self._f = self._f[:self.__eval_index, :]
+            self._x = self._x[:self.__eval_index, :]
+
+            # compute the pareto sorting indices
+            _, _, self._sorting_indices = non_dominated_sorting(y_values=self.f, x_values=self.x)
+
+            # we curtail this one too
+            self.max_eval = self.__eval_index
+
     def set_best_combination(self, combination: IntVec) -> None:
         """
         Set the best combination of investment groups
@@ -142,13 +163,12 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                            ResultTypes.InvestmentsParetoReportResults):
 
             columns = np.r_[np.array(self.f_names), np.array(self.x_names)]
-            data = np.r_[self.f, self.x]
+            data = np.c_[self.f, self.x]
 
             if result_type == ResultTypes.InvestmentsParetoReportResults:
                 # slice results according to the pareto indices
-                sorting_idx = self.get_pareto_indices()
-                index = index[sorting_idx]
-                data = data[sorting_idx, :]
+                index = index[self.sorting_indices]
+                data = data[self.sorting_indices, :]
 
             return ResultsTable(data=data,
                                 index=index,
@@ -160,20 +180,14 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 xlabel='',
                                 units="")
 
-        elif result_type in (ResultTypes.InvestmentsFrequencyResults, ResultTypes.InvestmentsParetoFrequencyResults):
+        elif result_type == ResultTypes.InvestmentsFrequencyResults:
 
-            if result_type == ResultTypes.InvestmentsParetoFrequencyResults:
-                # slice results according to the pareto indices
-                sorting_idx = self.get_pareto_indices()
-                freq = np.sum(self._x[sorting_idx, :], axis=0)
-            else:
-                freq = np.sum(self._x, axis=0)
-
+            freq = np.sum(self._x, axis=0)
             freq_rel = freq / freq.sum()
             data = np.c_[freq, freq_rel]
 
             return ResultsTable(data=data,
-                                index=np.array(self.f_names),
+                                index=np.array(self.x_names),
                                 idx_device_type=DeviceType.NoDevice,
                                 columns=np.array(["Frequency", "Relative frequency"]),
                                 cols_device_type=DeviceType.NoDevice.NoDevice,
@@ -187,16 +201,15 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             if result_type == ResultTypes.InvestmentsParetoCombinationsResults:
                 # slice results according to the pareto indices
-                sorting_idx = self.get_pareto_indices()
-                data = self._x[sorting_idx, :]
-                index = index[sorting_idx]
+                data = self._x[self.sorting_indices, :]
+                index = index[self.sorting_indices]
             else:
                 data = self._x
 
             return ResultsTable(data=data,
                                 index=index,
                                 idx_device_type=DeviceType.NoDevice,
-                                columns=self.f_names,
+                                columns=self.x_names,
                                 cols_device_type=DeviceType.NoDevice.NoDevice,
                                 title=str(result_type.value),
                                 ylabel="",
@@ -210,9 +223,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             if result_type == ResultTypes.InvestmentsParetoObjectivesResults:
                 # slice results according to the pareto indices
-                sorting_idx = self.get_pareto_indices()
-                data = data[sorting_idx, :]
-                index = index[sorting_idx]
+                data = data[self.sorting_indices, :]
+                index = index[self.sorting_indices]
 
             return ResultsTable(data=data,
                                 index=index,
@@ -263,9 +275,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                 :param ind:
                 :return:
                 """
-                annot.xy = scatter_plot.get_offsets()[ind["ind"][0]]
-                investment_names = self.x_names[ind["ind"][0]].replace("Investment", "").replace(" ", "").split(',')
-                text = "Investments:\n{}".format(", ".join(investment_names))
+                i = ind["ind"][0]
+                annot.xy = scatter_plot.get_offsets()[i]
+                text = f"Solution:\n{index[i]}"
                 wrapped_text = textwrap.fill(text, width=30)
                 annot.set_text(wrapped_text)
                 annot.get_bbox_patch().set_alpha(0.8)
@@ -303,20 +315,22 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                     min_idx = distances.argmin()
 
                     if distances[min_idx] < tolerance:
-                        investment_names = self.x_names[min_idx]
+                        investment_names = index[min_idx]
                         print("Investments made:")
-                        for name in investment_names:
-                            print(name)
+                        for i, x_val in enumerate(self.x[min_idx, :]):
+                            if x_val != 0.0:
+                                print(self.x_names[i])
 
             fig.canvas.mpl_connect("motion_notify_event", hover)
             fig.canvas.mpl_connect('button_press_event', click_solution)
             plt.show()
             plt.show()
 
-            return ResultsTable(data=np.r_[x_vals, y_vals],
+            return ResultsTable(data=np.c_[x_vals, y_vals],
                                 index=np.array(index),
                                 idx_device_type=DeviceType.NoDevice,
-                                columns=np.array([self.f_names[self.plot_x_idx], self.f_names[self.plot_y_idx]]),
+                                columns=np.array([self.f_names[self.plot_x_idx],
+                                                  self.f_names[self.plot_y_idx]]),
                                 cols_device_type=DeviceType.NoDevice.NoDevice,
                                 title="Pareto plot",
                                 ylabel=self.f_names[self.plot_y_idx],

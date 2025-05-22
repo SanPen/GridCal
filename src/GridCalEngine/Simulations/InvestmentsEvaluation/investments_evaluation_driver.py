@@ -9,9 +9,7 @@ import numpy as np
 
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
 from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_pareto import MVRSM_mo_pareto
-from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 import NSGA_3
@@ -46,11 +44,26 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.problem: BlackBoxProblemTemplate = problem
 
         # results object
-        self.results = InvestmentsEvaluationResults(f_names=self.problem.get_objectives_names(),
-                                                    x_names=self.problem.get_vars_names(),
-                                                    plot_x_idx=self.problem.plot_x_idx,
-                                                    plot_y_idx=self.problem.plot_y_idx,
-                                                    max_eval=self.options.max_eval)
+        self.results = InvestmentsEvaluationResults(
+            f_names=self.problem.get_objectives_names(),
+            x_names=self.problem.get_vars_names(),
+            plot_x_idx=self.problem.plot_x_idx,
+            plot_y_idx=self.problem.plot_y_idx,
+            max_eval=self.options.max_eval
+        )
+
+    def initialize(self, max_iter):
+        """
+        Initialize the results
+        :param max_iter: Maximum iterations
+        """
+        self.results = InvestmentsEvaluationResults(
+            f_names=self.problem.get_objectives_names(),
+            x_names=self.problem.get_vars_names(),
+            plot_x_idx=self.problem.plot_x_idx,
+            plot_y_idx=self.problem.plot_y_idx,
+            max_eval=max_iter
+        )
 
     def get_steps(self):
         """
@@ -68,6 +81,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
 
         objectives = self.problem.objective_function(x)
+
+        if record_results:
+            self.results.add(x_vec=x, f_vec=objectives)
 
         # Report the progress
         self.report_progress2(self.results.current_evaluation, self.results.max_eval)
@@ -88,7 +104,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
         """
-        results_with_combinations = []
+        results_with_combinations = list()
         dim = len(self.grid.investments_groups)
         self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
         baseline = self.objective_function(x=np.zeros(dim, dtype=int))
@@ -108,10 +124,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         Sort investments in order and then evaluate cumulative combinations of increasingly expensive investments
         """
-        max_iter = (len(self.grid.investments_groups) + 1) * 2
 
-        self.results = InvestmentsEvaluationResults(f_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=max_iter)
+        self.initialize(max_iter = (self.problem.n_vars() + 1) * 2)
 
         # Add baseline evaluation
         self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
@@ -138,50 +152,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             self.objective_function(x=cumulative_combination, record_results=True)
         et = timeit.default_timer()
         print(f"Time taken to evaluate cumulative combinations: {et - st}")
-        self.report_done()
-
-    def optimized_evaluation_mvrsm(self) -> None:
-        """
-        Run an optimized investment evaluation without considering multiple evaluation groups at a time
-        """
-
-        self.report_text("Evaluating investments with MVRSM...")
-
-        # number of random evaluations at the beginning
-        dim = self.problem.n_vars()
-        rand_evals = round(dim * 1.5)
-        lb = np.zeros(dim)
-        ub = np.ones(dim)
-        rand_search_active_prob = 0.5
-        conf_dist = 0.0
-        conf_level = 0.95
-        stop_crit = StochStopCriterion(conf_dist, conf_level)
-        x0 = np.random.binomial(1, rand_search_active_prob, dim)
-
-        # compile the snapshot
-        self.results = InvestmentsEvaluationResults(f_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval + 1)
-
-        # add baseline
-        ret = self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
-
-        # optimize
-        sorted_y_, sorted_x_, y_population_, x_population_, f_population_ = MVRSM_mo_scaled(
-            obj_func=self.objective_function,
-            x0=x0,
-            lb=lb,
-            ub=ub,
-            num_int=dim,
-            max_evals=self.options.max_eval,
-            rand_evals=rand_evals,
-            args=(),
-            stop_crit=stop_crit,
-            n_objectives=len(ret)
-        )
-
-        self.results.set_best_combination(combination=sorted_x_[0, :])
-
-        self.report_done()
 
     def optimized_evaluation_mvrsm_pareto(self) -> None:
         """
@@ -199,8 +169,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         x0 = np.random.binomial(1, rand_search_active_prob, dim)
 
         # compile the snapshot
-        self.results = InvestmentsEvaluationResults(f_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval * 2)
+        self.initialize(max_iter=self.options.max_eval * 2)
 
         # add baseline
         ret = self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
@@ -219,7 +188,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.results.set_best_combination(combination=sorted_x_[0, :])
 
-        self.report_done()
 
     def optimized_evaluation_nsga3(self) -> None:
         """
@@ -231,10 +199,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         n_partitions = int(round(pop_size))
 
         # compile the snapshot
-        self.results = InvestmentsEvaluationResults(
-            f_names=self.grid.get_investment_groups_names(),
-            max_eval=self.options.max_eval * 2
-        )
+        self.initialize(max_iter=self.options.max_eval * 2)
 
         # add baseline
         ret = self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
@@ -255,8 +220,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.results.set_best_combination(combination=X[:, 0])
 
 
-        self.report_done()
-
     def randomized_evaluation(self) -> None:
         """
         Run purely random evaluations, without any optimization
@@ -264,10 +227,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.report_text("Randomly evaluating investments...")
 
         # compile the snapshot
-        self.results = InvestmentsEvaluationResults(
-            f_names=self.grid.get_investment_groups_names(),
-            max_eval=self.options.max_eval * 2
-        )
+        self.initialize(max_iter=self.options.max_eval)
 
         # add baseline
         ret = self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
@@ -283,7 +243,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.results.set_best_combination(combination=X[:, 0])
 
-        self.report_done()
 
     def optimized_evaluation_mixed_nsga2(self) -> None:
         """
@@ -294,10 +253,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         pop_size = int(round(dim)) * 2
 
         # compile the snapshot
-        self.results = InvestmentsEvaluationResults(
-            f_names=self.grid.get_investment_groups_names(),
-            max_eval=self.options.max_eval * 2
-        )
+        self.initialize(max_iter=self.options.max_eval * 2)
 
         # add baseline
         ret = self.objective_function(x=np.zeros(self.problem.n_vars(), dtype=int))
@@ -323,9 +279,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                 res_x.append(v)
 
         self.results.set_best_combination(combination=np.array(res_x))
-        # self.results.set_best_combination(combination=X[:, 0])
 
-        self.report_done()
 
     def run(self) -> None:
         """
@@ -358,13 +312,14 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         else:
             raise Exception('Unsupported method')
 
+        # finalize
+        self.report_text("Finalizing the results object...")
+        self.results.finalize()
+
         # report the combination
-        inv_list = self.problem.get_investments_for_combination(x=self.results.best_combination)
+        inv_list = self.problem.get_investments_for_combination(x=self.results.f_best)
         for inv in inv_list:
             self.logger.add_info(msg=f"Best combination", device=inv.idtag, value=inv.name)
 
-        # this stores the pareto indices in the solution object for later usage
-        if self.results.current_evaluation > 0:
-            self.results.get_pareto_indices()
-
         self.toc()
+        self.report_done()
