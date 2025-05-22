@@ -506,7 +506,7 @@ class GridMapWidget(BaseDiagramWidget):
                                                  lat=lat,
                                                  lon=lon,
                                                  index=index,
-                                                 r=0.005)
+                                                 r=self.diagram.min_branch_width)
 
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
