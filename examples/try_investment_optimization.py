@@ -98,7 +98,7 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
     list_length = len(grid.investments_groups)
     combinations_list = [[random.choice([0, 1]) for _ in range(list_length)] for _ in range(num_random_combinations)]
 
-    investments_by_group = grid.get_investmenst_by_groups_index_dict()
+    investments_by_group = grid.get_investment_by_groups_index_dict()
 
     results = []
 

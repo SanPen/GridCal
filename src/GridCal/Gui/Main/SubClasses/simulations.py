@@ -2602,7 +2602,7 @@ class SimulationsMain(TimeEventsMain):
                         problem = sim.AdequacyInvestmentProblem(
                             grid=self.circuit,
                             n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
-                            use_monte_carlo=False,
+                            use_monte_carlo=True,
                             save_file=False
                         )
 

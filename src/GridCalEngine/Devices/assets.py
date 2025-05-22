@@ -3847,7 +3847,7 @@ class Assets:
 
         return res
 
-    def get_investmenst_by_groups_index_dict(self) -> Dict[int, List[dev.Investment]]:
+    def get_investment_by_groups_index_dict(self) -> Dict[int, List[dev.Investment]]:
         """
         Get a dictionary of investments goups and their
         :return: Dict[investment group index] = list of investments
@@ -4632,7 +4632,7 @@ class Assets:
         :param add_switch: Include the list of Switch?
         :return: list of branch devices lists
         """
-        lst = [
+        lst: List[List[BRANCH_TYPES]] = [
             self._lines,
             self._dc_lines,
             self._transformers2w,
@@ -6367,3 +6367,27 @@ class Assets:
         """
         for elm in self.get_all_elements_iter():
             elm.replace_objects(old_object=old_object, new_obj=new_obj, logger=logger)
+
+    def refine_pointer_objects(self, logger: Logger):
+        """
+        Find the device types of pointer objects
+        :param logger:
+        :return:
+        """
+        d, ok = self.get_all_elements_dict(logger=logger)
+        objects_to_remove = list()
+
+        for lst in [self.investments, self.remedial_actions, self.contingencies]:
+            for elm in lst:
+                pointed = d.get(elm.device_idtag, None)
+                if pointed is None:
+                    logger.add_error("Reference not found, element deleted",
+                                     device_class=elm.device_type.value,
+                                     value=elm.device_idtag)
+                    objects_to_remove.append(elm)
+                else:
+                    elm.set_device(pointed)
+
+        # Delete the elements that don't point to the right element
+        for elm in objects_to_remove:
+            self.delete_element(obj=elm)

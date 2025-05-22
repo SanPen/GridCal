@@ -20,7 +20,7 @@ class BlackBoxProblemTemplate:
         self.plot_y_idx = plot_y_idx
 
         # dictionary of investment groups
-        self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investmenst_by_groups_index_dict()
+        self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investment_by_groups_index_dict()
 
     def get_investments_for_combination(self, x: IntVec) -> List[Investment]:
         """

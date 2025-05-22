@@ -72,7 +72,7 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         self.dt = self.grid.get_time_deltas_in_hours()
         gen_dict = {idtag: idx for idx, idtag in enumerate(nc.generator_data.idtag)}
         batt_dict = {idtag: idx for idx, idtag in enumerate(nc.battery_data.idtag)}
-        inv_group_dict = self.grid.get_investmenst_by_groups_index_dict()
+        inv_group_dict = self.grid.get_investment_by_groups_index_dict()
 
         self.dim2gen = lil_matrix((nc.generator_data.nelm, self.dim))
         self.dim2batt = lil_matrix((nc.battery_data.nelm, self.dim))

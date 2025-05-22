@@ -71,3 +71,11 @@ class PointerDeviceParent(EditableDevice):
             self._tpe = val
         else:
             raise ValueError(f"tpe must be a string not {val}")
+
+    def set_device(self, elm: EditableDevice):
+        """
+        Set the device
+        :param elm: Device to be pointed
+        """
+        self._tpe = elm.device_type
+        self._device_idtag = elm.idtag

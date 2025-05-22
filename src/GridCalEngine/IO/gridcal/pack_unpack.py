@@ -1537,6 +1537,10 @@ def parse_gridcal_data(data: GRIDCAL_FILE_TYPE,
     if text_func is not None:
         text_func("Done!")
 
+    # search contingencies, investments and remedial actions pointed devices
+    # and remove those that point nowhere
+    circuit.refine_pointer_objects(logger=logger)
+
     if circuit.has_time_series:
         circuit.ensure_profiles_exist()
 

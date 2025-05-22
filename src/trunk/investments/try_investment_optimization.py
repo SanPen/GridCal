@@ -1,11 +1,6 @@
 import os
-import sys
-import time
 import random
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
 from GridCalEngine import *
 from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Devices as dev
@@ -100,7 +95,7 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
     list_length = len(grid.investments_groups)
     combinations_list = [[random.choice([0, 1]) for _ in range(list_length)] for _ in range(num_random_combinations)]
 
-    investments_by_group = grid.get_investmenst_by_groups_index_dict()
+    investments_by_group = grid.get_investment_by_groups_index_dict()
 
     results = []
 

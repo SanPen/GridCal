@@ -48,7 +48,8 @@ GCPROP_TYPES = Union[
     Type[SubstationTypes],
     Type[ContingencyOperationTypes],
     Type[BranchGroupTypes],
-    Type[ConverterControlType]
+    Type[ConverterControlType],
+    Type[DeviceType]
 ]
 
 
