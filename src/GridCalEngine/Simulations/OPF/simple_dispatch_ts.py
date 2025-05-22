@@ -216,6 +216,7 @@ def greedy_dispatch(
                     dispatch = min(gen_profile[t, g], remaining)
                     dispatch_gen[t, g] = dispatch
                     remaining -= dispatch
+                    total_cost += dispatch * gen_cost[t, g] * dt[t]
                     # No cost for renewables assumed
 
         # Step 2: Dispatchable generation (sorted by cost)

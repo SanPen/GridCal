@@ -218,7 +218,8 @@ def reliability_simulation(n_sim: int,
     :param tol:
     :return:
     """
-    lole = np.zeros(n_sim)
+    lole_arr = np.zeros(n_sim)
+    total_cost_arr = np.zeros(n_sim)
     for sim_idx in nb.prange(n_sim):
         simulated_gen_actives, n_failures = generate_states_matrix(mttf=gen_mttf,
                                                                    mttr=gen_mttr,
@@ -257,6 +258,7 @@ def reliability_simulation(n_sim: int,
                 tol=tol
             )
 
-            lole[sim_idx] = np.sum(load_not_supplied)
+            lole_arr[sim_idx] = np.sum(load_not_supplied)
+            total_cost_arr[sim_idx] = total_cost
 
-    return lole
+    return lole_arr, total_cost_arr

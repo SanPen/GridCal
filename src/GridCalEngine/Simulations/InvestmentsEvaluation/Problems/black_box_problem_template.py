@@ -5,7 +5,7 @@
 from typing import List, Dict
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, Logger
 
 
 class BlackBoxProblemTemplate:
@@ -13,6 +13,8 @@ class BlackBoxProblemTemplate:
     def __init__(self, grid: MultiCircuit, plot_x_idx: int, plot_y_idx: int):
 
         self.grid = grid
+
+        self.logger = Logger()
 
         self.plot_x_idx = plot_x_idx
         self.plot_y_idx = plot_y_idx

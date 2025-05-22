@@ -1103,8 +1103,9 @@ class InvestmentsEvaluationObjectives(Enum):
     """
     PowerFlow = 'PowerFlow'
     TimeSeriesPowerFlow = 'TimeSeriesPowerFlow'
-    OptimalPowerFlow = 'OptimalPowerFlow'
-    TimeSeriesOptimalPowerFlow = 'TimeSeriesOptimalPowerFlow'
+    # OptimalPowerFlow = 'OptimalPowerFlow'
+    # TimeSeriesOptimalPowerFlow = 'TimeSeriesOptimalPowerFlow'
+    GenerationAdequacy = "Adequacy"
     FromPlugin = 'From Plugin'
 
     def __str__(self):

@@ -1,32 +1,17 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at https://mozilla.org/MPL/2.0/.  
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-
+from typing import List
 import numpy as np
 import numba as nb
 from scipy.sparse import lil_matrix
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
-from GridCalEngine.Simulations.Adequacy.adequacy_results import AdequacyResults
-from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 import NSGA_3
-from GridCalEngine.Simulations.Reliability.reliability import (reliability_simulation)
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, IntMat, Mat
+from GridCalEngine.Simulations.InvestmentsEvaluation.Problems.black_box_problem_template import BlackBoxProblemTemplate
+from GridCalEngine.Simulations.Reliability.reliability import reliability_simulation
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputs, greedy_dispatch
-from GridCalEngine.basic_structures import IntVec, IntMat
-
-
-class AdequacyOptimizationOptions:
-
-    def __init__(self,
-                 n_ga_evaluations=1000,
-                 n_monte_carlo_sim=10000,
-                 use_monte_carlo: bool = True,
-                 save_file: bool = True):
-        self.max_ga_evaluations = n_ga_evaluations
-        self.n_monte_carlo_sim = n_monte_carlo_sim
-        self.use_monte_carlo = use_monte_carlo
-        self.save_file = save_file
 
 
 @nb.njit(cache=True)
@@ -37,25 +22,30 @@ def apply_actives_mask(original_active: IntMat, mask_indices: IntVec, mask: IntV
     return active
 
 
-class AdequacyOptimizationDriver(DriverTemplate):
+class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
 
-    def __init__(self, grid: MultiCircuit, options: AdequacyOptimizationOptions):
+    def __init__(self,
+                 grid: MultiCircuit,
+                 n_monte_carlo_sim=10000,
+                 use_monte_carlo: bool = True,
+                 save_file: bool = True):
         """
-        ContinuationPowerFlowDriver constructor
-        @param circuit: NumericalCircuit instance
-        @param pf_options: power flow options instance
+
+        :param grid:
+        :param n_monte_carlo_sim:
+        :param use_monte_carlo:
+        :param save_file:
         """
-        DriverTemplate.__init__(self, grid=grid)
+        super().__init__(grid=grid, plot_x_idx=1, plot_y_idx=2)
 
-        # voltage stability options
-        self.options = options
+        # options object
+        self.n_monte_carlo_sim = n_monte_carlo_sim
+        self.use_monte_carlo = use_monte_carlo
+        self.save_file = save_file
 
-        self.results = AdequacyResults(investment_groups_names=grid.get_investment_groups_names(),
-                                       max_eval=self.options.max_ga_evaluations)
+        self.x_dim = len(self.grid.investments_groups)
 
-        self.dim = 0  # to be extended
-
-        if self.options.save_file:
+        if self.save_file:
             self.output_f = open("adequacy_output.csv", "w")
         else:
             self.output_f = None
@@ -105,21 +95,41 @@ class AdequacyOptimizationDriver(DriverTemplate):
         self.inv_gen_idx = np.array(self.inv_gen_idx)
         self.inv_batt_idx = np.array(self.inv_batt_idx)
 
-        self.__cancel__ = False
+        self.branches_cost = np.array([e.Cost for e in grid.get_branches_wo_hvdc()], dtype=float)
 
-    def progress_callback(self, lmbda: float):
+    def n_objectives(self) -> int:
         """
-        Send progress report
-        :param lmbda: lambda value
-        :return: None
-        """
-        self.report_text('Running voltage collapse lambda:' + "{0:.2f}".format(lmbda) + '...')
-
-    def objective_function(self, x: IntVec):
-        """
-
-        :param x: array of active investment groups
+        Number of objectives (size of f)
         :return:
+        """
+        return 3
+
+    def n_vars(self) -> int:
+        """
+        Number of variables (size of x)
+        :return:
+        """
+        return self.x_dim
+
+    def get_objectives_names(self) -> StrVec:
+        """
+        Get a list of names for the elements of f
+        :return:
+        """
+        return np.array(["LOLE", "CAPEX", "Electricity cost"])
+
+    def get_vars_names(self) -> StrVec:
+        """
+        Get a list of names for the elements of x
+        :return:
+        """
+        return np.array([e.name for e in self.grid.investments_groups])
+
+    def objective_function(self, x: Vec | IntVec) -> Vec:
+        """
+        Evaluate x and return f(x)
+        :param x: array of variable values
+        :return: array of objectives
         """
         gen_mask = self.dim2gen @ x
         batt_mask = self.dim2batt @ x
@@ -132,18 +142,18 @@ class AdequacyOptimizationDriver(DriverTemplate):
                                         mask=gen_mask)
 
         batt_active = apply_actives_mask(original_active=self.greedy_dispatch_inputs.batt_active,
-                                        mask_indices=self.inv_batt_idx,
-                                        mask=batt_mask)
+                                         mask_indices=self.inv_batt_idx,
+                                         mask=batt_mask)
 
         # batt_pmax = self.greedy_dispatch_inputs.batt_p_max_charge.copy()
         # batt_pmax[:, self.inv_batt_idx] *= batt_mask[self.inv_batt_idx]
         # invested_batt_idx = np.where(batt_mask == 1)[0]
         # capex += np.sum(self.batt_capex[invested_batt_idx])
 
-        if self.options.use_monte_carlo:
+        if self.use_monte_carlo:
 
-            lole_array = reliability_simulation(
-                n_sim=self.options.n_monte_carlo_sim,
+            lole_array, total_cost_arr = reliability_simulation(
+                n_sim=self.n_monte_carlo_sim,
                 load_profile=self.greedy_dispatch_inputs.load_profile,
 
                 gen_profile=self.greedy_dispatch_inputs.gen_profile,
@@ -166,8 +176,8 @@ class AdequacyOptimizationDriver(DriverTemplate):
                 dt=self.greedy_dispatch_inputs.dt,
                 force_charge_if_low=True
             )
-            lole = lole_array[-1]
-
+            lole = np.cumsum(lole_array / (self.n_monte_carlo_sim - 1))[-1]
+            total_cost = np.cumsum(total_cost_arr / (self.n_monte_carlo_sim - 1))[-1]
         else:
 
             (gen_dispatch, batt_dispatch,
@@ -193,68 +203,10 @@ class AdequacyOptimizationDriver(DriverTemplate):
             )
             lole = np.sum(load_not_supplied)
 
-        self.results.add(
-            capex=capex,
-            opex=0,
-            lole=lole,
-            overload_score=0,
-            voltage_score=0,
-            financial=0,
-            objective_function_sum=lole,
-            combination=x
-        )
         print(f"n_inv: {sum(x)}, lole: {lole}, capex: {capex}")
 
         if self.output_f is not None:
             # write header
             self.output_f.write(f"{sum(x)},{lole},{capex}" + ",".join([f"{xi}" for xi in x]) + "\n")
 
-        return lole, capex
-
-    def run(self):
-        """
-        run the voltage collapse simulation
-        @return:
-        """
-        self.tic()
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Run the NSGA 3
-        # --------------------------------------------------------------------------------------------------------------
-        pop_size = 20
-
-        X, obj_values = NSGA_3(
-            obj_func=self.objective_function,
-            n_partitions=pop_size,
-            n_var=self.dim,
-            n_obj=2,
-            max_evals=self.options.max_ga_evaluations,  # termination
-            pop_size=pop_size,
-            crossover_prob=0.8,
-            mutation_probability=0.1,
-            eta=30,
-        )
-
-        self.X = X
-        self.obj_values = obj_values
-
-        if self.output_f is not None:
-            self.output_f.close()
-
-        self.toc()
-
-    def cancel(self):
-        self.__cancel__ = True
-
-
-if __name__ == '__main__':
-    import GridCalEngine.api as gce
-
-    fname = "/home/santi/Documentos/Git/eRoots/tonga_planning/model_conversion_and_validation/Tongatapu/models/Tongatapu_v4_2024_ts.gridcal"
-
-    grid_ = gce.open_file(fname)
-    options_ = AdequacyOptimizationOptions()
-    problem = AdequacyOptimizationDriver(grid=grid_, options=options_)
-    problem.run()
-
-    print()
+        return np.array([lole, capex, total_cost])

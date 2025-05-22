@@ -62,6 +62,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._f_best = np.zeros(n_f, dtype=float)
         self._sorting_indices = np.zeros(max_eval, dtype=int)
 
+        self.__eval_index: int = 0
+        
         self.register(name='f_names', tpe=StrVec)
         self.register(name='x_names', tpe=StrVec)
         self.register(name='x', tpe=Mat)
@@ -69,8 +71,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='f_best', tpe=Vec)
         self.register(name='plot_x_idx', tpe=int)
         self.register(name='plot_y_idx', tpe=int)
-
-        self.__eval_index: int = 0
 
     @property
     def max_eval(self) -> int:

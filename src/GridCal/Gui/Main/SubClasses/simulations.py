@@ -190,7 +190,8 @@ class SimulationsMain(TimeEventsMain):
         self.investment_evaluation_objfunc_dict = OrderedDict()
         lst = list()
         for method in [InvestmentsEvaluationObjectives.PowerFlow,
-                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow]:
+                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow,
+                       InvestmentsEvaluationObjectives.GenerationAdequacy]:
             self.investment_evaluation_objfunc_dict[method.value] = method
             lst.append(method.value)
         self.ui.investment_evaluation_objfunc_ComboBox.setModel(gf.get_list_model(lst))
@@ -2596,6 +2597,15 @@ class SimulationsMain(TimeEventsMain):
                             ),
                             engine=self.get_preferred_engine()
                         )
+
+                    elif obj_fn_tpe == InvestmentsEvaluationObjectives.GenerationAdequacy:
+                        problem = sim.AdequacyInvestmentProblem(
+                            grid=self.circuit,
+                            n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                            use_monte_carlo=False,
+                            save_file=False
+                        )
+
                     else:
                         self.show_error_toast("Objective not supported yet :/")
                         return

@@ -6,3 +6,4 @@
 from GridCalEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem import PowerFlowInvestmentProblem
 from GridCalEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_ts_problem import (
     TimeSeriesPowerFlowInvestmentProblem)
+from GridCalEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem import AdequacyInvestmentProblem
