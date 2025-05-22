@@ -291,7 +291,7 @@ class BaseDiagramWidget(QSplitter):
             graphic_object.delete_from_associations()
 
             if delete_from_db:
-                self.circuit.delete_element(obj=graphic_object.api_object)
+                self.circuit.delete_element(obj=device)
 
             # # For any other associated, graphic, delete too
             # for child_graphic in graphic_object.get_associated_widgets():
@@ -315,6 +315,19 @@ class BaseDiagramWidget(QSplitter):
             self.object_editor_table.setModel(None)
 
             return True
+
+        if graphic_object is None and device is not None:
+
+            if delete_from_db:
+                self.circuit.delete_element(obj=device)
+                self.delete_element_utility_function(device=device, propagate=delete_from_db)
+                self.object_editor_table.setModel(None)
+
+            else:
+                pass
+
+            return True
+
         else:
             self.gui.show_warning_toast(f"Graphic object {graphic_object} and device {device} are none")
             self.object_editor_table.setModel(None)
@@ -346,24 +359,24 @@ class BaseDiagramWidget(QSplitter):
         if len(selected) > 0:
 
             # get the set of all affected GenericDiagramWidget instances
-            extended: Set[GenericDiagramWidget] = set()
+            extended: Set[ALL_DEV_TYPES] = set()
 
             for graphic_obj in selected:
 
                 if graphic_obj is not None:
                     if isinstance(graphic_obj, GenericDiagramWidget):
-                        extended.add(graphic_obj)
+                        extended.add(graphic_obj.api_object)
 
-                    for child_graphic in graphic_obj.get_associated_widgets():
-                        if child_graphic is not None:
-                            extended.add(child_graphic)
+                    for child_item in graphic_obj.get_associated_devices():
+                        if child_item is not None:
+                            extended.add(child_item)
 
-            extended_lst: List[GenericDiagramWidget] = list(extended)
+            extended_lst: List[ALL_DEV_TYPES] = list(extended)
 
             dlg = DeleteDialogue(
-                names_list=[f"{graphic_obj.api_object.device_type.value}: "
-                              f"{graphic_obj.api_object.name}"
-                            for graphic_obj in extended_lst],
+                names_list=[f"{device.device_type.value}: "
+                              f"{device.name}"
+                            for device in extended_lst],
                 delete_from_db=delete_from_db,
                 title="Delete Selected",
                 checks=False,
@@ -373,9 +386,10 @@ class BaseDiagramWidget(QSplitter):
             dlg.exec()
 
             if dlg.is_accepted:
-                for graphic_object in extended_lst:
-                    self.remove_element(device=graphic_object.api_object,
-                                        graphic_object=graphic_object,
+                for device in extended_lst:
+
+                    self.remove_element(device=device,
+                                        graphic_object=self.graphics_manager.query(elm=device),
                                         delete_from_db=dlg.delete_from_db)
 
                 return True, dlg.delete_from_db

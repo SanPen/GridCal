@@ -189,6 +189,20 @@ class GenericDiagramWidget:
         return list()
 
 
+    def get_associated_devices(self):
+
+        """
+        Get a list of all graphical elements associated with this widget.
+        In the case of a BusGraphicsItem, it will be all the shunt connections
+        plus the LineGraphicItems connecting to it, etc.
+        This function is meant to be overloaded.
+        :return:
+
+        """
+
+        return list()
+
+
 class Polygon(QGraphicsPolygonItem):
     """
     PolygonItem
