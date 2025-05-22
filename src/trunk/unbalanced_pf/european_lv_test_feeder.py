@@ -22,7 +22,7 @@ grid.add_generator(bus = source, api_obj = gen)
 impedance = gce.Bus(name='ImpedanceBus', xpos=390872.8, ypos=392887.5, Vnom=11)
 grid.add_bus(obj=impedance)
 
-sequence_line_type = gce.SequenceLineType(R=0.1837, X=1.837, R0=0.1837, X0=1.837)
+sequence_line_type = gce.SequenceLineType(X=2.117, X0=3806.17)
 grid.add_sequence_line(sequence_line_type)
 source_impedance = gce.Line(bus_from=source, bus_to=impedance)
 source_impedance.apply_template(sequence_line_type, grid.Sbase, grid.fBase, logger)

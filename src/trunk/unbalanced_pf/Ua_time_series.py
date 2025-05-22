@@ -35,6 +35,8 @@ def load_simulations(df, bus):
     time = row_df.columns[1:]
     U_simulation = row_df.iloc[0, 1:].values
 
+    print(df.head())
+
     return U_simulation, time
 
 Ua_df = pd.read_excel('Ua_results.xlsx')
@@ -46,6 +48,7 @@ Ub_simulation, time_b = load_simulations(Ub_df, 900)
 Uc_df = pd.read_excel('Uc_results.xlsx')
 Uc_simulation, time_c = load_simulations(Uc_df, 614)
 
+"""
 plt.figure(figsize=(10, 4))
 plt.plot(time_a, Ua_real, label='Real A')
 plt.plot(time_a, Uc_real, label='Real C')
@@ -69,6 +72,7 @@ plt.grid(True)
 plt.tight_layout()
 plt.legend()
 plt.show()
+
 
 plt.figure(figsize=(10, 4))
 plt.plot(time_a, Ua_simulation, label='Simulated')
@@ -102,3 +106,5 @@ plt.grid(True)
 plt.tight_layout()
 plt.legend()
 plt.show()
+
+"""

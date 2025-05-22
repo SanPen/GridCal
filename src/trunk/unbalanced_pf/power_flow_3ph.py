@@ -15,18 +15,18 @@ def power_flow_3ph(grid, t_idx=None):
 
     problem = PfBasicFormulation3Ph(V0=V0, S0=S0, Qmin=Qmin*100, Qmax=Qmax*100, nc=nc, options=options)
 
-    print('Ybus = \n', problem.Ybus.toarray())
-    print('S0 = \n', problem.S0)
-    print('I0 = \n', problem.I0)
-    print('V0 = \n', problem.V)
+    #print('Ybus = \n', problem.Ybus.toarray())
+    #print('S0 = \n', problem.S0)
+    #print('I0 = \n', problem.I0)
+    #print('V0 = \n', problem.V)
 
     res = newton_raphson_fx(problem=problem, verbose=1)
 
     Ibus = problem.Ybus.dot(res.V)
-    print('Ibus = \n', Ibus)
+    #print('Ibus = \n', Ibus)
 
     Sbuss = res.V * np.conj(Ibus)
-    print('Sbuss = \n', Sbuss)
+    #print('Sbuss = \n', Sbuss)
 
     return res
 

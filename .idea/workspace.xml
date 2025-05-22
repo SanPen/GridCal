@@ -28,11 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Time series comparation.">
-      <change afterPath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Correction of the Dubanton approximation.">
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/line_constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/line_constants.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Ua_time_series.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Ua_time_series.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/european_lv_test_feeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/european_lv_test_feeder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/power_flow_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/power_flow_3ph.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -224,6 +224,7 @@
     "Python.make_wheels.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
     "Python.overhead_line_calcs.executor": "Run",
+    "Python.phase_number.executor": "Run",
     "Python.pmode3_test.executor": "Run",
     "Python.post_example.executor": "Run",
     "Python.power_flow_1ph_test.executor": "Run",
@@ -2347,7 +2348,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="719" />
+    <option name="localTasksCounter" value="720" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2393,7 +2394,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Removed &quot;kconv&quot;" />
     <MESSAGE value="5.3.36" />
     <MESSAGE value="Removed unused code and cleaned up things in pf_generalized_formulation.py" />
     <MESSAGE value="Improvements in  pf_generalized_formulation.py and bug fixes in linear_opf_ts.py" />
@@ -2418,7 +2418,8 @@
     <MESSAGE value="European LV Test Feeder Power Flow" />
     <MESSAGE value="Some files" />
     <MESSAGE value="Time series comparation." />
-    <option name="LAST_COMMIT_MESSAGE" value="Time series comparation." />
+    <MESSAGE value="Correction of the Dubanton approximation." />
+    <option name="LAST_COMMIT_MESSAGE" value="Correction of the Dubanton approximation." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
