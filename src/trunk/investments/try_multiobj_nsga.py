@@ -36,7 +36,8 @@ if __name__ == "__main__":
     #                                            max_eval=1 * len(grid.investments),
     #                                            pf_options=pf_options)
 
-    inv = sim.InvestmentsEvaluationDriver(grid, options=options)
+    problem = sim.PowerFlowInvestmentProblem(grid=grid, pf_options=pf_options)
+    inv = sim.InvestmentsEvaluationDriver(grid, options=options, problem=problem)
     st_time = time.time()
     inv.run()
     e_time = time.time()

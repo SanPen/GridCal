@@ -140,6 +140,7 @@ def create_driver(grid: MultiCircuit,
                 max_eval=0,
                 pf_options=PowerFlowOptions()
             ),
+            problem=None
         )
 
     else:

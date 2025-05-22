@@ -562,28 +562,21 @@ class SimulationsMain(TimeEventsMain):
         :return:
         """
         model = QtGui.QStandardItemModel()
-        model.setHorizontalHeaderLabels([
-            "Combination", "capex", "opex", "losses", "overload_score", "voltage_score"
-        ])
+        model.setHorizontalHeaderLabels(["Combination"] + list(drv.problem.get_objectives_names()))
 
         results = drv.results
         for i in range(results.max_eval):
-            idx = np.where(results._combinations[i, :] != 0)[0]
+            idx = np.where(results._x[i, :] != 0)[0]
             if len(idx):
-                row_items = [
-                    QtGui.QStandardItem(f"Combination {i}"),
-                    QtGui.QStandardItem(f"{results._capex[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._opex[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._losses[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._overload_score[i]:.2f}"),
-                    QtGui.QStandardItem(f"{results._voltage_score[i]:.2f}"),
+                row_items = [QtGui.QStandardItem(f"Combination {i}")] + [
+                    QtGui.QStandardItem(f"{fi:.2f}") for fi in drv.results.f
                 ]
                 model.appendRow(row_items)
 
                 # Add names as child nodes under this combination
                 names_parent_item = row_items[0]  # Use the first column (Combination) as parent
                 for k in idx:
-                    name_item = QtGui.QStandardItem(results.investment_groups_names[k])
+                    name_item = QtGui.QStandardItem(results.f_names[k])
                     names_parent_item.appendRow([name_item] + [QtGui.QStandardItem("") for _ in range(5)])
 
         return model
@@ -2586,16 +2579,30 @@ class SimulationsMain(TimeEventsMain):
                                                                plugin_fcn_ptr=fn_ptr
                                                                )
 
-                    opf_time_series_results = self.get_opf_ts_results(
-                        use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
-                    )
+                    if obj_fn_tpe == InvestmentsEvaluationObjectives.PowerFlow:
+                        problem = sim.PowerFlowInvestmentProblem(
+                            grid=self.circuit,
+                            pf_options=self.get_selected_power_flow_options()
+                        )
+
+                    elif obj_fn_tpe == InvestmentsEvaluationObjectives.TimeSeriesPowerFlow:
+                        problem = sim.TimeSeriesPowerFlowInvestmentProblem(
+                            grid=self.circuit,
+                            pf_options=self.get_selected_power_flow_options(),
+                            time_indices=self.get_time_indices(),
+                            clustering_results=self.get_clustering_results(),
+                            opf_time_series_results=self.get_opf_ts_results(
+                                use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                            ),
+                            engine=self.get_preferred_engine()
+                        )
+                    else:
+                        self.show_error_toast("Objective not supported yet :/")
+                        return
 
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
                                                           options=options,
-                                                          time_indices=self.get_time_indices(),
-                                                          opf_time_series_results=opf_time_series_results,
-                                                          clustering_results=self.get_clustering_results(),
-                                                          engine=self.get_preferred_engine()
+                                                          problem=problem
                                                           )
 
                     self.session.run(drv,

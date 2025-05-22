@@ -12,6 +12,7 @@ import GridCalEngine.Simulations as sim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes, DeviceType
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from trunk.acdc_pf.generalized_wip.acdc_generalized_9_lynn import problem
 
 
 # Define investment power lines in the grid
@@ -173,7 +174,8 @@ if __name__ == "__main__":
 
     print(6 * len(grid.investments))
     options = sim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=6 * len(grid.investments), pf_options=pf_options)
-    inv = sim.InvestmentsEvaluationDriver(grid, options=options)
+    problem = sim.PowerFlowInvestmentProblem(grid=grid, pf_options=pf_options)
+    inv = sim.InvestmentsEvaluationDriver(grid, options=options, problem=problem)
     inv.run()
 
     inv_results = inv.results

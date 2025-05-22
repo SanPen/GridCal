@@ -301,7 +301,7 @@ class ResultsMain(SimulationsMain):
 
     def copy_opf_to_profiles(self):
         """
-        Copy the results from the OPF time series to the profiles
+        Copy the results from the OPF snapshot and time series to the database
         """
 
         # copy the snapshot if that exits

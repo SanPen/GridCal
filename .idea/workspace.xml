@@ -28,11 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed the unused topology driver logic">
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/busbar_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/busbar_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/object_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/object_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/physical_device.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/physical_device.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the database from opf setting of values">
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Results/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Results/results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -203,7 +200,7 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python tests.test_ntc.py.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
     "Python.adequacy_driver.executor": "Run",
@@ -236,6 +233,7 @@
     "Python.round_trip.executor": "Run",
     "Python.run.executor": "Debug",
     "Python.run_child_1.executor": "Run",
+    "Python.run_contingencies_ts.executor": "Run",
     "Python.run_master.executor": "Run",
     "Python.run_server_farm.executor": "Debug",
     "Python.server_example.executor": "Run",
@@ -287,11 +285,11 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Adequacy" />
       <recent name="$PROJECT_DIR$/src/trunk/simple_dispatch" />
       <recent name="$PROJECT_DIR$/doc/rst_source/theory/opf" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
-      <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -744,7 +742,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="reliability_driver" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="run_contingencies_ts" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -753,12 +751,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/contingencies" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/reliability_driver.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/contingencies/run_contingencies_ts.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -978,6 +976,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -1082,24 +1103,6 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in test_topology_processor.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_parameters" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_topology_processor.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -1142,20 +1145,20 @@
       <item itemvalue="Python.test_opf" />
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
-      <item itemvalue="Python.reliability_driver" />
+      <item itemvalue="Python.run_contingencies_ts" />
+      <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.update_gui_file" />
       <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.test_ntc.py" />
-      <item itemvalue="Python tests.pytest in test_topology_processor.py" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest in test_topology_processor.py" />
         <item itemvalue="Python.update_gui_file" />
-        <item itemvalue="Python.reliability_driver" />
+        <item itemvalue="Python.run_contingencies_ts" />
+        <item itemvalue="Python.upload_to_pypi" />
+        <item itemvalue="Python tests.pytest in tests" />
       </list>
     </recent_temporary>
   </component>
@@ -2375,7 +2378,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="733" />
+    <option name="localTasksCounter" value="740" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2421,13 +2424,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Some cgmes handling improvements" />
-    <MESSAGE value="Fixed the round trip" />
-    <MESSAGE value="Fixes on the NTC algorithm, passing early tests" />
-    <MESSAGE value="More ntc testing" />
-    <MESSAGE value="Finished current tests for the NTC" />
-    <MESSAGE value="deleted case14_csh.gridcal and modified test to delete the file after using it" />
-    <MESSAGE value="modified test to delete the output file after using it" />
     <MESSAGE value="added the n_customers parameter" />
     <MESSAGE value="refactored reliability and blackout drivers" />
     <MESSAGE value="Reliability stuff" />
@@ -2446,7 +2442,14 @@
     <MESSAGE value="Migrated Investment to inherit from PointerDevice" />
     <MESSAGE value="Migrated Contingency and RemedialAction to inherit from PointerDevice" />
     <MESSAGE value="Removed the unused topology driver logic" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed the unused topology driver logic" />
+    <MESSAGE value="Fixed date editing" />
+    <MESSAGE value="Fixed issue with dates and colors" />
+    <MESSAGE value="Refactored the ntc contingencies table and updated the version to 5.3.44" />
+    <MESSAGE value="Fixed small bug" />
+    <MESSAGE value="Added contingency time series example" />
+    <MESSAGE value="Small refactor" />
+    <MESSAGE value="Improved the database from opf setting of values" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the database from opf setting of values" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2961,7 +2964,7 @@
           <option name="timeStamp" value="2736" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Reliability/adequacy_driver.py</url>
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Adequacy/adequacy_driver.py</url>
           <line>208</line>
           <option name="timeStamp" value="2742" />
         </line-breakpoint>
@@ -3014,6 +3017,11 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py</url>
           <line>601</line>
           <option name="timeStamp" value="2766" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/contingencies/run_contingencies_ts.py</url>
+          <line>12</line>
+          <option name="timeStamp" value="2767" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

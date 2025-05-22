@@ -98,3 +98,40 @@ def get_voltage_phase_score(voltage: Union[CxMat, CxVec], va_cost: Vec, va_max: 
                     cost_ += va_cost[j] * (va - va_max[j])
 
     return cost_
+
+
+class TechnoEconomicScores:
+    """
+    InvestmentScores
+    """
+
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
+        self.capex_score: float = 0.0
+        self.opex_score: float = 0.0
+        self.losses_score: float = 0.0
+        self.overload_score: float = 0.0
+        self.voltage_module_score: float = 0.0
+        self.voltage_angle_score: float = 0.0
+
+    @property
+    def financial_score(self) -> float:
+        """
+        Get the financial score: CAPEX + OPEX
+        :return: float
+        """
+        return self.capex_score + self.opex_score
+
+    @property
+    def tech_score(self):
+        return self.losses_score + self.overload_score + self.voltage_module_score + self.voltage_angle_score
+
+    def arr(self) -> Vec:
+        """
+        Return multidimensional metrics for the optimization
+        :return: array of 2 values
+        """
+        return np.array([self.losses_score, self.overload_score, self.voltage_module_score, self.voltage_angle_score,
+                         self.financial_score, self.tech_score])
