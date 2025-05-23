@@ -148,7 +148,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                          verbose=self.options.verbose,
                                          robust=self.options.robust)
 
-            self.results.voltage = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta[0, :])
+            self.results.voltage = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.Va[0, :])
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
             self.results.load_shedding = opf_vars.load_vars.shedding[0, :]
             self.results.battery_power = opf_vars.batt_vars.p[0, :]

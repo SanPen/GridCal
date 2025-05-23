@@ -133,7 +133,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          verbose=self.options.verbose,
                                          robust=self.options.robust)
 
-            self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
+            self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.Va)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
 
             self.results.load_power = opf_vars.load_vars.p
@@ -320,7 +320,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          robust=self.options.robust)
 
             self.results.voltage[time_indices, :] = (np.ones((opf_vars.nt, opf_vars.nbus))
-                                                     * np.exp(1j * opf_vars.bus_vars.theta))
+                                                     * np.exp(1j * opf_vars.bus_vars.Va))
             self.results.bus_shadow_prices[time_indices, :] = opf_vars.bus_vars.shadow_prices
 
             self.results.load_power[time_indices, :] = opf_vars.load_vars.p
