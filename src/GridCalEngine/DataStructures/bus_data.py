@@ -36,6 +36,7 @@ class BusData:
         self.installed_power: Vec = np.zeros(nbus, dtype=float)
         self.srap_availbale_power: Vec = np.zeros(nbus, dtype=float)
         self.is_dc: BoolVec = np.empty(nbus, dtype=bool)
+        self.is_grounded: BoolVec = np.empty(nbus, dtype=bool)
         self.areas: IntVec = np.empty(nbus, dtype=int)
         self.substations: IntVec = np.empty(nbus, dtype=int)
 
@@ -80,6 +81,7 @@ class BusData:
         data.installed_power = self.installed_power[elm_idx]
         data.srap_availbale_power = self.srap_availbale_power[elm_idx]
         data.is_dc = self.is_dc[elm_idx]
+        data.is_grounded = self.is_grounded[elm_idx]
         data.areas = self.areas[elm_idx]
         data.substations = self.substations[elm_idx]
 
@@ -128,6 +130,7 @@ class BusData:
         data.installed_power = self.installed_power.copy()
         data.srap_availbale_power = self.srap_availbale_power.copy()
         data.is_dc = self.is_dc.copy()
+        data.is_grounded = self.is_grounded.copy()
         data.areas = self.areas.copy()
         data.substations = self.substations.copy()
 

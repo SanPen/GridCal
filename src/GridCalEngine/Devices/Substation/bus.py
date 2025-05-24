@@ -36,6 +36,7 @@ class Bus(PhysicalDevice):
                  is_slack=False,
                  is_dc=False,
                  is_internal=False,
+                 is_grounded=False,
                  area: Area = None,
                  zone: Zone = None,
                  substation: Substation = None,
@@ -67,6 +68,7 @@ class Bus(PhysicalDevice):
         :param is_slack: Is this bus a slack bus?
         :param is_dc: Is this bus a DC bus?
         :param is_internal: Is this bus an internal bus? (i.e. the central bus on a 3W transformer, or the bus of a FluidNode)
+        :param is_grounded: Is this bus grounded, i.e., at V=0? Sometimes used for DC buses connected to a VSC
         :param area: Area object
         :param zone: Zone object
         :param substation: Substation object
@@ -156,6 +158,9 @@ class Bus(PhysicalDevice):
         # determine if this bus is part of a composite transformer such as a 3-winding transformer
         self._internal = bool(is_internal)
 
+        # determine if the bus is solidly grounded
+        self.is_grounded = bool(is_grounded)
+
         # position and dimensions
         self.x = float(xpos)
         self.y = float(ypos)
@@ -178,6 +183,7 @@ class Bus(PhysicalDevice):
                       definition='Is this bus part of a composite transformer, '
                                  'such as  a 3-winding transformer or a fluid node?.',
                       profile_name='', old_names=['is_tr_bus', 'is_internal'])
+        self.register(key='is_grounded', units='', tpe=bool, definition='Is this bus solidly grounded?.', profile_name='')
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the bus.', profile_name='')
         self.register(key='Vm0', units='p.u.', tpe=float, definition='Voltage module guess.', profile_name='')
         self.register(key='Va0', units='rad.', tpe=float, definition='Voltage angle guess.', profile_name='')
