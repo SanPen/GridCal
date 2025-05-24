@@ -2077,8 +2077,8 @@ def case_loop() -> None:
     v_slacks = np.zeros(n_con_all)
     f_slacks = np.zeros(n_con_all)
     W_k_vec = np.zeros(n_con_all)
-    # Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
-    Z_k_vec = np.ones((n_con_all, nc.generator_data.nelm)) * -0.0001  # largely negative if not filled
+    Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+    # Z_k_vec = np.ones((n_con_all, nc.generator_data.nelm)) * -0.0001  # largely negative if not filled
     u_j_vec = np.zeros((n_con_all, nc.generator_data.nelm))
 
     # Start main loop over iterations
