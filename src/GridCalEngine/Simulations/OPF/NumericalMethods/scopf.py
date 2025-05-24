@@ -563,6 +563,7 @@ class NonlinearSCOPFResults:
 
 
 def scopf_subproblem(nc: NumericalCircuit,
+                     gen_indices: IntVec,
                      opf_options: OptimalPowerFlowOptions,
                      debug: bool = False,
                      use_autodiff: bool = False,
@@ -610,8 +611,10 @@ def scopf_subproblem(nc: NumericalCircuit,
     # print("Slack: ", slack)
 
     # # Set all generator powers except for slack
-    Pg_max = np.copy(mp_results.Pg[nc.generator_data.original_idx])
-    Pg_min = np.copy(mp_results.Pg[nc.generator_data.original_idx])
+    # Pg_max = np.copy(mp_results.Pg[nc.generator_data.original_idx])
+    # Pg_min = np.copy(mp_results.Pg[nc.generator_data.original_idx])
+    Pg_max = np.copy(mp_results.Pg[gen_indices])
+    Pg_min = np.copy(mp_results.Pg[gen_indices])
 
     Pg_max[slackgens] = nc.generator_data.pmax[slackgens] / Sbase
     Pg_min[slackgens] = nc.generator_data.pmin[slackgens] / Sbase
@@ -1752,7 +1755,7 @@ def run_nonlinear_MP_opf(nc: NumericalCircuit,
         voltage_pf = nc.bus_data.Vbus
 
     # split into islands, but considering the HVDC lines as actual links
-    islands = nc.split_into_islands(ignore_single_node_islands=True,
+    islands = nc.split_into_islands(ignore_single_node_islands=False,
                                     consider_hvdc_as_island_links=True)
 
     # create and initialize results
@@ -1875,8 +1878,9 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
         Sbus_pf = nc.bus_data.installed_power
         voltage_pf = nc.bus_data.Vbus
 
+    gen_indices = np.copy(nc.generator_data.original_idx)
     # split into islands, but considering the HVDC lines as actual links
-    islands = nc.split_into_islands(ignore_single_node_islands=True,
+    islands = nc.split_into_islands(ignore_single_node_islands=False,
                                     consider_hvdc_as_island_links=True)
 
     # create and initialize results
@@ -1884,6 +1888,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
     results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen, nshed=nc.nbus if load_shedding else 0,
                        nhvdc=nc.nhvdc, ncap=0)
 
+    # for i, island in enumerate([nc]):
     for i, island in enumerate(islands):
 
         indices = island.get_simulation_indices()
@@ -1891,6 +1896,7 @@ def run_nonlinear_SP_scopf(nc: NumericalCircuit,
         if len(indices.vd) > 0:
             # 2. Run the island SP
             island_res = scopf_subproblem(nc=island,
+                                          gen_indices=gen_indices,
                                           opf_options=opf_options,
                                           debug=debug,
                                           use_autodiff=use_autodiff,
@@ -1999,7 +2005,11 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case39_v15.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case39_vjosep2.gridcal')
+    file_path = os.path.join('src/trunk/scopf/case39_vjosep3.gridcal')
+    # file_path = os.path.join('src/trunk/scopf/case39_vjosep4.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
@@ -2059,15 +2069,16 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 15
-    tolerance = 1e-5
+    max_iter = 10
+    tolerance = 5e-4
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
-    n_con_all = n_con_groups * 100
+    n_con_all = n_con_groups * 100  # abritrary large number to prestore memory
     v_slacks = np.zeros(n_con_all)
     f_slacks = np.zeros(n_con_all)
     W_k_vec = np.zeros(n_con_all)
-    Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+    # Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+    Z_k_vec = np.ones((n_con_all, nc.generator_data.nelm)) * -0.0001  # largely negative if not filled
     u_j_vec = np.zeros((n_con_all, nc.generator_data.nelm))
 
     # Start main loop over iterations
@@ -2104,7 +2115,7 @@ def case_loop() -> None:
                     nc.passive_branch_data.active[br_idx] = False  # Deactivate the affected branch
 
                     # Rebuild islands after modification
-                    islands = nc.split_into_islands()
+                    islands = nc.split_into_islands(ignore_single_node_islands=False)
 
                     if len(islands) > 1:
                         island_sizes = [island.nbus for island in islands]
