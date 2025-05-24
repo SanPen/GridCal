@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import numpy as np
 
-
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import CxVec
@@ -53,20 +52,20 @@ class ShortCircuitDriver(DriverTemplate):
 
         # declare an empty results object
         n = grid.get_bus_number()
-        self.results: ShortCircuitResults = ShortCircuitResults(n=n,
-                                                                m=grid.get_branch_number_wo_hvdc(),
-                                                                n_hvdc=grid.get_hvdc_number(),
-                                                                bus_names=grid.get_bus_names(),
-                                                                branch_names=grid.get_branch_names_wo_hvdc(),
-                                                                hvdc_names=grid.get_hvdc_names(),
-                                                                bus_types=np.ones(n),
-                                                                area_names=grid.get_area_names())
+        self.results: ShortCircuitResults = ShortCircuitResults(
+            n=n,
+            m=grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
+            n_hvdc=grid.get_hvdc_number(),
+            bus_names=grid.get_bus_names(),
+            branch_names=grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
+            hvdc_names=grid.get_hvdc_names(),
+            bus_types=np.ones(n),
+            area_names=grid.get_area_names()
+        )
 
         self.logger = Logger()
 
         self.__cancel__ = False
-
-
 
     def get_steps(self):
         """
@@ -225,11 +224,11 @@ class ShortCircuitDriver(DriverTemplate):
 
         # Compile the grid
         nc = compile_numerical_circuit_at(circuit=grid,
-                                                         t_idx=None,
-                                                         apply_temperature=self.pf_options.apply_temperature_correction,
-                                                         branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                         opf_results=self.opf_results,
-                                                         logger=self.logger)
+                                          t_idx=None,
+                                          apply_temperature=self.pf_options.apply_temperature_correction,
+                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
+                                          opf_results=self.opf_results,
+                                          logger=self.logger)
 
         calculation_inputs = nc.split_into_islands(
             ignore_single_node_islands=self.pf_options.ignore_single_node_islands
@@ -265,7 +264,8 @@ class ShortCircuitDriver(DriverTemplate):
                                                     fault_type=self.options.fault_type)
 
                     # merge results
-                    results.apply_from_island(res, island.bus_data.original_idx, island.passive_branch_data.original_idx)
+                    results.apply_from_island(res, island.bus_data.original_idx,
+                                              island.passive_branch_data.original_idx)
 
         else:  # single island
 
@@ -293,5 +293,3 @@ class ShortCircuitDriver(DriverTemplate):
         self.grid.short_circuit_results = results
         self._is_running = False
         self.toc()
-
-

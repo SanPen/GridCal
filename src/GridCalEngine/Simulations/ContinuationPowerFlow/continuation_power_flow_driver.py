@@ -48,9 +48,11 @@ class ContinuationPowerFlowDriver(DriverTemplate):
 
         self.results = ContinuationPowerFlowResults(nval=0,
                                                     nbus=self.grid.get_bus_number(),
-                                                    nbr=self.grid.get_branch_number_wo_hvdc(),
+                                                    nbr=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                                                     bus_names=self.grid.get_bus_names(),
-                                                    branch_names=self.grid.get_branch_names_wo_hvdc(),
+                                                    branch_names=self.grid.get_branch_names(add_hvdc=False,
+                                                                                            add_vsc=False,
+                                                                                            add_switch=True),
                                                     bus_types=np.ones(self.grid.get_bus_number()))
 
     def get_steps(self):

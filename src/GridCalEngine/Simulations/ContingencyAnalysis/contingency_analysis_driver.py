@@ -73,9 +73,9 @@ class ContingencyAnalysisDriver(DriverTemplate):
         self.results = ContingencyAnalysisResults(
             ncon=self.grid.get_contingency_groups_number(),
             nbus=self.grid.get_bus_number(),
-            nbr=self.grid.get_branch_number_wo_hvdc(),
+            nbr=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
             bus_names=self.grid.get_bus_names(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             con_names=np.array(self.grid.get_contingency_group_names())
         )
@@ -176,9 +176,9 @@ class ContingencyAnalysisDriver(DriverTemplate):
             self.results = ContingencyAnalysisResults(
                 ncon=self.grid.get_contingency_groups_number(),
                 nbus=self.grid.get_bus_number(),
-                nbr=self.grid.get_branch_number_wo_hvdc(),
+                nbr=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                 bus_names=self.grid.get_bus_names(),
-                branch_names=self.grid.get_branch_names_wo_hvdc(),
+                branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
                 bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
                 con_names=np.array(self.grid.get_contingency_group_names())
             )

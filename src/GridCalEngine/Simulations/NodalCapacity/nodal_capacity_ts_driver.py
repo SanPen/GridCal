@@ -61,7 +61,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         # OPF results
         self.results: NodalCapacityTimeSeriesResults = NodalCapacityTimeSeriesResults(
             bus_names=self.grid.get_bus_names(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             load_names=self.grid.get_load_names(),
             generator_names=self.grid.get_generator_names(),
             battery_names=self.grid.get_battery_names(),
@@ -73,7 +73,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             fluid_path_names=self.grid.get_fluid_path_names(),
             fluid_injection_names=self.grid.get_fluid_injection_names(),
             n=self.grid.get_bus_number(),
-            m=self.grid.get_branch_number_wo_hvdc(),
+            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
             nt=nt,
             ngen=self.grid.get_generators_number(),
             nbat=self.grid.get_batteries_number(),

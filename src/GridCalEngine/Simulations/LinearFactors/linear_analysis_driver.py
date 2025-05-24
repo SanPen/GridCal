@@ -48,11 +48,13 @@ class LinearAnalysisDriver(DriverTemplate):
         self.opf_results = opf_results
 
         # Results
-        self.results: LinearAnalysisResults = LinearAnalysisResults(n_br=self.grid.get_branch_number_wo_hvdc(),
-                                                                    n_bus=self.grid.get_bus_number(),
-                                                                    br_names=self.grid.get_branch_names_wo_hvdc(),
-                                                                    bus_names=self.grid.get_bus_names(),
-                                                                    bus_types=np.ones(self.grid.get_bus_number()))
+        self.results: LinearAnalysisResults = LinearAnalysisResults(
+            n_br=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
+            n_bus=self.grid.get_bus_number(),
+            br_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
+            bus_names=self.grid.get_bus_names(),
+            bus_types=np.ones(self.grid.get_bus_number())
+        )
 
         self.all_solved: bool = True
 
@@ -65,7 +67,7 @@ class LinearAnalysisDriver(DriverTemplate):
         self.report_progress(0)
 
         bus_names = self.grid.get_bus_names()
-        br_names = self.grid.get_branch_names_wo_hvdc()
+        br_names = self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True)
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
             self.results = LinearAnalysisResults(

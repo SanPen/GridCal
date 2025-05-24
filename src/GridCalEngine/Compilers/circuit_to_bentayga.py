@@ -678,7 +678,7 @@ def translate_bentayga_pf_results(grid: MultiCircuit, res) -> PowerFlowResults:
     :return:
     """
     results = PowerFlowResults(n=grid.get_bus_number(),
-                               m=grid.get_branch_number_wo_hvdc(),
+                               m=grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                                n_hvdc=grid.get_hvdc_number(),
                                n_vsc=grid.get_vsc_number(),
                                n_gen=grid.get_generators_number(),

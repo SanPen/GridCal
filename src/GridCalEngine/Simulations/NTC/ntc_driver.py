@@ -77,7 +77,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         # pack the results
         self.results = OptimalNetTransferCapacityResults(
             bus_names=self.grid.get_bus_names(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             hvdc_names=self.grid.get_hvdc_names(),
             contingency_group_names=self.grid.get_contingency_group_names()
         )

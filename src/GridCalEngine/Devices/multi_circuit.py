@@ -267,7 +267,7 @@ class MultiCircuit(Assets):
         Get branch active matrix
         :return: array with branch active status
         """
-        active = np.empty((self.get_time_number(), self.get_branch_number_wo_hvdc()), dtype=int)
+        active = np.empty((self.get_time_number(), self.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True)), dtype=int)
         for i, b in enumerate(self.get_branches_wo_hvdc()):
             active[:, i] = b.active_prof.toarray()
         return active
@@ -682,7 +682,7 @@ class MultiCircuit(Assets):
             df_bus, df_branch = power_flow_results.export_all()
 
             df_bus.index = self.get_bus_names()
-            df_branch.index = self.get_branch_names_wo_hvdc()
+            df_branch.index = self.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True)
 
             with pd.ExcelWriter(file_name) as writer:  # pylint: disable=abstract-class-instantiated
                 df_bus.to_excel(writer, 'Bus results')
@@ -1701,7 +1701,7 @@ class MultiCircuit(Assets):
         Get the complex bus power Injections
         :return: (ntime, nbr) [MVA]
         """
-        val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
+        val = np.zeros((self.get_time_number(), self.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True)))
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
             val[:, i] = branch.rate_prof.toarray()
@@ -1713,7 +1713,7 @@ class MultiCircuit(Assets):
         Get the complex bus power Injections
         :return: (nbr) [MVA]
         """
-        val = np.zeros(self.get_branch_number_wo_hvdc())
+        val = np.zeros(self.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True))
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
             val[i] = branch.rate
@@ -1725,7 +1725,7 @@ class MultiCircuit(Assets):
         Get the complex bus power Injections
         :return: (ntime, nbr) [MVA]
         """
-        val = np.zeros((self.get_time_number(), self.get_branch_number_wo_hvdc()))
+        val = np.zeros((self.get_time_number(), self.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True)))
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
             val[:, i] = branch.rate_prof.toarray() * branch.contingency_factor_prof.toarray()
@@ -1737,7 +1737,7 @@ class MultiCircuit(Assets):
         Get the complex bus power Injections
         :return: (nbr) [MVA]
         """
-        val = np.zeros(self.get_branch_number_wo_hvdc())
+        val = np.zeros(self.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True))
 
         for i, branch in enumerate(self.get_branches_wo_hvdc()):
             val[i] = branch.rate_prof.toarray() * branch.contingency_factor.toarray()

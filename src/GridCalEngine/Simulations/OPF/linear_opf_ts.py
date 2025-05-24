@@ -773,8 +773,11 @@ def add_linear_generation_formulation(t: Union[int, None],
     else:
         id_gen_nonvd = []
 
-    if len(time_array) > 0:
-        year = time_array[t].year - time_array[0].year
+    if time_array is not None:
+        if len(time_array) > 0:
+            year = time_array[t].year - time_array[0].year
+        else:
+            year = 0
     else:
         year = 0
 
@@ -1490,14 +1493,14 @@ def add_linear_vsc_formulation(t: int,
             if (vsc_data_t.control1[m] == ConverterControlType.Vm_dc or
                     vsc_data_t.control2[m] == ConverterControlType.Vm_dc):
                 # set the DC slack
-                bus_vars.Vm[fr] = 1.0
+                bus_vars.Vm[t, fr] = 1.0
                 any_dc_slack = True
 
         else:
             # not active, therefore the flow is exactly zero
             vsc_vars.flows[t, m] = 0.0
 
-    if not any_dc_slack:
+    if not any_dc_slack and vsc_data_t.nelm > 0:
         logger.add_warning("No DC Slack! set Vm_dc in any of the converters")
 
     return f_obj
@@ -1820,7 +1823,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()
-    nbr = grid.get_branch_number_wo_hvdc()
+    nbr = grid.get_branch_number(add_vsc=False, add_hvdc=False, add_switch=True)
     ng = grid.get_generators_number()
     nb = grid.get_batteries_number()
     nl = grid.get_load_like_device_number()
@@ -1884,8 +1887,15 @@ def run_linear_opf_ts(grid: MultiCircuit,
             mip_vars.bus_vars.Va[local_t_idx, k] = lp_model.add_var(
                 lb=nc.bus_data.angle_min[k],
                 ub=nc.bus_data.angle_max[k],
-                name=join("th_", [local_t_idx, k], "_")
+                name=join("Va_", [local_t_idx, k], "_")
             )
+
+            if nc.bus_data.is_dc[k]:
+                mip_vars.bus_vars.Vm[local_t_idx, k] = lp_model.add_var(
+                    lb=nc.bus_data.Vmin[k],
+                    ub=nc.bus_data.Vmax[k],
+                    name=join("Vm_", [local_t_idx, k], "_")
+                )
 
         # formulate loads ------------------------------------------------------------------------------------------
         f_obj += add_linear_load_formulation(

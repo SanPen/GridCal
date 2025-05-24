@@ -58,12 +58,14 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
         self.simulation_type = simulation_type
 
-        self.results = StochasticPowerFlowResults(n=self.grid.get_bus_number(),
-                                                  m=self.grid.get_branch_number_wo_hvdc(),
-                                                  p=self.max_sampling_points,
-                                                  bus_names=self.grid.get_bus_names(),
-                                                  branch_names=self.grid.get_branch_names_wo_hvdc(),
-                                                  bus_types=np.ones(self.grid.get_bus_number()))
+        self.results = StochasticPowerFlowResults(
+            n=self.grid.get_bus_number(),
+            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
+            p=self.max_sampling_points,
+            bus_names=self.grid.get_bus_names(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
+            bus_types=np.ones(self.grid.get_bus_number())
+        )
 
         self.logger = Logger()
 
@@ -105,11 +107,11 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
         # compile the multi-circuit, we'll hack it later
         nc = compile_numerical_circuit_at(circuit=self.grid,
-                                                         t_idx=None,
-                                                         apply_temperature=False,
-                                                         branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                         opf_results=self.opf_time_series_results,
-                                                         logger=self.logger)
+                                          t_idx=None,
+                                          apply_temperature=False,
+                                          branch_tolerance_mode=BranchImpedanceMode.Specified,
+                                          opf_results=self.opf_time_series_results,
+                                          logger=self.logger)
 
         mc_results = StochasticPowerFlowResults(n=nc.nbus,
                                                 m=nc.nbr,

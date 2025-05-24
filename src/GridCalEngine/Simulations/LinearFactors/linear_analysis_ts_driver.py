@@ -48,11 +48,11 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         self.results = LinearAnalysisTimeSeriesResults(
             n=self.grid.get_bus_number(),
-            m=self.grid.get_branch_number_wo_hvdc(),
+            m=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
             time_array=self.grid.time_profile[self.time_indices],
             bus_names=self.grid.get_bus_names(),
             bus_types=self.grid.get_bus_default_types(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             clustering_results=self.clustering_results,
         )
 

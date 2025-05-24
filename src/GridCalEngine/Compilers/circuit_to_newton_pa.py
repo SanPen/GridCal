@@ -1488,7 +1488,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     :return: PowerFlowResults instance
     """
     results = PowerFlowResults(n=grid.get_bus_number(),
-                               m=grid.get_branch_number_wo_hvdc(),
+                               m=grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                                n_hvdc=grid.get_hvdc_number(),
                                n_vsc=grid.get_vsc_number(),
                                n_gen=grid.get_generators_number(),
@@ -1554,6 +1554,7 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
                                       generator_names=res.generator_names,
                                       battery_names=res.battery_names,
                                       hvdc_names=res.hvdc_names,
+                                      vsc_names=grid.get_vsc_names(),
                                       bus_types=convert_bus_types(res.bus_types[0]),
                                       area_names=[a.name for a in grid.areas],
                                       F=res.F,
@@ -1631,9 +1632,11 @@ def translate_newton_pa_contingencies(grid: MultiCircuit,
 
     # declare the results
     results = ContingencyAnalysisResults(ncon=len(grid.get_contingency_groups()),
-                                         nbr=grid.get_branch_number_wo_hvdc(),
+                                         nbr=grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
                                          nbus=grid.get_bus_number(),
-                                         branch_names=grid.get_branch_names_wo_hvdc(),
+                                         branch_names=grid.get_branch_names(add_hvdc=False,
+                                                                            add_vsc=False,
+                                                                            add_switch=True),
                                          bus_names=grid.get_bus_names(),
                                          bus_types=grid.get_bus_default_types(),
                                          con_names=grid.get_contingency_group_names())

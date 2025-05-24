@@ -46,12 +46,13 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         # OPF results
         self.results: OptimalPowerFlowResults = OptimalPowerFlowResults(
             bus_names=self.grid.get_bus_names(),
-            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            branch_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             load_names=self.grid.get_load_names(),
             generator_names=self.grid.get_generator_names(),
             shunt_like_names=self.grid.get_shunt_like_devices_names(),
             battery_names=self.grid.get_battery_names(),
             hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             area_names=self.grid.get_area_names(),
             fluid_node_names=self.grid.get_fluid_node_names(),
@@ -148,7 +149,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                          verbose=self.options.verbose,
                                          robust=self.options.robust)
 
-            self.results.voltage = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.Va[0, :])
+            self.results.voltage = opf_vars.bus_vars.Vm[0, :] * np.exp(1j * opf_vars.bus_vars.Va[0, :])
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
             self.results.load_shedding = opf_vars.load_vars.shedding[0, :]
             self.results.battery_power = opf_vars.batt_vars.p[0, :]
@@ -163,6 +164,9 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             # self.results.Sbus = problem.get_power_injections()[0, :]
             self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
             self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
+
+            self.results.vsc_Pf = opf_vars.vsc_vars.flows[0, :]
+            self.results.vsc_loading = opf_vars.vsc_vars.loading[0, :]
             self.results.converged = opf_vars.acceptable_solution
 
             self.results.fluid_node_p2x_flow = opf_vars.fluid_node_vars.p2x_flow[0, :]

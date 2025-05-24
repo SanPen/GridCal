@@ -407,7 +407,9 @@ class AvailableTransferCapacityDriver(DriverTemplate):
 
         # OPF results
         rates = self.grid.get_branch_rates_wo_hvdc()
-        self.results = AvailableTransferCapacityResults(br_names=self.grid.get_branch_names_wo_hvdc(),
+        self.results = AvailableTransferCapacityResults(br_names=self.grid.get_branch_names(add_hvdc=False,
+                                                                                            add_vsc=False,
+                                                                                            add_switch=True),
                                                         bus_names=self.grid.get_bus_names(),
                                                         rates=rates,
                                                         contingency_rates=rates,

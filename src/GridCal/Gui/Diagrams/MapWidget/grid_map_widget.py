@@ -1180,7 +1180,7 @@ class GridMapWidget(BaseDiagramWidget):
         arrow_size = self.diagram.arrow_size  # self.get_arrow_scale()
 
         # Try colouring the branches
-        if self.circuit.get_branch_number_wo_hvdc():
+        if self.circuit.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True):
 
             lnorm = np.abs(loadings)
             lnorm[lnorm == np.inf] = 0

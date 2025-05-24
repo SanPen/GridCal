@@ -1536,7 +1536,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
 
     n = grid.get_bus_number()
-    nbr = grid.get_branch_number_wo_hvdc()
+    nbr = grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True)
     ng = grid.get_generators_number()
     nb = grid.get_batteries_number()
     nl = grid.get_load_like_device_number()
