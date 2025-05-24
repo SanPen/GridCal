@@ -528,7 +528,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Bus indices (initial values)
         self.bus_types = nc.bus_data.bus_types.copy()
-        self.bus_internal = nc.bus_data.internal.copy()
+        # self.bus_internal = nc.bus_data.internal.copy()
         self.is_p_controlled = nc.bus_data.is_p_controlled.copy()
         self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
         self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
