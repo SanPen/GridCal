@@ -34,22 +34,14 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                  battery_names: StrVec,
                  shunt_like_names: StrVec,
                  hvdc_names: StrVec,
+                 vsc_names: StrVec,
                  fuel_names: StrVec,
                  emission_names: StrVec,
                  technology_names: StrVec,
                  fluid_node_names: StrVec,
                  fluid_path_names: StrVec,
                  fluid_injection_names: StrVec,
-                 n: int,
-                 m: int,
                  nt: int,
-                 ngen: int = 0,
-                 nbat: int = 0,
-                 nload: int = 0,
-                 nhvdc: int = 0,
-                 n_fluid_node: int = 0,
-                 n_fluid_path: int = 0,
-                 n_fluid_injection: int = 0,
                  time_array=None,
                  bus_types=(),
                  clustering_results: Union[None, ClusteringResults] = None):
@@ -68,16 +60,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         :param fluid_node_names:
         :param fluid_path_names:
         :param fluid_injection_names:
-        :param n:
-        :param m:
         :param nt:
-        :param ngen:
-        :param nbat:
-        :param nload:
-        :param nhvdc:
-        :param n_fluid_node:
-        :param n_fluid_path:
-        :param n_fluid_injection:
         :param time_array:
         :param bus_types:
         :param clustering_results:
@@ -152,6 +135,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.battery_names = battery_names
         self.shunt_like_names = shunt_like_names
         self.hvdc_names = hvdc_names
+        self.vsc_names = vsc_names
         self.fuel_names = fuel_names
         self.emission_names = emission_names
         self.technology_names = technology_names
@@ -159,6 +143,18 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
         self.fluid_node_names = fluid_node_names
         self.fluid_path_names = fluid_path_names
         self.fluid_injection_names = fluid_injection_names
+
+        n = len(bus_names)
+        m = len(branch_names)
+        ngen = len(generator_names)
+        nbat = len(battery_names)
+        nsh = len(shunt_like_names)
+        nload = len(load_names)
+        nhvdc = len(hvdc_names)
+        nvsc = len(vsc_names)
+        n_fluid_node = len(fluid_node_names)
+        n_fluid_path = len(fluid_path_names)
+        n_fluid_injection = len(fluid_injection_names)
 
         nfuels = len(fuel_names)
         nemissions = len(emission_names)
@@ -184,6 +180,9 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
         self.hvdc_Pf = np.zeros((nt, nhvdc), dtype=float)
         self.hvdc_loading = np.zeros((nt, nhvdc), dtype=float)
+
+        self.vsc_Pf = np.zeros((nt, nvsc), dtype=float)
+        self.vsc_loading = np.zeros((nt, nvsc), dtype=float)
 
         self.load_power = np.zeros((nt, nload), dtype=float)
         self.load_shedding = np.zeros((nt, nload), dtype=float)
