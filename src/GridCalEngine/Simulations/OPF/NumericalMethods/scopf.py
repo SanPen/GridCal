@@ -2070,7 +2070,7 @@ def case_loop() -> None:
 
     prob_cont = 0
     max_iter = 10
-    tolerance = 5e-4
+    tolerance = 1e-5
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
     n_con_all = n_con_groups * 100  # abritrary large number to prestore memory
