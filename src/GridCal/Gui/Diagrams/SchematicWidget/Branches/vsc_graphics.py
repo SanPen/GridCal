@@ -322,26 +322,30 @@ class VscGraphicItem(GenericDiagramWidget, QGraphicsRectItem):
 
     def redraw(self):
         """
-
+        Redraw method - only recalculate position if VSC doesn't have saved coordinates
         :return:
         """
-        # h = self.parent.pos2.y() - self.parent.pos1.y()
-        # b = self.parent.pos2.x() - self.parent.pos1.x()
-        h1 = self.terminal_ac.pos().y() - (self.terminal_dc_p.pos().y() + self.terminal_dc_n.pos().y()) / 2.0
-        b1 = self.terminal_ac.pos().x() - (self.terminal_dc_p.pos().x() + self.terminal_dc_n.pos().x()) / 2.0
-        ang = np.arctan2(h1, b1)
-        h2 = self.rect().height() / 2.0
-        w2 = self.rect().width() / 2.0
-        a = h2 * np.cos(ang) - w2 * np.sin(ang)
-        b = w2 * np.sin(ang) + h2 * np.cos(ang)
+        # Only recalculate position if the VSC is at the default position (close to 0, 0)
+        # This preserves saved positions when loading from file
+        current_pos = self.pos()
+        # Use small tolerance to handle floating-point precision issues
+        if abs(current_pos.x()) < 1.0 and abs(current_pos.y()) < 1.0:
+            # Only do automatic positioning if we're near the origin
+            h1 = self.terminal_ac.pos().y() - (self.terminal_dc_p.pos().y() + self.terminal_dc_n.pos().y()) / 2.0
+            b1 = self.terminal_ac.pos().x() - (self.terminal_dc_p.pos().x() + self.terminal_dc_n.pos().x()) / 2.0
+            ang = np.arctan2(h1, b1)
+            h2 = self.rect().height() / 2.0
+            w2 = self.rect().width() / 2.0
+            a = h2 * np.cos(ang) - w2 * np.sin(ang)
+            b = w2 * np.sin(ang) + h2 * np.cos(ang)
 
-        center = (self.terminal_ac.pos() + (self.terminal_dc_p.pos() + self.terminal_dc_n.pos()) * 0.5) * 0.5 - QPointF(a, b)
+            center = (self.terminal_ac.pos() + (self.terminal_dc_p.pos() + self.terminal_dc_n.pos()) * 0.5) * 0.5 - QPointF(a, b)
 
-        transform = QTransform()
-        transform.translate(center.x(), center.y())
-        transform.rotate(np.rad2deg(ang))
-        self.setTransform(transform)
-
+            transform = QTransform()
+            transform.translate(center.x(), center.y())
+            transform.rotate(np.rad2deg(ang))
+            self.setTransform(transform)
+        # If we're not near the origin, preserve the current position (likely loaded from file)
 
     def remove_connection(self, conn_line: LineGraphicTemplateItem):
         """Remove a connection from a specific terminal."""
