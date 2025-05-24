@@ -528,7 +528,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         # Bus indices (initial values)
         self.bus_types = nc.bus_data.bus_types.copy()
-        # self.bus_internal = nc.bus_data.internal.copy()
+        self.bus_grounded = nc.bus_data.is_grounded.copy()
         self.is_p_controlled = nc.bus_data.is_p_controlled.copy()
         self.is_q_controlled = nc.bus_data.is_q_controlled.copy()
         self.is_vm_controlled = nc.bus_data.is_vm_controlled.copy()
@@ -593,7 +593,6 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.Qt_vsc[self.k_vsc_qt] = self.vsc_qt_set / self.nc.Sbase
 
         # Admittance ---------------------------------------------------------------------------------------------------
-
         self.Ys: CxVec = self.nc.passive_branch_data.get_series_admittance()
         self.Yshunt_bus = self.nc.get_Yshunt_bus_pu()  # computed here for later
 
