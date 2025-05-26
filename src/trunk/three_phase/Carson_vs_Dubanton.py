@@ -498,3 +498,6 @@ Zcarson = np.array([
 np.set_printoptions(precision=4, suppress=True)
 print('Carson =\n', Zcarson)
 print('\nDubanton =\n', Zdubanton)
+
+Yshunt, n_p, n_e = calc_Y_matrix(line_dict)
+print('Yshunt =\n', Yshunt*1e6)

@@ -28,12 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Correction of the Dubanton approximation.">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Developing phase number">
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/prueba.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Ua_time_series.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/Ua_time_series.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/european_lv_test_feeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/european_lv_test_feeder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/power_flow_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/power_flow_3ph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/three_phase/Carson_vs_Dubanton.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -206,9 +205,10 @@
     "Python tests.test_ntc.py.executor": "Debug",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.Carson_vs_Dubanton.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
+    "Python.Panther_Cable.executor": "Run",
     "Python.Ua_time_series.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.circuit_to_optimods.executor": "Run",
@@ -229,6 +229,7 @@
     "Python.post_example.executor": "Run",
     "Python.power_flow_1ph_test.executor": "Run",
     "Python.power_flow_3ph.executor": "Run",
+    "Python.prueba.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
     "Python.python_console.executor": "Run",
     "Python.raw_imp_exp_test.executor": "Run",
@@ -258,7 +259,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "#394 on #343__3phase",
+    "git-widget-placeholder": "#395 on #343__3phase",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/GridCal/src/trunk/three_phase",
     "node.js.detected.package.eslint": "true",
@@ -2348,7 +2349,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="720" />
+    <option name="localTasksCounter" value="721" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2394,7 +2395,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="5.3.36" />
     <MESSAGE value="Removed unused code and cleaned up things in pf_generalized_formulation.py" />
     <MESSAGE value="Improvements in  pf_generalized_formulation.py and bug fixes in linear_opf_ts.py" />
     <MESSAGE value="General refactors of the derivatives in the pf_generalized_formulation.py" />
@@ -2419,7 +2419,8 @@
     <MESSAGE value="Some files" />
     <MESSAGE value="Time series comparation." />
     <MESSAGE value="Correction of the Dubanton approximation." />
-    <option name="LAST_COMMIT_MESSAGE" value="Correction of the Dubanton approximation." />
+    <MESSAGE value="Developing phase number" />
+    <option name="LAST_COMMIT_MESSAGE" value="Developing phase number" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2747,6 +2748,11 @@
           <url>file://$PROJECT_DIR$/src/trunk/three_phase/line_constants.py</url>
           <line>168</line>
           <option name="timeStamp" value="2609" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
+          <line>372</line>
+          <option name="timeStamp" value="2610" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
