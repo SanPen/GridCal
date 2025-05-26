@@ -28,17 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="No exploding pf errors with load shedding">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/CO2/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/GridVariants/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/optimise.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/train_scopf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/Report/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/Report/contingencies.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Training with scopf variables">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/train14.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/train_pf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/NumericalMethods/scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/NumericalMethods/scopf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2026,7 +2017,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="583" />
+    <option name="localTasksCounter" value="584" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2079,7 +2070,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minor updates" />
     <MESSAGE value="Worked a bit more on the generalized PF indexing" />
     <MESSAGE value="Minor refactorings" />
     <MESSAGE value="Worked on the new definition of VSC and the compilation" />
@@ -2104,7 +2094,8 @@
     <MESSAGE value="improved conversion to gslv" />
     <MESSAGE value="Refactoring opf setting" />
     <MESSAGE value="No exploding pf errors with load shedding" />
-    <option name="LAST_COMMIT_MESSAGE" value="No exploding pf errors with load shedding" />
+    <MESSAGE value="Training with scopf variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="Training with scopf variables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

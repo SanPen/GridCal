@@ -30,8 +30,8 @@ print(f"Using device: {device}")
 grid_file_path_train = "/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal"
 
 # GNN Model params
-f_node_in = 2
-f_edge_in = 4
+f_node_in = 3  # W_k, u_j, Z_k
+f_edge_in = 3  # P, Q and is_active
 hidden_channels = 64
 num_layers = 4
 
@@ -513,7 +513,7 @@ def visualize_grid_sample(data, node_key='y_node', edge_key='y_edge', title="Gri
     node_vals = getattr(data, node_key, None)
     if node_vals is not None:
         node_vals = node_vals.cpu().numpy()
-        node_vals_flat = node_vals[:, 0]  # Assume Vm is first column
+        node_vals_flat = node_vals[:, 0]  # Vm is the first column
         if error_mode and hasattr(data, 'y_node_pred'):
             pred_vals = data.y_node_pred.cpu().numpy()
             node_vals_flat = np.abs(pred_vals[:, 0] - node_vals[:, 0])
@@ -639,15 +639,15 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.show()
 
-    # --- Visualize Grid Sample (Ground Truth + Prediction Error if available) ---
+    # --- Ground Truth + Prediction Error ---
     sample = all_data[0]
     visualize_grid_sample(sample, title="Voltage & Flow (Ground Truth)")
 
-    # OPTIONAL: Generate predictions for this sample
     model.eval()
     with torch.no_grad():
         sample = sample.to(device)
-        # You’d need a model that returns node/edge predictions to support these:
+        # TODO: Replace with actual model prediction logic
+        # need a model that returns node/edge predictions to support these:
         sample.y_node_pred = sample.y_node.clone()  # Replace with actual node prediction
         sample.y_edge_pred = sample.y_edge.clone()  # Replace with actual edge prediction
 
