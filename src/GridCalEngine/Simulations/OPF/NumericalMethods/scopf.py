@@ -1992,7 +1992,7 @@ def case_loop() -> None:
     # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
     # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
-    # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
+    # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case5.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
@@ -2008,10 +2008,11 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_v15.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep2.gridcal')
-    file_path = os.path.join('src/trunk/scopf/case39_vjosep3.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep2.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_vjosep4.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
-    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v11.gridcal')
+    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal')
+    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v15.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
     # ieee 39 is infeasible
 
@@ -2073,7 +2074,7 @@ def case_loop() -> None:
     tolerance = 1e-5
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
-    n_con_all = n_con_groups * 100  # abritrary large number to prestore memory
+    n_con_all = n_con_groups * 100  # arbitrary large number to pre-store memory
     v_slacks = np.zeros(n_con_all)
     f_slacks = np.zeros(n_con_all)
     W_k_vec = np.zeros(n_con_all)
@@ -2155,15 +2156,16 @@ def case_loop() -> None:
                             u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
                             prob_cont += 1
                             viols += 1
+                            print('VIOLATION')
 
-                            # print('nbus', island.nbus, 'ngen', island.ngen)
-                            print(f"W_k: {slack_sol_cont.W_k}")
-                            print(f"Z_k: {slack_sol_cont.Z_k}")
-                            print(f"u_j: {slack_sol_cont.u_j}")
-                            print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
-                            print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
-                            print(f"Sf slack: {slack_sol_cont.sl_sf}")
-                            print(f"St slack: {slack_sol_cont.sl_st}")
+                        # print('nbus', island.nbus, 'ngen', island.ngen)
+                        print(f"W_k: {slack_sol_cont.W_k}")
+                        print(f"Z_k: {slack_sol_cont.Z_k}")
+                        print(f"u_j: {slack_sol_cont.u_j}")
+                        print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
+                        print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
+                        print(f"Sf slack: {slack_sol_cont.sl_sf}")
+                        print(f"St slack: {slack_sol_cont.sl_st}")
 
                     else:
                         print("No valid voltage-dependent nodes found in island. Skipping.")

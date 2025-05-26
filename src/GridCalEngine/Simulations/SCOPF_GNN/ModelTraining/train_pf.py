@@ -1,16 +1,26 @@
 import torch
 import torch.nn.functional as F
+from matplotlib import cm
 from torch_geometric.nn import NNConv
-from torch_geometric.data import Data, DataLoader
+from torch_geometric.data import Data
+from torch_geometric.loader import DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import networkx as nx
+from torch_geometric.utils import to_networkx
 from sklearn.preprocessing import StandardScaler
 import random
 import os
 import time
 
-from GridCalEngine import (FileOpen, PowerFlowOptions, SolverType, AcOpfMode, OptimalPowerFlowOptions, compile_numerical_circuit_at)
-from GridCalEngine.Simulations.SCOPF_GNN.NumericalMethods.scopf import (run_nonlinear_MP_opf, LinearMultiContingencies, run_nonlinear_SP_scopf)
+from GridCalEngine import (FileOpen, PowerFlowOptions, SolverType, AcOpfMode, OptimalPowerFlowOptions,
+                           compile_numerical_circuit_at, FileSave)
+from GridCalEngine.Simulations.SCOPF_GNN.NumericalMethods.scopf import (run_nonlinear_MP_opf, LinearMultiContingencies,
+                                                                        run_nonlinear_SP_scopf)
+
+from codecarbon import EmissionsTracker
+
 
 # GPU/CPU configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -31,11 +41,81 @@ num_sample_from_ts = -1  # -1 means use all available
 
 # GNN Model
 f_node_in = 2  # Node features: P_inj_pu, Q_inj_pu
-f_edge_in = 3  # Edge features: R_pu, X_pu, B_pu (total line charging)
+f_edge_in = 4  # Edge features: R_pu, X_pu, B_pu, is_active (total line charging)
 f_node_out = 2  # Node outputs: Vm_pu, Va_rad
 f_edge_out = 4  # Edge outputs: Pf_pu, Pt_pu, Qf_pu, Qt_pu
-hidden_channels = 2
-num_layers = 2
+hidden_channels = 32
+num_layers = 4
+
+
+def visualize_grid_predictions(data, y_node_pred, y_edge_pred, error_mode=False, title='Grid GNN Prediction'):
+    import matplotlib.colors as mcolors
+    import matplotlib.cm as cm
+
+    G = to_networkx(data, to_undirected=True)
+
+    node_vals = y_node_pred.cpu().detach().numpy()
+    if error_mode:
+        node_vals = np.abs(node_vals - data.y_node.cpu().numpy())
+
+    # Edge values
+    if y_edge_pred is not None and data.edge_index.numel() > 0 and data.y_edge is not None:
+        edge_vals = y_edge_pred.cpu().detach().numpy()
+        if error_mode:
+            edge_vals = np.abs(edge_vals - data.y_edge.cpu().numpy())
+        edge_vals = np.linalg.norm(edge_vals[:, :2], axis=1)  # Pf and Pt magnitude
+    else:
+        edge_vals = None
+
+    pos = nx.spring_layout(G, seed=42)
+
+    plt.figure(figsize=(10, 8))
+
+    # Normalize node values for color
+    node_vals_flat = node_vals[:, 0]  # Vm prediction or error
+    node_norm = mcolors.Normalize(vmin=node_vals_flat.min(), vmax=node_vals_flat.max())
+    node_cmap = plt.get_cmap('viridis')
+    node_colors = node_cmap(node_norm(node_vals_flat))
+
+    # Draw nodes
+    nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=400)
+
+    # Draw node labels (numeric Vm or error)
+    # labels = {i: f"{v:.2f}" for i, v in enumerate(node_vals_flat)}
+    if hasattr(data, 'bus_names'):
+        labels = {i: f"{data.bus_names[i]}\n{node_vals_flat[i]:.2f}" for i in range(len(node_vals_flat))}
+    else:
+        labels = {i: f"{v:.2f}" for i, v in enumerate(node_vals_flat)}
+
+    nx.draw_networkx_labels(G, pos, labels=labels, font_color='black')
+
+    # Edges
+    if edge_vals is not None:
+        edge_norm = mcolors.Normalize(vmin=edge_vals.min(), vmax=edge_vals.max())
+        edge_cmap = plt.get_cmap('plasma')
+        edge_colors = edge_cmap(edge_norm(edge_vals))
+        nx.draw_networkx_edges(G, pos, edge_color=edge_colors, width=2)
+        sm = cm.ScalarMappable(norm=edge_norm, cmap=edge_cmap)
+    else:
+        nx.draw_networkx_edges(G, pos)
+        sm = cm.ScalarMappable(norm=node_norm, cmap=node_cmap)
+
+    ax = plt.gca()
+    cbar = plt.colorbar(sm, ax=ax, shrink=0.7)
+    cbar.set_label('Error' if error_mode else 'Prediction')
+
+    plt.title(title)
+    plt.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+
+def mean_absolute_error(pred, true):
+    return torch.mean(torch.abs(pred - true)).item()
+
+
+def root_mean_squared_error(pred, true):
+    return torch.sqrt(F.mse_loss(pred, true)).item()
 
 
 def generate_scopf_data(grid_file_path):
@@ -53,11 +133,11 @@ def generate_scopf_data(grid_file_path):
 
     pf_options = PowerFlowOptions(control_q=False)
     opf_slack_options = OptimalPowerFlowOptions(
-                        ips_method=SolverType.NR,
-                        ips_tolerance=1e-6,
-                        ips_iterations=50,
-                        acopf_mode=AcOpfMode.ACOPFslacks,
-                        verbose=0)
+        ips_method=SolverType.NR,
+        ips_tolerance=1e-6,
+        ips_iterations=50,
+        acopf_mode=AcOpfMode.ACOPFslacks,
+        verbose=0)
 
     # Compile base circuit and contingencies
     nc = compile_numerical_circuit_at(grid)
@@ -137,6 +217,9 @@ def generate_scopf_data(grid_file_path):
                         island = islands[0]
 
                     indices = island.get_simulation_indices()
+
+                    bus_names = list(island.bus_data.names)
+                    print(f"Bus names: {bus_names}")
 
                     if len(indices.vd) > 0:
                         print('Selected island with size:', island.nbus)
@@ -233,6 +316,9 @@ def generate_scopf_data(grid_file_path):
                                 num_nodes=len(y_node)
                             )
 
+                            data.bus_names = bus_names  # attach to data object
+                            print(f"Bus names: {bus_names}")
+
                             data_scopf.append(data)
                             print(f"Sample {len(data_scopf)} added.")
 
@@ -251,6 +337,10 @@ def generate_scopf_data(grid_file_path):
             W_k_vec_used = W_k_vec[:prob_cont]
             Z_k_vec_used = Z_k_vec[:prob_cont, :]
             u_j_vec_used = u_j_vec[:prob_cont, :]
+        else:  # assign small number
+            W_k_vec_used = np.zeros(1)
+            Z_k_vec_used = np.zeros((1, nc.generator_data.nelm))
+            u_j_vec_used = np.zeros((1, nc.generator_data.nelm))
 
         # Store metrics for this iteration
         if viols > 0:
@@ -309,31 +399,65 @@ def generate_scopf_data(grid_file_path):
 class PowerSystemGNN(torch.nn.Module):
     def __init__(self, node_in_feat, edge_in_feat, hidden_feat, node_out_feat, edge_out_feat, num_layers=3):
         super().__init__()
-        self.node_embed = torch.nn.Linear(node_in_feat, hidden_feat)
+        # self.node_embed = torch.nn.Linear(node_in_feat, hidden_feat)
+        #
+        # self.convs = torch.nn.ModuleList()
+        # current_node_feat_dim = hidden_feat
+        # for _ in range(num_layers):
+        #     mlp_for_nnconv = torch.nn.Sequential(
+        #         torch.nn.Linear(edge_in_feat, hidden_feat * 2),
+        #         torch.nn.ReLU(),
+        #         torch.nn.Linear(hidden_feat * 2, current_node_feat_dim * hidden_feat)
+        #     )
+        #     self.convs.append(NNConv(current_node_feat_dim, hidden_feat, mlp_for_nnconv, aggr='mean'))
+        #     current_node_feat_dim = hidden_feat
+        #
+        # self.node_decoder = torch.nn.Linear(hidden_feat, node_out_feat)
+        #
+        # edge_decoder_mlp_in_dim = 2 * hidden_feat + edge_in_feat
+        # self.edge_decoder = torch.nn.Sequential(
+        #     torch.nn.Linear(edge_decoder_mlp_in_dim, hidden_feat * 2),  # Increased capacity slightly
+        #     torch.nn.ReLU(),
+        #     torch.nn.Linear(hidden_feat * 2, edge_out_feat)
+        # )
+
+        self.node_embed = torch.nn.Sequential(
+            torch.nn.Linear(node_in_feat, hidden_feat),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(hidden_feat)
+        )
 
         self.convs = torch.nn.ModuleList()
-        current_node_feat_dim = hidden_feat
         for _ in range(num_layers):
+            # mlp_for_nnconv = torch.nn.Sequential(
+            #     torch.nn.Linear(edge_in_feat, hidden_feat),
+            #     torch.nn.ReLU(),
+            #     torch.nn.Linear(hidden_feat, hidden_feat * hidden_feat)
+            # )
             mlp_for_nnconv = torch.nn.Sequential(
                 torch.nn.Linear(edge_in_feat, hidden_feat * 2),
                 torch.nn.ReLU(),
-                torch.nn.Linear(hidden_feat * 2, current_node_feat_dim * hidden_feat)
+                torch.nn.Linear(hidden_feat * 2, hidden_feat * hidden_feat)
             )
-            self.convs.append(NNConv(current_node_feat_dim, hidden_feat, mlp_for_nnconv, aggr='mean'))
-            current_node_feat_dim = hidden_feat
 
-        self.node_decoder = torch.nn.Linear(hidden_feat, node_out_feat)
+            self.convs.append(NNConv(hidden_feat, hidden_feat, mlp_for_nnconv, aggr='mean'))
 
-        edge_decoder_mlp_in_dim = 2 * hidden_feat + edge_in_feat
-        self.edge_decoder = torch.nn.Sequential(
-            torch.nn.Linear(edge_decoder_mlp_in_dim, hidden_feat * 2),  # Increased capacity slightly
+        self.node_decoder = torch.nn.Sequential(
+            torch.nn.Linear(hidden_feat, hidden_feat),
             torch.nn.ReLU(),
-            torch.nn.Linear(hidden_feat * 2, edge_out_feat)
+            torch.nn.Linear(hidden_feat, node_out_feat)
+        )
+
+        self.edge_decoder = torch.nn.Sequential(
+            torch.nn.Linear(2 * hidden_feat + edge_in_feat, hidden_feat),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_feat, edge_out_feat)
         )
 
     def forward(self, data):
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
-        h_node = F.relu(self.node_embed(x))
+        # h_node = F.relu(self.node_embed(x))
+        h_node = self.node_embed(x)
 
         for conv_layer in self.convs:
             h_node = F.relu(conv_layer(h_node, edge_index, edge_attr))
@@ -362,10 +486,11 @@ test_set = 0.05
 epochs = 50
 lr = 1e-3
 
+
 # Generate data
-data_list = generate_scopf_data(grid_file_path_train)
-if not data_list:
-    raise RuntimeError("No SCOPF data generated. Check your grid file or contingency definition.")
+# data_list = generate_scopf_data(grid_file_path_train)
+
+# print(data_list)
 
 
 # Training and eval fns
@@ -406,7 +531,6 @@ def evaluate_epoch(model, loader, criterion_node, criterion_edge, scalers, set_n
     for data in loader:
         data = data.to(device)
         y_node_pred, y_edge_pred = model(data)
-
         loss_node = criterion_node(y_node_pred, data.y_node)
 
         if data.edge_index.numel() == 0 or y_edge_pred.shape[0] == 0 or data.y_edge.shape[0] == 0:
@@ -416,6 +540,9 @@ def evaluate_epoch(model, loader, criterion_node, criterion_edge, scalers, set_n
 
         loss = loss_node + loss_edge
         total_loss += loss.item() * data.num_graphs
+
+        assert y_node_pred.shape == data.y_node.shape
+        assert y_edge_pred.shape == data.y_edge.shape
 
         # Unscale node predictions for Vm
         if y_node_pred.shape[0] > 0:  # Ensure there's data
@@ -460,13 +587,73 @@ def evaluate_epoch(model, loader, criterion_node, criterion_edge, scalers, set_n
         all_y_edge_true_unscaled_pt = torch.cat(all_y_edge_true_unscaled_pt)
         all_y_edge_pred_unscaled_pt = torch.cat(all_y_edge_pred_unscaled_pt)
 
+    if all_y_node_true_unscaled_vm.numel() > 0:
+        mae_vm = mean_absolute_error(all_y_node_pred_unscaled_vm, all_y_node_true_unscaled_vm)
+        rmse_vm = root_mean_squared_error(all_y_node_pred_unscaled_vm, all_y_node_true_unscaled_vm)
+        print(f"[Vm] MAE: {mae_vm:.4f}, RMSE: {rmse_vm:.4f}")
+
+    if all_y_edge_true_unscaled_pf.numel() > 0:
+        mae_pf = mean_absolute_error(all_y_edge_pred_unscaled_pf, all_y_edge_true_unscaled_pf)
+        rmse_pf = root_mean_squared_error(all_y_edge_pred_unscaled_pf, all_y_edge_true_unscaled_pf)
+        print(f"[Pf] MAE: {mae_pf:.4f}, RMSE: {rmse_pf:.4f}")
+
+    if all_y_edge_true_unscaled_pt.numel() > 0:
+        mae_pt = mean_absolute_error(all_y_edge_pred_unscaled_pt, all_y_edge_true_unscaled_pt)
+        rmse_pt = root_mean_squared_error(all_y_edge_pred_unscaled_pt, all_y_edge_true_unscaled_pt)
+        print(f"[Pt] MAE: {mae_pt:.4f}, RMSE: {rmse_pt:.4f}")
+
     return (avg_loss,
             all_y_node_true_unscaled_vm, all_y_node_pred_unscaled_vm,
             all_y_edge_true_unscaled_pf, all_y_edge_pred_unscaled_pf,
             all_y_edge_true_unscaled_pt, all_y_edge_pred_unscaled_pt)
 
 
+def generate_augmented_scopf_data(grid_file_path, num_variants=10, variation_scale=0.1):
+    all_augmented_data = []
+
+    # Target directory to save variants
+    variant_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/GridVariants"
+    os.makedirs(variant_dir, exist_ok=True)
+
+    for i in range(num_variants):
+        print(f"\nGenerating variant {i + 1} of {num_variants}")
+
+        # Load grid
+        grid = FileOpen(grid_file_path).open()
+
+        for line in grid.lines:
+            line.R *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+            line.X *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+            line.B *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+
+        for tf in grid.transformers2w:
+            tf.R *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+            tf.X *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+            tf.B *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+
+        for gen in grid.generators:
+            gen.P *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+            # gen.Q *= (1.0 + np.random.uniform(-variation_scale, variation_scale))
+
+        variant_filename = os.path.join(variant_dir, f"variant_{i + 1}.gridcal")
+        FileSave(grid, variant_filename).save()
+        print(f"Saved variant to: {variant_filename}")
+
+        # Generate SCOPF data from this variant
+        variant_data = generate_scopf_data(variant_filename)
+        all_augmented_data.extend(variant_data)
+
+    print(f"\nTotal augmented training samples: {len(all_augmented_data)}")
+    return all_augmented_data
+
+
 if __name__ == '__main__':
+    tracker = EmissionsTracker(
+        project_name="SCOPF_GNN_Training",
+        output_dir="/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/CO2",  # You can change this path
+    )
+    tracker.start()
+
     start_time = time.time()
 
     grid_file_to_process = grid_file_path_train
@@ -474,26 +661,44 @@ if __name__ == '__main__':
     plot_suffix = "_train_grid"
 
     # 1. Generate or Load Data for the current mode
-    all_data = []
-    if os.path.exists(data_cache_file):
-        print(f"Loading pre-generated data from {data_cache_file}...")
-        try:
-            loaded_content = torch.load(data_cache_file, weights_only=False)  # Set weights_only based on content
-            all_data = loaded_content['data']
-        except Exception as e:
-            print(f"Could not load data from {data_cache_file}: {e}. Regenerating...")
-            all_data = []  # Ensure it's empty to trigger regeneration
+    # all_data = []
+    # if os.path.exists(data_cache_file):
+    #     print(f"Loading pre-generated data from {data_cache_file}...")
+    #     try:
+    #         loaded_content = torch.load(data_cache_file, weights_only=False)  # Set weights_only based on content
+    #         all_data = loaded_content['data']
+    #     except Exception as e:
+    #         print(f"Could not load data from {data_cache_file}: {e}. Regenerating...")
+    #         all_data = []  # Ensure it's empty to trigger regeneration
+    #
+    # if not all_data:  # If cache file didn't exist or failed to load
+    #     print(f"Generating new data for {grid_file_to_process}...")
+    #     all_data = generate_scopf_data(grid_file_to_process)
+    #     if all_data:
+    #         os.makedirs(os.path.dirname(data_cache_file), exist_ok=True)
+    #         torch.save({'data': all_data}, data_cache_file)
+    #         print(f"Saved generated data to {data_cache_file}")
+    #     else:
+    #         print(f"ERROR: No data generated from {grid_file_to_process}. Exiting.")
+    #         exit()
 
-    if not all_data:  # If cache file didn't exist or failed to load
-        print(f"Generating new data for {grid_file_to_process}...")
-        all_data = generate_scopf_data(grid_file_to_process)
-        if all_data:
-            os.makedirs(os.path.dirname(data_cache_file), exist_ok=True)
-            torch.save({'data': all_data}, data_cache_file)
-            print(f"Saved generated data to {data_cache_file}")
-        else:
-            print(f"ERROR: No data generated from {grid_file_to_process}. Exiting.")
-            exit()
+    # 1. Always generate new data (ignore cache)
+    print(f"Generating new data for {grid_file_to_process}...")
+    # all_data = generate_scopf_data(grid_file_to_process)
+    all_data = generate_augmented_scopf_data(
+        grid_file_path=grid_file_to_process,
+        num_variants=20,  # More variants = more data
+        variation_scale=0.1  # ±10% noise
+    )
+
+    if not all_data:
+        raise RuntimeError("No SCOPF data generated. Check your grid file or contingency definition.")
+    print(f"Generated {all_data} data samples.")
+
+    # Optionally save it for future reuse
+    os.makedirs(os.path.dirname(data_cache_file), exist_ok=True)
+    torch.save({'data': all_data}, data_cache_file)
+    print(f"Saved generated data to {data_cache_file}")
 
     num_total = len(all_data)
     if num_total < 5:  # Increased minimum slightly
@@ -584,7 +789,7 @@ if __name__ == '__main__':
             print(
                 f'Epoch: {epoch:03d}, Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}, Time: {epoch_duration:.2f}s')
 
-        if val_loss < best_val_loss and val_loss > 0:
+        if best_val_loss > val_loss > 0:
             best_val_loss = val_loss
             os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
             torch.save(model.state_dict(), model_save_path)
@@ -609,6 +814,53 @@ if __name__ == '__main__':
     test_y_edge_true_pt, test_y_edge_pred_pt = eval_results[5], eval_results[6]
 
     print(f"Final Test Loss on {grid_file_to_process}: {test_loss:.6f}")
+
+    # Stop tracking and print the result
+    emissions = tracker.stop()
+    print(f"Estimated CO2 emissions: {emissions:.6f} kg")
+
+    model.eval()
+    for test_batch in test_loader:
+        test_batch = test_batch.to(device)
+        y_node_pred, y_edge_pred = model(test_batch)
+
+        # Convert batch back into individual graphs
+        data_list = test_batch.to_data_list()
+
+        node_offset = 0
+        edge_offset = 0
+        for data in data_list:
+            num_nodes = data.num_nodes
+            num_edges = data.edge_index.size(1)
+
+            visualize_grid_predictions(
+                data,
+                y_node_pred[node_offset:node_offset + num_nodes],
+                y_edge_pred[edge_offset:edge_offset + num_edges],
+                error_mode=False,
+                title="GNN Predictions"
+            )
+            # visualize_grid_predictions(data, y_node_pred, y_edge_pred, error_mode=True)
+
+            node_offset += num_nodes
+            edge_offset += num_edges
+
+            break  # just show one sample
+
+
+    # Pick the first graph from the batch
+    #     data = test_batch.to_data_list()[0]
+    #     y_node = y_node_pred[:data.num_nodes]
+    #     y_edge = y_edge_pred[:data.edge_index.shape[1]]
+    #
+    #     visualize_grid_predictions(
+    #         data,
+    #         y_node_pred=y_node,
+    #         y_edge_pred=y_edge,
+    #         error_mode=False,
+    #         title="GNN Prediction for a Single Test Contingency"
+    #     )
+    #     break  # Show one graph only
 
     # 7. Plotting Results
     # Ensure the results directory exists
@@ -639,6 +891,16 @@ if __name__ == '__main__':
         true_vms_np = true_vms_np[valid_indices]
         pred_vms_np = pred_vms_np[valid_indices]
 
+        plt.hist(pred_vms_np, bins=20, alpha=0.7, label='Predicted Vm')
+        plt.hist(true_vms_np, bins=20, alpha=0.7, label='True Vm')
+        plt.xlabel("Voltage Magnitude (pu)")
+        plt.ylabel("Frequency")
+        plt.title("Distribution of Vm Predictions vs True Values")
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+
         if len(true_vms_np) > 0:
             plt.figure(figsize=(8, 7))
             min_val = min(true_vms_np.min(), pred_vms_np.min()) * 0.99
@@ -655,10 +917,11 @@ if __name__ == '__main__':
             plt.grid(True)
             plt.gca().set_aspect('equal', adjustable='box')
             plt.tight_layout()
-            vm_scatter_filename = f"{results_plot_prefix}gnn_vm_scatter{plot_suffix}.png"
-            plt.savefig(vm_scatter_filename)
-            print(f"Saved Vm scatter plot to {vm_scatter_filename}")
-            plt.close()
+            # vm_scatter_filename = f"{results_plot_prefix}gnn_vm_scatter{plot_suffix}.png"
+            # plt.savefig(vm_scatter_filename)
+            # print(f"Saved Vm scatter plot to {vm_scatter_filename}")
+            # plt.close()
+            plt.show()
         else:
             print("No valid Vm data for scatter plot after filtering.")
     else:
@@ -689,10 +952,11 @@ if __name__ == '__main__':
             plt.grid(True)
             plt.gca().set_aspect('equal', adjustable='box')
             plt.tight_layout()
-            pf_scatter_filename = f"{results_plot_prefix}gnn_pf_scatter{plot_suffix}.png"
-            plt.savefig(pf_scatter_filename)
-            print(f"Saved Pf scatter plot to {pf_scatter_filename}")
-            plt.close()
+            # pf_scatter_filename = f"{results_plot_prefix}gnn_pf_scatter{plot_suffix}.png"
+            # plt.savefig(pf_scatter_filename)
+            # print(f"Saved Pf scatter plot to {pf_scatter_filename}")
+            # plt.close()
+            plt.show()
         else:
             print("No valid Pf data for scatter plot after filtering.")
     else:
@@ -723,11 +987,16 @@ if __name__ == '__main__':
             plt.grid(True)
             plt.gca().set_aspect('equal', adjustable='box')
             plt.tight_layout()
-            pt_scatter_filename = f"{results_plot_prefix}gnn_pt_scatter{plot_suffix}.png"
-            plt.savefig(pt_scatter_filename)
-            print(f"Saved Pt scatter plot to {pt_scatter_filename}")
-            plt.close()
+            # pt_scatter_filename = f"{results_plot_prefix}gnn_pt_scatter{plot_suffix}.png"
+            # plt.savefig(pt_scatter_filename)
+            # print(f"Saved Pt scatter plot to {pt_scatter_filename}")
+            # plt.close()
+            plt.show()
+
+
         else:
             print("No valid Pt data for scatter plot after filtering.")
     else:
         print("Pt data not available for scatter plot.")
+
+

@@ -1989,7 +1989,7 @@ def case_loop() -> None:
     # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
     # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
     # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
-    file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
+    # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
     # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
@@ -2004,7 +2004,7 @@ def case_loop() -> None:
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
     # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
-    # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+    file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep.gridcal')
     # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
@@ -2066,8 +2066,8 @@ def case_loop() -> None:
     linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
 
     prob_cont = 0
-    max_iter = 25
-    tolerance = 1e-5
+    max_iter = 50
+    tolerance = 1e-53
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
     n_con_all = n_con_groups * 100
