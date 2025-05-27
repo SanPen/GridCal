@@ -72,7 +72,7 @@ plt.grid(True)
 plt.tight_layout()
 plt.legend()
 plt.show()
-
+"""
 
 plt.figure(figsize=(10, 4))
 plt.plot(time_a, Ua_simulation, label='Simulated')
@@ -106,5 +106,3 @@ plt.grid(True)
 plt.tight_layout()
 plt.legend()
 plt.show()
-
-"""

@@ -353,7 +353,10 @@ class OverheadLineType(EditableDevice):
         """
         Zbase = (Vnom * Vnom) / Sbase
 
-        k = (3 * (circuit_idx - 1)) + np.array([0, 1, 2])
+        phases = self.y_phases_abc
+        for i in range(len(phases)):
+            phases[i] -= 1
+        k = (3 * (circuit_idx - 1)) + phases
         z = self.z_abc[np.ix_(k, k)] * length / Zbase
         y = np.linalg.inv(z)
         return y
@@ -369,7 +372,11 @@ class OverheadLineType(EditableDevice):
         """
         Zbase = (Vnom * Vnom) / Sbase
         Ybase = 1 / Zbase
-        k = (3 * (circuit_idx - 1)) + np.array([0, 1, 2])
+
+        phases = self.y_phases_abc
+        for i in range(len(phases)):
+            phases[i] -= 1
+        k = (3 * (circuit_idx - 1)) + phases
         y = self.y_abc[np.ix_(k, k)] * length * -1e6 / Ybase
         return y
 
