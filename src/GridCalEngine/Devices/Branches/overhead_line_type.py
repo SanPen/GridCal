@@ -354,12 +354,14 @@ class OverheadLineType(EditableDevice):
         Zbase = (Vnom * Vnom) / Sbase
 
         phases = self.y_phases_abc
-        for i in range(len(phases)):
-            phases[i] -= 1
+        phases -= np.ones(len(phases), dtype=int)
         k = (3 * (circuit_idx - 1)) + phases
-        z = self.z_abc[np.ix_(k, k)] * length / Zbase
+        z = self.z_abc * length / Zbase
         y = np.linalg.inv(z)
-        return y
+        y_3x3 = np.zeros((3,3), dtype=complex)
+        y_3x3[np.ix_(k,k)] = y
+
+        return y_3x3
 
     def get_ysh(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
         """
@@ -374,10 +376,10 @@ class OverheadLineType(EditableDevice):
         Ybase = 1 / Zbase
 
         phases = self.y_phases_abc
-        for i in range(len(phases)):
-            phases[i] -= 1
         k = (3 * (circuit_idx - 1)) + phases
-        y = self.y_abc[np.ix_(k, k)] * length * -1e6 / Ybase
+        y = self.y_abc * length * -1e6 / Ybase
+        y_3x3 = np.zeros((3, 3), dtype=complex)
+        y_3x3[np.ix_(k, k)] = y
         return y
 
     def add_wire_relationship(self, wire: Wire,
