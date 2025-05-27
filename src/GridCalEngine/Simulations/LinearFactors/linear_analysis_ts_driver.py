@@ -84,7 +84,7 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                                 logger=self.logger)
 
             driver_ = LinearAnalysis(
-                numerical_circuit=nc,
+                nc=nc,
                 distributed_slack=True,
                 correct_values=False,
             )

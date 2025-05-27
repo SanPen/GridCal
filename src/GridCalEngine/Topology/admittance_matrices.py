@@ -565,9 +565,11 @@ class LinearAdmittanceMatrices:
     Admittance matrices for linear methods (DC power flow, PTDF, ..)
     """
 
-    def __init__(self, Bbus: sp.csc_matrix, Bf: sp.csc_matrix):
+    def __init__(self, Bbus: sp.csc_matrix, Bf: sp.csc_matrix, Gbus: sp.csc_matrix, Gf: sp.csc_matrix):
         self.Bbus = Bbus
         self.Bf = Bf
+        self.Gbus = Gbus
+        self.Gf = Gf
 
     def get_Bred(self, pqpv: IntVec) -> sp.csc_matrix:
         """
@@ -609,19 +611,17 @@ def compute_linear_admittances(nbr: int,
     :param dc: array of dc Branches indices
     :return: Bbus, Bf
     """
-    if len(dc):
-        # compose the vector for AC-DC grids where the R is needed for this matrix
-        # even if conceptually we only want the susceptance
-        b = np.zeros(nbr)
-        b[ac] = 1.0 / (X[ac] * active[ac] * m[ac] + 1e-20)  # for ac Branches
-        b[dc] = 1.0 / (R[dc] * active[dc] * m[dc] + 1e-20)  # for dc Branches
-    else:
-        b = 1.0 / (X * active * m + 1e-20)  # for ac Branches
-
+    b = 1.0 / (X * active * m + 1e-20)  # for ac Branches
     b_tt = sp.diags(b)  # This is Bd from the
     Bf = b_tt * Cf - b_tt * Ct
     Bt = -b_tt * Cf + b_tt * Ct
     Bbus = Cf.T * Bf + Ct.T * Bt
+
+    g = 1.0 / (R * active + 1e-20)  # for dc Branches
+    g_tt = sp.diags(g)  # This is Bd from the
+    Gf = g_tt * Cf - g_tt * Ct
+    Gt = -g_tt * Cf + g_tt * Ct
+    Gbus = Cf.T * Gf + Ct.T * Gt
 
     """
     According to the KULeuven document "DC power flow in unit commitment models"
@@ -638,4 +638,4 @@ def compute_linear_admittances(nbr: int,
     bus_angles = Bbus^-1 x (Pbus - Btau x branch_angles)
     """
 
-    return LinearAdmittanceMatrices(Bbus=Bbus, Bf=Bf)
+    return LinearAdmittanceMatrices(Bbus=Bbus, Bf=Bf, Gbus=Gbus, Gf=Gf)

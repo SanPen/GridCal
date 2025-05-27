@@ -53,7 +53,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                          bus_types=nc.bus_data.bus_types,
                                          con_names=linear_multiple_contingencies.get_contingency_group_names())
 
-    linear_analysis = LinearAnalysis(numerical_circuit=nc,
+    linear_analysis = LinearAnalysis(nc=nc,
                                      distributed_slack=options.lin_options.distribute_slack,
                                      correct_values=options.lin_options.correct_values)
 

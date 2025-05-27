@@ -1621,7 +1621,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
     if zonal_grouping == ZonalGrouping.NoGrouping:
 
         # declare the linear analysis and compute the PTDF and LODF
-        ls = LinearAnalysis(numerical_circuit=nc,
+        ls = LinearAnalysis(nc=nc,
                             distributed_slack=False,
                             correct_values=True)
 

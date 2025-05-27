@@ -258,6 +258,18 @@ class SparseArray:
         """
         return self._size
 
+    def clear(self):
+        """
+        Clear the sparse array
+        :return:
+        """
+        self._map.clear()
+        self._size = 0
+
+    def set_data(self, d: Dict[int, Any]):
+
+        self._map = d
+
     def resize(self, n: int):
         """
         Resize the array

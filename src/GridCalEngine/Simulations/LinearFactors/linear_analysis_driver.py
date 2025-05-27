@@ -49,10 +49,10 @@ class LinearAnalysisDriver(DriverTemplate):
 
         # Results
         self.results: LinearAnalysisResults = LinearAnalysisResults(
-            n_br=self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True),
-            n_bus=self.grid.get_bus_number(),
             br_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             bus_names=self.grid.get_bus_names(),
+            hvdc_names=self.grid.get_hvdc_names(),
+            vsc_names=self.grid.get_vsc_names(),
             bus_types=np.ones(self.grid.get_bus_number())
         )
 
@@ -71,10 +71,10 @@ class LinearAnalysisDriver(DriverTemplate):
         bus_types = np.ones(len(bus_names), dtype=int)
         try:
             self.results = LinearAnalysisResults(
-                n_br=len(br_names),
-                n_bus=len(bus_names),
                 br_names=br_names,
                 bus_names=bus_names,
+                hvdc_names=self.grid.get_hvdc_names(),
+                vsc_names=self.grid.get_vsc_names(),
                 bus_types=bus_types
             )
 
@@ -101,7 +101,7 @@ class LinearAnalysisDriver(DriverTemplate):
             )
 
             analysis = LinearAnalysis(
-                numerical_circuit=nc,
+                nc=nc,
                 distributed_slack=self.options.distribute_slack,
                 correct_values=self.options.correct_values
             )
@@ -113,8 +113,13 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.PTDF = analysis.PTDF
             self.results.LODF = analysis.LODF
 
+            self.results.HvdcDF = analysis.HvdcDF
+            self.results.HvdcODF = analysis.HvdcODF
+
+            self.results.VscDF = analysis.VscDF
+            self.results.VscODF = analysis.VscODF
+
             # compose the HVDC power Injections
-            bus_dict = self.grid.get_bus_index_dict()
             nbus = len(self.grid.buses)
 
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,

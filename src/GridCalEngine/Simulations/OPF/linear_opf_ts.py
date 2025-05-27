@@ -2028,7 +2028,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                     # hence, this step goes before the add_linear_node_balance function
 
                     # compute the PTDF and LODF
-                    ls = LinearAnalysis(numerical_circuit=nc,
+                    ls = LinearAnalysis(nc=nc,
                                         distributed_slack=False,
                                         correct_values=True)
 

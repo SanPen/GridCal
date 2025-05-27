@@ -275,7 +275,7 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=t)
 
             linear_analysis = LinearAnalysis(
-                numerical_circuit=nc,
+                nc=nc,
                 distributed_slack=True,
                 correct_values=False,
             )

@@ -433,7 +433,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
 
         # declare the linear analysis
         linear = LinearAnalysis(
-            numerical_circuit=nc,
+            nc=nc,
             distributed_slack=self.options.distributed_slack,
             correct_values=self.options.correct_values,
         )

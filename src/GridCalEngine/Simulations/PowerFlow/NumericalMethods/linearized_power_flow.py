@@ -13,6 +13,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
+from GridCalEngine.enumerations import ConverterControlType
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -107,6 +108,166 @@ def dcpf(nc: NumericalCircuit,
                                    It=It,
                                    loading=loading,
                                    losses=losses,
+                                   Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                   losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                   Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                   norm_f=norm_f,
+                                   converged=True,
+                                   iterations=1,
+                                   elapsed=elapsed)
+
+
+def acdc_lin_pf(nc: NumericalCircuit,
+                Bbus: sp.csc_matrix, Bf: sp.csc_matrix,
+                Gbus: sp.csc_matrix, Gf: sp.csc_matrix,
+                ac: IntVec, dc: IntVec, vd: IntVec, pv: IntVec,
+                S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec, tau: Vec) -> NumericPowerFlowResults:
+    """
+    Solves a linear-ACDC power flow.
+    :param nc:
+    :param Bbus:
+    :param Bf:
+    :param Gbus:
+    :param Gf:
+    :param ac:
+    :param dc:
+    :param vd:
+    :param pv:
+    :param S0:
+    :param I0:
+    :param Y0:
+    :param V0:
+    :param tau:
+    :return:
+    """
+
+
+    """
+    
+    :param nc: NumericalCircuit instance
+    :param Ybus: Normal circuit admittance matrix
+    :param Bpqpv: Susceptance matrix reduced
+    :param Bref: Susceptane matrix sliced for the slack node
+    :param Bf: Susceptance matrix of the Branches to nodes (used to include the phase shifters)
+    :param S0: Complex power Injections at all the nodes
+    :param I0: Complex current Injections at all the nodes
+    :param Y0: Complex admittance Injections at all the nodes
+    :param V0: Array of complex seed voltage (it contains the ref voltages)
+    :param tau: Array of branch angles
+    :param vd: array of the indices of the slack nodes
+    :param no_slack: array of the indices of the non-slack nodes
+    :param pq: array of the indices of the pq nodes
+    :param pv: array of the indices of the pv nodes
+    :return: NumericPowerFlowResults instance
+    """
+
+    start = time.time()
+
+    ac_noslack = np.setdiff1d(ac, vd)  # elements from ac that are not in vd
+    dc_noslack = np.setdiff1d(dc, pv)  # elements from dc that are not in pv
+    dc_pv = np.intersect1d(dc, pv)  # elements that are pv and dc
+
+    A11 = Bbus[np.ix_(ac_noslack, ac_noslack)]
+    A12 = sp.csc_matrix((len(ac_noslack), len(dc_noslack)), dtype=float)
+    A21 = sp.csc_matrix((len(dc_noslack), len(ac_noslack)), dtype=float)
+    A22 = Gbus[np.ix_(dc_noslack, dc_noslack)]
+
+    Asys = sp.vstack([sp.hstack([A11, A12]),
+                      sp.hstack([A21, A22])], format="csc")
+
+    npq = len(ac_noslack)
+    zm = np.zeros(nc.passive_branch_data.nelm)
+
+    if npq > 0:
+        # Decompose the voltage in angle and magnitude
+        Va = np.angle(V0)
+        Vm = np.abs(V0)
+
+        # initialize result vector
+
+        # compute the power injection
+        Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+
+        # compose the reduced power injections (Pinj)
+        # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
+        # We also need to account for the effect of the phase shifters (Pps)
+        Pps = Bf.T @ tau
+
+        Bref = Bbus[:, vd]
+        Gref = Gbus[:, dc_pv]
+        Pref = (Bref @ Va[vd]) * Vm + (Gref @ Vm[dc_pv])
+
+        P = Sbus.real - Pref + Pps
+
+        # add the converters effect
+        for i in range(nc.vsc_data.nelm):
+            if nc.vsc_data.control1[i] == ConverterControlType.Pdc:
+                P[nc.vsc_data.F[i]] -= nc.vsc_data.control1_val[i] / nc.Sbase
+
+            elif nc.vsc_data.control2[i] == ConverterControlType.Pac:
+                P[nc.vsc_data.T[i]] -= nc.vsc_data.control1_val[i] / nc.Sbase
+
+            if nc.vsc_data.control2[i] == ConverterControlType.Pdc:
+                P[nc.vsc_data.F[i]] -= nc.vsc_data.control2_val[i] / nc.Sbase
+
+            elif nc.vsc_data.control2[i] == ConverterControlType.Pac:
+                P[nc.vsc_data.T[i]] -= nc.vsc_data.control2_val[i] / nc.Sbase
+
+        f = np.r_[P[ac_noslack], P[dc_noslack]]
+
+        # update angles for non-reference buses
+        dx = linear_solver(Asys, f)
+        Va[ac_noslack] = dx[0:len(ac_noslack)]
+        Vm[dc_noslack] = dx[len(ac_noslack):len(ac_noslack) + len(dc_noslack)]
+
+        # re assemble the voltage
+        V = cf.polar_to_rect(Vm, Va)
+
+        # compute flows
+        Pf = (Bf @ Va + Gf @ Vm) * nc.Sbase
+
+        # check for convergence
+        norm_f = 0.0
+    else:
+        norm_f = 0.0
+        Pf = zm
+        V = V0
+
+    end = time.time()
+    elapsed = end - start
+
+    # Sf, St, If, It, Vbranch, loading, losses, Sbus = cf.power_flow_post_process_linear(
+    #     Sbus=S0,
+    #     V=V,
+    #     active=nc.passive_branch_data.active,
+    #     X=nc.passive_branch_data.X,
+    #     tap_module=nc.active_branch_data.tap_module,
+    #     tap_angle=nc.active_branch_data.tap_angle,
+    #     F=nc.passive_branch_data.F,
+    #     T=nc.passive_branch_data.T,
+    #     branch_rates=nc.passive_branch_data.rates,
+    #     Sbase=nc.Sbase
+    # )
+
+    loading = Pf / (nc.passive_branch_data.rates + 1e-20)
+
+    return NumericPowerFlowResults(V=V,
+                                   Scalc=S0 * nc.Sbase,
+                                   m=np.ones(nc.nbr, dtype=float),
+                                   tau=np.zeros(nc.nbr, dtype=float),
+                                   Sf=Pf,
+                                   St=-Pf,
+                                   If=zm,
+                                   It=zm,
+                                   loading=loading,
+                                   losses=zm,
                                    Pf_vsc=np.zeros(nc.nvsc, dtype=float),
                                    St_vsc=np.zeros(nc.nvsc, dtype=complex),
                                    If_vsc=np.zeros(nc.nvsc, dtype=float),

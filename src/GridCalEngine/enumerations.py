@@ -1376,6 +1376,10 @@ class ResultTypes(Enum):
     PTDF = 'PTDF'
     PTDFBusVoltageSensitivity = 'Bus voltage sensitivity'
     LODF = 'LODF'
+    HvdcPTDF = "HVDC PTDF"
+    HvdcODF = "HVDC ODF"
+    VscPTDF = "Vsc PTDF"
+    VscODF = "Vsc ODF"
 
     MaxOverloads = 'Maximum contingency flow'
     ContingencyFlows = 'Contingency flow'

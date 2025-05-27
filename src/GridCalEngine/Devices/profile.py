@@ -227,7 +227,16 @@ class Profile:
         :param map_data: map with the data
         """
         self._is_sparse = True
-        self._sparse_array = SparseArray(data_type=self.dtype, default_value=default_value)
+
+        try:
+            # try casting the default value, if failing use a proper one
+            if default_value is not None:
+                a = self.dtype(default_value)
+            self._sparse_array = SparseArray(data_type=self.dtype, default_value=default_value)
+        except ValueError:
+            self._sparse_array = SparseArray(data_type=self.dtype, default_value=self._sparse_array.default_value)
+
+
         if map_data is None:
             self._sparse_array.create(size=size, default_value=default_value)
         else:

@@ -1672,21 +1672,21 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
-        loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
+        dloss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = self.Vm[self.nc.hvdc_data.F]
         zbase = self.nc.hvdc_data.Vnf * self.nc.hvdc_data.Vnf / self.nc.Sbase
         Ploss_hvdc = self.nc.hvdc_data.r / zbase * np.power(self.Pf_hvdc / Vmf_hvdc, 2.0)
-        loss_hvdc = Ploss_hvdc - self.Pf_hvdc - self.Pt_hvdc
+        dloss_hvdc = Ploss_hvdc - self.Pf_hvdc - self.Pt_hvdc
 
         Pinj_hvdc = self.nc.hvdc_data.Pset / self.nc.Sbase
         if len(self.hvdc_droop_idx):
             Vaf_hvdc = self.Vm[self.nc.hvdc_data.F[self.hvdc_droop_idx]]
             Vat_hvdc = self.Vm[self.nc.hvdc_data.T[self.hvdc_droop_idx]]
             Pinj_hvdc[self.hvdc_droop_idx] += self.nc.hvdc_data.angle_droop[self.hvdc_droop_idx] * (Vaf_hvdc - Vat_hvdc)
-        inj_hvdc = self.Pf_hvdc - Pinj_hvdc
+        dinj_hvdc = self.Pf_hvdc - Pinj_hvdc
 
         Sf_hvdc = make_complex(self.Pf_hvdc, self.Qf_hvdc)
         St_hvdc = make_complex(self.Pt_hvdc, self.Qt_hvdc)
@@ -1711,9 +1711,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self._f = np.r_[
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
-            loss_vsc,
-            loss_hvdc,
-            inj_hvdc,
+            dloss_vsc,
+            dloss_hvdc,
+            dinj_hvdc,
             Pf_cbr - self.cbr_pf_set,
             Pt_cbr - self.cbr_pt_set,
             Qf_cbr - self.cbr_qf_set,

@@ -70,7 +70,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     if options.use_srap:
 
         # we need the PTDF for this
-        linear_analysis = LinearAnalysis(numerical_circuit=nc,
+        linear_analysis = LinearAnalysis(nc=nc,
                                          distributed_slack=options.lin_options.distribute_slack,
                                          correct_values=options.lin_options.correct_values)
 

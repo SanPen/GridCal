@@ -6,4 +6,4 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.fast_decoupled import 
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.iwamoto_newton_raphson import IwamotoNR
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.gauss_power_flow import gausspf
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep, helm_coefficients_josep, helm_coefficients_dY, helm_preparation_dY
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow import dcpf, lacpf
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow import dcpf, lacpf, acdc_lin_pf

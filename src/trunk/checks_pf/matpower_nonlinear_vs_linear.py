@@ -53,6 +53,7 @@ def run_grid(fname):
             "error (p.u.)": res_nonlinear.error,
             "iterations": res_nonlinear.iterations,
             "time (s)": res_nonlinear.elapsed,
+            "linear time (s)": res_linear.elapsed,
             "DC flow error average (%)": flows_error * 100,
         }
 
@@ -69,6 +70,7 @@ def run_grid(fname):
             "error (p.u.)": 0,
             "iterations": 0,
             "time (s)": 0,
+            "linear time (s)": 0,
             "DC flow error average (%)": 0.0,
         }
 
@@ -91,4 +93,4 @@ with mp.Pool(mp.cpu_count()) as p:
     data = p.map(run_grid, files_list)
 
 df = pd.DataFrame(data).sort_values(by='n_buses', ascending=False)
-df.to_excel("All matpower grids.xlsx", index=False)
+df.to_excel("All matpower grids lin vs nonlin.xlsx", index=False)

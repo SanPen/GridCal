@@ -7,6 +7,8 @@ import numpy as np
 import numba as nb
 import scipy.sparse as sp
 from typing import Union, List, Tuple, Dict
+
+from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve as scipy_spsolve
 
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
@@ -575,24 +577,32 @@ class LinearAnalysis:
     """
 
     def __init__(self,
-                 numerical_circuit: NumericalCircuit,
+                 nc: NumericalCircuit,
                  distributed_slack: bool = True,
                  correct_values: bool = False):
         """
         Linear Analysis constructor
-        :param numerical_circuit: numerical circuit instance
+        :param nc: numerical circuit instance
         :param distributed_slack: boolean to distribute slack
         :param correct_values: boolean to fix out layer values
         """
 
         self.logger: Logger = Logger()
 
-        islands = numerical_circuit.split_into_islands()
-        n_br = numerical_circuit.nbr
-        n_bus = numerical_circuit.nbus
+        islands = nc.split_into_islands()
+        n_br = nc.nbr
+        n_bus = nc.nbus
+        n_hvdc = nc.hvdc_data.nelm
+        n_vsc = nc.vsc_data.nelm
 
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
+
+        self.HvdcDF: Mat = np.zeros((n_hvdc, n_bus))
+        self.HvdcODF: Mat = np.zeros((n_br, n_hvdc))
+
+        self.VscDF: Mat = np.zeros((n_vsc, n_bus))
+        self.VscODF: Mat = np.zeros((n_br, n_vsc))
 
         # compute the PTDF per islands
         if len(islands) > 0:
@@ -638,6 +648,28 @@ class LinearAnalysis:
         else:
             # there are no islands
             pass
+
+        # compute the HVDC PTDF (HVDC lines, Buses)
+        A_hvdc = lil_matrix((n_bus, n_hvdc))
+        for k in range(n_hvdc):
+            f = nc.hvdc_data.F[k]
+            t = nc.hvdc_data.T[k]
+            A_hvdc[f, k] = -1  # subtracts power at the "from" side
+            A_hvdc[t, k] = 1  # injects power at the "to" side
+            self.HvdcODF[:, k] = self.PTDF[:, f] - self.PTDF[:, t]
+
+        self.HvdcDF = self.PTDF @ A_hvdc
+
+        # compute the VSC PTDF (HVDC lines, Buses)
+        A_vsc = lil_matrix((n_bus, n_vsc))
+        for k in range(n_vsc):
+            f = nc.vsc_data.F[k]
+            t = nc.vsc_data.T[k]
+            A_vsc[f, k] = -1  # subtracts power at the "from" side
+            A_vsc[t, k] = 1  # injects power at the "to" side
+            self.VscODF[:, k] = self.PTDF[:, f] - self.PTDF[:, t]
+
+        self.VscDF = self.PTDF @ A_vsc
 
     def get_transfer_limits(self, flows: np.ndarray, rates: Vec):
         """
