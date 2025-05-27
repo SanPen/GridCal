@@ -466,15 +466,15 @@ class OverheadLineType(EditableDevice):
             return False
 
         # if there is a phase, all the preceding ones must be present too
-        mx = max(phases)
-        missing_phases = False
-        for i in range(1, mx):
-            if i not in phases:
-                logger.add('Missing phase', value=i)
-                missing_phases = True
+        # mx = max(phases)
+        # missing_phases = False
+        # for i in range(1, mx):
+        #     if i not in phases:
+        #         logger.add('Missing phase', value=i)
+        #         missing_phases = True
 
-        if missing_phases:
-            return False
+        # if missing_phases:
+        #     return False
 
         return True
 
