@@ -28,9 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Developing phase number">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="get_ys and get_ysh corrected">
+      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB_powerflow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB.gridcal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,6 +204,7 @@
     "Python tests.pytest in test_transformer_type.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python tests.test_ntc.py.executor": "Debug",
+    "Python.2ph_AB_powerflow.executor": "Debug",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.Carson_vs_Dubanton.executor": "Run",
     "Python.ExecuteGridCal.executor": "Debug",
@@ -260,7 +264,7 @@
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "#395 on #343__3phase",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/GridCal/src/trunk/three_phase",
+    "last_opened_file_path": "C:/GridCal/src/trunk/unbalanced_pf",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -278,8 +282,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\GridCal\src\trunk\three_phase" />
       <recent name="C:\GridCal\src\trunk\unbalanced_pf" />
+      <recent name="C:\GridCal\src\trunk\three_phase" />
       <recent name="C:\Users\alexb\OneDrive\eRoots\GridCal\src\trunk\three_phase" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/Stochastic" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/icons" />
@@ -2348,7 +2352,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="724" />
+    <option name="localTasksCounter" value="725" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2394,7 +2398,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Removed unused code and cleaned up things in pf_generalized_formulation.py" />
     <MESSAGE value="Improvements in  pf_generalized_formulation.py and bug fixes in linear_opf_ts.py" />
     <MESSAGE value="General refactors of the derivatives in the pf_generalized_formulation.py" />
     <MESSAGE value="Refactor of the get_solution method in pf_generalized_formulation.py" />
@@ -2419,7 +2422,8 @@
     <MESSAGE value="Time series comparation." />
     <MESSAGE value="Correction of the Dubanton approximation." />
     <MESSAGE value="Developing phase number" />
-    <option name="LAST_COMMIT_MESSAGE" value="Developing phase number" />
+    <MESSAGE value="get_ys and get_ysh corrected" />
+    <option name="LAST_COMMIT_MESSAGE" value="get_ys and get_ysh corrected" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2749,9 +2753,19 @@
           <option name="timeStamp" value="2609" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py</url>
+          <line>67</line>
+          <option name="timeStamp" value="2615" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
           <line>363</line>
-          <option name="timeStamp" value="2614" />
+          <option name="timeStamp" value="2617" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
+          <line>383</line>
+          <option name="timeStamp" value="2618" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2759,6 +2773,7 @@
       <configuration name="PythonConfigurationType">
         <watch expression="np.linalg.inv(zabc)" language="Python" />
         <watch expression="grid.current_injections" />
+        <watch expression="circuit_idx" language="Python" />
       </configuration>
     </watches-manager>
   </component>

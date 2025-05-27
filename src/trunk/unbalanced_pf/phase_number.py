@@ -32,4 +32,3 @@ print('\nN = \n', N)
 # Mascara
 M = (N > 0).astype(int).reshape(-1)
 print('\nM = \n', M)
-
