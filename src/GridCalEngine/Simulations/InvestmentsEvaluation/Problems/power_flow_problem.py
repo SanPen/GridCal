@@ -73,12 +73,12 @@ class PowerFlowInvestmentProblem(BlackBoxProblemTemplate):
         :param grid: MultiCircuit
         :param pf_options: PowerFlowOptions
         """
-        super().__init__(grid=grid, plot_x_idx=4, plot_y_idx=5)
+        super().__init__(grid=grid,
+                         x_dim=len(grid.investments_groups),
+                         plot_x_idx=4, plot_y_idx=5)
 
         # options object
         self.pf_options = pf_options
-
-        self.x_dim = len(self.grid.investments_groups)
 
         # gather a dictionary of all the elements, this serves for the investments generation
         self.get_all_elements_dict, dict_ok = self.grid.get_all_elements_dict()

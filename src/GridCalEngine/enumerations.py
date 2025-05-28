@@ -1106,6 +1106,7 @@ class InvestmentsEvaluationObjectives(Enum):
     # OptimalPowerFlow = 'OptimalPowerFlow'
     # TimeSeriesOptimalPowerFlow = 'TimeSeriesOptimalPowerFlow'
     GenerationAdequacy = "Adequacy"
+    SimpleDispatch = "Simple dispatch"
     FromPlugin = 'From Plugin'
 
     def __str__(self):

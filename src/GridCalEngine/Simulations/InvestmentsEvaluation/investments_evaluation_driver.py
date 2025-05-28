@@ -163,8 +163,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # number of random evaluations at the beginning
         dim = self.problem.n_vars()
         rand_evals = round(dim)
-        lb = np.zeros(dim)
-        ub = np.ones(dim)
+        lb = self.problem.x_min
+        ub = self.problem.x_max
         rand_search_active_prob = 0.5
         x0 = np.random.binomial(1, rand_search_active_prob, dim)
 
@@ -209,6 +209,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             obj_func=self.objective_function,
             n_partitions=n_partitions,
             n_var=dim,
+            lb=self.problem.x_min,
+            ub=self.problem.x_max,
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
@@ -237,6 +239,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         X, obj_values = random_trial(
             obj_func=self.objective_function,
             n_var=dim,
+            lb=self.problem.x_min,
+            ub=self.problem.x_max,
             n_obj=len(ret),
             max_evals=self.options.max_eval,
         )

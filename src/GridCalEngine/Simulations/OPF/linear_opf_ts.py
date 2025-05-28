@@ -1884,17 +1884,18 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.Va[local_t_idx, k] = lp_model.add_var(
-                lb=nc.bus_data.angle_min[k],
-                ub=nc.bus_data.angle_max[k],
-                name=join("Va_", [local_t_idx, k], "_")
-            )
-
+            # we declare Vm for DC buses and Va for AC buses
             if nc.bus_data.is_dc[k]:
                 mip_vars.bus_vars.Vm[local_t_idx, k] = lp_model.add_var(
                     lb=nc.bus_data.Vmin[k],
                     ub=nc.bus_data.Vmax[k],
                     name=join("Vm_", [local_t_idx, k], "_")
+                )
+            else:
+                mip_vars.bus_vars.Va[local_t_idx, k] = lp_model.add_var(
+                    lb=nc.bus_data.angle_min[k],
+                    ub=nc.bus_data.angle_max[k],
+                    name=join("Va_", [local_t_idx, k], "_")
                 )
 
         # formulate loads ------------------------------------------------------------------------------------------

@@ -191,7 +191,8 @@ class SimulationsMain(TimeEventsMain):
         lst = list()
         for method in [InvestmentsEvaluationObjectives.PowerFlow,
                        InvestmentsEvaluationObjectives.TimeSeriesPowerFlow,
-                       InvestmentsEvaluationObjectives.GenerationAdequacy]:
+                       InvestmentsEvaluationObjectives.GenerationAdequacy,
+                       InvestmentsEvaluationObjectives.SimpleDispatch]:
             self.investment_evaluation_objfunc_dict[method.value] = method
             lst.append(method.value)
         self.ui.investment_evaluation_objfunc_ComboBox.setModel(gf.get_list_model(lst))
@@ -2603,6 +2604,14 @@ class SimulationsMain(TimeEventsMain):
                             grid=self.circuit,
                             n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
                             use_monte_carlo=True,
+                            save_file=False
+                        )
+
+                    elif obj_fn_tpe == InvestmentsEvaluationObjectives.SimpleDispatch:
+                        problem = sim.AdequacyInvestmentProblem(
+                            grid=self.circuit,
+                            n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                            use_monte_carlo=False,
                             save_file=False
                         )
 

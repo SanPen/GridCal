@@ -3,6 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from typing import List, Dict
+
+import numpy as np
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, Logger
@@ -10,7 +13,7 @@ from GridCalEngine.basic_structures import Vec, IntVec, StrVec, Logger
 
 class BlackBoxProblemTemplate:
 
-    def __init__(self, grid: MultiCircuit, plot_x_idx: int, plot_y_idx: int):
+    def __init__(self, grid: MultiCircuit, x_dim: int, plot_x_idx: int, plot_y_idx: int):
 
         self.grid = grid
 
@@ -18,6 +21,10 @@ class BlackBoxProblemTemplate:
 
         self.plot_x_idx = plot_x_idx
         self.plot_y_idx = plot_y_idx
+
+        self.x_dim = x_dim
+        self.x_min = np.zeros(self.x_dim)
+        self.x_max = np.ones(self.x_dim)
 
         # dictionary of investment groups
         self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investment_by_groups_index_dict()
@@ -54,7 +61,7 @@ class BlackBoxProblemTemplate:
         Number of variables (size of x)
         :return:
         """
-        raise Exception("You need to implement this in your child class")
+        return self.x_dim
 
     def get_objectives_names(self) -> StrVec:
         """

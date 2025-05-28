@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-from typing import List
+
 import numpy as np
 import numba as nb
 from scipy.sparse import lil_matrix
@@ -15,11 +15,51 @@ from GridCalEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInput
 
 
 @nb.njit(cache=True)
-def apply_actives_mask(original_active: IntMat, mask_indices: IntVec, mask: IntVec):
+def correct_x(x, lb, ub) -> Vec:
+    for i in range(len(x)):
+        if x[i] < lb[i]:
+            x[i] = lb[i]
+        elif x[i] > ub[i]:
+            x[i] = ub[i]
+
+
+# @nb.njit(cache=True)
+def apply_actives_mask(original_active: IntMat, mask_indices: IntVec, mask: IntVec, years_starts_indices: IntVec):
+    """
+
+    :param original_active:
+    :param mask_indices:
+    :param mask: x aplied to generators or batteries (goes from 0 to N-years + 1)
+    :param years_starts_indices: array saying in which profile index starts each year
+    :return:
+    """
     active = original_active.copy()
     for i in mask_indices:
-        active[:, i] = mask[i]
+        if mask[i] == 0:
+            active[:, i] = 0
+        else:
+            start = years_starts_indices[int(mask[i]) - 1]
+            active[:start, i] = 0  # deactivate until start
+            active[start:, i] = 1  # activate from start onwards
+
     return active
+
+
+def determine_starting_index_of_every_year(index) -> IntVec:
+    """
+    Find the index where each different year starts
+    :param index:
+    :return:
+    """
+    indices = list()
+    year_prev = index[0].year
+    indices.append(0)
+    for i, entry in enumerate(index):
+        if entry.year != year_prev:
+            year_prev = entry.year
+            indices.append(i)
+
+    return np.array(indices)
 
 
 class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
@@ -36,14 +76,14 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         :param use_monte_carlo:
         :param save_file:
         """
-        super().__init__(grid=grid, plot_x_idx=1, plot_y_idx=2)
+        super().__init__(grid=grid,
+                         x_dim=len(grid.investments_groups),
+                         plot_x_idx=1, plot_y_idx=2)
 
         # options object
         self.n_monte_carlo_sim = n_monte_carlo_sim
         self.use_monte_carlo = use_monte_carlo
         self.save_file = save_file
-
-        self.x_dim = len(self.grid.investments_groups)
 
         if self.save_file:
             self.output_f = open("adequacy_output.csv", "w")
@@ -58,10 +98,19 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
                                                            time_indices=None,
                                                            logger=self.logger)
 
+        self.years_starts_indices = determine_starting_index_of_every_year(index=self.grid.time_profile)
+        years = len(self.years_starts_indices)
+        self.x_max *= years  # 0 is for not investing, any other number is for the year of entrance
+
+        self.total_load = np.sum(self.greedy_dispatch_inputs.load_profile)
+
+        self.inv_group_capex = self.grid.get_capex_by_investment_group()
+
         nc = compile_numerical_circuit_at(self.grid, t_idx=None)
         self.gen_mttf = nc.generator_data.mttf
         self.gen_mttr = nc.generator_data.mttr
         self.gen_capex = nc.generator_data.capex * nc.generator_data.snom  # CAPEX in $
+        self.batt_capex = nc.battery_data.capex * nc.battery_data.snom
         self.dim = len(self.grid.investments_groups)
 
         if self.output_f is not None:
@@ -116,7 +165,7 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         Get a list of names for the elements of f
         :return:
         """
-        return np.array(["LOLE", "CAPEX", "Electricity cost"])
+        return np.array(["LOLE", "CAPEX", "Unitary electricity cost"])
 
     def get_vars_names(self) -> StrVec:
         """
@@ -131,24 +180,33 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         :param x: array of variable values
         :return: array of objectives
         """
+        # correct x
+        correct_x(x=x, lb=self.x_min, ub=self.x_max)
+
+        x_bin = x.astype(bool).astype(float)
         gen_mask = self.dim2gen @ x
         batt_mask = self.dim2batt @ x
 
-        invested_gen_idx = np.where(gen_mask == 1)[0]
-        capex = np.sum(self.gen_capex[invested_gen_idx])
+        # invested_gen_idx = np.where(gen_mask == 1)[0]
+        # capex = np.sum(self.gen_capex[invested_gen_idx])
 
         gen_active = apply_actives_mask(original_active=self.greedy_dispatch_inputs.gen_active,
                                         mask_indices=self.inv_gen_idx,
-                                        mask=gen_mask)
+                                        mask=gen_mask,
+                                        years_starts_indices=self.years_starts_indices)
 
         batt_active = apply_actives_mask(original_active=self.greedy_dispatch_inputs.batt_active,
                                          mask_indices=self.inv_batt_idx,
-                                         mask=batt_mask)
+                                         mask=batt_mask,
+                                         years_starts_indices=self.years_starts_indices)
 
         # batt_pmax = self.greedy_dispatch_inputs.batt_p_max_charge.copy()
         # batt_pmax[:, self.inv_batt_idx] *= batt_mask[self.inv_batt_idx]
         # invested_batt_idx = np.where(batt_mask == 1)[0]
         # capex += np.sum(self.batt_capex[invested_batt_idx])
+
+        # compute the capex of the selected investment groups
+        capex = np.sum(self.inv_group_capex * x_bin)
 
         if self.use_monte_carlo:
 
@@ -203,10 +261,12 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
             )
             lole = np.sum(load_not_supplied)
 
-        print(f"n_inv: {sum(x)}, lole: {lole}, capex: {capex}")
-
         if self.output_f is not None:
             # write header
             self.output_f.write(f"{sum(x)},{lole},{capex}" + ",".join([f"{xi}" for xi in x]) + "\n")
 
-        return np.array([lole, capex, total_cost])
+        unit_cost = total_cost / self.total_load
+
+        print(f"n_inv: {sum(x)}, lole: {lole}, capex: {capex}, e cost: {unit_cost}")
+
+        return np.array([lole, capex, unit_cost])

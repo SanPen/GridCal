@@ -9,8 +9,11 @@ from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.repair.rounding import RoundingRepair
+from pymoo.core.mixed import MixedVariableSampling
 from pymoo.core.sampling import Sampling
+from pymoo.operators.sampling.rnd import IntegerRandomSampling
 from pymoo.core.mutation import Mutation
+from GridCalEngine.basic_structures import Vec, IntVec
 
 
 class UniformBinarySampling(Sampling):
@@ -94,7 +97,7 @@ class GridNsga(ElementwiseProblem):
     Problem formulation packaging to use the pymoo library
     """
 
-    def __init__(self, obj_func, n_var, n_obj):
+    def __init__(self, obj_func, n_var, n_obj, lb: Vec | IntVec, ub: Vec | IntVec):
         """
 
         :param obj_func:
@@ -104,8 +107,8 @@ class GridNsga(ElementwiseProblem):
         super().__init__(n_var=n_var,
                          n_obj=n_obj,
                          n_ieq_constr=0,
-                         xl=np.zeros(n_var),
-                         xu=np.ones(n_var),
+                         xl=lb,
+                         xu=ub,
                          vtype=int)
         self.obj_func = obj_func
 
@@ -122,9 +125,9 @@ class GridNsga(ElementwiseProblem):
 
 
 def NSGA_3(obj_func,
+           n_var: int, lb: Vec | IntVec, ub: Vec | IntVec,
+           n_obj: int,
            n_partitions: int = 100,
-           n_var: int = 1,
-           n_obj: int = 2,
            max_evals: int = 30,
            pop_size: int = 1,
            crossover_prob: float = 0.05,
@@ -135,6 +138,8 @@ def NSGA_3(obj_func,
     :param obj_func: Objective function pointer [f(x)]
     :param n_partitions: Number of partitions
     :param n_var: Number of variables
+    :param lb: Array of x lower boundaries
+    :param ub: Array of x upper boundaries
     :param n_obj: Number of objectives
     :param max_evals: Maximum number of evaluations
     :param pop_size: Population size
@@ -143,14 +148,19 @@ def NSGA_3(obj_func,
     :param eta: eta parameter for the SBX crossover
     :return: X, f
     """
-    problem = GridNsga(obj_func, n_var, n_obj)
+    problem = GridNsga(obj_func, n_var, n_obj, lb=lb, ub=ub)
 
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=SkewedBinarySampling(),
-                      crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                      mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4, repair=RoundingRepair()),
+                      sampling=IntegerRandomSampling(), # MixedVariableSampling(), # SkewedBinarySampling(),
+                      crossover=SBX(prob=crossover_prob,
+                                    eta=eta,
+                                    vtype=float,
+                                    repair=RoundingRepair()),
+                      mutation=BitflipMutation(prob=mutation_probability,
+                                               prob_var=0.4,
+                                               repair=RoundingRepair()),
                       eliminate_duplicates=True,
                       ref_dirs=ref_dirs)
 
@@ -161,7 +171,7 @@ def NSGA_3(obj_func,
                    verbose=True,
                    save_history=False)
 
-    import pandas as pd
-    dff = pd.DataFrame(res.F)
-    dff.to_excel('nsga.xlsx')
+    # import pandas as pd
+    # dff = pd.DataFrame(res.F)
+    # dff.to_excel('nsga.xlsx')
     return res.X, res.F

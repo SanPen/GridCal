@@ -3865,6 +3865,22 @@ class Assets:
 
         return res
 
+    def get_capex_by_investment_group(self) -> Vec:
+        """
+        Get array of CAPEX costs per investment group
+        :return:
+        """
+        capex = np.zeros(len(self.investments_groups))
+
+        # pre-compute the capex of each investment group
+        d = self.get_investment_by_groups_index_dict()
+
+        for i, investments in d.items():
+            for investment in investments:
+                capex[i] += investment.CAPEX
+
+        return capex
+
     # ------------------------------------------------------------------------------------------------------------------
     # Technology
     # ------------------------------------------------------------------------------------------------------------------

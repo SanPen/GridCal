@@ -17,7 +17,6 @@ from GridCalEngine.enumerations import EngineType
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec
 
 
-
 def power_flow_ts_function(inv_list: List[Investment],
                            grid: MultiCircuit,
                            pf_options: PowerFlowOptions,
@@ -98,7 +97,10 @@ class TimeSeriesPowerFlowInvestmentProblem(BlackBoxProblemTemplate):
         :param opf_time_series_results: Optimal power flow results
         :param engine: Engine to run the simulations
         """
-        super().__init__(grid=grid, plot_x_idx=4, plot_y_idx=5)
+        super().__init__(grid=grid,
+                         x_dim=len(grid.investments_groups),
+                         plot_x_idx=4,
+                         plot_y_idx=5)
 
         # options object
         self.pf_options = pf_options
@@ -106,8 +108,6 @@ class TimeSeriesPowerFlowInvestmentProblem(BlackBoxProblemTemplate):
         self.opf_time_series_results = opf_time_series_results
         self.clustering_results = clustering_results
         self.engine = engine
-
-        self.x_dim = len(self.grid.investments_groups)
 
         # gather a dictionary of all the elements, this serves for the investments generation
         self.get_all_elements_dict, dict_ok = self.grid.get_all_elements_dict()
