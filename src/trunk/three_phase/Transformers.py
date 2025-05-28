@@ -124,12 +124,12 @@ elif connexion == 'Dy':
 
 elif connexion == 'Yz':
     Yprimitive = np.zeros((12, 12), dtype=object)
-    Yprimitive[0:2, 0:2] = Y_2x2
-    Yprimitive[2:4, 2:4] = Y_2x2
-    Yprimitive[4:6, 4:6] = Y_2x2
-    Yprimitive[6:8, 6:8] = Y_2x2
-    Yprimitive[8:10, 8:10] = Y_2x2
-    Yprimitive[10:12, 10:12] = Y_2x2
+    Yprimitive[0:2, 0:2] = Y_2x2 * 2
+    Yprimitive[2:4, 2:4] = Y_2x2 * 2
+    Yprimitive[4:6, 4:6] = Y_2x2 * 2
+    Yprimitive[6:8, 6:8] = Y_2x2 * 2
+    Yprimitive[8:10, 8:10] = Y_2x2 * 2
+    Yprimitive[10:12, 10:12] = Y_2x2 * 2
     Cu = np.zeros((6, 12))
     Cu[0, 0] = 1
     Cu[0, 2] = 1
@@ -160,12 +160,12 @@ elif connexion == 'Yz':
 
 elif connexion == 'Zy':
     Yprimitive = np.zeros((12, 12), dtype=object)
-    Yprimitive[0:2, 0:2] = Y_2x2
-    Yprimitive[2:4, 2:4] = Y_2x2
-    Yprimitive[4:6, 4:6] = Y_2x2
-    Yprimitive[6:8, 6:8] = Y_2x2
-    Yprimitive[8:10, 8:10] = Y_2x2
-    Yprimitive[10:12, 10:12] = Y_2x2
+    Yprimitive[0:2, 0:2] = Y_2x2 * 2
+    Yprimitive[2:4, 2:4] = Y_2x2 * 2
+    Yprimitive[4:6, 4:6] = Y_2x2 * 2
+    Yprimitive[6:8, 6:8] = Y_2x2 * 2
+    Yprimitive[8:10, 8:10] = Y_2x2 * 2
+    Yprimitive[10:12, 10:12] = Y_2x2 * 2
     Cu = np.zeros((6, 12))
     Cu[0, 0] = 1
     Cu[0, 6] = -1
@@ -196,12 +196,12 @@ elif connexion == 'Zy':
 
 elif connexion == 'Zz':
     Yprimitive = np.zeros((12, 12), dtype=object)
-    Yprimitive[0:2, 0:2] = Y_2x2
-    Yprimitive[2:4, 2:4] = Y_2x2
-    Yprimitive[4:6, 4:6] = Y_2x2
-    Yprimitive[6:8, 6:8] = Y_2x2
-    Yprimitive[8:10, 8:10] = Y_2x2
-    Yprimitive[10:12, 10:12] = Y_2x2
+    Yprimitive[0:2, 0:2] = Y_2x2 * 2
+    Yprimitive[2:4, 2:4] = Y_2x2 * 2
+    Yprimitive[4:6, 4:6] = Y_2x2 * 2
+    Yprimitive[6:8, 6:8] = Y_2x2 * 2
+    Yprimitive[8:10, 8:10] = Y_2x2 * 2
+    Yprimitive[10:12, 10:12] = Y_2x2 * 2
     Cu = np.zeros((6, 12))
     Cu[0, 0] = 1
     Cu[0, 6] = -1
@@ -232,12 +232,12 @@ elif connexion == 'Zz':
 
 elif connexion == 'Dz':
     Yprimitive = np.zeros((12, 12), dtype=object)
-    Yprimitive[0:2, 0:2] = Y_2x2
-    Yprimitive[2:4, 2:4] = Y_2x2
-    Yprimitive[4:6, 4:6] = Y_2x2
-    Yprimitive[6:8, 6:8] = Y_2x2
-    Yprimitive[8:10, 8:10] = Y_2x2
-    Yprimitive[10:12, 10:12] = Y_2x2
+    Yprimitive[0:2, 0:2] = Y_2x2 * 2
+    Yprimitive[2:4, 2:4] = Y_2x2 * 2
+    Yprimitive[4:6, 4:6] = Y_2x2 * 2
+    Yprimitive[6:8, 6:8] = Y_2x2 * 2
+    Yprimitive[8:10, 8:10] = Y_2x2 * 2
+    Yprimitive[10:12, 10:12] = Y_2x2 * 2
     Cu_left = np.zeros((6, 6))
     Cu_left[0, 0] = 1
     Cu_left[0, 1] = -1
@@ -299,12 +299,12 @@ elif connexion == 'Dz':
 
 elif connexion == 'Zd':
     Yprimitive = np.zeros((12, 12), dtype=object)
-    Yprimitive[0:2, 0:2] = Y_2x2
-    Yprimitive[2:4, 2:4] = Y_2x2
-    Yprimitive[4:6, 4:6] = Y_2x2
-    Yprimitive[6:8, 6:8] = Y_2x2
-    Yprimitive[8:10, 8:10] = Y_2x2
-    Yprimitive[10:12, 10:12] = Y_2x2
+    Yprimitive[0:2, 0:2] = Y_2x2 * 2
+    Yprimitive[2:4, 2:4] = Y_2x2 * 2
+    Yprimitive[4:6, 4:6] = Y_2x2 * 2
+    Yprimitive[6:8, 6:8] = Y_2x2 * 2
+    Yprimitive[8:10, 8:10] = Y_2x2 * 2
+    Yprimitive[10:12, 10:12] = Y_2x2 * 2
     Cu_left = np.zeros((6, 6))
     Cu_left[0, 0] = 1
     Cu_left[1, 1] = 1

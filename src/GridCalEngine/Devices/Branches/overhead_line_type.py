@@ -355,11 +355,10 @@ class OverheadLineType(EditableDevice):
 
         phases = self.y_phases_abc
         phases -= np.ones(len(phases), dtype=int)
-        k = (3 * (circuit_idx - 1)) + phases
         z = self.z_abc * length / Zbase
         y = np.linalg.inv(z)
-        y_3x3 = np.zeros((3*circuit_idx,3*circuit_idx), dtype=complex)
-        y_3x3[np.ix_(k,k)] = y
+        y_3x3 = np.zeros((3,3), dtype=complex)
+        y_3x3[np.ix_(phases,phases)] = y
 
         return y_3x3
 
@@ -376,10 +375,9 @@ class OverheadLineType(EditableDevice):
         Ybase = 1 / Zbase
 
         phases = self.y_phases_abc
-        k = (3 * (circuit_idx - 1)) + phases
         y = self.y_abc * length * -1e6 / Ybase
-        y_3x3 = np.zeros((3*circuit_idx, 3*circuit_idx), dtype=complex)
-        y_3x3[np.ix_(k, k)] = y
+        y_3x3 = np.zeros((3, 3), dtype=complex)
+        y_3x3[np.ix_(phases, phases)] = y
 
         return y_3x3
 
