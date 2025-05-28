@@ -16,6 +16,21 @@ from pymoo.core.mutation import Mutation
 from GridCalEngine.basic_structures import Vec, IntVec
 
 
+class IntegerRandomSamplingGridCal(Sampling):
+    def _do(self, problem, n_samples, **kwargs):
+        xl = np.asarray(problem.xl, dtype=int)
+        xu = np.asarray(problem.xu, dtype=int)
+
+        n_var = len(xl)
+        X = np.zeros((n_samples, n_var), dtype=int)
+
+        for j in range(n_var):
+            values = np.arange(xl[j], xu[j] + 1)
+            for i in range(n_samples):
+                X[i, j] = np.random.choice(values)
+
+        return X
+
 class UniformBinarySampling(Sampling):
     """
     UniformBinarySampling
@@ -57,6 +72,34 @@ class SkewedBinarySampling(Sampling):
         #     ones_into_array = np.vstack([ones_into_array, row])
 
         return ones_into_array
+
+class SkewedIntegerSamplingRange(Sampling):
+    """
+    SkewedIntegerSampling generates samples skewed toward the lower bounds
+    but spread across the full lb–ub range. Works for integer variables.
+    """
+
+    def _do(self, problem, n_samples, **kwargs):
+        xl = np.asarray(problem.xl, dtype=int)
+        xu = np.asarray(problem.xu, dtype=int)
+
+        n_var = len(xl)
+        X = np.zeros((n_samples, n_var), dtype=int)
+
+        # Generate skewed samples per variable
+        for j in range(n_var):
+            # Create skewed samples in [0, 1]
+            skewed = (np.linspace(0, 1, n_samples) ** 3)
+
+            # Scale to range [xl[j], xu[j]]
+            range_j = xu[j] - xl[j]
+            values = (skewed * range_j + xl[j]).astype(int)
+
+            # Shuffle for diversity
+            np.random.shuffle(values)
+            X[:, j] = values
+
+        return X
 
 
 class QuadBinarySampling(Sampling):
@@ -153,7 +196,7 @@ def NSGA_3(obj_func,
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=IntegerRandomSampling(), # MixedVariableSampling(), # SkewedBinarySampling(),
+                      sampling=SkewedIntegerSamplingRange(), #IntegerRandomSamplingGridCal(), # SkewedBinarySampling(),
                       crossover=SBX(prob=crossover_prob,
                                     eta=eta,
                                     vtype=float,
