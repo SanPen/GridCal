@@ -5322,6 +5322,9 @@ class Assets:
         elif device_type == DeviceType.FluidP2XDevice:
             return self._p2xs
 
+        elif device_type == DeviceType.FluidInjectionDevice:
+            return self.get_fluid_injections()
+
         elif device_type == DeviceType.PMeasurementDevice:
             return self.get_p_measurements()
 
