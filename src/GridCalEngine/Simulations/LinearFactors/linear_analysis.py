@@ -79,14 +79,14 @@ def make_contingency_flows(base_flow: Vec,
     return flow_n1
 
 
-def make_acptdf(Ybus: sp.csc_matrix,
-                Yf: sp.csc_matrix,
-                F: IntVec,
-                T: IntVec,
-                V: CxVec,
-                pq: IntVec,
-                pv: IntVec,
-                distribute_slack: bool = False) -> Mat:
+def make_jacobian_ptdf(Ybus: sp.csc_matrix,
+                       Yf: sp.csc_matrix,
+                       F: IntVec,
+                       T: IntVec,
+                       V: CxVec,
+                       pq: IntVec,
+                       pv: IntVec,
+                       distribute_slack: bool = False) -> Mat:
     """
     Compute the AC-PTDF
     :param Ybus: admittance matrix
@@ -170,7 +170,80 @@ def make_ptdf(Bpqpv: sp.csc_matrix,
 
     # compute corresponding change in branch Sf
     # Bf is a sparse matrix
-    H = Bf * dTheta
+    H = Bf @ dTheta
+
+    return H
+
+
+def make_acdc_ptdf(nc: NumericalCircuit,
+                   distribute_slack: bool = True) -> Mat:
+    """
+    Build the ACDC PTDF matrix
+    :param nc: NumericalCircuit
+    :param distribute_slack: distribute the slack?
+    :return: PTDF matrix. It is a full matrix of dimensions Branches x buses
+    """
+    n = nc.nbus
+
+    # mount the base matrix
+    A = lil_matrix((n, n))
+    Af = lil_matrix((nc.nbr, n))
+
+    for k in range(nc.nbr):
+        f = nc.passive_branch_data.F[k]
+        t = nc.passive_branch_data.T[k]
+
+        if nc.bus_data.is_dc[f] and nc.bus_data.is_dc[t]:
+            # this is a dc branch
+            ys = float(nc.passive_branch_data.active[k]) / (nc.passive_branch_data.R[k] + 1e-20)
+
+        elif not nc.bus_data.is_dc[f] and not nc.bus_data.is_dc[t]:
+            # this is an ac branch
+            ys = float(nc.passive_branch_data.active[k]) / (nc.passive_branch_data.X[k] + 1e-20)
+
+        else:
+            # this is an error
+            raise AttributeError(f"The branch {k} is nether fully AC not fully DC :(")
+
+        Af[k, f] = ys
+        Af[k, t] = -ys
+
+        A[f, f] += ys
+        A[f, t] -= ys
+        A[t, f] -= ys
+        A[t, t] += ys
+
+    # detect how to slice
+    no_slack =  list()
+    dc_sl = list()
+    ac_sl = list()
+    for i in range(n):
+        if nc.bus_data.is_dc[i]:
+            if nc.bus_data.is_vm_controlled[i]:
+                dc_sl.append(i)
+            else:
+                no_slack.append(i)
+        else:
+            if nc.bus_data.is_vm_controlled[i] and nc.bus_data.is_va_controlled[i]:
+                ac_sl.append(i)
+            else:
+                no_slack.append(i)
+
+    if distribute_slack:
+        dP = np.ones((n, n)) * (-1 / (n - 1))
+        for i in range(n):
+            dP[i, i] = 1.0
+    else:
+        dP = np.eye(n, n)
+
+    Ared = A[no_slack, :][:, no_slack]
+    Pred = dP[no_slack, :]
+    dtheta_ref = sp.linalg.spsolve(Ared.tocsc(), Pred)
+
+    dTheta = np.zeros((n, n))
+    dTheta[no_slack, :] = dtheta_ref
+
+    H = Af @ dTheta
 
     return H
 
@@ -589,7 +662,7 @@ class LinearAnalysis:
 
         self.logger: Logger = Logger()
 
-        islands = nc.split_into_islands()
+        islands: List[NumericalCircuit] = nc.split_into_islands()
         n_br = nc.nbr
         n_bus = nc.nbus
         n_hvdc = nc.hvdc_data.nelm
@@ -614,15 +687,19 @@ class LinearAnalysis:
                 if len(indices.vd) == 1:
                     if len(indices.no_slack) > 0:
 
-                        adml = island.get_linear_admittance_matrices(indices=indices)
+                        if island.bus_data.is_dc.any():
+                            ptdf_island = make_acdc_ptdf(nc=island, distribute_slack=distributed_slack)
 
-                        Bpqpv = adml.get_Bred(pqpv=indices.no_slack)
+                        else:
+                            adml = island.get_linear_admittance_matrices(indices=indices)
 
-                        # compute the PTDF of the island
-                        ptdf_island = make_ptdf(Bpqpv=Bpqpv,
-                                                Bf=adml.Bf,
-                                                no_slack=indices.no_slack,
-                                                distribute_slack=distributed_slack)
+                            Bpqpv = adml.get_Bred(pqpv=indices.no_slack)
+
+                            # compute the PTDF of the island
+                            ptdf_island = make_ptdf(Bpqpv=Bpqpv,
+                                                    Bf=adml.Bf,
+                                                    no_slack=indices.no_slack,
+                                                    distribute_slack=distributed_slack)
 
                         # assign the PTDF to the main PTDF matrix
                         self.PTDF[np.ix_(island.passive_branch_data.original_idx,
