@@ -2037,8 +2037,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                     mctg = LinearMultiContingencies(grid=grid,
                                                     contingency_groups_used=contingency_groups_used)
 
-                    mctg.compute(lodf=ls.LODF,
-                                 ptdf=ls.PTDF,
+                    mctg.compute(lin=ls,
                                  ptdf_threshold=lodf_threshold,
                                  lodf_threshold=lodf_threshold)
 

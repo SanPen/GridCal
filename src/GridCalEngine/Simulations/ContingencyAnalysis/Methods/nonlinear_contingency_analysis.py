@@ -74,8 +74,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                          distributed_slack=options.lin_options.distribute_slack,
                                          correct_values=options.lin_options.correct_values)
 
-        linear_multiple_contingencies.compute(lodf=linear_analysis.LODF,
-                                              ptdf=linear_analysis.PTDF,
+        linear_multiple_contingencies.compute(lin=linear_analysis,
                                               ptdf_threshold=options.lin_options.ptdf_threshold,
                                               lodf_threshold=options.lin_options.lodf_threshold)
 

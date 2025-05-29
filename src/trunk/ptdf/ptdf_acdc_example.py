@@ -2,7 +2,9 @@ import os
 import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import make_acdc_ptdf
-fname = os.path.join('..', '..', '..', 'Grids_and_profiles',  'grids', 'case5_3_he.gridcal')
+
+fname = os.path.join('..', '..', '..', 'Grids_and_profiles',  'grids', 'simple_acdc.gridcal')
+# fname = os.path.join('..', '..', '..', 'Grids_and_profiles',  'grids', 'case5_3_he.gridcal')
 grid = gce.FileOpen(fname).open()
 
 # options = gce.LinearAnalysisOptions(distribute_slack=False, correct_values=False)

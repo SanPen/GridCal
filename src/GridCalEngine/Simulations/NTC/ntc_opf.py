@@ -1677,8 +1677,7 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                 # declare the multi-contingencies analysis and compute
                 mctg = LinearMultiContingencies(grid=grid,
                                                 contingency_groups_used=contingency_groups_used)
-                mctg.compute(lodf=ls.LODF,
-                             ptdf=ls.PTDF,
+                mctg.compute(lin=ls,
                              ptdf_threshold=lodf_threshold,
                              lodf_threshold=lodf_threshold)
 

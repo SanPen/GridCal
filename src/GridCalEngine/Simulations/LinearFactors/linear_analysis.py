@@ -6,7 +6,7 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from typing import Union, List, Tuple, Dict
+from typing import Union, List, Dict
 
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve as scipy_spsolve
@@ -214,7 +214,7 @@ def make_acdc_ptdf(nc: NumericalCircuit,
         A[t, t] += ys
 
     # detect how to slice
-    no_slack =  list()
+    no_slack = list()
     dc_sl = list()
     ac_sl = list()
     for i in range(n):
@@ -335,6 +335,139 @@ def create_M_numba(lodf: Mat, branch_contingency_indices) -> Mat:
             else:
                 M[i, j] = -lodf[branch_contingency_indices[i], branch_contingency_indices[j]]
     return M
+
+
+class LinearAnalysis:
+    """
+    Linear Analysis
+    """
+
+    def __init__(self,
+                 nc: NumericalCircuit,
+                 distributed_slack: bool = True,
+                 correct_values: bool = False):
+        """
+        Linear Analysis constructor
+        :param nc: numerical circuit instance
+        :param distributed_slack: boolean to distribute slack
+        :param correct_values: boolean to fix out layer values
+        """
+
+        self.logger: Logger = Logger()
+
+        islands: List[NumericalCircuit] = nc.split_into_islands()
+        n_br = nc.nbr
+        n_bus = nc.nbus
+        n_hvdc = nc.hvdc_data.nelm
+        n_vsc = nc.vsc_data.nelm
+
+        self.PTDF = np.zeros((n_br, n_bus))
+        self.LODF = np.zeros((n_br, n_br))
+
+        self.HvdcDF: Mat = np.zeros((n_hvdc, n_bus))
+        self.HvdcODF: Mat = np.zeros((n_br, n_hvdc))
+
+        self.VscDF: Mat = np.zeros((n_vsc, n_bus))
+        self.VscODF: Mat = np.zeros((n_br, n_vsc))
+
+        # compute the PTDF per islands
+        if len(islands) > 0:
+            for n_island, island in enumerate(islands):
+
+                indices = island.get_simulation_indices()
+
+                # no slacks will make it impossible to compute the PTDF analytically
+                if len(indices.vd) == 1:
+                    if len(indices.no_slack) > 0:
+
+                        if island.bus_data.is_dc.any():
+                            ptdf_island = make_acdc_ptdf(nc=island, distribute_slack=distributed_slack)
+
+                        else:
+                            adml = island.get_linear_admittance_matrices(indices=indices)
+
+                            Bpqpv = adml.get_Bred(pqpv=indices.no_slack)
+
+                            # compute the PTDF of the island
+                            ptdf_island = make_ptdf(Bpqpv=Bpqpv,
+                                                    Bf=adml.Bf,
+                                                    no_slack=indices.no_slack,
+                                                    distribute_slack=distributed_slack)
+
+                        # assign the PTDF to the main PTDF matrix
+                        self.PTDF[np.ix_(island.passive_branch_data.original_idx,
+                                         island.bus_data.original_idx)] = ptdf_island
+
+                        # compute the island LODF
+                        lodf_island = make_lodf(Cf=island.passive_branch_data.Cf.tocsc(),
+                                                Ct=island.passive_branch_data.Ct.tocsc(),
+                                                PTDF=ptdf_island,
+                                                correct_values=correct_values)
+
+                        # assign the LODF to the main LODF matrix
+                        self.LODF[np.ix_(island.passive_branch_data.original_idx,
+                                         island.passive_branch_data.original_idx)] = lodf_island
+                    else:
+                        self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
+
+                elif len(indices.vd) == 0:
+                    self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
+
+                else:
+                    self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
+        else:
+            # there are no islands
+            pass
+
+        # compute the HVDC PTDF (HVDC lines, Buses)
+        # A_hvdc = lil_matrix((n_bus, n_hvdc))
+        for k in range(n_hvdc):
+            f = nc.hvdc_data.F[k]
+            t = nc.hvdc_data.T[k]
+            # A_hvdc[f, k] = -1  # subtracts power at the "from" side
+            # A_hvdc[t, k] = 1  # injects power at the "to" side
+            self.HvdcDF[:, k] = self.PTDF[:, t] - self.PTDF[:, f]
+            self.HvdcODF[:, k] = self.PTDF[:, f] - self.PTDF[:, t]
+
+        # self.HvdcDF = self.PTDF @ A_hvdc
+
+        # compute the VSC PTDF (HVDC lines, Buses)
+        # A_vsc = lil_matrix((n_bus, n_vsc))
+        for k in range(n_vsc):
+            f = nc.vsc_data.F[k]
+            t = nc.vsc_data.T[k]
+            # A_vsc[f, k] = -1  # subtracts power at the "from" side
+            # A_vsc[t, k] = 1  # injects power at the "to" side
+            self.VscDF[:, k] = self.PTDF[:, t] - self.PTDF[:, f]
+            self.VscODF[:, k] = self.PTDF[:, f] - self.PTDF[:, t]
+
+        # self.VscDF = self.PTDF @ A_vsc
+
+    def get_transfer_limits(self, flows: np.ndarray, rates: Vec):
+        """
+        Compute the maximum transfer limits of each branch in normal operation
+        :param flows: base Sf in MW
+        :param rates: rates in MW
+        :return: Max transfer limits vector (n-branch)
+        """
+        return make_transfer_limits(
+            ptdf=self.PTDF,
+            flows=flows,
+            rates=rates
+        )
+
+    def get_flows(self, Sbus: Union[CxVec, CxMat]) -> Union[CxVec, CxMat]:
+        """
+        Compute the time series branch Sf using the PTDF
+        :param Sbus: Power Injections time series array (nbus) for 1D, (time, nbus) for 2D
+        :return: branch active power Sf (nbus) for 1D, (time, nbus) for 2D
+        """
+        if Sbus.ndim == 1:
+            return np.dot(self.PTDF, Sbus.real)
+        elif Sbus.ndim == 2:
+            return np.dot(self.PTDF, Sbus.real.T).T
+        else:
+            raise Exception(f'Sbus has unsupported dimensions: {Sbus.shape}')
 
 
 class LinearMultiContingency:
@@ -529,8 +662,7 @@ class LinearMultiContingencies:
         return [elm.name for elm in self.contingency_groups_used]
 
     def compute(self,
-                lodf: Mat,
-                ptdf: Mat,
+                lin: LinearAnalysis,
                 ptdf_threshold: float = 0.0001,
                 lodf_threshold: float = 0.0001) -> None:
         """
@@ -541,6 +673,9 @@ class LinearMultiContingencies:
         :param lodf_threshold: Threshold for LODF conversion to sparse
         :return: None
         """
+
+        # lodf: Mat = lin.LODF
+        # ptdf: Mat = lin.PTDF
 
         self.multi_contingencies = list()
 
@@ -558,9 +693,9 @@ class LinearMultiContingencies:
                 # + PTDF[k, i] * dPi
 
                 # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-                M = create_M_numba(lodf=lodf,
+                M = create_M_numba(lodf=lin.LODF,
                                    branch_contingency_indices=contingency_indices.branch_contingency_indices)
-                L = lodf[:, contingency_indices.branch_contingency_indices]
+                L = lin.LODF[:, contingency_indices.branch_contingency_indices]
 
                 try:
                     # Compute LODF for the multiple failure MLODF[k, βδ]
@@ -574,20 +709,20 @@ class LinearMultiContingencies:
 
                 if len(contingency_indices.bus_contingency_indices) > 0:
                     # this is PTDF[k, i]
-                    ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
+                    ptdf_k_i = dense_to_csc(mat=lin.PTDF[:, contingency_indices.bus_contingency_indices],
                                             threshold=ptdf_threshold)
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
-                        mat=ptdf[np.ix_(contingency_indices.branch_contingency_indices,
+                        mat=lin.PTDF[np.ix_(contingency_indices.branch_contingency_indices,
                                         contingency_indices.bus_contingency_indices)],
                         threshold=ptdf_threshold
                     )
 
                 else:
-                    ptdf_k_i = sp.csc_matrix((ptdf.shape[0], ptdf.shape[1]))
+                    ptdf_k_i = sp.csc_matrix((lin.PTDF.shape[0], lin.PTDF.shape[1]))
 
                     # PTDF[βδ, i]
-                    ptdf_bd_i = dense_to_csc(mat=ptdf[contingency_indices.branch_contingency_indices, :],
+                    ptdf_bd_i = dense_to_csc(mat=lin.PTDF[contingency_indices.branch_contingency_indices, :],
                                              threshold=ptdf_threshold)
 
                 # must compute: MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]
@@ -601,18 +736,18 @@ class LinearMultiContingencies:
                 # + PTDF[k, i] * dPi
 
                 # append values
-                mlodf_factors = dense_to_csc(mat=lodf[:, contingency_indices.branch_contingency_indices],
+                mlodf_factors = dense_to_csc(mat=lin.LODF[:, contingency_indices.branch_contingency_indices],
                                              threshold=lodf_threshold)
 
                 if len(contingency_indices.bus_contingency_indices) > 0:
                     # single branch and single bus contingency
 
                     # this is PTDF[k, i]
-                    ptdf_k_i = dense_to_csc(mat=ptdf[:, contingency_indices.bus_contingency_indices],
+                    ptdf_k_i = dense_to_csc(mat=lin.PTDF[:, contingency_indices.bus_contingency_indices],
                                             threshold=ptdf_threshold)
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
-                        mat=ptdf[np.ix_(contingency_indices.branch_contingency_indices,
+                        mat=lin.PTDF[np.ix_(contingency_indices.branch_contingency_indices,
                                         contingency_indices.bus_contingency_indices)],
                         threshold=ptdf_threshold
                     )
@@ -621,16 +756,16 @@ class LinearMultiContingencies:
                     compensated_ptdf_factors = mlodf_factors @ ptdf_bd_i + ptdf_k_i
                 else:
                     # single branch contingency, no bus contingency
-                    compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
+                    compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lin.LODF.shape[0], 0))
 
             else:
-                mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
+                mlodf_factors = sp.csc_matrix(([], [], [0]), shape=(lin.LODF.shape[0], 0))
                 if len(contingency_indices.bus_contingency_indices) > 0:
                     # only bus contingencies
-                    compensated_ptdf_factors = ptdf[:, contingency_indices.bus_contingency_indices]
+                    compensated_ptdf_factors = lin.PTDF[:, contingency_indices.bus_contingency_indices]
                 else:
                     # no bus or branch contingencies
-                    compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lodf.shape[0], 0))
+                    compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lin.LODF.shape[0], 0))
 
             # append values
             self.multi_contingencies.append(
@@ -642,134 +777,3 @@ class LinearMultiContingencies:
                     injections_factor=contingency_indices.injections_factors
                 )
             )
-
-
-class LinearAnalysis:
-    """
-    Linear Analysis
-    """
-
-    def __init__(self,
-                 nc: NumericalCircuit,
-                 distributed_slack: bool = True,
-                 correct_values: bool = False):
-        """
-        Linear Analysis constructor
-        :param nc: numerical circuit instance
-        :param distributed_slack: boolean to distribute slack
-        :param correct_values: boolean to fix out layer values
-        """
-
-        self.logger: Logger = Logger()
-
-        islands: List[NumericalCircuit] = nc.split_into_islands()
-        n_br = nc.nbr
-        n_bus = nc.nbus
-        n_hvdc = nc.hvdc_data.nelm
-        n_vsc = nc.vsc_data.nelm
-
-        self.PTDF = np.zeros((n_br, n_bus))
-        self.LODF = np.zeros((n_br, n_br))
-
-        self.HvdcDF: Mat = np.zeros((n_hvdc, n_bus))
-        self.HvdcODF: Mat = np.zeros((n_br, n_hvdc))
-
-        self.VscDF: Mat = np.zeros((n_vsc, n_bus))
-        self.VscODF: Mat = np.zeros((n_br, n_vsc))
-
-        # compute the PTDF per islands
-        if len(islands) > 0:
-            for n_island, island in enumerate(islands):
-
-                indices = island.get_simulation_indices()
-
-                # no slacks will make it impossible to compute the PTDF analytically
-                if len(indices.vd) == 1:
-                    if len(indices.no_slack) > 0:
-
-                        if island.bus_data.is_dc.any():
-                            ptdf_island = make_acdc_ptdf(nc=island, distribute_slack=distributed_slack)
-
-                        else:
-                            adml = island.get_linear_admittance_matrices(indices=indices)
-
-                            Bpqpv = adml.get_Bred(pqpv=indices.no_slack)
-
-                            # compute the PTDF of the island
-                            ptdf_island = make_ptdf(Bpqpv=Bpqpv,
-                                                    Bf=adml.Bf,
-                                                    no_slack=indices.no_slack,
-                                                    distribute_slack=distributed_slack)
-
-                        # assign the PTDF to the main PTDF matrix
-                        self.PTDF[np.ix_(island.passive_branch_data.original_idx,
-                                         island.bus_data.original_idx)] = ptdf_island
-
-                        # compute the island LODF
-                        lodf_island = make_lodf(Cf=island.passive_branch_data.Cf.tocsc(),
-                                                Ct=island.passive_branch_data.Ct.tocsc(),
-                                                PTDF=ptdf_island,
-                                                correct_values=correct_values)
-
-                        # assign the LODF to the main LODF matrix
-                        self.LODF[np.ix_(island.passive_branch_data.original_idx,
-                                         island.passive_branch_data.original_idx)] = lodf_island
-                    else:
-                        self.logger.add_error('No PQ or PV nodes', 'Island {}'.format(n_island))
-
-                elif len(indices.vd) == 0:
-                    self.logger.add_warning('No slack bus', 'Island {}'.format(n_island))
-
-                else:
-                    self.logger.add_error('More than one slack bus', 'Island {}'.format(n_island))
-        else:
-            # there are no islands
-            pass
-
-        # compute the HVDC PTDF (HVDC lines, Buses)
-        A_hvdc = lil_matrix((n_bus, n_hvdc))
-        for k in range(n_hvdc):
-            f = nc.hvdc_data.F[k]
-            t = nc.hvdc_data.T[k]
-            A_hvdc[f, k] = -1  # subtracts power at the "from" side
-            A_hvdc[t, k] = 1  # injects power at the "to" side
-            self.HvdcODF[:, k] = self.PTDF[:, f] - self.PTDF[:, t]
-
-        self.HvdcDF = self.PTDF @ A_hvdc
-
-        # compute the VSC PTDF (HVDC lines, Buses)
-        A_vsc = lil_matrix((n_bus, n_vsc))
-        for k in range(n_vsc):
-            f = nc.vsc_data.F[k]
-            t = nc.vsc_data.T[k]
-            A_vsc[f, k] = -1  # subtracts power at the "from" side
-            A_vsc[t, k] = 1  # injects power at the "to" side
-            self.VscODF[:, k] = self.PTDF[:, f] - self.PTDF[:, t]
-
-        self.VscDF = self.PTDF @ A_vsc
-
-    def get_transfer_limits(self, flows: np.ndarray, rates: Vec):
-        """
-        Compute the maximum transfer limits of each branch in normal operation
-        :param flows: base Sf in MW
-        :param rates: rates in MW
-        :return: Max transfer limits vector (n-branch)
-        """
-        return make_transfer_limits(
-            ptdf=self.PTDF,
-            flows=flows,
-            rates=rates
-        )
-
-    def get_flows(self, Sbus: Union[CxVec, CxMat]) -> Union[CxVec, CxMat]:
-        """
-        Compute the time series branch Sf using the PTDF
-        :param Sbus: Power Injections time series array (nbus) for 1D, (time, nbus) for 2D
-        :return: branch active power Sf (nbus) for 1D, (time, nbus) for 2D
-        """
-        if Sbus.ndim == 1:
-            return np.dot(self.PTDF, Sbus.real)
-        elif Sbus.ndim == 2:
-            return np.dot(self.PTDF, Sbus.real.T).T
-        else:
-            raise Exception(f'Sbus has unsupported dimensions: {Sbus.shape}')
