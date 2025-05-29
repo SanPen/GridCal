@@ -3872,7 +3872,7 @@ class Assets:
         """
 
         # we initialize with the capex of the group, then we add the capex of the individual investments
-        capex = np.array(elm.CAPEX for elm in self.investments_groups)
+        capex = np.array([elm.CAPEX for elm in self.investments_groups])
 
         # pre-compute the capex of each investment group
         d = self.get_investment_by_groups_index_dict()
