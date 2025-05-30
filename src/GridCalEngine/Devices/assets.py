@@ -793,6 +793,20 @@ class Assets:
         except ValueError:
             pass
 
+    def get_hvdc_dict(self) -> Dict[str, dev.HvdcLine]:
+        """
+        Get dictionary of HVDC lines
+        :return: idtag -> HvdcLine
+        """
+        return {elm.idtag: elm for elm in self.hvdc_lines}
+
+    def get_hvdc_index_dict(self) -> Dict[str, int]:
+        """
+        Get dictionary of HVDC lines
+        :return: idtag -> HvdcLine
+        """
+        return {elm.idtag: i for i, elm in enumerate(self.hvdc_lines)}
+
     # ------------------------------------------------------------------------------------------------------------------
     # VSC
     # ------------------------------------------------------------------------------------------------------------------
@@ -859,6 +873,20 @@ class Assets:
             self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
+
+    def get_vsc_dict(self) -> Dict[str, dev.VSC]:
+        """
+        Get dictionary of VSC converters
+        :return: idtag -> VSC
+        """
+        return {elm.idtag: elm for elm in self.vsc_devices}
+
+    def get_vsc_index_dict(self) -> Dict[str, int]:
+        """
+        Get index dictionary of VSC lines
+        :return: idtag -> i
+        """
+        return {elm.idtag: i for i, elm in enumerate(self.vsc_devices)}
 
     # ------------------------------------------------------------------------------------------------------------------
     # UPFC
@@ -4764,9 +4792,23 @@ class Assets:
         :param add_vsc: Include the list of VSC?
         :param add_hvdc: Include the list of HvdcLine?
         :param add_switch: Include the list of Switch?
-        :return:
+        :return: Branch object to index
         """
         return {b: i for i, b in enumerate(self.get_branches_iter(add_vsc=add_vsc,
+                                                                  add_hvdc=add_hvdc,
+                                                                  add_switch=add_switch))}
+
+    def get_branches_index_dict2(self, add_vsc: bool = True,
+                                add_hvdc: bool = True,
+                                add_switch: bool = False) -> Dict[str, int]:
+        """
+        Get the branch to index dictionary
+        :param add_vsc: Include the list of VSC?
+        :param add_hvdc: Include the list of HvdcLine?
+        :param add_switch: Include the list of Switch?
+        :return: Branch idtag to index
+        """
+        return {b.idtag: i for i, b in enumerate(self.get_branches_iter(add_vsc=add_vsc,
                                                                   add_hvdc=add_hvdc,
                                                                   add_switch=add_switch))}
 

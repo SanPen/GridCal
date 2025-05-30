@@ -11,6 +11,7 @@ from typing import Union, List, Dict
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve as scipy_spsolve
 
+from GridCalEngine import DeviceType
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -364,10 +365,10 @@ class LinearAnalysis:
         self.PTDF = np.zeros((n_br, n_bus))
         self.LODF = np.zeros((n_br, n_br))
 
-        self.HvdcDF: Mat = np.zeros((n_hvdc, n_bus))
+        self.HvdcDF: Mat = np.zeros((n_br, n_hvdc))
         self.HvdcODF: Mat = np.zeros((n_br, n_hvdc))
 
-        self.VscDF: Mat = np.zeros((n_vsc, n_bus))
+        self.VscDF: Mat = np.zeros((n_br, n_vsc))
         self.VscODF: Mat = np.zeros((n_br, n_vsc))
 
         # compute the PTDF per islands
@@ -477,13 +478,19 @@ class LinearMultiContingency:
 
     def __init__(self,
                  branch_indices: IntVec,
+                 hvdc_indices: IntVec,
+                 vsc_indices: IntVec,
                  bus_indices: IntVec,
                  mlodf_factors: sp.csc_matrix,
                  compensated_ptdf_factors: sp.csc_matrix,
+                 hvdc_odf: sp.csc_matrix,
+                 vsc_odf: sp.csc_matrix,
                  injections_factor: Vec):
         """
         Linear multi contingency object
         :param branch_indices: contingency branch indices.
+        :param hvdc_indices: HvdcLine indices that belong into the contingency
+        :param vsc_indices: VSC indices that belong into the contingency
         :param bus_indices: contingency bus indices.
 
         :param mlodf_factors: MLODF factors applicable (all_branches, contingency branches).
@@ -499,6 +506,8 @@ class LinearMultiContingency:
         assert len(bus_indices) == len(injections_factor)
 
         self.branch_indices: IntVec = branch_indices
+        self.hvdc_indices: IntVec = hvdc_indices
+        self.vsc_indices: IntVec = vsc_indices
         self.bus_indices: IntVec = bus_indices
 
         # MLODF[k, βδ]
@@ -510,6 +519,9 @@ class LinearMultiContingency:
         # percentage to decrease an injection, used to compute ΔP
         self.injections_factor: Vec = injections_factor
 
+        self.hvdc_odf = hvdc_odf
+        self.vsc_odf = vsc_odf
+
     def has_injection_contingencies(self) -> bool:
         """
         Check if this multi-contingency has bus injection modifications
@@ -517,20 +529,31 @@ class LinearMultiContingency:
         """
         return len(self.bus_indices) > 0
 
-    def get_contingency_flows(self, base_flow: Vec, injections: Vec, tau: Vec = None) -> Vec:
+    def get_contingency_flows(self,
+                              base_branches_flow: Vec,
+                              injections: Vec,
+                              hvdc_flow: Vec | None = None,
+                              vsc_flow: Vec | None = None) -> Vec:
         """
         Get contingency flows
-        :param base_flow: Base branch flows (nbranch)
+        :param base_branches_flow: Base branch flows (nbranch)
         :param injections: Bus injections increments (nbus)
-        :param tau: Phase shifter angles (rad)
+        :param hvdc_flow: Base HvdcLine flows (n_hvdc)
+        :param vsc_flow: Base Vsc flows (n_vsc)
         :return: New flows (nbranch)
         """
 
-        flow = base_flow.copy()
+        flow = base_branches_flow.copy()
 
         if len(self.branch_indices):
             # MLODF[k, βδ] x Pf0[βδ]
-            flow += self.mlodf_factors @ base_flow[self.branch_indices]
+            flow += self.mlodf_factors @ base_branches_flow[self.branch_indices]
+
+        if len(self.hvdc_indices) and hvdc_flow is not None:
+            flow += self.hvdc_odf @ hvdc_flow[self.hvdc_indices]
+
+        if len(self.vsc_indices) and vsc_flow is not None:
+            flow += self.vsc_odf @ vsc_flow[self.vsc_indices]
 
         if len(self.bus_indices):
             injection_delta = injections[self.bus_indices]
@@ -542,11 +565,15 @@ class LinearMultiContingency:
 
     def get_lp_contingency_flows(self,
                                  base_flow: ObjVec,
-                                 injections: ObjVec) -> ObjVec:
+                                 injections: ObjVec,
+                                 hvdc_flow: ObjVec | None = None,
+                                 vsc_flow: ObjVec | None = None) -> ObjVec:
         """
         Get contingency flows using the LP interface equations
         :param base_flow: Base branch flows (nbranch)
         :param injections: Bus injections (nbus)
+        :param hvdc_flow: Base HvdcLine flows (n_hvdc)
+        :param vsc_flow: Base Vsc flows (n_vsc)
         :return: New flows (nbranch)
         """
 
@@ -554,6 +581,12 @@ class LinearMultiContingency:
 
         if len(self.branch_indices):
             flow += lpDot(self.mlodf_factors, base_flow[self.branch_indices])
+
+        if len(self.hvdc_indices) and hvdc_flow is not None:
+            flow += lpDot(self.hvdc_odf, hvdc_flow[self.hvdc_indices])
+
+        if len(self.vsc_indices) and vsc_flow is not None:
+            flow += lpDot(self.vsc_odf, vsc_flow[self.vsc_indices])
 
         if len(self.bus_indices):
             injection_delta = self.injections_factor * injections[self.bus_indices]
@@ -571,6 +604,8 @@ class ContingencyIndices:
                  contingency_group: ContingencyGroup,
                  contingency_group_dict: Dict[str, List[Contingency]],
                  branches_dict: Dict[str, int],
+                 hvdc_dict: Dict[str, int],
+                 vsc_dict: Dict[str, int],
                  generator_bus_index_dict: Dict[str, int]):
         """
         Contingency indices
@@ -581,9 +616,11 @@ class ContingencyIndices:
         """
 
         # get the group's contingencies
-        contingencies = contingency_group_dict[contingency_group.idtag]
+        contingencies: List[Contingency] = contingency_group_dict[contingency_group.idtag]
 
         branch_contingency_indices_list = list()
+        hvdc_contingency_indices_list = list()
+        vsc_contingency_indices_list = list()
         bus_contingency_indices_list = list()
         injections_factors_list = list()
 
@@ -592,12 +629,23 @@ class ContingencyIndices:
 
             if cnt.prop == ContingencyOperationTypes.Active:
 
-                # search for the contingency in the Branches
-                br_idx = branches_dict.get(cnt.device_idtag, None)
-                if br_idx is not None:
-                    branch_contingency_indices_list.append(br_idx)
+                if cnt.tpe == DeviceType.HVDCLineDevice:
+                    hvdc_idx = hvdc_dict.get(cnt.device_idtag, None)
+                    if hvdc_idx is not None:
+                        hvdc_contingency_indices_list.append(hvdc_idx)
+
+                elif cnt.tpe == DeviceType.VscDevice:
+                    vsc_idx = vsc_dict.get(cnt.device_idtag, None)
+                    if vsc_idx is not None:
+                        vsc_contingency_indices_list.append((vsc_idx))
+
                 else:
-                    print(f"contingency branch {cnt.device_idtag} not found")
+                    # search for the contingency in the Branches
+                    br_idx = branches_dict.get(cnt.device_idtag, None)
+                    if br_idx is not None:
+                        branch_contingency_indices_list.append(br_idx)
+                    else:
+                        print(f"contingency branch {cnt.device_idtag} not found")
 
             elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                 bus_idx = generator_bus_index_dict.get(cnt.device_idtag, None)
@@ -609,9 +657,11 @@ class ContingencyIndices:
             else:
                 print(f'Unknown branch contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
 
-        self.branch_contingency_indices = np.array(branch_contingency_indices_list)
-        self.bus_contingency_indices = np.array(bus_contingency_indices_list)
-        self.injections_factors = np.array(injections_factors_list)
+        self.branch_contingency_indices = np.array(branch_contingency_indices_list, dtype=int)
+        self.hvdc_contingency_indices = np.array(hvdc_contingency_indices_list, dtype=int)
+        self.vsc_contingency_indices = np.array(vsc_contingency_indices_list, dtype=int)
+        self.bus_contingency_indices = np.array(bus_contingency_indices_list, dtype=int)
+        self.injections_factors = np.array(injections_factors_list, dtype=float)
 
 
 class LinearMultiContingencies:
@@ -631,7 +681,9 @@ class LinearMultiContingencies:
         # auxiliary structures
         self.__contingency_group_dict = grid.get_contingency_group_dict()
         bus_index_dict = grid.get_bus_index_dict()
-        self.__branches_dict = {b.idtag: i for i, b in enumerate(grid.get_branches_wo_hvdc())}
+        self.__branches_dict = grid.get_branches_index_dict2(add_vsc=False, add_hvdc=False, add_switch=True)
+        self.__hvdc_dict = grid.get_hvdc_index_dict()
+        self.__vsc_dict = grid.get_vsc_index_dict()
         self.__generator_bus_index_dict = {g.idtag: bus_index_dict[g.bus] for g in grid.get_generators()}
 
         self.contingency_indices_list = list()
@@ -643,6 +695,8 @@ class LinearMultiContingencies:
                     contingency_group=contingency_group,
                     contingency_group_dict=self.__contingency_group_dict,
                     branches_dict=self.__branches_dict,
+                    hvdc_dict=self.__hvdc_dict,
+                    vsc_dict=self.__vsc_dict,
                     generator_bus_index_dict=self.__generator_bus_index_dict
                 )
             )
@@ -667,8 +721,7 @@ class LinearMultiContingencies:
                 lodf_threshold: float = 0.0001) -> None:
         """
         Make the LODF with any contingency combination using the declared contingency objects
-        :param lodf: original LODF matrix (nbr, nbr)
-        :param ptdf: original PTDF matrix (nbr, nbus)
+        :param lin: LinearAnalysis instance
         :param ptdf_threshold: threshold to discard values
         :param lodf_threshold: Threshold for LODF conversion to sparse
         :return: None
@@ -714,7 +767,7 @@ class LinearMultiContingencies:
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
                         mat=lin.PTDF[np.ix_(contingency_indices.branch_contingency_indices,
-                                        contingency_indices.bus_contingency_indices)],
+                                            contingency_indices.bus_contingency_indices)],
                         threshold=ptdf_threshold
                     )
 
@@ -748,7 +801,7 @@ class LinearMultiContingencies:
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
                         mat=lin.PTDF[np.ix_(contingency_indices.branch_contingency_indices,
-                                        contingency_indices.bus_contingency_indices)],
+                                            contingency_indices.bus_contingency_indices)],
                         threshold=ptdf_threshold
                     )
 
@@ -767,13 +820,26 @@ class LinearMultiContingencies:
                     # no bus or branch contingencies
                     compensated_ptdf_factors = sp.csc_matrix(([], [], [0]), shape=(lin.LODF.shape[0], 0))
 
+            # compute the hvdc and vsc contingency distribution factor matrices
+            hvdc_odf: sp.csc_matrix = dense_to_csc(
+                mat=lin.HvdcODF[:, contingency_indices.hvdc_contingency_indices],
+                threshold=lodf_threshold
+            )
+            vsc_odf: sp.csc_matrix = dense_to_csc(
+                mat=lin.VscODF[:, contingency_indices.vsc_contingency_indices],
+                threshold=lodf_threshold
+            )
             # append values
             self.multi_contingencies.append(
                 LinearMultiContingency(
                     branch_indices=contingency_indices.branch_contingency_indices,
+                    hvdc_indices=contingency_indices.hvdc_contingency_indices,
+                    vsc_indices=contingency_indices.vsc_contingency_indices,
                     bus_indices=contingency_indices.bus_contingency_indices,
                     mlodf_factors=mlodf_factors,
                     compensated_ptdf_factors=compensated_ptdf_factors,
-                    injections_factor=contingency_indices.injections_factors
+                    injections_factor=contingency_indices.injections_factors,
+                    hvdc_odf=hvdc_odf,
+                    vsc_odf=vsc_odf
                 )
             )

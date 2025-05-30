@@ -1326,6 +1326,8 @@ def add_linear_branches_formulation(t: int,
 def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   Sbase: float,
                                                   branch_data_t: PassiveBranchData,
+                                                  hvdc_vars: HvdcVars,
+                                                  vsc_vars: VscVars,
                                                   branch_vars: BranchVars,
                                                   bus_vars: BusVars,
                                                   prob: LpModel,
@@ -1346,7 +1348,9 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
 
         # compute the contingency flow (Lp expression)
         contingency_flows = contingency.get_lp_contingency_flows(base_flow=branch_vars.flows[t_idx, :],
-                                                                 injections=bus_vars.Pinj[t_idx, :])
+                                                                 injections=bus_vars.Pinj[t_idx, :],
+                                                                 hvdc_flow=hvdc_vars.flows[t_idx, :],
+                                                                 vsc_flow=vsc_vars.flows[t_idx, :])
 
         for m, contingency_flow in enumerate(contingency_flows):
 
@@ -2047,6 +2051,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                         Sbase=nc.Sbase,
                         branch_data_t=nc.passive_branch_data,
                         branch_vars=mip_vars.branch_vars,
+                        hvdc_vars=mip_vars.hvdc_vars,
+                        vsc_vars=mip_vars.vsc_vars,
                         bus_vars=mip_vars.bus_vars,
                         prob=lp_model,
                         linear_multicontingencies=mctg

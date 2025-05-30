@@ -28,9 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added capex to the investment group">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed broken test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_ptdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_ptdf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/assets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/linear_contingency_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/linear_contingency_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/optimal_linear_contingency_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/optimal_linear_contingency_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +74,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="acdc_ptdf" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -153,6 +156,7 @@
     "Python tests.pytest for src.tests.test_line_circuit_idx_setter.test_valid_circuit_idx.executor": "Run",
     "Python tests.pytest for src.tests.test_load_save_load.test_load_save_load_xlsx.executor": "Debug",
     "Python tests.pytest for src.tests.test_nodal_capacity.test_linear_vs_nonlinear_ncap.executor": "Debug",
+    "Python tests.pytest for src.tests.test_ntc.executor": "Run",
     "Python tests.pytest for src.tests.test_profiles.executor": "Run",
     "Python tests.pytest for src.tests.test_tower_composition.test_acha.executor": "Run",
     "Python tests.pytest for src.tests.test_transformer_type.executor": "Run",
@@ -263,7 +267,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "Shell Script.make.sh.executor": "Run",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "devel",
+    "git-widget-placeholder": "acdc__ptdf",
     "last_opened_file_path": "/home/santi/Documentos/Git/eRoots/OffshoreExpansionPlugin",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -296,7 +300,7 @@
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest for test_ptdf.test_mlodf">
+  <component name="RunManager" selected="Python tests.pytest for src.tests.test_ntc">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -698,6 +702,29 @@
       <option name="PARENT_ENVS" value="true" />
       <option name="PARAMETERS" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/GridCal" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/GridCal/ExecuteGridCal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
@@ -1015,7 +1042,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_contingency.test_linear_contingency" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for src.tests.test_ntc" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1029,11 +1056,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_contingency.test_linear_contingency&quot;" />
+      <option name="_new_target" value="&quot;src.tests.test_ntc&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_ptdf" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest for test_opf.test_opf_ts" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1047,11 +1074,11 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_ptdf&quot;" />
+      <option name="_new_target" value="&quot;test_opf.test_opf_ts&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for src.tests.test_ptdf.test_mlodf" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="pytest in test_ptdf.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -1065,26 +1092,8 @@
       <option name="_new_keywords" value="&quot;&quot;" />
       <option name="_new_parameters" value="&quot;&quot;" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;src.tests.test_ptdf.test_mlodf&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="pytest for test_ptdf.test_mlodf" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_parameters" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_ptdf.test_mlodf&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests/test_ptdf.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
@@ -1129,20 +1138,20 @@
       <item itemvalue="Python.test_opf" />
       <item itemvalue="Python.test_power_flow" />
       <item itemvalue="Python.test_raw_cgmes_cross_roundtrip" />
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.test_ntc.py" />
-      <item itemvalue="Python tests.pytest for src.tests.test_contingency.test_linear_contingency" />
-      <item itemvalue="Python tests.pytest for src.tests.test_ptdf" />
-      <item itemvalue="Python tests.pytest for src.tests.test_ptdf.test_mlodf" />
-      <item itemvalue="Python tests.pytest for test_ptdf.test_mlodf" />
+      <item itemvalue="Python tests.pytest for src.tests.test_ntc" />
+      <item itemvalue="Python tests.pytest in test_ptdf.py" />
+      <item itemvalue="Python tests.pytest for test_opf.test_opf_ts" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest for test_ptdf.test_mlodf" />
+        <item itemvalue="Python tests.pytest for src.tests.test_ntc" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python tests.pytest for src.tests.test_ptdf.test_mlodf" />
-        <item itemvalue="Python tests.pytest for src.tests.test_ptdf" />
-        <item itemvalue="Python tests.pytest for src.tests.test_contingency.test_linear_contingency" />
+        <item itemvalue="Python tests.pytest in test_ptdf.py" />
+        <item itemvalue="Python tests.pytest for test_opf.test_opf_ts" />
+        <item itemvalue="Python.ExecuteGridCal" />
       </list>
     </recent_temporary>
   </component>
@@ -2362,7 +2371,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="743" />
+    <option name="localTasksCounter" value="744" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2408,7 +2417,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored the linear opf to not to use Bbus" />
     <MESSAGE value="Fixed the tower and the tower builder not properly showing the nominal voltage" />
     <MESSAGE value="Improvements in the CGMES handling of garbage data" />
     <MESSAGE value="Improved handling of sparse arrays" />
@@ -2433,7 +2441,8 @@
     <MESSAGE value="Worked on the investment problem" />
     <MESSAGE value="Improved get_elements_by_type" />
     <MESSAGE value="Added capex to the investment group" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added capex to the investment group" />
+    <MESSAGE value="Fixed broken test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed broken test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2808,9 +2817,29 @@
           <option name="timeStamp" value="2680" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>1390</line>
+          <option name="timeStamp" value="2681" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>748</line>
+          <option name="timeStamp" value="2683" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>2013</line>
+          <option name="timeStamp" value="2686" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_opf.py</url>
           <line>392</line>
           <option name="timeStamp" value="2690" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
+          <line>1958</line>
+          <option name="timeStamp" value="2694" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/table_models.py</url>
@@ -2831,6 +2860,11 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
           <line>838</line>
           <option name="timeStamp" value="2700" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NTC/ntc_opf.py</url>
+          <line>1720</line>
+          <option name="timeStamp" value="2711" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/ntc/pmode3_eqs.py</url>
@@ -2923,6 +2957,21 @@
           <option name="timeStamp" value="2743" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>2914</line>
+          <option name="timeStamp" value="2755" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>2907</line>
+          <option name="timeStamp" value="2757" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py</url>
+          <line>2909</line>
+          <option name="timeStamp" value="2759" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py</url>
           <line>608</line>
           <option name="timeStamp" value="2762" />
@@ -2971,11 +3020,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/power_flow_worker.py</url>
           <line>253</line>
           <option name="timeStamp" value="2781" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>240</line>
-          <option name="timeStamp" value="2787" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

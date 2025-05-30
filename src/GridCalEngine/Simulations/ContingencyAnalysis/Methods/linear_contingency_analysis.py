@@ -93,7 +93,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
         else:
             injections = None
 
-        c_flow = multi_contingency.get_contingency_flows(base_flow=flows_n, injections=injections)
+        c_flow = multi_contingency.get_contingency_flows(base_branches_flow=flows_n, injections=injections)
         c_loading = c_flow / (nc.passive_branch_data.rates + 1e-9)
 
         results.Sf[ic, :] = c_flow  # already in MW
