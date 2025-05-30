@@ -414,7 +414,7 @@ def test_mlodf() -> None:
         # Power flow initial using linear method
         linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
-        lin = LinearAnalysis(nc=gce.compile_numerical_circuit_at(main_circuit))
+        lin = LinearAnalysis(nc=gce.compile_numerical_circuit_at(main_circuit), distributed_slack=False)
 
         Sf0 = linear_analysis.results.Sf
         Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
