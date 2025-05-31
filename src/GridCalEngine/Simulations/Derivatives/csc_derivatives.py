@@ -1954,7 +1954,7 @@ def dP_dPfvsc_csc(i_k_p, u_vsc_pf, F_vsc) -> CSC:
     return mat.real
 
 
-@njit()
+# @njit()
 def dPQ_dPQft_csc(nbus: int, nvsc: int, i_k_pq: IntVec, u_dev_pq: IntVec, FT_dev: IntVec) -> CSC:
     """
     Calculate the derivatives of the power balance with respect to injections of branches
@@ -1982,11 +1982,11 @@ def dPQ_dPQft_csc(nbus: int, nvsc: int, i_k_pq: IntVec, u_dev_pq: IntVec, FT_dev
     for dev_idx, dev in enumerate(u_dev_pq):
         f_bus = FT_dev[dev]
 
-        # if j_lookup[f_bus] >= 0: # this is always evaluated to true
-        Tx[nnz] = 1.0
-        Ti[nnz] = j_lookup[f_bus]
-        Tj[nnz] = vsc_lookup[dev]
-        nnz += 1
+        if j_lookup[f_bus] >= 0:
+            Tx[nnz] = 1.0
+            Ti[nnz] = j_lookup[f_bus]
+            Tj[nnz] = vsc_lookup[dev]
+            nnz += 1
 
     # Convert to CSC
     mat.fill_from_coo(Ti, Tj, Tx, nnz)
