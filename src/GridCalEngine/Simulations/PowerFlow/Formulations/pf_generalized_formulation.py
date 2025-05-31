@@ -25,7 +25,7 @@ from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, HvdcC
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 
 
-# @njit()
+@njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  nvsc: int,
