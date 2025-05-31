@@ -91,7 +91,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
             try:
 
-                print(f"Residual Josep: {f}")
                 # compute update step: J x Δx = Δg
                 dx, ok = spsolve_csc(J, -f)
 
