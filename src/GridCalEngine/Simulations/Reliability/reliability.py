@@ -187,6 +187,7 @@ def reliability_simulation(n_sim: int,
                            batt_energy_max: Mat,
                            batt_eff_charge: Mat,
                            batt_eff_discharge: Mat,
+                           batt_cost: Mat,
                            batt_soc0: Vec,
                            batt_soc_min: Vec,
 
@@ -213,6 +214,7 @@ def reliability_simulation(n_sim: int,
     :param batt_eff_discharge:
     :param batt_soc0:
     :param batt_soc_min:
+    :param batt_cost:
     :param dt:
     :param force_charge_if_low:
     :param tol:
@@ -251,6 +253,7 @@ def reliability_simulation(n_sim: int,
                 batt_energy_max=batt_energy_max,
                 batt_eff_charge=batt_eff_charge,
                 batt_eff_discharge=batt_eff_discharge,
+                batt_cost=batt_cost,
                 batt_soc0=batt_soc0,
                 batt_soc_min=batt_soc_min,
                 dt=dt,

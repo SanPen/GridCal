@@ -11,7 +11,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType, SimulationTypes
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
-from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch_ts
+from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_greedy_dispatch_ts
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -236,7 +236,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         elif self.options.solver == SolverType.SIMPLE_OPF:
 
             # AC optimal power flow
-            load_profile, gen_dispatch, batt_dispatch, battery_energy, load_shedding = run_simple_dispatch_ts(
+            load_profile, gen_dispatch, batt_dispatch, battery_energy, load_shedding = run_greedy_dispatch_ts(
                 grid=self.grid,
                 time_indices=self.time_indices,
                 text_prog=self.report_text,

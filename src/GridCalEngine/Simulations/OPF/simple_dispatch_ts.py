@@ -150,6 +150,7 @@ def greedy_dispatch(
         batt_energy_max: Mat,
         batt_eff_charge: Mat,
         batt_eff_discharge: Mat,
+        batt_cost: Mat,
         batt_soc0: Vec,
         batt_soc_min: Vec,
 
@@ -171,6 +172,7 @@ def greedy_dispatch(
     :param batt_energy_max: ndarray (T, B) - Battery energy capacity.
     :param batt_eff_charge: ndarray (T, B) - Battery efficiencies.
     :param batt_eff_discharge: ndarray (T, B) - Battery efficiencies.
+    :param batt_cost (T, B) - Battery costs of discharge
     :param batt_soc0: ndarray (B,) - Initial SOC.
     :param batt_soc_min: ndarray (B) - Battery minimum state of charge
     :param dt: float - Timestep duration [h].
@@ -244,6 +246,7 @@ def greedy_dispatch(
                     dispatch_batt[t, b] = dispatched
                     batt_energy[t + 1, b] = batt_energy[t, b] - p_dis * dt[t]
                     remaining -= dispatched
+                    total_cost += dispatched * batt_cost[t, b] * dt[t]
                     if remaining <= tol:
                         break
         else:
@@ -313,7 +316,7 @@ class GreedyDispatchInputs:
         for i, elm in enumerate(grid.generators):
             self.gen_profile[:, i] = elm.P_prof.toarray()[time_indices]
             self.gen_active[:, i] = elm.active_prof.toarray()[time_indices]
-            self.gen_cost[:, i] = elm.Cost_prof.toarray()[time_indices]
+            self.gen_cost[:, i] = elm.Cost_prof.toarray()[time_indices] + elm.opex
             self.gen_p_max[:, i] = elm.Pmax_prof.toarray()[time_indices]
             self.gen_p_min[:, i] = elm.Pmin_prof.toarray()[time_indices]
             self.gen_dispatchable[i] = elm.enabled_dispatch
@@ -327,6 +330,7 @@ class GreedyDispatchInputs:
         self.batt_energy_max = np.zeros((nt, nbatt), dtype=float)
         self.batt_eff_charge = np.ones((nt, nbatt), dtype=float)
         self.batt_eff_discharge = np.ones((nt, nbatt), dtype=float)
+        self.batt_cost = np.ones((nt, nbatt), dtype=float)
         self.batt_soc0 = np.zeros(nbatt, dtype=float) + 0.5
         self.batt_soc_min = np.zeros(nbatt, dtype=float) + 0.1
         for i, elm in enumerate(grid.batteries):
@@ -334,6 +338,7 @@ class GreedyDispatchInputs:
             self.batt_p_max_charge[:, i] = elm.Pmax
             self.batt_p_max_discharge[:, i] = elm.Pmax
             self.batt_energy_max[:, i] = elm.Enom
+            self.batt_cost[:, i] = elm.Cost_prof.toarray()[time_indices] + elm.opex
 
             if elm.charge_efficiency > 0.0:
                 self.batt_eff_charge[:, i] = elm.charge_efficiency
@@ -351,7 +356,7 @@ class GreedyDispatchInputs:
             self.batt_soc_min[i] = elm.Enom * elm.min_soc
 
 
-def run_simple_dispatch_ts(grid: MultiCircuit,
+def run_greedy_dispatch_ts(grid: MultiCircuit,
                            time_indices: IntVec | None,
                            logger: Logger,
                            text_prog=None,
@@ -390,6 +395,7 @@ def run_simple_dispatch_ts(grid: MultiCircuit,
         batt_energy_max=inpts.batt_energy_max,
         batt_eff_charge=inpts.batt_eff_charge,
         batt_eff_discharge=inpts.batt_eff_discharge,
+        batt_cost=inpts.batt_cost,
         batt_soc0=inpts.batt_soc0,
         batt_soc_min=inpts.batt_soc_min,
         dt=inpts.dt,
@@ -413,10 +419,10 @@ if __name__ == '__main__':
 
     grid_ = gce.open_file(fname)
 
-    (load_profile,
-     gen_dispatch,
-     batt_dispatch,
-     batt_energy,
-     load_shedding) = run_simple_dispatch_ts(grid=grid_, time_indices=None, logger=Logger())
+    (load_profile_,
+     gen_dispatch_,
+     batt_dispatch_,
+     batt_energy_,
+     load_shedding_) = run_greedy_dispatch_ts(grid=grid_, time_indices=None, logger=Logger())
 
     print()
