@@ -1792,6 +1792,126 @@ def dLossvsc_dQtvsc_csc(nvsc, u_vsc_qt, alpha2, alpha3, Vm, Pt, Qt, T_vsc) -> CS
 
     return mat
 
+@njit()
+def dIvsc_dPfpvsc_csc(nvsc, u_vsc_pfp, Vm, Fdcn_vsc) -> CSC:
+    """
+    Compute dIvsc_dPfpvsc in CSC format.
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param u_vsc_pfp: Column indices for the sparse matrix.
+    :param Vm: Voltage magnitudes at buses.
+    :param Fdcn_vsc: From negative bus indices for VSCs.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(u_vsc_pfp)  # Number of columns (length of i_u_pfp).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = len(u_vsc_pfp)  # Maximum number of non-zero entries.
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k, vsc in enumerate(u_vsc_pfp):
+        fn = Fdcn_vsc[vsc]
+        val = Vm[fn]
+
+        # Populate COO format arrays
+        Tx[nnz] = val
+        Ti[nnz] = vsc  # Row index corresponds to the current VSC
+        Tj[nnz] = k  # Column index aligns with u_vsc_pfp, should be equal to k
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+# @njit()
+def dIvsc_dPfnvsc_csc(nvsc, u_vsc_pfn, Vm, Fdcp_vsc) -> CSC:
+    """
+    Compute dIvsc_dPfnvsc in CSC format.
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param u_vsc_pfn: Column indices for the sparse matrix.
+    :param Vm: Voltage magnitudes at buses.
+    :param Fdcp_vsc: From positive bus indices for VSCs.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(u_vsc_pfn)  # Number of columns (length of i_u_pfn).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = len(u_vsc_pfn)  # Maximum number of non-zero entries.
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0  # Counter for non-zero entries
+
+    for k, vsc in enumerate(u_vsc_pfn):
+        fp = Fdcp_vsc[vsc]
+        val = Vm[fp]
+
+        # Populate COO format arrays
+        Tx[nnz] = val
+        Ti[nnz] = vsc  # Row index corresponds to the current VSC
+        Tj[nnz] = k  # Column index aligns with u_vsc_pfn, should be equal to k
+        nnz += 1
+
+    # Convert to CSC
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dIvsc_dVm_csc(nvsc, nbus, i_u_vm, Pfp_vsc, Pfn_vsc, Fdcp_vsc, Fdcn_vsc) -> CSC:
+    """
+    Compute dIvsc_dVm in CSC format.
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param nbus: Number of buses.
+    :param i_u_vm: Column indices for the sparse matrix.
+    :param Pfp_vsc: Active power flows from positive bus to VSC.
+    :param Pfn_vsc: Active power flows from negative bus to VSC.
+    :param Fdcp_vsc: From positive bus indices for VSCs.
+    :param Fdcn_vsc: From negative bus indices for VSCs.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(i_u_vm)  # Number of columns (length of i_u_vm).
+    n_rows = nvsc  # Number of rows (equal to nvsc).
+    max_nnz = 2 * nvsc  # Maximum number of non-zero entries.
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0
+
+    j_lookup = make_lookup(nbus, i_u_vm)
+
+    for kidx in range(nvsc):
+        fp = Fdcp_vsc[kidx]
+        fn = Fdcn_vsc[kidx]
+
+        if j_lookup[fp] >= 0:
+            Tx[nnz] = Pfn_vsc[kidx]
+            Ti[nnz] = kidx
+            Tj[nnz] = j_lookup[fp]
+            nnz += 1
+
+        if j_lookup[fn] >= 0:
+            Tx[nnz] = Pfp_vsc[kidx]
+            Ti[nnz] = kidx
+            Tj[nnz] = j_lookup[fn]
+            nnz += 1
+
+    # # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
 
 @njit()
 def dP_dPfvsc_csc(i_k_p, u_vsc_pf, F_vsc) -> CSC:
