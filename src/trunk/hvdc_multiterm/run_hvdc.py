@@ -73,11 +73,15 @@ def run_hvdc_multiterminal() -> None:
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc1.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'simple_v1.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'simple_v2.gridcal')
-    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug2.gridcal')
+    # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug2.gridcal')
+    fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'vsc_debug3.gridcal')
     # fname = os.path.join('src', 'trunk', 'hvdc_multiterm', 'debug_controls.gridcal')
     grid = gce.FileOpen(fname).open()
 
-    options = PowerFlowOptions(control_q=False, use_stored_guess=True, max_iter=25)
+    options = PowerFlowOptions(control_q=False, 
+                               use_stored_guess=True,
+                               max_iter=25,
+                               limit_i_vsc=True)
     problem, solution = solve_generalized(grid=grid, options=options)
 
     print(f"Converged: {solution.converged}")

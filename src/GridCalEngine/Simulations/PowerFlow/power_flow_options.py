@@ -19,6 +19,7 @@ class PowerFlowOptions(OptionsTemplate):
                  initialize_with_existing_solution: bool = False,
                  tolerance: float = 1e-6,
                  max_iter: int = 25,
+                 limit_i_vsc: bool = False,
                  control_q: bool = True,
                  control_taps_modules: bool = True,
                  control_taps_phase: bool = True,
@@ -40,6 +41,7 @@ class PowerFlowOptions(OptionsTemplate):
         :param verbose: Print additional details in the console (0: no details, 1: some details, 2: all details)
         :param tolerance: Solution tolerance for the power flow numerical methods
         :param max_iter: Maximum number of iterations for the power flow numerical method
+        :param limit_i_vsc: Limit the current of the VSCs?
         :param control_q: Control mode for the PV nodes reactive power limits
         :param apply_temperature_correction: Apply the temperature correction to the resistance of the Branches?
         :param branch_impedance_tolerance_mode: Type of modification of the Branches impedance
@@ -60,6 +62,8 @@ class PowerFlowOptions(OptionsTemplate):
         self.tolerance = tolerance
 
         self.max_iter = max_iter
+
+        self.limit_i_vsc = limit_i_vsc
 
         self.control_Q = control_q
 
@@ -97,6 +101,7 @@ class PowerFlowOptions(OptionsTemplate):
         self.register(key="retry_with_other_methods", tpe=bool)
         self.register(key="tolerance", tpe=float)
         self.register(key="max_iter", tpe=int)
+        self.register(key="limit_i_vsc", tpe=bool)
         self.register(key="control_Q", tpe=bool)
         self.register(key="verbose", tpe=int)
         self.register(key="initialize_with_existing_solution", tpe=bool)

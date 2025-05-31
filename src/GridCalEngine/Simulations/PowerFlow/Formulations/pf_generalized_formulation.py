@@ -1657,6 +1657,16 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                                              device=self.nc.passive_branch_data.names[k],
                                              value=self.tau[i])
 
+            if self.options.limit_i_vsc:
+                for i in range(self.nc.nvsc):
+                    print(i)
+                    print(self.Pt_vsc[i])
+                    print(self.Qt_vsc[i])
+                    print(self.nc.vsc_data.rates[i])
+                    It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T_ac[i]]
+                    Imax = self.nc.vsc_data.rates[i] / self.nc.Sbase  # Assume 1.0 p.u. base
+                    print(It_i, Imax)
+
             if branch_ctrl_change:
 
                 if len(m_fixed_idx) > 0:
