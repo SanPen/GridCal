@@ -530,6 +530,7 @@ class ConverterControlType(Enum):
     Qac = 'Q_ac'
     Pdc = 'P_dc'
     Pac = 'P_ac'
+    Imax = 'Imax'
 
     def __str__(self) -> str:
         return str(self.value)
