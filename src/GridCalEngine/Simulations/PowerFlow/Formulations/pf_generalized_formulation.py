@@ -64,6 +64,7 @@ def adv_jacobian(nbus: int,
                  alpha1: Vec,
                  alpha2: Vec,
                  alpha3: Vec,
+                 Imax_vsc: Vec,
 
                  # HVDC Params
                  hvdc_r: Vec,
@@ -125,6 +126,7 @@ def adv_jacobian(nbus: int,
     :param alpha1:
     :param alpha2:
     :param alpha3:
+    :param Imax_vsc:
     :param hvdc_r:
     :param hvdc_droop:
     :param i_u_vm:
@@ -213,6 +215,20 @@ def adv_jacobian(nbus: int,
     dIvsc_dQthvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
     dIvsc_dm = CSC(nvsc, len(u_cbr_m), 0, False)  # fully empty
     dIvsc_dtau = CSC(nvsc, len(u_cbr_tau), 0, False)  # fully empty
+
+    # -------- ROW 5 (max current VSCs) ---------
+    dImax_dVa = CSC(nvsc, len(i_u_va), 0, False)  # fully empty
+    dImax_dVm = None 
+    dImax_dPfpvsc = CSC(nvsc, len(u_vsc_pfp), 0, False)  # fully empty
+    dImax_dPfnvsc = CSC(nvsc, len(u_vsc_pfn), 0, False)  # fully empty
+    dImax_dPtvsc = None
+    dImax_dQtvsc = None
+    dImax_dPfhvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
+    dImax_dPthvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
+    dImax_dQfhvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
+    dImax_dQthvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
+    dImax_dm = CSC(nvsc, len(u_cbr_m), 0, False)  # fully empty
+    dImax_dtau = CSC(nvsc, len(u_cbr_tau), 0, False)  # fully empty
 
     # -------- ROW 5 (loss HVDCs) ---------
     dLhvdc_dVa = CSC(nhvdc, len(i_u_va), 0, False)  # fully empty
@@ -1543,6 +1559,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         m2[self.u_cbr_m] = m
         tau2[self.u_cbr_tau] = tau
 
+        Imax_vsc = self.nc.vsc_data.rates / self.nc.Sbase
+
         self.adm = compute_admittances(
             R=self.nc.passive_branch_data.R,
             X=self.nc.passive_branch_data.X,
@@ -1629,7 +1647,10 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         St_vsc = make_complex(Pt_vsc, Qt_vsc)
 
         # Add the 2nd equation per VSC
-        current_vsc = Pfp_vsc * Vm[self.nc.vsc_data.F_dcn] + Pfn_vsc * Vm[self.nc.vsc_data.F_dcp]
+        balance_vsc = Pfp_vsc * Vm[self.nc.vsc_data.F_dcn] + Pfn_vsc * Vm[self.nc.vsc_data.F_dcp]
+
+        # Add the 3rd equation per VSC
+        current_vsc = It**2 - Imax_vsc**2
 
         # HVDC ---------------------------------------------------------------------------------------------------------
         Vmf_hvdc = Vm[self.nc.hvdc_data.F]
@@ -1670,7 +1691,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
             loss_vsc,
-            current_vsc,
+            balance_vsc,
+            current_vsc[self.k_vsc_i],
             loss_hvdc,
             inj_hvdc,
             Pf_cbr - self.cbr_pf_set,
@@ -1854,68 +1876,57 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
                         if self.nc.vsc_data.control1[i] == ConverterControlType.Pdc:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control1_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Pdc:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control2_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Pac:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control1_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Pac:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control2_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Qac:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control1_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Qac:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control2_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Vm_dc:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control1_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Vm_dc:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control2_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Vm_ac:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control1_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Vm_ac:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control2_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control1[i] == ConverterControlType.Va_ac:
                             self.nc.vsc_data.control1[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control1_val[i] = Imax
                             branch_ctrl_change = True
                         elif self.nc.vsc_data.control2[i] == ConverterControlType.Va_ac:
                             self.nc.vsc_data.control2[i] = ConverterControlType.Imax
+                            self.nc.vsc_data.control2_val[i] = Imax
                             branch_ctrl_change = True
                         else:
                             raise ValueError(f"Unfound control type when switching to current limiting: "
                                              f"{self.nc.vsc_data.control1[i]}")
 
                     print(It_i, Imax)
-                # Change controls with concatenates and deletes
-                # Are we looping each iteration to update the VSC controls? Or only once?
-                # i_control = np.concatenate((i_control, i_on))
-                # i_control.sort()
-                # pac_control = np.delete(p_control, pac_off)
-                # pdc_control = np.delete(p_control, pdc_off)
-                # q_control = np.delete(q_control, q_off)
-                # vdc_control = np.delete(v_control, vdc_off)
-                # vac_control = np.delete(v_control, vac_off)
-                # th_control = np.delete(v_control, th_off)
-
-                # use the self.something for the above
-                # then add the equation Imax = sqrt(P^2 + Q^2) / V in the compute_f and Jacobian
-
-                """
-                a = len(self.i_u_va)
-                b = a + len(self.i_u_vm)
-                c = b + len(self.u_vsc_pfp)
-                d = c + len(self.u_vsc_pfn)
-                e = d + len(self.u_vsc_pt)
-                f = e + len(self.u_vsc_qt)
-                """
-               
 
             if branch_ctrl_change:
 
@@ -1960,6 +1971,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
 
         V = polar_to_rect(self.Vm, self.Va)
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
+        Imax_vsc = self.nc.vsc_data.rates / self.nc.Sbase
 
         # Update Ybus with the new taps
         m2 = self.nc.active_branch_data.tap_module.copy()
@@ -2051,7 +2063,9 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha1)
 
         loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pfp_vsc - self.Pfn_vsc
-        current_vsc = self.Pfp_vsc * self.Vm[F_dcn] + self.Pfn_vsc * self.Vm[F_dcp]
+        balance_vsc = self.Pfp_vsc * self.Vm[F_dcn] + self.Pfn_vsc * self.Vm[F_dcp]
+
+        current_vsc = It**2 - Imax_vsc**2
 
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
 
@@ -2094,7 +2108,8 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
             dS[self.i_k_p].real,
             dS[self.i_k_q].imag,
             loss_vsc,
-            current_vsc,
+            balance_vsc,
+            current_vsc[self.k_vsc_i],
             loss_hvdc,
             inj_hvdc,
             Pf_cbr - self.cbr_pf_set,
@@ -2172,6 +2187,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 alpha1=self.nc.vsc_data.alpha1,
                 alpha2=self.nc.vsc_data.alpha2,
                 alpha3=self.nc.vsc_data.alpha3,
+                Imax_vsc=self.nc.vsc_data.rates / self.nc.Sbase,
 
                 # HVDC Params
                 hvdc_r=hvdc_r_pu,
