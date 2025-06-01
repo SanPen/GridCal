@@ -67,7 +67,6 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             print("x0:\n", problem.get_x_df(x))
 
         while not converged and iteration < max_iter:
-            print(f"Josep iteration {iteration}")
 
             # update iteration counter
             iteration += 1

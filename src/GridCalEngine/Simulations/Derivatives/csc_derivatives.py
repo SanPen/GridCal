@@ -1914,6 +1914,89 @@ def dIvsc_dVm_csc(nvsc, nbus, i_u_vm, Pfp_vsc, Pfn_vsc, Fdcp_vsc, Fdcn_vsc) -> C
 
 
 @njit()
+def dImaxvsc_dVm_csc(nbus, k_vsc_imax, i_u_vm, Pt_vsc, Qt_vsc, Vm, T_vsc) -> CSC:
+    """
+    Compute dImaxvsc_dVm in CSC format.
+    The equation is: (P**2 + Q**2) / Vm**2 - Imax**2 = 0
+    :param nbus: Number of buses.
+    :param k_vsc_imax: VSC indices working at maximum current.
+    :param i_u_vm: Column indices for the sparse matrix.
+    :param Pt_vsc: Active power flow on the AC side of the VSC.
+    :param Qt_vsc: Reactive power flow on the AC side of the VSC.
+    :param Vm: Voltage magnitude
+    :param T_vsc: Bus index pointing to the AC bus of the VSC.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(i_u_vm)  # Number of columns (length of i_u_vm).
+    n_rows = len(k_vsc_imax)  # Number of rows (equal to nvsc).
+    max_nnz = len(k_vsc_imax)  # Maximum number of non-zero entries.
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0
+
+    j_lookup = make_lookup(nbus, i_u_vm)
+
+    for i, kidx in enumerate(k_vsc_imax):
+        t_ac = T_vsc[kidx]
+
+        if j_lookup[t_ac] >= 0:  # If Vm is unknown
+            Tx[nnz] = -2 * (Pt_vsc[kidx]**2 + Qt_vsc[kidx]**2) / Vm[t_ac]**3
+            Ti[nnz] = i
+            Tj[nnz] = j_lookup[t_ac]
+            nnz += 1
+
+    # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
+def dImaxvsc_dPQ_csc(nvsc, k_vsc_imax, u_vsc_pqt, PQt_vsc, Vm, T_vsc) -> CSC:
+    """
+    Compute dImaxvsc_dPQ in CSC format.
+    The equation is: (P**2 + Q**2) / Vm**2 - Imax**2 = 0
+    :param nvsc: Number of VSCs (rows of the matrix).
+    :param k_vsc_imax: VSC indices working at maximum current.
+    :param u_vsc_pqt: P or Q indices where the AC side power is unknonw.
+    :param PQt_vsc: Active or reactive power flow on the AC side of the VSC.
+    :param Vm: Voltage magnitude
+    :param T_vsc: Bus index pointing to the AC bus of the VSC.
+    :return: Sparse matrix in CSC format.
+    """
+    n_cols = len(u_vsc_pqt)  # Number of columns (length of i_u_vm).
+    n_rows = len(k_vsc_imax)  # Number of rows (equal to nvsc).
+    max_nnz = len(k_vsc_imax)  # Maximum number of non-zero entries.
+
+    mat = CSC(n_rows, n_cols, max_nnz, False)
+    Tx = np.empty(max_nnz, dtype=np.float64)
+    Ti = np.empty(max_nnz, dtype=np.int32)
+    Tj = np.empty(max_nnz, dtype=np.int32)
+
+    nnz = 0
+
+    j_lookup = make_lookup(nvsc, u_vsc_pqt)
+
+    for i, kidx in enumerate(k_vsc_imax):
+        t_ac = T_vsc[kidx]
+
+        if j_lookup[kidx] >= 0:  # If P or Q is unknown
+            Tx[nnz] = 2 * PQt_vsc[kidx] / Vm[t_ac]**2
+            Ti[nnz] = i
+            Tj[nnz] = j_lookup[kidx]
+            nnz += 1
+
+    # # convert to csc
+    mat.fill_from_coo(Ti, Tj, Tx, nnz)
+
+    return mat
+
+
+@njit()
 def dP_dPfvsc_csc(i_k_p, u_vsc_pf, F_vsc) -> CSC:
     """
     Compute dP_dPfvsc in CSC format.

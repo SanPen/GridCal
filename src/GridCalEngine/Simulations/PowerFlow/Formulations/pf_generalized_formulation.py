@@ -25,7 +25,7 @@ from GridCalEngine.enumerations import (TapPhaseControl, TapModuleControl, HvdcC
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 
 
-@njit()
+# @njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  nvsc: int,
@@ -60,11 +60,12 @@ def adv_jacobian(nbus: int,
                  u_vsc_pt: IntVec,
                  u_vsc_qt: IntVec,
 
+                 k_vsc_imax: IntVec,
+
                  # VSC Params
                  alpha1: Vec,
                  alpha2: Vec,
                  alpha3: Vec,
-                 Imax_vsc: Vec,
 
                  # HVDC Params
                  hvdc_r: Vec,
@@ -158,6 +159,7 @@ def adv_jacobian(nbus: int,
     dS_dVm = CxCSC(nbus, nbus, len(dSy_dVm_x), False).set(Yi, Yp, dSy_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dSy_dVa_x), False).set(Yi, Yp, dSy_dVa_x)
 
+    nvsc_imax = len(k_vsc_imax)
     hvdc_range = np.arange(nhvdc)
 
     # -------- ROW 1 (P) ---------
@@ -217,20 +219,20 @@ def adv_jacobian(nbus: int,
     dIvsc_dtau = CSC(nvsc, len(u_cbr_tau), 0, False)  # fully empty
 
     # -------- ROW 5 (max current VSCs) ---------
-    dImax_dVa = CSC(nvsc, len(i_u_va), 0, False)  # fully empty
-    dImax_dVm = None 
-    dImax_dPfpvsc = CSC(nvsc, len(u_vsc_pfp), 0, False)  # fully empty
-    dImax_dPfnvsc = CSC(nvsc, len(u_vsc_pfn), 0, False)  # fully empty
-    dImax_dPtvsc = None
-    dImax_dQtvsc = None
-    dImax_dPfhvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
-    dImax_dPthvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
-    dImax_dQfhvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
-    dImax_dQthvdc = CSC(nvsc, nhvdc, 0, False)  # fully empty
-    dImax_dm = CSC(nvsc, len(u_cbr_m), 0, False)  # fully empty
-    dImax_dtau = CSC(nvsc, len(u_cbr_tau), 0, False)  # fully empty
+    dImax_dVa = CSC(nvsc_imax, len(i_u_va), 0, False)  # fully empty
+    dImax_dVm = deriv.dImaxvsc_dVm_csc(nbus, k_vsc_imax, i_u_vm, Pt_vsc, Qt_vsc, Vm, T_vsc)
+    dImax_dPfpvsc = CSC(nvsc_imax, len(u_vsc_pfp), 0, False)  # fully empty
+    dImax_dPfnvsc = CSC(nvsc_imax, len(u_vsc_pfn), 0, False)  # fully empty
+    dImax_dPtvsc = deriv.dImaxvsc_dPQ_csc(nvsc, k_vsc_imax, u_vsc_pt, Pt_vsc, Vm, T_vsc)
+    dImax_dQtvsc = deriv.dImaxvsc_dPQ_csc(nvsc, k_vsc_imax, u_vsc_qt, Qt_vsc, Vm, T_vsc)
+    dImax_dPfhvdc = CSC(nvsc_imax, nhvdc, 0, False)  # fully empty
+    dImax_dPthvdc = CSC(nvsc_imax, nhvdc, 0, False)  # fully empty
+    dImax_dQfhvdc = CSC(nvsc_imax, nhvdc, 0, False)  # fully empty
+    dImax_dQthvdc = CSC(nvsc_imax, nhvdc, 0, False)  # fully empty
+    dImax_dm = CSC(nvsc_imax, len(u_cbr_m), 0, False)  # fully empty
+    dImax_dtau = CSC(nvsc_imax, len(u_cbr_tau), 0, False)  # fully empty
 
-    # -------- ROW 5 (loss HVDCs) ---------
+    # -------- ROW 6 (loss HVDCs) ---------
     dLhvdc_dVa = CSC(nhvdc, len(i_u_va), 0, False)  # fully empty
     dLhvdc_dVm = deriv.dLosshvdc_dVm_csc(nhvdc, nbus, i_u_vm, Vm, Pf_hvdc, hvdc_r, F_hvdc)
     dLhvdc_dPfpvsc = CSC(nhvdc, nvsc, 0, False)  # fully empty
@@ -244,7 +246,7 @@ def adv_jacobian(nbus: int,
     dLhvdc_dm = CSC(nhvdc, len(u_cbr_m), 0, False)  # fully empty
     dLhvdc_dtau = CSC(nhvdc, len(u_cbr_tau), 0, False)  # fully empty
 
-    # -------- ROW 6 (inj HVDCs) ---------
+    # -------- ROW 7 (inj HVDCs) ---------
     dInjhvdc_dVa = deriv.dInjhvdc_dVa_csc(nhvdc, nbus, i_u_va, hvdc_droop, F_hvdc, T_hvdc)
     dInjhvdc_dVm = CSC(nhvdc, len(i_u_vm), 0, False)  # fully empty
     dInjhvdc_dPfpvsc = CSC(nhvdc, len(u_vsc_pfp), 0, False)  # fully empty
@@ -258,7 +260,7 @@ def adv_jacobian(nbus: int,
     dInjhvdc_dm = CSC(nhvdc, len(u_cbr_m), 0, False)  # fully empty
     dInjhvdc_dtau = CSC(nhvdc, len(u_cbr_tau), 0, False)  # fully empty
 
-    # -------- ROW 7 (Pf) ---------
+    # -------- ROW 8 (Pf) ---------
     dPf_dVa = deriv.dSf_dVa_csc(nbus, k_cbr_pf, i_u_va, yft_cbr, V, F, T).real
     dPf_dVm = deriv.dSf_dVm_csc(nbus, k_cbr_pf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).real
     dPf_dPfpvsc = CSC(len(k_cbr_pf), len(u_vsc_pfp), 0, False)  # fully empty
@@ -272,7 +274,7 @@ def adv_jacobian(nbus: int,
     dPf_dm = deriv.dSf_dm_csc(nbr, k_cbr_pf, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).real
     dPf_dtau = deriv.dSf_dtau_csc(nbr, k_cbr_pf, u_cbr_tau, F, T, Ys, tap, V).real
 
-    # -------- ROW 8 (Pt) ---------
+    # -------- ROW 9 (Pt) ---------
     dPt_dVa = deriv.dSt_dVa_csc(nbus, k_cbr_pt, i_u_va, ytf_cbr, V, F, T).real
     dPt_dVm = deriv.dSt_dVm_csc(nbus, k_cbr_pt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).real
     dPt_dPfpvsc = CSC(len(k_cbr_pt), len(u_vsc_pfp), 0, False)  # fully empty
@@ -286,7 +288,7 @@ def adv_jacobian(nbus: int,
     dPt_dm = deriv.dSt_dm_csc(nbr, k_cbr_pt, u_cbr_m, F, T, Ys, tap, tap_modules, V).real
     dPt_dtau = deriv.dSt_dtau_csc(nbr, k_cbr_pt, u_cbr_tau, F, T, Ys, tap, V).real
 
-    # -------- ROW 9 (Qf) ---------
+    # -------- ROW 10 (Qf) ---------
     dQf_dVa = deriv.dSf_dVa_csc(nbus, k_cbr_qf, i_u_va, yft_cbr, V, F, T).imag
     dQf_dVm = deriv.dSf_dVm_csc(nbus, k_cbr_qf, i_u_vm, yff_cbr, yft_cbr, Vm, Va, F, T).imag
     dQf_dPfpvsc = CSC(len(k_cbr_qf), len(u_vsc_pfp), 0, False)  # fully empty
@@ -300,7 +302,7 @@ def adv_jacobian(nbus: int,
     dQf_dm = deriv.dSf_dm_csc(nbr, k_cbr_qf, u_cbr_m, F, T, Ys, Bc, tap, tap_modules, V).imag
     dQf_dtau = deriv.dSf_dtau_csc(nbr, k_cbr_qf, u_cbr_tau, F, T, Ys, tap, V).imag
 
-    # -------- ROW 10 (Qt) ---------
+    # -------- ROW 11 (Qt) ---------
     dQt_dVa = deriv.dSt_dVa_csc(nbus, k_cbr_qt, i_u_va, ytf_cbr, V, F, T).imag
     dQt_dVm = deriv.dSt_dVm_csc(nbus, k_cbr_qt, i_u_vm, ytt_cbr, ytf_cbr, Vm, Va, F, T).imag
     dQt_dPfpvsc = CSC(len(k_cbr_qt), len(u_vsc_pfp), 0, False)  # fully empty
@@ -339,6 +341,9 @@ def adv_jacobian(nbus: int,
         dIvsc_dVa, dIvsc_dVm, dIvsc_dPfpvsc, dIvsc_dPfnvsc, dIvsc_dPtvsc, dIvsc_dQtvsc, dIvsc_dPfhvdc, dIvsc_dPthvdc,
         dIvsc_dQfhvdc, dIvsc_dQthvdc, dIvsc_dm, dIvsc_dtau,
 
+        dImax_dVa, dImax_dVm, dImax_dPfpvsc, dImax_dPfnvsc, dImax_dPtvsc, dImax_dQtvsc, dImax_dPfhvdc, dImax_dPthvdc,
+        dImax_dQfhvdc, dImax_dQthvdc, dImax_dm, dImax_dtau,
+
         dLhvdc_dVa, dLhvdc_dVm, dLhvdc_dPfpvsc, dLhvdc_dPfnvsc, dLhvdc_dPtvsc, dLhvdc_dQtvsc, dLhvdc_dPfhvdc, dLhvdc_dPthvdc,
         dLhvdc_dQfhvdc, dLhvdc_dQthvdc, dLhvdc_dm, dLhvdc_dtau,
 
@@ -357,7 +362,7 @@ def adv_jacobian(nbus: int,
         dQt_dVa, dQt_dVm, dQt_dPfpvsc, dQt_dPfnvsc, dQt_dPtvsc, dQt_dQtvsc, dQt_dPfhvdc, dQt_dPthvdc, dQt_dQfhvdc,
         dQt_dQthvdc, dQt_dm, dQt_dtau
 
-    ], n_rows=10, n_cols=12)
+    ], n_rows=11, n_cols=12)
 
     return J
 
@@ -611,10 +616,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
         self.k_vsc_pfn = np.zeros(0, dtype=int)
         self.k_vsc_pt = np.zeros(0, dtype=int)
         self.k_vsc_qt = np.zeros(0, dtype=int)
+        self.k_vsc_i = np.zeros(0, dtype=int)
         self.vsc_pfp_set = np.zeros(0, dtype=float)
         self.vsc_pfn_set = np.zeros(0, dtype=float)
         self.vsc_pt_set = np.zeros(0, dtype=float)
         self.vsc_qt_set = np.zeros(0, dtype=float)
+        self.vsc_i_set = np.zeros(0, dtype=float)
         self._set_vsc_control_indices()
 
         # Fill HVDC Indices
@@ -2183,11 +2190,12 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                 u_vsc_pt=self.u_vsc_pt,
                 u_vsc_qt=self.u_vsc_qt,
 
+                k_vsc_imax=self.k_vsc_i,
+
                 # VSC Params
                 alpha1=self.nc.vsc_data.alpha1,
                 alpha2=self.nc.vsc_data.alpha2,
                 alpha3=self.nc.vsc_data.alpha3,
-                Imax_vsc=self.nc.vsc_data.rates / self.nc.Sbase,
 
                 # HVDC Params
                 hvdc_r=hvdc_r_pu,
