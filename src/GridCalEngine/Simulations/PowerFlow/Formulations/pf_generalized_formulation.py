@@ -1842,7 +1842,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                     It_i = np.sqrt(self.Pt_vsc[i]**2 + self.Qt_vsc[i]**2) / self.Vm[self.nc.vsc_data.T_ac[i]]
                     Imax = self.nc.vsc_data.rates[i] / self.nc.Sbase  # Assume 1.0 p.u. base voltage
 
-                    print(It_i, Imax)
+                    print(f"Josep current: {It_i}, Imax: {Imax}")
 
                     if (It_i > Imax 
                         and self.nc.vsc_data.control1[i] != ConverterControlType.Imax 
@@ -2041,7 +2041,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                         vtap_t=self.nc.passive_branch_data.virtual_tap_t).imag
 
         # VSC ----------------------------------------------------------------------------------------------------------
-        T_vsc = self.nc.vsc_data.T
+        T_vsc = self.nc.vsc_data.T_ac
         F_dcp = self.nc.vsc_data.F_dcp
         F_dcn = self.nc.vsc_data.F_dcn
         It = np.sqrt(self.Pt_vsc * self.Pt_vsc + self.Qt_vsc * self.Qt_vsc) / self.Vm[T_vsc]
@@ -2050,7 +2050,7 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                      + self.nc.vsc_data.alpha2 * It
                      + self.nc.vsc_data.alpha1)
 
-        loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pf_vsc
+        loss_vsc = PLoss_IEC - self.Pt_vsc - self.Pfp_vsc - self.Pfn_vsc
         current_vsc = self.Pfp_vsc * self.Vm[F_dcn] + self.Pfn_vsc * self.Vm[F_dcp]
 
         St_vsc = make_complex(self.Pt_vsc, self.Qt_vsc)
