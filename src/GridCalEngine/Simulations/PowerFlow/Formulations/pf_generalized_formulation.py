@@ -1933,6 +1933,11 @@ class PfGeneralizedFormulation(PfFormulationTemplate):
                             raise ValueError(f"Unfound control type when switching to current limiting: "
                                              f"{self.nc.vsc_data.control1[i]}")
 
+                                             
+                        # Potentially add new conditionals, mainly for the 2nd iteration once saturated
+                        # If letting the P naturally go to zero is not enough, no longer control Vm
+                        # Control Q and then it will naturally get to a point that does not surpass Imax
+
                     print(It_i, Imax)
 
             if branch_ctrl_change:
