@@ -144,7 +144,9 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         self.inv_gen_idx = np.array(self.inv_gen_idx)
         self.inv_batt_idx = np.array(self.inv_batt_idx)
 
-        self.branches_cost = np.array([e.Cost for e in grid.get_branches_wo_hvdc()], dtype=float)
+        self.branches_cost = np.array([e.Cost for e in
+                                       grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)],
+                                      dtype=float)
 
     def n_objectives(self) -> int:
         """

@@ -219,8 +219,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.results = AvailableTransferCapacityTimeSeriesResults(
             br_names=self.grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
             bus_names=self.grid.get_bus_names(),
-            rates=self.grid.get_branch_rates_prof_wo_hvdc(),
-            contingency_rates=self.grid.get_branch_contingency_rates_prof_wo_hvdc(),
+            rates=self.grid.get_branch_rates_prof(),
+            contingency_rates=self.grid.get_branch_contingency_rates_prof(),
             time_array=self.grid.time_profile[self.time_indices],
             clustering_results=clustering_results
         )

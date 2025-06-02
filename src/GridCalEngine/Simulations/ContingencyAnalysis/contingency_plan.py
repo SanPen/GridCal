@@ -229,7 +229,7 @@ def generate_automatic_contingency_plan(
 
     # add branch contingencies
     if consider_branches:
-        branches = grid.get_branches_wo_hvdc()
+        branches = grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)
 
         if k == 1:
             contingencies1, groups1 = add_n1_contingencies(branches=branches,

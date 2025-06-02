@@ -146,7 +146,7 @@ class LinearAnalysisDriver(DriverTemplate):
             self.results.LODF = lin_mat.LODF
             # TODO: figure this out
             self.results.Sbus = self.grid.get_Pbus()
-            rates = self.grid.get_branch_rates_wo_hvdc()
+            rates = self.grid.get_branch_rates()
             self.results.Sf = np.dot(lin_mat.PTDF, self.results.Sbus)
             self.results.loading = self.results.Sf / (rates + 1e-20)
 

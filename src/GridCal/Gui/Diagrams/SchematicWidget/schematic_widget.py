@@ -3800,7 +3800,7 @@ class SchematicWidget(BaseDiagramWidget):
                         bus_dict[bus.idtag] = graphic_object
 
         # third pass: we must also add all those branches connecting the selected buses
-        for lst in self.circuit.get_branch_lists():
+        for lst in self.circuit.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for api_object in lst:
                 if api_object.bus_from.idtag in bus_dict or api_object.bus_to.idtag in bus_dict:
                     diagram.set_point(device=api_object,

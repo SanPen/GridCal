@@ -642,3 +642,10 @@ class BranchParent(PhysicalDevice):
                 return f, t, True
 
             return handle_error("Isolated branch!")
+
+    def get_weight(self) -> float:
+        """
+        Get a weight of this line for graph purposes
+        :return: weight value
+        """
+        return 1.0

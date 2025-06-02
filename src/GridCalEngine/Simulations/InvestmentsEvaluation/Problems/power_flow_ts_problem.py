@@ -121,7 +121,9 @@ class TimeSeriesPowerFlowInvestmentProblem(BlackBoxProblemTemplate):
         self.va_max = np.array([e.angle_max for e in grid.get_buses()], dtype=float)
         self.va_min = np.array([e.angle_min for e in grid.get_buses()], dtype=float)
 
-        self.branches_cost = np.array([e.Cost for e in grid.get_branches_wo_hvdc()], dtype=float)
+        self.branches_cost = np.array([e.Cost for e in
+                                       grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)],
+                                      dtype=float)
 
     def n_objectives(self) -> int:
         """

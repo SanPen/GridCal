@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 import time
+import warnings
 import scipy.sparse as sp
 import numpy as np
 
@@ -148,7 +149,6 @@ def acdc_lin_pf(nc: NumericalCircuit,
     :return:
     """
 
-
     """
     
     :param nc: NumericalCircuit instance
@@ -170,78 +170,128 @@ def acdc_lin_pf(nc: NumericalCircuit,
 
     start = time.time()
 
-    ac_noslack = np.setdiff1d(ac, vd)  # elements from ac that are not in vd
-    dc_noslack = np.setdiff1d(dc, pv)  # elements from dc that are not in pv
-    dc_pv = np.intersect1d(dc, pv)  # elements that are pv and dc
+    n = nc.nbus
 
-    A11 = Bbus[np.ix_(ac_noslack, ac_noslack)]
-    A12 = sp.csc_matrix((len(ac_noslack), len(dc_noslack)), dtype=float)
-    A21 = sp.csc_matrix((len(dc_noslack), len(ac_noslack)), dtype=float)
-    A22 = Gbus[np.ix_(dc_noslack, dc_noslack)]
+    # Decompose the voltage in angle and magnitude
+    Va = np.angle(V0)
+    Vm = np.abs(V0)
 
-    Asys = sp.vstack([sp.hstack([A11, A12]),
-                      sp.hstack([A21, A22])], format="csc")
+    # mount the base matrix
+    A = sp.lil_matrix((n, n))
+    Af = sp.lil_matrix((nc.nbr, n))
 
-    npq = len(ac_noslack)
-    zm = np.zeros(nc.passive_branch_data.nelm)
+    for k in range(nc.nbr):
+        f = nc.passive_branch_data.F[k]
+        t = nc.passive_branch_data.T[k]
 
-    if npq > 0:
-        # Decompose the voltage in angle and magnitude
-        Va = np.angle(V0)
-        Vm = np.abs(V0)
+        if nc.bus_data.is_dc[f] and nc.bus_data.is_dc[t]:
+            # this is a dc branch
+            ys = float(nc.passive_branch_data.active[k]) / (nc.passive_branch_data.R[k] + 1e-20)
 
-        # initialize result vector
+        elif not nc.bus_data.is_dc[f] and not nc.bus_data.is_dc[t]:
+            # this is an ac branch
+            ys = float(nc.passive_branch_data.active[k]) / (nc.passive_branch_data.X[k] + 1e-20)
 
-        # compute the power injection
-        Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+        else:
+            # this is an error
+            raise AttributeError(f"The branch {k} is nether fully AC not fully DC :(")
 
-        # compose the reduced power injections (Pinj)
-        # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
-        # We also need to account for the effect of the phase shifters (Pps)
-        Pps = Bf.T @ tau
+        Af[k, f] = ys
+        Af[k, t] = -ys
 
-        Bref = Bbus[:, vd]
-        Gref = Gbus[:, dc_pv]
-        Pref = (Bref @ Va[vd]) * Vm + (Gref @ Vm[dc_pv])
+        A[f, f] += ys
+        A[f, t] -= ys
+        A[t, f] -= ys
+        A[t, t] += ys
 
-        P = Sbus.real - Pref + Pps
+    # detect how to slice
+    no_slack = list()
+    dc_sl = list()
+    ac_sl = list()
+    for i in range(n):
+        if nc.bus_data.is_dc[i]:
+            if nc.bus_data.is_vm_controlled[i]:
+                dc_sl.append(i)
+            else:
+                no_slack.append(i)
+        else:
+            if nc.bus_data.is_vm_controlled[i] and nc.bus_data.is_va_controlled[i]:
+                ac_sl.append(i)
+            else:
+                no_slack.append(i)
 
-        # add the converters effect
-        for i in range(nc.vsc_data.nelm):
-            if nc.vsc_data.control1[i] == ConverterControlType.Pdc:
-                P[nc.vsc_data.F[i]] -= nc.vsc_data.control1_val[i] / nc.Sbase
+    Ared = A[no_slack, :][:, no_slack]
 
-            elif nc.vsc_data.control2[i] == ConverterControlType.Pac:
-                P[nc.vsc_data.T[i]] -= nc.vsc_data.control1_val[i] / nc.Sbase
+    # compute the power injection
+    Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+    # compute the power injection
+    Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
 
-            if nc.vsc_data.control2[i] == ConverterControlType.Pdc:
-                P[nc.vsc_data.F[i]] -= nc.vsc_data.control2_val[i] / nc.Sbase
+    # compose the reduced power injections (Pinj)
+    # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
+    # We also need to account for the effect of the phase shifters (Pps)
+    Pps = Bf.T @ tau
 
-            elif nc.vsc_data.control2[i] == ConverterControlType.Pac:
-                P[nc.vsc_data.T[i]] -= nc.vsc_data.control2_val[i] / nc.Sbase
+    Bref = Bbus[:, vd]
+    Pref = (Bref @ Va[vd]) * Vm
 
-        f = np.r_[P[ac_noslack], P[dc_noslack]]
+    P = Sbus.real - Pref + Pps
+    Pred = P[no_slack]
 
-        # update angles for non-reference buses
-        dx = linear_solver(Asys, f)
-        Va[ac_noslack] = dx[0:len(ac_noslack)]
-        Vm[dc_noslack] = dx[len(ac_noslack):len(ac_noslack) + len(dc_noslack)]
+    zm = np.zeros(nc.nbr)
 
-        # re assemble the voltage
-        V = cf.polar_to_rect(Vm, Va)
+    with warnings.catch_warnings():
+        warnings.filterwarnings('error')
+        try:
+            dx = sp.linalg.spsolve(Ared.tocsc(), Pred)
+        except sp.linalg.MatrixRankWarning as e:
+            # logger.add_error("ACDC PTDF singular matrix. Does each subgrid have a slack?")
+            print(e)
 
-        # compute flows
-        Pf = (Bf @ Va + Gf @ Vm) * nc.Sbase
+            norm_f = 0.0
+            Pf = zm
+            V = V0
 
-        # check for convergence
-        norm_f = 0.0
-    else:
-        norm_f = 0.0
-        Pf = zm
-        V = V0
+            return NumericPowerFlowResults(V=V,
+                                           Scalc=S0 * nc.Sbase,
+                                           m=np.ones(nc.nbr, dtype=float),
+                                           tau=np.zeros(nc.nbr, dtype=float),
+                                           Sf=Pf,
+                                           St=-Pf,
+                                           If=zm,
+                                           It=zm,
+                                           loading=zm,
+                                           losses=zm,
+                                           Pf_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           St_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           If_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           It_vsc=np.zeros(nc.nvsc, dtype=complex),
+                                           losses_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           loading_vsc=np.zeros(nc.nvsc, dtype=float),
+                                           Sf_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           St_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           losses_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           loading_hvdc=np.zeros(nc.nhvdc, dtype=complex),
+                                           norm_f=norm_f,
+                                           converged=True,
+                                           iterations=1,
+                                           elapsed=time.time() - start)
 
-    end = time.time()
-    elapsed = end - start
+    x = np.r_[Va, Vm]
+    x[no_slack] += dx
+
+    # update angles for non-reference buses
+    Va = x[0:n]
+    Vm = x[n:2 * n]
+
+    # re assemble the voltage
+    V = cf.polar_to_rect(Vm, Va)
+
+    # compute flows
+    Pf = (Af @ V) * nc.Sbase
+
+    # check for convergence
+    norm_f = 0.0
 
     # Sf, St, If, It, Vbranch, loading, losses, Sbus = cf.power_flow_post_process_linear(
     #     Sbus=S0,
@@ -281,7 +331,7 @@ def acdc_lin_pf(nc: NumericalCircuit,
                                    norm_f=norm_f,
                                    converged=True,
                                    iterations=1,
-                                   elapsed=elapsed)
+                                   elapsed=time.time() - start)
 
 
 def lacpf(nc: NumericalCircuit,

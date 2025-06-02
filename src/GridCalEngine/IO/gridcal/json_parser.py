@@ -2114,7 +2114,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                'va': np.angle(driver.results.voltage[i])}
 
                     branch_data = dict()
-                    for i, elm in enumerate(circuit.get_branches_wo_hvdc()):
+                    for i, elm in enumerate(circuit.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)):
                         branch_data[elm.idtag] = {'p': driver.results.Sf[i].real,
                                                   'q': driver.results.Sf[i].imag,
                                                   'losses': driver.results.losses[i].real}
@@ -2135,7 +2135,7 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                                'va': np.angle(driver.results.voltage[:, i]).tolist()}
 
                     branch_data = dict()
-                    for i, elm in enumerate(circuit.get_branches_wo_hvdc()):
+                    for i, elm in enumerate(circuit.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)):
                         branch_data[elm.idtag] = {'p': driver.results.Sf[:, i].real.tolist(),
                                                   'q': driver.results.Sf[:, i].imag.tolist(),
                                                   'losses': driver.results.losses[:, i].real.tolist()}

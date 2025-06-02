@@ -947,7 +947,7 @@ def get_branches(circuit: MultiCircuit, bus_dict: Dict[dev.Bus, int]) -> List[Di
     """
     data = list()
 
-    elm_list = circuit.get_branches_wo_hvdc()
+    elm_list = circuit.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
 
     for k, elm in enumerate(elm_list):
         f = bus_dict[elm.bus_from]  # already accounts for the +1 of Matlab

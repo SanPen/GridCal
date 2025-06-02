@@ -60,7 +60,7 @@ class NodeGroupsDriver(DriverTemplate):
 
         bus_dictionary = {bus: i for i, bus in enumerate(self.grid.get_buses())}
 
-        for branch_list in self.grid.get_branch_lists():
+        for branch_list in self.grid.get_branch_lists(add_vsc=True, add_hvdc=True, add_switch=True):
             for i, branch in enumerate(branch_list):
                 # if branch.active:
                 f = bus_dictionary[branch.bus_from]

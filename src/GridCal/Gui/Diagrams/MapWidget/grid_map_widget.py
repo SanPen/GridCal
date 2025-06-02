@@ -1186,7 +1186,7 @@ class GridMapWidget(BaseDiagramWidget):
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(Sf)
             Sfnorm = Sfabs / np.max(Sfabs + 1e-20)
-            for i, branch in enumerate(self.circuit.get_branches_wo_hvdc_iter()):
+            for i, branch in enumerate(self.circuit.get_branches_iter(add_vsc=False, add_hvdc=False, add_switch=True)):
 
                 # try to find the diagram object of the DB object
                 graphic_object: Union[MapAcLine, MapDcLine] = self.graphics_manager.query(branch)

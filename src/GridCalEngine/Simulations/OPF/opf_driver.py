@@ -40,7 +40,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         # Options to use
         self.options = options if options else OptimalPowerFlowOptions()
 
-        F, T = self.grid.get_branch_number_wo_hvdc_FT()
+        F, T = self.grid.get_branch_FT(add_vsc=False, add_hvdc=False, add_switch=True)
         F_hvdc, T_hvdc = self.grid.get_hvdc_FT()
 
         # OPF results

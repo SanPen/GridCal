@@ -97,7 +97,7 @@ class PowerFlowDriver(DriverTemplate):
                                         expected_value=bus.Vmin)
 
         loading = np.abs(self.results.loading)
-        branches = self.grid.get_branches_wo_hvdc()
+        branches = self.grid.get_branches(add_vsc=False, add_hvdc=False, add_switch=True)
         for i, branch in enumerate(branches):
             if loading[i] > 1.0:
                 self.logger.add_warning("Overload",

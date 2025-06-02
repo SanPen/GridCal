@@ -44,7 +44,7 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
     # set the numerical circuit
     nc = compile_numerical_circuit_at(grid, t_idx=t)
 
-    calc_branches = grid.get_branches_wo_hvdc()
+    calc_branches = grid.get_branches(add_hvdc=False, add_vsc=False, add_switch=True)
 
     area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
 

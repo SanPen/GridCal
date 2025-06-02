@@ -406,7 +406,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.options = options
 
         # OPF results
-        rates = self.grid.get_branch_rates_wo_hvdc()
+        rates = self.grid.get_branch_rates()
         self.results = AvailableTransferCapacityResults(br_names=self.grid.get_branch_names(add_hvdc=False,
                                                                                             add_vsc=False,
                                                                                             add_switch=True),
