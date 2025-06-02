@@ -57,6 +57,35 @@ class SkewedBinarySampling(Sampling):
         return ones_into_array
 
 
+class SkewedIntegerSampling(Sampling):
+    """
+    SkewedIntegerSampling generates samples skewed toward the lower bounds
+    but spread across the full lb–ub range. Works for integer variables.
+    """
+
+    def _do(self, problem, n_samples, **kwargs):
+        xl = np.asarray(problem.xl, dtype=int)
+        xu = np.asarray(problem.xu, dtype=int)
+
+        n_var = len(xl)
+        X = np.zeros((n_samples, n_var), dtype=int)
+
+        # Generate skewed samples per variable
+        for j in range(n_var):
+            # Create skewed samples in [0, 1]
+            skewed = (np.linspace(0, 1, n_samples) ** 3)
+
+            # Scale to range [xl[j], xu[j]]
+            range_j = xu[j] - xl[j]
+            values = (skewed * range_j + xl[j]).astype(int)
+
+            # Shuffle for diversity
+            np.random.shuffle(values)
+            X[:, j] = values
+
+        return X
+
+
 class QuadBinarySampling(Sampling):
     """
     QuadBinarySampling

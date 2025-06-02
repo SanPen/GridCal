@@ -9,6 +9,7 @@ import pandas as pd
 from scipy import sparse as sp
 from typing import Tuple, List
 from dataclasses import dataclass
+import json
 
 import GridCalEngine
 from GridCalEngine import ContingencyGroup, Contingency, LinearMultiContingencies, BranchType
@@ -2067,7 +2068,7 @@ def case_loop() -> None:
 
     prob_cont = 0
     max_iter = 50
-    tolerance = 1e-53
+    tolerance = 1e-5
 
     n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
     n_con_all = n_con_groups * 100
@@ -2239,7 +2240,346 @@ def case_loop() -> None:
 
     return None
 
+def case_loop_perturbed() -> None:
+    """
+    Simple 5 bus system from where to build the SCOPF, looping
+    :return:
+    """
+    num_perturbations = 10
+    for p in range(num_perturbations):
+        print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
+
+        # Load basic grid
+        # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v9.gridcal')
+        # file_path = 'src/trunk/scopf/bus5_v10.gridcal'
+        # file_path = 'src/trunk/scopf/bus5_v10_noQ.gridcal'
+        # file_path = 'C:/Users/some1/Desktop/GridCal_SCOPF/src/trunk/scopf/bus5_v12.gridcal'
+        # file_path = '/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal'
+        # file_path = os.path.join('C:/Users/some1/Desktop/GridCal_SCOPF/Grids_and_profiles/grids/case14_cont.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v2.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v3.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v4.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v0_freeze.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v5.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v6.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v7.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v8.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v8_cristina.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v9.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case14_cont_v10.gridcal')
+        # file_path = os.path.join('src/trunk/scopf/case39_v11.gridcal')
+        file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal')
+        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_v16.gridcal')
+        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep.gridcal')
+        # file_path = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/Grids_and_profiles/grids/IEEE39.gridcal')
+        # ieee 39 is infeasible
+
+
+        grid = FileOpen(file_path).open()
+
+        # --- Perturb LOADS ---
+        load_perturbation_factor = 0.1  # ±10%
+        for load in grid.loads:
+            original_p = load.P
+            delta_p = (np.random.rand() * 2 - 1) * load_perturbation_factor * original_p
+            load.P = max(original_p + delta_p, 0)  # ensure non-negative
+
+            original_q = load.Q
+            delta_q = (np.random.rand() * 2 - 1) * load_perturbation_factor * original_q
+            load.Q = max(original_q + delta_q, 0)
+
+        # --- Perturb LINE IMPEDANCES ---
+        line_perturbation_factor = 0.05  # ±5%
+        for line in grid.lines:
+            r = line.R
+            x = line.X
+            delta_r = (np.random.rand() * 2 - 1) * line_perturbation_factor * r
+            delta_x = (np.random.rand() * 2 - 1) * line_perturbation_factor * x
+            line.r = max(r + delta_r, 1e-6)  # avoid zero or negative
+            line.x = max(x + delta_x, 1e-6)
+
+        print(grid.lines[0].rate)
+
+        # configure grid for load shedding testing
+        for ll in range(len(grid.lines)):
+            grid.lines[ll].monitor_loading = True
+        for tt in range(len(grid.transformers2w)):
+            grid.transformers2w[tt].monitor_loading = True
+
+        # grid.loads[1].Cost = 0
+
+        # Set options
+        pf_options = PowerFlowOptions(control_q=False)
+        opf_base_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
+                                                   ips_tolerance=1e-6,
+                                                   ips_iterations=50,
+                                                   acopf_mode=AcOpfMode.ACOPFstd)
+        opf_slack_options = OptimalPowerFlowOptions(ips_method=SolverType.NR,
+                                                    ips_tolerance=1e-6,
+                                                    ips_iterations=50,
+                                                    acopf_mode=AcOpfMode.ACOPFslacks,
+                                                    verbose=0)
+
+        nc = compile_numerical_circuit_at(grid, t_idx=None)
+
+        # --- Perturb Pg before any solving ---
+        Pg = nc.generator_data.p.copy()
+        Pmin = nc.generator_data.pmin
+        Pmax = nc.generator_data.pmax
+        perturbation_factor = 0.1  # ±10%
+        delta = (np.random.rand(*Pg.shape) * 2 - 1) * perturbation_factor * Pmax
+        Pg_perturbed = np.clip(Pg + delta, Pmin, Pmax)
+        nc.generator_data.Pg = Pg_perturbed
+        print(f"Perturbed Pg: {Pg_perturbed}")
+
+        acopf_results = run_nonlinear_MP_opf(nc=nc, pf_options=pf_options,
+                                             opf_options=opf_slack_options, pf_init=False, load_shedding=False)
+
+        contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
+
+        print()
+        print(f"--- Base case ---")
+        print(f"Base OPF loading {acopf_results.loading} .")
+        print(f"Voltage magnitudes: {acopf_results.Vm}")
+        print(f"Generators P: {acopf_results.Pg}")
+        print(f"Generators Q: {acopf_results.Qg}")
+        print(f"Error: {acopf_results.error}")
+
+        print()
+        print("--- Starting loop with fixed number of repetitions, then breaking ---")
+
+        # Initialize tracking dictionary
+        iteration_data = {
+            'max_wk': [],
+            'num_violations': [],
+            'max_voltage_slack': [],
+            'avg_voltage_slack': [],
+            'max_flow_slack': [],
+            'avg_flow_slack': [],
+            'total_cost': [],
+            'num_cuts': []
+        }
+
+        linear_multiple_contingencies = LinearMultiContingencies(grid, grid.get_contingency_groups())
+
+        prob_cont = 0
+        max_iter = 50
+        tolerance = 1e-5
+
+        n_con_groups = len(linear_multiple_contingencies.contingency_groups_used)
+        n_con_all = n_con_groups * 100
+        v_slacks = np.zeros(n_con_all)
+        f_slacks = np.zeros(n_con_all)
+        W_k_vec = np.zeros(n_con_all)
+        Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+        u_j_vec = np.zeros((n_con_all, nc.generator_data.nelm))
+
+        # Start main loop over iterations
+        for klm in range(max_iter):
+            print(f"General iteration {klm + 1} of {max_iter}")
+
+            # v_slacks = np.zeros(n_con_groups)
+            # f_slacks = np.zeros(n_con_groups)
+            viols = 0
+            # W_k_vec = np.zeros(n_con_groups)
+            # Z_k_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
+            # u_j_vec = np.zeros((n_con_groups, nc.generator_data.nelm))
+
+            W_k_local = np.zeros(n_con_groups)
+
+            br_lists = grid.get_branch_lists()
+            all_branches = [br for group in br_lists for br in group]
+            # print(len(all_branches))
+
+            for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
+
+                contingencies = linear_multiple_contingencies.contingency_group_dict[contingency_group.idtag]
+                print(f"\nContingency group {ic}: {contingency_group.name}")
+
+                if contingencies is None:
+                    print(f"Contingencies have not been initialised.")
+                    break
+
+                # Set contingency status
+                nc.set_con_or_ra_status(contingencies)
+
+                for cont in contingencies:
+                    try:
+                        br_idx = next(i for i, br in enumerate(all_branches) if br.name == cont.name)
+                        nc.passive_branch_data.active[br_idx] = False  # Deactivate the affected branch
+
+                        # Rebuild islands after modification
+                        islands = nc.split_into_islands()
+
+                        if len(islands) > 1:
+                            island_sizes = [island.nbus for island in islands]
+                            largest_island_idx = np.argmax(island_sizes)
+                            island = islands[largest_island_idx]
+                        else:
+                            island = islands[0]
+
+                        indices = island.get_simulation_indices()
+
+                        if len(indices.vd) > 0:
+                            print('Selected island with size:', island.nbus)
+
+                            slack_sol_cont = run_nonlinear_SP_scopf(
+                                nc=island,
+                                pf_options=pf_options,
+                                opf_options=opf_slack_options,
+                                pf_init=False,
+                                mp_results=acopf_results,
+                                load_shedding=False,
+                            )
+                            # print(f"Error: {slack_sol_cont.error}")
+
+                            # Collect slacks
+                            v_slack = max(np.maximum(slack_sol_cont.sl_vmax, slack_sol_cont.sl_vmin))
+                            f_slack = max(np.maximum(slack_sol_cont.sl_sf, slack_sol_cont.sl_st))
+                            v_slacks[ic] = v_slack
+                            f_slacks[ic] = f_slack
+                            W_k_local[ic] = slack_sol_cont.W_k
+
+                            if slack_sol_cont.error > 1e-6:
+                                print(f"Error: {slack_sol_cont.error}")
+                            print(f"u_j: {slack_sol_cont.u_j}")
+
+                            if slack_sol_cont.W_k > tolerance:
+                                W_k_vec[prob_cont] = slack_sol_cont.W_k
+                                Z_k_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.Z_k
+                                u_j_vec[prob_cont, island.generator_data.original_idx] = slack_sol_cont.u_j
+                                prob_cont += 1
+                                viols += 1
+
+                                # print('nbus', island.nbus, 'ngen', island.ngen)
+                                print(f"W_k: {slack_sol_cont.W_k}")
+                                print(f"Z_k: {slack_sol_cont.Z_k}")
+                                print(f"u_j: {slack_sol_cont.u_j}")
+                                print(f"Vmax slack: {slack_sol_cont.sl_vmax}")
+                                print(f"Vmin slack: {slack_sol_cont.sl_vmin}")
+                                print(f"Sf slack: {slack_sol_cont.sl_sf}")
+                                print(f"St slack: {slack_sol_cont.sl_st}")
+
+                        else:
+                            print("No valid voltage-dependent nodes found in island. Skipping.")
+
+                        nc.passive_branch_data.active[br_idx] = True
+                    except StopIteration:
+                        print(f"Line with name '{cont.name}' not found in grid.lines. Skipping.")
+
+                # Revert contingency
+                nc.set_con_or_ra_status(contingencies, revert=True)
+
+            if viols > 0:
+                # crop the dimension 0
+                W_k_vec_used = W_k_vec[:prob_cont]
+                Z_k_vec_used = Z_k_vec[:prob_cont, :]
+                u_j_vec_used = u_j_vec[:prob_cont, :]
+
+
+            # Store metrics for this iteration
+            if viols > 0:
+                iteration_data['max_wk'].append(W_k_local.max())
+                iteration_data['max_voltage_slack'].append(v_slacks.max())
+                iteration_data['avg_voltage_slack'].append(v_slacks.mean())
+                iteration_data['max_flow_slack'].append(f_slacks.max())
+                iteration_data['avg_flow_slack'].append(f_slacks.mean())
+            else:
+                iteration_data['max_wk'].append(1e-10)
+                iteration_data['max_voltage_slack'].append(1e-10)
+                iteration_data['avg_voltage_slack'].append(1e-10)
+                iteration_data['max_flow_slack'].append(1e-10)
+                iteration_data['avg_flow_slack'].append(1e-10)
+                print('Master problem solution found')
+
+            iteration_data['num_violations'].append(viols)
+
+            # Run the MP with information from the SPs
+            print('')
+            print("--- Feeding SPs info to MP ---")
+            acopf_results = run_nonlinear_MP_opf(nc=nc,
+                                                 pf_options=pf_options,
+                                                 opf_options=opf_slack_options,
+                                                 pf_init=False,
+                                                 W_k_vec=W_k_vec_used,
+                                                 Z_k_vec=Z_k_vec_used,
+                                                 u_j_vec=u_j_vec_used,
+                                                 load_shedding=False)
+
+
+            # Store generation cost
+            total_cost = np.sum(acopf_results.Pcost)
+            iteration_data['total_cost'].append(total_cost)
+
+            # Print current iteration metrics
+            print(f"Maximum W_k: {iteration_data['max_wk'][-1]}")
+            print(f"Number of violations: {iteration_data['num_violations'][-1]}")
+            print(f"Maximum voltage slack: {iteration_data['max_voltage_slack'][-1]}")
+            print(f"Average voltage slack: {iteration_data['avg_voltage_slack'][-1]}")
+            print(f"Maximum flow slack: {iteration_data['max_flow_slack'][-1]}")
+            print(f"Average flow slack: {iteration_data['avg_flow_slack'][-1]}")
+            print(f"Total generation cost: {total_cost}")
+
+            if viols == 0:
+                break
+            iteration_data['num_cuts'].append(prob_cont)
+            print(f"Total number of cuts: {iteration_data['num_cuts'][-1]}")
+            print('-')
+            print('Length W_k_vec', len(W_k_vec))
+
+            # print(f"W_k_vec: {W_k_vec}")
+            # print(f"Z_k_vec: {Z_k_vec}")
+            # print(f"u_j_vec: {u_j_vec}")
+
+        # Plot the results
+        plot_scopf_progress(iteration_data)
+
+        contingency_outputs = []
+        if prob_cont > 0:
+            for i in range(prob_cont):
+                contingency_outputs.append({
+                    "contingency_index": i,
+                    "W_k": float(W_k_vec[i]),
+                    "Z_k": Z_k_vec[i].tolist(),
+                    "u_j": u_j_vec[i].tolist()
+                })
+
+        result = {
+            "perturbation_index": p,
+            "Pg": Pg_perturbed.tolist(),
+            "loads": [(load.P, load.Q) for load in grid.loads],
+            "contingency_outputs": contingency_outputs,
+            "violation": prob_cont > 0,
+            "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
+            "max_flow_slack": iteration_data['max_flow_slack'][-1],
+            "total_cost": iteration_data['total_cost'][-1]
+        }
+
+        # # Save the result for this perturbation - this one didn't save all the data, just the final result
+        # result = {
+        #     "perturbation_index": p,
+        #     "Pg": Pg_perturbed.tolist(),
+        #     "loads": [(load.P, load.Q) for load in grid.loads],
+        #     "W_k": W_k_vec_used.tolist() if viols > 0 else [],
+        #     "Z_k": Z_k_vec_used.tolist() if viols > 0 else [],
+        #     "u_j": u_j_vec_used.tolist() if viols > 0 else [],
+        #     "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
+        #     "max_flow_slack": iteration_data['max_flow_slack'][-1],
+        #     "total_cost": iteration_data['total_cost'][-1]
+        # }
+
+        save_dir = "/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/scopf_outputs"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, f"scopf_result_{p:03d}.json")
+        with open(save_path, "w") as f:
+            json.dump(result, f, indent=2)
+
+        print(f"Saved results for perturbation {p} to {save_path}")
+
+    return None
+
 
 if __name__ == '__main__':
     # case_v0()
-    case_loop()
+    case_loop_perturbed()

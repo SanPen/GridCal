@@ -28,8 +28,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Training with scopf variables">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Training with scopf variables visualised">
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/train_scopf_SP.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/new_aug_data/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/NSGA_3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/NumericalMethods/scopf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/train_scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/ModelTraining/train_scopf_MP.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/NumericalMethods/scopf.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/NumericalMethods/scopf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/Report/contingencies.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/SCOPF_GNN/Report/contingencies.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -179,9 +187,12 @@
     &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
     &quot;Python.python_console.executor&quot;: &quot;Run&quot;,
     &quot;Python.scopf.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
     &quot;Python.test_gslv_conversion.executor&quot;: &quot;Run&quot;,
     &quot;Python.train14.executor&quot;: &quot;Run&quot;,
     &quot;Python.train_scopf.executor&quot;: &quot;Run&quot;,
+    &quot;Python.train_scopf_MP.executor&quot;: &quot;Run&quot;,
+    &quot;Python.train_scopf_SP.executor&quot;: &quot;Run&quot;,
     &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
     &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
     &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
@@ -2017,7 +2028,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="584" />
+    <option name="localTasksCounter" value="585" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2070,7 +2081,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Worked a bit more on the generalized PF indexing" />
     <MESSAGE value="Minor refactorings" />
     <MESSAGE value="Worked on the new definition of VSC and the compilation" />
     <MESSAGE value="Fixed some bugs" />
@@ -2095,7 +2105,8 @@
     <MESSAGE value="Refactoring opf setting" />
     <MESSAGE value="No exploding pf errors with load shedding" />
     <MESSAGE value="Training with scopf variables" />
-    <option name="LAST_COMMIT_MESSAGE" value="Training with scopf variables" />
+    <MESSAGE value="Training with scopf variables visualised" />
+    <option name="LAST_COMMIT_MESSAGE" value="Training with scopf variables visualised" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
