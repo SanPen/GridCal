@@ -1246,10 +1246,14 @@ def add_linear_branches_formulation(t: int,
                                                    ub=inf,
                                                    name=join("flow_", [t, m], "_"))
 
-            if bus_data_t.is_dc[fr] and bus_data_t.is_dc[to]:
+            if branch_data_t.dc[m]:
 
                 # DC Branch
-                bk = 1.0 / branch_data_t.R[m]
+                if branch_data_t.R[m] == 0.0:
+                    bk = 1e-20
+                else:
+                    bk = 1.0 / branch_data_t.R[m]
+
                 branch_vars.flows[t, m] = bk * (bus_vars.Vm[t, fr] - bus_vars.Vm[t, to])
 
             else:
@@ -1257,10 +1261,7 @@ def add_linear_branches_formulation(t: int,
 
                 # compute the branch susceptance
                 if branch_data_t.X[m] == 0.0:
-                    if branch_data_t.R[m] != 0.0:
-                        bk = 1.0 / branch_data_t.R[m]
-                    else:
-                        bk = 1e-20
+                    bk = 1e-20
                 else:
                     bk = 1.0 / branch_data_t.X[m]
 
