@@ -4727,9 +4727,9 @@ class Assets:
             for elm in lst:
                 yield elm
 
-    def get_branch_number(self, add_vsc: bool = True,
-                          add_hvdc: bool = True,
-                          add_switch: bool = False) -> int:
+    def get_branch_number(self, add_vsc: bool = False,
+                          add_hvdc: bool = False,
+                          add_switch: bool = True) -> int:
         """
         return the number of Branches (of all types)
         :param add_vsc: Include the list of VSC?
