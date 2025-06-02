@@ -3,7 +3,7 @@ import numpy as np
 import sympy as sp
 np.set_printoptions(linewidth=20000, precision=3, suppress=True)
 
-def clean_matrix(matrix, threshold=1e-10, decimals=2):
+def clean_matrix(matrix, threshold=1e-10, decimals=3):
     cleaned_matrix = []
     for row in matrix:
         cleaned_row = []
@@ -239,12 +239,12 @@ elif connexion == 'Dz':
     Yprimitive[8:10, 8:10] = Y_2x2 * 2
     Yprimitive[10:12, 10:12] = Y_2x2 * 2
     Cu_left = np.zeros((6, 6))
-    Cu_left[0, 0] = 1
-    Cu_left[0, 1] = -1
-    Cu_left[1, 1] = 1
-    Cu_left[1, 2] = -1
-    Cu_left[2, 2] = 1
-    Cu_left[2, 0] = -1
+    Cu_left[0, 0] = 1 / np.sqrt(3)
+    Cu_left[0, 1] = -1 / np.sqrt(3)
+    Cu_left[1, 1] = 1 / np.sqrt(3)
+    Cu_left[1, 2] = -1 / np.sqrt(3)
+    Cu_left[2, 2] = 1 / np.sqrt(3)
+    Cu_left[2, 0] = -1 / np.sqrt(3)
     Cu_left[3, 3] = 1
     Cu_left[4, 4] = 1
     Cu_left[5, 5] = 1
@@ -281,12 +281,12 @@ elif connexion == 'Dz':
     Ci_left[10, 9] = 1
     Ci_left[11, 11] = 1
     Ci_right = np.zeros((12, 6))
-    Ci_right[0, 0] = 1
-    Ci_right[1, 0] = 1
-    Ci_right[2, 1] = 1
-    Ci_right[3, 1] = 1
-    Ci_right[4, 2] = 1
-    Ci_right[5, 2] = 1
+    Ci_right[0, 0] = 1 * np.sqrt(3)
+    Ci_right[1, 0] = 1 * np.sqrt(3)
+    Ci_right[2, 1] = 1 * np.sqrt(3)
+    Ci_right[3, 1] = 1 * np.sqrt(3)
+    Ci_right[4, 2] = 1 * np.sqrt(3)
+    Ci_right[5, 2] = 1 * np.sqrt(3)
     Ci_right[6, 3] = 1
     Ci_right[7, 5] = -1
     Ci_right[8, 4] = 1
@@ -309,12 +309,12 @@ elif connexion == 'Zd':
     Cu_left[0, 0] = 1
     Cu_left[1, 1] = 1
     Cu_left[2, 2] = 1
-    Cu_left[3, 3] = 1
-    Cu_left[3, 4] = -1
-    Cu_left[4, 4] = 1
-    Cu_left[4, 5] = -1
-    Cu_left[5, 3] = -1
-    Cu_left[5, 5] = 1
+    Cu_left[3, 3] = 1 / np.sqrt(3)
+    Cu_left[3, 4] = -1 / np.sqrt(3)
+    Cu_left[4, 4] = 1 / np.sqrt(3)
+    Cu_left[4, 5] = -1 / np.sqrt(3)
+    Cu_left[5, 3] = -1 / np.sqrt(3)
+    Cu_left[5, 5] = 1 / np.sqrt(3)
     Cu_right = np.zeros((6, 12))
     Cu_right[0, 0] = 1
     Cu_right[0, 6] = -1
@@ -354,17 +354,24 @@ elif connexion == 'Zd':
     Ci_right[3, 0] = -1
     Ci_right[4, 2] = 1
     Ci_right[5, 1] = -1
-    Ci_right[6, 3] = 1
-    Ci_right[7, 3] = 1
-    Ci_right[8, 4] = 1
-    Ci_right[9, 4] = 1
-    Ci_right[10, 5] = 1
-    Ci_right[11, 5] = 1
+    Ci_right[6, 3] = 1 * np.sqrt(3)
+    Ci_right[7, 3] = 1 * np.sqrt(3)
+    Ci_right[8, 4] = 1 * np.sqrt(3)
+    Ci_right[9, 4] = 1 * np.sqrt(3)
+    Ci_right[10, 5] = 1 * np.sqrt(3)
+    Ci_right[11, 5] = 1 * np.sqrt(3)
     Cu = np.linalg.pinv(Cu_left) @ Cu_right
     Ci = np.linalg.pinv(Ci_left) @ Ci_right
     Ytrafo = np.linalg.pinv(Ci) @ Yprimitive @ np.linalg.pinv(Cu)
 
+print(Cu)
+print()
+print(Ci)
+print()
+
 cleaned = clean_matrix(Ytrafo, threshold=1e-10)
 sp.pprint(cleaned)
+
+print('\n')
 
 # Extract yff, yft, ytf, ytt for the 9 possible combinations
