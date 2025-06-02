@@ -12,7 +12,11 @@ from sklearn.model_selection import train_test_split
 
 import os
 import json
-from torch_geometric.data import Data
+import torch.nn.functional as F
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, r2_score
 
 from torch_geometric.data import Data
 
@@ -400,7 +404,7 @@ def scale_targets(dataset):
         data.y_uj = torch.tensor(scaler_uj.transform(data.y_uj.reshape(1, -1)), dtype=torch.float).squeeze()
         data.y_zk = torch.tensor(scaler_zk.transform(data.y_zk.reshape(1, -1)), dtype=torch.float).squeeze()
 
-def train_model(model, train_loader, val_loader, optimizer, loss_fn, epochs=200, alpha=10, beta=100):
+def train_model(model, train_loader, val_loader, optimizer, loss_fn, epochs=500, alpha=10, beta=100):
     train_losses = []
     val_losses = []
 
@@ -458,63 +462,234 @@ def train_model(model, train_loader, val_loader, optimizer, loss_fn, epochs=200,
 
     return train_losses[-1]
 
+# === Denormalize function ===
+def denormalize_predictions(y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk):
+    y_true_wk = scaler_wk.inverse_transform(np.array(y_true_wk).reshape(-1, 1)).flatten()
+    y_pred_wk = scaler_wk.inverse_transform(np.array(y_pred_wk).reshape(-1, 1)).flatten()
 
-# def train_model(model, loader, optimizer, loss_fn):
-#     for i, data in enumerate(dataset):
-#         if data.x.ndim != 2 or data.x.shape[1] != input_dim:
-#             print(f"[!] x shape mismatch at sample {i}: {data.x.shape}")
-#         if data.y_uj.shape[0] != num_generators:
-#             print(f"[!] uj shape mismatch at sample {i}: {data.y_uj.shape}")
-#
-#     model.train()
-#     total_loss = 0
-#     for data in loader:
-#         x = data.x.view(data.num_graphs, -1).to(model.device)
-#         y_wk = data.y_wk.to(model.device)
-#         y_uj = data.y_uj.to(model.device)
-#         y_zk = data.y_zk.to(model.device)
-#
-#         optimizer.zero_grad()
-#         wk_pred, uj_pred, zk_pred = model(x)
-#         loss = (
-#                 loss_fn(wk_pred, y_wk.view_as(wk_pred)) +
-#                 loss_fn(uj_pred, y_uj.view_as(uj_pred)) +
-#                 loss_fn(zk_pred, y_zk.view_as(zk_pred))
-#         )
-#
-#         loss.backward()
-#         optimizer.step()
-#         total_loss += loss.item() * x.size(0)
-#     return total_loss / len(loader.dataset)
+    y_true_uj = scaler_uj.inverse_transform(np.array(y_true_uj).reshape(-1, num_generators))
+    y_pred_uj = scaler_uj.inverse_transform(np.array(y_pred_uj).reshape(-1, num_generators))
 
-def evaluate_model(model, loader, loss_fn):
+    y_true_zk = scaler_zk.inverse_transform(np.array(y_true_zk).reshape(-1, num_generators))
+    y_pred_zk = scaler_zk.inverse_transform(np.array(y_pred_zk).reshape(-1, num_generators))
+
+    return y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk
+
+
+# def evaluate_model(model, test_loader):
+#     model.eval()
+#     all_y_uj = []
+#     all_uj_pred = []
+#
+#     num_generators = model.out_uj.out_features
+#
+#     with torch.no_grad():
+#         for batch in test_loader:
+#             x = batch.x.to(model.device)
+#             y_uj = batch.y_uj.to(model.device)
+#
+#             # Forward pass
+#             _, uj_pred, _ = model(x)
+#
+#             # Reshape to (batch_size, num_generators)
+#             y_uj = y_uj.view(-1, num_generators)
+#             uj_pred = uj_pred.view(-1, num_generators)
+#
+#             all_y_uj.append(y_uj)
+#             all_uj_pred.append(uj_pred)
+#
+#     # Concatenate all batches
+#     all_y_uj = torch.cat(all_y_uj, dim=0)
+#     all_uj_pred = torch.cat(all_uj_pred, dim=0)
+#
+#     # Denormalize
+#     uj_pred_denorm = scaler_uj.inverse_transform(all_uj_pred.cpu().numpy())
+#     y_uj_denorm = scaler_uj.inverse_transform(all_y_uj.cpu().numpy())
+#
+#     # Convert back to tensors if needed
+#     uj_pred_denorm = torch.tensor(uj_pred_denorm)
+#     y_uj_denorm = torch.tensor(y_uj_denorm)
+#
+#     # Example: compute and print MSE
+#     mse = torch.nn.functional.mse_loss(uj_pred_denorm, y_uj_denorm)
+#     print(f"Test MSE on denormalized u_j: {mse.item():.4f}")
+
+def evaluate_model(model, data_loader):
+    # Collect predictions
     model.eval()
-    total_loss = 0
+    y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk = [], [], [], [], [], []
+
     with torch.no_grad():
-        for data in loader:
-            x = data.x.view(data.num_graphs, -1).to(model.device)
-            y_wk = data.y_wk.to(model.device)
-            y_uj = data.y_uj.to(model.device)
-            y_zk = data.y_zk.to(model.device)
-
+        for batch in test_loader:
+            x = batch.x.to(model.device)
             wk_pred, uj_pred, zk_pred = model(x)
-            loss = (
-                    loss_fn(wk_pred, y_wk.view_as(wk_pred)) +
-                    loss_fn(uj_pred, y_uj.view_as(uj_pred)) +
-                    loss_fn(zk_pred, y_zk.view_as(zk_pred))
-            )
 
-            total_loss += loss.item() * x.size(0)
-    return total_loss / len(loader.dataset)
+            y_true_wk.extend(batch.y_wk.cpu().numpy())
+            y_pred_wk.extend(wk_pred.cpu().numpy())
+
+            y_true_uj.extend(batch.y_uj.view(-1, uj_pred.shape[1]).cpu().numpy())
+            y_pred_uj.extend(uj_pred.cpu().numpy())
+
+            y_true_zk.extend(batch.y_zk.view(-1, zk_pred.shape[1]).cpu().numpy())
+            y_pred_zk.extend(zk_pred.cpu().numpy())
+
+    # ✅ Denormalize
+    y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk = denormalize_predictions(
+        y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk
+    )
+
+    # Evaluate and plot
+    evaluate_model_from_arrays(y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk)
+
+def evaluate_model_from_arrays(y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk):
+    def plot_pred_vs_true(true, pred, label):
+        true = np.array(true).flatten()
+        pred = np.array(pred).flatten()
+        plt.figure()
+        plt.scatter(true, pred, alpha=0.6)
+        min_val = min(true.min(), pred.min())
+        max_val = max(true.max(), pred.max())
+        plt.plot([min_val, max_val], [min_val, max_val], 'r--')
+        plt.xlabel('True')
+        plt.ylabel('Predicted')
+        plt.title(f'{label} - True vs Predicted')
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+
+    def plot_error_hist(true, pred, label):
+        errors = np.array(pred) - np.array(true)
+        plt.figure()
+        plt.hist(errors, bins=40, alpha=0.7)
+        plt.title(f'{label} - Prediction Error Histogram')
+        plt.xlabel('Error')
+        plt.ylabel('Frequency')
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+
+    def print_metrics(true, pred, label):
+        mse = mean_squared_error(true, pred)
+        r2 = r2_score(true, pred)
+        print(f" {label} Metrics:")
+        print(f"    MSE = {mse:.6f}")
+        print(f"    R²  = {r2:.4f}")
+        print()
+
+    def save_to_csv(true_wk, pred_wk, true_uj, pred_uj, true_zk, pred_zk):
+        df = pd.DataFrame({
+            'W_k_true': np.array(true_wk).flatten(),
+            'W_k_pred': np.array(pred_wk).flatten(),
+            'u_j_true': np.array(true_uj).flatten(),
+            'u_j_pred': np.array(pred_uj).flatten(),
+            'Z_k_true': np.array(true_zk).flatten(),
+            'Z_k_pred': np.array(pred_zk).flatten(),
+        })
+        df.to_csv("scopf_predictions.csv", index=False)
+        print("✅ Results saved to scopf_predictions.csv")
+
+    # Run evaluation
+    plot_pred_vs_true(y_true_uj, y_pred_uj, 'u_j')
+    plot_error_hist(y_true_uj, y_pred_uj, 'u_j')
+    print_metrics(y_true_uj, y_pred_uj, 'u_j')
+
+    plot_pred_vs_true(y_true_wk, y_pred_wk, 'W_k')
+    plot_error_hist(y_true_wk, y_pred_wk, 'W_k')
+    print_metrics(y_true_wk, y_pred_wk, 'W_k')
+
+    plot_pred_vs_true(y_true_zk, y_pred_zk, 'Z_k')
+    plot_error_hist(y_true_zk, y_pred_zk, 'Z_k')
+    print_metrics(y_true_zk, y_pred_zk, 'Z_k')
+
+    save_to_csv(y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk)
+    #
+    # # Plot and metrics
+    # def plot_pred_vs_true(true, pred, label):
+    #     true = np.array(true).flatten()
+    #     pred = np.array(pred).flatten()
+    #     plt.figure()
+    #     plt.scatter(true, pred, alpha=0.6)
+    #     min_val = min(true.min(), pred.min())
+    #     max_val = max(true.max(), pred.max())
+    #     plt.plot([min_val, max_val], [min_val, max_val], 'r--')
+    #     plt.xlabel('True')
+    #     plt.ylabel('Predicted')
+    #     plt.title(f'{label} - True vs Predicted')
+    #     plt.grid(True)
+    #     plt.tight_layout()
+    #     plt.show()
+    #
+    # def plot_error_hist(true, pred, label):
+    #     errors = np.array(pred) - np.array(true)
+    #     plt.figure()
+    #     plt.hist(errors, bins=40, alpha=0.7)
+    #     plt.title(f'{label} - Prediction Error Histogram')
+    #     plt.xlabel('Error')
+    #     plt.ylabel('Frequency')
+    #     plt.grid(True)
+    #     plt.tight_layout()
+    #     plt.show()
+    #
+    # def print_metrics(true, pred, label):
+    #     true = np.array(true).flatten()
+    #     pred = np.array(pred).flatten()
+    #     print(f"🔍 {label} shape check: true={true.shape}, pred={pred.shape}")
+    #
+    #     mse = mean_squared_error(true, pred)
+    #     r2 = r2_score(true, pred)
+    #     print(f"📌 {label} Metrics:")
+    #     print(f"    MSE = {mse:.6f}")
+    #     print(f"    R²  = {r2:.4f}")
+    #     print()
+    #
+    # def save_to_csv(true_wk, pred_wk, true_uj, pred_uj, true_zk, pred_zk):
+    #     # Ensure all arrays are 1D
+    #     true_wk = np.array(true_wk).flatten()
+    #     pred_wk = np.array(pred_wk).flatten()
+    #     true_uj = np.array(true_uj).flatten()
+    #     pred_uj = np.array(pred_uj).flatten()
+    #     true_zk = np.array(true_zk).flatten()
+    #     pred_zk = np.array(pred_zk).flatten()
+    #
+    #     # Determine minimum length to align them
+    #     min_len = min(len(true_wk), len(pred_wk), len(true_uj), len(pred_uj), len(true_zk), len(pred_zk))
+    #
+    #     df = pd.DataFrame({
+    #         'W_k_true': true_wk[:min_len],
+    #         'W_k_pred': pred_wk[:min_len],
+    #         'u_j_true': true_uj[:min_len],
+    #         'u_j_pred': pred_uj[:min_len],
+    #         'Z_k_true': true_zk[:min_len],
+    #         'Z_k_pred': pred_zk[:min_len],
+    #     })
+    #
+    #     df.to_csv("scopf_predictions.csv", index=False)
+    #     print(" Results saved to scopf_predictions.csv")
+    #
+    # # Run visualizations and evaluation
+    # plot_pred_vs_true(y_true_uj, y_pred_uj, 'u_j')
+    # plot_error_hist(y_true_uj, y_pred_uj, 'u_j')
+    # print_metrics(y_true_uj, y_pred_uj, 'u_j')
+    #
+    # plot_pred_vs_true(y_true_wk, y_pred_wk, 'W_k')
+    # plot_error_hist(y_true_wk, y_pred_wk, 'W_k')
+    # print_metrics(y_true_wk, y_pred_wk, 'W_k')
+    #
+    # plot_pred_vs_true(y_true_zk, y_pred_zk, 'Z_k')
+    # plot_error_hist(y_true_zk, y_pred_zk, 'Z_k')
+    # print_metrics(y_true_zk, y_pred_zk, 'Z_k')
+    #
+    # save_to_csv(y_true_wk, y_pred_wk, y_true_uj, y_pred_uj, y_true_zk, y_pred_zk)
 
 
 if __name__ == '__main__':
     grid_file_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal"
     grid = FileOpen(grid_file_path).open()
 
-    # Placeholder contingencies
-    contingency_list = [[] for _ in range(10)]
-
+    # # Placeholder contingencies
+    # contingency_list = [[] for _ in range(len(grid.get_contingency_groups()))]
+    # print(contingency_list)
+    #
     nc = compile_numerical_circuit_at(grid, t_idx=None)
 
     print(f"Number of buses: {nc.bus_data.nbus}")
@@ -533,12 +708,22 @@ if __name__ == '__main__':
 
     # Build and split dataset
     # dataset = build_dataset(grid_file_path)
-    train_dataset, val_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
+    # train_dataset, val_dataset = train_test_split(dataset, test_size=0.05, random_state=42)
+    train_val, test_dataset = train_test_split(dataset, test_size=0.10, random_state=42)
+
+    # Step 2: Split 5% of the remaining 95% for validation
+    val_ratio = 0.1  # 10% of the remaining 90% will be validation
+    train_dataset, val_dataset = train_test_split(train_val, test_size=val_ratio, random_state=42)
+    print(f"Train samples: {len(train_dataset)}")
+    print(f"Val samples: {len(val_dataset)}")
+    print(f"Test samples: {len(test_dataset)}")
+
     scale_targets(train_dataset + val_dataset)
 
     # Create DataLoaders
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
     # Inspect batch format
     for batch in train_loader:
@@ -562,6 +747,7 @@ if __name__ == '__main__':
 
     # Train the model
     train_model(model, train_loader, val_loader, optimizer, loss_fn)
+    evaluate_model(model, test_loader)
 
     print(f"Total samples in dataset: {len(dataset)}")
 
@@ -577,71 +763,40 @@ if __name__ == '__main__':
     print(df.head())
 
 
-# if __name__ == '__main__':
-#     # grid_file_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case5.gridcal"
-#     grid_file_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case14_cont_v12.gridcal"
-#     # grid_file_path = "/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/scopf/case39_vjosep3.gridcal"
-#     grid = FileOpen(grid_file_path).open()
-#
-#     # Placeholder contingencies
-#     contingency_list = [[] for _ in range(10)]
-#
-#     nc = compile_numerical_circuit_at(grid, t_idx=None)
-#
-#     print(f"Number of buses: {nc.bus_data.nbus}")
-#     print(f"Number of generators: {nc.generator_data.nelm}")
-#
-#     class MPResultsMock:
-#         Pg = np.random.rand(nc.generator_data.nelm)  # replace with actual generator Pg
-#         Qg = np.random.rand(nc.generator_data.nelm)
-#
-#
-#     mp_results = MPResultsMock()
-#
-#     dataset = build_dataset(grid_file_path)
-#     train_dataset, val_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
-#     scale_targets(train_dataset + val_dataset)
-#     # loader = DataLoader(dataset, batch_size=4, shuffle=True)
-#     data = Data(x=torch.randn(10, 4), y_wk=torch.tensor([0.1]), y_uj=torch.randn(3), y_zk=torch.randn(3))
-#     # Loader
-#     loader = DataLoader([data], batch_size=1)
-#     # loader = {
-#     #     'train': DataLoader(train_dataset, batch_size=16, shuffle=True),
-#     #     'val': DataLoader(val_dataset, batch_size=16, shuffle=False)
-#     # }
-#
-#     for batch in loader:
-#         print(f"\n--- Batch {batch} ---")
-#         print(f"x: {batch.x.shape}")
-#         print(f"y_wk: {batch.y_wk.shape}")
-#         print(f"y_uj: {batch.y_uj.shape}")
-#         print(f"y_zk: {batch.y_zk.shape}")
-#         break  # remove this line to print all batches
-#
-#     input_dim = dataset[0].x.numel()
-#     hidden_dim = 64
-#     num_generators = len(mp_results.Pg)
-#
-#     model = SCOPFParameterRegressor(input_dim, hidden_dim, num_generators)
-#     model.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     model.to(model.device)
-#
-#     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-#     loss_fn = torch.nn.MSELoss()
-#
-#     for epoch in range(200):
-#         train_loss = train_model(model, train_loader, optimizer, loss_fn)
-#         val_loss = evaluate_model(model, val_loader, loss_fn)
-#         print(f"Epoch {epoch + 1:03d}: Train Loss = {train_loss:.6f}, Val Loss = {val_loss:.6f}")
-#
-#     print(f"Total samples in dataset: {len(dataset)}")
-#
-#     df = pd.DataFrame({
-#         'Contingency ID': [data.x[0, 0].item() for data in dataset],
-#         'Pg': [data.x[0, 1:].tolist() for data in dataset],
-#         'W_k': [data.y_wk.item() for data in dataset],
-#         'Z_k': [data.y_zk.tolist() for data in dataset],
-#         'u_j': [data.y_uj.tolist() for data in dataset],
-#     })
-#
-#     print(df.head())
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.decomposition import PCA
+
+def evaluate_and_plot(model, test_dataset):
+    model.eval()
+    all_preds = []
+    all_targets = []
+
+    with torch.no_grad():
+        for data in test_dataset:
+            x = data.x.unsqueeze(0).to(model.device)
+            _, pred_uj, _ = model(x)
+            all_preds.append(pred_uj.cpu().squeeze().numpy())
+            all_targets.append(data.y_uj.cpu().numpy())
+
+    all_preds = np.array(all_preds)
+    all_targets = np.array(all_targets)
+
+    # PCA projection to 2D
+    pca = PCA(n_components=2)
+    preds_2d = pca.fit_transform(all_preds)
+    targets_2d = pca.transform(all_targets)
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x=targets_2d[:, 0], y=targets_2d[:, 1], label='Actual', color='blue', alpha=0.6)
+    sns.scatterplot(x=preds_2d[:, 0], y=preds_2d[:, 1], label='Predicted', color='red', alpha=0.6)
+    plt.title("PCA Projection of Predicted vs Actual $u_j$")
+    plt.xlabel("PCA Component 1")
+    plt.ylabel("PCA Component 2")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+# Call it after model evaluation

@@ -2245,7 +2245,7 @@ def case_loop_perturbed() -> None:
     Simple 5 bus system from where to build the SCOPF, looping
     :return:
     """
-    num_perturbations = 10
+    num_perturbations = 100
     for p in range(num_perturbations):
         print(f"\n====== Perturbation case {p + 1} of {num_perturbations} ======\n")
 
@@ -2375,6 +2375,8 @@ def case_loop_perturbed() -> None:
         Z_k_vec = np.zeros((n_con_all, nc.generator_data.nelm))
         u_j_vec = np.zeros((n_con_all, nc.generator_data.nelm))
 
+        contingency_outputs = []
+
         # Start main loop over iterations
         for klm in range(max_iter):
             print(f"General iteration {klm + 1} of {max_iter}")
@@ -2461,6 +2463,15 @@ def case_loop_perturbed() -> None:
                                 print(f"Sf slack: {slack_sol_cont.sl_sf}")
                                 print(f"St slack: {slack_sol_cont.sl_st}")
 
+                            contingency_outputs.append({
+                                "contingency_index": int(ic),
+                                "W_k": float(slack_sol_cont.W_k),
+                                "Z_k": slack_sol_cont.Z_k.tolist(),
+                                "u_j": slack_sol_cont.u_j.tolist()
+                            })
+
+
+
                         else:
                             print("No valid voltage-dependent nodes found in island. Skipping.")
 
@@ -2533,27 +2544,26 @@ def case_loop_perturbed() -> None:
             # print(f"u_j_vec: {u_j_vec}")
 
         # Plot the results
-        plot_scopf_progress(iteration_data)
+        # plot_scopf_progress(iteration_data)
 
-        contingency_outputs = []
-        if prob_cont > 0:
-            for i in range(prob_cont):
-                contingency_outputs.append({
-                    "contingency_index": i,
-                    "W_k": float(W_k_vec[i]),
-                    "Z_k": Z_k_vec[i].tolist(),
-                    "u_j": u_j_vec[i].tolist()
-                })
+        # contingency_outputs = []
+        # for i in range(len(contingencies)):
+        #     contingency_outputs.append({
+        #         "contingency_index": i,
+        #         "W_k": float(W_k_vec[i]),
+        #         "Z_k": Z_k_vec[i].tolist(),
+        #         "u_j": u_j_vec[i].tolist()
+        #     })
 
         result = {
-            "perturbation_index": p,
+            # "perturbation_index": p,
             "Pg": Pg_perturbed.tolist(),
-            "loads": [(load.P, load.Q) for load in grid.loads],
+            # "loads": [(load.P, load.Q) for load in grid.loads],
             "contingency_outputs": contingency_outputs,
-            "violation": prob_cont > 0,
-            "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
-            "max_flow_slack": iteration_data['max_flow_slack'][-1],
-            "total_cost": iteration_data['total_cost'][-1]
+            # "violation": prob_cont > 0,
+            # "max_voltage_slack": iteration_data['max_voltage_slack'][-1],
+            # "max_flow_slack": iteration_data['max_flow_slack'][-1],
+            # "total_cost": iteration_data['total_cost'][-1]
         }
 
         # # Save the result for this perturbation - this one didn't save all the data, just the final result
