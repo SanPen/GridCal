@@ -29,6 +29,6 @@ print('\nC_NR= \n', C_NR)
 N = C_NR @ R
 print('\nN = \n', N)
 
-# Mascara
+# Mask
 M = (N > 0).astype(int).reshape(-1)
 print('\nM = \n', M)

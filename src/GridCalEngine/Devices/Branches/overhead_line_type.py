@@ -342,6 +342,27 @@ class OverheadLineType(EditableDevice):
     def y_0123(self) -> CxMat | None:
         return self._y_0123
 
+    def get_phA(self):
+        phases = self.y_phases_abcn
+        phA = 0
+        if 1 in phases:
+            phA = 1
+        return phA
+
+    def get_phB(self):
+        phases = self.y_phases_abcn
+        phB = 0
+        if 2 in phases:
+            phB = 1
+        return phB
+
+    def get_phC(self):
+        phases = self.y_phases_abcn
+        phC = 0
+        if 3 in phases:
+            phC = 1
+        return phC
+
     def get_ys(self, circuit_idx: int, Sbase: float, length: float, Vnom: float):
         """
         get the series admittance matrix in p.u. (total)

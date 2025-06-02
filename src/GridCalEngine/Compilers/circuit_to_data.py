@@ -1496,7 +1496,7 @@ def get_branch_data(
             data.Ytt3[k3, :] = y1
 
             """ Alex """
-            data.phases = elm.
+            #data.phases = elm.
             """ Alex """
 
         # store for later

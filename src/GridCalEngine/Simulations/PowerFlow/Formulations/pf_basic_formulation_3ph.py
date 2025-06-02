@@ -27,6 +27,12 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
     :return: Ybus, Yf, Yt, Yshunt_bus
     """
 
+    # Mask
+
+
+
+    #
+
     n = nc.bus_data.nbus
     m = nc.passive_branch_data.nelm
     Cf = lil_matrix((3 * m, 3 * n), dtype=int)

@@ -472,6 +472,10 @@ class Line(BranchParent):
             self.ys.values = obj.get_ys(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
             self.ysh.values = obj.get_ysh(circuit_idx=self.circuit_idx, Sbase=Sbase, length=self.length, Vnom=vn)
 
+            self.phA = obj.get_phA()
+            self.phB = obj.get_phB()
+            self.phC = obj.get_phC()
+
             self.template = obj
 
         elif isinstance(obj, UndergroundLineType):
