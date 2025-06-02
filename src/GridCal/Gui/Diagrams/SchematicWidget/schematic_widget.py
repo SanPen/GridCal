@@ -3498,7 +3498,10 @@ class SchematicWidget(BaseDiagramWidget):
         # VSC lines
         if vsc_Pf is not None:
 
-            vsc_sending_power_norm = np.abs(vsc_Pt + 1j * vsc_Qt) / (max_flow + 1e-20)
+            if vsc_Qt is None:
+                vsc_sending_power_norm = np.abs(vsc_Pt) / (max_flow + 1e-20)
+            else:
+                vsc_sending_power_norm = np.abs(vsc_Pt + 1j * vsc_Qt) / (max_flow + 1e-20)
 
             if self.circuit.get_vsc_number() == len(vsc_Pf):
                 for i, elm in enumerate(self.circuit.vsc_devices):
@@ -3549,15 +3552,25 @@ class SchematicWidget(BaseDiagramWidget):
 
                             tooltip += '\nPower (from):\t' + "{:10.4f}".format(vsc_Pf[i]) + ' [MW]'
 
-                            if vsc_losses is not None:
-                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
-                                tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
-                                tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
-                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                     St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                            if vsc_Qt is None:
+                                if vsc_losses is not None:
+                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
+                                    tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i],
+                                                                         St=vsc_Pt[i])
+                                else:
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i],
+                                                                         St=-vsc_Pf[i])
                             else:
-                                graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
-                                                                     St=-vsc_Pf[i] + 1j * vsc_Qt[i])
+                                if vsc_losses is not None:
+                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Pt[i]) + ' [MW]'
+                                    tooltip += '\nPower (to):\t' + "{:10.4f}".format(vsc_Qt[i]) + ' [Mvar]'
+                                    tooltip += '\nLosses: \t\t' + "{:10.4f}".format(vsc_losses[i]) + ' [MW]'
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                                                                         St=vsc_Pt[i] + 1j * vsc_Qt[i])
+                                else:
+                                    graphic_object.set_arrows_with_power(Sf=vsc_Pf[i] + 1j * 0.0,
+                                                                         St=-vsc_Pf[i] + 1j * vsc_Qt[i])
 
                             graphic_object.setToolTipText(tooltip)
                             graphic_object.set_colour(color, w, style)

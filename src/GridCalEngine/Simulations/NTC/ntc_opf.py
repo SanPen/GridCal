@@ -375,7 +375,7 @@ def pmode3_formulation(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
     return flow
 
 
-def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
+def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t, base_name: str = "hvdc"):
     """
     Formulation
     ------------------------------------------------------------
@@ -407,7 +407,7 @@ def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
     flow = prob.add_var(
         lb=-prob.INFINITY,
         ub=prob.INFINITY,
-        name=join("hvdc_flow_", [t_idx, m], "_")
+        name=join(f"{base_name}_flow_", [t_idx, m], "_")
     )
 
     flow_lin = prob.add_var(
@@ -415,8 +415,8 @@ def pmode3_formulation2(prob, t_idx, m, rate, P0, droop, theta_f, theta_t):
         ub=prob.INFINITY,
         name=join("pmode3_eq", [t_idx, m], "_")
     )
-    z1 = prob.add_int(lb=0, ub=1, name=join("hvdc_z1_", [t_idx, m], "_"))
-    z2 = prob.add_int(lb=0, ub=1, name=join("hvdc_z2_", [t_idx, m], "_"))
+    z1 = prob.add_int(lb=0, ub=1, name=join(f"{base_name}_z1_", [t_idx, m], "_"))
+    z2 = prob.add_int(lb=0, ub=1, name=join(f"{base_name}_z2_", [t_idx, m], "_"))
 
     M = 2 * rate  # exactly this
 
@@ -1135,8 +1135,7 @@ def add_linear_branches_formulation(t_idx: int,
                                     alpha_threshold: float,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
-                                    inf=1e20,
-                                    add_flow_slacks: bool = True):
+                                    inf=1e20):
     """
     Formulate the branches
     :param t_idx: time index
@@ -1171,30 +1170,39 @@ def add_linear_branches_formulation(t_idx: int,
             # compute rate in per unit
             rate_pu = branch_data_t.rates[m] / Sbase
 
-            # declare the flow LPVar
-            branch_vars.flows[t_idx, m] = prob.add_var(
-                lb=-inf,
-                ub=inf,
-                name=join("flow_", [t_idx, m], "_")
-            )
-
             if branch_data_t.dc[m]:
+
+                # declare the flow LPVar
+                branch_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-inf,
+                    ub=inf,
+                    name=join("dc_flow_", [t_idx, m], "_")
+                )
 
                 # DC Branch
                 # compute the branch susceptance
                 if branch_data_t.R[m] == 0.0:
-                    bk = 1e-20
+                    bk = 1e-6  # setting a value too low will "break" the linear solver
                 else:
                     bk = 1.0 / branch_data_t.R[m]
 
-                branch_vars.flows[t_idx, m] = bk * (bus_vars.Vm[t_idx, fr] - bus_vars.Vm[t_idx, to])
+                prob.add_cst(
+                    cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Vm[t_idx, fr] - bus_vars.Vm[t_idx, to]),
+                    name=join("dc_flows_", [t_idx, m], "_")
+                )
 
             else:
                 # AC branch
+                # declare the flow LPVar
+                branch_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-inf,
+                    ub=inf,
+                    name=join("ac_flow_", [t_idx, m], "_")
+                )
 
                 # compute the branch susceptance
                 if branch_data_t.X[m] == 0.0:
-                    bk = 1e-20
+                    bk = 1e-6  # setting a value too low will "break" the linear solver
                 else:
                     bk = 1.0 / branch_data_t.X[m]
 
@@ -1234,7 +1242,7 @@ def add_linear_branches_formulation(t_idx: int,
                         prob.add_cst(
                             cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Va[t_idx, fr] -
                                                                      bus_vars.Va[t_idx, to]),
-                            name=join("flow_", [t_idx, m], "_")
+                            name=join("ac_flow_", [t_idx, m], "_")
                         )
 
             # We save in Pcalc the balance of the branch flows
@@ -1439,7 +1447,8 @@ def add_linear_hvdc_formulation(t_idx: int,
                                                                     P0=P0,
                                                                     droop=droop,
                                                                     theta_f=vars_bus.Va[t_idx, fr],
-                                                                    theta_t=vars_bus.Va[t_idx, to])
+                                                                    theta_t=vars_bus.Va[t_idx, to],
+                                                                    base_name="hvdc")
 
                     # hvdc_vars.flows[t_idx, m] = formulate_hvdc_Pmode3_single_flow(
                     #     solver=prob,
@@ -1559,7 +1568,8 @@ def add_linear_vsc_formulation(t_idx: int,
 
         if vsc_data_t.active[m]:
 
-            if vsc_data_t.control1[m] == ConverterControlType.Pdc_angle_droop:  # P-MODE 3
+            if (vsc_data_t.control1[m] == ConverterControlType.Pdc_angle_droop and
+                    vsc_data_t.control2[m] == ConverterControlType.Pac):  # P-MODE 3
 
                 # set the flow based on the angular difference
                 P0 = vsc_data_t.control2_val[m] / Sbase
@@ -1569,14 +1579,17 @@ def add_linear_vsc_formulation(t_idx: int,
 
                 if saturate:
 
-                    vsc_vars.flows[t_idx, m] = pmode3_formulation2(prob=prob,
-                                                                   t_idx=t_idx,
-                                                                   m=m,
-                                                                   rate=vsc_data_t.rates[m] / Sbase,
-                                                                   P0=P0,
-                                                                   droop=droop,
-                                                                   theta_f=bus_vars.Va[t_idx, fr],
-                                                                   theta_t=bus_vars.Va[control_bus_idx, to])
+                    vsc_vars.flows[t_idx, m] = pmode3_formulation2(
+                        prob=prob,
+                        t_idx=t_idx,
+                        m=m,
+                        rate=vsc_data_t.rates[m] / Sbase,
+                        P0=P0,
+                        droop=droop,
+                        theta_f=bus_vars.Va[t_idx, fr],
+                        theta_t=bus_vars.Va[control_bus_idx, to],
+                        base_name="vsc"
+                    )
 
                 else:
 
@@ -1586,43 +1599,112 @@ def add_linear_vsc_formulation(t_idx: int,
                     vsc_vars.flows[t_idx, m] = prob.add_var(
                         lb=-vsc_data_t.rates[m] / Sbase,
                         ub=vsc_data_t.rates[m] / Sbase,
-                        name=join("hvdc_flow_", [t_idx, m], "_")
+                        name=join("vsc_flow_", [t_idx, m], "_")
                     )
 
                     # flow = P0 + k · (theta_f - theta_t)
                     prob.add_cst(
                         cst=vsc_vars.flows[t_idx, m] == P0 + droop * (
                                 bus_vars.Va[t_idx, fr] - bus_vars.Va[control_bus_idx, to]),
-                        name=join("hvdc_flow_cst_", [t_idx, m], "_")
+                        name=join("vsc_flow_cst_", [t_idx, m], "_")
                     )
 
-                # add the injections matching the flow
-                bus_vars.Pbalance[t_idx, fr] -= vsc_vars.flows[t_idx, m]
-                bus_vars.Pbalance[t_idx, to] += vsc_vars.flows[t_idx, m]
+            elif (vsc_data_t.control1[m] == ConverterControlType.Vm_dc and
+                  vsc_data_t.control2[m] == ConverterControlType.Pac):
 
-            elif (vsc_data_t.control1[m] == ConverterControlType.Pdc or
-                  vsc_data_t.control1[m] == ConverterControlType.Pac):
+                # set the DC slack
+                val = vsc_data_t.control1_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                any_dc_slack = True
 
                 # declare the flow var
                 vsc_vars.flows[t_idx, m] = prob.add_var(
                     lb=-vsc_data_t.rates[m] / Sbase,
                     ub=vsc_data_t.rates[m] / Sbase,
-                    name=join("hvdc_flow_", [t_idx, m], "_")
+                    name=join("vsc_flow_", [t_idx, m], "_")
                 )
 
-                # add the injections matching the flow
-                bus_vars.Pbalance[t_idx, fr] -= vsc_vars.flows[t_idx, m]
-                bus_vars.Pbalance[t_idx, to] += vsc_vars.flows[t_idx, m]
-
-            elif (vsc_data_t.control1[m] == ConverterControlType.Vm_dc or
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pac and
                   vsc_data_t.control2[m] == ConverterControlType.Vm_dc):
+
                 # set the DC slack
-                bus_vars.Vm[t_idx, fr] = 1.0
+                val = vsc_data_t.control2_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
                 any_dc_slack = True
 
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Vm_dc and
+                  vsc_data_t.control2[m] == ConverterControlType.Pdc):
+
+                # set the DC slack
+                val = vsc_data_t.control1_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                any_dc_slack = True
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pdc and
+                  vsc_data_t.control2[m] == ConverterControlType.Vm_dc):
+
+                # set the DC slack
+                val = vsc_data_t.control2_val[m]
+                if val == 0:
+                    val = 1
+                set_var_bounds(var=bus_vars.Vm[t_idx, fr], lb=val, ub=val)
+                any_dc_slack = True
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pdc and
+                  vsc_data_t.control2[m] == ConverterControlType.Pac):
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
+            elif (vsc_data_t.control1[m] == ConverterControlType.Pac and
+                  vsc_data_t.control2[m] == ConverterControlType.Pdc):
+
+                # declare the flow var
+                vsc_vars.flows[t_idx, m] = prob.add_var(
+                    lb=-vsc_data_t.rates[m] / Sbase,
+                    ub=vsc_data_t.rates[m] / Sbase,
+                    name=join("vsc_flow_", [t_idx, m], "_")
+                )
+
             else:
-                logger.add_error(f"Unsupported VSC control combination "
-                                 f"{vsc_data_t.control1[m]}, {vsc_data_t.control2[m]}")
+                logger.add_error(msg=f"Unsupported controls",
+                                 value=f"{vsc_data_t.control1[m]}, {vsc_data_t.control2[m]}")
+
+            # add the injections matching the flow
+            bus_vars.Pbalance[t_idx, fr] -= vsc_vars.flows[t_idx, m]
+            bus_vars.Pbalance[t_idx, to] += vsc_vars.flows[t_idx, m]
+
         else:
             # not active, therefore the flow is exactly zero
             set_var_bounds(var=vsc_vars.flows[t_idx, m], ub=0.0, lb=0.0)
@@ -1659,6 +1741,7 @@ def add_linear_node_balance(t_idx: int,
             cst=bus_vars.Pbalance[t_idx, k] == 0,
             name=join("kirchhoff_", [t_idx, k], "_"))
 
+    # set this to the set value
     Va = np.angle(bus_data.Vbus)
     for i in vd:
         set_var_bounds(var=bus_vars.Va[t_idx, i], lb=Va[i], ub=Va[i])
@@ -1828,7 +1911,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         # declare the linear analysis and compute the PTDF and LODF
         ls = LinearAnalysis(nc=nc,
                             distributed_slack=False,
-                            correct_values=True)
+                            correct_values=True,
+                            logger=logger)
 
         # compute the sensitivity to the exchange
         alpha = compute_alpha(ptdf=ls.PTDF,
@@ -1863,7 +1947,6 @@ def run_linear_ntc_opf(grid: MultiCircuit,
             structural_ntc=float(structural_ntc),
             ntc_load_rule=ntc_load_rule,
             inf=1e20,
-            add_flow_slacks=False,
         )
 
         # formulate nodes ---------------------------------------------------------------------------------------
