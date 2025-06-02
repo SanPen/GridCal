@@ -68,13 +68,15 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
                  grid: MultiCircuit,
                  n_monte_carlo_sim=10000,
                  use_monte_carlo: bool = True,
-                 save_file: bool = True):
+                 save_file: bool = True,
+                 time_indices: IntVec | None = None):
         """
 
         :param grid:
         :param n_monte_carlo_sim:
         :param use_monte_carlo:
         :param save_file:
+        :param time_indices: array of time indices to use, if None all are used
         """
         super().__init__(grid=grid,
                          x_dim=len(grid.investments_groups),
@@ -84,6 +86,7 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         self.n_monte_carlo_sim = n_monte_carlo_sim
         self.use_monte_carlo = use_monte_carlo
         self.save_file = save_file
+        self.time_indices = time_indices
 
         if self.save_file:
             self.output_f = open("adequacy_output.csv", "w")
@@ -95,7 +98,7 @@ class AdequacyInvestmentProblem(BlackBoxProblemTemplate):
         # --------------------------------------------------------------------------------------------------------------
 
         self.greedy_dispatch_inputs = GreedyDispatchInputs(grid=self.grid,
-                                                           time_indices=None,
+                                                           time_indices=self.time_indices,
                                                            logger=self.logger)
 
         self.years_starts_indices = determine_starting_index_of_every_year(index=self.grid.time_profile)

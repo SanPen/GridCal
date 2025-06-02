@@ -2608,20 +2608,32 @@ class SimulationsMain(TimeEventsMain):
                         )
 
                     elif obj_fn_tpe == InvestmentsEvaluationObjectives.GenerationAdequacy:
-                        problem = sim.AdequacyInvestmentProblem(
-                            grid=self.circuit,
-                            n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
-                            use_monte_carlo=True,
-                            save_file=False
-                        )
+
+                        if self.circuit.has_time_series:
+                            problem = sim.AdequacyInvestmentProblem(
+                                grid=self.circuit,
+                                n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                                use_monte_carlo=True,
+                                save_file=False,
+                                time_indices=self.get_time_indices()
+                            )
+                        else:
+                            self.show_warning_toast('Adequacy studies need time data...')
+                            return
 
                     elif obj_fn_tpe == InvestmentsEvaluationObjectives.SimpleDispatch:
-                        problem = sim.AdequacyInvestmentProblem(
-                            grid=self.circuit,
-                            n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
-                            use_monte_carlo=False,
-                            save_file=False
-                        )
+
+                        if self.circuit.has_time_series:
+                            problem = sim.AdequacyInvestmentProblem(
+                                grid=self.circuit,
+                                n_monte_carlo_sim=self.ui.max_iterations_reliability_spinBox.value(),
+                                use_monte_carlo=False,
+                                save_file=False,
+                                time_indices=self.get_time_indices()
+                            )
+                        else:
+                            self.show_warning_toast('Adequacy studies need time data...')
+                            return
 
                     else:
                         self.show_error_toast("Objective not supported yet :/")
@@ -2901,30 +2913,34 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if not self.session.is_this_running(SimulationTypes.Reliability_run):
+            if self.circuit.get_time_number() > 0:
 
-                self.add_simulation(SimulationTypes.Reliability_run)
+                if not self.session.is_this_running(SimulationTypes.Reliability_run):
 
-                self.LOCK()
+                    self.add_simulation(SimulationTypes.Reliability_run)
 
-                # Compile the grid
-                self.ui.progress_label.setText('Compiling the grid...')
-                QtGui.QGuiApplication.processEvents()
+                    self.LOCK()
 
-                pf_options = self.get_selected_power_flow_options()
+                    # Compile the grid
+                    self.ui.progress_label.setText('Compiling the grid...')
+                    QtGui.QGuiApplication.processEvents()
 
-                drv = sim.ReliabilityStudyDriver(grid=self.circuit,
-                                                 pf_options=pf_options,
-                                                 n_sim=self.ui.max_iterations_reliability_spinBox.value())
+                    pf_options = self.get_selected_power_flow_options()
 
-                self.session.run(drv,
-                                 post_func=self.post_reliability,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
+                    drv = sim.ReliabilityStudyDriver(grid=self.circuit,
+                                                     pf_options=pf_options,
+                                                     time_indices=self.get_time_indices(),
+                                                     n_sim=self.ui.max_iterations_reliability_spinBox.value())
 
+                    self.session.run(drv,
+                                     post_func=self.post_reliability,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+                else:
+                    self.show_warning_toast('Another reliability study is running already...')
             else:
-                self.show_warning_toast('Another OPF time series is running already...')
-
+                self.show_warning_toast('Reliability studies need time data...')
         else:
             pass
 
