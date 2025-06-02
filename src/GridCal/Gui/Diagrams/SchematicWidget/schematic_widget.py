@@ -4316,6 +4316,30 @@ class SchematicWidget(BaseDiagramWidget):
             if idx_bus_list[0][1] == line_graphics.api_object.bus_from:
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
 
+    def set_vsc_control_dev(self, graphic: VscGraphicItem, control_idx: int):
+        """
+        Set the VSC control1_dev or control1_dev with the selected bus
+        :param graphic: VscGraphicItem
+        :param control_idx: 1 or 2 to set control1_dev or control1_dev
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            if control_idx == 1:
+                graphic.api_object.control1_dev = sel_bus
+            elif control_idx == 2:
+                graphic.api_object.control2_dev = sel_bus
+            else:
+                print("control_idx must be either 1 or 2")
+        else:
+            error_msg(f"You need to select exactly one bus to be set as the VSC control device {control_idx}",
+                      "Set VSC control device 1")
+
     def get_picture_width(self) -> int:
         return self.editor_graphics_view.width()
 

@@ -530,6 +530,7 @@ class ConverterControlType(Enum):
     Qac = 'Q_ac'
     Pdc = 'P_dc'
     Pac = 'P_ac'
+    Pdc_angle_droop = 'P_dc_angle_droop'  # PMODE3
 
     def __str__(self) -> str:
         return str(self.value)
