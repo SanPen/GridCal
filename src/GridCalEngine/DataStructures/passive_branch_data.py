@@ -53,6 +53,10 @@ class PassiveBranchData(BranchParentData):
         self.Ytf3 = np.zeros((self.nelm * 3, 3), dtype=complex)
         self.Ytt3 = np.zeros((self.nelm * 3, 3), dtype=complex)
 
+        self.phA: IntVec = np.zeros(self.nelm, dtype=int)
+        self.phB: IntVec = np.zeros(self.nelm, dtype=int)
+        self.phC: IntVec = np.zeros(self.nelm, dtype=int)
+
     def size(self) -> int:
         """
         Get size of the structure
@@ -98,6 +102,10 @@ class PassiveBranchData(BranchParentData):
         data.virtual_tap_f = self.virtual_tap_f[elm_idx]
         data.virtual_tap_t = self.virtual_tap_t[elm_idx]
 
+        data.phA = self.phA[elm_idx]
+        data.phB = self.phB[elm_idx]
+        data.phC = self.phC[elm_idx]
+
         return data
 
     def copy(self) -> "PassiveBranchData":
@@ -129,6 +137,10 @@ class PassiveBranchData(BranchParentData):
 
         data.virtual_tap_f = self.virtual_tap_f.copy()
         data.virtual_tap_t = self.virtual_tap_t.copy()
+
+        data.phA = self.phA.copy()
+        data.phB = self.phB.copy()
+        data.phC = self.phC.copy()
 
         return data
 

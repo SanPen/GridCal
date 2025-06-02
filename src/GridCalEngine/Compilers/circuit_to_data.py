@@ -1495,9 +1495,10 @@ def get_branch_data(
             data.Ytf3[k3, :] = y2
             data.Ytt3[k3, :] = y1
 
-            """ Alex """
-            #data.phases = elm.
-            """ Alex """
+            """ Save the phases of each line """
+            data.phA[ii] = elm.phA
+            data.phB[ii] = elm.phB
+            data.phC[ii] = elm.phC
 
         # store for later
         branch_dict[elm] = ii

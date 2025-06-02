@@ -42,6 +42,8 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
 
     idx3 = np.array([0, 1, 2])  # array that we use to generate the 3-phase indices
 
+    R = np.zeros((m, 3), dtype=int)
+
     for k in range(m):
         f = nc.passive_branch_data.F[k]
         t = nc.passive_branch_data.T[k]
@@ -55,8 +57,14 @@ def compute_ybus(nc: NumericalCircuit) -> Tuple[csc_matrix, csc_matrix, csc_matr
         Yt[np.ix_(k3, f3)] = nc.passive_branch_data.Ytf3[k3, :]
         Yt[np.ix_(k3, t3)] = nc.passive_branch_data.Ytt3[k3, :]
 
+        R[k, 0] = nc.passive_branch_data.phA
+        R[k, 1] = nc.passive_branch_data.phB
+        R[k, 2] = nc.passive_branch_data.phC
+
         Cf[k3, f3] = 1
         Ct[k3, t3] = 1
+
+    N = R @ Cf + R @ Ct
 
     Ysh_bus = np.zeros(n * 3, dtype=complex)
     for k in range(nc.shunt_data.nelm):

@@ -28,16 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Some Zigzag and Delta transformer admittance matrices solved.">
-      <change afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/read_grid.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Save the phases that each line has.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/branch_parent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/passive_branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/passive_branch_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/Formulations/pf_basic_formulation_3ph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB.gridcal" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB.gridcal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/phase_number.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB_powerflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/unbalanced_pf/2ph_AB_powerflow.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -211,7 +207,7 @@
     "Python.2ph_AB_powerflow.executor": "Debug",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.Carson_vs_Dubanton.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.LineBuilderDialogue.executor": "Run",
     "Python.Panther_Cable.executor": "Run",
@@ -2359,7 +2355,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="728" />
+    <option name="localTasksCounter" value="729" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2405,7 +2401,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactor of the get_solution method in pf_generalized_formulation.py" />
     <MESSAGE value="Refactored multi_island_pf_nc to remove useless initialization" />
     <MESSAGE value="Caught possible bug in the adjacency formation" />
     <MESSAGE value="minor change in the test_fubm_new voltage comparison, now checking also the imaginary part" />
@@ -2430,7 +2425,8 @@
     <MESSAGE value="get_ys and get_ysh corrected" />
     <MESSAGE value="Now get_ys and get_ysh always return 3x3 y matrices." />
     <MESSAGE value="Some Zigzag and Delta transformer admittance matrices solved." />
-    <option name="LAST_COMMIT_MESSAGE" value="Some Zigzag and Delta transformer admittance matrices solved." />
+    <MESSAGE value="Save the phases that each line has." />
+    <option name="LAST_COMMIT_MESSAGE" value="Save the phases that each line has." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2758,21 +2754,6 @@
           <url>file://$PROJECT_DIR$/src/trunk/three_phase/line_constants.py</url>
           <line>168</line>
           <option name="timeStamp" value="2609" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>356</line>
-          <option name="timeStamp" value="2617" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>363</line>
-          <option name="timeStamp" value="2618" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/overhead_line_type.py</url>
-          <line>349</line>
-          <option name="timeStamp" value="2619" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
